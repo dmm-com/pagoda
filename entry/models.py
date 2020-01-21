@@ -1077,6 +1077,11 @@ class Entry(ACLBase):
     def delete(self):
         super(Entry, self).delete()
 
+        # update Elasticsearch index info which refered this entry not to refer this link
+        es_object = ESS()
+        for entry in [x for x in self.get_referred_objects() if x.id != self.id]:
+            entry.register_es(es=es_object)
+
         # also delete each attributes
         for attr in self.attrs.filter(is_active=True):
 
@@ -1158,7 +1163,7 @@ class Entry(ACLBase):
                 'type': attr.type,
                 'key': '',
                 'value': '',
-                'referral_id': None,
+                'referral_id': '',
             }
 
             # Basically register attribute information whatever value doesn't exist
@@ -1199,12 +1204,15 @@ class Entry(ACLBase):
 
             elif attr.type & AttrTypeValue['named']:
                 attrinfo['key'] = attrv.value
-                attrinfo['value'] = truncate(attrv.referral.name) if attrv.referral else ''
-                attrinfo['referral_id'] = attrv.referral.id if attrv.referral else ''
+
+                if attrv.referral and attrv.referral.is_active:
+                    attrinfo['value'] = truncate(attrv.referral.name)
+                    attrinfo['referral_id'] = attrv.referral.id
 
             elif attr.type & AttrTypeValue['object']:
-                attrinfo['value'] = truncate(attrv.referral.name) if attrv.referral else ''
-                attrinfo['referral_id'] = attrv.referral.id if attrv.referral else ''
+                if attrv.referral and attrv.referral.is_active:
+                    attrinfo['value'] = truncate(attrv.referral.name)
+                    attrinfo['referral_id'] = attrv.referral.id
 
             elif attr.type & AttrTypeValue['group']:
                 if attrv.value and Group.objects.filter(id=attrv.value).exists():
