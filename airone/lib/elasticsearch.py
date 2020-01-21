@@ -697,15 +697,6 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
         ][0]
 
     for (entry, hit_attrs) in sorted(hit_infos.items(), key=lambda x: x[0].name):
-        # If 'keyword' parameter is specified and hited entry doesn't have value at the targt
-        # attribute, that entry should be removed from result. This processing may be worth to
-        # do before refering entry from DB for saving time of server-side processing.
-        for hint in hint_attrs:
-            if ('keyword' in hint and hint['keyword'] and
-                    # This checks hitted entry has specified attribute
-                    not [x for x in hit_attrs if x['name'] == hint['name']]):
-                continue
-
         ret_info = {
             'entity': {'id': entry.schema.id, 'name': entry.schema.name},
             'entry': {'id': entry.id, 'name': entry.name},
