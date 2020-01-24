@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}List Entities{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
+    <li class="breadcrumb-item">エンティティ・エントリ一覧</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <h2>エンティティ・エントリ一覧</h2>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <div class="float-left">
+        <button name="button_new" type="button" class="btn btn-primary" onclick="location.href='/entity/create'">新規作成</button>
+        <button name="button_export" type="button" class="btn btn-secondary" onclick="location.href='/entity/export/'">エクスポート</button>
+        <button name="button_import" type="button" class="btn btn-secondary" onclick="location.href='/dashboard/import/'">インポート</button>
+      </div>
+      <div class="float-right">
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <td>エンティティ名</td>
+            <td>備考</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entity in entities %}
+          <tr>
+            <td>
+                <a href='/entry/{{ entity.id }}'>{{ entity.name }}</a>
+            </td>
+            <td>{{ entity.note }}</td>
+            <td>
+              <a href="/entity/edit/{{ entity.id }}"><button type='button' class='btn btn-info btn-sm'>エンティティ編集</button></a>
+              <a href='/entity/history/{{ entity.id }}'><button type='button' class='btn btn-info btn-sm'>変更履歴</button></a>
+              <a href='/acl/{{ entity.id }}'><button type='button' class='btn btn-info btn-sm'>ACL</button></a>
+            </td>
+            <td><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/entity/do_delete/{{ entity.id }}">del</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+$(document).ready(function() {
+  $('.del-item').on('click', confirm_delete_table_item);
+});
+</script>
+{% endblock %}

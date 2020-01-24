@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Entity{% endblock %}
+
+{% block nav_sub_header %}
+{% with "history_entity" as path %}
+{% include 'navigation.html' %}
+{% endwith %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Operator</th>
+        <th>Operation</th>
+        <th>Details</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for column in history %}
+      <tr>
+        <td>{{ column.user.username }}</td>
+        {% if column.operation == OPERATION_HISTORY.ADD_ENTITY %}
+          <td>作成</td>
+        {% elif column.operation == OPERATION_HISTORY.MOD_ENTITY %}
+          <td>変更</td>
+        {% elif column.operation == OPERATION_HISTORY.DEL_ENTITY %}
+          <td>削除</td>
+        {% else %}
+          <td>{{ column.operation }} ({{ OPERATION_HISTORY.ADD_ENTITY }})</td>
+        {% endif %}
+        <td>
+          <table class='table'>
+            <tbody>
+            {% for detail in column.details.all %}
+              <tr>
+                {% if detail.operation == OPERATION_HISTORY.MOD_ENTITY %}
+                  <td>変更</td>
+                {% elif detail.operation == OPERATION_HISTORY.ADD_ATTR %}
+                  <td>属性追加</td>
+                {% elif detail.operation == OPERATION_HISTORY.MOD_ATTR %}
+                  <td>属性変更</td>
+                {% elif detail.operation == OPERATION_HISTORY.DEL_ATTR %}
+                  <td>属性削除</td>
+                {% else %}
+                  <td></td>
+                {% endif %}
+                <td>{{ detail.target_obj.name }}</td>
+                <td>{{ detail.text }}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </td>
+        <td>{{ column.time }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="/static/js/entity.js"></script>
+{% endblock %}

@@ -1,0 +1,24 @@
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top py-0 airone-navbar">
+  <!-- logo -->
+  <div class="mr-auto">
+    <a href="/" class="navbar-brand">AirOne</a>
+    <span class="navbar-text align-top">{{version}}</span>
+  </div>
+  <div>
+    <ul class="navbar-nav">
+      {% if user.is_authenticated %}
+      <li class='navbar'>{% include 'nav_user.html' %}</li>
+      {% else %}
+      <li class="navbar"><a href="/dashboard/login" class="nav-link">ログイン</a></li>
+      {% endif %}
+      <li class='navbar'>{% include 'nav_jobs.html' %}
+      </li>
+    </ul>
+  </div>
+  <div>
+    <form class="form-inline" action="/dashboard/search/" id="navbar-search-form">
+      <input name='query' class="form-control" type="text" placeholder="Search"/>
+      <button class="btn btn-outline-secondary" type="submit" form="navbar-search-form">検索</button>
+    </form>
+  </div>
+</nav>

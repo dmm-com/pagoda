@@ -1,0 +1,27 @@
+<ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link active">表示</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href='hoge'>編集</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link">参照エントリ一覧</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link">変更履歴</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link">コピー</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link">ACL 設定</a>
+  </li>
+</ul>
+
+
+<div class="tab-content">
+  {% include 'show_entry/attributes.html' %}
+  {% include 'show_entry/referrals.html' %}
+  {% include 'show_entry/change_history.html' %}
+</div>

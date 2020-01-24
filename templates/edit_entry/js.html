@@ -1,0 +1,430 @@
+{% load bitwise_tags %}
+<script>
+var get_register_attrs = function(base) {
+  var attrs = []
+
+  {% for attr in attributes %}
+  attrs.push({
+    'id': '{{ attr.id }}',
+    'type': '{{ attr.type }}',
+    'value': $(base).find(".attr_value[attr_id='{{ attr.id }}'][enabled='True']").map(function(i, e) {
+      if($(e).attr('type') == 'checkbox') {
+        return {'data': $(e).prop('checked'), 'index': $(e).attr('index')};
+      } else {
+        return {'data': $(e).val(), 'index': $(e).attr('index')};
+      }
+    }).get(),
+    'referral_key': $(base).find(".referral_key[attr_id='{{ attr.id }}'][enabled='True']").map(function(i, e){
+      return {'data': $(e).val(), 'index': $(e).attr('index')};
+    }).get(),
+  });
+  {% endfor %}
+
+  return attrs;
+}
+
+AirOneButtonUtil.initialize($('#submit-button'), gettext('button_save'),
+                            gettext('button_communicating'), true, true, function(e) {
+  $('#edit-form').submit();
+});
+  
+$('#edit-form').submit(function(event){
+  event.preventDefault();
+
+  // clear old warning
+  MessageBox.clear();
+
+  if(! form_validator()) {
+    MessageBox.error('Some parameters are required to input');
+    $("#submit-button").trigger('enableButton');
+    return false;
+  }
+
+  HttpPost($(this), {'attrs': get_register_attrs(this)}).done(function(data) {
+    {% if entry %}
+      // success to edit entry
+      MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, "Success to update Entry");
+    {% else %}
+      // scucess to create entry
+      MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, "Success to create a new Entry");
+    {% endif %}
+
+    location.href = '{{ redirect_url }}';
+  }).fail(function(data) {
+    MessageBox.error(data.responseText);
+
+    if(data.responseText == 'Duplicate name entry is existed') {
+      $('input[name="entry_name"]').parent().addClass('table-danger');
+    }
+    $("#submit-button").trigger('enableButton');
+  });
+
+  return false;
+});
+
+// This validates form inputs and notify the parameter that has problems if it exists.
+var form_validator = function() {
+  var result = true;
+
+  // check input of entry name
+  elem_name = $('input[name="entry_name"]');
+  if(! elem_name.val()) {
+    elem_name.parent().addClass('table-danger');
+    result = false;
+  }
+
+  // check mandatory attrs of referral entry
+  $('.attr_referral[mandatory]').each(function() {
+    var all_empty = true;
+    $(this).find('input[class="referral_key"],select[class="attr_value"]').each(function() {
+      if($(this).val()) {
+        all_empty = false;
+      }
+    });
+    if(all_empty) {
+      $(this).parent().addClass('table-danger');
+      result = false;
+    } else {
+      $(this).parent().removeClass('table-danger');
+    }
+  });
+
+  // check mandatory attrs of text-input
+  $('input[type="text"][class="attr_value"][mandatory]').each(function() {
+    if(! $(this).val()) {
+      $(this).parent().addClass('table-danger');
+      result = false;
+    }
+  });
+
+  // check mandatory attrs of select
+  $('select[class="attr_value"][mandatory]').each(function() {
+    if(! $(this).val()) {
+      $(this).parent().addClass('table-danger');
+      result = false;
+    }
+  });
+
+  // check mandatory attrs of textarea
+  $('textarea[class="attr_value"][mandatory]').each(function() {
+    if(! $(this).val()) {
+      $(this).parent().addClass('table-danger');
+      result = false;
+    }
+  });
+
+  // check mandatory attrs of date
+  $('input[type="date"][class="attr_value"][mandatory]').each(function() {
+    if(! $(this).val()) {
+      $(this).parent().addClass('table-danger');
+      result = false;
+    }
+  });
+
+  // check mandatory attrs of array
+  $('.array_element[mandatory]').each(function() {
+    if(! $(this).children().length) {
+      $(this).parent().parent().addClass('table-danger');
+      result = false;
+    }
+
+    var all_empty = true;
+    $(this).find('input[class="attr_value"],input[class="referral_key"],select[class="attr_value"]').each(function() {
+      if($(this).val()) {
+        all_empty = false;
+      }
+    });
+    if(all_empty) {
+      $(this).parent().parent().addClass('table-danger');
+      result = false;
+    } else {
+      $(this).parent().parent().removeClass('table-danger');
+    }
+  });
+
+  return result;
+}
+
+var append_column = function(container, template, value_setter) {
+  var new_column = $('<div class="row" />');
+
+  new_column.append($.parseHTML(template.html()));
+
+  // set value to the new column
+  value_setter(new_column);
+
+  container.append(new_column);
+};
+
+var del_column = function() {
+  // remove selected column
+  $(this).parent().parent().remove();
+
+  return false;
+}
+
+var filter_options = function(input_elem) {
+  var input_str = $(input_elem).val();
+  $(input_elem).parent().parent().find('select option').each(function(i, elem) {
+    if($(elem).val() != 0) {
+      if($(elem).text().toLowerCase().indexOf(input_str.toLowerCase()) >= 0) {
+        $(elem).show();
+      } else {
+        $(elem).hide();
+      }
+    }
+  });
+}
+var replace_options = function(elem_select, referrals) {
+  let elem_not_set = $('<option />').val(0).text('- NOT SET -');
+
+  elem_select.empty();
+
+  // show 'NOT SET' and selected options regardless of input value
+  elem_select.append(elem_not_set);
+
+  selected_items = [];
+  $(elem_select).closest('div').find('.airone-selected-items').each(function(i, elem) {
+    selected_items.push($(elem).text());
+
+    // The case when '- NOT SET -' is selected.
+    if($(elem).text() == elem_not_set.text()) {
+      elem_not_set.attr('selected', true);
+    }
+  });
+
+  for(var ref of referrals) {
+    if(selected_items.includes(ref.name)) {
+      elem_select.append($('<option selected/>').val(ref.id).text(ref.name));
+    } else {
+      elem_select.append($('<option />').val(ref.id).text(ref.name));
+    }
+  }
+}
+
+var sending_request = false;
+var do_update_option = function(elem_select, attr_id, keyword) {
+  if(! sending_request) {
+    sending_request = true;
+
+    // disable selector until responsed is returned
+    $(elem_select).prop('disabled', true);
+
+    $.ajax({
+      type: 'GET',
+      url: `/entry/api/v1/get_attr_referrals/${ attr_id }/`,
+      data: {
+        keyword: keyword,
+      },
+    }).done(function(data){
+      replace_options(elem_select, data['results']);
+
+      // reset sending flag
+      sending_request = false;
+
+      // clear unfetched flag
+      elem_select.attr('unfetched_value', null);
+
+      elem_select.prop('disabled', false);
+    }).fail(function(data){
+      MessageBox.error(data);
+      elem_select.prop('disabled', false);
+    });
+  }
+}
+
+var update_option = function(input_elem) {
+  if($(input_elem).attr('use_api')) {
+    do_update_option($(input_elem).closest('div').find('select'),
+                     $(input_elem).attr('attr_id'),
+                     $(input_elem).val());
+  } else {
+    filter_options(input_elem);
+  }
+}
+
+var enable_key_handling = true;
+var narrow_down_handler = {
+  "compositionstart": function() {
+    enable_key_handling = false;
+  },
+  "compositionend": function() {
+    enable_key_handling = true;
+
+    update_option(this);
+  },
+  "keyup": function(e) {
+    if (e.keyCode == 13) {
+      update_option(this);
+    }
+  },
+  "focus": function(e) {
+    let elem_select = $(this).closest('div').find('select');
+
+    if(elem_select.attr('unfetched_value')) {
+      do_update_option(elem_select, $(this).attr('attr_id'), '');
+    }
+  }
+}
+
+var update_selected_item = function() {
+  var attr_id = $(this).attr('attr_id');
+  var text = $(this).find('option:selected').text();
+
+  // clear danger notification if it's set
+  $(this).parent().removeClass('table-danger');
+
+  if(text.length > {{ config.entry.MAX_LABEL_STRING }}) {
+    text = text.substring(0, {{ config.entry.MAX_LABEL_STRING }} - 3) + '...';
+  }
+
+  $(this).parent().find('li[attr_id="'+ attr_id +'"]').text(text);
+}
+
+var select_value_handler = {
+  'change': update_selected_item,
+  'keydown': function() {
+    // clear danger notification if it's set
+    $(this).parent().removeClass('table-danger');
+  },
+  'focus': function() {
+    if($(this).attr('unfetched_value')) {
+      do_update_option($(this), $(this).attr('attr_id'), '');
+    }
+  }
+}
+
+// Helper function to identify row index for array_named_entry params
+var index_map = {};
+function get_index(attr_id) {
+  if(attr_id in index_map) {
+    index_map[attr_id] += 1;
+  } else {
+    index_map[attr_id] = 0;
+  }
+
+  return index_map[attr_id];
+}
+
+$('button[name=add_attr]').on('click', function() {
+  var container = $(this).parent().find('.array_element');
+  var new_column = $('<div class="row" />');
+
+  // clear danger notification if it's set
+  $(this).parent().parent().removeClass('table-danger');
+
+  new_column.append($.parseHTML($(this).parent().find('.attr_value_template').html()));
+  new_column.find('button[name=del_attr]').on('click', del_column);
+  new_column.find('.narrow_down_referral').on(narrow_down_handler);
+  new_column.find(".attr_value").on(select_value_handler);
+  new_column.find(".attr_value").attr('enabled', 'True');
+  new_column.find(".referral_key").attr('enabled', 'True');
+
+  // set index attribute for attr_value and referral_key parameter
+  var current_index = get_index($(this).attr('attr_id'));
+
+  new_column.find(".attr_value").attr('index', current_index);
+  new_column.find(".referral_key").attr('index', current_index);
+
+  container.prepend(new_column);
+
+  return false;
+});
+
+// Initiate array values
+{% for attr in attributes %}
+  {% if attr.type|bitwise_and:attr_type_value.array %}
+    var container = $('.array_element[attr_id="{{ attr.id }}"]');
+    var template = $('#template-{{ attr.id }}');
+    var value_setter = undefined;
+
+    {% for value in attr.last_value %}
+      {% if attr.type == attr_type.array_string %}
+        value_setter = function(new_column) {
+          new_column.find('.attr_value').val('{{ value }}');
+          new_column.find('.attr_value').attr('enabled', 'True');
+        };
+
+      {% elif attr.type == attr_type.array_entry %}
+        value_setter = function(new_column) {
+          elem_select = new_column.find('select');
+
+          // clear select element and set option to show only selected one
+          {% if value %}
+            elem_select.children('option').remove();
+
+            elem_select.append($('<option />').val(0).text('- NOT SET -'));
+            elem_select.append($('<option />').val({{ value.id }}).text('{{ value.name }}').attr('selected', 'True'));
+          {% endif %}
+
+          // set flags to specify this value will be registered to server
+          elem_select.attr('enabled', 'True');
+
+          // set flag that describes this selector doens't contain values
+          elem_select.attr('unfetched_value', 'true');
+
+          // set name of list element to specify selected value
+          new_column.find('li').text('{{ value.name|truncatechars:config.entry.MAX_LABEL_STRING }}');
+        }
+
+      {% elif attr.type == attr_type.array_named_entry %}
+        value_setter = function(new_column) {
+          var elem_referral_key = new_column.find('.referral_key')
+          var elem_select = new_column.find('select');
+          var current_index = get_index({{ attr.id }});
+
+          // clear select element and set option to show only selected one
+          {% if value.referral %}
+            elem_select.children('option').remove();
+
+            elem_select.append($('<option />').val(0).text('- NOT SET -'));
+            elem_select.append($('<option />').val({{ value.referral.id }}).text('{{ value.referral.name }}').attr('selected', 'True'));
+          {% endif %}
+
+          // set name of list element to specify selected value
+          new_column.find('li').text('{{ value.referral.name|truncatechars:config.entry.MAX_LABEL_STRING }}');
+          elem_referral_key.val('{{ value.value }}');
+
+          // set enabled flag and index to each parameters
+          elem_referral_key.attr('enabled', 'True');
+          elem_select.attr('enabled', 'True');
+
+          new_column.find('.referral_key').attr('index', current_index);
+          elem_select.attr('index', current_index);
+        }
+      {% endif %}
+      append_column(container, template, value_setter);
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+
+$(document).ready(function() {
+  $('button[name=del_attr]').on('click', del_column);
+  $(".narrow_down_referral").on(narrow_down_handler);
+  $("select.attr_value").on(select_value_handler);
+  $('input[name="entry_name"]').on('keydown', function() {
+    // clear danger notification if it's set
+    $(this).parent().removeClass('table-danger');
+  });
+  $('#edit-form').keypress(function(e){
+    if(!(e.which != 13 || $(e.target).prop('tagName').toLowerCase() == 'textarea')){
+      return false;
+    }
+  });
+});
+
+$(window).scroll(function(){
+    if($(this).scrollTop() > 60){
+        $('#back-to-top').fadeIn();
+    }else{
+        $('#back-to-top').fadeOut();
+    }
+});
+
+$('#back-to-top').click(function(){
+    $('body,html').animate({
+        scrollTop:0
+    },500);
+    return false;
+});
+</script>

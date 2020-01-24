@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Create new Entity{% endblock %}
+
+{% block nav_sub_header %}
+{% with "create_entity" as path %}
+{% include 'navigation.html' %}
+{% endwith %}
+{% endblock %}
+
+{% block content %}
+<form id="edit-form" name="edit-form" url="/entity/do_create" method="post">
+  {% include 'edit_entity_content.html' %}
+</form>
+{% endblock %}
+
+{% block script %}
+<script src="/static/js/entity.js"></script>
+{% endblock %}

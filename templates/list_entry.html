@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}List Entries{% endblock %}
+
+{% block nav_sub_header %}
+{% with "index_entry" as path %}
+{% include 'navigation.html' %}
+{% endwith %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  {% include 'entity_navigation.html' with tab='list' %}
+
+  <hr/>
+
+  {% include 'entity_tab.html' with tab='list' %}
+
+  <div class='tab-content'>
+    {% include 'list_entry/content.html' %}
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+  {% include 'list_entry/common.js' %}
+  {% include 'list_entry/list.js'%}
+</script>
+{% endblock %}

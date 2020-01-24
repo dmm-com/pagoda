@@ -1,0 +1,9 @@
+
+Group:
+- { name: Group1 }
+- { name: Group2 }
+
+User:
+- { username: User1, email: user1@example.com, groups: '' }
+- { username: User2, email: user1@example.com, groups: '' }
+- { username: User1, email: user1@example.com, groups: 'Group1,Group2' }

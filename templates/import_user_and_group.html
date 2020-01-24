@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Import User and Group{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
+    <li class="breadcrumb-item"><a href="/group/">グループ管理</a></li>
+    <li class="breadcrumb-item">インポート</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<form action='/group/do_import/' method='POST' enctype='multipart/form-data'>
+  {% csrf_token %}
+  <input type="file" id="upfile" name="file"/>
+  <input type="submit" id="send" value="アップロード" disabled="True" />
+</form>
+<p>(注：CSV 形式のデータはインポートできません)</p>
+{% endblock %}

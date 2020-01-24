@@ -1,0 +1,35 @@
+<div class="container-fluid">
+  {% include 'entry_tab.html' with tab='copy' %}
+
+  <div class="tab-content">
+  <form id="copy-form" name="copy-form" url='{{ form_url }}' method='post'>
+  <div class="row">
+    <div class="col">
+      <div class="float-left">
+        <p>入力した各行毎に <a href='/entry/show/{{ entry.id }}'>{{ entry.name }}</a> と同じ属性値を持つ別エントリを作成</p>
+      </div>
+      <div class="float-right">
+        <input type="button" class="btn btn-primary" id="submit-button" value="コピー" />
+      </div>
+    </div>
+  </div>
+  <div class='row'>
+    <div class="col-5">
+      <textarea id="creating_entries" cols="40" rows="10"></textarea>
+    </div>
+    <div class="col-7">
+      <p class='text-muted'>例：'vm0001', 'vm0002', ... 'vm0006' の 6 エントリを作成する場合</p>
+      <textarea class="input-disabled" cols="40" rows="8" disabled="True">
+vm0001
+vm0002
+vm0003
+vm0004
+vm0005
+vm0006
+      </textarea>
+    </div>
+  </div>
+  {% csrf_token %}
+  </form>
+  </div>
+</div>

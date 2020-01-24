@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}検索結果{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
+    <li class="breadcrumb-item">検索結果</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  {% if results %}
+    <table class="table table-bordered">
+      <tr>
+        <th>Name</th>
+        <th>Note</th>
+      </tr>
+      {% for result in results %}
+      <tr>
+        {% if result.type == "Entity" %}
+          <td><a href="/entry/{{ result.object.id }}/">{{ result.object.name }}</a></td>
+        {% else %}
+          <td><a href="/entry/show/{{ result.object.id }}/">{{ result.object.name }}</a></td>
+        {% endif %}
+
+        <td>{{ result.hint }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    該当情報なし
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block script %}
+  {% include 'show_search_results/js.html' %}
+{% endblock %}

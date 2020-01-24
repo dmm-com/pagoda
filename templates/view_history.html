@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}View History{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="index.html">top</a></li>
+    <li class="breadcrumb-item">履歴</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <h1>エントリ履歴</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <div class="float-left">
+        <button name="button_export" type="button" class="btn btn-secondary">エクスポート</button>
+        <button name="button_delete" type="button" class="btn btn-danger">削除</button>
+      </div>
+      <div class="float-right">
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <form name="searchform" action="view_history.html" method="post" class="form-inline">
+        時刻<input type="text" name="text-from" value="" placeholder="2017-06-01 00:00:00" />-<input type="text" name="text-to" value="" placeholder="2017-06-02 00:00:00" /> 検索<input type="text" name="text-search" value="" placeholder="" />
+      </form>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <td>時刻</td>
+            <td>ユーザ名</td>
+            <td>変更</td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for history in histories %}
+          <tr>
+            <td>2017-06-01 11:00:00</td>
+            <td>uchikawa</td>
+            <td>エンティティ追加: server</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

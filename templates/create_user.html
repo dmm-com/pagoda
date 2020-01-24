@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Create User{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
+    <li class="breadcrumb-item"><a href="/user">ユーザ管理</a></li>
+    <li class="breadcrumb-item">新規ユーザ作成</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <h2>ユーザ新規作成</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <form id="create-form" name="create-form" url='/user/do_create' method='post'>
+        <p><input type="submit" class="btn btn-primary align-right" value='保存'/></p>
+        <table class="table table-bordered">
+          <tr>
+            <th>名前</th>
+            <td><input type="text" name="name"></input><br/></td>
+          </tr>
+          <tr>
+            <th>メールアドレス</th>
+            <td><input type="text" name="email"></input><br/></td>
+          </tr>
+          <tr>
+            <th>パスワード</th>
+            <td><input type="password" name="passwd"></input><br/></td>
+          </tr>
+          <tr>
+            <th>管理者権限を付与</th>
+            <td><input type="checkbox" name="is_superuser"></input><br/></td>
+          </tr>
+        </table>
+        {% csrf_token %}
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+$('#create-form').submit(function(){
+  var username = $('input[name="name"]').val();
+
+  HttpPost($(this)).done(function(data) {
+    MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, `Success to create User "${username}"`);
+
+    location.href = '/user/';
+  });
+
+  return false;
+});
+</script>
+{% endblock %}

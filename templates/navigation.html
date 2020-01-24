@@ -1,0 +1,76 @@
+{% load bitwise_tags %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
+
+    {% if object.objtype == navigator.acl_objtype.entry %}
+      <li class="breadcrumb-item"><a href="/entity/">エンティティ一覧</a></li>
+      <li class="breadcrumb-item"><a href="/entry/{{ object.schema.id }}">{{ object.schema.name }}</a></li>
+
+      {% if entry.is_deleted %}
+        <li class="breadcrumb-item">{{ object.name }} [削除済]</li>
+      {% elif entry.status|bitwise_and:STATUS_ENTRY.EDITING %}
+        <li class="breadcrumb-item">{{ object.name }} [編集中]</li>
+      {% else %}
+        <li class="breadcrumb-item">{{ object.name }}</li>
+      {% endif %}
+
+    {% elif object.objtype == navigator.acl_objtype.entity %}
+      <li class="breadcrumb-item"><a href="/entity/">エンティティ一覧</a></li>
+      <li class="breadcrumb-item">{{ entity.name }}</li>
+
+    {% elif path == 'create_entry' %}
+      <li class="breadcrumb-item"><a href="/entity/">エンティティ一覧</a></li>
+      <li class="breadcrumb-item"><a href='/entry/{{ entity.id }}'>{{ entity.name }}</a></li>
+      <li class="breadcrumb-item">新規エントリ作成</li>
+
+    {% elif path == 'index_entry' %}
+      <li class="breadcrumb-item"><a href="/entity/">エンティティ一覧</a></li>
+      <li class="breadcrumb-item">{{ entity.name }}</li>
+
+    {% elif path == 'import_entity' %}
+      <li class="breadcrumb-item"><a href="/entity/">エンティティ一覧</a></li>
+      <li class="breadcrumb-item">インポート</li>
+
+    {% elif path == 'history_entity' %}
+      <li class="breadcrumb-item"><a href="/entity/">エンティティ一覧</a></li>
+      <li class="breadcrumb-item">{{ entity.name }}の変更履歴</li>
+
+    {% elif path == 'import_entry' %}
+      <li class="breadcrumb-item"><a href="/entity/">エンティティ一覧</a></li>
+      <li class="breadcrumb-item"><a href="/entry/{{ entity.id }}">{{ entity.name }}</a></li>
+      <li class="breadcrumb-item">インポート</li>
+
+    {% elif path == 'create_entity' %}
+      <li class="breadcrumb-item"><a href="/entity/">エンティティ一覧</a></li>
+      <li class="breadcrumb-item">新規エンティティの作成</li>
+
+    {% elif path == 'edit_entity' %}
+      <li class="breadcrumb-item"><a href="/entity/">エンティティ一覧</a></li>
+      <li class="breadcrumb-item"><a href='/entry/{{ entity.id }}'>{{ entity.name }}</a></li>
+      <li class="breadcrumb-item">エンティティの編集</li>
+
+    {% elif path == 'acl' %}
+      <li class="breadcrumb-item"><a href="/entity/">エンティティ一覧</a></li>
+      {% if object.objtype == navigator.acl_objtype.entity %}
+        <li class="breadcrumb-item"><a href="/entry/{{ object.id }}">{{ object.name }}</a></li>
+        <li class="breadcrumb-item">ACL 設定</li>
+      {% elif object.objtype == navigator.acl_objtype.attrbase %}
+        <li class="breadcrumb-item"><a href="/entity/edit/{{ parent.id }}">{{ parent.name }}の編集</a></li>
+        <li class="breadcrumb-item">{{ object.name }} の ACL 設定</li>
+      {% elif object.objtype == navigator.acl_objtype.attr %}
+        <li class="breadcrumb-item"><a href="/entry/{{ parent.schema.id }}">{{ parent.schema.name }}</a></li>
+        <li class="breadcrumb-item"><a href="/entry/show/{{ parent.id }}">{{ parent.name }}</a></li>
+        <li class="breadcrumb-item">{{ object.name }} の ACL 設定</li>
+      {% endif %}
+
+    {% elif path == 'advanced_search' %}
+      <li class="breadcrumb-item">高度な検索</li>
+
+    {% elif path == 'advanced_search_result' %}
+      <li class="breadcrumb-item"><a href='/dashboard/advanced_search'>高度な検索</a></li>
+      <li class="breadcrumb-item">検索結果</li>
+
+    {% endif %}
+  </ul>
+</div>

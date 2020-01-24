@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block title %}Edit Group{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
+    <li class="breadcrumb-item"><a href="/group">グループ管理</a></li>
+    <li class="breadcrumb-item">グループの編集</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<form id="edit-form" name="edit-form" url='{{ submit_ref }}' method='post'>
+  {% csrf_token %}
+  <div class="form-row">
+    <div class="form-group col-md-11">
+      <label class="col-form-label">グループ名</label>
+      <input type="text" name="name" class="form-control" id="group-name" value="{{ current_group_name }}"/>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-5">
+      <label class="col-form-label">ユーザ管理</label>
+      <select id="group" class="form-control">
+        {% for group in groups %}
+          {% if group.id == default_group_id %}
+            <option value='airone-group-{{ group.id }}' selected="on">{{ group.name }}</option>
+          {% else %}
+            <option value='airone-group-{{ group.id }}'>{{ group.name }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+      {% for group in groups %}
+        {% if group.id == default_group_id %}
+        <select multiple="on" class="listed_users form-control airone-group-{{ group.id }}" size="13">
+        {% else %}
+        <select multiple="on" class="listed_users form-control airone-group-{{ group.id }}" size="13" style="display:none;">
+        {% endif %}
+
+          {% for user in group.members %}
+          <option value='{{ user.id }}'>{{ user.username }}</option>
+          {% endfor %}
+        </select>
+      {% endfor %}
+    </div>
+    <div class="form-group col-md-1">
+      <table style="height: 120%; margin:0 auto;">
+        <tr>
+          <td class="align-middle"><button type="button" class="align-middle form-control btn btn-secondary btn-sm" id='delete_users'>＜</button></td>
+          <td class="align-middle"><button type="button" class="align-middle form-control btn btn-primary btn-sm" id='append_users'>＞</button></td>
+        </tr>
+      </table>
+    </div>
+    <div class="form-group col-md-5">
+      <label class="col-form-label">グループに登録するユーザ</label>
+      <select multiple="on" id="selected_users" class="form-control" size="15">
+        {% for user in current_group_members %}
+          <option value='{{ user.id }}'>{{ user.username }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-5">
+      <input type="text" class="form-control" id="search_user" placeholder="ユーザ検索" />
+    </div>
+    <div class="form-group col-md-4">
+    </div>
+  </div>
+  {% if 'create' in submit_ref %}
+    <button type="submit" class="btn btn-primary">作成</button>
+  {% else %}
+    <button type="submit" class="btn btn-primary">更新</button>
+  {% endif %}
+</form>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+$('#edit-form').submit(function(){
+  var selected_users = [];
+  $('#selected_users option').each(function(i, elem) {
+    selected_users.push($(elem).val());
+  });
+
+  HttpPost($(this), {'users': selected_users}).done(function(data) {
+    MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, data.msg);
+
+    location.href = '/group/';
+  });
+
+  return false;
+});
+
+$('#append_users').on('click', function() {
+  var elem_selected_users = $('#selected_users');
+
+  $(".listed_users").find(":selected").each(function(i, elem){
+    if(elem_selected_users.find("option[value="+ $(elem).val() +"]").length == 0) {
+      elem_selected_users.append($(elem).clone());
+    }
+  });
+});
+
+$('#delete_users').on('click', function() {
+  $("#selected_users").find(":selected").each(function(i, elem){
+    $(elem).remove();
+  });
+});
+
+$('#search_user').keyup(function() {
+  var input_str = $(this).val();
+  $(".listed_users option").each(function(i, elem){
+    if($(elem).text().indexOf(input_str) >= 0) {
+      $(elem).show();
+    } else {
+      $(elem).hide();
+    }
+  });
+});
+
+$('#group').change(function() {
+  var target_group = $(this).val();
+
+  $('.listed_users').each(function(i, elem){
+    if($(elem).hasClass(target_group)) {
+      $(elem).show();
+    } else {
+      // clear all selected objects
+      $(elem).val([]);
+      $(elem).hide();
+    }
+  });
+});
+
+</script>
+{% endblock %}

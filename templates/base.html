@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}AirOne Page{% endblock %}</title>
+
+    <!-- third party css files -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/jquery-ui.min.css" />
+    <link rel="stylesheet" href="/static/css/livepreview.css" />
+
+    <!-- airone css file -->
+    <link rel="stylesheet" href="/static/css/airone.css" />
+
+    <link rel="shortcut icon" href="/static/favicon.ico" />
+
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <!-- header bar -->
+    {% include 'nav_header.html' %}
+
+    <!-- main container -->
+    <div class="container-fluid">
+      <div class="row">
+        <!-- left navigation -->
+        {% include 'navigator.html' %}
+
+        <!-- right contents -->
+        <div class="col-10 ml-auto px-0">
+          <!-- breadcrumb -->
+          {% block nav_sub_header %}{% endblock %}
+
+          <!-- message box -->
+          {% include 'messagebox.html' %}
+
+          <!-- main contents -->
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+    </div>
+
+    <!-- bootstrap js file -->
+    <script src="/static/js/popper.js"></script>
+    <script src="/static/js/jquery-3.2.1.min.js"></script>
+    <script src="/static/js/jquery.cookie.js"></script>
+    <script src="/static/js/jquery-ui.min.js"></script>
+    <script src="/static/js/tether.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/http_request.js"></script>
+    <script src="/static/js/messagebox.js"></script>
+    <script src="/static/js/airone_constants.js"></script>
+    <script src="/static/js/airone_jobs_nav.js"></script>
+    <script src="/static/js/airone_context.js"></script>
+    <script src="/static/js/airone_button.js"></script>
+    <script src="/static/js/confirm_delete.js"></script>
+    <script src="/static/js/file_size_limit.js"></script>
+    <script src="/static/js/jquery-live-preview.min.js"></script>
+
+    {% block script %}{% endblock %}
+  </body>
+</html>

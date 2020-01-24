@@ -1,0 +1,18 @@
+Entity:
+  - name: Entry
+    attrs:
+      str: foo
+      obj: ref
+      grp: group
+      bool: False
+      date: 2018-12-31 
+      name:
+        foo: ref
+      arr1:
+        - foo
+        - bar
+        - baz
+      arr2:
+        - ref
+      arr3:
+        - foo: ref

@@ -1,0 +1,10 @@
+<nav class="col-2 sidebar airone-sidebar">
+  <ul class="nav nav-pills flex-column">
+    {% load bitwise_tags %}
+    {% for entity in navigator.entities %}
+      {% if entity.status|bitwise_and:STATUS_ENTITY.TOP_LEVEL %}
+      <li class="nav-item"><a href="/entry/{{ entity.id }}" class="nav-link">{{ entity.name }}</a></li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</nav>

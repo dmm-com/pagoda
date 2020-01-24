@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ entry.name }} - Edit Entry{% endblock %}
+
+{% block nav_sub_header %}
+{% include 'navigation.html' with object=entry %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  {% include 'entry_tab.html' with tab='edit' %}
+
+  <div class="tab-content">
+    {% include 'edit_entry/content.html' with is_edit=True %}
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{% include 'edit_entry/js.html'%}
+{% endblock %}

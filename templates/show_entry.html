@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ entry.name }} - Show Entry{% endblock %}
+
+{% block nav_sub_header %}
+{% include 'navigation.html' with object=entry %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+  {% include 'entry_tab.html' with tab='show' %}
+
+  <div class="tab-content">
+  {% include 'show_entry/attributes.html' %}
+  </div>
+</div>
+{% csrf_token %}
+{% endblock %}
+
+{% block script %}
+  {% include 'show_entry/js.html' %}
+{% endblock %}

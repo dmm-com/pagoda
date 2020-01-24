@@ -1,0 +1,9 @@
+Entity:
+- {created_user: admin, id: 1, name: Entity1, note: '', status: 1}
+
+Entry:
+- {created_user: admin, entity: Entity1, id: 2, name: entry1}
+# may not import this value because of lack of mandatory value of 'name'
+- {created_user: admin, entity: Entity1, id: 3, name: ''}
+# may not import this value because of lack of mandatory key 'name'
+- {created_user: admin, entity: Entity1, id: 4}

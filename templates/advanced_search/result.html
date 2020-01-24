@@ -1,0 +1,219 @@
+{% load bitwise_tags %}
+<div class="container">
+  <div class="row">
+    <div class="col-3">
+      <h4>
+      検索結果
+      <span id='entry_count'>
+        ({{ results.ret_count }}{% if results.ret_count >= max_num %}{% endif %} 件)
+      </span>
+      </h4>
+    </div>
+    <div class="col-9">
+      <form id='form_export' action='/dashboard/advanced_search_export' method='post'>
+        {% csrf_token %}
+        <input type='hidden' name='entities' value='[{{ entities }}]' />
+        <input type='hidden' name='attrinfo' value='[]' />
+        <input type='hidden' name='export_style' value='' />
+        {% if has_referral %}
+          <input type='hidden' id='param_export_csv_referral' name='has_referral' value='' />
+        {% endif %}
+
+        <div class='float-right'>
+          <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#renew_search_attr_condition" id='show_renew_search_attr_condition'>
+            <img src='/static/images/setting.png' weight='16' height='16' /> 検索属性の再設定
+          </button>
+          <button type="button" class="btn btn-primary btn-sm export_yaml">YAML 出力</button>
+          <button type="button" class="btn btn-primary btn-sm export_csv">CSV 出力</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<table class='table table-striped table-bordered table-hover'>
+  <thead>
+    <tr>
+      <th>
+        Name<br/>
+        <input type='text' class='input-sm narrow_down_entries hint_entry_name' attrname='{{ attrname }}'></input>
+      </th>
+      {% for attrname in attrs %}
+      <th>
+        {{ attrname }}<br/>
+        <input type='text' class='input-sm narrow_down_entries hint_attr_value' attrname='{{ attrname }}'></input>
+      </th>
+      {% endfor %}
+
+      {% if has_referral %}
+      <th>
+        参照エントリ<br/>
+        <input type='text' class='input-sm narrow_down_referral'></input>
+      </th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody id='main_table'>
+    {% for result in results.ret_values %}
+    <tr>
+      <th><a href='/entry/show/{{ result.entry.id }}'>{{ result.entry.name }} [{{ result.entity.name }}]</a></th>
+
+      {% for attrname in attrs %}
+        {% with result.attrs|get_item:attrname as attr %}
+          {% if attr.type == attr_type.string %}
+            <td>{{ attr.value }}</td>
+
+          {% elif attr.type == attr_type.textarea %}
+            <td>{{ attr.value }}</td>
+
+          {% elif attr.type == attr_type.boolean %}
+            <td>{{ attr.value }}</td>
+
+            {% elif attr.type == attr_type.date %}
+              <td>{{ attr.value|date:"Y-m-d" }}</td>
+
+          {% elif attr.type == attr_type.entry %}
+            <td><a href='/entry/show/{{ attr.value.id }}'>{{ attr.value.name }}</a></td>
+
+          {% elif attr.type == attr_type.named_entry %}
+            <td>
+              {% for key, value in attr.value.items %}
+              <div class='row'>
+                <div class='col'>
+                  <p class='url_conv'>{{ key }}</p>
+                </div>
+                <div class='col'>
+                  <a href='/entry/show/{{ value.id }}'>{{ value.name }}</a>
+                </div>
+              </div>
+              {% endfor %}
+            </td>
+
+          {% elif attr.type == attr_type.group %}
+            <td><a href='/group/'>{{ attr.value.name }}</a></td>
+
+          {% elif attr.type == attr_type.array_string %}
+            <td>
+              <ul class='list-group'>
+              {% for value in attr.value %}
+                <li class='list-group-item'>{{ value }}</li>
+              {% endfor %}
+              </ul>
+            </td>
+
+          {% elif attr.type == attr_type.array_entry %}
+            <td>
+              <ul class='list-group'>
+              {% for value in attr.value %}
+                <li class='list-group-item'><a href='/entry/show/{{ value.id }}'>{{ value.name }}</a></li>
+              {% endfor %}
+              </ul>
+            </td>
+
+          {% elif attr.type == attr_type.array_named_entry %}
+            <td>
+              <ul class='list-group'>
+              {% for item in attr.value %}
+                {% for key, value in item.items %}
+                <li class='list-group-item'>
+                  <div class='row'>
+                    <div class='col'>
+                      <p class='url_conv'>{{ key }}</p>
+                    </div>
+                    <div class='col'>
+                      <a href='/entry/show/{{ value.id }}'>{{ value.name }}</a>
+                    </div>
+                  </div>
+                </li>
+                {% endfor %}
+              {% endfor %}
+              </ul>
+            </td>
+
+          {% else %}
+            <td></td>
+
+          {% endif %}
+        {% endwith %}
+      {% endfor %}
+
+      {% if has_referral %}
+      <td>
+        <ul class='list-group'>
+          {% for referral in result.referrals %}
+          <li class='list-group-item'>
+            <a href='/entry/show/{{ referral.id }}'>{{ referral.name }} / {{ referral.schema }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+      </td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="modal fade" id="renew_search_attr_condition" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-lg modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">検索属性の再設定</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body ">
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-5">
+        <label class="col-label">属性一覧</label>
+        <select multiple='on' id='modal_condition_all_attr' class="form-control" size='8' disabled>
+          <option>...属性取得中...</option>
+        </select>
+        <input type="text" id='modal_condition_narrow_down' class="form-control" placeholder="絞り込み" />
+      </div>
+      <div class="col-md-2">
+        <table style="height: 120%; margin:0 auto;">
+          <tr>
+            <td class="align-middle">
+              <button type="button"
+                      class="align-middle form-control btn btn-secondary btn-sm modal_cond_update_attr delete_attr">＜</button>
+            </td>
+            <td class="align-middle">
+              <button type="button"
+                      class="align-middle form-control btn btn-primary btn-sm modal_cond_update_attr append_attr">＞</button>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="col-md-5">
+        <label class="col-label">検索対象の属性</label>
+        <select multiple="on" id="modal_condition_selected_attr" class="form-control" size='9'>
+          {% for attrname in attrs %}
+          <option value='{{ attrname }}'>{{ attrname }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <span class="mr-auto">
+          {% if has_referral %}
+            <input type='checkbox' id='modal_cond_add_referral' checked='True'> 参照エントリも含める</input>
+          {% else %}
+            <input type='checkbox' id='modal_cond_add_referral'> 参照エントリも含める</input>
+          {% endif %}
+        </span>
+
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
+        <button type="button" class="btn btn-primary" id='commit_condition_change'>更新</button>
+      </div>
+    </div>
+  </div>
+</div>
+

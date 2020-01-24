@@ -1,0 +1,9 @@
+Entity:
+- {created_user: admin, id: 1, name: Entity1, note: '', status: 0}
+- {created_user: admin, id: 3, name: Server, note: note of Server, status: 1}
+
+Entry:
+- {created_user: admin, entity: Entity1, id: 8, name: entry1}
+- {created_user: admin, entity: Server, id: 14, name: srv001}
+# This is a invalid entry which refers invalid schema
+- {created_user: admin, entity: invalid_schema, name: hoge}

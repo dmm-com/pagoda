@@ -1,0 +1,67 @@
+{% if a_type == attr_type.string %}
+  <span class='url_conv'>{{ attrv.value }}</span>
+
+{% elif a_type == attr_type.textarea %}
+  <span class='url_conv textarea'>{{ attrv.value }}</span>
+
+{% elif a_type == attr_type.entry and attrv.value %}
+  <a href='/entry/show/{{ attrv.value.id}}'>{{ attrv.value.name }}</a>
+
+{% elif a_type == attr_type.array_string %}
+  <ul class='list-group'>
+  {% for attrv in attrv.value %}
+    <li class='list-group-item'>{{ attrv }}</li>
+  {% endfor %}
+  </ul>
+
+{% elif a_type == attr_type.array_entry %}
+  <ul class='list-group'>
+  {% for attrv in attrv.value %}
+    <li class='list-group-item'>
+      <a href='/entry/show/{{ attrv.id }}'>
+        {{ attrv.name }}
+      </a>
+    </li>
+  {% endfor %}
+  </ul>
+
+{% elif a_type == attr_type.boolean %}
+  {% if attrv.value %}
+  <input type="checkbox" disabled='True' checked='True'/>
+  {% else %}
+  <input type="checkbox" disabled='True' />
+  {% endif %}
+
+{% elif a_type == attr_type.date %}
+  <span>{{ attrv.value|date:"Y-m-d" }}</span>
+
+{% elif a_type == attr_type.named_entry %}
+    <div class='row'>
+      <div class='col-3'>
+        {{ attrv.value.value }}
+      </div>
+      <div class='col-9'>
+        <a href='/entry/show/{{ attrv.value.referral.id }}'>{{ attrv.value.referral.name }}</a>
+      </div>
+    </div>
+
+{% elif a_type == attr_type.array_named_entry %}
+    <ul class='list-group'>
+    {% for attrv in attrv.value %}
+      <li class='list-group-item'>
+        <div class='row'>
+          <div class='col-3'>
+            {{ attrv.value }}
+          </div>
+          <div class='col-9'>
+            <a href='/entry/show/{{ attrv.referral.id }}'>{{ attrv.referral.name }}</a>
+          </div>
+        </div>
+      </li>
+    {% endfor %}
+    </ul>
+
+{% elif a_type == attr_type.group %}
+  <a href='/group/edit/{{ attrv.value.id}}'>{{ attrv.value.name }}</a>
+{% endif %}
+

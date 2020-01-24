@@ -1,0 +1,30 @@
+<ul class="nav nav-tabs">
+  <li class="nav-item">
+    {% if tab == 'dashboard' %}
+      <a class="nav-link active">ダッシュボード</a>
+    {% else %}
+      <a class="nav-link" href='/entity/dashboard/{{ entity.id }}'>ダッシュボード</a>
+    {% endif %}
+  </li>
+  <li class="nav-item">
+    {% if tab == 'list' %}
+      <a class="nav-link active">エントリ一覧</a>
+    {% else %}
+      <a class="nav-link" href='/entry/{{ entity.id }}'>エントリ一覧</a>
+    {% endif %}
+  </li>
+  <li class="nav-item">
+    {% if tab == 'config_dashboard' %}
+      <a class="nav-link active">ダッシュボードの設定</a>
+    {% else %}
+      <a class="nav-link" href='/entity/dashboard/config/{{ entity.id }}'>ダッシュボードの設定</a>
+    {% endif %}
+  </li>
+  <li class="nav-item">
+    {% if tab == 'deleted_list' %}
+      <a class="nav-link active">削除エントリの復旧</a>
+    {% else %}
+      <a class="nav-link" href='/entry/restore/{{ entity.id }}/'>削除エントリの復旧</a>
+    {% endif %}
+  </li>
+</ul>

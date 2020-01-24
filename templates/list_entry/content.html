@@ -1,0 +1,33 @@
+{% include 'list_entry/nav_search.html'%}
+
+{% load bitwise_tags %}
+<div class="row">
+  <div class="col">
+    {% csrf_token %}
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>エントリ名</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id='entry_container'>
+        {% for entry in entries %}
+
+        <tr>
+          {% if entry.status|bitwise_and:STATUS_ENTRY.CREATING %}
+            <td>{{ entry.name }} [作成中]</td>
+          {% elif entry.status|bitwise_and:STATUS_ENTRY.EDITING %}
+            <td><a href='/entry/show/{{ entry.id }}'>{{ entry.name }} [編集中]</a></td>
+          {% else %}
+            <td><a href='/entry/show/{{ entry.id }}'>{{ entry.name }}</a></td>
+          {% endif %}
+
+          <td><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/entry/do_delete/{{ entry.id }}/">del</button></td>
+        </tr>
+
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,123 @@
+<div class="row">
+  <div class="col">
+    <table class="table table-borderless airone-entry-table-history" id='attribute-history'>
+      {% for history in value_history %}
+      <tr class='attr_info'>
+        <td class='attr_name'>{{ history.attr_name }}</td>
+        <td>
+          {% if history.prev %}
+          <div class='container'>
+            <div class='row border'>
+                <div class='col-6 border-right'>
+                  <div class='container'>
+                    <div class='row'>
+                      <div class='col-12 border-bottom'><center>変更前</center></div>
+                      <div class='col-12 attr_val prev_attr_value'>
+                        {% include "show_entry/history_value.html" with a_type=history.attr_type attrv=history.prev %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class='col-6'>
+                  <div class='container'>
+                    <div class='row'>
+                      <div class='col-12 border-bottom'><center>変更後</center></div>
+                      <div class='col-12 attr_val curr_attr_value'>
+                        {% include "show_entry/history_value.html" with a_type=history.attr_type attrv=history.curr %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+          </div>
+          {% else %}
+            {% include "show_entry/history_value.html" with a_type=history.attr_type attrv=history.curr %}
+          {% endif %}
+        </td>
+
+        <td>
+          <ul class='list-group'>
+            <li class='list-group-item curr_updated_user'>{{ history.curr.created_user }}</li>
+            <li class='list-group-item curr_updated_time'>{{ history.curr.created_time }}</li>
+          </ul>
+        </td>
+        <td>
+          <span class='replace_attrv' data-toggle="tooltip">
+            {% if history.prev %}
+            <a href='#'><img src='/static/images/update.png' data-toggle="modal" data-target="#renew_checkbox"/></a>
+            {% endif %}
+          </span>
+        </td>
+        <input type='hidden' class='attr_id' value='{{ history.attr_id }}' />
+        <input type='hidden' class='prev_attrv_id' value='{{ history.prev.attrv_id }}' />
+        <input type='hidden' class='prev_updated_user' value='{{ history.prev.created_user }}' />
+        <input type='hidden' class='prev_updated_time' value='{{ history.prev.created_time }}' />
+      </tr>
+      {% endfor %}
+    </table>
+    <input type="button" class="btn btn-primary show_old_history"></input>
+  </div>
+</div>
+
+<div class="modal fade" id="renew_checkbox" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-lg modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="renew_checkbox_title"></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Modal contexts are revealed after getting context -->
+        <table class='table airone-entry-table-history'>
+          <p class='desc'></p>
+          <tr>
+            <b><p class='modal_attr_name text-center'></p></b>
+          </tr>
+            <th>変更前</th>
+            <td class='modal_prev'>
+              <table class='table table-bordered'>
+                <tr>
+                  <td colspan=2 class='value'></td>
+                </tr>
+                <tr>
+                  <td>更新日時</td>
+                  <td class='time'></td>
+                </tr>
+                <tr>
+                  <td>更新者</td>
+                  <td class='user'></td>
+                </tr>
+              </table>
+            </td>
+          <tr>
+            <th>変更後</th>
+            <td class='modal_curr'>
+              <table class='table table-bordered'>
+                <tr>
+                  <td colspan=2 class='value'></td>
+                </tr>
+                <tr>
+                  <td>更新日時</td>
+                  <td class='time'></td>
+                </tr>
+                <tr>
+                  <td>更新者</td>
+                  <td class='user'></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <input type='hidden' class='modal_attr_id'/>
+        <input type='hidden' class='modal_attrv_id'/>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
+        <input type="button" class="btn btn-primary do_update_attr"></input>
+      </div>
+    </div>
+  </div>
+</div>

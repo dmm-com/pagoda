@@ -1,0 +1,11 @@
+Entity:
+- {created_user: admin, id: 1, name: Entity1, note: '', status: 0}
+- {created_user: admin, id: 3, name: Server, note: note of Server, status: 1}
+
+Entry:
+- {created_user: admin, entity: Entity1, id: 8, name: entry1}
+- {created_user: admin, entity: Server, id: 14, name: srv001}
+# This is a duplicate entry which may not be created
+- {created_user: admin, entity: Server, name: srv001}
+# This is not a duplicate entry which will be created
+- {created_user: admin, entity: Entity1, name: srv001}

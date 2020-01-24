@@ -1,0 +1,10 @@
+hoge:
+  - name: entry1
+    attrs:
+      test: foo
+  - name: entry2
+    attrs:
+      test: bar
+  - name: entry3
+    attrs:
+      test: baz

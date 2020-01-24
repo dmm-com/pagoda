@@ -1,0 +1,165 @@
+{% load bitwise_tags %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <div class="float-right">
+        <input name="button_save" type="submit" class="btn btn-primary" value='保存'></input>
+      </div>
+      <table class="table table-bordered">
+        <tr>
+          <td>エンティティ名</td>
+          <td><input type="text" name="name" value="{{ entity.name }}" /></td>
+        </tr>
+        <tr>
+          <td>備考</td>
+          <td><input type="text" name="note" size="50" value="{{ entity.note }}" /></td>
+        </tr>
+        <tr>
+          <td>サイドバーに表示</td>
+          {% if entity.status|bitwise_and:STATUS_ENTITY.TOP_LEVEL %}
+            <td><input type="checkbox" name="is_toplevel" checked="checked"/></td>
+          {% else %}
+            <td><input type="checkbox" name="is_toplevel" /></td>
+          {% endif %}
+        </tr>
+      </table>
+
+      <table class="table table-bordered">
+        <thead>
+          <th>属性名</th>
+          <th>型</th>
+          <th>オプション</th>
+          <th></th>
+        </thead>
+
+        <tbody name="attributes" id='sortdata'>
+          {% for attr in attributes %}
+          <tr class="attr" attr_id="{{ attr.id }}">
+            <input type='hidden' class="row_index" value='{{ forloop.counter }}' />
+            <td><input type="text" class="attr_name" value="{{ attr.name }}"/></td>
+            <td>
+              <div class='row'>
+                <div class='col-4'>
+                  <select class="attr_type">
+                    {% for type in attr_types %}
+                    <option value="{{ type.TYPE }}" {% if attr.type == type.TYPE %}selected="selected"{% endif %}>{{ type.NAME }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class='col-8'>
+
+                  <ul class='list-group'>
+                    {% for ref in attr.referrals %}
+                    <li class='list-group-item list-group-item-info' style="height: 30px; padding: 5px 15px;">
+                      {{ ref.name }}
+                    </li>
+                    {% endfor %}
+                  </ul>
+
+                  <select class="attr_referral" size="3" multiple="True"
+                    {% if not attr.type|bitwise_and:attr_type.entry %}
+                      style="display:none; width:100%"
+                    {% else %}
+                      style="width:100%"
+                    {% endif %}>
+
+                    {% for ref in attr.referrals %}
+                      <option value="{{ ref.id }}" selected='True'>{{ ref.name }}</option>
+                    {% endfor %}
+                  </select>
+
+                  <input type="text" class="narrow_down_referral" placeholder="絞り込み"
+                    {% if not attr.type|bitwise_and:attr_type.entry %}
+                      style="display:none; width:100%"
+                    {% else %}
+                      style="width:100%"
+                    {% endif %}
+                  />
+
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class='attr_option_mandatory' data-toggle="tooltip">
+              {% if attr.is_mandatory %}
+                <input type="checkbox" class="is_mandatory" checked="checked" /> 必須
+              {% else %}
+                <input type="checkbox" class="is_mandatory" /> 必須
+              {% endif %}
+              </span>
+
+              <br/>
+
+              <span class='attr_option_delete_in_chain' data-toggle="tooltip">
+              {% if attr.is_delete_in_chain %}
+              <input type="checkbox" class="is_delete_in_chain" checked="checked" /> 関連削除
+              {% else %}
+              <input type="checkbox" class="is_delete_in_chain" /> 関連削除
+              {% endif %}
+              </span>
+            </td>
+            <td>
+              <a href="/acl/{{ attr.id }}"><button type="button" class="btn btn-info btn-sm">ACL</button></a>
+              <button type="button" class="btn btn-danger btn-sm" name="del_attr">delete</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+        <!-- templates -->
+        <tfoot style="display:none">
+          <tr name="attr_template">
+            <td><input type="text" class="attr_name"></input></td>
+            <td>
+
+              <div class='row'>
+                <div class='col-4'>
+
+              <select class="attr_type">
+                {% for type in attr_types %}
+                <option value="{{ type.TYPE }}">{{ type.NAME }}</option>
+                {% endfor %}
+              </select>
+
+                </div>
+                <div class='col-8'>
+
+                  <ul class='list-group' style="display:none">
+                  </ul>
+
+                  <select class="attr_referral template" style="display:none; width: 100%" size="3" multiple="True">
+                  </select>
+
+                  <input type="text" class="narrow_down_referral" placeholder="絞り込み"  style="width: 100%; display:none"/>
+
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class='attr_option_mandatory' data-toggle="tooltip">
+                <input type="checkbox" class="is_mandatory" /> 必須
+              </span>
+
+              <br/>
+
+              <span class='attr_option_delete_in_chain' data-toggle="tooltip">
+                <input type="checkbox" class="is_delete_in_chain" /> 関連削除
+              </span>
+            </td>
+            <td>
+              <button type="button" class="btn btn-danger btn-sm" name="del_attr">del</button>
+            </td>
+            <input type='hidden' class="row_index" />
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <button type="button" class="btn btn-primary" name="add_attr">属性追加</button>
+    </div>
+  </div>
+</div>
+{% csrf_token %}

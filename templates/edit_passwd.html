@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit User{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
+    <li class="breadcrumb-item"><a href="/user">ユーザ管理</a></li>
+    <li class="breadcrumb-item">パスワード編集</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <h2>パスワード編集</h2>
+    </div>
+    {% if user_grade == 'self' %}
+    <form id="edit-form" name="edit-form" url="/user/do_edit_passwd/{{ user_id }}" method='post'>
+    {% else %}
+    <form id="edit-form" name="edit-form" url="/user/do_su_edit_passwd/{{ user_id }}" method='post'>
+    {% endif %}
+    <p><input type="submit" class="btn btn-primary align-right" value='保存'/></p>
+    <table class="table table-bordered" style="table-layout:fixed;">
+      <tr>
+        <th style="width:200px;">名前</th>
+        <td>{{ user_name }}<br/></td>
+      </tr>
+        <tr>
+          <th>パスワード</th>
+          <td>
+            {% if user_grade == 'self' %}
+            <dt><label for="old_password">Old password</label></dt>
+            <input class="required" type="password" name="old_passwd" /><br/><br/>
+            {% endif %}
+            <dt><label for="new_password">New password</label></dt>
+            <input id="new_passwd" class="required" type="password" name="new_passwd" /><br/><br/>
+            <dt><label for="chk_password">Confirm new password</label></dt>
+            <input id="chk_passwd" class="required" type="password" name="chk_passwd" /><br/><br/>
+          </td>
+        </tr>
+      </table>
+      {% csrf_token %}
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+$('#edit-form').submit(function(){
+  HttpPost($(this)).done(function() {
+    // set successful message to the updated page
+    MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS,
+    `Success to update {{ user_name }}\'s password`);
+
+    // set redirect URL
+    location.href = '/user/';
+  });
+  return false;
+});
+
+$('input.required').on('blur', function() {
+    var error;
+    if($(this).val() === '') {
+        error = true;
+    }
+    if(error) {
+        if(!$(this).next('span.error').length) {
+            $(this).next('span').remove();
+            $(this).after('<span class="error">Empty</span>');
+        }
+    } else {
+        $(this).next('span.error').remove();
+    }
+});
+
+$("#chk_passwd").on('blur',function() {
+  // except empty
+  if($(this).val() !== '') {
+    $(this).next('span').remove();
+    // get new_passwd
+    var new_val = $('#new_passwd').val();
+    // get chk_passwd
+    var chk_val = $(this).val();
+    // compare new_passwd with chk_passwd
+    if( new_val != chk_val ){
+      $(this).after('<span>Not equal new passwd</span>');
+    }
+  }
+});
+
+</script>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}List Users{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
+    <li class="breadcrumb-item">ユーザ管理</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <div class="float-left">
+        <button name="button_new" type="button" class="btn btn-primary" onclick="location.href='/user/create'">新規作成</button>
+        <button name="button_export" type="button" class="btn btn-secondary" onclick="location.href='/user/export/'">エクスポート</button>
+        <button name="button_import" type="button" class="btn btn-secondary" onclick="location.href='/group/import/'">インポート</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <td>名前</td>
+            <td>メールアドレス</td>
+            <td>作成日時</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for list_user in users %}
+          <tr>
+            <td>{{ list_user.username }}</td>
+            <td>{{ list_user.email }}</td>
+            <td>{{ list_user.date_joined }}</td>
+            <td>
+              {% if user.is_superuser or list_user.id == user.id%}
+                <a href='/user/edit/{{ list_user.id }}'><button type='button' class='btn btn-info btn-sm'>編集</button></a>
+              {% else %}
+                <button type="button" class="btn btn-secondary btn-sm">編集</button>
+              {% endif %}
+            </td>
+            <td>
+              {% if user.is_superuser or user.id == list_user.id %}
+              <a href='/user/edit_passwd/{{ list_user.id }}'><button type='button' class='btn btn-info btn-sm'>パスワード編集</button></a>
+              {% else %}
+                <button type="button" class="btn btn-secondary btn-sm">パスワード編集</button>
+              {% endif %}
+            </td>
+
+            <td><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/user/do_delete/{{ list_user.id }}">del</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+$(document).ready(function() {
+  $('.del-item').on('click', confirm_delete_table_item);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,74 @@
+<div class="container-fluid">
+  <!-- title of target range of entitiy -->
+  <div class="row">
+    <div class="col">
+      <h3>検索条件入力</h3>
+    </div>
+  </div>
+
+  <!-- context of target range of entitiy -->
+  <div class="row">
+    <div class="col-md-5">
+      <label class="col-label">全 Entity の一覧　</label>
+      <input type='checkbox' id='select_all_entity'> 検索対象を絞り込まない</input>
+      <select multiple='on' id="all_entity" class="form-control" size='7'>
+        {% for entity in entities %}
+          <option value='{{ entity.id }}'>{{ entity.name }}</option>
+        {% endfor %}
+      </select>
+      <input type="text" class="form-control narrow_down_option" placeholder="絞り込み" />
+    </div>
+    <div class="col-md-1">
+      <table style="height: 120%; margin:0 auto;">
+        <tr>
+          <td class="align-middle"><button type="button" class="align-middle form-control btn btn-secondary btn-sm" id='delete_target_entity'>＜</button></td>
+          <td class="align-middle"><button type="button" class="align-middle form-control btn btn-primary btn-sm" id='append_target_entity'>＞</button></td>
+        </tr>
+      </table>
+    </div>
+    <div class="col-md-5">
+      <label class="col-label">検索対象の Entity</label>
+      <select multiple="on" id="selected_entity" class="form-control" style='height:230px;'>
+      </select>
+    </div>
+  </div>
+
+  <hr/>
+
+  <div id='attr_condition' style='display:none;'>
+    <div class="row">
+      <div class="col-md-5">
+        <label class="col-label">属性一覧</label>
+        <select multiple='on' id='all_attr' class="form-control" size='7'>
+        </select>
+        <input type="text" class="form-control narrow_down_option" placeholder="絞り込み" />
+      </div>
+      <div class="col-md-1">
+        <table style="height: 120%; margin:0 auto;">
+          <tr>
+            <td class="align-middle"><button type="button" class="align-middle form-control btn btn-secondary btn-sm" id='delete_target_attr'>＜</button></td>
+            <td class="align-middle"><button type="button" class="align-middle form-control btn btn-primary btn-sm" id='append_target_attr'>＞</button></td>
+          </tr>
+        </table>
+      </div>
+      <div class="col-md-5">
+        <label class="col-label">検索対象の属性</label>
+        <select multiple="on" id="selected_attr" class="form-control" style='height:230px;'>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <div class="float-left">
+          <input type='checkbox' id='add_referral'> 参照エントリも含める</input>
+        </div>
+        <div class="float-right">
+          <button id="do_search" type="button" class="btn btn-primary">検索</button>
+        </div>
+      </div>
+    </div>
+  </div> <!-- end of 'attr_condition' -->
+
+</div>
+

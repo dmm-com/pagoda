@@ -1,0 +1,259 @@
+<script>
+function do_update_attr(e) {
+  let modal_content = $(e.target).parents('.modal-content');
+
+  MessageBox.clear();
+
+  $.ajax({ type: 'POST',
+    url: "/entry/revert_attrv",
+    data: JSON.stringify({
+      'attr_id': modal_content.find('.modal_attr_id').val(),
+      'attrv_id': modal_content.find('.modal_attrv_id').val(),
+    }),
+    headers: {
+      'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+    }
+  }).done(function(data) {
+    MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, data);
+
+    location.href = '/entry/show/{{ entry.id }}';
+
+  }).fail(function(data) {
+    MessageBox.error(data.responseText);
+  });
+}
+
+function prep_renew_modal(e) {
+  let elem_parent = $(e.target).parents('.attr_info');
+
+  $('#renew_checkbox .modal_attr_name').text(elem_parent.find('.attr_name').text());
+
+  // value
+  $('#renew_checkbox .modal_prev .value').html(elem_parent.find('.prev_attr_value').html());
+  $('#renew_checkbox .modal_curr .value').html(elem_parent.find('.curr_attr_value').html());
+
+  // date
+  $('#renew_checkbox .modal_curr .time').html(elem_parent.find('.curr_updated_time').text());
+  $('#renew_checkbox .modal_prev .time').html(elem_parent.find('.prev_updated_time').val());
+
+  // user
+  $('#renew_checkbox .modal_prev .user').html(elem_parent.find('.prev_updated_user').val());
+  $('#renew_checkbox .modal_curr .user').html(elem_parent.find('.curr_updated_user').html());
+
+  $('#renew_checkbox .modal_attr_id').val(elem_parent.find('.attr_id').val());
+  $('#renew_checkbox .modal_attrv_id').val(elem_parent.find('.prev_attrv_id').val());
+}
+
+var history_count = {{ history_count }};
+var history_index = {{ history_count }};
+var attr_type = {
+  'entry': {{ attr_type.entry }},
+  'string': {{ attr_type.string }},
+  'textarea': {{ attr_type.textarea }},
+  'named_entry': {{ attr_type.named_entry }},
+  'boolean': {{ attr_type.boolean }},
+  'group': {{ attr_type.group }},
+  'date': {{ attr_type.date }},
+  'array_entry': {{ attr_type.array_entry }},
+  'array_string': {{ attr_type.array_string }},
+  'array_named_entry': {{ attr_type.array_named_entry }},
+};
+function show_old_history(e) {
+  MessageBox.clear();
+
+  $.ajax({ type: 'GET',
+    url: "/entry/api/v1/get_entry_history/{{ entry.id }}/",
+    data: {
+      'count': history_count,
+      'index': history_index,
+    },
+    headers: {
+      'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+    }
+  }).done(function(data) {
+    let container = $('#attribute-history');
+    
+    // update history index value
+    get_count = data['results'].length;
+    if (get_count > 0) {
+      history_index += get_count;
+
+      for(let value of data['results']) {
+        append_history_item(container, value)
+      }
+    } else {
+      $(e.target).hide();
+    }
+
+    // enable to push button
+    $(e.target).trigger('enableButton');
+
+  }).fail(function(data) {
+    MessageBox.error(data.responseText);
+  });
+}
+
+function make_element_value_text(a_type, attrv) {
+  if(attrv.value === null || attrv.value === '') {
+    return '';
+  }
+
+  if (a_type == attr_type.entry) {
+    return `<a href='/entry/show/${ attrv.value.id }'>${ attrv.value.name }</a>`;
+
+  } else if (a_type == attr_type.string || a_type == attr_type.textarea) {
+    return `<span class='url_conv'>${ attrv.value }</span>`;
+
+  } else if (a_type == attr_type.boolean) {
+    if(attrv.value) {
+      return "<input type='checkbox' disabled='True' checked='True'/>";
+    } else {
+      return "<input type='checkbox' disabled='True'/>";
+    }
+
+  } else if (a_type == attr_type.named_entry) {
+    let ref_value = '';
+    if(attrv.value.referral != null) {
+      ref_value = `<a href='/entry/show/${ attrv.value.referral.id }'>${ attrv.value.referral.name }</a>`;
+    }
+
+    return `<div class ='row'>` +
+             `<div class ='col-3'>${ attrv.value.value }</div>` +
+             `<div class ='col-9'>${ ref_value }</div>` +
+           `</div>`;
+
+  } else if (a_type == attr_type.group) {
+    return `<a href='/group/edit/${ attrv.value.id }'>{{ attrv.value.name }}</a>`;
+
+  } else if (a_type == attr_type.date) {
+    return `<span>${ attrv.value }</span>`;
+
+  } else if (a_type == attr_type.array_entry) {
+    let result = "<ul class='list-group'>";
+    for (let co_info of attrv.value) {
+      result += `<li class='list-group-item'>` +
+                  `<a href='/entry/show/${ co_info.id }'>${ co_info.name }</a>` +
+                `</li>`;
+    }
+    result += '</ul>';
+    return result;
+
+  } else if (a_type == attr_type.array_string) {
+    let result = "<ul class='list-group'>";
+    for (let co_info of attrv.value) {
+      result += `<li class='list-group-item'>${ co_info }</li>`;
+    }
+    result += '</ul>';
+    return result;
+
+  } else if (a_type == attr_type.array_named_entry) {
+    let result = "<ul class='list-group'>";
+    for (let co_info of attrv.value) {
+      let ref_value = '';
+      if(co_info.referral != null) {
+        ref_value = `<a href='/entry/show/${ co_info.referral.id }'>${ co_info.referral.name }</a>`;
+      }
+      result += `<li class='list-group-item'>` +
+                  `<div class='row'>` +
+                    `<div class='col-3'>${ co_info.value  }</div>` +
+                    `<div class='col-9'>${ ref_value }</div>` +
+                  `</div>` +
+                `</li>`;
+    }
+    result += '</ul>';
+    return result;
+  }
+}
+
+function append_history_item(container, info) {
+  let elem_tr = $(`<tr class='attr_info'>`);
+
+  // set attribute and attribute value id
+  elem_tr.append(`<input type='hidden' class='attr_id' value='${ info.attr_id }' />`);
+
+  // set name of attribute
+  elem_tr.append(`<td class='attr_name'>${ info.attr_name }</td>`);
+
+  // set attribute value
+
+  if (info.prev) {
+    // set previous upated parameter infomations
+    elem_tr.append(`<input type='hidden' class='prev_updated_user' value='${ info.prev.created_user }' />`);
+    elem_tr.append(`<input type='hidden' class='prev_updated_time' value='${ info.prev.created_time }' />`);
+    elem_tr.append(`<input type='hidden' class='prev_attrv_id' value='${ info.prev.attrv_id }' />`);
+
+    elem_tr.append(`
+          <td>
+            <div class='container'>
+              <div class='row border'>
+                <div class='col-6 border-right'>
+                  <div class='container'>
+                    <div class='row'>
+                      <div class='col-12 border-bottom'><center>変更前</center></div>
+                      <div class='col-12 attr_val prev_attr_value'>
+                        ${ make_element_value_text(info.attr_type, info.prev) }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class='col-6'>
+                  <div class='container'>
+                    <div class='row'>
+                      <div class='col-12 border-bottom'><center>変更後</center></div>
+                      <div class='col-12 attr_val curr_attr_value'>
+                        ${ make_element_value_text(info.attr_type, info.curr) }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+    `);
+  } else {
+    elem_tr.append(`<td>${ make_element_value_text(info.attr_type, info.curr) }</td>`);
+  }
+
+  // set previous current parameter infomations
+  elem_tr.append(`
+      <td>
+        <ul class='list-group'>
+          <li class='list-group-item curr_updated_user'>${ info.curr.created_user }</li>
+          <li class='list-group-item curr_updated_time'>${ info.curr.created_time }</li>
+        </ul>
+      </td>`);
+
+  // set update button if previous value is existed
+  let elem_td = $('<td>');
+  if (info.prev) {
+    let elem_button = $(`<span class='replace_attrv' data-toggle="tooltip">` +
+                        `<a href='#'>` +
+                        `<img src='/static/images/update.png' data-toggle="modal" data-target="#renew_checkbox"/>` +
+                        `</a></span>`);
+
+    elem_button.prop('title', gettext('button_history_desc_replace')).tooltip();
+    elem_button.on('click', prep_renew_modal);
+
+    elem_td.append(elem_button);
+  }
+  elem_tr.append(elem_td);
+
+  container.append(elem_tr);
+}
+
+$(document).ready(function() {
+  // initialize text information for each elements
+  $('#renew_checkbox_title').text(gettext('modal_history_title'));
+  $('#renew_checkbox .desc').text(gettext('modal_history_desc'));
+  $('.replace_attrv').prop('title', gettext('button_history_desc_replace')).tooltip();
+
+  // initialize event handlers
+  $('.replace_attrv').on('click', prep_renew_modal);
+
+  AirOneButtonUtil.initialize($('.show_old_history'), gettext('button_history_more'),
+                              gettext('button_communicating'), true, true, show_old_history);
+
+  AirOneButtonUtil.initialize($('.modal-footer .do_update_attr'), gettext('button_update'),
+                              gettext('button_communicating'), true, true, do_update_attr);
+});
+</script>

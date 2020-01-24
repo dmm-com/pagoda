@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Advanced Search (Result){% endblock %}
+
+{% block nav_sub_header %}
+  {% include 'navigation.html' with path='advanced_search' %}
+{% endblock %}
+
+{% block content %}
+{% load bitwise_tags %}
+  {% include 'advanced_search/contents.html' %}
+{% endblock %}
+
+{% block script %}
+<script>
+  {% include 'advanced_search/contents.js' %}
+</script>
+{% endblock %}

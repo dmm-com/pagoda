@@ -1,0 +1,4 @@
+hoge:
+  - name: entry
+    attrs:
+      test: fuga

@@ -1,0 +1,11 @@
+<div class="row">
+  <div class="col">
+    {% if total_count != list_count %}
+      <h5 id='entry_count'> {{ list_count }} / {{ total_count }} エントリ</h5>
+    {% else %}
+      <h5 id='entry_count'>{{ total_count }} エントリ</h5>
+    {% endif %}
+    <input id='narrow_down_entries' text='text' placeholder='絞り込む' />
+    <p></p>
+  </div>
+</div>

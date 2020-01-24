@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit User{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
+    <li class="breadcrumb-item"><a href="/user">ユーザ管理</a></li>
+    <li class="breadcrumb-item">ユーザ編集</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <h2>ユーザ編集</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <form id="edit-form" name="edit-form" url="/user/do_edit/{{ user_id }}" method='post'>
+
+        <!-- Top navigation buttons-->
+        <p><input type="submit" class="btn btn-primary align-right" value='保存'/></p>
+
+        <table class="table table-bordered">
+          {% if user.is_superuser %}
+          <tr>
+            <th>名前</th>
+            <td><input type="text" name="name" value="{{ user_name }}" /><br/></td>
+          </tr>
+          <tr>
+            <th>メールアドレス</th>
+            <td><input type="text" name="email" value="{{ user_email }}" /><br/></td>
+          </tr>
+          <tr>
+            <th>管理者権限を付与</th>
+            {% if user_is_superuser %}
+            <td><input type="checkbox" name="is_superuser" value="{{ user_is_superuser }}" checked="checked" /><br/></td>
+            {% else %}
+            <td><input type="checkbox" name="is_superuser" value="{{ user_is_superuser }}" /><br/></td>
+            {% endif %}
+          </tr>
+
+          {% else %}
+          <!-- The case who doens't have the priviledged level permission-->
+          <tr>
+            <th>名前</th>
+            <td>{{ user_name }}</td>
+            <input type='hidden' name='name' value='{{ user_name }}' />
+          </tr>
+          <tr>
+            <th>メールアドレス</th>
+            <td>{{ user_email }}</td>
+            <input type='hidden' name='email' value='{{ user_email }}' />
+          </tr>
+          {% endif %}
+
+          {% if token %}
+          <tr>
+            <th>AccessToken</th>
+            <td>
+              <p id='access_token'>{{ token }}</p>
+              <button type='button' id='refresh_token' class='btn btn-primary btn-sm'>Refresh</button>
+            </td>
+          </tr>
+          {% endif %}
+          <tr>
+            <th>AccessToken の有効期間 [sec]</th>
+            <td>
+              <p>
+                <input type="text" name="token_lifetime" value="{{ token_lifetime }}" />
+                (0 ~ 10^8 の範囲の整数を指定してください(0 を入力した場合は期限は無期限になります))
+              </p>
+              有効期限：{{ token_expire }}
+            </td>
+          </tr>
+        </table>
+        {% csrf_token %}
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+$('#edit-form').submit(function(){
+  var username = $('input[name="name"]').val();
+
+  HttpPost($(this)).done(function(data) {
+    MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, `Success to update User "${username}"`);
+
+    location.href = '/user/';
+  }).fail(function(resp){
+    MessageBox.error(resp.responseText);
+  });
+
+  return false;
+});
+
+$("#refresh_token").on('click', function() {
+  $.ajax({
+    type: 'PUT',
+    url: "/api/v1/user/access_token",
+    headers: {
+      'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+    },
+  }).done(function(data){
+    $("#access_token").text(data['results']);
+  });
+});
+
+</script>
+{% endblock %}

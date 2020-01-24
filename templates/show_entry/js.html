@@ -1,0 +1,66 @@
+<script>
+var complete_processing = function(data) {
+  var container = $('#referral_entries');
+
+  container.empty();
+  for(var entry of data['entries']) {
+    var new_elem = $(`<a class="list-group-item" href="/entry/show/${entry['id']}">${entry['name']} (${entry['entity']})</a>`);
+
+    container.append(new_elem);
+  }
+  $('#referral_entry_count').text(`エントリ数：${ data['found_count'] } / ${ data['total_count'] }`);
+}
+
+$('input[name=delete_entry]').on('click', function() {
+  if(confirm(`本当に削除しますか？`)) {
+    $.ajax({
+      type: 'POST',
+      url: "/entry/do_delete/{{ entry.id }}/",
+      data: JSON.stringify({}),
+      headers: {
+        'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+      }
+    }).done(function(data) {
+      MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, "Success to delete Entry ({{ entry.name }})");
+
+      location.href = '/entry/{{ entry.schema.id }}';
+    }).fail(function(data) {
+      MessageBox.error(data.responseText);
+    });
+  }
+});
+
+$(document).ready(function() {
+  var sending_request = false;
+  $("#narrow_down_referral").on('keyup', function(e) {
+    if(! (e.keyCode != 13 || sending_request)) {
+      sending_request = true;
+
+      $.ajax({
+        type: 'GET',
+        url: "/entry/api/v1/get_referrals/{{ entry.id }}/",
+        data: {
+          keyword: $(this).val(),
+        },
+      }).done(function(data){
+        complete_processing(data);
+
+        // reset sending flag
+        sending_request = false
+      }).fail(function(data){
+        MessageBox.error('failed to load data from server (Please reload this page or call Administrator)');
+      });
+
+      $('#referral_entry_count').text('エントリ数：...データ取得中...');
+    }
+  });
+});
+// hyper_link
+$(".url_conv").each(function(){
+   $(this).html( $(this).html().replace(/(http(s)?:\/\/.+)/g,'<a href="$1" class="preview">$1</a>') );
+});
+// live_preview
+$(document).ready(function() {
+  $(".preview").livePreview();
+});
+</script>

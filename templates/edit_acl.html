@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ object.name }} - Create ACLs{% endblock %}
+
+{% block nav_sub_header %}
+{% with "acl" as path %}
+{% include 'navigation.html' %}
+{% endwith %}
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container-fluid">
+
+  {% if object.objtype == navigator.acl_objtype.entry %}
+    {% include 'entry_tab.html' with tab='acl' entry=object %}
+  {% else %}
+  <div class="row">
+    <div class="col">
+      <h2>"{{ object.name }}" の ACL 設定</h2>
+    </div>
+  </div>
+  {% endif %}
+
+  <form id="acl-form" name="acl-form" url="/acl/set" method="post">
+
+  <br/>
+  <div class="row">
+    <div class="col">
+      <input type="hidden" name="object_id" value="{{ object.id }}" />
+      <input type="hidden" name="object_type" value="{{ object.objtype }}" />
+      <div class="container">
+        <div class="row">
+          <div class="col">
+            <div class="float-left">
+              公開：<input type="checkbox" name="is_public" {% if object.is_public %}checked="checked"{% endif %}/>
+            </div>
+            <div class="float-right">
+              <input type="button" class="btn btn-primary" id="submit-button" value="保存" />
+            </div>
+          </div>
+        </div>
+        <br/>
+        <div class="row default_permission" {% if object.is_public %}style="display: none"{% endif %}>
+          <!-- show interfaces to set default permissions -->
+          <div class="col">
+            デフォルト権限：
+          </div>
+          {% for acltype in acltypes %}
+          <div class="col">
+            <div class="radio">
+              <label><input type="radio" name="default_permission" value="{{ acltype.id }}" {% if object.default_permission == acltype.id %}checked="checked"{% endif %} />：{{ acltype.name }}</label>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <hr />
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <td>ユーザ or グループ</td>
+            <td>権限</td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for member in members %}
+          <tr>
+            <td>{{ member.name }}</td>
+            <td>
+              <select name="acl" member_id="{{ member.id }}" member_type="{{ member.type }}">
+                {% for acltype in acltypes %}
+                  {% if acltype.id == member.current_permission %}
+                    <option value="{{ acltype.id }}" selected="selected">{{ acltype.name }}</option>
+                  {% else %}
+                    <option value="{{ acltype.id }}">{{ acltype.name }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+$("input[name=is_public]").change(function() {
+  if (this.checked) {
+    $('.default_permission').hide();
+  } else {
+    $('.default_permission').show();
+  }
+});
+$("select[name=acl]").change(function(e) {
+  $(e.target).addClass('changed');
+});
+
+AirOneButtonUtil.initialize($('#submit-button'), gettext('button_save'),
+                            gettext('button_communicating'), true, true, function(e) {
+  $('#acl-form').submit();
+});
+  
+$('#acl-form').submit(function(event){
+  event.preventDefault();
+  var acl = [];
+
+  $(this).find('select[name=acl].changed').each(function(){
+    acl.push({
+      'member_type': $(this).attr('member_type'),
+      'member_id': $(this).attr('member_id'),
+      'value': $(this).val() != "" ? $(this).val() : null,
+    });
+  });
+
+  HttpPost($(this), {'acl': acl}).done(function(data) {
+    // set successful message to the updated page
+    MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, data.msg);
+
+    // set redirect URL
+    location.href = data.redirect_url;
+  }).fail(function(data) {
+    MessageBox.error(data.responseText);
+    $("#submit-button").trigger('enableButton');
+  });
+
+  return false;
+});
+</script>
+{% endblock %}

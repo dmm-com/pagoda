@@ -1,0 +1,111 @@
+/*
+* livepreview.css v1.1.0 (https://github.com/alanphoon/jquery-live-preview)
+* Copyright 2015 Alan Phoon, www.ampedupdesigns.com
+* Licensed under MIT (https://github.com/alanphoon/jquery-live-preview/blob/master/license.txt)
+*/
+
+/*** Styles for Live Preview Window ***/
+
+#livepreview_iframe {
+    box-shadow: inset 5px 0px 0px #666;
+    -moz-box-shadow: inset 5 10px 10px #666;
+    -webkit-box-shadow: inset 0 0px 10px #666;
+}
+
+#livepreview_dialog {
+    padding:0px;
+    margin:0px;
+    position:absolute;
+    background-color:#fff;
+    background-image:url('/static/images/icon_loading.gif');
+    background-repeat:no-repeat;
+    background-position:center center;
+    border:solid 0px #fff;
+    border-radius:0px;
+    -moz-border-radius: 0px;
+    -webkit-border-radius:0px;
+}
+
+#livepreview_dialog:after, #livepreview_dialog:before {
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+#livepreview_dialog.bottom:after, #livepreview_dialog.bottom:before {
+    bottom: 100%;
+    left: 50%;
+}
+
+#livepreview_dialog.bottom:after {
+    border-color: rgba(255, 255, 255, 0);
+    border-bottom-color: #ffffffff;
+    border-width: 20px;
+    margin-left: -20px;
+}
+#livepreview_dialog.bottom:before {
+    border-color: rgba(102, 102, 102, 0);
+    border-bottom-color: #666666;
+    border-width: 26px;
+    margin-left: -26px;
+}
+
+#livepreview_dialog.top:after, #livepreview_dialog.top:before {
+    top: 100%;
+    left: 50%;
+}
+
+#livepreview_dialog.top:after {
+    border-color: rgba(255, 255, 255, 0);
+    border-top-color: #ffffffff;
+    border-width: 20px;
+    margin-left: -20px;
+}
+
+#livepreview_dialog.top:before {
+    border-color: rgba(102, 102, 102, 0);
+    border-top-color: #666666;
+    border-width: 26px;
+    margin-left: -26px;
+}
+
+#livepreview_dialog.right:after, #livepreview_dialog.right:before {
+    right: 100%;
+    top: 50%;
+}
+
+#livepreview_dialog.right:after {
+    border-color: rgba(255, 255, 255, 0);
+    border-right-color: #ffffffff;
+    border-width: 20px;
+    margin-top: -20px;
+}
+
+#livepreview_dialog.right:before {
+    border-color: rgba(102, 102, 102, 0);
+    border-right-color: #666666;
+    border-width: 26px;
+    margin-top: -26px;
+}
+
+#livepreview_dialog.left, #livepreview_dialog.left:before {
+    left: 100%;
+    top: 50%;
+}
+
+#livepreview_dialog.left:after {
+    border-color: rgba(255, 255, 255, 0);
+    border-left-color: #ffffffff;
+    border-width: 20px;
+    margin-top: -20px;
+}
+
+#livepreview_dialog.left:before {
+    border-color: rgba(102, 102, 102, 0);
+    border-left-color: #666666;
+    border-width: 26px;
+    margin-top: -26px;
+}

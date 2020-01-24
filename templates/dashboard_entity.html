@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Show Entry{% endblock %}
+
+{% block nav_sub_header %}
+{% include 'navigation.html' with object=entity %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  {% include 'entity_navigation.html' %}
+
+  <hr />
+
+  {% include 'entity_tab.html' with tab='dashboard' %}
+
+  <div class="tab-content">
+    <div class='row'>
+      {% for attr in summarized_data.keys %}
+      <div class='col-sm-6'>
+        <center><h5>{{ attr.name }} の統計</h5></center>
+        <canvas id='chart-{{ attr.id }}'></canvas>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="/static/js/Chart.min-2_7_2.js"></script>
+
+<script>
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+{% for attr, info in summarized_data.items %}
+  // set value and label for each referrals
+  var data = [];
+  var labels = [];
+  var bg_colors = [];
+
+  {% for info in info.referral_count %}
+    data.push({{ info.count }});
+    labels.push('{{ info.referral }} [{{ info.ratio }}%]');
+    bg_colors.push(getRandomColor());
+  {% endfor %}
+
+  // empty information
+  data.push({{ info.no_referral_count }});
+  labels.push('(Empty) [{{ info.no_referral_ratio }}%]');
+  bg_colors.push(getRandomColor());
+  
+  var ctx = document.getElementById("chart-{{ attr.id }}").getContext('2d');
+  var chart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+          labels: labels,
+          datasets: [{
+              backgroundColor: bg_colors,
+              data: data,
+          }]
+      },
+  });
+{% endfor %}
+
+</script>
+{% endblock %}

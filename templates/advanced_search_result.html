@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Advanced Search (Result){% endblock %}
+
+{% block nav_sub_header %}
+  {% include 'navigation.html' with path='advanced_search_result' %}
+{% endblock %}
+
+{% block content %}
+  {% include 'advanced_search/result.html' %}
+{% endblock %}
+
+{% block script %}
+<script>
+  {% include 'advanced_search/result.js' %}
+</script>
+{% endblock %}

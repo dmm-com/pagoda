@@ -1,0 +1,119 @@
+
+body {
+    padding-top: 50px;
+}
+
+.airone-navbar {
+    min-height: 50px;
+    height: 50px;
+}
+
+.airone-sidebar {
+    background-color: #d2d4d5;
+
+    position: fixed;
+    top: 50px;
+    bottom: 0;
+    left: 0;
+    padding-top: 10px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.airone-breadcrumb {
+    border-radius: 0;
+}
+
+/* This is a configuration for the page of create/edit Entity */
+#sortdata tr {
+    cursor: pointer;
+}
+
+/* This used for the page of show Entry */
+.url_conv {
+    white-space: pre-wrap;      /* CSS3 */
+    word-wrap: break-word;      /* IE 5.5+ */
+}
+
+.input-disabled{
+    background-color: #dbdbdb;
+};
+
+/* The heart of the matter */
+.testimonial-group > .row {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.testimonial-group > .row > .col-xs-4 {
+  display: inline-block;
+  float: none;
+}
+
+/* ------------------------------- *
+ * Configuration for showing Entry
+ * ------------------------------- */
+.airone-entry-table-history,
+.airone-entry-table-show {
+  width:100%;
+  border: none;
+  margin: 10px 0px;
+}
+
+.airone-entry-table-show .attr {
+  font-size: 13px;
+  text-align: right;
+  font-weight: bold;
+  width: 240px;
+}
+
+.airone-entry-table-history td,
+.airone-entry-table-history li,
+.airone-entry-table-show li,
+.airone-entry-table-show td {
+  font-size: 13px;
+  padding: 4px 10px;
+}
+.airone-entry-table-history .textarea,
+.airone-entry-table-show .textarea {
+  font-size: 13px;
+}
+
+.nav-item :not(.active) {
+  cursor: pointer;
+}
+
+.tab-content {
+  padding: 10px 0px 0px;
+}
+
+.history_value {
+  width: 100%;
+}
+
+#attribute-history .attr_val {
+  padding: 10px;
+}
+
+/* ------------------------------------------------------------ *
+ * Configuration for Job menu items (e.g. Job) in top navigator
+ * ------------------------------------------------------------ */
+.nav_menu_item img {
+  opacity: 0.5;
+}
+
+.nav_menu_item img:hover {
+  opacity: 1;
+}
+
+.job-status-done {
+  background-color: #B8E1C0;
+}
+
+.job-status-processing {
+  background-color: #FFEBAC;
+}
+
+.job-status-error,.job-status-tieout {
+  background-color: #d9534f;
+}

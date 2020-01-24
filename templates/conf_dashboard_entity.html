@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Show Entry{% endblock %}
+
+{% block nav_sub_header %}
+{% include 'navigation.html' with object=entity %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  {% include 'entity_navigation.html' %}
+
+  <hr />
+
+  {% include 'entity_tab.html' with tab='config_dashboard' %}
+
+  <div class="tab-content">
+    <form id="conf-form" name="conf-form" url='{{ redirect_url }}' method='post'>
+      {% csrf_token %}
+      <div class="row">
+        <div class="col-md-5">
+          グラフ化可能な属性一覧
+          <select class="form-control" id='all_attrs' size='10' multiple='on'>
+            {% for attr in ref_attrs %}
+            <option value='{{ attr.id }}'>{{ attr.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+  
+        <div class="col-md-1">
+          <table style="height: 120%; margin:0 auto;">
+            <tr>
+              <td class="align-middle"><button type="button" class="align-middle form-control btn btn-secondary btn-sm" id='delete_attr'>＜</button></td>
+              <td class="align-middle"><button type="button" class="align-middle form-control btn btn-primary btn-sm" id='append_attr'>＞</button></td>
+            </tr>
+          </table>
+        </div>
+  
+        <div class="col-md-5">
+          グラフ化する属性の一覧
+          <select class="form-control" id='selected_attrs' size='10' multiple='on'>
+            {% for attr in ref_attrs %}
+              {% if attr.is_summarized %}
+                <option value='{{ attr.id }}'>{{ attr.name }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <br/>
+      <button type="submit" class="btn btn-primary">保存</button>
+    </form>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+$('#append_attr').on('click', function() {
+  var elem_selected_attrs = $("#selected_attrs");
+
+  $("#all_attrs").find(":selected").each(function(i, elem){
+    if(elem_selected_attrs.find("option[value="+ $(elem).val() +"]").length == 0) {
+      elem_selected_attrs.append($(elem).clone());
+    }
+  });
+});
+
+$('#delete_attr').on('click', function() {
+  $("#selected_attrs").find(":selected").each(function(i, elem){
+    $(elem).remove();
+  });
+});
+
+$('#conf-form').submit(function(){
+  var selected_attrs = [];
+  $('#selected_attrs option').each(function(i, elem) {
+    selected_attrs.push($(elem).val());
+  });
+
+  HttpPost($(this), {'attrs': selected_attrs}).done(function(data) {
+    MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, data.msg);
+
+    location.href = '/entity/dashboard/{{ entity.id }}';
+  });
+
+  return false;
+});
+</script>
+{% endblock %}

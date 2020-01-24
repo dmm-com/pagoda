@@ -1,0 +1,45 @@
+<script>
+AirOneButtonUtil.initialize(
+  $("#submit-button"), gettext("button_copy"), gettext("button_communicating"),
+  true, true, function(e) {
+  $('#copy-form').submit();
+});
+
+$('#copy-form').submit(function(event){
+  const SHOW_ALL_COPY_RESULT = 5;
+
+  event.preventDefault();
+
+  // clear old warning
+  MessageBox.clear();
+
+  let context = {
+    'entries': $(this).find("#creating_entries").val(),
+  };
+  HttpPost($(this), context).done(function(data) {
+    if(data.results.length <= SHOW_ALL_COPY_RESULT) {
+      for(let r of data.results) {
+        let code = (r.status == 'success') ? MessageBox.SUCCESS : MessageBox.ERROR;
+        MessageBox.setNextOnLoadMessage(code, r.msg);
+      }
+    } else {
+      let succeeded = 0;
+      for(let r of data.results) {
+        if(r.status == 'success') {
+          succeeded += 1;
+        } else {
+          // show all errors even if too many copy
+          MessageBox.setNextOnLoadMessage(MessageBox.ERROR, r.msg);
+        }
+      }
+      MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS,
+          "Succeeded: copied " + String(succeeded) + " entries(this may take a few minutes).");
+    }
+    location.href = '{{ redirect_url }}';
+  }).fail(function(data) {
+    MessageBox.error(data.responseText);
+    $('#submit-button').trigger("enableButton");
+  });
+
+});
+</script>

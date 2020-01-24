@@ -1,0 +1,13 @@
+{% if referred_objects %}
+<div class="row" id='referred_objects'>
+  <div class="col">
+    <h5 id='referral_entry_count'>(エントリ数：{{ referred_total }})</h5>
+    <input id='narrow_down_referral' text='text' placeholder='絞り込む' />
+    <div class='list-group' id='referral_entries'>
+      {% for object in referred_objects %}
+      <a class="list-group-item" href="/entry/show/{{ object.id }}">{{ object.name }} ({{ object.schema.name }})</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}

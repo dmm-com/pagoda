@@ -1,0 +1,32 @@
+<script>
+$(document).ready(function() {
+  /* get search query from url */
+  let querystr = $(location).attr('search');
+
+  if(!querystr.startsWith("?")) {
+    return;
+  }
+
+  let qarr = querystr.substring(1).split("&");
+  let search_query = "";
+
+  for(let i in qarr) {
+    let parr = qarr[i].split("=");
+    if(parr[0] == "query") {
+      search_query = parr[1];
+      break;
+    }
+  }
+
+  /* set search box default value to current query */
+  $('input[name="query"]').val(decodeURIComponent(search_query));
+
+  /* highlight row which entry name is exactly same as search query */
+  $('td>a').each(function(idx, val) {
+    if($(this).text() == search_query) {
+      $(this).parent().parent().addClass("table-primary");
+    }
+  });
+  
+});
+</script>

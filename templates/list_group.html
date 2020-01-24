@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}List Users{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
+    <li class="breadcrumb-item">グループ管理</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <div class="float-left">
+        <button name="button_new" type="button" class="btn btn-primary" onclick="location.href='/group/create'">新規作成</button>
+        <button name="button_export" type="button" class="btn btn-secondary" onclick="location.href='/group/export/'">エクスポート</button>
+        <button name="button_import" type="button" class="btn btn-secondary" onclick="location.href='/group/import/'">インポート</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <td>名前</td>
+            <td>メンバー</td>
+            <td></td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for group in groups %}
+          <tr>
+            <td><a href="/group/edit/{{ group.id }}">{{ group.name }}</a></td>
+            <td>
+              <ul>
+                {% for member in group.members %}
+                <li>{{ member.username }}</li>
+                {% endfor %}
+              </ul>
+            </td>
+            <td><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/group/do_delete/{{ group.id }}">del</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+$(document).ready(function() {
+  $('.del-item').on('click', confirm_delete_table_item);
+});
+</script>
+{% endblock %}

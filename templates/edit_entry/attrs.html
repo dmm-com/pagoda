@@ -1,0 +1,127 @@
+{% for attr in attributes %}
+{% load bitwise_tags %}
+<tr>
+  <td>
+    {% if attr.is_mandatory %}<strong>(*)</strong>{% endif %}{{ attr.name }}
+  </td>
+  <td>
+    {% if attr.type|bitwise_and:attr_type_value.array %}
+      <div>
+        <button type="button" class="btn btn-primary btn-sm" name='add_attr' attr_id="{{ attr.id }}">add row</button>
+        <div class='array_element' attr_id="{{ attr.id }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}>
+        </div>
+
+        <!-- template of attribute value column -->
+        <div style="display:none" class='attr_value_template' id='template-{{ attr.id }}'>
+
+      {% if attr.type|bitwise_and:attr_type_value.named %}
+        <div class='col-3'>
+          <input type='text' class='referral_key' attr_id="{{ attr.id }}"></input>
+        </div>
+        <div class='col-7'>
+      {% else %}
+        <div class='col-10'>
+      {% endif %}
+
+            {% if attr.type|bitwise_and:attr_type.entry %}
+
+        <ul class='list-group'>
+          <li class='list-group-item list-group-item-info airone-selected-items' attr_id='{{ attr.id }}' style="height: 30px; padding: 5px 15px;">{{ attr.last_referral.name }}</li>
+        </ul>
+        <!-- specify maximum size of list -->
+        <select class="attr_value" attr_id="{{ attr.id }}" size=5 style="width: 100%" unfetched_value='true'>
+          {% if not attr.is_mandatory %}
+          <option value='0'>- NOT SET -</option>
+          {% endif %}
+
+          <!-- show selected referral entry on the top of list -->
+          {% if attr.last_referral %}
+            <option value="{{ attr.last_referral.id }}" selected='selected'>{{ attr.last_referral.name }}</option>
+          {% endif %}
+        </select>
+
+        <input type="text" class="narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}"/>
+
+            {% else %}
+              <input type='text' class='attr_value' attr_id='{{ attr.id }}' index='0'/>
+            {% endif %}
+
+          </div>
+          <div class='col-2'>
+            <button type="button" class="btn btn-danger btn-sm" name="del_attr">del</button>
+          </div>
+        </div>
+      </div>
+    {% elif attr.type|bitwise_and:attr_type.entry %}
+      <div class='row attr_referral' {% if attr.is_mandatory %}mandatory="true"{% endif %}>
+      {% if attr.type|bitwise_and:attr_type_value.named %}
+        <div class='col-3'>
+          <input type='text' class='referral_key' attr_id="{{ attr.id }}" value="{{ attr.last_value }}" enabled="True" index="0"></input>
+        </div>
+        <div class='col-9'>
+      {% else %}
+        <div class='col-12'>
+      {% endif %}
+
+        <!-- specify maximum size of list -->
+        <ul class='list-group'>
+          <li class='list-group-item list-group-item-info airone-selected-items' attr_id='{{ attr.id }}' style="height: 30px; padding: 5px 15px;">{{ attr.last_referral.name }}</li>
+        </ul>
+
+        <select class="attr_value" attr_id="{{ attr.id }}" enabled="True" index='0' size='5' style="width: 100%" unfetched_value='true'>
+          {% if not attr.is_mandatory %}
+          <option value='0'>- NOT SET -</option>
+          {% endif %}
+
+          <!-- show selected referral entry on the top of list -->
+          {% if attr.last_referral %}
+          <option value="{{ attr.last_referral.id }}" selected='selected'>{{ attr.last_referral.name }}</option>
+          {% endif %}
+        </select>
+
+        <input type="text" class="narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}"/>
+
+        </div>
+      </div>
+
+    {% elif attr.type == attr_type.textarea %}
+
+      <textarea class="attr_value" attr_id="{{ attr.id }}" enabled="True" cols="80" rows="10" {%if attr.is_mandatory%}mandatory="true"{%endif%}>{{ attr.last_value }}</textarea>
+
+    {% elif attr.type == attr_type.date %}
+
+      <input type="date" class="attr_value" attr_id="{{ attr.id }}" enabled="True" value="{{ attr.last_value|date:"Y-m-d"}}" {%if attr.is_mandatory%}mandatory="true"{%endif%}/>
+
+    {% elif attr.type == attr_type.boolean %}
+
+      {% if attr.last_value %}
+        <input type="checkbox" class="attr_value" attr_id="{{ attr.id }}" enabled="True" checked=True/>
+      {% else %}
+        <input type="checkbox" class="attr_value" attr_id="{{ attr.id }}" enabled="True" />
+      {% endif %}
+
+    {% elif attr.type|bitwise_and:attr_type.group %}
+
+      <select class="attr_value" attr_id="{{ attr.id }}" enabled="True" index='0' size='5' style="width: 100%" {% if attr.is_mandatory %}mandatory="true"{% endif %}>
+          {% if not attr.is_mandatory %}
+          <option value='0'>- NOT SET -</option>
+          {% endif %}
+
+          {% for group in groups %}
+          <option value="{{ group.id }}"{% if group.id == attr.last_referral.id %} selected="selected" {% endif %}>{{ group.name }}</option>
+          {% endfor %}
+      </select>
+
+    {% else %}
+
+      <input type="text" class="attr_value" attr_id="{{ attr.id }}" enabled="True" value="{{ attr.last_value }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}/>
+
+    {% endif %}
+  </td>
+  {% if is_edit %}
+  <td>
+    <a href="/acl/{{ attr.id }}"><button type="button" class="btn btn-info btn-sm">ACL</button></a>
+  </td>
+  {% endif %}
+</tr>
+{% endfor %}
