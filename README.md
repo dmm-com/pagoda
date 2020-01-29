@@ -9,73 +9,112 @@ These are the features of this software.
 # Setup
 Here is the documentation to setup the development environment of AirOne.
 
-## Preparation
+## Installation of AirOne
 You have to install Python3.5+ to run AirOne like below (for the case of `ubuntu`).
 ```
-$ sudo apt-get install python3 python3-pip
+user@hostname:~$ $ sudo apt-get install python3 python3-pip virtualenv
 ```
 
 And you have to install RabbitMQ for executing heavy processing as background task using [Celery](http://docs.celeryproject.org/) and Memcached for caching backend.
 ```
-$ sudo apt-get install rabbitmq-server memcached mysql-server python-dev libmysqlclient-dev
+user@hostname:~$ $ sudo apt-get install rabbitmq-server memcached mysql-server python-dev libmysqlclient-dev
 ```
 
-Then, you can install libraries on which AieOne depends by following after cloning this repository.
+Then, you can install libraries on which AieOne depends by following after cloning this repository. But we recommand you to setup airone on the separated environment using virtualenv not to pollute system-wide python environment.
 ```
-$ cd airone
-$ sudo pip install -r requirements.txt
+user@hostname:~$ cd airone
+user@hostname:~/airone$ virtualenv -p python3 virtualenv
+user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone$ sudo pip install -r requirements.txt
 ```
 
-Cerate database and user for airone in MySQL.
+### Setting-up MySQL configuration
+
+You should cerate database and user for airone in MySQL.
 ```
-$ mysql -uroot -p****
+user@hostname:~/airone$ sudo mysql -uroot
 
 mysql> create database airone;
 mysql> CREATE USER 'airone'@'localhost' IDENTIFIED BY 'password';
 mysql> GRANT ALL ON airone.* to airone@'localhost' IDENTIFIED BY 'password';
 ```
 
-This command makes database schema using the [django Migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/), and makes default user account.
+And specifying character set of database is necessary. Please add following setting in the `mysqld.cnf` at `mysqld` section.
 ```
-$ tools/clear_and_initdb.sh
+[mysqld]
+...
+character-set-server = utf8mb4
 ```
 
-This is the default account information.
+Then, you should restart MySQL server to apply for this configuration.
+```
+user@hostname:~$ sudo service mysql restart
+```
+
+### Initialize AirOne configuratoin
+This command makes database schema using the [django Migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/), and makes default user account.
+```
+user@hostname:~$ cd airone
+user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone$ tools/clear_and_initdb.sh
+```
+
+Finally, you should create an initial user to login the system using `tools/register_user.sh`.
+```
+(virtualenv) user@hostname:~/airone$ tools/register_user.sh demo
+Password:   ## input password of this user
+Succeed in register user (demo)
+```
+
+This creates following user.
 
 | Username | Password |
 |:---------|:---------|
 | demo     | demo     |
 
-Finally, you can start AirOne and can browse from `http://hostname:8080/`.
+If you want to create an administrative user who can access all information regardless of ACL (Please refer the [User-Manual(TBD)](#)), you can do it with `-s, --superuser` option. This creates another user who takes privilege of this system.
 ```
-$ python3 manage.py runserver 0:8080
+(virtualenv) user@hostname:~/airone$ tools/register_user.sh -s admin
+Password:   ## input password of this user
+Succeed in register user (admin)
 ```
 
-### Celery
+## Run AirOne
+You can start AirOne as following and can browse from `http://hostname:8080/` (Please change the `hostname` to the appropriate one on which you installed AirOne).
+
+```
+user@hostname:~/$ cd airone
+user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone/$ python3 manage.py runserver 0:8080
+```
+
+## Run Celery
 
 In addition, you have to run Celery worker to execute background task as following.
 ```
-$ celery -A airone worker -l info
+user@hostname:~/$ cd airone
+user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone$ celery -A airone worker -l info
 ```
 
-### ElasticSearch
-You have to setup Java8 for executing elasticsearch. Here is the procedure to setup `Oracle JDK 8`.
+## Run ElasticSearch
+You have to setup JRE for executing elasticsearch.
 ```
-$ sudo add-apt-repository ppa:webupd8team/java
-$ sudo apt-get update
-$ sudo apt-get install oracle-java8-installer
+user@hostname:~$ sudo add-apt-repository ppa:linuxuprising/java
+user@hostname:~$ sudo apt-get update
+user@hostname:~$ sudo apt-get install -y oracle-java13-installer
 ```
 
 The way to install elasticsearch is quite easy like that.
 ```
-$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.2.3.tar.gz
-$ tar -xvf elasticsearch-6.2.3.tar.gz
+user@hostname:~$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.8.6.tar.gz
+user@hostname:~$ tar -xvf elasticsearch-6.8.6.tar.gz
 ```
 
 After installing it, you have to change configuration to accept connecting from AirOne nodes.
 ```diff
---- elasticsearch-6.2.3/config/elasticsearch.yml.old        2018-03-13 19:02:56.000000000 +0900
-+++ elasticsearch-6.2.3/config/elasticsearch.yml            2018-05-10 16:35:25.872529462 +0900
+--- elasticsearch-6.8.6/config/elasticsearch.yml.old        2020-01-29 10:19:40.511687943 +0900
++++ elasticsearch-6.8.6/config/elasticsearch.yml            2020-01-29 10:41:23.103687943 +0900
 @@ -52,7 +52,7 @@
  #
  # Set the bind address to a specific IP (IPv4 or IPv6):
@@ -87,32 +126,37 @@ After installing it, you have to change configuration to accept connecting from 
  #
 ```
 
-Then, you can execute ElasticSearch search like that.
+You should set sysctl as below because Elasticsearch requires to expand virtual memory area.
 ```
-$ elasticsearch-6.2.3/bin/elasticsearch
+user@hostname:~$ sudo sysctl vm.max_map_count=262144
 ```
 
-### Nginx
+Finally, you can run ElasticSearch service like that.
+```
+user@hostname:~$ elasticsearch-6.8.6/bin/elasticsearch
+```
+
+## Run Nginx (Optional)
 Install Nginx by package manager like this.
 ```
-$ sudo apt-get install nginx
+user@hostname:~$ sudo apt-get install nginx
 ```
 
 Create Self-Signed SSL Certificate and key-pair.
 ```
-$ openssl genrsa 2048 > server.key
-$ openssl req -new -key server.key > server.csr
+user@hostname:~$ openssl genrsa 2048 > server.key
+user@hostname:~$ openssl req -new -key server.key > server.csr
 ... (set appropriate configuration)
 
-$ openssl x509 -days 3650 -req -signkey server.key < server.csr > server.crt
-$ sudo mkdir /etc/nginx/ssl
-$ sudo mv server* /etc/nginx/ssl
+user@hostname:~$ openssl x509 -days 3650 -req -signkey server.key < server.csr > server.crt
+user@hostname:~$ sudo mkdir /etc/nginx/ssl
+user@hostname:~$ sudo mv server* /etc/nginx/ssl
 ```
 
 Write following configuration for AirOne on Nginx at `/etc/nginx/conf.d/airone.conf`.
 ```
 upstream airone {
-  server localhost:8080;
+  server hostname:8080;
 }
 
 server {
@@ -158,5 +202,5 @@ This regists all entries which has been created in the database to the Elasticse
 You can do it just by following command. The configurations about the database to read and Elasticsearch to register are referred from airone/settings.py.
 
 ```
-$ tools/register_es_document.py
+user@hostname:~/airone/$ tools/register_es_document.py
 ```
