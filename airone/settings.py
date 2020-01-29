@@ -102,6 +102,9 @@ DATABASES = {
         'USER': 'airone',
         'PASSWORD': 'password',
         'HOST': 'localhost',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        }
     }
 }
 DATABASE_ROUTERS = []
