@@ -1166,27 +1166,12 @@ class Entry(ACLBase):
                 'referral_id': '',
             }
 
-            # Basically register attribute information whatever value doesn't exist
-            if not (attr.type & AttrTypeValue['array'] and not is_recursive):
-                container.append(attrinfo)
-
-            elif attr.type & AttrTypeValue['array'] and not is_recursive and attrv is not None:
-                # Here is the case of parent array, set each child values
-                [_set_attrinfo(attr, x, container, True) for x in attrv.data_array.all()]
-
-                # If there is no value in container,
-                # this set blank value for maching blank search request
-                if not [x for x in container if x['name'] == attr.name]:
-                    container.append(attrinfo)
-
-                return
-
-            # This is the processing to be safe even if the empty AttributeValue was passed.
+            # Convert data format for mapping of Elasticsearch according to the data type
             if attrv is None:
-                return
+                # This is the processing to be safe even if the empty AttributeValue was passed.
+                pass
 
-            # Convert data format for mapping of Elasticsearch  according to the data type
-            if (attr.type & AttrTypeValue['string'] or attr.type & AttrTypeValue['text']):
+            elif (attr.type & AttrTypeValue['string'] or attr.type & AttrTypeValue['text']):
                 # When the value was date format, Elasticsearch detect it date type
                 # automatically. This processing explicitly set value to the date typed
                 # parameter.
@@ -1221,6 +1206,19 @@ class Entry(ACLBase):
                     attrinfo['referral_id'] = group.id
                 else:
                     attrinfo['value'] = attrinfo['referral_id'] = ''
+
+            # Basically register attribute information whatever value doesn't exist
+            if not (attr.type & AttrTypeValue['array'] and not is_recursive):
+                container.append(attrinfo)
+
+            elif attr.type & AttrTypeValue['array'] and not is_recursive and attrv is not None:
+                # Here is the case of parent array, set each child values
+                [_set_attrinfo(attr, x, container, True) for x in attrv.data_array.all()]
+
+                # If there is no value in container,
+                # this set blank value for maching blank search request
+                if not [x for x in container if x['name'] == attr.name]:
+                    container.append(attrinfo)
 
         document = {
             'entity': {'id': self.schema.id, 'name': self.schema.name},
