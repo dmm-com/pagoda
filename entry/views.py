@@ -19,12 +19,10 @@ from airone.lib.profile import airone_profile
 
 from entity.models import Entity
 from entry.models import Entry, Attribute, AttributeValue
-from job.models import Job
+from job.models import Job, JobOperation
 from user.models import User
 from group.models import Group
 from .settings import CONFIG
-from .tasks import (create_entry_attrs, edit_entry_attrs, delete_entry, copy_entry, import_entries,
-                    export_entries, restore_entry)
 
 
 def _validate_input(recv_data, obj):
@@ -169,11 +167,9 @@ def do_create(request, entity_id, recv_data):
                                  schema=entity,
                                  status=Entry.STATUS_CREATING)
 
-    # Create a new job
+    # Create a new job to create entry and run it
     job = Job.new_create(user, entry, params=recv_data)
-
-    # register a task to create Attributes for the created entry
-    create_entry_attrs.delay(user.id, entry.id, job.id)
+    job.run()
 
     return JsonResponse({
         'entry_id': entry.id,
@@ -260,11 +256,9 @@ def do_edit(request, entry_id, recv_data):
 
     entry.save()
 
-    # Create a new job
+    # Create a new job to edit entry and run it
     job = Job.new_edit(user, entry, params=recv_data)
-
-    # register a task to edit entry attributes
-    edit_entry_attrs.delay(user.id, entry.id, job.id)
+    job.run()
 
     return JsonResponse({
         'entry_id': entry.id,
@@ -386,15 +380,13 @@ def export(request, entity_id):
     if not user.has_permission(entity, ACLType.Readable):
         return HttpResponse('Permission denied to export "%s"' % entity.name, status=400)
 
-    # create a job to export search result
+    # create a job to export search result and run it
     job = Job.new_export(user, **{
         'text': 'entry_%s.%s' % (entity.name, job_params['export_format']),
         'target': entity,
         'params': job_params,
     })
-
-    # create a job to export search result
-    export_entries.delay(job.id)
+    job.run()
 
     return JsonResponse({
         'result': 'Succeed in registering export processing. ' +
@@ -418,7 +410,7 @@ def do_import_data(request, entity_id, context):
         return HttpResponse("Couldn't parse uploaded file", status=400)
 
     try:
-        data = yaml.load(context)
+        data = yaml.load(context, Loader=yaml.FullLoader)
     except yaml.parser.ParserError:
         return HttpResponse("Couldn't parse uploaded file", status=400)
 
@@ -434,8 +426,9 @@ def do_import_data(request, entity_id, context):
         if resp:
             return resp
 
+    # create job to import data to create or update entries and run it
     job = Job.new_import(user, entity, text='Preparing to import data', params=data)
-    import_entries.delay(job.id)
+    job.run()
 
     return HttpResponseSeeOther('/entry/%s/' % entity_id)
 
@@ -471,10 +464,9 @@ def do_delete(request, entry_id, recv_data):
     # register operation History for deleting entry
     user.seth_entry_del(entry)
 
-    # Create a new job
+    # Create a new job to delete entry and run it
     job = Job.new_delete(user, entry)
-
-    delete_entry.delay(entry.id, job.id)
+    job.run()
 
     return JsonResponse(ret)
 
@@ -552,7 +544,7 @@ def do_copy(request, entry_id, recv_data):
 
         # Check another COPY job that targets same name entry is under processing
         if Job.objects.filter(
-                operation=Job.OP_COPY,
+                operation=JobOperation.COPY_ENTRY.value,
                 target=entry,
                 status__in=[Job.STATUS['PREPARING'], Job.STATUS['PROCESSING']],
                 params=json.dumps(params, sort_keys=True)):
@@ -562,9 +554,9 @@ def do_copy(request, entry_id, recv_data):
             })
             continue
 
-        # make a new job to copy entry
-        copy_entry.delay(user.id, entry_id,
-                         Job.new_copy(user, entry, text=new_name, params=params).id)
+        # make a new job to copy entry and run it
+        job = Job.new_copy(user, entry, text=new_name, params=params)
+        job.run()
 
         ret.append({
             'status': 'success',
@@ -620,9 +612,9 @@ def do_restore(request, entry_id, recv_data):
 
     entry.set_status(Entry.STATUS_CREATING)
 
-    # Create a new job
+    # Create a new job to restore deleted entry and run it
     job = Job.new_restore(user, entry)
-    restore_entry.delay(entry.id, job.id)
+    job.run()
 
     return HttpResponse('Success to queue a request to restore an entry')
 

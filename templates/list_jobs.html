@@ -67,7 +67,8 @@
               コピー
             {% elif job.operation == JOB.OPERATION.IMPORT %}
               インポート
-            {% elif job.operation == JOB.OPERATION.EXPORT %}
+            {% elif job.operation == JOB.OPERATION.EXPORT or
+                    job.operation == JOB.OPERATION.EXPORT_SEARCH_RESULT %}
               エクスポート
             {% elif job.operation == JOB.OPERATION.RESTORE %}
               復旧

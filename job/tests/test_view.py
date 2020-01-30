@@ -77,7 +77,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context['jobs'], [])
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_rerun_job_which_is_under_processing(self):
         # send a request to re-run creating entry which is under processing
         user = self.guest_login()

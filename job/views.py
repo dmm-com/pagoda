@@ -9,7 +9,7 @@ from airone.lib.http import get_download_response
 from airone.lib.http import http_get, render
 
 # related models in AirOne
-from job.models import Job
+from job.models import Job, JobOperation
 from user.models import User
 
 # configuration of this app
@@ -36,8 +36,8 @@ def index(request):
                 x.updated_at - x.created_at
             ).seconds if x.is_finished() else (datetime.now(timezone.utc) - x.created_at).seconds,
         } for x in Job.objects.filter(user=user).order_by('-created_at')[:limitation]
-            if (x.operation == Job.OP_EXPORT or
-                (x.operation != Job.OP_EXPORT and x.target.is_active))]
+            if (x.operation == JobOperation.EXPORT_ENTRY.value or
+                (x.operation != JobOperation.EXPORT_ENTRY.value and x.target.is_active))]
     }
 
     return render(request, 'list_jobs.html', context)
@@ -54,7 +54,7 @@ def download(request, job_id):
     if job.user.id != user.id:
         return HttpResponse("Target Job is executed by other people", status=400)
 
-    if job.operation not in [Job.OP_EXPORT]:
+    if job.operation not in [JobOperation.EXPORT_ENTRY.value]:
         return HttpResponse("Target Job has no value to return", status=400)
 
     # get value associated this Job from cache

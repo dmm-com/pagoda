@@ -88,15 +88,15 @@ def _convert_data_value(attr, info):
 
 
 @app.task(bind=True)
-def create_entry_attrs(self, user_id, entry_id, job_id):
+def create_entry_attrs(self, job_id):
     job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():
         # At the first time, update job status to prevent executing this job duplicately
         job.update(Job.STATUS['PROCESSING'])
 
-        user = User.objects.filter(id=user_id).first()
-        entry = Entry.objects.filter(id=entry_id, is_active=True).first()
+        user = User.objects.filter(id=job.user.id).first()
+        entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
         if not entry or not user:
             # Abort when specified entry doesn't exist
             job.update(Job.STATUS['CANCELED'])
@@ -149,21 +149,21 @@ def create_entry_attrs(self, user_id, entry_id, job_id):
 
     elif job.is_canceled():
         # When job is canceled before starting, created entry should be deleted.
-        entry = Entry.objects.filter(id=entry_id, is_active=True).first()
+        entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
         if entry:
             entry.delete()
 
 
 @app.task(bind=True)
-def edit_entry_attrs(self, user_id, entry_id, job_id):
+def edit_entry_attrs(self, job_id):
     job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():
         # At the first time, update job status to prevent executing this job duplicately
         job.update(Job.STATUS['PROCESSING'])
 
-        user = User.objects.get(id=user_id)
-        entry = Entry.objects.get(id=entry_id)
+        user = User.objects.get(id=job.user.id)
+        entry = Entry.objects.get(id=job.target.id)
 
         recv_data = json.loads(job.params)
         for info in recv_data['attrs']:
@@ -196,7 +196,7 @@ def edit_entry_attrs(self, user_id, entry_id, job_id):
 
 
 @app.task(bind=True)
-def delete_entry(self, entry_id, job_id):
+def delete_entry(self, job_id):
     job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():
@@ -208,13 +208,13 @@ def delete_entry(self, entry_id, job_id):
 
 
 @app.task(bind=True)
-def restore_entry(self, entry_id, job_id):
+def restore_entry(self, job_id):
     job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():
         job.update(Job.STATUS['PROCESSING'])
 
-        entry = Entry.objects.get(id=entry_id)
+        entry = Entry.objects.get(id=job.target.id)
         entry.restore()
 
         # remove status flag which is set before calling this
@@ -232,15 +232,15 @@ def restore_entry(self, entry_id, job_id):
 
 
 @app.task(bind=True)
-def copy_entry(self, user_id, src_entry_id, job_id):
+def copy_entry(self, job_id):
     job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():
         # update job status
         job.update(Job.STATUS['PROCESSING'])
 
-        user = User.objects.get(id=user_id)
-        src_entry = Entry.objects.get(id=src_entry_id)
+        user = User.objects.get(id=job.user.id)
+        src_entry = Entry.objects.get(id=job.target.id)
 
         params = json.loads(job.params)
         dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params['new_name']).first()

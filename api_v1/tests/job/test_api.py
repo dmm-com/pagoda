@@ -4,7 +4,7 @@ from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 from datetime import timedelta
 
-from job.models import Job
+from job.models import Job, JobOperation
 from entry.models import Entry
 from entity.models import Entity, EntityAttr
 
@@ -44,13 +44,13 @@ class APITest(AironeViewTest):
         # checks expected parameters are set correctly
         results = resp.json()
         self.assertEqual(results['constant']['operation'], {
-            'create': Job.OP_CREATE,
-            'edit': Job.OP_EDIT,
-            'delete': Job.OP_DELETE,
-            'copy': Job.OP_COPY,
-            'import': Job.OP_IMPORT,
-            'export': Job.OP_EXPORT,
-            'restore': Job.OP_RESTORE,
+            'create': JobOperation.CREATE_ENTRY.value,
+            'edit': JobOperation.EDIT_ENTRY.value,
+            'delete': JobOperation.DELETE_ENTRY.value,
+            'copy': JobOperation.COPY_ENTRY.value,
+            'import': JobOperation.IMPORT_ENTRY.value,
+            'export': JobOperation.EXPORT_ENTRY.value,
+            'restore': JobOperation.RESTORE_ENTRY.value,
         })
         self.assertEqual(results['constant']['status'], {
             'processing': Job.STATUS['PROCESSING'],
@@ -174,11 +174,11 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
 
         # send request with a GET parameter that doesn't match any job
-        resp = self.client.get('/api/v1/job/search', {'operation': Job.OP_COPY})
+        resp = self.client.get('/api/v1/job/search', {'operation': JobOperation.COPY_ENTRY.value})
         self.assertEqual(resp.status_code, 404)
 
         # send requests with GET parameter that matches the created job
-        for param in [{'operation': Job.OP_DELETE}, {'target_id': entry.id}]:
+        for param in [{'operation': JobOperation.DELETE_ENTRY.value}, {'target_id': entry.id}]:
             resp = self.client.get('/api/v1/job/search', param)
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(len(resp.json()), 1)

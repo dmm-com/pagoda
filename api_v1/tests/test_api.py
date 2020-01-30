@@ -674,7 +674,7 @@ class APITest(AironeViewTest):
         resp = self.client.get('/api/v1/entry', {'entry_id': entry.id, 'is_active': False})
         self.assertEqual(resp.status_code, 200)
 
-    @mock.patch('api_v1.views.delete_entry.delay', mock.Mock(side_effect=tasks.delete_entry))
+    @mock.patch('entry.tasks.delete_entry.delay', mock.Mock(side_effect=tasks.delete_entry))
     def test_delete_entry(self):
         # wrapper to send delete request in this test
         def send_request(param):

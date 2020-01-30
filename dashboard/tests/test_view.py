@@ -11,7 +11,7 @@ from airone.lib.types import AttrTypeValue
 from django.urls import reverse
 from django.contrib.auth.models import User as DjangoUser
 from group.models import Group
-from job.models import Job
+from job.models import Job, JobOperation
 from datetime import date
 
 from entity.models import Entity, EntityAttr
@@ -141,7 +141,7 @@ class ViewTest(AironeViewTest):
         # entity-2 should not be displayed
         self.assertEquals(0, len(list(filter(lambda n: n == "entity-2", entity_names))))
 
-    @patch('dashboard.views.task_export_search_result.delay',
+    @patch('dashboard.tasks.export_search_result.delay',
            Mock(side_effect=dashboard_tasks.export_search_result))
     def test_show_advanced_search_results(self):
         for entity_index in range(0, 2):
@@ -185,7 +185,7 @@ class ViewTest(AironeViewTest):
 
         # check export task is executed
         job = Job.objects.last()
-        self.assertEqual(job.operation, Job.OP_EXPORT)
+        self.assertEqual(job.operation, JobOperation.EXPORT_SEARCH_RESULT.value)
         self.assertEqual(job.status, Job.STATUS['DONE'])
         self.assertEqual(json.loads(job.params), export_params)
 
@@ -209,7 +209,7 @@ class ViewTest(AironeViewTest):
             # check export task is executed
             job = Job.objects.last()
             self.assertEqual(resp.status_code, 200)
-            self.assertEqual(job.operation, Job.OP_EXPORT)
+            self.assertEqual(job.operation, JobOperation.EXPORT_SEARCH_RESULT.value)
             with self.assertRaises(OSError) as e:
                 raise OSError
 
@@ -233,7 +233,7 @@ class ViewTest(AironeViewTest):
                                  for i in range(2)]))
         self.assertEqual(resp.context['results']['ret_count'], 20)
 
-    @patch('dashboard.views.task_export_search_result.delay',
+    @patch('dashboard.tasks.export_search_result.delay',
            Mock(side_effect=dashboard_tasks.export_search_result))
     def test_export_advanced_search_result(self):
         user = self.admin
@@ -290,7 +290,7 @@ class ViewTest(AironeViewTest):
         # checks all data are exported in order of specified sequence
         self.assertEqual(csv_contents[0], 'Name,Entity,%s' % ','.join(exporting_attr_names))
 
-    @patch('dashboard.views.task_export_search_result.delay',
+    @patch('dashboard.tasks.export_search_result.delay',
            Mock(side_effect=dashboard_tasks.export_search_result))
     def test_export_advanced_search_result_with_referral(self):
         user = self.admin
@@ -340,7 +340,7 @@ class ViewTest(AironeViewTest):
         csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
         self.assertEqual(len(csv_contents), 1)
 
-    @patch('dashboard.views.task_export_search_result.delay',
+    @patch('dashboard.tasks.export_search_result.delay',
            Mock(side_effect=dashboard_tasks.export_search_result))
     def test_show_advanced_search_results_csv_escape(self):
         user = self.admin
@@ -432,8 +432,8 @@ class ViewTest(AironeViewTest):
             data = content.replace(header, '', 1).strip()
             self.assertEqual(data, '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, case[2]))
 
-    @patch('entry.views.import_entries.delay', Mock(side_effect=entry_tasks.import_entries))
-    @patch('dashboard.views.task_export_search_result.delay',
+    @patch('entry.tasks.import_entries.delay', Mock(side_effect=entry_tasks.import_entries))
+    @patch('dashboard.tasks.export_search_result.delay',
            Mock(side_effect=dashboard_tasks.export_search_result))
     def test_yaml_export(self):
         user = self.admin
@@ -496,7 +496,7 @@ class ViewTest(AironeViewTest):
         }), 'application/json')
         self.assertEqual(resp.status_code, 200)
 
-        resp_data = yaml.load(Job.objects.last().get_cache())
+        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
         for index in range(2):
             entity = Entity.objects.get(name='Entity-%d' % index)
             e_data = resp_data[entity.name]
@@ -564,7 +564,7 @@ class ViewTest(AironeViewTest):
             elif attr_name == 'date':
                 self.assertEqual(attrv.date, date(1999, 1, 1))
 
-    @patch('dashboard.views.task_export_search_result.delay',
+    @patch('dashboard.tasks.export_search_result.delay',
            Mock(side_effect=dashboard_tasks.export_search_result))
     def test_duplicate_export(self):
         user = self.admin
@@ -600,7 +600,7 @@ class ViewTest(AironeViewTest):
                                 'application/json')
         self.assertEqual(resp.status_code, 200)
 
-    @patch('dashboard.views.task_export_search_result.delay',
+    @patch('dashboard.tasks.export_search_result.delay',
            Mock(side_effect=dashboard_tasks.export_search_result))
     def test_export_with_hint_entry_name(self):
         entity = Entity.objects.create(name='Entity', created_user=self.admin)
@@ -615,6 +615,6 @@ class ViewTest(AironeViewTest):
         }), 'application/json')
         self.assertEqual(resp.status_code, 200)
 
-        resp_data = yaml.load(Job.objects.last().get_cache())
+        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
         self.assertEqual(len(resp_data['Entity']), 2)
         self.assertEqual([x['name'] for x in resp_data['Entity']], ['bar', 'baz'])

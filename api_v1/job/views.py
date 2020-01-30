@@ -7,10 +7,9 @@ from rest_framework.response import Response
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.authentication import SessionAuthentication
 
-from job.models import Job
+from job.models import Job, JobOperation
 from job.settings import CONFIG as JOB_CONFIG
 from user.models import User
-from entry.tasks import create_entry_attrs, edit_entry_attrs, delete_entry, copy_entry
 
 from api_v1.auth import AironeTokenAuth
 
@@ -35,13 +34,13 @@ class JobAPI(APIView):
                 'timeout': Job.STATUS['TIMEOUT'],
             },
             'operation': {
-                'create': Job.OP_CREATE,
-                'edit': Job.OP_EDIT,
-                'delete': Job.OP_DELETE,
-                'copy': Job.OP_COPY,
-                'import': Job.OP_IMPORT,
-                'export': Job.OP_EXPORT,
-                'restore': Job.OP_RESTORE,
+                'create': JobOperation.CREATE_ENTRY.value,
+                'edit': JobOperation.EDIT_ENTRY.value,
+                'delete': JobOperation.DELETE_ENTRY.value,
+                'copy': JobOperation.COPY_ENTRY.value,
+                'import': JobOperation.IMPORT_ENTRY.value,
+                'export': JobOperation.EXPORT_ENTRY.value,
+                'restore': JobOperation.RESTORE_ENTRY.value,
             }
         }
 
@@ -100,21 +99,8 @@ class SpecificJobAPI(APIView):
             return Response('Job target has already been deleted',
                             status=status.HTTP_400_BAD_REQUEST)
 
-        if job.operation == Job.OP_CREATE:
-            create_entry_attrs(job.user.id, job.target.id, job.id)
-
-        elif job.operation == Job.OP_EDIT:
-            edit_entry_attrs(job.user.id, job.target.id, job.id)
-
-        elif job.operation == Job.OP_COPY:
-            copy_entry(job.user.id, job.target.id, job.id)
-
-        elif job.operation == Job.OP_DELETE:
-            delete_entry(job.target.id, job.id)
-
-        else:
-            return Response('Job(id=%d) has unsupported operation(%d)' % (job_id, job.operation),
-                            status=status.HTTP_400_BAD_REQUEST)
+        # Run job on an Application node
+        job.run(will_delay=False)
 
         return Response('Success to run command')
 

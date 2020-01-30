@@ -15,7 +15,6 @@ from entry.models import Entry, AttributeValue
 from job.models import Job
 from user.models import User
 from .settings import CONFIG
-from .tasks import export_search_result as task_export_search_result
 
 IMPORT_INFOS = [
     {'model': 'Entity', 'resource': EntityResource},
@@ -64,7 +63,7 @@ def do_import_data(request, context):
         return HttpResponse("File size over", status=400)
 
     try:
-        data = yaml.load(context)
+        data = yaml.load(context, Loader=yaml.FullLoader)
     except yaml.parser.ParserError:
         return HttpResponse("Couldn't parse uploaded file", status=400)
 
@@ -201,14 +200,12 @@ def export_search_result(request, recv_data):
     if Job.get_job_with_params(user, recv_data).filter(status__in=job_status_not_finished).exists():
         return HttpResponse('Same export processing is under execution', status=400)
 
-    # create a job to export search result
-    job = Job.new_export(user, **{
+    # create a job to export search result and run it
+    job = Job.new_export_search_result(user, **{
         'text': 'search_results.%s' % recv_data['export_style'],
         'params': recv_data,
     })
-
-    # register task to make export data and cache it
-    task_export_search_result.delay(job.id)
+    job.run()
 
     return JsonResponse({
         'result': 'Succeed in registering export processing. ' +
