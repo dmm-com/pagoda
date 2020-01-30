@@ -149,14 +149,14 @@ def _yaml_export(job, values, recv_data, has_referral):
 def export_search_result(self, job_id):
     job = Job.objects.get(id=job_id)
 
-    if not job.is_ready_to_process():
+    if not job.proceed_if_ready():
         return
 
     # wait dependent job is finished
     job.wait_dependent_job()
 
     # set flag to indicate that this job starts processing
-    job.set_status(Job.STATUS['PROCESSING'])
+    job.update(Job.STATUS['PROCESSING'])
 
     user = job.user
     recv_data = json.loads(job.params)
@@ -188,4 +188,4 @@ def export_search_result(self, job_id):
 
     # update job status and save it except for the case that target job is canceled.
     if not job.is_canceled():
-        job.set_status(Job.STATUS['DONE'])
+        job.update(Job.STATUS['DONE'])

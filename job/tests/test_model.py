@@ -119,43 +119,116 @@ class ModelTest(AironeTestCase):
         self.assertFalse(job.is_canceled())
 
         # change status of target job
-        job.set_status(Job.STATUS['CANCELED'])
+        job.update(Job.STATUS['CANCELED'])
 
         # confirms that is_canceled would be true by changing job status parameter
         self.assertTrue(job.is_canceled())
 
-    def test_set_status(self):
-        job = Job.new_create(self.guest, self.entity)
+    def test_update_method(self):
+        job = Job.new_create(self.guest, self.entry, 'original text')
         self.assertEqual(job.status, Job.STATUS['PREPARING'])
-
-        self.assertTrue(job.set_status(Job.STATUS['DONE']))
-        job.refresh_from_db(fields=['status'])
-        self.assertEqual(job.status, Job.STATUS['DONE'])
+        last_updated_time = job.updated_at
 
         # When an invalid status value is specified, status value won't be changed
-        self.assertFalse(job.set_status(9999))
-        job.refresh_from_db(fields=['status'])
-        self.assertEqual(job.status, Job.STATUS['DONE'])
+        job.update(9999)
+        job.refresh_from_db()
 
-    def test_is_ready_to_process(self):
-        job = Job.new_create(self.guest, self.entity)
+        self.assertEqual(job.status, Job.STATUS['PREPARING'])
+        self.assertEqual(job.text, 'original text')
+        self.assertEqual(job.target.id, self.entry.id)
+        self.assertGreater(job.updated_at, last_updated_time)
+        last_updated_time = job.updated_at
+
+        # update only status parameter
+        job.update(Job.STATUS['PROCESSING'])
+        job.refresh_from_db()
+
+        self.assertEqual(job.status, Job.STATUS['PROCESSING'])
+        self.assertEqual(job.text, 'original text')
+        self.assertEqual(job.target.id, self.entry.id)
+        self.assertGreater(job.updated_at, last_updated_time)
+        last_updated_time = job.updated_at
+
+        # update status and text parameters
+        job.update(Job.STATUS['CANCELED'], 'changed message')
+        job.refresh_from_db()
+        self.assertEqual(job.status, Job.STATUS['CANCELED'])
+        self.assertEqual(job.text, 'changed message')
+        self.assertEqual(job.target.id, self.entry.id)
+        self.assertGreater(job.updated_at, last_updated_time)
+        last_updated_time = job.updated_at
+
+        # update status, text and target parameters
+        new_entry = Entry.objects.create(name='newone', created_user=self.guest, schema=self.entity)
+        job.update(Job.STATUS['DONE'], 'further changed message', new_entry)
+        job.refresh_from_db()
+
+        self.assertEqual(job.status, Job.STATUS['DONE'])
+        self.assertEqual(job.text, 'further changed message')
+        self.assertEqual(job.target.id, new_entry.id)
+        self.assertGreater(job.updated_at, last_updated_time)
+
+    def test_proceed_if_ready(self):
+        job = Job.new_create(self.guest, self.entry)
 
         for status in [Job.STATUS['DONE'], Job.STATUS['ERROR'], Job.STATUS['TIMEOUT'],
                        Job.STATUS['CANCELED'], Job.STATUS['PROCESSING']]:
             job.status = status
             job.save(update_fields=['status'])
-            self.assertFalse(job.is_ready_to_process())
+            self.assertFalse(job.proceed_if_ready())
 
         job.status = Job.STATUS['PREPARING']
         job.save(update_fields=['status'])
-        self.assertTrue(job.is_ready_to_process())
+        self.assertTrue(job.proceed_if_ready())
 
-    @patch('job.models.time.sleep')
-    def test_waiting_job_until_dependent_one_is_finished(self, mock_sleep):
-        # create two jobs which have dependency
-        (job1, job2) = [Job.new_create(self.guest, self.entity) for _x in range(2)]
-        self.assertFalse(job1.is_finished())
-        self.assertFalse(job2.is_finished())
+    def test_may_schedule(self):
+        # This describes how many times run method of Job called.
+        self.test_data = 0
+
+        def side_effect():
+            self.test_data += 1
+
+        [job1, job2] = [Job.new_create(self.guest, self.entry) for _ in range(2)]
+
+        # Checks dependent_job parameters of both entries are set properly
+        self.assertIsNone(job1.dependent_job)
+        self.assertEqual(job2.dependent_job.id, job1.id)
+
+        with mock.patch.object(Job, 'run') as mock_run:
+            mock_run.side_effect = side_effect
+
+            # job1 doesn't have dependent job and ready to run so this never be rescheduled
+            self.assertTrue(job1.proceed_if_ready())
+            self.assertFalse(job1.may_schedule())
+            self.assertEqual(self.test_data, 0)
+
+            # job2 depends on job1 so this will be rescheduled by calling run method
+            self.assertTrue(job2.may_schedule())
+            self.assertEqual(self.test_data, 1)
+
+            # This checks proceed_if_ready() method also call rescheduling method
+            self.assertFalse(job2.proceed_if_ready())
+            self.assertEqual(self.test_data, 2)
+
+    @mock.patch('job.models.import_module')
+    def test_task_module(self, mock_import_module):
+        # This initializes test data that describes how many times does import_module is called
+        # in the processing actually.
+        self.test_data = 0
+
+        def side_effect(component):
+            self.test_data += 1
+
+        mock_import_module.side_effect = side_effect
+
+        # create a job and call get_task_module method many times
+        job = Job.new_create(self.guest, self.entry)
+        for _x in range(3):
+            job.get_task_module('hoge')
+
+        # This confirms import_module method is invoked just one time even through get_task_module
+        # is called multiple times.
+        self.assertEqual(self.test_data, 1)
 
         def side_effect(*args, **kwargs):
             job1.text = 'finished manually from side_effect'

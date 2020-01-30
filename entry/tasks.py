@@ -91,19 +91,15 @@ def _convert_data_value(attr, info):
 def create_entry_attrs(self, user_id, entry_id, job_id):
     job = Job.objects.get(id=job_id)
 
-    # wait dependent job is finished
-    job.wait_dependent_job()
-
-    if job.is_ready_to_process():
+    if job.proceed_if_ready():
         # At the first time, update job status to prevent executing this job duplicately
-        job.status = Job.STATUS['PROCESSING']
-        job.save(update_fields=['status'])
+        job.update(Job.STATUS['PROCESSING'])
 
         user = User.objects.filter(id=user_id).first()
         entry = Entry.objects.filter(id=entry_id, is_active=True).first()
         if not entry or not user:
             # Abort when specified entry doesn't exist
-            job.set_status(Job.STATUS['CANCELED'])
+            job.update(Job.STATUS['CANCELED'])
             return
 
         recv_data = json.loads(job.params)
@@ -149,8 +145,7 @@ def create_entry_attrs(self, user_id, entry_id, job_id):
 
         # update job status and save it except for the case that target job is canceled.
         if not job.is_canceled():
-            job.status = Job.STATUS['DONE']
-            job.save()
+            job.update(Job.STATUS['DONE'])
 
     elif job.is_canceled():
         # When job is canceled before starting, created entry should be deleted.
@@ -163,13 +158,9 @@ def create_entry_attrs(self, user_id, entry_id, job_id):
 def edit_entry_attrs(self, user_id, entry_id, job_id):
     job = Job.objects.get(id=job_id)
 
-    # wait dependent job is finished
-    job.wait_dependent_job()
-
-    if job.is_ready_to_process():
+    if job.proceed_if_ready():
         # At the first time, update job status to prevent executing this job duplicately
-        job.status = Job.STATUS['PROCESSING']
-        job.save(update_fields=['status'])
+        job.update(Job.STATUS['PROCESSING'])
 
         user = User.objects.get(id=user_id)
         entry = Entry.objects.get(id=entry_id)
@@ -201,35 +192,27 @@ def edit_entry_attrs(self, user_id, entry_id, job_id):
         entry.del_status(Entry.STATUS_EDITING)
 
         # update job status and save it
-        job.status = Job.STATUS['DONE']
-        job.save()
+        job.update(Job.STATUS['DONE'])
 
 
 @app.task(bind=True)
 def delete_entry(self, entry_id, job_id):
     job = Job.objects.get(id=job_id)
 
-    # wait dependent job is finished
-    job.wait_dependent_job()
-
-    if job.is_ready_to_process():
-        entry = Entry.objects.get(id=entry_id)
+    if job.proceed_if_ready():
+        entry = Entry.objects.get(id=job.target.id)
         entry.delete()
 
         # update job status and save it
-        job.status = Job.STATUS['DONE']
-        job.save()
+        job.update(Job.STATUS['DONE'])
 
 
 @app.task(bind=True)
 def restore_entry(self, entry_id, job_id):
     job = Job.objects.get(id=job_id)
 
-    # wait dependent job is finished
-    job.wait_dependent_job()
-
-    if job.is_ready_to_process():
-        job.set_status(Job.STATUS['PROCESSING'])
+    if job.proceed_if_ready():
+        job.update(Job.STATUS['PROCESSING'])
 
         entry = Entry.objects.get(id=entry_id)
         entry.restore()
@@ -245,20 +228,16 @@ def restore_entry(self, entry_id, job_id):
         entry.register_es()
 
         # update job status and save it
-        job.status = Job.STATUS['DONE']
-        job.save()
+        job.update(Job.STATUS['DONE'])
 
 
 @app.task(bind=True)
 def copy_entry(self, user_id, src_entry_id, job_id):
     job = Job.objects.get(id=job_id)
 
-    # wait dependent job is finished
-    job.wait_dependent_job()
-
-    if job.is_ready_to_process():
+    if job.proceed_if_ready():
         # update job status
-        job.set_status(Job.STATUS['PROCESSING'])
+        job.update(Job.STATUS['PROCESSING'])
 
         user = User.objects.get(id=user_id)
         src_entry = Entry.objects.get(id=src_entry_id)
@@ -274,36 +253,31 @@ def copy_entry(self, user_id, src_entry_id, job_id):
                                     dest_entry, params['post_data'])
 
         # update job status and save it
-        job.target = dest_entry
-        job.status = Job.STATUS['DONE']
-        job.text = 'original entry: %s' % src_entry.name
-
-        job.save()
+        job.update(Job.STATUS['DONE'], 'original entry: %s' % src_entry.name, dest_entry)
 
 
 @app.task(bind=True)
 def import_entries(self, job_id):
     job = Job.objects.get(id=job_id)
 
-    # wait dependent job is finished
-    job.wait_dependent_job()
-
-    if job.is_ready_to_process():
+    if job.proceed_if_ready():
         user = job.user
 
         entity = Entity.objects.get(id=job.target.id)
         if not user.has_permission(entity, ACLType.Writable):
-            job.status = Job.STATUS['ERROR']
-            job.text = 'Permission denied to import. ' \
-                'You need Writable permission for "%s"' % entity.name
-            job.save(update_fields=['text', 'status'])
+            job.update(**{
+                'status': Job.STATUS['ERROR'],
+                'text': 'Permission denied to import. '
+                        'You need Writable permission for "%s"' % entity.name
+            })
             return
 
         whole_data = json.loads(job.params).get(entity.name)
         if not whole_data:
-            job.status = Job.STATUS['ERROR']
-            job.text = 'Uploaded file has no entry data of %s' % entity.name
-            job.save(update_fields=['text', 'status'])
+            job.update(**{
+                'status': Job.STATUS['ERROR'],
+                'text': 'Uploaded file has no entry data of %s' % entity.name
+            })
             return
 
         # get custom_view method to prevent executing check method in every loop processing
@@ -311,8 +285,7 @@ def import_entries(self, job_id):
         if custom_view.is_custom("after_import_entry", entity.name):
             custom_view_handler = 'after_import_entry'
 
-        job.status = Job.STATUS['PROCESSING']
-        job.save(update_fields=['status'])
+        job.update(Job.STATUS['PROCESSING'])
 
         total_count = len(whole_data)
         # create or update entry
@@ -360,22 +333,17 @@ def import_entries(self, job_id):
 
         # update job status and save it except for the case that target job is canceled.
         if not job.is_canceled():
-            job.status = Job.STATUS['DONE']
-            job.text = ''
-            job.save()
+            job.update(status=Job.STATUS['DONE'], text='')
 
 
 @app.task(bind=True)
 def export_entries(self, job_id):
     job = Job.objects.get(id=job_id)
 
-    if not job.is_ready_to_process():
+    if not job.proceed_if_ready():
         return
 
-    # wait dependent job is finished
-    job.wait_dependent_job()
-
-    job.set_status(Job.STATUS['PROCESSING'])
+    job.update(Job.STATUS['PROCESSING'])
 
     user = job.user
     entity = Entity.objects.get(id=job.target.id)
@@ -431,4 +399,4 @@ def export_entries(self, job_id):
 
     # update job status and save it except for the case that target job is canceled.
     if not job.is_canceled():
-        job.set_status(Job.STATUS['DONE'])
+        job.update(Job.STATUS['DONE'])

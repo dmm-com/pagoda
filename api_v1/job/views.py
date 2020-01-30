@@ -75,7 +75,7 @@ class JobAPI(APIView):
             return Response('Target job has already been done')
 
         # update job.status to be canceled
-        job.set_status(Job.STATUS['CANCELED'])
+        job.update(Job.STATUS['CANCELED'])
 
         return Response('Success to cancel job')
 
