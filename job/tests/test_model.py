@@ -124,7 +124,7 @@ class ModelTest(AironeTestCase):
     def test_update_method(self):
         job = Job.new_create(self.guest, self.entry, 'original text')
         self.assertEqual(job.status, Job.STATUS['PREPARING'])
-        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
         last_updated_time = job.updated_at
 
         # When an invalid status value is specified, status value won't be changed
@@ -134,7 +134,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(job.status, Job.STATUS['PREPARING'])
         self.assertEqual(job.text, 'original text')
         self.assertEqual(job.target.id, self.entry.id)
-        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
         self.assertGreater(job.updated_at, last_updated_time)
         last_updated_time = job.updated_at
 
@@ -145,7 +145,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(job.status, Job.STATUS['PROCESSING'])
         self.assertEqual(job.text, 'original text')
         self.assertEqual(job.target.id, self.entry.id)
-        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
         self.assertGreater(job.updated_at, last_updated_time)
         last_updated_time = job.updated_at
 
@@ -155,7 +155,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(job.status, Job.STATUS['CANCELED'])
         self.assertEqual(job.text, 'changed message')
         self.assertEqual(job.target.id, self.entry.id)
-        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
         self.assertGreater(job.updated_at, last_updated_time)
         last_updated_time = job.updated_at
 
@@ -167,16 +167,16 @@ class ModelTest(AironeTestCase):
         self.assertEqual(job.status, Job.STATUS['DONE'])
         self.assertEqual(job.text, 'further changed message')
         self.assertEqual(job.target.id, new_entry.id)
-        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
         self.assertGreater(job.updated_at, last_updated_time)
 
         # update invalid operation, job operation parameter won't be changed
         job.update(operation=9999)
-        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
 
         # update valid operation, job operation parameter will be changed
-        job.update(operation=JobOperation.CREATE_ENTRY.value)
-        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
+        job.update(operation=JobOperation.EDIT_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
 
     def test_proceed_if_ready(self):
         job = Job.new_create(self.guest, self.entry)
