@@ -2,6 +2,7 @@ import json
 import mock
 
 from airone.lib.test import AironeTestCase
+from airone.celery import app
 
 from django.conf import settings
 from job.models import Job, JobOperation
@@ -123,6 +124,7 @@ class ModelTest(AironeTestCase):
     def test_update_method(self):
         job = Job.new_create(self.guest, self.entry, 'original text')
         self.assertEqual(job.status, Job.STATUS['PREPARING'])
+        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
         last_updated_time = job.updated_at
 
         # When an invalid status value is specified, status value won't be changed
@@ -132,6 +134,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(job.status, Job.STATUS['PREPARING'])
         self.assertEqual(job.text, 'original text')
         self.assertEqual(job.target.id, self.entry.id)
+        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
         self.assertGreater(job.updated_at, last_updated_time)
         last_updated_time = job.updated_at
 
@@ -142,6 +145,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(job.status, Job.STATUS['PROCESSING'])
         self.assertEqual(job.text, 'original text')
         self.assertEqual(job.target.id, self.entry.id)
+        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
         self.assertGreater(job.updated_at, last_updated_time)
         last_updated_time = job.updated_at
 
@@ -151,6 +155,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(job.status, Job.STATUS['CANCELED'])
         self.assertEqual(job.text, 'changed message')
         self.assertEqual(job.target.id, self.entry.id)
+        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
         self.assertGreater(job.updated_at, last_updated_time)
         last_updated_time = job.updated_at
 
@@ -162,7 +167,16 @@ class ModelTest(AironeTestCase):
         self.assertEqual(job.status, Job.STATUS['DONE'])
         self.assertEqual(job.text, 'further changed message')
         self.assertEqual(job.target.id, new_entry.id)
+        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
         self.assertGreater(job.updated_at, last_updated_time)
+
+        # update invalid operation, job operation parameter won't be changed
+        job.update(operation=9999)
+        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
+
+        # update valid operation, job operation parameter will be changed
+        job.update(operation=JobOperation.CREATE_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
 
     def test_proceed_if_ready(self):
         job = Job.new_create(self.guest, self.entry)
@@ -234,3 +248,25 @@ class ModelTest(AironeTestCase):
 
         # This confirms all operations of JobOperation are registered
         self.assertTrue(all([x.value in method_table for x in JobOperation]))
+
+    def test_register_method_table(self):
+        @app.task(bind=True)
+        def custom_method(self, job_id):
+            return 'result of custom_method'
+
+        @app.task(bind=True)
+        def another_custom_method(self, job_id):
+            return 'result of another_custom_method'
+
+        # register custom operation and method
+        Job.register_method_table('custom_operation', custom_method)
+
+        job = Job.new_create(self.guest, self.entry)
+        job.operation = 'custom_operation'
+
+        # run job and check custom_method is called properly
+        self.assertEqual(job.run(will_delay=False), 'result of custom_method')
+
+        # check unable to overwrite method when specified operation has already registered.
+        Job.register_method_table('custom_operation', another_custom_method)
+        self.assertEqual(job.run(will_delay=False), 'result of custom_method')

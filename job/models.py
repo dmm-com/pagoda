@@ -144,7 +144,7 @@ class Job(models.Model):
 
         return True
 
-    def update(self, status=None, text=None, target=None):
+    def update(self, status=None, text=None, target=None, operation=None):
         update_fields = ['updated_at']
 
         if status is not None and status in Job.STATUS.values():
@@ -158,6 +158,10 @@ class Job(models.Model):
         if target is not None:
             update_fields.append('target')
             self.target = target
+
+        if operation is not None and operation in self.method_table():
+            update_fields.append('operation')
+            self.operation = operation
 
         self.save(update_fields=update_fields)
 
@@ -246,6 +250,11 @@ class Job(models.Model):
             }
 
         return kls._METHOD_TABLE
+
+    @classmethod
+    def register_method_table(kls, operation, method):
+        if operation not in kls.method_table():
+            kls._METHOD_TABLE[operation] = method
 
     @classmethod
     def get_job_with_params(kls, user, params):
