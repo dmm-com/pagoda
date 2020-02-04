@@ -13,6 +13,7 @@
 
 {% block content %}
 {% csrf_token %}
+{% load calculator %}
 <div class="container-fluid">
   <div class="row">
     <div class="col">
@@ -57,20 +58,20 @@
 
             <!-- set operation -->
             <td>
-            {% if job.operation == JOB.OPERATION.CREATE %}
+            {% if job.operation|divmod:100 == JOB.OPERATION.CREATE %}
               作成
-            {% elif job.operation == JOB.OPERATION.EDIT %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EDIT %}
               編集
-            {% elif job.operation == JOB.OPERATION.DELETE %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.DELETE %}
               削除
-            {% elif job.operation == JOB.OPERATION.COPY %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.COPY %}
               コピー
-            {% elif job.operation == JOB.OPERATION.IMPORT %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.IMPORT %}
               インポート
-            {% elif job.operation == JOB.OPERATION.EXPORT or
-                    job.operation == JOB.OPERATION.EXPORT_SEARCH_RESULT %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT or
+                    job.operation|divmod:100 == JOB.OPERATION.EXPORT_SEARCH_RESULT %}
               エクスポート
-            {% elif job.operation == JOB.OPERATION.RESTORE %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.RESTORE %}
               復旧
             {% endif %}
             </td>

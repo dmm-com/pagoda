@@ -20,8 +20,9 @@ $(document).ready(function() {
 
         for (let jobinfo of data['result']) {
           let operation = '';
+          let operation_type = jobinfo['operation'] % 100;
           let target_name = '';
-          switch(jobinfo['operation']) {
+          switch(operation_type) {
             case data['constant']['operation']['create']:
               target_name = jobinfo['target']['name'];
               operation = '作成';
@@ -56,10 +57,10 @@ $(document).ready(function() {
               container.append(`<li class='dropdown-item job-status-processing' href='#'>[処理中/${operation}] ${ target_name }</li>`);
               break;
             case data['constant']['status']['done']:
-              if (jobinfo['operation'] == data['constant']['operation']['import']) {
+              if (operation_type == data['constant']['operation']['import']) {
                 // The case of import job, target-id indicates Entity-ID
                 link_url = `/entry/${ jobinfo['target']['id'] }`;
-              } else if (jobinfo['operation'] == data['constant']['operation']['export']) {
+              } else if (operation_type == data['constant']['operation']['export']) {
                 // The case of export job, it has no target
                 link_url = `/job/download/${ jobinfo['id'] }`;
               } else {
