@@ -20,6 +20,15 @@ $(document).ready(function() {
 
         for (let jobinfo of data['result']) {
           let operation = '';
+          /*
+           * The reason why getting modulo of specified operation type is that
+           * considering to the customized operation-type which might be defined in CustomView.
+           *
+           * When an user who develops Custom View defines custom operation type, it might be
+           * required to be handled as a basic one. In this case, user could declare it with an
+           * identifier which is greater than 100 (A hundred could be enough number to be able to
+           * identify basic operation types).
+           */
           let operation_type = jobinfo['operation'] % 100;
           let target_name = '';
           switch(operation_type) {

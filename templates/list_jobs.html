@@ -56,7 +56,18 @@
               <td><a href='/entry/show/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
             {% endif %}
 
-            <!-- set operation -->
+            <!-- set operation
+              Note: what divmod:100 means.
+
+              The custom filter "divmod" simply get result of (dividend % divisor).
+              The reason why following processing compares the result of this calculation is
+              considering to the customized operation-type which might be defined in CustomView.
+
+              When an user who develops Custom View defines custom operation type, it might be
+              required to be handled as a basic one. In this case, user could declare it with an
+              identifier which is greater than 100 (A hundred could be enough number to be able to
+              identify basic operation types).
+            -->
             <td>
             {% if job.operation|divmod:100 == JOB.OPERATION.CREATE %}
               作成
