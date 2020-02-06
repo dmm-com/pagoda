@@ -50,6 +50,7 @@ class APITest(AironeViewTest):
             'copy': JobOperation.COPY_ENTRY.value,
             'import': JobOperation.IMPORT_ENTRY.value,
             'export': JobOperation.EXPORT_ENTRY.value,
+            'export_search_result': JobOperation.EXPORT_SEARCH_RESULT.value,
             'restore': JobOperation.RESTORE_ENTRY.value,
         })
         self.assertEqual(results['constant']['status'], {
