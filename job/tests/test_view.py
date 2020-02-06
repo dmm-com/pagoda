@@ -145,11 +145,24 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content.decode(), 'Target Job is executed by other people')
 
-    def test_job_download(self):
+    def test_job_download_exported_result(self):
         user = self.guest_login()
 
         # initialize an export Job
         job = Job.new_export(user, text='hoge')
+        job.set_cache('abcd')
+
+        # check job contents could be downloaded
+        resp = self.client.get('/job/download/%d' % job.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp['Content-Disposition'], 'attachment; filename="hoge"')
+        self.assertEqual(resp.content.decode('utf8'), 'abcd')
+
+    def test_job_download_exported_search_result(self):
+        user = self.guest_login()
+
+        # initialize an export Job
+        job = Job.new_export_search_result(user, text='hoge')
         job.set_cache('abcd')
 
         # check job contents could be downloaded
