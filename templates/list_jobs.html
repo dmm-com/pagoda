@@ -44,13 +44,13 @@
           {% for job in jobs %}
           <tr>
             <!-- set target ACLbase object -->
-            {% if job.operation == JOB.OPERATION.EXPORT %}
+            {% if job.operation|divmod:100 == JOB.OPERATION.EXPORT %}
               {% if job.target %}
               <td><a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
               {% else %}
               <td></td>
               {% endif %}
-            {% elif job.operation == JOB.OPERATION.IMPORT %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.IMPORT %}
               <td><a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
             {% else %}
               <td><a href='/entry/show/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
@@ -79,8 +79,9 @@
               コピー
             {% elif job.operation|divmod:100 == JOB.OPERATION.IMPORT %}
               インポート
-            {% elif (job.operation|divmod:100 == JOB.OPERATION.EXPORT) or
-                    (job.operation|divmod:100 == JOB.OPERATION.EXPORT_SEARCH_RESULT) %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT %}
+              エクスポート
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT_SEARCH_RESULT %}
               エクスポート
             {% elif job.operation|divmod:100 == JOB.OPERATION.RESTORE %}
               復旧
@@ -112,7 +113,13 @@
             <td>{{ job.created_at }}</td>
 
             <!-- set text -->
-            {% if job.operation == JOB.OPERATION.EXPORT %}
+            {% if job.operation|divmod:100 == JOB.OPERATION.EXPORT %}
+              {% if job.status == JOB.STATUS.DONE %}
+              <td><a href='/job/download/{{ job.id }}'>Download</td>
+              {% else %}
+              <td></td>
+              {% endif %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT_SEARCH_RESULT %}
               {% if job.status == JOB.STATUS.DONE %}
               <td><a href='/job/download/{{ job.id }}'>Download</td>
               {% else %}

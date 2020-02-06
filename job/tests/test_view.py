@@ -86,6 +86,17 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.context['jobs']), 0)
 
+    def test_get_exporting_job(self):
+        user = self.guest_login()
+
+        # create jobs which are related with export
+        Job.new_export(user),
+        Job.new_export_search_result(user),
+
+        resp = self.client.get('/job/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context['jobs']), 2)
+
     @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_rerun_job_which_is_under_processing(self):
         # send a request to re-run creating entry which is under processing
