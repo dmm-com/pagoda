@@ -4,6 +4,7 @@ import pytz
 import time
 
 from acl.models import ACLBase
+from airone.lib.log import Logger
 from datetime import date
 from entity.models import Entity
 from entry.models import Entry
@@ -11,13 +12,29 @@ from entry.models import Entry
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.db import models
+from enum import Enum
+from importlib import import_module
 from user.models import User
+
+from job.settings import CONFIG as JOB_CONFIG
 
 
 def _support_time_default(o):
     if isinstance(o, date):
         return o.isoformat()
     raise TypeError(repr(o) + " is not JSON serializable")
+
+
+class JobOperation(Enum):
+    # Constant to describes status of each jobs
+    CREATE_ENTRY = 1
+    EDIT_ENTRY = 2
+    DELETE_ENTRY = 3
+    COPY_ENTRY = 4
+    IMPORT_ENTRY = 5
+    EXPORT_ENTRY = 6
+    RESTORE_ENTRY = 7
+    EXPORT_SEARCH_RESULT = 8
 
 
 class Job(models.Model):
@@ -36,15 +53,11 @@ class Job(models.Model):
     # This value could be overwrite by settings
     DEFAULT_JOB_TIMEOUT = 86400
 
-    # Constant to describes status of each jobs
-    # TODO: these constants should be changed as dict value like STATUS for maintainability
-    OP_CREATE = 1
-    OP_EDIT = 2
-    OP_DELETE = 3
-    OP_COPY = 4
-    OP_IMPORT = 5
-    OP_EXPORT = 6
-    OP_RESTORE = 7
+    # This caches each task module to be able to call them from Job instance
+    _TASK_MODULE = {}
+
+    # This hash table describes operation status value and operation processing
+    _METHOD_TABLE = {}
 
     # TODO: these constants should be changed as dict value like STATUS for maintainability
     TARGET_UNKNOWN = 0
@@ -78,11 +91,19 @@ class Job(models.Model):
     # When this has another job, this job have to wait until it would be finished.
     dependent_job = models.ForeignKey('Job', null=True)
 
-    def wait_dependent_job(self):
-        # When there is dependent job, this waits until that would be finished.
-        if self.dependent_job:
-            while not self.dependent_job.is_finished():
-                time.sleep(.5)
+    def may_schedule(self):
+        # When there is dependent job, this re-send a request to run same job
+        if self.dependent_job and not self.dependent_job.is_finished():
+            # This delay is needed to prevent sending excessive message to MQ
+            # when there are many dependent jobs.
+            time.sleep(JOB_CONFIG.RESCHEDULING_DELAY_SECONDS)
+
+            # This sends request to reschedule this job.
+            self.run()
+
+            return True
+        else:
+            return False
 
     def is_timeout(self):
         # Sync updated_at time information with the data which is stored in database
@@ -112,17 +133,37 @@ class Job(models.Model):
 
         return self.status == Job.STATUS['CANCELED']
 
-    def is_ready_to_process(self):
-        return (not self.is_finished() and self.status != Job.STATUS['PROCESSING'])
-
-    def set_status(self, new_status):
-        if new_status in Job.STATUS.values():
-            self.status = new_status
-            self.save(update_fields=['status', 'updated_at'])
-
-            return True
-        else:
+    def proceed_if_ready(self):
+        # In this case, job is finished (might be canceled or proceeded same job by other process)
+        if self.is_finished() or self.status == Job.STATUS['PROCESSING']:
             return False
+
+        # This checks whether dependent job is and it hasn't finished yet.
+        if self.may_schedule():
+            return False
+
+        return True
+
+    def update(self, status=None, text=None, target=None, operation=None):
+        update_fields = ['updated_at']
+
+        if status is not None and status in Job.STATUS.values():
+            update_fields.append('status')
+            self.status = status
+
+        if text is not None:
+            update_fields.append('text')
+            self.text = text
+
+        if target is not None:
+            update_fields.append('target')
+            self.target = target
+
+        if operation is not None and operation in self.method_table():
+            update_fields.append('operation')
+            self.operation = operation
+
+        self.save(update_fields=update_fields)
 
     def to_json(self):
         return {
@@ -139,6 +180,19 @@ class Job(models.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at,
         }
+
+    def run(self, will_delay=True):
+        method_table = self.method_table()
+        if self.operation not in method_table:
+            Logger.error('Job %s has invalid operation type' % self.id)
+            return
+
+        # initiate job processing
+        method = method_table[self.operation]
+        if will_delay:
+            return method.delay(self.id)
+        else:
+            return method(self.id)
 
     @classmethod
     def _create_new_job(kls, user, target, operation, text, params):
@@ -172,46 +226,83 @@ class Job(models.Model):
         return kls.objects.create(**params)
 
     @classmethod
+    def get_task_module(kls, component):
+        if component not in kls._TASK_MODULE:
+            kls._TASK_MODULE[component] = import_module(component)
+
+        return kls._TASK_MODULE[component]
+
+    @classmethod
+    def method_table(kls):
+        if not kls._METHOD_TABLE:
+            entry_task = kls.get_task_module('entry.tasks')
+            dashboard_task = kls.get_task_module('dashboard.tasks')
+
+            kls._METHOD_TABLE = {
+                JobOperation.CREATE_ENTRY.value: entry_task.create_entry_attrs,
+                JobOperation.EDIT_ENTRY.value: entry_task.edit_entry_attrs,
+                JobOperation.DELETE_ENTRY.value: entry_task.delete_entry,
+                JobOperation.COPY_ENTRY.value: entry_task.copy_entry,
+                JobOperation.IMPORT_ENTRY.value: entry_task.import_entries,
+                JobOperation.EXPORT_ENTRY.value: entry_task.export_entries,
+                JobOperation.RESTORE_ENTRY.value: entry_task.restore_entry,
+                JobOperation.EXPORT_SEARCH_RESULT.value: dashboard_task.export_search_result,
+            }
+
+        return kls._METHOD_TABLE
+
+    @classmethod
+    def register_method_table(kls, operation, method):
+        if operation not in kls.method_table():
+            kls._METHOD_TABLE[operation] = method
+
+    @classmethod
     def get_job_with_params(kls, user, params):
         return kls.objects.filter(
             user=user, params=json.dumps(params, default=_support_time_default, sort_keys=True))
 
     @classmethod
     def new_create(kls, user, target, text='', params={}):
-        return kls._create_new_job(user, target, kls.OP_CREATE, text,
+        return kls._create_new_job(user, target, JobOperation.CREATE_ENTRY.value, text,
                                    json.dumps(params, default=_support_time_default,
                                               sort_keys=True))
 
     @classmethod
     def new_edit(kls, user, target, text='', params={}):
-        return kls._create_new_job(user, target, kls.OP_EDIT, text,
+        return kls._create_new_job(user, target, JobOperation.EDIT_ENTRY.value, text,
                                    json.dumps(params, default=_support_time_default,
                                               sort_keys=True))
 
     @classmethod
     def new_delete(kls, user, target, text='', params={}):
-        return kls._create_new_job(user, target, kls.OP_DELETE, text, params)
+        return kls._create_new_job(user, target, JobOperation.DELETE_ENTRY.value, text, params)
 
     @classmethod
     def new_copy(kls, user, target, text='', params={}):
-        return kls._create_new_job(user, target, kls.OP_COPY, text,
+        return kls._create_new_job(user, target, JobOperation.COPY_ENTRY.value, text,
                                    json.dumps(params, sort_keys=True))
 
     @classmethod
     def new_import(kls, user, entity, text='', params={}):
-        return kls._create_new_job(user, entity, kls.OP_IMPORT, text,
+        return kls._create_new_job(user, entity, JobOperation.IMPORT_ENTRY.value, text,
                                    json.dumps(params, default=_support_time_default,
                                               sort_keys=True))
 
     @classmethod
     def new_export(kls, user, target=None, text='', params={}):
-        return kls._create_new_job(user, target, kls.OP_EXPORT, text,
+        return kls._create_new_job(user, target, JobOperation.EXPORT_ENTRY.value, text,
                                    json.dumps(params, default=_support_time_default,
                                               sort_keys=True))
 
     @classmethod
     def new_restore(kls, user, target, text='', params={}):
-        return kls._create_new_job(user, target, kls.OP_RESTORE, text, params)
+        return kls._create_new_job(user, target, JobOperation.RESTORE_ENTRY.value, text, params)
+
+    @classmethod
+    def new_export_search_result(kls, user, target=None, text='', params={}):
+        return kls._create_new_job(user, target, JobOperation.EXPORT_SEARCH_RESULT.value, text,
+                                   json.dumps(params, default=_support_time_default,
+                                              sort_keys=True))
 
     def set_cache(self, value):
         with open('%s/job_%d' % (settings.AIRONE['FILE_STORE_PATH'], self.id), 'wb') as fp:

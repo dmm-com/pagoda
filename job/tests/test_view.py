@@ -77,7 +77,27 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context['jobs'], [])
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    def test_get_non_target_job(self):
+        user = self.guest_login()
+
+        Job.new_create(user, None)
+
+        resp = self.client.get('/job/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context['jobs']), 0)
+
+    def test_get_exporting_job(self):
+        user = self.guest_login()
+
+        # create jobs which are related with export
+        Job.new_export(user),
+        Job.new_export_search_result(user),
+
+        resp = self.client.get('/job/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context['jobs']), 2)
+
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_rerun_job_which_is_under_processing(self):
         # send a request to re-run creating entry which is under processing
         user = self.guest_login()
@@ -136,11 +156,24 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content.decode(), 'Target Job is executed by other people')
 
-    def test_job_download(self):
+    def test_job_download_exported_result(self):
         user = self.guest_login()
 
         # initialize an export Job
         job = Job.new_export(user, text='hoge')
+        job.set_cache('abcd')
+
+        # check job contents could be downloaded
+        resp = self.client.get('/job/download/%d' % job.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp['Content-Disposition'], 'attachment; filename="hoge"')
+        self.assertEqual(resp.content.decode('utf8'), 'abcd')
+
+    def test_job_download_exported_search_result(self):
+        user = self.guest_login()
+
+        # initialize an export Job
+        job = Job.new_export_search_result(user, text='hoge')
         job.set_cache('abcd')
 
         # check job contents could be downloaded

@@ -12,7 +12,6 @@ from api_v1.auth import AironeTokenAuth
 from airone.lib.acl import ACLType
 from entity.models import Entity
 from entry.models import Entry
-from entry.tasks import delete_entry
 from job.models import Job
 from user.models import User
 
@@ -169,9 +168,8 @@ class EntryAPI(APIView):
 
         # Delete the specified entry then return its id, if is active
         if entry.is_active:
-            # create a new Job to delete entry
+            # create a new Job to delete entry and run it
             job = Job.new_delete(user, entry)
-
-            delete_entry.delay(entry.id, job.id)
+            job.run()
 
         return Response({'id': entry.id})

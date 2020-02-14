@@ -12,7 +12,7 @@ from entity import models as entity_models
 from entry import models as entry_models
 from acl.models import ACLBase
 from user.models import User, History
-from job.models import Job
+from job.models import Job, JobOperation
 
 from airone.lib.types import AttrTypes, AttrTypeValue
 from airone.lib.acl import ACLObjType, ACLType
@@ -186,13 +186,14 @@ def render(request, template, context={}):
     context['JOB'] = {
         'STATUS': Job.STATUS,
         'OPERATION': {
-            'CREATE': Job.OP_CREATE,
-            'EDIT': Job.OP_EDIT,
-            'DELETE': Job.OP_DELETE,
-            'COPY': Job.OP_COPY,
-            'IMPORT': Job.OP_IMPORT,
-            'EXPORT': Job.OP_EXPORT,
-            'RESTORE': Job.OP_RESTORE,
+            'CREATE': JobOperation.CREATE_ENTRY.value,
+            'EDIT': JobOperation.EDIT_ENTRY.value,
+            'DELETE': JobOperation.DELETE_ENTRY.value,
+            'COPY': JobOperation.COPY_ENTRY.value,
+            'IMPORT': JobOperation.IMPORT_ENTRY.value,
+            'EXPORT': JobOperation.EXPORT_ENTRY.value,
+            'RESTORE': JobOperation.RESTORE_ENTRY.value,
+            'EXPORT_SEARCH_RESULT': JobOperation.EXPORT_SEARCH_RESULT.value,
         }
     }
 

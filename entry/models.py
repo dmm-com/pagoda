@@ -1077,6 +1077,11 @@ class Entry(ACLBase):
     def delete(self):
         super(Entry, self).delete()
 
+        # update Elasticsearch index info which refered this entry not to refer this link
+        es_object = ESS()
+        for entry in [x for x in self.get_referred_objects() if x.id != self.id]:
+            entry.register_es(es=es_object)
+
         # also delete each attributes
         for attr in self.attrs.filter(is_active=True):
 
@@ -1158,30 +1163,15 @@ class Entry(ACLBase):
                 'type': attr.type,
                 'key': '',
                 'value': '',
-                'referral_id': None,
+                'referral_id': '',
             }
 
-            # Basically register attribute information whatever value doesn't exist
-            if not (attr.type & AttrTypeValue['array'] and not is_recursive):
-                container.append(attrinfo)
-
-            elif attr.type & AttrTypeValue['array'] and not is_recursive and attrv is not None:
-                # Here is the case of parent array, set each child values
-                [_set_attrinfo(attr, x, container, True) for x in attrv.data_array.all()]
-
-                # If there is no value in container,
-                # this set blank value for maching blank search request
-                if not [x for x in container if x['name'] == attr.name]:
-                    container.append(attrinfo)
-
-                return
-
-            # This is the processing to be safe even if the empty AttributeValue was passed.
+            # Convert data format for mapping of Elasticsearch according to the data type
             if attrv is None:
-                return
+                # This is the processing to be safe even if the empty AttributeValue was passed.
+                pass
 
-            # Convert data format for mapping of Elasticsearch  according to the data type
-            if (attr.type & AttrTypeValue['string'] or attr.type & AttrTypeValue['text']):
+            elif (attr.type & AttrTypeValue['string'] or attr.type & AttrTypeValue['text']):
                 # When the value was date format, Elasticsearch detect it date type
                 # automatically. This processing explicitly set value to the date typed
                 # parameter.
@@ -1199,12 +1189,15 @@ class Entry(ACLBase):
 
             elif attr.type & AttrTypeValue['named']:
                 attrinfo['key'] = attrv.value
-                attrinfo['value'] = truncate(attrv.referral.name) if attrv.referral else ''
-                attrinfo['referral_id'] = attrv.referral.id if attrv.referral else ''
+
+                if attrv.referral and attrv.referral.is_active:
+                    attrinfo['value'] = truncate(attrv.referral.name)
+                    attrinfo['referral_id'] = attrv.referral.id
 
             elif attr.type & AttrTypeValue['object']:
-                attrinfo['value'] = truncate(attrv.referral.name) if attrv.referral else ''
-                attrinfo['referral_id'] = attrv.referral.id if attrv.referral else ''
+                if attrv.referral and attrv.referral.is_active:
+                    attrinfo['value'] = truncate(attrv.referral.name)
+                    attrinfo['referral_id'] = attrv.referral.id
 
             elif attr.type & AttrTypeValue['group']:
                 if attrv.value and Group.objects.filter(id=attrv.value).exists():
@@ -1213,6 +1206,19 @@ class Entry(ACLBase):
                     attrinfo['referral_id'] = group.id
                 else:
                     attrinfo['value'] = attrinfo['referral_id'] = ''
+
+            # Basically register attribute information whatever value doesn't exist
+            if not (attr.type & AttrTypeValue['array'] and not is_recursive):
+                container.append(attrinfo)
+
+            elif attr.type & AttrTypeValue['array'] and not is_recursive and attrv is not None:
+                # Here is the case of parent array, set each child values
+                [_set_attrinfo(attr, x, container, True) for x in attrv.data_array.all()]
+
+                # If there is no value in container,
+                # this set blank value for maching blank search request
+                if not [x for x in container if x['name'] == attr.name]:
+                    container.append(attrinfo)
 
         document = {
             'entity': {'id': self.schema.id, 'name': self.schema.name},

@@ -25,7 +25,7 @@ from unittest.mock import patch
 from unittest.mock import Mock
 from unittest import skip
 from entry import tasks
-from job.models import Job
+from job.models import Job, JobOperation
 from django.http.response import JsonResponse
 
 
@@ -205,7 +205,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Attribute.objects.count(), 0)
         self.assertEqual(AttributeValue.objects.count(), 0)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_post_create_entry(self):
         user = self.admin_login()
 
@@ -253,7 +253,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(obj.target.id, entry.id)
         self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
         self.assertEqual(obj.status, Job.STATUS['DONE'])
-        self.assertEqual(obj.operation, Job.OP_CREATE)
+        self.assertEqual(obj.operation, JobOperation.CREATE_ENTRY.value)
 
         # checks specify part of attribute parameter then set AttributeValue
         # which is only specified one
@@ -282,7 +282,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual([x['last_value'] for x in attr_info if x['name'] == 'test'], [''])
         self.assertEqual([x['last_value'] for x in attr_info if x['name'] == 'new_attr'], ['foo'])
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_post_create_entry_without_permission(self):
         self.guest_login()
 
@@ -311,7 +311,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Attribute.objects.count(), 0)
         self.assertEqual(AttributeValue.objects.count(), 0)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_post_with_optional_parameter(self):
         user = self.admin_login()
 
@@ -350,7 +350,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.get(name='test-optional').values.count(), 1)
         self.assertEqual(entry.attrs.get(name='test').values.last().value, 'hoge')
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_post_with_lack_of_params(self):
         self.admin_login()
 
@@ -370,7 +370,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Attribute.objects.count(), 0)
         self.assertEqual(AttributeValue.objects.count(), 0)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_post_create_with_referral(self):
         user = self.admin_login()
 
@@ -405,7 +405,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Entry.objects.last().attrs.last().values.last().value, '')
         self.assertEqual(Entry.objects.last().attrs.last().values.last().referral.id, entry.id)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_post_with_invalid_param(self):
         self.admin_login()
 
@@ -426,7 +426,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Attribute.objects.count(), 0)
         self.assertEqual(AttributeValue.objects.count(), 0)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_post_without_entry(self):
         user = self.admin_login()
 
@@ -553,7 +553,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('entry:edit', args=[entry.id]))
         self.assertEqual(resp.status_code, 400)
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_with_valid_param(self):
         user = self.admin_login()
 
@@ -616,7 +616,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(obj.target.id, entry.id)
         self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
         self.assertEqual(obj.status, Job.STATUS['DONE'])
-        self.assertEqual(obj.operation, Job.OP_EDIT)
+        self.assertEqual(obj.operation, JobOperation.EDIT_ENTRY.value)
 
         # checks specify part of attribute parameter then set AttributeValue
         # which is only specified one
@@ -636,7 +636,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.get(name='foo').get_latest_value().value, 'puyo')
         self.assertEqual(entry.attrs.get(name='bar').get_latest_value().value, 'fuga')
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_with_optional_params(self):
         user = self.admin_login()
 
@@ -674,7 +674,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Attribute.objects.get(name='baz').values.last().value, '0')
         self.assertEqual(Entry.objects.get(id=entry.id).name, entry.name)
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_with_array_string_value(self):
         user = self.admin_login()
 
@@ -732,7 +732,7 @@ class ViewTest(AironeViewTest):
         self.assertTrue(
             all([x.value in ['hoge', 'puyo'] for x in attr.values.last().data_array.all()]))
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_with_array_object_value(self):
         user = self.admin_login()
 
@@ -822,7 +822,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('entry:show', args=[entry.id]))
         self.assertEqual(resp.status_code, 200)
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_with_referral(self):
         user = self.admin_login()
 
@@ -861,7 +861,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.last().values.last().value, '')
         self.assertEqual(entry.attrs.last().values.last().referral.id, new_entry.id)
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_without_referral_value(self):
         user = self.admin_login()
 
@@ -895,7 +895,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attr.values.count(), 2)
         self.assertEqual(attr.values.last().value, '')
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_to_no_referral(self):
         user = self.admin_login()
 
@@ -928,7 +928,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attr.values.first(), attr_value)
         self.assertIsNone(attr.values.last().referral)
 
-    @patch('entry.views.export_entries.delay', Mock(side_effect=tasks.export_entries))
+    @patch('entry.tasks.export_entries.delay', Mock(side_effect=tasks.export_entries))
     def test_get_export(self):
         user = self.admin_login()
 
@@ -953,7 +953,7 @@ class ViewTest(AironeViewTest):
         })
 
         job = Job.objects.last()
-        self.assertEqual(job.operation, Job.OP_EXPORT)
+        self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY.value)
         self.assertEqual(job.status, Job.STATUS['DONE'])
         self.assertEqual(job.text, 'entry_ほげ.yaml')
 
@@ -1006,7 +1006,7 @@ class ViewTest(AironeViewTest):
         })
 
         job = Job.objects.last()
-        self.assertEqual(job.operation, Job.OP_EXPORT)
+        self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY.value)
         self.assertEqual(job.text, 'entry_ほげ.yaml')
         with self.assertRaises(OSError) as e:
             raise OSError
@@ -1014,7 +1014,7 @@ class ViewTest(AironeViewTest):
         if e.exception.errno == errno.ENOENT:
             job.get_cache()
 
-    @patch('entry.views.export_entries.delay', Mock(side_effect=tasks.export_entries))
+    @patch('entry.tasks.export_entries.delay', Mock(side_effect=tasks.export_entries))
     def test_get_export_csv_escape(self):
         user = self.admin_login()
 
@@ -1099,7 +1099,7 @@ class ViewTest(AironeViewTest):
             data = content.replace(header, '', 1).strip()
             self.assertEqual(data, '"%s,""ENTRY""",' % type_name + case[2])
 
-    @patch('entry.views.delete_entry.delay', Mock(side_effect=tasks.delete_entry))
+    @patch('entry.tasks.delete_entry.delay', Mock(side_effect=tasks.delete_entry))
     def test_post_delete_entry(self):
         user = self.admin_login()
 
@@ -1125,7 +1125,7 @@ class ViewTest(AironeViewTest):
                            ignore=[404])
         self.assertFalse(res['found'])
 
-    @patch('entry.views.delete_entry.delay', Mock(return_value=None))
+    @patch('entry.tasks.delete_entry.delay', Mock(return_value=None))
     def test_post_delete_entry_with_long_delay(self):
         # This is the case when background processing never be started
         user = self.guest_login()
@@ -1166,7 +1166,7 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.last()
         self.assertTrue(entry.is_active)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_post_create_array_string_attribute(self):
         user = self.admin_login()
 
@@ -1218,7 +1218,7 @@ class ViewTest(AironeViewTest):
         self.assertTrue([x.value == 'hoge' or x.value == 'fuga' or x.value == 'puyo'
                          for x in attr_value.data_array.all()])
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_post_create_array_object_attribute(self):
         user = self.admin_login()
 
@@ -1271,7 +1271,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attr_value.data_array.count(), 2)
         self.assertTrue(all([x.referral.id == referral.id for x in attr_value.data_array.all()]))
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_post_text_area_value(self):
         user = self.admin_login()
 
@@ -1314,7 +1314,7 @@ class ViewTest(AironeViewTest):
             for x in entry.attrs.all()
         ]))
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_post_create_just_limit_of_value(self):
         self.admin_login()
 
@@ -1340,7 +1340,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(entry.attrs.last().values.last().value),
                          AttributeValue.MAXIMUM_VALUE_SIZE)
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_just_limit_of_value(self):
         user = self.admin_login()
 
@@ -1364,7 +1364,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(AttributeValue.objects.filter(parent_attr=attr, is_latest=True).count(), 1)
         self.assertEqual(len(attr.values.last().value), AttributeValue.MAXIMUM_VALUE_SIZE)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_post_create_exceeding_limit_of_value(self):
         self.admin_login()
 
@@ -1387,7 +1387,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(Entry.objects.count(), 0)
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_exceeding_limit_of_value(self):
         user = self.admin_login()
 
@@ -1410,7 +1410,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(attr.values.count(), 0)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_try_to_create_duplicate_name_of_entry(self):
         user = self.admin_login()
 
@@ -1459,7 +1459,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 400)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_make_entry_with_unpermitted_params(self):
         user = self.admin_login()
 
@@ -1499,7 +1499,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.count(), 1)
         self.assertEqual(entry.attrs.last().schema, attr)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_get_available_attrs(self):
         admin = self.admin_login()
 
@@ -1541,8 +1541,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(entry.get_available_attrs(user, ACLType.Writable)), 1)
         self.assertEqual(entry.get_available_attrs(user, ACLType.Writable)[0]['name'], 'attr1')
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_create_and_edit_entry_that_has_boolean_attr(self):
         admin = self.admin_login()
 
@@ -1648,9 +1648,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(Entry.objects.get(id=entry.id).name, 'Entry')
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
-    @patch('entry.views.delete_entry.delay', Mock(side_effect=tasks.delete_entry))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.delete_entry.delay', Mock(side_effect=tasks.delete_entry))
     def test_referred_entry_cache(self):
         user = self.admin_login()
 
@@ -1777,7 +1777,7 @@ class ViewTest(AironeViewTest):
         # checks jobs were created
         self.assertEqual(Job.objects.filter(user=user).count(), 4)
 
-        job = Job.objects.filter(user=user, operation=Job.OP_DELETE)
+        job = Job.objects.filter(user=user, operation=JobOperation.DELETE_ENTRY.value)
         self.assertEqual(job.count(), 1)
 
         # checks each parameters of the job are as expected
@@ -1827,7 +1827,7 @@ class ViewTest(AironeViewTest):
             self.assertIsNone(attr_ref.get_latest_value().referral)
             self.assertEqual(attr_ref.get_latest_value().data_array.count(), 0)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_create_entry_with_named_ref(self):
         user = self.admin_login()
 
@@ -1906,7 +1906,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.get(name='named_ref').values.last().value, 'hoge')
         self.assertEqual(entry.attrs.get(name='named_ref').values.last().referral, None)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_create_entry_with_array_named_ref(self):
         user = self.admin_login()
 
@@ -1962,7 +1962,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attrv.data_array.all()[2].value, 'fuga')
         self.assertEqual(attrv.data_array.all()[2].referral, None)
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_with_named_ref(self):
         user = self.admin_login()
 
@@ -2028,7 +2028,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(updated_entry.attrs.get(name='named_ref').values.last().referral.id,
                          ref_entry2.id)
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_with_array_named_ref(self):
         user = self.admin_login()
 
@@ -2171,7 +2171,7 @@ class ViewTest(AironeViewTest):
                                 json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 400)
 
-    @patch('entry.views.copy_entry.delay', Mock(side_effect=tasks.copy_entry))
+    @patch('entry.tasks.copy_entry.delay', Mock(side_effect=tasks.copy_entry))
     def test_post_copy_with_valid_entry(self):
         user = self.admin_login()
 
@@ -2206,7 +2206,7 @@ class ViewTest(AironeViewTest):
         # checks jobs were created
         self.assertEqual(Job.objects.filter(user=user).count(), 3)
 
-        jobs = Job.objects.filter(user=user, operation=Job.OP_COPY)
+        jobs = Job.objects.filter(user=user, operation=JobOperation.COPY_ENTRY.value)
 
         self.assertEqual(jobs.count(), 3)
         for obj in jobs.all():
@@ -2217,7 +2217,7 @@ class ViewTest(AironeViewTest):
             self.assertNotEqual(obj.created_at, obj.updated_at)
             self.assertTrue((obj.updated_at - obj.created_at).total_seconds() > 0)
 
-    @patch('entry.views.copy_entry.delay', Mock(side_effect=tasks.copy_entry))
+    @patch('entry.tasks.copy_entry.delay', Mock(side_effect=tasks.copy_entry))
     def test_post_copy_after_job_creating(self):
         user = self.admin_login()
         entry = Entry.objects.create(name='entry', created_user=user, schema=self._entity)
@@ -2242,7 +2242,7 @@ class ViewTest(AironeViewTest):
         # check job won't be created by this request
         self.assertFalse(Job.objects.filter(Q(target=entry) & ~Q(id=job.id)).exists())
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_create_entry_with_group_attr(self):
         admin = self.admin_login()
 
@@ -2277,7 +2277,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attrv.value, str(group.id))
         self.assertEqual(attrv.data_type, AttrTypeValue['group'])
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_with_group_attr(self):
         admin = self.admin_login()
 
@@ -2334,7 +2334,7 @@ class ViewTest(AironeViewTest):
         self.assertIsNotNone(attrv)
         self.assertEqual(attrv.value, str(Group.objects.get(name='group-1').id))
 
-    @patch('entry.views.import_entries.delay', Mock(side_effect=tasks.import_entries))
+    @patch('entry.tasks.import_entries.delay', Mock(side_effect=tasks.import_entries))
     def test_import_entry(self):
         user = self.guest_login()
 
@@ -2428,7 +2428,7 @@ class ViewTest(AironeViewTest):
             job.text,
             'Permission denied to import. You need Writable permission for "%s"' % entity.name)
 
-    @patch('entry.views.import_entries.delay', Mock(side_effect=tasks.import_entries))
+    @patch('entry.tasks.import_entries.delay', Mock(side_effect=tasks.import_entries))
     def test_import_entry_with_changing_entity_attr(self):
         user = self.admin_login()
 
@@ -2507,8 +2507,8 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(Entry.objects.filter(name__iregex=r'えんとり*').coiunt(), 3)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_create_and_edit_entry_that_has_date_attr(self):
         admin = self.admin_login()
 
@@ -2559,7 +2559,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.last().values.count(), 2)
         self.assertEqual(entry.attrs.last().get_latest_value().date, date(2019, 1, 1))
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_create_invalid_date_param(self):
         admin = self.admin_login()
 
@@ -2584,7 +2584,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 400)
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_invalid_date_param(self):
         INITIAL_DATE = date.today()
         admin = self.admin_login()
@@ -2622,7 +2622,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.last().values.count(), 1)
         self.assertEqual(attr.get_latest_value().date, INITIAL_DATE)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_create_empty_date_param(self):
         admin = self.admin_login()
 
@@ -2655,7 +2655,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.count(), 1)
         self.assertIsNone(entry.attrs.last().get_latest_value().date)
 
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_for_each_typed_attributes_repeatedly(self):
         user = self.admin_login()
 
@@ -2812,7 +2812,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(entry.attrs.get(schema=info['schema']).get_latest_value().get_value(),
                              info['expect_blank_value'])
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_create_with_invalid_referral_params(self):
         user = self.admin_login()
 
@@ -2866,7 +2866,7 @@ class ViewTest(AironeViewTest):
             for (name, info) in attr_info.items():
                 info['checker'](entry.attrs.get(schema__name=name).get_latest_value())
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_attribute_of_mandatory_params(self):
         """
         This tests the processing of creating entry would return error, or not,
@@ -2936,23 +2936,23 @@ class ViewTest(AironeViewTest):
             'attrs': [],
         }
 
-        def side_effect(user_id, entry_id, job_id):
+        def side_effect(job_id):
             job = Job.objects.get(id=job_id)
 
-            self.assertEqual(job.user.id, user_id)
-            self.assertEqual(job.target.id, entry_id)
+            self.assertEqual(job.user.id, user.id)
+            self.assertEqual(job.target.id, entry.id)
             self.assertEqual(job.target_type, Job.TARGET_ENTRY)
             self.assertEqual(job.status, Job.STATUS['PREPARING'])
-            self.assertEqual(job.operation, Job.OP_EDIT)
+            self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
 
-        with patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=side_effect)):
+        with patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=side_effect)):
             resp = self.client.post(reverse('entry:do_edit', args=[entry.id]),
                                     json.dumps(params),
                                     'application/json')
 
             self.assertEqual(resp.status_code, 200)
 
-    @patch('entry.views.delete_entry.delay', Mock(side_effect=tasks.delete_entry))
+    @patch('entry.tasks.delete_entry.delay', Mock(side_effect=tasks.delete_entry))
     def test_not_to_show_deleted_entry(self):
         user = self.guest_login()
         entity = Entity.objects.create(name='entity', created_user=user)
@@ -3003,8 +3003,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('entry:history', args=[entry.id]))
         self.assertEqual(resp.status_code, 200)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_create_and_edit_without_type_parameter(self):
         user = self.guest_login()
         entity = Entity.objects.create(name='entity', created_user=user)
@@ -3066,7 +3066,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.context['entries'][0].name.find('e-2'), 0)
         self.assertEqual(resp.context['entries'][1].name.find('e-0'), 0)
 
-    @patch('entry.views.restore_entry.delay', Mock(side_effect=tasks.restore_entry))
+    @patch('entry.tasks.restore_entry.delay', Mock(side_effect=tasks.restore_entry))
     def test_restore_entry(self):
         # initialize entries to test
         user = self.guest_login()
@@ -3418,7 +3418,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(data['entry_id'], 1)
         self.assertEqual(data['entry_name'], 'fuga')
 
-    @patch('entry.views.import_entries.delay', Mock(side_effect=tasks.import_entries))
+    @patch('entry.tasks.import_entries.delay', Mock(side_effect=tasks.import_entries))
     def test_import_entry_with_multiple_attr(self):
         user = self.admin_login()
 
@@ -3442,7 +3442,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             entry.attrs.get(schema__name='test', is_active=True).get_latest_value().value, 'fuga')
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     @patch.object(Job, 'is_canceled', Mock(return_value=True))
     def test_cancel_creating_entry(self):
         user = self.admin_login()
@@ -3475,8 +3475,8 @@ class ViewTest(AironeViewTest):
         self.assertIn('entry_deleted_', entry.name)
 
     @patch.object(Job, 'is_canceled', Mock(return_value=True))
-    @patch.object(Job, 'is_ready_to_process', Mock(return_value=False))
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch.object(Job, 'proceed_if_ready', Mock(return_value=False))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_cancel_creating_entry_before_starting_background_processing(self):
         user = self.admin_login()
         entity = Entity.objects.create(name='entity', created_user=user)
@@ -3492,7 +3492,7 @@ class ViewTest(AironeViewTest):
         self.assertIn('entry_deleted_', entry.name)
 
     @patch.object(Job, 'is_canceled', Mock(return_value=True))
-    @patch('entry.views.import_entries.delay', Mock(side_effect=tasks.import_entries))
+    @patch('entry.tasks.import_entries.delay', Mock(side_effect=tasks.import_entries))
     def test_cancel_importing_entries(self):
         self.admin_login()
 

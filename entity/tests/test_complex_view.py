@@ -21,8 +21,8 @@ class ComplexViewTest(AironeViewTest):
     This has complex tests that combine multiple requests across the inter-applicational
     """
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
-    @patch('entry.views.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     def test_add_attr_after_creating_entry(self):
         """
         This test executes followings
@@ -172,7 +172,7 @@ class ComplexViewTest(AironeViewTest):
         value_arr_obj = attr_arr_obj.values.last()
         self.assertEqual(value_arr_obj.data_array.count(), 1)
 
-    @patch('entry.views.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     def test_inherite_attribute_acl(self):
         """
         This test executes followings

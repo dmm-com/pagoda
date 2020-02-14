@@ -1551,9 +1551,11 @@ class ModelTest(AironeTestCase):
     def test_search_entries_with_hint_referral(self):
         user = User.objects.create(username='hoge')
 
-        # initialize Entities
+        # Initialize entities -- there are 2 entities as below
+        # * ReferredEntity - has no attribute
+        # * Entity - has an attribute that refers ReferredEntity
         ref_entity = Entity.objects.create(name='Referred Entity', created_user=user)
-        entity = Entity.objects.create(name='entity', created_user=user)
+        entity = Entity.objects.create(name='Entity', created_user=user)
         entity_attr = EntityAttr.objects.create(name='attr_ref',
                                                 type=AttrTypeValue['object'],
                                                 created_user=user,
@@ -1561,7 +1563,7 @@ class ModelTest(AironeTestCase):
         entity_attr.referral.add(ref_entity)
         entity.attrs.add(entity_attr)
 
-        # initialize Entries
+        # Initialize entries as below
         ref_entries = [Entry.objects.create(name='ref%d' % i, schema=ref_entity,
                                             created_user=user) for i in range(3)]
         for index in range(10):
@@ -1675,6 +1677,80 @@ class ModelTest(AironeTestCase):
             resp = Entry.search_entries(user, [], entry_name="foo")
             self.assertEqual(resp['ret_count'], 1)
             self.assertEqual(resp['ret_values'][0]['entry']['id'], entry.id)
+
+    def test_search_entries_with_deleted_hint(self):
+        # This call search_entries with hint_attrs that contains values which specify
+        # entry name that has already deleted.
+
+        # Initialize entities -- there are 2 entities as below
+        # * ReferredEntity - has no attribute
+        # * Entity - has an attribute that refers ReferredEntity
+        ref_entity = Entity.objects.create(name='ReferredEntity', created_user=self._user)
+        ref_entries = [Entry.objects.create(name='ref-%d' % i,
+                                            schema=ref_entity,
+                                            created_user=self._user) for i in range(4)]
+
+        entity = Entity.objects.create(name='Entity', created_user=self._user)
+        ref_info = {
+            'ref': {
+                'type': AttrTypeValue['object'],
+                'value': ref_entries[0],
+                'expected_value': {'name': '', 'id': ''}
+            },
+            'name': {
+                'type': AttrTypeValue['named_object'],
+                'value': {'name': 'hoge', 'id': ref_entries[1]},
+                'expected_value': {'hoge': {'name': '', 'id': ''}}
+            },
+            'arr_ref': {
+                'type': AttrTypeValue['array_object'],
+                'value': [ref_entries[2]],
+                'expected_value': [{'name': '', 'id': ''}]
+            },
+            'arr_name': {
+                'type': AttrTypeValue['array_named_object'],
+                'value': [{'name': 'hoge', 'id': ref_entries[3]}],
+                'expected_value': [{'hoge': {'name': '', 'id': ''}}]
+            }
+        }
+        for (attr_name, info) in ref_info.items():
+            entity_attr = EntityAttr.objects.create(name=attr_name,
+                                                    type=info['type'],
+                                                    created_user=self._user,
+                                                    parent_entity=entity)
+            entity_attr.referral.add(ref_entity)
+            entity.attrs.add(entity_attr)
+
+        # Initialize an entry that refers 'ref' entry which will be deleted later
+        entry = Entry.objects.create(name='ent', schema=entity, created_user=self._user)
+        entry.complement_attrs(self._user)
+        for (attr_name, info) in ref_info.items():
+            attr = entry.attrs.get(name=attr_name)
+            attr.add_value(self._user, info['value'])
+
+        # Finally, register this created entry to Elasticsearch
+        entry.register_es()
+
+        # delete each referred entries from 'ent' entry
+        for ent in ref_entries:
+            ent.delete()
+
+        # Check search result when each referred entries which is specified in the hint still exist
+        for attr_name in ref_info.keys():
+            # Check search result without keyword of hint_attrs
+            hint_attr = {'name': attr_name, 'keyword': ''}
+            ret = Entry.search_entries(self._user, [entity.id], hint_attrs=[hint_attr])
+            self.assertEqual(ret['ret_count'], 1)
+            self.assertEqual(len(ret['ret_values'][0]['attrs']), len(ref_info))
+
+            for (_name, _info) in ret['ret_values'][0]['attrs'].items():
+                self.assertTrue(_name in ref_info)
+                self.assertEqual(_info['value'], ref_info[_name]['expected_value'])
+
+            hint_attr = {'name': attr_name, 'keyword': 'ref'}
+            ret = Entry.search_entries(self._user, [entity.id], hint_attrs=[hint_attr])
+            self.assertEqual(ret['ret_count'], 0)
+            self.assertEqual(ret['ret_values'], [])
 
     def test_register_entry_to_elasticsearch(self):
         ENTRY_COUNTS = 10
@@ -2828,3 +2904,44 @@ class ModelTest(AironeTestCase):
             ret = Entry.search_entries(user, [], entry_name=test_suite['search_word'])
             self.assertEqual(ret['ret_count'], test_suite['ret_cnt'])
             self.assertEqual(ret['ret_values'][0]['entry']['name'], test_suite['ret_entry_name'])
+
+    def test_get_es_document_when_referred_entry_was_deleted(self):
+        # This entry refers self._entry which will be deleted later
+        ref_entity = Entity.objects.create(name='', created_user=self._user)
+        ref_attr = EntityAttr.objects.create(**{
+            'name': 'ref',
+            'type': AttrTypeValue['object'],
+            'created_user': self._user,
+            'parent_entity': ref_entity,
+        })
+        ref_attr.referral.add(self._entity)
+        ref_entity.attrs.add(ref_attr)
+
+        ref_entry = Entry.objects.create(name='ref', schema=ref_entity, created_user=self._user)
+        ref_entry.complement_attrs(self._user)
+
+        ref_entry.attrs.first().add_value(self._user, self._entry)
+
+        result = ref_entry.get_es_document()
+        self.assertEqual(result['name'], ref_entry.name)
+        self.assertEqual(result['attr'], [{
+            'name': ref_attr.name,
+            'type': ref_attr.type,
+            'key': '',
+            'value': self._entry.name,
+            'referral_id': self._entry.id,
+        }])
+
+        # Delete an entry which is referred by ref_entry
+        self._entry.delete()
+
+        # Check result of query of ref_entry after referring entry is deleted.
+        result = ref_entry.get_es_document()
+        self.assertEqual(result['name'], ref_entry.name)
+        self.assertEqual(result['attr'], [{
+            'name': ref_attr.name,
+            'type': ref_attr.type,
+            'key': '',
+            'value': '',        # expected not to have information about deleted entry
+            'referral_id': '',  # expected not to have information about deleted entry
+        }])

@@ -13,6 +13,7 @@
 
 {% block content %}
 {% csrf_token %}
+{% load calculator %}
 <div class="container-fluid">
   <div class="row">
     <div class="col">
@@ -43,33 +44,46 @@
           {% for job in jobs %}
           <tr>
             <!-- set target ACLbase object -->
-            {% if job.operation == JOB.OPERATION.EXPORT %}
+            {% if job.operation|divmod:100 == JOB.OPERATION.EXPORT %}
               {% if job.target %}
               <td><a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
               {% else %}
               <td></td>
               {% endif %}
-            {% elif job.operation == JOB.OPERATION.IMPORT %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.IMPORT %}
               <td><a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
             {% else %}
               <td><a href='/entry/show/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
             {% endif %}
 
-            <!-- set operation -->
+            <!-- set operation
+              Note: what divmod:100 means.
+
+              The custom filter "divmod" simply get result of (dividend % divisor).
+              The reason why following processing compares the result of this calculation is
+              considering to the customized operation-type which might be defined in CustomView.
+
+              When an user who develops Custom View defines custom operation type, it might be
+              required to be handled as a basic one. In this case, user could declare it with an
+              identifier which is greater than 100 (A hundred could be enough number to be able to
+              identify basic operation types).
+            -->
             <td>
-            {% if job.operation == JOB.OPERATION.CREATE %}
+            {% if job.operation|divmod:100 == JOB.OPERATION.CREATE %}
               作成
-            {% elif job.operation == JOB.OPERATION.EDIT %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EDIT %}
               編集
-            {% elif job.operation == JOB.OPERATION.DELETE %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.DELETE %}
               削除
-            {% elif job.operation == JOB.OPERATION.COPY %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.COPY %}
               コピー
-            {% elif job.operation == JOB.OPERATION.IMPORT %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.IMPORT %}
               インポート
-            {% elif job.operation == JOB.OPERATION.EXPORT %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT %}
               エクスポート
-            {% elif job.operation == JOB.OPERATION.RESTORE %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT_SEARCH_RESULT %}
+              エクスポート
+            {% elif job.operation|divmod:100 == JOB.OPERATION.RESTORE %}
               復旧
             {% endif %}
             </td>
@@ -99,7 +113,13 @@
             <td>{{ job.created_at }}</td>
 
             <!-- set text -->
-            {% if job.operation == JOB.OPERATION.EXPORT %}
+            {% if job.operation|divmod:100 == JOB.OPERATION.EXPORT %}
+              {% if job.status == JOB.STATUS.DONE %}
+              <td><a href='/job/download/{{ job.id }}'>Download</td>
+              {% else %}
+              <td></td>
+              {% endif %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT_SEARCH_RESULT %}
               {% if job.status == JOB.STATUS.DONE %}
               <td><a href='/job/download/{{ job.id }}'>Download</td>
               {% else %}

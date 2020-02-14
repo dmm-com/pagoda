@@ -20,8 +20,18 @@ $(document).ready(function() {
 
         for (let jobinfo of data['result']) {
           let operation = '';
+          /*
+           * The reason why getting modulo of specified operation type is that
+           * considering to the customized operation-type which might be defined in CustomView.
+           *
+           * When an user who develops Custom View defines custom operation type, it might be
+           * required to be handled as a basic one. In this case, user could declare it with an
+           * identifier which is greater than 100 (A hundred could be enough number to be able to
+           * identify basic operation types).
+           */
+          let operation_type = jobinfo['operation'] % 100;
           let target_name = '';
-          switch(jobinfo['operation']) {
+          switch(operation_type) {
             case data['constant']['operation']['create']:
               target_name = jobinfo['target']['name'];
               operation = '作成';
@@ -43,6 +53,7 @@ $(document).ready(function() {
               operation = 'インポート';
               break;
             case data['constant']['operation']['export']:
+            case data['constant']['operation']['export_search_result']:
               operation = 'エクスポート';
               break;
             case data['constant']['operation']['restore']:
@@ -56,10 +67,11 @@ $(document).ready(function() {
               container.append(`<li class='dropdown-item job-status-processing' href='#'>[処理中/${operation}] ${ target_name }</li>`);
               break;
             case data['constant']['status']['done']:
-              if (jobinfo['operation'] == data['constant']['operation']['import']) {
+              if (operation_type == data['constant']['operation']['import']) {
                 // The case of import job, target-id indicates Entity-ID
                 link_url = `/entry/${ jobinfo['target']['id'] }`;
-              } else if (jobinfo['operation'] == data['constant']['operation']['export']) {
+              } else if (operation_type == data['constant']['operation']['export'] ||
+                         operation_type == data['constant']['operation']['export_search_result']) {
                 // The case of export job, it has no target
                 link_url = `/job/download/${ jobinfo['id'] }`;
               } else {
