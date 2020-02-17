@@ -1,9 +1,8 @@
 import ldap3
 import mock
 
-from django.test import override_settings
-
 from airone.lib.test import AironeTestCase
+from django.test import override_settings
 from user.models import User
 
 
@@ -14,6 +13,7 @@ class ViewTest(AironeTestCase):
         self.assertFalse(self.client.login(username='invalid_user', password='invalid_passwd'))
         self.assertFalse(self.client.login(username='guest', password='invalid_passwd'))
 
+    def test_success_local_authentication(self):
         # When both user and password were correct, it would be success.
         user = User(username='guest', email='guest@example.com', is_superuser=False)
         user.set_password('guest')
@@ -24,81 +24,44 @@ class ViewTest(AironeTestCase):
                                             authenticate_type=User.AUTH_TYPE_LOCAL).exists())
 
     @mock.patch('airone.auth.ldap.ldap3')
-    def test_fail_ldap_authentication_caused_by_server_connection(self, ldap_mock):
+    @mock.patch('airone.auth.ldap.Logger')
+    def test_fail_ldap_authentication_caused_by_server_connection(self, mock_logger, mock_ldap):
         class _ConnectionMock(object):
             def __init__(self, *args, **kwargs):
-                raise ldap3.core.exceptions.LDAPSocketOpenError('test')
-        ldap_mock.Connection = _ConnectionMock
+                raise ldap3.core.exceptions.LDAPSocketOpenError('some problem was happend')
+        mock_ldap.Connection = _ConnectionMock
 
         self.assertFalse(self.client.login(username='ldap_user', password='ldap_passwd'))
         self.assertFalse(User.objects.filter(username='ldap_user', is_active=True).exists())
+        mock_logger.error('some problem was happend')
 
-    @mock.patch('airone.auth.ldap.ldap3')
-    def test_fail_ldap_authentication_caused_by_invalid_user(self, ldap_mock):
-        class _ConnectionMock(object):
-            def __init__(self, *args, **kwargs):
-                self.args = args
-                self.kwargs = kwargs
+#    #@mock.patch.object(ldap3.Connection, 'bind', mock.Mock(return_value=False))
+#    @mock.patch('airone.auth.ldap.ldap3')
+#    def test_fail_ldap_authentication_caused_by_invalid_user(self, ldap_mock):
+#        class _ConnectionMock(object):
+#            def __init__(self, *args, **kwargs):
+#                self.args = args
+#                self.kwargs = kwargs
+#
+#            def __enter__(self):
+#                mock_conn = mock.Mock()
+#                mock_conn.search.return_value = False
+#                return mock_conn
+#
+#            def __exit__(self, *args, **kwargs):
+#                pass
+#        ldap_mock.Connection = _ConnectionMock
+#
+#        self.assertFalse(self.client.login(username='ldap_user', password='ldap_passwd'))
+#        self.assertFalse(User.objects.filter(username='ldap_user', is_active=True).exists())
 
-            def __enter__(self):
-                mock_conn = mock.Mock()
-                mock_conn.search.return_value = False
-                return mock_conn
-
-            def __exit__(self, *args, **kwargs):
-                pass
-        ldap_mock.Connection = _ConnectionMock
-
+    @mock.patch.object(ldap3.Connection, 'bind', mock.Mock(return_value=False))
+    def test_fail_ldap_authentication_caused_by_invalid_password(self):
         self.assertFalse(self.client.login(username='ldap_user', password='ldap_passwd'))
         self.assertFalse(User.objects.filter(username='ldap_user', is_active=True).exists())
 
-    @mock.patch('airone.auth.ldap.ldap3')
-    def test_fail_ldap_authentication_caused_by_invalid_password(self, ldap_mock):
-        class _ConnectionMock(object):
-            def __init__(self, *args, **kwargs):
-                self.args = args
-                self.kwargs = kwargs
-
-                # simulate credentical error
-                if 'user' in kwargs:
-                    raise ldap3.core.exceptions.LDAPInvalidCredentialsResult('test')
-
-            def __enter__(self):
-                mock_result = mock.Mock()
-                mock_result.entry_dn = 'user'
-
-                mock_conn = mock.Mock()
-                mock_conn.search.return_value = True
-                mock_conn.entries = [mock_result]
-                return mock_conn
-
-            def __exit__(self, *args, **kwargs):
-                pass
-        ldap_mock.Connection = _ConnectionMock
-
-        self.assertFalse(self.client.login(username='ldap_user', password='ldap_passwd'))
-        self.assertFalse(User.objects.filter(username='ldap_user', is_active=True).exists())
-
-    @mock.patch('airone.auth.ldap.ldap3')
+    @mock.patch.object(ldap3.Connection, 'bind', mock.Mock(return_value=True))
     def test_success_ldap_authentication(self, ldap_mock):
-        class _ConnectionMock(object):
-            def __init__(self, *args, **kwargs):
-                self.args = args
-                self.kwargs = kwargs
-
-            def __enter__(self):
-                mock_result = mock.Mock()
-                mock_result.entry_dn = 'user'
-
-                mock_conn = mock.Mock()
-                mock_conn.search.return_value = True
-                mock_conn.entries = [mock_result]
-                return mock_conn
-
-            def __exit__(self, *args, **kwargs):
-                pass
-        ldap_mock.Connection = _ConnectionMock
-
         self.assertTrue(self.client.login(username='ldap_user', password='ldap_passwd'))
         self.assertTrue(User.objects.filter(username='ldap_user', is_active=True,
                                             authenticate_type=User.AUTH_TYPE_LDAP).exists())
