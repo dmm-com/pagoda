@@ -218,8 +218,7 @@ ES_CONFIG = {
 AUTH_CONFIG = {
     'LDAP': {
         'SERVER_ADDRESS': 'localhost',
-        'BASE_DN': 'dc=example,dc=com',
-        'SEARCH_FILTER': '(sn={username})'
+        'USER_FILTER': 'sn={username},ou=User,dc=example,dc=com'
     }
 }
 

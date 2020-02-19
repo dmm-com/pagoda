@@ -1,7 +1,8 @@
 from django.conf.urls import url
 
+from airone.lib.log import Logger
 from group import views as group_views
-from . import views
+from user import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
@@ -15,3 +16,10 @@ urlpatterns = [
     url(r'^do_delete/(\d+)$', views.do_delete, name='do_delete'),
     url(r'^export/$', group_views.export, name='export'),
 ]
+
+try:
+    from custom_view.user.urls import override_urlpatterns
+
+    urlpatterns = override_urlpatterns(urlpatterns)
+except ImportError:
+    Logger.info("There is no URL dispatcher of custom-view")
