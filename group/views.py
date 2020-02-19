@@ -204,7 +204,7 @@ def import_user_and_group(request):
 @check_superuser
 def do_import_user_and_group(request, context):
     try:
-        data = yaml.load(context)
+        data = yaml.load(context, Loader=yaml.SafeLoader)
     except (yaml.parser.ParserError, yaml.scanner.ScannerError):
         return HttpResponse("Couldn't parse uploaded file", status=400)
 

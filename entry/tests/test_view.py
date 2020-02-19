@@ -957,7 +957,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(job.status, Job.STATUS['DONE'])
         self.assertEqual(job.text, 'entry_ほげ.yaml')
 
-        obj = yaml.load(job.get_cache())
+        obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
         self.assertTrue(entity.name in obj)
 
         self.assertEqual(len(obj[entity.name]), 1)
@@ -986,7 +986,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse('entry:export', args=[entity.id]))
         self.assertEqual(resp.status_code, 200)
-        obj = yaml.load(Job.objects.last().get_cache())
+        obj = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
 
         # check permitted attributes exist in the result
         self.assertTrue(all([x in obj['ほげ'][0]['attrs'] for x in ['foo', 'bar']]))

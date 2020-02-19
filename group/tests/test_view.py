@@ -205,7 +205,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('group:export'))
         self.assertEqual(resp.status_code, 200)
 
-        obj = yaml.load(resp.content)
+        obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
         self.assertTrue(isinstance(obj, dict))
 
         self.assertEqual(len(obj['User']), 3)
@@ -233,7 +233,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('group:export'))
         self.assertEqual(resp.status_code, 200)
 
-        obj = yaml.load(resp.content)
+        obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
 
         self.assertEqual(len(obj['User']), self._get_active_user_count())
         self.assertEqual(len(obj['Group']), 2)
