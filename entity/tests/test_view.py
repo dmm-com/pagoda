@@ -510,7 +510,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('entity:export'))
         self.assertEqual(resp.status_code, 200)
 
-        obj = yaml.load(resp.content)
+        obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
         self.assertTrue(isinstance(obj, dict))
         self.assertEqual(sorted(obj.keys()), ['Entity', 'EntityAttr'])
         self.assertEqual(len(obj['EntityAttr']), 3)
@@ -564,7 +564,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('entity:export'))
         self.assertEqual(resp.status_code, 200)
 
-        obj = yaml.load(resp.content)
+        obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
         self.assertEqual(len(obj['Entity']), 2)
         self.assertEqual(len(obj['EntityAttr']), 2)
         self.assertTrue([x for x in obj['Entity'] if x['name'] == entity1.name])
@@ -586,7 +586,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('entity:export'))
         self.assertEqual(resp.status_code, 200)
 
-        obj = yaml.load(resp.content)
+        obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
         self.assertEqual(len(obj['Entity']), 1)
         self.assertEqual(obj['Entity'][0]['name'], 'entity1')
 
