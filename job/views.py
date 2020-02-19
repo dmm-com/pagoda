@@ -42,7 +42,8 @@ def index(request):
             ).seconds if x.is_finished() else (datetime.now(timezone.utc) - x.created_at).seconds,
         } for x in Job.objects.filter(user=user).order_by('-created_at')[:limitation]
             if (x.operation in export_operations or
-                (x.operation not in export_operations and x.target and x.target.is_active))]
+                (x.operation not in export_operations and x.target and x.target.is_active) or
+                (x.operation is JobOperation.DELETE_ENTRY.value and x.target))]
     }
 
     return render(request, 'list_jobs.html', context)

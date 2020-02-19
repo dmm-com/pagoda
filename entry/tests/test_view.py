@@ -3066,6 +3066,14 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.context['entries'][0].name.find('e-2'), 0)
         self.assertEqual(resp.context['entries'][1].name.find('e-0'), 0)
 
+        # If called from other than the job list,
+        # confirm that the search keyword has not been entered
+        self.assertEqual(resp.context['search_name'], '')
+
+        # If called from the job list, make sure that the search keyword has been entered
+        resp = self.client.get('/entry/restore/%d/?search_name=%s' % (entity.id, entries[0].name))
+        self.assertEqual(resp.context['search_name'], entries[0].name)
+
     @patch('entry.tasks.restore_entry.delay', Mock(side_effect=tasks.restore_entry))
     def test_restore_entry(self):
         # initialize entries to test

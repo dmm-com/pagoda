@@ -584,11 +584,13 @@ def restore(request, entity_id):
         entries = entries[:CONFIG.MAX_LIST_ENTRIES]
         list_count = CONFIG.MAX_LIST_ENTRIES
 
+    # "search_name" is populated only when called from a delete job in the job list.
     return render(request, 'list_deleted_entry.html', {
         'entity': entity,
         'entries': entries,
         'total_count': total_count,
         'list_count': list_count,
+        'search_name': request.GET.get('search_name', ''),
     })
 
 

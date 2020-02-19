@@ -80,29 +80,42 @@ var complete_processing = function(data) {
   $('#entry_count').text(`エントリ数：${ data['results'].length }/{{ total_count }}`);
 }
 
-$(document).ready(function() {
-  var sending_request = false;
-  $("#narrow_down_entries").on('keyup', function(e) {
-    if(! (e.keyCode != 13 || sending_request)) {
+var search_entries = function(keyword) {
+  $.ajax({
+    type: 'GET',
+    url: "/entry/api/v1/get_entries/{{ entity.id }}/",
+    data: {
+      keyword: keyword,
+      is_active: 'False',
+    },
+  }).done(function(data){
+    complete_processing(data);
+
+    // reset sending flag
+    sending_request = false
+  }).fail(function(data){
+    MessageBox.error('failed to load data from server (Please reload this page or call Administrator)');
+  });
+
+  $('#entry_count').text('エントリ数：...データ取得中...');
+}
+
+$(window).on('load', function() {
+    var keyword = `{{ search_name }}`;
+    if (keyword) {
       sending_request = true;
 
-      $.ajax({
-        type: 'GET',
-        url: "/entry/api/v1/get_entries/{{ entity.id }}/",
-        data: {
-          keyword: $(this).val(),
-          is_active: 'False',
-        },
-      }).done(function(data){
-        complete_processing(data);
+      search_entries(keyword);
+    }
+})
 
-        // reset sending flag
-        sending_request = false
-      }).fail(function(data){
-        MessageBox.error('failed to load data from server (Please reload this page or call Administrator)');
-      });
+var sending_request = false;
+$(document).ready(function() {
+  $("#narrow_down_entries").on('keyup', function(e) {
+    if(e.keyCode == 13 && !sending_request) {
+      sending_request = true;
 
-      $('#entry_count').text('エントリ数：...データ取得中...');
+      search_entries($(this).val());
     }
   });
 
