@@ -74,6 +74,9 @@ $(document).ready(function() {
                          operation_type == data['constant']['operation']['export_search_result']) {
                 // The case of export job, it has no target
                 link_url = `/job/download/${ jobinfo['id'] }`;
+              } else if (!jobinfo['target']['is_active']) {
+                // If the target has been deleted, transition to the restore screen
+                link_url = `/entry/restore/${ jobinfo['target']['schema_id'] }?search_name=${ jobinfo['target']['name'] }`;
               } else {
                 // This indicates Entry-ID by default
                 link_url = `/entry/show/${ jobinfo['target']['id'] }`;

@@ -64,6 +64,24 @@ class APITest(AironeViewTest):
         self.assertEqual(Job.objects.filter(user=user).count(), 3)
         self.assertEqual(len(results['result']), _TEST_MAX_LIST_NAV)
 
+        # Check the contents of 'result'
+        test_suites = [
+            {'job': jobs[-1], 'result': results['result'][0]},
+            {'job': jobs[-2], 'result': results['result'][1]},
+        ]
+        for test_suite in test_suites:
+            self.assertEqual(test_suite['result'], {
+                'id': test_suite['job'].id,
+                'target': {
+                    'id': entry.id,
+                    'name': entry.name,
+                    'is_active': entry.is_active,
+                    'schema_id': entry.schema.id,
+                },
+                'status': test_suite['job'].status,
+                'operation': test_suite['job'].operation,
+            })
+
         # After cheeting created_at time back to CONFIG.RECENT_SECONDS or more,
         # this checks that nothing result will be returned.
         for job in jobs:

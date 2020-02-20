@@ -52,7 +52,8 @@
               {% endif %}
             {% elif job.operation|divmod:100 == JOB.OPERATION.IMPORT %}
               <td><a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
-            {% elif job.operation|divmod:100 == JOB.OPERATION.DELETE %}
+            {% elif not job.target.entry.is_active %}
+              <!-- If the target has been deleted, transition to the restore screen -->
               <td><a href='/entry/restore/{{ job.target.entry.schema.id }}?search_name={{ job.target.entry.name }}'>{{ job.target.entry.name }}</a></td>
             {% else %}
               <td><a href='/entry/show/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
