@@ -48,3 +48,14 @@ var gettext = function(key, lang) {
     return DEFAULT_DICTIONARY[key];
   }
 };
+
+/* This is necessary because the HTML special characters which are set in the variable in Jinja2
+ * is encoded. When you want to use it in the JavaScript processing, you have to wrap it using
+ * this method to show all text properly. */
+function unescapeHtml(safe) {
+  return safe.replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
