@@ -59,8 +59,10 @@ class JobAPI(APIView):
         jobs = [{
             'id': x.id,
             'target': {
-                'id': x.target.id,
-                'name': x.target.name,
+                'id': (x.target.id
+                       if x.operation is not JobOperation.EXPORT_SEARCH_RESULT.value else None),
+                'name': (x.target.name
+                         if x.operation is not JobOperation.EXPORT_SEARCH_RESULT.value else None),
                 'is_active': (x.target.entry.is_active
                               if x.operation not in export_operations else None),
                 'schema_id': (x.target.entry.schema.id
