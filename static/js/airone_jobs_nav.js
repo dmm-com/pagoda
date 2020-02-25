@@ -76,8 +76,8 @@ $(document).ready(function() {
                 link_url = `/job/download/${ jobinfo['id'] }`;
               } else if (!jobinfo['target']['is_active']) {
                 // If the target has been deleted, transition to the restore screen
-                var schema_id = jobinfo['target']['schema_id']
-                var search_name = jobinfo['target']['name']
+                var schema_id = jobinfo['target']['schema_id'];
+                var search_name = jobinfo['target']['name'];
                 link_url = `/entry/restore/${ schema_id }?search_name=${ search_name }`;
               } else {
                 // This indicates Entry-ID by default
