@@ -9,7 +9,7 @@
         <tr>
           <td>エントリ名</td>
           <td>
-            <input type="text" name="entry_name" value="{{ entry.name }}"/>
+            <input type="text" class="form-control" name="entry_name" value="{{ entry.name }}"/>
           {% if entry.is_deleted %}
             [削除済]
           {% elif entry.status|bitwise_and:STATUS_ENTRY.EDITING %}

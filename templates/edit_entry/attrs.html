@@ -16,7 +16,7 @@
 
       {% if attr.type|bitwise_and:attr_type_value.named %}
         <div class='col-3'>
-          <input type='text' class='referral_key' attr_id="{{ attr.id }}"></input>
+          <input type='text' class='form-control referral_key' attr_id="{{ attr.id }}"></input>
         </div>
         <div class='col-7'>
       {% else %}
@@ -40,10 +40,10 @@
           {% endif %}
         </select>
 
-        <input type="text" class="narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}"/>
+        <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}"/>
 
             {% else %}
-              <input type='text' class='attr_value' attr_id='{{ attr.id }}' index='0'/>
+              <input type='text' class='form-control attr_value' attr_id='{{ attr.id }}' index='0'/>
             {% endif %}
 
           </div>
@@ -56,7 +56,7 @@
       <div class='row attr_referral' {% if attr.is_mandatory %}mandatory="true"{% endif %}>
       {% if attr.type|bitwise_and:attr_type_value.named %}
         <div class='col-3'>
-          <input type='text' class='referral_key' attr_id="{{ attr.id }}" value="{{ attr.last_value }}" enabled="True" index="0"></input>
+          <input type='text' class='form-control referral_key' attr_id="{{ attr.id }}" value="{{ attr.last_value }}" enabled="True" index="0"></input>
         </div>
         <div class='col-9'>
       {% else %}
@@ -79,14 +79,14 @@
           {% endif %}
         </select>
 
-        <input type="text" class="narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}"/>
+        <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}"/>
 
         </div>
       </div>
 
     {% elif attr.type == attr_type.textarea %}
 
-      <textarea class="attr_value" attr_id="{{ attr.id }}" enabled="True" cols="80" rows="10" {%if attr.is_mandatory%}mandatory="true"{%endif%}>{{ attr.last_value }}</textarea>
+      <textarea class="form-control attr_value" attr_id="{{ attr.id }}" enabled="True" cols="80" rows="10" {%if attr.is_mandatory%}mandatory="true"{%endif%}>{{ attr.last_value }}</textarea>
 
     {% elif attr.type == attr_type.date %}
 
@@ -114,7 +114,7 @@
 
     {% else %}
 
-      <input type="text" class="attr_value" attr_id="{{ attr.id }}" enabled="True" value="{{ attr.last_value }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}/>
+      <input type="text" class="form-control attr_value" attr_id="{{ attr.id }}" enabled="True" value="{{ attr.last_value }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}/>
 
     {% endif %}
   </td>

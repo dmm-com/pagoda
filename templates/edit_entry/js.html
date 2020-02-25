@@ -341,7 +341,7 @@ $('button[name=add_attr]').on('click', function() {
     {% for value in attr.last_value %}
       {% if attr.type == attr_type.array_string %}
         value_setter = function(new_column) {
-          new_column.find('.attr_value').val('{{ value }}');
+          new_column.find('.attr_value').val(unescapeHtml('{{ value }}'));
           new_column.find('.attr_value').attr('enabled', 'True');
         };
 
@@ -354,7 +354,7 @@ $('button[name=add_attr]').on('click', function() {
             elem_select.children('option').remove();
 
             elem_select.append($('<option />').val(0).text('- NOT SET -'));
-            elem_select.append($('<option />').val({{ value.id }}).text('{{ value.name }}').attr('selected', 'True'));
+            elem_select.append($('<option />').val({{ value.id }}).text(unescapeHtml('{{ value.name }}')).attr('selected', 'True'));
           {% endif %}
 
           // set flags to specify this value will be registered to server
@@ -364,7 +364,7 @@ $('button[name=add_attr]').on('click', function() {
           elem_select.attr('unfetched_value', 'true');
 
           // set name of list element to specify selected value
-          new_column.find('li').text('{{ value.name|truncatechars:config.entry.MAX_LABEL_STRING }}');
+          new_column.find('li').text(unescapeHtml('{{ value.name|truncatechars:config.entry.MAX_LABEL_STRING }}'));
         }
 
       {% elif attr.type == attr_type.array_named_entry %}
@@ -378,12 +378,12 @@ $('button[name=add_attr]').on('click', function() {
             elem_select.children('option').remove();
 
             elem_select.append($('<option />').val(0).text('- NOT SET -'));
-            elem_select.append($('<option />').val({{ value.referral.id }}).text('{{ value.referral.name }}').attr('selected', 'True'));
+            elem_select.append($('<option />').val({{ value.referral.id }}).text(unescapeHtml('{{ value.referral.name }}')).attr('selected', 'True'));
           {% endif %}
 
           // set name of list element to specify selected value
-          new_column.find('li').text('{{ value.referral.name|truncatechars:config.entry.MAX_LABEL_STRING }}');
-          elem_referral_key.val('{{ value.value }}');
+          new_column.find('li').text(unescapeHtml('{{ value.referral.name|truncatechars:config.entry.MAX_LABEL_STRING }}'));
+          elem_referral_key.val(unescapeHtml('{{ value.value }}'));
 
           // set enabled flag and index to each parameters
           elem_referral_key.attr('enabled', 'True');
