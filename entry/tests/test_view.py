@@ -19,7 +19,9 @@ from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
 from airone.lib.types import AttrTypeNamedObj, AttrTypeArrNamedObj
 from airone.lib.types import AttrTypeValue
 from airone.lib.test import AironeViewTest
+from airone.lib.test import DisableStderr
 from airone.lib.acl import ACLType
+
 
 from unittest.mock import patch
 from unittest.mock import Mock
@@ -1814,9 +1816,11 @@ class ViewTest(AironeViewTest):
                     },
                 ],
             }
-            resp = self.client.post(reverse('entry:do_create', args=[entity.id]),
-                                    json.dumps(params),
-                                    'application/json')
+
+            with DisableStderr():
+                resp = self.client.post(reverse('entry:do_create', args=[entity.id]),
+                                        json.dumps(params),
+                                        'application/json')
 
             self.assertEqual(resp.status_code, 200)
 
@@ -2578,6 +2582,7 @@ class ViewTest(AironeViewTest):
                  'value': [{'data': '2018-13-30', 'index': 0}], 'referral_key': []},
             ],
         }
+
         resp = self.client.post(reverse('entry:do_create', args=[entity.id]),
                                 json.dumps(params),
                                 'application/json')
@@ -2856,9 +2861,11 @@ class ViewTest(AironeViewTest):
                         {'data': 'foo', 'index': 0}] if x.type & AttrTypeValue['named'] else [],
                 } for x in entity.attrs.all()],
             }
-            resp = self.client.post(reverse('entry:do_create', args=[entity.id]),
-                                    json.dumps(params),
-                                    'application/json')
+
+            with DisableStderr():
+                resp = self.client.post(reverse('entry:do_create', args=[entity.id]),
+                                        json.dumps(params),
+                                        'application/json')
 
             self.assertEqual(resp.status_code, 200)
             entry = Entry.objects.get(name=entry_name, schema=entity)
