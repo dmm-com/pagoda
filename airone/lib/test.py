@@ -63,14 +63,12 @@ class AironeViewTest(AironeTestCase):
         return open("%s/fixtures/%s" % (test_base_path, fname), 'r')
 
 
-def disable_stderr(func):
-    def wrapper(*args, **kwargs):
-        tmp_stderr = sys.stderr
-        f = open(os.devnull, 'w')
-        sys.stderr = f
-        r = func(*args, **kwargs)
-        sys.stderr = tmp_stderr
-        f.close()
-        return r
+class DisableStderr(object):
+    def __enter__(self):
+        self.tmp_stderr = sys.stderr
+        self.f = open(os.devnull, 'w')
+        sys.stderr = self.f
 
-    return wrapper
+    def __exit__(self, *arg, **kwargs):
+        sys.stderr = self.tmp_stderr
+        self.f.close()
