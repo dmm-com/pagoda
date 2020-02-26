@@ -35,17 +35,8 @@ class APITest(AironeViewTest):
         entity = Entity.objects.create(name='entity', created_user=user)
         entry = Entry.objects.create(name='entry', created_user=user, schema=entity)
 
-        # create four jobs
-        jobs = [Job.new_create(user, entry) for _ in range(0, 4)]
-
-        """
-        Breakdown of 4 jobs
-         - Index 0 and 1 is data whose 'operation' is CREATE_ENTRY
-         - Index 2 is data whose 'operation' is EXPORT_ENTRY
-         - Index 3 is data whose 'operation' is EXPORT_SEARCH_RESULT
-        """
-        jobs[2].update(operation=JobOperation.EXPORT_ENTRY.value)
-        jobs[3].update(operation=JobOperation.EXPORT_SEARCH_RESULT.value)
+        # create three jobs
+        jobs = [Job.new_create(user, entry) for _ in range(0, 3)]
 
         resp = self.client.get('/api/v1/job/')
         self.assertEqual(resp.status_code, 200)
@@ -70,33 +61,8 @@ class APITest(AironeViewTest):
         })
 
         # checks the parameter MAXLIST_NAV is applied
-        self.assertEqual(Job.objects.filter(user=user).count(), 4)
+        self.assertEqual(Job.objects.filter(user=user).count(), 3)
         self.assertEqual(len(results['result']), _TEST_MAX_LIST_NAV)
-
-        """
-        Check the contents of 'result'. Jobs are taken in descending order
-         1. Validate 'EXPORT_SEARCH_RESULT' data
-         2. Validate 'EXPORT_ENTRY' data
-         3. Validate 'CREATE_ENTRY' data
-        """
-        test_suites = [
-            {'job': jobs[3], 'result': results['result'][0],
-             'verification_target': {'id': None, 'name': None, 'is_active': None,
-                                     'schema_id': None}},
-            {'job': jobs[2], 'result': results['result'][1],
-             'verification_target': {'id': entry.id, 'name': entry.name,
-                                     'is_active': None, 'schema_id': None}},
-            {'job': jobs[1], 'result': results['result'][2],
-             'verification_target': {'id': entry.id, 'name': entry.name,
-                                     'is_active': entry.is_active, 'schema_id': entry.schema.id}},
-        ]
-        for test_suite in test_suites:
-            self.assertEqual(test_suite['result'], {
-                'id': test_suite['job'].id,
-                'target': test_suite['verification_target'],
-                'status': test_suite['job'].status,
-                'operation': test_suite['job'].operation,
-            })
 
         # After cheeting created_at time back to CONFIG.RECENT_SECONDS or more,
         # this checks that nothing result will be returned.

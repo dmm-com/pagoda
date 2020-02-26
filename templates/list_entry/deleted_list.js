@@ -103,7 +103,7 @@ var search_entries = function(keyword) {
 var sending_request = false;
 $(document).ready(function() {
   $("#narrow_down_entries").on('keyup', function(e) {
-    if(e.keyCode == 13 && !sending_request) {
+    if(! (e.keyCode != 13 || sending_request)) {
       sending_request = true;
 
       search_entries($(this).val());

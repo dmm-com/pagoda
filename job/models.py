@@ -166,14 +166,27 @@ class Job(models.Model):
         self.save(update_fields=update_fields)
 
     def to_json(self):
+        # For advanced search results export, target is assumed to be empty.
+        target = {
+            'id': self.target.id,
+            'name': self.target.name,
+        } if self.target else {}
+
+        # For advanced search results export, export, and import,
+        # the entry is assumed to be empty.
+        entry = self.target.entry if hasattr(self.target, 'entry') else {}
+        if entry:
+            entry_attr = {
+                'is_active': entry.is_active,
+                'schema_id': entry.schema.id
+            }
+            target['entry'] = entry_attr
+
         return {
             'id': self.id,
             'user': self.user.username,
             'target_type': self.target_type,
-            'target': {
-                'id': self.target.id,
-                'name': self.target.name,
-            } if self.target else {},
+            'target': target,
             'text': self.text,
             'status': self.status,
             'operation': self.operation,

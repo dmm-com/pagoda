@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
 from django.db.models import Q
-from django.http.response import JsonResponse
 
 from rest_framework import status
 from rest_framework.views import APIView
@@ -46,36 +45,18 @@ class JobAPI(APIView):
             }
         }
 
-        export_operations = [
-            JobOperation.EXPORT_ENTRY.value,
-            JobOperation.EXPORT_SEARCH_RESULT.value,
-            JobOperation.IMPORT_ENTRY.value,
-        ]
-
         query = {
             'user': user,
             'created_at__gte': time_threashold,
         }
-        jobs = [{
-            'id': x.id,
-            'target': {
-                'id': (x.target.id
-                       if x.operation is not JobOperation.EXPORT_SEARCH_RESULT.value else None),
-                'name': (x.target.name
-                         if x.operation is not JobOperation.EXPORT_SEARCH_RESULT.value else None),
-                'is_active': (x.target.entry.is_active
-                              if x.operation not in export_operations else None),
-                'schema_id': (x.target.entry.schema.id
-                              if x.operation not in export_operations else None),
-            },
-            'status': x.status,
-            'operation': x.operation,
-        } for x in Job.objects.filter(**query).order_by('-created_at')[:JOB_CONFIG.MAX_LIST_NAV]]
+        jobs = [
+            x.to_json() for x in Job.objects.filter(**query).order_by('-created_at')
+            [:JOB_CONFIG.MAX_LIST_NAV]]
 
-        return JsonResponse({
+        return Response({
             'result': jobs,
             'constant': constant,
-        })
+        }, content_type='application/json; charset=UTF-8')
 
     def delete(self, request, format=None):
         """

@@ -74,9 +74,9 @@ $(document).ready(function() {
                          operation_type == data['constant']['operation']['export_search_result']) {
                 // The case of export job, it has no target
                 link_url = `/job/download/${ jobinfo['id'] }`;
-              } else if (!jobinfo['target']['is_active']) {
+              } else if (!jobinfo['target']['entry']['is_active']) {
                 // If the target has been deleted, transition to the restore screen
-                var schema_id = jobinfo['target']['schema_id'];
+                var schema_id = jobinfo['target']['entry']['schema_id'];
                 var search_name = jobinfo['target']['name'];
                 link_url = `/entry/restore/${ schema_id }?search_name=${ search_name }`;
               } else {
