@@ -19,6 +19,7 @@ from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
 from airone.lib.types import AttrTypeNamedObj, AttrTypeArrNamedObj
 from airone.lib.types import AttrTypeValue
 from airone.lib.test import AironeViewTest
+from airone.lib.test import disable_stderr
 from airone.lib.acl import ACLType
 
 from unittest.mock import patch
@@ -1814,7 +1815,9 @@ class ViewTest(AironeViewTest):
                     },
                 ],
             }
-            resp = self.client.post(reverse('entry:do_create', args=[entity.id]),
+
+            disable_stderr_post = disable_stderr(self.client.post)
+            resp = disable_stderr_post(reverse('entry:do_create', args=[entity.id]),
                                     json.dumps(params),
                                     'application/json')
 
@@ -2578,6 +2581,7 @@ class ViewTest(AironeViewTest):
                  'value': [{'data': '2018-13-30', 'index': 0}], 'referral_key': []},
             ],
         }
+
         resp = self.client.post(reverse('entry:do_create', args=[entity.id]),
                                 json.dumps(params),
                                 'application/json')
@@ -2856,7 +2860,9 @@ class ViewTest(AironeViewTest):
                         {'data': 'foo', 'index': 0}] if x.type & AttrTypeValue['named'] else [],
                 } for x in entity.attrs.all()],
             }
-            resp = self.client.post(reverse('entry:do_create', args=[entity.id]),
+
+            disable_stderr_post = disable_stderr(self.client.post)
+            resp = disable_stderr_post(reverse('entry:do_create', args=[entity.id]),
                                     json.dumps(params),
                                     'application/json')
 

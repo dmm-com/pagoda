@@ -1,4 +1,5 @@
 import inspect
+import sys
 import os
 
 from django.test import TestCase, Client, override_settings
@@ -60,3 +61,16 @@ class AironeViewTest(AironeTestCase):
         test_base_path = os.path.dirname(test_file_path)
 
         return open("%s/fixtures/%s" % (test_base_path, fname), 'r')
+
+
+def disable_stderr(func):
+    def wrapper(*args, **kwargs):
+        tmp_stderr = sys.stderr
+        f = open(os.devnull, 'w')
+        sys.stderr = f
+        r = func(*args, **kwargs)
+        sys.stderr = tmp_stderr
+        f.close()
+        return r
+
+    return wrapper
