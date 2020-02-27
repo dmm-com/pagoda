@@ -176,11 +176,8 @@ class Job(models.Model):
         # the entry is assumed to be empty.
         entry = self.target.entry if hasattr(self.target, 'entry') else {}
         if entry:
-            entry_attr = {
-                'is_active': entry.is_active,
-                'schema_id': entry.schema.id
-            }
-            target['entry'] = entry_attr
+            target['is_active'] = entry.is_active
+            target['schema_id'] = entry.schema.id
 
         return {
             'id': self.id,

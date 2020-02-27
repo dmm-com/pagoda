@@ -273,51 +273,45 @@ class ModelTest(AironeTestCase):
 
     def test_to_json(self):
         # Create a job for each operetion
-        jobs = [
-            Job.new_create(self.guest, self.entry),
-            Job.new_edit(self.guest, self.entry),
-            Job.new_delete(self.guest, self.entry),
-            Job.new_copy(self.guest, self.entry),
-            Job.new_import(self.guest, self.entity),
-            Job.new_export(self.guest, self.entity),
-            Job.new_restore(self.guest, self.entry),
-            Job.new_export_search_result(self.guest),
-        ]
+        jobs = {
+            'create_job': Job.new_create(self.guest, self.entry),
+            'edit_job': Job.new_edit(self.guest, self.entry),
+            'delete_job': Job.new_delete(self.guest, self.entry),
+            'copy_job': Job.new_copy(self.guest, self.entry),
+            'import_job': Job.new_import(self.guest, self.entity),
+            'export_job': Job.new_export(self.guest, self.entity),
+            'restore_job': Job.new_restore(self.guest, self.entry),
+            'export_search_result_job': Job.new_export_search_result(self.guest),
+        }
 
-        """
-        Create to_json result and expected result.
-         - index 7 is an export from Advanced Search.target is empty.
-         - index 5 is an export.The entry in target is empty.
-         - index 4 is an import.The entry in target is empty.
-         - For all other cases, check that the target and entry are complete.
-        """
+        # Create to_json result and expected result.
         test_suites = [
-            {'job': jobs[7].to_json(),
+            {'job': jobs['create_job'].to_json(),
+             'verification_target': {'id': self.entry.id, 'name': self.entry.name,
+                                     'is_active': self.entry.is_active,
+                                     'schema_id': self.entry.schema.id}},
+            {'job': jobs['edit_job'].to_json(),
+             'verification_target': {'id': self.entry.id, 'name': self.entry.name,
+                                     'is_active': self.entry.is_active,
+                                     'schema_id': self.entry.schema.id}},
+            {'job': jobs['delete_job'].to_json(),
+             'verification_target': {'id': self.entry.id, 'name': self.entry.name,
+                                     'is_active': self.entry.is_active,
+                                     'schema_id': self.entry.schema.id}},
+            {'job': jobs['copy_job'].to_json(),
+             'verification_target': {'id': self.entry.id, 'name': self.entry.name,
+                                     'is_active': self.entry.is_active,
+                                     'schema_id': self.entry.schema.id}},
+            {'job': jobs['import_job'].to_json(),
+             'verification_target': {'id': self.entity.id, 'name': self.entity.name}},
+            {'job': jobs['export_job'].to_json(),
+             'verification_target': {'id': self.entity.id, 'name': self.entity.name}},
+            {'job': jobs['restore_job'].to_json(),
+             'verification_target': {'id': self.entry.id, 'name': self.entry.name,
+                                     'is_active': self.entry.is_active,
+                                     'schema_id': self.entry.schema.id}},
+            {'job': jobs['export_search_result_job'].to_json(),
              'verification_target': {}},
-            {'job': jobs[6].to_json(),
-             'verification_target': {'id': self.entry.id, 'name': self.entry.name,
-                                     'entry': {'is_active': self.entry.is_active,
-                                               'schema_id': self.entry.schema.id}}},
-            {'job': jobs[5].to_json(),
-             'verification_target': {'id': self.entity.id, 'name': self.entity.name}},
-            {'job': jobs[4].to_json(),
-             'verification_target': {'id': self.entity.id, 'name': self.entity.name}},
-            {'job': jobs[3].to_json(),
-             'verification_target': {'id': self.entry.id, 'name': self.entry.name,
-                                     'entry': {'is_active': self.entry.is_active,
-                                               'schema_id': self.entry.schema.id}}},
-            {'job': jobs[2].to_json(),
-             'verification_target': {'id': self.entry.id, 'name': self.entry.name,
-                                     'entry': {'is_active': self.entry.is_active,
-                                               'schema_id': self.entry.schema.id}}},
-            {'job': jobs[1].to_json(),
-             'verification_target': {'id': self.entry.id, 'name': self.entry.name,
-                                     'entry': {'is_active': self.entry.is_active,
-                                               'schema_id': self.entry.schema.id}}},
-            {'job': jobs[0].to_json(),
-             'verification_target': {'id': self.entry.id, 'name': self.entry.name,
-                                     'entry': {'is_active': self.entry.is_active,
-                                               'schema_id': self.entry.schema.id}}},
         ]
 
         # Check the result of to_json.
