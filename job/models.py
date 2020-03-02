@@ -174,10 +174,9 @@ class Job(models.Model):
 
         # For advanced search results export, export, and import,
         # the entry is assumed to be empty.
-        entry = self.target.entry if hasattr(self.target, 'entry') else {}
-        if entry:
-            target['is_active'] = entry.is_active
-            target['schema_id'] = entry.schema.id
+        if self.target and hasattr(self.target, 'entry'):
+            target['is_active'] = self.target.entry.is_active
+            target['schema_id'] = self.target.entry.schema.id
 
         return {
             'id': self.id,
