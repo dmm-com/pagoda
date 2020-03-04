@@ -8,6 +8,9 @@ from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import redirect
+from django.urls import reverse
+from urllib.parse import urlencode
 from datetime import datetime
 
 from airone.lib.http import http_get, http_post, check_permission, render
@@ -193,7 +196,7 @@ def edit(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return redirect(_make_redirect_url(entry))
 
     entry.complement_attrs(user)
 
@@ -282,7 +285,7 @@ def show(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return redirect(_make_redirect_url(entry))
 
     # create new attributes which are appended after creation of Entity
     entry.complement_attrs(user)
@@ -317,7 +320,7 @@ def history(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return redirect(_make_redirect_url(entry))
 
     context = {
         'entry': entry,
@@ -342,7 +345,7 @@ def refer(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return redirect(_make_redirect_url(entry))
 
     # get referred entries and count of them
     referred_objects = entry.get_referred_objects()
@@ -487,7 +490,7 @@ def copy(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return redirect(_make_redirect_url(entry))
 
     context = {
         'form_url': '/entry/do_copy/%s' % entry.id,
@@ -691,3 +694,8 @@ def revert_attrv(request, recv_data):
             ])
 
     return HttpResponse('Succeed in updating Attribute "%s"' % attr.schema.name)
+
+
+def _make_redirect_url(entry):
+    return '{}?{}'.format(reverse('entry:restore', args=[entry.schema.id]),
+                          urlencode({'search_name': entry.name}))

@@ -167,22 +167,14 @@ class Job(models.Model):
 
     def to_json(self):
         # For advanced search results export, target is assumed to be empty.
-        target = {
-            'id': self.target.id,
-            'name': self.target.name,
-        } if self.target else {}
-
-        # For advanced search results export, export, and import,
-        # the entry is assumed to be empty.
-        if self.target and hasattr(self.target, 'entry'):
-            target['is_active'] = self.target.entry.is_active
-            target['schema_id'] = self.target.entry.schema.id
-
         return {
             'id': self.id,
             'user': self.user.username,
             'target_type': self.target_type,
-            'target': target,
+            'target': {
+                'id': self.target.id,
+                'name': self.target.name,
+            } if self.target else {},
             'text': self.text,
             'status': self.status,
             'operation': self.operation,

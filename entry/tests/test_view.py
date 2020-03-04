@@ -2961,12 +2961,13 @@ class ViewTest(AironeViewTest):
         # delete entry and check each page couldn't be shown
         entry.delete()
 
-        self.assertEqual(self.client.get(reverse('entry:show', args=[entry.id])).status_code, 400)
-        self.assertEqual(self.client.get(reverse('entry:edit', args=[entry.id])).status_code, 400)
-        self.assertEqual(self.client.get(reverse('entry:copy', args=[entry.id])).status_code, 400)
-        self.assertEqual(self.client.get(reverse('entry:refer', args=[entry.id])).status_code, 400)
-        self.assertEqual(
-            self.client.get(reverse('entry:history', args=[entry.id])).status_code, 400)
+        # Check status code and transition destination url
+        test_suites = ['entry:show', 'entry:edit', 'entry:copy', 'entry:refer', 'entry:history']
+        for test_suite in test_suites:
+            resp = self.client.get(reverse(test_suite, args=[entry.id]))
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.url,
+                             '/entry/restore/{}/?search_name={}'.format(entity.id, entry.name))
 
     def test_not_to_show_under_processing_entry(self):
         user = self.guest_login()
