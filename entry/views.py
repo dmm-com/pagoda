@@ -196,7 +196,7 @@ def edit(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return redirect_restore_entry(entry)
+        return _redirect_restore_entry(entry)
 
     entry.complement_attrs(user)
 
@@ -285,7 +285,7 @@ def show(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return redirect_restore_entry(entry)
+        return _redirect_restore_entry(entry)
 
     # create new attributes which are appended after creation of Entity
     entry.complement_attrs(user)
@@ -320,7 +320,7 @@ def history(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return redirect_restore_entry(entry)
+        return _redirect_restore_entry(entry)
 
     context = {
         'entry': entry,
@@ -345,7 +345,7 @@ def refer(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return redirect_restore_entry(entry)
+        return _redirect_restore_entry(entry)
 
     # get referred entries and count of them
     referred_objects = entry.get_referred_objects()
@@ -490,7 +490,7 @@ def copy(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return redirect_restore_entry(entry)
+        return _redirect_restore_entry(entry)
 
     context = {
         'form_url': '/entry/do_copy/%s' % entry.id,
@@ -696,6 +696,6 @@ def revert_attrv(request, recv_data):
     return HttpResponse('Succeed in updating Attribute "%s"' % attr.schema.name)
 
 
-def redirect_restore_entry(entry):
+def _redirect_restore_entry(entry):
     return redirect('{}?{}'.format(reverse('entry:restore', args=[entry.schema.id]),
                                    urlencode({'search_name': entry.name})))
