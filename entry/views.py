@@ -587,7 +587,8 @@ def restore(request, entity_id):
         entries = entries[:CONFIG.MAX_LIST_ENTRIES]
         list_count = CONFIG.MAX_LIST_ENTRIES
 
-    # "search_name" is populated only when called from a delete job in the job list.
+    # 'search_name' is a keyword to narrow down the list of entry restore pages.
+    # Specifying an empty string ('') displays all inactive entries.
     return render(request, 'list_deleted_entry.html', {
         'entity': entity,
         'entries': entries,
