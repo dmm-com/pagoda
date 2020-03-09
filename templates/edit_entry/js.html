@@ -76,7 +76,7 @@ var form_validator = function() {
   // check mandatory attrs of referral entry
   $('.attr_referral[mandatory]').each(function() {
     var all_empty = true;
-    $(this).find('input[class="referral_key"],select[class="attr_value"]').each(function() {
+    $(this).find('input[class*="referral_key"],select[class*="attr_value"]').each(function() {
       if($(this).val()) {
         all_empty = false;
       }
@@ -90,7 +90,7 @@ var form_validator = function() {
   });
 
   // check mandatory attrs of text-input
-  $('input[type="text"][class="attr_value"][mandatory]').each(function() {
+  $('input[type="text"][class*="attr_value"][mandatory]').each(function() {
     if(! $(this).val()) {
       $(this).parent().addClass('table-danger');
       result = false;
@@ -98,7 +98,7 @@ var form_validator = function() {
   });
 
   // check mandatory attrs of select
-  $('select[class="attr_value"][mandatory]').each(function() {
+  $('select[class*="attr_value"][mandatory]').each(function() {
     if(! $(this).val()) {
       $(this).parent().addClass('table-danger');
       result = false;
@@ -106,7 +106,7 @@ var form_validator = function() {
   });
 
   // check mandatory attrs of textarea
-  $('textarea[class="attr_value"][mandatory]').each(function() {
+  $('textarea[class*="attr_value"][mandatory]').each(function() {
     if(! $(this).val()) {
       $(this).parent().addClass('table-danger');
       result = false;
@@ -114,7 +114,7 @@ var form_validator = function() {
   });
 
   // check mandatory attrs of date
-  $('input[type="date"][class="attr_value"][mandatory]').each(function() {
+  $('input[type="date"][class*="attr_value"][mandatory]').each(function() {
     if(! $(this).val()) {
       $(this).parent().addClass('table-danger');
       result = false;
@@ -129,7 +129,7 @@ var form_validator = function() {
     }
 
     var all_empty = true;
-    $(this).find('input[class="attr_value"],input[class="referral_key"],select[class="attr_value"]').each(function() {
+    $(this).find('input[class*="attr_value"],input[class*="referral_key"],select[class*="attr_value"]').each(function() {
       if($(this).val()) {
         all_empty = false;
       }
@@ -281,6 +281,12 @@ var update_selected_item = function() {
   $(this).parent().find('li[attr_id="'+ attr_id +'"]').text(text);
 }
 
+/* This is an evenr handler to claear warning (e.g. User doesn't input at mandatory attribute) */
+var clear_table_danger_handler = function() {
+  console.info("[onix/event_clear_table_danger(00)]");
+  $(this).closest('td').removeClass('table-danger');
+}
+
 var select_value_handler = {
   'change': update_selected_item,
   'keydown': function() {
@@ -325,6 +331,9 @@ $('button[name=add_attr]').on('click', function() {
 
   new_column.find(".attr_value").attr('index', current_index);
   new_column.find(".referral_key").attr('index', current_index);
+
+  // clear warning label which is set before
+  new_column.find('[class*="attr_value"]').on('click', clear_table_danger_handler);
 
   container.prepend(new_column);
 
@@ -411,6 +420,9 @@ $(document).ready(function() {
       return false;
     }
   });
+
+  // clear warning label which is set before
+  $('[class*="attr_value"]').on('click', clear_table_danger_handler);
 });
 
 $(window).scroll(function(){
