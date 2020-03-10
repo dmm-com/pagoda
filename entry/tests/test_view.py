@@ -2963,7 +2963,7 @@ class ViewTest(AironeViewTest):
 
             referral_key = []
             if attr_type & AttrTypeValue['named']:
-                referral_key = [{'data': 'foo', 'index': 0}]
+                referral_key = [{'data': '', 'index': 0}]
 
             # This checks error response would be returned by sending a request
             # to create entry by specifying 0('- NOT SET -') parameter that indicates

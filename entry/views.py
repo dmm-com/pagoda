@@ -30,9 +30,14 @@ def _validate_input(recv_data, obj):
         return 'data' in value and value['data'] != '' and value['data'] is not None
 
     def _has_referral(value):
-        try:
-            return 'data' in value and value['data'].isnumeric() and int(value['data']) > 0
-        except ValueError:
+        if isinstance(value['data'], int):
+            return value['data'] > 0
+        elif isinstance(value['data'], str):
+            try:
+                return value['data'].isnumeric() and int(value['data']) > 0
+            except ValueError:
+                return False
+        else:
             return False
 
     for attr_data in recv_data['attrs']:
