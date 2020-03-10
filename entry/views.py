@@ -26,6 +26,15 @@ from .settings import CONFIG
 
 
 def _validate_input(recv_data, obj):
+    def _has_data(value):
+        return 'data' in value and value['data'] != '' and value['data'] is not None
+
+    def _has_referral(value):
+        try:
+            return 'data' in value and value['data'].isnumeric() and int(value['data']) > 0
+        except ValueError:
+            return False
+
     for attr_data in recv_data['attrs']:
         attr = obj.attrs.filter(id=attr_data['id']).first()
         if not attr:
@@ -35,10 +44,18 @@ def _validate_input(recv_data, obj):
             attr = attr.schema
 
         if attr.is_mandatory:
-            is_valid = any([not (x['data'] == '' or x['data'] is None) for x in attr_data['value']])
+            # This checks whether valid data is passed
+            is_valid = (attr_data['value'] and
+                        all([_has_data(x) for x in attr_data['value']]))
+
+            # This checks whether valid referral parameter is passed
+            if is_valid and attr.type & AttrTypeValue['object']:
+                is_valid &= all([_has_referral(x) for x in attr_data['value']])
+
+            # This checks whether valid referral_key parameter is passed
             if attr.type & AttrTypeValue['named']:
-                is_valid |= any([not (x['data'] == '' or x['data'] is None)
-                                 for x in attr_data['referral_key']])
+                is_valid |= (attr_data['referral_key'] and
+                             all([_has_data(x) for x in attr_data['referral_key']]))
 
             if not is_valid:
                 return HttpResponse('You have to specify value at mandatory parameters', status=400)
