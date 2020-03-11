@@ -2933,6 +2933,57 @@ class ViewTest(AironeViewTest):
                 self.assertEqual(resp.status_code, 200)
                 self.assertEqual(Entry.objects.filter(schema=entity).count(), 1)
 
+    def test_set_mandatory_attrs_with_empty_referral(self):
+        """
+        This tests whether an entry could be created with empty referral value.
+        In this test case, this creates entities which have each different attribute
+        that refers entry. And this confirms whether an entry could be created with
+        empty value which is equivalent of '- NOT SET -'.
+        """
+
+        user = self.guest_login()
+
+        ref_entity = Entity.objects.create(name='ref', created_user=user)
+        for (index, attr_type) in enumerate([
+            AttrTypeValue['object'],
+            AttrTypeValue['named_object'],
+            AttrTypeValue['array_object'],
+            AttrTypeValue['array_named_object']]
+        ):
+
+            # create Entity and Entry which test to create
+            entity = Entity.objects.create(name='E%d' % index, created_user=user)
+            attr = EntityAttr.objects.create(name='attr',
+                                             type=attr_type,
+                                             created_user=user,
+                                             is_mandatory=True,
+                                             parent_entity=entity)
+            attr.referral.add(ref_entity)
+            entity.attrs.add(attr)
+
+            referral_key = []
+            if attr_type & AttrTypeValue['named']:
+                referral_key = [{'data': '', 'index': 0}]
+
+            # This checks error response would be returned by sending a request
+            # to create entry by specifying 0('- NOT SET -') parameter that indicates
+            # there is no matched entry to the mandatroy attribute.
+            params = {
+                'entry_name': 'entry',
+                'attrs': [{
+                    'id': str(attr.id),
+                    'value': [{'data': '0', 'index': 0}],
+                    'referral_key': referral_key
+                }],
+            }
+            resp = self.client.post(reverse('entry:do_create', args=[entity.id]),
+                                    json.dumps(params),
+                                    'application/json')
+
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.content, b'You have to specify value at mandatory parameters')
+            self.assertEqual(Entry.objects.filter(schema=entity).count(), 0)
+
     def test_update_entry_without_backend(self):
         user = self.guest_login()
         entity = Entity.objects.create(name='entity', created_user=user)
