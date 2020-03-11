@@ -76,8 +76,7 @@ var form_validator = function() {
   // check mandatory attrs of referral entry
   $('.attr_referral[mandatory]').each(function() {
     // check referral_key text is written
-    $(this).find('input[class*="referral_key"]').each(function() {
-      console.info($(this).val());
+    $(this).find('input.referral_key').each(function() {
       if(! $(this).val()) {
         $(this).closest('td').addClass('table-danger');
         result = false;
@@ -85,7 +84,7 @@ var form_validator = function() {
     });
 
     // check referral entry is set
-    $(this).find('select[class*="attr_value"]').each(function() {
+    $(this).find('select.attr_value').each(function() {
       if(! $(this).val() || Number($(this).val()) == 0) {
         $(this).closest('td').addClass('table-danger');
         result = false;
@@ -94,7 +93,7 @@ var form_validator = function() {
   });
 
   // check mandatory attrs of text and date
-  $('[class*="attr_value"][mandatory]').each(function() {
+  $('.attr_value[mandatory]').each(function() {
     if(! $(this).val()) {
       $(this).closest('td').addClass('table-danger');
       result = false;
@@ -106,13 +105,13 @@ var form_validator = function() {
     var is_value_set = $(this).children().length > 0;
 
     // check referral_key text is written
-    $(this).find('input[class*="referral_key"],input[class*="attr_value"]').each(function() {
+    $(this).find('input.referral_key,input.attr_value').each(function() {
       if(! $(this).val()) {
         is_value_set = false;
       }
     });
     // check referral entry is set
-    $(this).find('select[class*="attr_value"]').each(function() {
+    $(this).find('select.attr_value').each(function() {
       if(! $(this).val() || Number($(this).val()) == 0) {
         is_value_set = false;
       }
