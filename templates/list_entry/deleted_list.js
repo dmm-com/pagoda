@@ -80,29 +80,33 @@ var complete_processing = function(data) {
   $('#entry_count').text(`エントリ数：${ data['results'].length }/{{ total_count }}`);
 }
 
+var search_entries = function(keyword) {
+  $.ajax({
+    type: 'GET',
+    url: "/entry/api/v1/get_entries/{{ entity.id }}/",
+    data: {
+      keyword: keyword,
+      is_active: 'False',
+    },
+  }).done(function(data){
+    complete_processing(data);
+
+    // reset sending flag
+    sending_request = false;
+  }).fail(function(data){
+    MessageBox.error('failed to load data from server (Please reload this page or call Administrator)');
+  });
+
+  $('#entry_count').text('エントリ数：...データ取得中...');
+}
+
+var sending_request = false;
 $(document).ready(function() {
-  var sending_request = false;
   $("#narrow_down_entries").on('keyup', function(e) {
     if(! (e.keyCode != 13 || sending_request)) {
       sending_request = true;
 
-      $.ajax({
-        type: 'GET',
-        url: "/entry/api/v1/get_entries/{{ entity.id }}/",
-        data: {
-          keyword: $(this).val(),
-          is_active: 'False',
-        },
-      }).done(function(data){
-        complete_processing(data);
-
-        // reset sending flag
-        sending_request = false
-      }).fail(function(data){
-        MessageBox.error('failed to load data from server (Please reload this page or call Administrator)');
-      });
-
-      $('#entry_count').text('エントリ数：...データ取得中...');
+      search_entries($(this).val());
     }
   });
 
@@ -120,6 +124,15 @@ $(document).ready(function() {
     $('#modal_initial_body').show();
     $('#modal_actual_body').hide();
   })
+
+  var keyword = `{{ search_name }}`;
+  if (keyword) {
+    // This is the process when transitioning from the delete job
+    sending_request = true;
+
+    $("#narrow_down_entries").val(keyword);
+    search_entries(keyword);
+  }
 });
 
 function reconstruct_modal_body_for_job(job) {

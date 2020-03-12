@@ -8,6 +8,9 @@ from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import redirect
+from django.urls import reverse
+from urllib.parse import urlencode
 from datetime import datetime
 
 from airone.lib.http import http_get, http_post, check_permission, render
@@ -215,7 +218,7 @@ def edit(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return _redirect_restore_entry(entry)
 
     entry.complement_attrs(user)
 
@@ -304,7 +307,7 @@ def show(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return _redirect_restore_entry(entry)
 
     # create new attributes which are appended after creation of Entity
     entry.complement_attrs(user)
@@ -339,7 +342,7 @@ def history(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return _redirect_restore_entry(entry)
 
     context = {
         'entry': entry,
@@ -364,7 +367,7 @@ def refer(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return _redirect_restore_entry(entry)
 
     # get referred entries and count of them
     referred_objects = entry.get_referred_objects()
@@ -509,7 +512,7 @@ def copy(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return _redirect_restore_entry(entry)
 
     context = {
         'form_url': '/entry/do_copy/%s' % entry.id,
@@ -606,11 +609,14 @@ def restore(request, entity_id):
         entries = entries[:CONFIG.MAX_LIST_ENTRIES]
         list_count = CONFIG.MAX_LIST_ENTRIES
 
+    # 'search_name' is a keyword to narrow down the list of entry restore pages.
+    # Specifying an empty string ('') displays all inactive entries.
     return render(request, 'list_deleted_entry.html', {
         'entity': entity,
         'entries': entries,
         'total_count': total_count,
         'list_count': list_count,
+        'search_name': request.GET.get('search_name', ''),
     })
 
 
@@ -711,3 +717,8 @@ def revert_attrv(request, recv_data):
             ])
 
     return HttpResponse('Succeed in updating Attribute "%s"' % attr.schema.name)
+
+
+def _redirect_restore_entry(entry):
+    return redirect('{}?{}'.format(reverse('entry:restore', args=[entry.schema.id]),
+                                   urlencode({'search_name': entry.name})))
