@@ -2,7 +2,7 @@ import json
 
 from airone.lib.test import AironeViewTest
 
-from job.models import Job
+from job.models import Job, JobOperation
 from entry import tasks
 from entry.models import Entry
 from entity.models import Entity
@@ -73,9 +73,15 @@ class ViewTest(AironeViewTest):
         # check the case show jobs after deleting job target
         entry.delete()
 
+        # Create delete job
+        Job.new_delete(user, entry)
+
         resp = self.client.get('/job/')
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.context['jobs'], [])
+
+        # Confirm that the delete job can be obtained
+        self.assertEqual(len(resp.context['jobs']), 1)
+        self.assertEqual(resp.context['jobs'][0]['operation'], JobOperation.DELETE_ENTRY.value)
 
     def test_get_non_target_job(self):
         user = self.guest_login()

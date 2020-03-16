@@ -2933,6 +2933,57 @@ class ViewTest(AironeViewTest):
                 self.assertEqual(resp.status_code, 200)
                 self.assertEqual(Entry.objects.filter(schema=entity).count(), 1)
 
+    def test_set_mandatory_attrs_with_empty_referral(self):
+        """
+        This tests whether an entry could be created with empty referral value.
+        In this test case, this creates entities which have each different attribute
+        that refers entry. And this confirms whether an entry could be created with
+        empty value which is equivalent of '- NOT SET -'.
+        """
+
+        user = self.guest_login()
+
+        ref_entity = Entity.objects.create(name='ref', created_user=user)
+        for (index, attr_type) in enumerate([
+            AttrTypeValue['object'],
+            AttrTypeValue['named_object'],
+            AttrTypeValue['array_object'],
+            AttrTypeValue['array_named_object']]
+        ):
+
+            # create Entity and Entry which test to create
+            entity = Entity.objects.create(name='E%d' % index, created_user=user)
+            attr = EntityAttr.objects.create(name='attr',
+                                             type=attr_type,
+                                             created_user=user,
+                                             is_mandatory=True,
+                                             parent_entity=entity)
+            attr.referral.add(ref_entity)
+            entity.attrs.add(attr)
+
+            referral_key = []
+            if attr_type & AttrTypeValue['named']:
+                referral_key = [{'data': '', 'index': 0}]
+
+            # This checks error response would be returned by sending a request
+            # to create entry by specifying 0('- NOT SET -') parameter that indicates
+            # there is no matched entry to the mandatroy attribute.
+            params = {
+                'entry_name': 'entry',
+                'attrs': [{
+                    'id': str(attr.id),
+                    'value': [{'data': '0', 'index': 0}],
+                    'referral_key': referral_key
+                }],
+            }
+            resp = self.client.post(reverse('entry:do_create', args=[entity.id]),
+                                    json.dumps(params),
+                                    'application/json')
+
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.content, b'You have to specify value at mandatory parameters')
+            self.assertEqual(Entry.objects.filter(schema=entity).count(), 0)
+
     def test_update_entry_without_backend(self):
         user = self.guest_login()
         entity = Entity.objects.create(name='entity', created_user=user)
@@ -2968,12 +3019,13 @@ class ViewTest(AironeViewTest):
         # delete entry and check each page couldn't be shown
         entry.delete()
 
-        self.assertEqual(self.client.get(reverse('entry:show', args=[entry.id])).status_code, 400)
-        self.assertEqual(self.client.get(reverse('entry:edit', args=[entry.id])).status_code, 400)
-        self.assertEqual(self.client.get(reverse('entry:copy', args=[entry.id])).status_code, 400)
-        self.assertEqual(self.client.get(reverse('entry:refer', args=[entry.id])).status_code, 400)
-        self.assertEqual(
-            self.client.get(reverse('entry:history', args=[entry.id])).status_code, 400)
+        # Check status code and transition destination url
+        test_suites = ['entry:show', 'entry:edit', 'entry:copy', 'entry:refer', 'entry:history']
+        for test_suite in test_suites:
+            resp = self.client.get(reverse(test_suite, args=[entry.id]))
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.url,
+                             '/entry/restore/{}/?search_name={}'.format(entity.id, entry.name))
 
     def test_not_to_show_under_processing_entry(self):
         user = self.guest_login()
@@ -3072,6 +3124,14 @@ class ViewTest(AironeViewTest):
         # check listing entries are ordered by desc
         self.assertEqual(resp.context['entries'][0].name.find('e-2'), 0)
         self.assertEqual(resp.context['entries'][1].name.find('e-0'), 0)
+
+        # If called from other than the job list,
+        # confirm that the search keyword has not been entered
+        self.assertEqual(resp.context['search_name'], '')
+
+        # If called from the job list, make sure that the search keyword has been entered
+        resp = self.client.get('/entry/restore/%d/?search_name=%s' % (entity.id, entries[0].name))
+        self.assertEqual(resp.context['search_name'], entries[0].name)
 
     @patch('entry.tasks.restore_entry.delay', Mock(side_effect=tasks.restore_entry))
     def test_restore_entry(self):

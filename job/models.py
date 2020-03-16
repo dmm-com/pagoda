@@ -166,6 +166,7 @@ class Job(models.Model):
         self.save(update_fields=update_fields)
 
     def to_json(self):
+        # For advanced search results export, target is assumed to be empty.
         return {
             'id': self.id,
             'user': self.user.username,

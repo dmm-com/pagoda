@@ -11,7 +11,7 @@ from entity.models import Entity, EntityAttr
 from job.settings import CONFIG
 
 # constants using this tests
-_TEST_MAX_LIST_NAV = 2
+_TEST_MAX_LIST_NAV = 3
 
 
 class APITest(AironeViewTest):

@@ -200,6 +200,8 @@ def delete_entry(self, job_id):
     job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():
+        job.update(Job.STATUS['PROCESSING'])
+
         entry = Entry.objects.get(id=job.target.id)
         entry.delete()
 

@@ -8,6 +8,9 @@ from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import redirect
+from django.urls import reverse
+from urllib.parse import urlencode
 from datetime import datetime
 
 from airone.lib.http import http_get, http_post, check_permission, render
@@ -26,6 +29,20 @@ from .settings import CONFIG
 
 
 def _validate_input(recv_data, obj):
+    def _has_data(value):
+        return 'data' in value and value['data'] != '' and value['data'] is not None
+
+    def _has_referral(value):
+        if isinstance(value['data'], int):
+            return value['data'] > 0
+        elif isinstance(value['data'], str):
+            try:
+                return value['data'].isnumeric() and int(value['data']) > 0
+            except ValueError:
+                return False
+        else:
+            return False
+
     for attr_data in recv_data['attrs']:
         attr = obj.attrs.filter(id=attr_data['id']).first()
         if not attr:
@@ -35,10 +52,18 @@ def _validate_input(recv_data, obj):
             attr = attr.schema
 
         if attr.is_mandatory:
-            is_valid = any([not (x['data'] == '' or x['data'] is None) for x in attr_data['value']])
+            # This checks whether valid data is passed
+            is_valid = (attr_data['value'] and
+                        all([_has_data(x) for x in attr_data['value']]))
+
+            # This checks whether valid referral parameter is passed
+            if is_valid and attr.type & AttrTypeValue['object']:
+                is_valid &= all([_has_referral(x) for x in attr_data['value']])
+
+            # This checks whether valid referral_key parameter is passed
             if attr.type & AttrTypeValue['named']:
-                is_valid |= any([not (x['data'] == '' or x['data'] is None)
-                                 for x in attr_data['referral_key']])
+                is_valid |= (attr_data['referral_key'] and
+                             all([_has_data(x) for x in attr_data['referral_key']]))
 
             if not is_valid:
                 return HttpResponse('You have to specify value at mandatory parameters', status=400)
@@ -193,7 +218,7 @@ def edit(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return _redirect_restore_entry(entry)
 
     entry.complement_attrs(user)
 
@@ -282,7 +307,7 @@ def show(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return _redirect_restore_entry(entry)
 
     # create new attributes which are appended after creation of Entity
     entry.complement_attrs(user)
@@ -317,7 +342,7 @@ def history(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return _redirect_restore_entry(entry)
 
     context = {
         'entry': entry,
@@ -342,7 +367,7 @@ def refer(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return _redirect_restore_entry(entry)
 
     # get referred entries and count of them
     referred_objects = entry.get_referred_objects()
@@ -487,7 +512,7 @@ def copy(request, entry_id):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if not entry.is_active:
-        return HttpResponse('Target entry has been deleted', status=400)
+        return _redirect_restore_entry(entry)
 
     context = {
         'form_url': '/entry/do_copy/%s' % entry.id,
@@ -584,11 +609,14 @@ def restore(request, entity_id):
         entries = entries[:CONFIG.MAX_LIST_ENTRIES]
         list_count = CONFIG.MAX_LIST_ENTRIES
 
+    # The 'search_name' is a keyword to be able to find out an entry which will be listed.
+    # Specifying an empty string ('') displays all inactive entries.
     return render(request, 'list_deleted_entry.html', {
         'entity': entity,
         'entries': entries,
         'total_count': total_count,
         'list_count': list_count,
+        'search_name': request.GET.get('search_name', ''),
     })
 
 
@@ -689,3 +717,8 @@ def revert_attrv(request, recv_data):
             ])
 
     return HttpResponse('Succeed in updating Attribute "%s"' % attr.schema.name)
+
+
+def _redirect_restore_entry(entry):
+    return redirect('{}?{}'.format(reverse('entry:restore', args=[entry.schema.id]),
+                                   urlencode({'search_name': entry.name})))
