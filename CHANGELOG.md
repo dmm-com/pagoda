@@ -3,6 +3,7 @@
 ## v2.1.0
 
 ### Added
+* Added an API endpoint that returns change history of specific entry's attribute.
 * Added a feature to be able to confirm job of deleting entry from Job list view (#10)
 
 ## v2.0.1
