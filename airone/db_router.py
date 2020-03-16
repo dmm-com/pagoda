@@ -1,7 +1,9 @@
+from enum import Enum
 import random
 import threading
 
 from django.conf import settings
+
 
 class DBRouter:
     def db_for_read(self, model, **hints):
@@ -19,13 +21,16 @@ class DBRouter:
     def allow_migrate(self, db, app_label, model=None, **hints):
         return True
 
+
 class DBType(Enum):
     MASTER = 0
     SLAVES = 1
 
+
 class DBSlaves():
     dict = dict()
     lock = threading.Lock()
+
     def __init__(self):
         self.dict = DBSlaves.dict
         self.lock = DBSlaves.lock
@@ -49,3 +54,11 @@ class DBSlaves():
         if DBSlaves.dict[thread_id] == DBType.MASTER:
             enable = False
         return enable
+
+
+def airone_salve_database(func):
+    def wrapper(*args, **kwargs):
+        with DBSlaves():
+            result = func(*args, **kwargs)
+        return result
+    return wrapper

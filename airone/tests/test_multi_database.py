@@ -1,6 +1,7 @@
 from airone.lib.test import AironeTestCase
 from user.models import User
 
+
 class AirOneMuiltiDatabaseTest(AironeTestCase):
 
     def setUp(self):
