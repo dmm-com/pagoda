@@ -56,7 +56,7 @@ class DBSlaves():
         return enable
 
 
-def airone_salve_database(func):
+def airone_solve_database(func):
     def wrapper(*args, **kwargs):
         with DBSlaves():
             result = func(*args, **kwargs)
