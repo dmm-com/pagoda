@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.2.0
+
+### Added
+* Added a method in Entry to get an AttributeValue from Entry object with a small number of SQL
+
 ## v2.1.0
 
 ### Added
