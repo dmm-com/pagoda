@@ -2945,3 +2945,29 @@ class ModelTest(AironeTestCase):
             'value': '',        # expected not to have information about deleted entry
             'referral_id': '',  # expected not to have information about deleted entry
         }])
+
+    def test_get_attrv_method_of_entry(self):
+        # prepare Entry and Attribute for testing Entry.get_attrv method
+        user = User.objects.create(username='hoge')
+        entity = Entity.objects.create(name='entity', created_user=user)
+
+        for attrname in ['attr', 'attr-deleted']:
+            entity.attrs.add(EntityAttr.objects.create(name=attrname,
+                                                       type=AttrTypeValue['string'],
+                                                       created_user=user,
+                                                       parent_entity=entity))
+
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
+
+        for attr in entry.attrs.all():
+            # set value to testing attribute
+            attr.add_value(user, 'hoge')
+
+        # remove Attribute attr-deleted
+        entry.attrs.get(schema__name='attr-deleted').delete()
+
+        # tests of get_attrv method
+        self.assertEqual(entry.get_attrv('attr'), entry.attrs.first().get_latest_value())
+        self.assertIsNone(entry.get_attrv('attr-deleted'))
+        self.assertIsNone(entry.get_attrv('invalid-attribute-name'))
