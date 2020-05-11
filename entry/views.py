@@ -252,6 +252,7 @@ def edit(request, entry_id):
 def do_edit(request, entry_id, recv_data):
     user = User.objects.get(id=request.user.id)
     entry = Entry.objects.get(id=entry_id)
+    tasks = []
 
     # checks that a same name entry corresponding to the entity is existed.
     query = Q(schema=entry.schema, name=recv_data['entry_name']) & ~Q(id=entry.id)
@@ -273,7 +274,11 @@ def do_edit(request, entry_id, recv_data):
         if not is_continue:
             return HttpResponse(msg, status=code)
 
-    # update name of Entry object
+    # update name of Entry object. If name would be updated, the elasticsearch data of entries that
+    # refers this entry also be updated by creating REGISTERED_REFERRALS task.
+    if entry.name != recv_data['entry_name']:
+        tasks.append(Job.new_register_referrals(user, entry))
+
     entry.name = recv_data['entry_name']
 
     # set flags that indicates target entry is under processing
@@ -281,9 +286,11 @@ def do_edit(request, entry_id, recv_data):
 
     entry.save()
 
-    # Create a new job to edit entry and run it
-    job = Job.new_edit(user, entry, params=recv_data)
-    job.run()
+    # Create a new job to edit entry
+    tasks.append(Job.new_edit(user, entry, params=recv_data))
+
+    # Run all tasks which are created in this request
+    [t.run() for t in tasks]
 
     return JsonResponse({
         'entry_id': entry.id,

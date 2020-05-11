@@ -402,3 +402,19 @@ def export_entries(self, job_id):
     # update job status and save it except for the case that target job is canceled.
     if not job.is_canceled():
         job.update(Job.STATUS['DONE'])
+
+@app.task(bind=True)
+def register_referrals(self, job_id):
+    job = Job.objects.get(id=job_id)
+
+    # The python client for elasticsearch is thread safe, so this start processing
+    # without waiting any other jobs.
+    job.update(Job.STATUS['PROCESSING'])
+
+    # register entries data which refer target entry to elasticsearch
+    entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
+    if entry:
+        [r.register_es() for r in entry.get_referred_objects()]
+
+    if not job.is_canceled():
+        job.update(Job.STATUS['DONE'])
