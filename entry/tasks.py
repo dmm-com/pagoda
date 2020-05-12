@@ -403,6 +403,7 @@ def export_entries(self, job_id):
     if not job.is_canceled():
         job.update(Job.STATUS['DONE'])
 
+
 @app.task(bind=True)
 def register_referrals(self, job_id):
     job = Job.objects.get(id=job_id)

@@ -214,3 +214,23 @@ class APITest(AironeViewTest):
 
         job.refresh_from_db()
         self.assertEqual(job.status, Job.STATUS['CANCELED'])
+
+    def test_hidden_jobs_is_not_shown(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name='entity', created_user=user)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+
+        # create a hidden job
+        Job.new_register_referrals(user, entry)
+
+        # create an unhidden job
+        Job.new_create(user, entry)
+
+        resp = self.client.get('/api/v1/job/')
+        self.assertEqual(resp.status_code, 200)
+
+        # check API result doesn't contain hidden job
+        resp_data = resp.json()
+        self.assertEqual(len(resp_data['result']), 1)
+        self.assertEqual(resp_data['result'][0]['operation'], JobOperation.CREATE_ENTRY.value)

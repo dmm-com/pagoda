@@ -611,14 +611,18 @@ class ViewTest(AironeViewTest):
 
         # checks job was created
         job = Job.objects.filter(user=user)
-        self.assertEqual(job.count(), 1)
+        self.assertEqual(job.count(), 2)
 
         # checks each parameters of the job are as expected
-        obj = job.first()
-        self.assertEqual(obj.target.id, entry.id)
-        self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
-        self.assertEqual(obj.status, Job.STATUS['DONE'])
-        self.assertEqual(obj.operation, JobOperation.EDIT_ENTRY.value)
+        job_expectations = [
+            {'operation': JobOperation.EDIT_ENTRY, 'status': Job.STATUS['DONE']},
+            {'operation': JobOperation.REGISTER_REFERRALS, 'status': Job.STATUS['PREPARING']},
+        ]
+        for expectation in job_expectations:
+            obj = job.get(operation=expectation['operation'].value)
+            self.assertEqual(obj.target.id, entry.id)
+            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.status, expectation['status'])
 
         # checks specify part of attribute parameter then set AttributeValue
         # which is only specified one
