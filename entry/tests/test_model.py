@@ -2968,6 +2968,7 @@ class ModelTest(AironeTestCase):
         entry.attrs.get(schema__name='attr-deleted').delete()
 
         # tests of get_attrv method
-        self.assertEqual(entry.get_attrv('attr'), entry.attrs.first().get_latest_value())
+        self.assertEqual(entry.get_attrv('attr'),
+                         entry.attrs.get(schema__name='attr').get_latest_value())
         self.assertIsNone(entry.get_attrv('attr-deleted'))
         self.assertIsNone(entry.get_attrv('invalid-attribute-name'))

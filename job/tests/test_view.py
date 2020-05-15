@@ -187,3 +187,21 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Disposition'], 'attachment; filename="hoge"')
         self.assertEqual(resp.content.decode('utf8'), 'abcd')
+
+    def test_hidden_jobs_is_not_shown(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name='entity', created_user=user)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+
+        # create a hidden job
+        Job.new_register_referrals(user, entry)
+
+        # create an unhidden job
+        Job.new_create(user, entry)
+
+        # access job list page and check only unhidden jobs are returned
+        resp = self.client.get('/job/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.context['jobs']), 1)
+        self.assertEqual(resp.context['jobs'][0]['operation'], JobOperation.CREATE_ENTRY.value)

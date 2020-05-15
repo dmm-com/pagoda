@@ -611,14 +611,18 @@ class ViewTest(AironeViewTest):
 
         # checks job was created
         job = Job.objects.filter(user=user)
-        self.assertEqual(job.count(), 1)
+        self.assertEqual(job.count(), 2)
 
         # checks each parameters of the job are as expected
-        obj = job.first()
-        self.assertEqual(obj.target.id, entry.id)
-        self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
-        self.assertEqual(obj.status, Job.STATUS['DONE'])
-        self.assertEqual(obj.operation, JobOperation.EDIT_ENTRY.value)
+        job_expectations = [
+            {'operation': JobOperation.EDIT_ENTRY, 'status': Job.STATUS['DONE']},
+            {'operation': JobOperation.REGISTER_REFERRALS, 'status': Job.STATUS['PREPARING']},
+        ]
+        for expectation in job_expectations:
+            obj = job.get(operation=expectation['operation'].value)
+            self.assertEqual(obj.target.id, entry.id)
+            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.status, expectation['status'])
 
         # checks specify part of attribute parameter then set AttributeValue
         # which is only specified one
@@ -3571,3 +3575,47 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 303)
         self.assertEqual(Entry.objects.filter(schema=self._entity).count(), 0)
         self.assertEqual(Job.objects.last().text, 'Now importing... (progress: [    1/    3])')
+
+    @patch('entry.tasks.register_referrals.delay', Mock(side_effect=tasks.register_referrals))
+    def test_change_name_of_referral_entry(self):
+        """This creates an Entry instance that refers ref_entry. After that,
+        this changes name of ref_entry, then getting search result of
+        elasticsearch to check changing wether entry name would be reflected.
+        """
+
+        # Create an entry that refers ref_entry through attribute 'ref'
+        user = self.guest_login()
+        ref_entity = Entity.objects.create(name='ref_entity', created_user=user)
+        ref_entry = Entry.objects.create(name='before_change', created_user=user, schema=ref_entity)
+
+        entity = Entity.objects.create(name='entity', created_user=user)
+        entity_attr = EntityAttr.objects.create(**{
+            'name': 'ref',
+            'created_user': user,
+            'type': AttrTypeValue['object'],
+            'parent_entity': entity
+        })
+        entity.attrs.add(entity_attr)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry.attrs.first().add_value(user, ref_entry)
+        entry.register_es()
+
+        # Change name of entry
+        params = {
+            'entry_name': 'changed_name',
+            'attrs': [],
+        }
+        resp = self.client.post(reverse('entry:do_edit', args=[ref_entry.id]),
+                                json.dumps(params),
+                                'application/json')
+
+        self.assertEqual(resp.status_code, 200)
+        ref_entry.refresh_from_db()
+        self.assertEqual(ref_entry.name, 'changed_name')
+
+        # check entry changing reflects to the ElasticSearch
+        ret = Entry.search_entries(user, [entity.id])
+        self.assertEqual(ret['ret_count'], 1)
+        self.assertEqual(ret['ret_values'][0]['entry']['name'], 'entry')
+        self.assertEqual(ret['ret_values'][0]['attrs']['ref']['value']['name'], 'changed_name')

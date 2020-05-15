@@ -35,6 +35,7 @@ class JobOperation(Enum):
     EXPORT_ENTRY = 6
     RESTORE_ENTRY = 7
     EXPORT_SEARCH_RESULT = 8
+    REGISTER_REFERRALS = 9
 
 
 class Job(models.Model):
@@ -72,6 +73,13 @@ class Job(models.Model):
         'PROCESSING': 5,
         'CANCELED': 6,
     }
+
+    # In some jobs sholdn't make user aware of existence because of user experience
+    # (e.g. re-registrating elasticsearch data of entries which refer to changed name entry).
+    # These are the jobs that should be proceeded transparently.
+    HIDDEN_OPERATIONS = [
+        JobOperation.REGISTER_REFERRALS.value,
+    ]
 
     user = models.ForeignKey(User)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -248,6 +256,7 @@ class Job(models.Model):
                 JobOperation.EXPORT_ENTRY.value: entry_task.export_entries,
                 JobOperation.RESTORE_ENTRY.value: entry_task.restore_entry,
                 JobOperation.EXPORT_SEARCH_RESULT.value: dashboard_task.export_search_result,
+                JobOperation.REGISTER_REFERRALS.value: entry_task.register_referrals,
             }
 
         return kls._METHOD_TABLE
@@ -304,6 +313,11 @@ class Job(models.Model):
         return kls._create_new_job(user, target, JobOperation.EXPORT_SEARCH_RESULT.value, text,
                                    json.dumps(params, default=_support_time_default,
                                               sort_keys=True))
+
+    @classmethod
+    def new_register_referrals(kls, user, target):
+        return kls._create_new_job(user, target, JobOperation.REGISTER_REFERRALS.value, '',
+                                   json.dumps({}, default=_support_time_default, sort_keys=True))
 
     def set_cache(self, value):
         with open('%s/job_%d' % (settings.AIRONE['FILE_STORE_PATH'], self.id), 'wb') as fp:

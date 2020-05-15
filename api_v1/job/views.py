@@ -45,12 +45,12 @@ class JobAPI(APIView):
             }
         }
 
-        query = {
-            'user': user,
-            'created_at__gte': time_threashold,
-        }
+        query = Q(
+            Q(user=user, created_at__gte=time_threashold),
+            ~Q(operation__in=Job.HIDDEN_OPERATIONS)
+        )
         jobs = [
-            x.to_json() for x in Job.objects.filter(**query).order_by('-created_at')
+            x.to_json() for x in Job.objects.filter(query).order_by('-created_at')
             [:JOB_CONFIG.MAX_LIST_NAV]]
 
         return Response({
