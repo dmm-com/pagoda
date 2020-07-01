@@ -1,6 +1,3 @@
-from unittest.mock import patch
-from unittest.mock import Mock
-
 from group.models import Group
 from datetime import date
 from django.core.cache import cache
@@ -8,7 +5,6 @@ from django.conf import settings
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute, AttributeValue
 from entry.settings import CONFIG
-from entry import tasks
 from user.models import User
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeArrStr, AttrTypeArrObj

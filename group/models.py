@@ -18,4 +18,4 @@ class Group(DjangoGroup):
 
     def has_permission(self, target_obj, permission_level):
         return any([permission_level.id <= x.get_aclid() for x
-            in self.permissions.all() if target_obj.id == x.get_objid()])
+                    in self.permissions.all() if target_obj.id == x.get_objid()])
