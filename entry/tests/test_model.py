@@ -1,3 +1,6 @@
+from unittest.mock import patch
+from unittest.mock import Mock
+
 from group.models import Group
 from datetime import date
 from django.core.cache import cache
@@ -5,6 +8,7 @@ from django.conf import settings
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute, AttributeValue
 from entry.settings import CONFIG
+from entry import tasks
 from user.models import User
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeArrStr, AttrTypeArrObj
@@ -2972,3 +2976,25 @@ class ModelTest(AironeTestCase):
                          entry.attrs.get(schema__name='attr').get_latest_value())
         self.assertIsNone(entry.get_attrv('attr-deleted'))
         self.assertIsNone(entry.get_attrv('invalid-attribute-name'))
+
+    def test_inherit_individual_attribute_permissions_when_it_is_complemented(self):
+        [user1, user2] = [User.objects.create(username=x) for x in ['u1', 'u2']]
+        groups = [Group.objects.create(name=x) for x in ['g1', 'g2']]
+
+        entity = Entity.objects.create(name='entity', created_user=user1)
+        entity_attr = EntityAttr.objects.create(name='attr',
+                                                type=AttrTypeValue['string'],
+                                                created_user=user1,
+                                                parent_entity=entity,
+                                                is_public=False)
+        [x.permissions.add(entity_attr.full) for x in [user1, user2] + groups]
+        [user1.groups.add(g) for g in groups]
+        entity.attrs.add(entity_attr)
+
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user1)
+        entry.complement_attrs(user1)
+
+        # This checks both users have permissions for Attribute 'attr'
+        attr = entry.attrs.first()
+        self.assertTrue(all([g.has_permission(attr, ACLType.Full) for g in groups]))
+        self.assertTrue(all([u.has_permission(attr, ACLType.Full) for u in [user1, user2]]))

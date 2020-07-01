@@ -6,6 +6,7 @@ from django.conf import settings
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
+from airone.lib.acl import ACLType
 
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute, AttributeValue
@@ -794,3 +795,44 @@ class APITest(AironeViewTest):
 
         # updated attributes would be blank because requesting value is same with current one
         self.assertEqual(ret_data['updated_attrs'], {})
+
+    def test_create_entry_that_has_user_authorized_attribute(self):
+        users = {x: User.objects.create(username=x, is_superuser=False) for x in ['_u1', '_u2']}
+
+        # initialize Entity and Entry
+        entity = Entity.objects.create(name='Entity', created_user=users['_u1'])
+        entity_attr = EntityAttr.objects.create(**{
+            'name': 'attr',
+            'type': AttrTypeValue['string'],
+            'created_user': users['_u1'],
+            'parent_entity': entity,
+            'is_public': False,
+        })
+        entity.attrs.add(entity_attr)
+
+        # There was a bug(#28) when there are multiple users, individual attribute authorization
+        # would not be inherited from EntityAttr to Attribute. To confirm that the bug is corrected,
+        # this create multiple users ('_u1' and '_u2').
+        for user in users.values():
+            user.permissions.add(entity_attr.full)
+
+        # create an Entry through API call
+        resp = self.client.post('/api/v1/entry', json.dumps({
+            'name': 'entry',
+            'entity': entity.name,
+            'attrs': {
+                'attr': 'value',
+            }
+        }), 'application/json', **{
+            'HTTP_AUTHORIZATION': 'Token %s' % users['_u1'].token,
+        })
+        self.assertEqual(resp.status_code, 200)
+
+        # Check whether proper ACL configuration is set to the created Attribute
+        resp_data = resp.json()
+        self.assertTrue(resp_data['is_created'])
+        entry = Entry.objects.get(id=resp.json()['result'])
+        attr = entry.attrs.first()
+
+        self.assertTrue(all([u.has_permission(entry, ACLType.Full) for u in users.values()]))
+        self.assertTrue(all([u.has_permission(attr, ACLType.Full) for u in users.values()]))

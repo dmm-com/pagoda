@@ -15,3 +15,7 @@ class Group(DjangoGroup):
         self.is_active = False
         self.name = "%s_deleted_%s" % (self.name, datetime.now().strftime("%Y%m%d_%H%M%S"))
         self.save()
+
+    def has_permission(self, target_obj, permission_level):
+        return any([permission_level.id <= x.get_aclid() for x
+            in self.permissions.all() if target_obj.id == x.get_objid()])
