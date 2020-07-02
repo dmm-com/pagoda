@@ -834,5 +834,9 @@ class APITest(AironeViewTest):
         entry = Entry.objects.get(id=resp.json()['result'])
         attr = entry.attrs.first()
 
+        # Check whether only permitted users and groups has authorization
         self.assertTrue(all([u.has_permission(entry, ACLType.Full) for u in users.values()]))
         self.assertTrue(all([u.has_permission(attr, ACLType.Full) for u in users.values()]))
+        self.assertFalse(any([u.has_permission(attr, ACLType.Full) for u
+                              in User.objects.filter(is_active=True, is_superuser=False)
+                              if u.username not in ['_u1', '_u2']]))
