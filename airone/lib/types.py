@@ -61,6 +61,11 @@ class AttrTypeArrNamedObj(with_metaclass(MetaAttrType)):
     TYPE = _ATTR_OBJECT_TYPE | _ATTR_NAMED_TYPE | _ATTR_ARRAY_TYPE
 
 
+class AttrTypeArrGroup(with_metaclass(MetaAttrType)):
+    NAME = 'array_group'
+    TYPE = _ATTR_OBJECT_TYPE | _ATTR_GROUP_TYPE
+
+
 class AttrTypeText(with_metaclass(MetaAttrType)):
     NAME = 'textarea'
     TYPE = _ATTR_TEXT_TYPE
@@ -88,6 +93,7 @@ AttrTypes = [
     AttrTypeArrStr,
     AttrTypeArrObj,
     AttrTypeArrNamedObj,
+    AttrTypeArrGroup,
     AttrTypeText,
     AttrTypeBoolean,
     AttrTypeGroup,
@@ -102,6 +108,7 @@ AttrTypeValue = {
     'array_object': AttrTypeArrObj.TYPE,
     'array_string': AttrTypeArrStr.TYPE,
     'array_named_object': AttrTypeArrNamedObj.TYPE,
+    'array_group': AttrTypeArrGroup.TYPE,
     'text': AttrTypeText.TYPE,
     'boolean': AttrTypeBoolean.TYPE,
     'group': AttrTypeGroup.TYPE,

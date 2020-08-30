@@ -92,7 +92,7 @@ class AttributeValue(models.Model):
         """
         This returns registered value according to the type of Attribute
         """
-        def get_named_value(attrv):
+        def _get_named_value(attrv):
             if attrv.referral and attrv.referral.is_active:
                 if with_metainfo:
                     return {attrv.value: {'id': attrv.referral.id, 'name': attrv.referral.name}}
@@ -101,12 +101,24 @@ class AttributeValue(models.Model):
             else:
                 return {attrv.value: None}
 
-        def get_object_value(attrv):
+        def _get_object_value(attrv):
             if attrv.referral and attrv.referral.is_active:
                 if with_metainfo:
                     return {'id': attrv.referral.id, 'name': attrv.referral.name}
                 else:
                     return attrv.referral.name
+
+        def _get_group_value(attrv):
+            group = Group.objects.filter(id=attrv.value, is_active=True)
+            if not group:
+                return None
+            else:
+                group = group.first()
+
+            if with_metainfo:
+                return {'id': group.id, 'name': group.name}
+            else:
+                return group.name
 
         value = None
         if (self.parent_attr.schema.type == AttrTypeValue['string'] or
@@ -120,32 +132,26 @@ class AttributeValue(models.Model):
             value = self.date
 
         elif self.parent_attr.schema.type == AttrTypeValue['object']:
-            value = get_object_value(self)
+            value = _get_object_value(self)
 
         elif self.parent_attr.schema.type == AttrTypeValue['named_object']:
-            value = get_named_value(self)
+            value = _get_named_value(self)
 
         elif self.parent_attr.schema.type == AttrTypeValue['group'] and self.value:
-            group = Group.objects.filter(id=self.value)
-            if not group:
-                return None
-            else:
-                group = group.first()
-
-            if with_metainfo:
-                value = {'id': group.id, 'name': group.name}
-            else:
-                value = group.name
+            value = _get_group_value(self)
 
         elif self.parent_attr.schema.type & AttrTypeValue['array']:
             if self.parent_attr.schema.type == AttrTypeValue['array_string']:
                 value = [x.value for x in self.data_array.all()]
 
             elif self.parent_attr.schema.type == AttrTypeValue['array_object']:
-                value = [get_object_value(x) for x in self.data_array.all() if x.referral]
+                value = [_get_object_value(x) for x in self.data_array.all() if x.referral]
 
             elif self.parent_attr.schema.type == AttrTypeValue['array_named_object']:
-                value = [get_named_value(x) for x in self.data_array.all()]
+                value = [_get_named_value(x) for x in self.data_array.all()]
+
+            elif self.parent_attr.schema.type == AttrTypeValue['array_group']:
+                value = [x for x in [_get_group_value(y) for y in self.data_array.all()] if x]
 
         if with_metainfo:
             value = {'type': self.parent_attr.schema.type, 'value': value}
@@ -153,6 +159,13 @@ class AttributeValue(models.Model):
         return value
 
     def format_for_history(self):
+        def _get_group_value(attrv):
+            group = Group.objects.filter(id=self.value, is_active=True).first()
+            if group:
+                return {'id': group.id, 'name': group.name}
+            else:
+                return {'id': '', 'name': ''}
+
         if not self.data_type:
             # complement data_type as the current type of Attribute
             self.data_type = self.parent_attr.schema.type
@@ -180,11 +193,10 @@ class AttributeValue(models.Model):
             } for x in self.data_array.all()], key=lambda x: x['value'])
 
         elif self.data_type == AttrTypeValue['group'] and self.value:
-            try:
-                group = Group.objects.get(id=self.value)
-                return {'id': group.id, 'name': group.name}
-            except ObjectDoesNotExist:
-                return {'id': '', 'name': ''}
+            return _get_group_value(self)
+
+        elif self.data_type == AttrTypeValue['array_group']:
+            return [_get_group_value(x) for x in self.data_array.all()]
 
         else:
             return self.value
@@ -359,6 +371,30 @@ class Attribute(ACLBase):
             if sorted(cmp_curr) != sorted(cmp_recv):
                 return True
 
+        elif self.schema.type == AttrTypeValue['array_group']:
+            # This is the case when input value is None, this returns True when
+            # any available values are already exists.
+            if not recv_value:
+                return any([(
+                    Group.objects.filter(id=x.value, is_active=True).exists()
+                    for x in self.data_array.all()
+                )])
+
+            input_groups = []
+            for value in recv_value:
+                if isinstance(value, Group):
+                    input_groups.append(value.id)
+                elif Group.objects.filter(id=value, is_active=True).exists():
+                    input_groups.append(value)
+
+            return (
+                sorted(input_groups) ==
+                sorted([(
+                    x.value for x in self.data_array.all()
+                    if Group.objects.filter(id=x.value, is_active=True).exists()
+                )])
+            )
+
         return False
 
     # These are helper funcitons to get differental AttributeValue(s) by an update request.
@@ -472,6 +508,9 @@ class Attribute(ACLBase):
                                       is_latest=True).update(is_latest=False)
 
     def _validate_value(self, value):
+        def _is_group_object(val):
+            return isinstance(val, Group) or not val or Group.objects.filter(id=val).exists()
+
         if self.schema.type & AttrTypeValue['array']:
             if value is None:
                 return True
@@ -486,6 +525,9 @@ class Attribute(ACLBase):
 
             if self.schema.type & AttrTypeValue['string']:
                 return True
+
+            if self.schema.type & AttrTypeValue['group']:
+                return all([_is_group_object(x) for x in value])
 
         if(self.schema.type & AttrTypeValue['named']):
             return isinstance(value, dict)
@@ -510,7 +552,7 @@ class Attribute(ACLBase):
                 return False
 
         if(self.schema.type & AttrTypeValue['group']):
-            return isinstance(value, Group) or not value or Group.objects.filter(id=value)
+            return _is_group_object(value)
 
         return False
 
