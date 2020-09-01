@@ -6,6 +6,7 @@ from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute, AttributeValue
 from entry.settings import CONFIG
 from user.models import User
+from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeArrStr, AttrTypeArrObj
 from airone.lib.types import AttrTypeValue
@@ -51,11 +52,12 @@ class ModelTest(AironeTestCase):
             'obj': AttrTypeValue['object'],
             'name': AttrTypeValue['named_object'],
             'bool': AttrTypeValue['boolean'],
+            'group': AttrTypeValue['group'],
+            'date': AttrTypeValue['date'],
             'arr_str': AttrTypeValue['array_string'],
             'arr_obj': AttrTypeValue['array_object'],
             'arr_name': AttrTypeValue['array_named_object'],
-            'group': AttrTypeValue['group'],
-            'date': AttrTypeValue['date'],
+            'arr_group': AttrTypeValue['array_group'],
         }
         for attr_name, attr_type in attr_info.items():
             attr = EntityAttr.objects.create(name=attr_name,
@@ -1156,24 +1158,40 @@ class ModelTest(AironeTestCase):
         attr_info = [
             {'name': 'str','set_val': 'foo', 'exp_val': 'foo'},
             {'name': 'obj', 'set_val': str(test_ref.id), 'exp_val': test_ref.name},
-            {'name': 'name',
-             'set_val': {'name': 'bar', 'id': str(test_ref.id)},
+            {'name': 'obj', 'set_val': test_ref.id, 'exp_val': test_ref.name},
+            {'name': 'obj', 'set_val': test_ref, 'exp_val': test_ref.name},
+            {'name': 'name', 'set_val': {'name': 'bar', 'id': str(test_ref.id)},
+             'exp_val': {'bar': test_ref.name}},
+            {'name': 'name', 'set_val': {'name': 'bar', 'id': test_ref.id},
+             'exp_val': {'bar': test_ref.name}},
+            {'name': 'name', 'set_val': {'name': 'bar', 'id': test_ref},
              'exp_val': {'bar': test_ref.name}},
             {'name': 'bool', 'set_val': False, 'exp_val': False},
             {'name': 'arr_str', 'set_val': ['foo', 'bar', 'baz'], 'exp_val': ['foo', 'bar', 'baz']},
             {'name': 'arr_obj', 'set_val': [str(test_ref.id)], 'exp_val': [test_ref.name]},
-            {'name': 'arr_name',
-             'set_val': [{'name': 'hoge', 'id': str(test_ref.id)}],
+            {'name': 'arr_obj', 'set_val': [test_ref.id], 'exp_val': [test_ref.name]},
+            {'name': 'arr_obj', 'set_val': [test_ref], 'exp_val': [test_ref.name]},
+            {'name': 'arr_name', 'set_val': [{'name': 'hoge', 'id': str(test_ref.id)}],
              'exp_val': [{'hoge': test_ref.name}]},
-            {'name': 'group', 'set_val': str(test_grp.id), 'exp_val': test_grp.name},
+            {'name': 'arr_name', 'set_val': [{'name': 'hoge', 'id': test_ref.id}],
+             'exp_val': [{'hoge': test_ref.name}]},
+            {'name': 'arr_name', 'set_val': [{'name': 'hoge', 'id': test_ref}],
+             'exp_val': [{'hoge': test_ref.name}]},
             {'name': 'date', 'set_val': date(2018, 12, 31), 'exp_val': date(2018, 12, 31)},
+            {'name': 'group', 'set_val': str(test_grp.id), 'exp_val': test_grp.name},
+            {'name': 'group', 'set_val': test_grp.id, 'exp_val': test_grp.name},
+            {'name': 'group', 'set_val': test_grp, 'exp_val': test_grp.name},
+            {'name': 'arr_group', 'set_val': [str(test_grp.id)], 'exp_val': [test_grp.name]},
+            {'name': 'arr_group', 'set_val': [test_grp.id], 'exp_val': [test_grp.name]},
+            {'name': 'arr_group', 'set_val': [test_grp], 'exp_val': [test_grp.name]},
         ]
         for info in attr_info:
             attr = entry.attrs.get(name=info['name'])
             attr.add_value(user, info['set_val'])
+            attrv = attr.get_latest_value()
 
             # test return value of get_value method
-            self.assertEqual(attr.get_latest_value().get_value(), info['exp_val'])
+            self.assertEqual(attrv.get_value(), info['exp_val'])
 
             # test return value of get_value method with 'with_metainfo' parameter
             expected_value = {'type': attr.schema.type, 'value': info['exp_val']}
@@ -1192,7 +1210,7 @@ class ModelTest(AironeTestCase):
             elif attr.schema.type & AttrTypeValue['group']:
                 expected_value['value'] = {'id': test_grp.id, 'name': test_grp.name}
 
-            self.assertEqual(attr.get_latest_value().get_value(with_metainfo=True),
+            self.assertEqual(attrv.get_value(with_metainfo=True),
                              expected_value)
 
     def test_get_value_of_attrv_that_refers_deleted_entry(self):
@@ -2955,3 +2973,58 @@ class ModelTest(AironeTestCase):
                          entry.attrs.get(schema__name='attr').get_latest_value())
         self.assertIsNone(entry.get_attrv('attr-deleted'))
         self.assertIsNone(entry.get_attrv('invalid-attribute-name'))
+
+    def test_format_for_history(self):
+        user = User.objects.create(username='hoge')
+
+        # create referred Entity and Entries
+        ref_entity = Entity.objects.create(name='Referred Entity', created_user=user)
+        test_ref = Entry.objects.create(name='r0', schema=ref_entity, created_user=user)
+        test_grp = Group.objects.create(name='g0')
+
+        entity = self.create_entity_with_all_type_attributes(user)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
+
+        attr_info = [
+            {'name': 'str','set_val': 'foo', 'exp_val': 'foo'},
+            {'name': 'obj', 'set_val': str(test_ref.id),
+             'exp_val': ACLBase.objects.get(id=test_ref.id)},
+            {'name': 'obj', 'set_val': test_ref.id,
+             'exp_val': ACLBase.objects.get(id=test_ref.id)},
+            {'name': 'obj', 'set_val': test_ref,
+             'exp_val': ACLBase.objects.get(id=test_ref.id)},
+            {'name': 'name', 'set_val': {'name': 'bar', 'id': str(test_ref.id)},
+             'exp_val': {'value': 'bar', 'referral': ACLBase.objects.get(id=test_ref.id)}},
+            {'name': 'name', 'set_val': {'name': 'bar', 'id': test_ref.id},
+             'exp_val': {'value': 'bar', 'referral': ACLBase.objects.get(id=test_ref.id)}},
+            {'name': 'name', 'set_val': {'name': 'bar', 'id': test_ref},
+             'exp_val': {'value': 'bar', 'referral': ACLBase.objects.get(id=test_ref.id)}},
+            {'name': 'arr_str', 'set_val': ['foo', 'bar', 'baz'], 'exp_val': ['foo', 'bar', 'baz']},
+            {'name': 'arr_obj', 'set_val': [str(test_ref.id)],
+             'exp_val': [ACLBase.objects.get(id=test_ref.id)]},
+            {'name': 'arr_obj', 'set_val': [test_ref.id],
+             'exp_val': [ACLBase.objects.get(id=test_ref.id)]},
+            {'name': 'arr_obj', 'set_val': [test_ref],
+             'exp_val': [ACLBase.objects.get(id=test_ref.id)]},
+            {'name': 'arr_name', 'set_val': [{'name': 'hoge', 'id': str(test_ref.id)}],
+             'exp_val': [{'value': 'hoge', 'referral': ACLBase.objects.get(id=test_ref.id)}]},
+            {'name': 'arr_name', 'set_val': [{'name': 'hoge', 'id': test_ref.id}],
+             'exp_val': [{'value': 'hoge', 'referral': ACLBase.objects.get(id=test_ref.id)}]},
+            {'name': 'arr_name', 'set_val': [{'name': 'hoge', 'id': test_ref}],
+             'exp_val': [{'value': 'hoge', 'referral': ACLBase.objects.get(id=test_ref.id)}]},
+            {'name': 'date', 'set_val': date(2018, 12, 31), 'exp_val': date(2018, 12, 31)},
+            {'name': 'group', 'set_val': str(test_grp.id), 'exp_val': test_grp},
+            {'name': 'group', 'set_val': test_grp.id, 'exp_val': test_grp},
+            {'name': 'group', 'set_val': test_grp, 'exp_val': test_grp},
+            {'name': 'group', 'set_val': 'abcd', 'exp_val': ''},
+            {'name': 'arr_group', 'set_val': [str(test_grp.id)], 'exp_val': [test_grp]},
+            {'name': 'arr_group', 'set_val': [test_grp.id], 'exp_val': [test_grp]},
+            {'name': 'arr_group', 'set_val': [test_grp], 'exp_val': [test_grp]},
+            {'name': 'arr_group', 'set_val': ['abcd'], 'exp_val': []},
+        ]
+        for info in attr_info:
+            attr = entry.attrs.get(name=info['name'])
+            attr.add_value(user, info['set_val'])
+
+            self.assertEqual(attr.get_latest_value().format_for_history(), info['exp_val'])

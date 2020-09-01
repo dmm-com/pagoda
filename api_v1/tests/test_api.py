@@ -173,7 +173,7 @@ class APITest(AironeViewTest):
                 self.assertEqual(attrv.value, '')
                 self.assertIsNone(attrv.referral)
             elif attr.schema.name == 'group':
-                self.assertEqual(attrv.value, '0')
+                self.assertEqual(attrv.value, '')
             elif attr.schema.name == 'text':
                 self.assertEqual(attrv.value, '')
             elif attr.schema.name == 'vals':

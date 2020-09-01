@@ -161,11 +161,7 @@ class AttributeValue(models.Model):
 
     def format_for_history(self):
         def _get_group_value(attrv):
-            group = Group.objects.filter(id=self.value, is_active=True).first()
-            if group:
-                return {'id': group.id, 'name': group.name}
-            else:
-                return {'id': '', 'name': ''}
+            return Group.objects.filter(id=attrv.value, is_active=True).first()
 
         if not self.data_type:
             # complement data_type as the current type of Attribute
@@ -197,7 +193,7 @@ class AttributeValue(models.Model):
             return _get_group_value(self)
 
         elif self.data_type == AttrTypeValue['array_group']:
-            return [_get_group_value(x) for x in self.data_array.all()]
+            return [y for y in [_get_group_value(x) for x in self.data_array.all()] if y]
 
         else:
             return self.value
@@ -249,7 +245,7 @@ class AttributeValue(models.Model):
 
         # when value is invalid value (e.g. False, empty string) set 0
         # not to cause ValueError exception at other retrieval processing.
-        return obj_group.id if obj_group else 0
+        return obj_group.id if obj_group else ''
 
 
 class Attribute(ACLBase):
@@ -532,7 +528,7 @@ class Attribute(ACLBase):
 
     def _validate_value(self, value):
         def _is_group_object(val):
-            return isinstance(val, Group) or not val or Group.objects.filter(id=val).exists()
+            return isinstance(val, Group) or isinstance(val, int) or isinstance(val, str) or not val
 
         if self.schema.type & AttrTypeValue['array']:
             if value is None:
