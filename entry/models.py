@@ -942,11 +942,11 @@ class Entry(ACLBase):
     def clear_cache(self, cache_key):
         cache.delete("%s_%s" % (self.id, cache_key))
 
-    def add_attribute_from_base(self, base, user):
+    def add_attribute_from_base(self, base, request_user):
         if not isinstance(base, EntityAttr):
             raise TypeError('Variable "base" is incorrect type')
 
-        if not isinstance(user, User):
+        if not isinstance(request_user, User):
             raise TypeError('Variable "user" is incorrect type')
 
         # While an Attribute object which corresponding to base EntityAttr has been already
@@ -969,21 +969,20 @@ class Entry(ACLBase):
 
         attr = Attribute.objects.create(name=base.name,
                                         schema=base,
-                                        created_user=user,
+                                        created_user=request_user,
                                         parent_entry=self,
                                         is_public=base.is_public,
                                         default_permission=base.default_permission)
 
-        # inherites permissions of base object for user
-        [[user.permissions.add(getattr(attr, acltype.name))
-            for acltype in ACLType.availables() if permission.name == acltype.name]
+        # inherits permissions of base object for user
+        [[user.permissions.add(getattr(attr, permission.name))
             for permission in user.get_acls(base)]
+            for user in User.objects.filter(is_active=True)]
 
-        # inherites permissions of base object for each groups
-        [[[group.permissions.add(getattr(attr, acltype.name))
-            for acltype in ACLType.availables() if permission.name == acltype.name]
+        # inherits permissions of base object for each groups
+        [[group.permissions.add(getattr(attr, permission.name))
             for permission in group.get_acls(base)]
-            for group in user.groups.all()]
+            for group in Group.objects.all()]
 
         self.attrs.add(attr)
 
