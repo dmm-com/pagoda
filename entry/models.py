@@ -230,7 +230,7 @@ class AttributeValue(models.Model):
         ID of specific Group instance and name(str) value of specific Group instance.
         """
         obj_group = None
-        if isinstance(val, Group):
+        if isinstance(val, Group) and val.is_active:
             obj_group = val
 
         elif isinstance(val, str):

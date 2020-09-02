@@ -1291,34 +1291,15 @@ class ModelTest(AironeTestCase):
 
         ref_entity = Entity.objects.create(name='Referred Entity', created_user=user)
         ref_entry = Entry.objects.create(name='Ref Entry', schema=ref_entity, created_user=user)
-        attr_info = {
-            'str': {'type': AttrTypeValue['string']},
-            'obj': {'type': AttrTypeValue['object']},
-            'name': {'type': AttrTypeValue['named_object']},
-            'bool': {'type': AttrTypeValue['boolean']},
-            'arr1': {'type': AttrTypeValue['array_string']},
-            'arr2': {'type': AttrTypeValue['array_object']},
-            'arr3': {'type': AttrTypeValue['array_named_object']},
-            'group': {'type': AttrTypeValue['group']},
-            'date': {'type': AttrTypeValue['date']}
-        }
 
-        entity = Entity.objects.create(name='entity', created_user=user)
-        for attr_name, info in attr_info.items():
-            attr = EntityAttr.objects.create(name=attr_name,
-                                             type=info['type'],
-                                             created_user=user,
-                                             parent_entity=entity)
-
-            if info['type'] & AttrTypeValue['object']:
-                attr.referral.add(ref_entity)
-
-            entity.attrs.add(attr)
-
+        entity = self.create_entity_with_all_type_attributes(user, ref_entity)
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
         entry.complement_attrs(user)
 
         group = Group.objects.create(name='Group')
+        deleted_group = Group.objects.create(name='Deleting Group')
+        deleted_group.delete()
+
         checklist = [
             {'attr': 'str', 'input': 'foo', 'checker': lambda x: x == 'foo'},
             {'attr': 'obj', 'input': 'Ref Entry', 'checker': lambda x: x.id == ref_entry.id},
@@ -1326,19 +1307,29 @@ class ModelTest(AironeTestCase):
             {'attr': 'name', 'input': {'foo': ref_entry},
              'checker': lambda x: x['name'] == 'foo' and x['id'].id == ref_entry.id},
             {'attr': 'bool', 'input': False, 'checker': lambda x: x is False},
-            {'attr': 'arr1', 'input': ['foo', 'bar'], 'checker': lambda x: x == ['foo', 'bar']},
-            {'attr': 'arr2', 'input': ['Ref Entry'],
+            {'attr': 'arr_str', 'input': ['foo', 'bar'], 'checker': lambda x: x == ['foo', 'bar']},
+            {'attr': 'arr_obj', 'input': ['Ref Entry'],
              'checker': lambda x: len(x) == 1 and x[0].id == ref_entry.id},
-            {'attr': 'arr2', 'input': ['Ref Entry', 'Invalid Entry'],
+            {'attr': 'arr_obj', 'input': ['Ref Entry', 'Invalid Entry'],
              'checker': lambda x: len(x) == 1 and x[0].id == ref_entry.id},
-            {'attr': 'arr3', 'input': [{'foo': 'Ref Entry'}],
+            {'attr': 'arr_name', 'input': [{'foo': 'Ref Entry'}],
              'checker': lambda x: len(x) == 1 and x[0]['name'] == 'foo' and
              x[0]['id'].id == ref_entry.id},
-            {'attr': 'arr3', 'input': [{'foo': 'Ref Entry'}, {'bar': 'Invalid Entry'}],
+            {'attr': 'arr_name', 'input': [{'foo': 'Ref Entry'}, {'bar': 'Invalid Entry'}],
              'checker': lambda x: (len(x) == 2 and x[0]['name'] == 'foo' and
                                    x[0]['id'].id == ref_entry.id and x[1]['name'] == 'bar' and
                                    x[1]['id'] is None)},
             {'attr': 'group', 'input': 'Group', 'checker': lambda x: x == str(group.id)},
+            {'attr': 'group', 'input': str(group.id), 'checker': lambda x: x == str(group.id)},
+            {'attr': 'group', 'input': group.id, 'checker': lambda x: x == str(group.id)},
+            {'attr': 'group', 'input': group, 'checker': lambda x: x == str(group.id)},
+            {'attr': 'group', 'input': deleted_group, 'checker': lambda x: x is None},
+            {'attr': 'arr_group', 'input': ['Group'], 'checker': lambda x: x == [str(group.id)]},
+            {'attr': 'arr_group', 'input': [str(group.id)],
+             'checker': lambda x: x == [str(group.id)]},
+            {'attr': 'arr_group', 'input': [group.id], 'checker': lambda x: x == [str(group.id)]},
+            {'attr': 'arr_group', 'input': [group], 'checker': lambda x: x == [str(group.id)]},
+            {'attr': 'arr_group', 'input': [deleted_group], 'checker': lambda x: x == []},
             {'attr': 'date', 'input': date(2018, 12, 31),
              'checker': lambda x: x == date(2018, 12, 31)},
             {'attr': 'date', 'input': '2020-01-01', 'checker': lambda x: x == '2020-01-01'}
