@@ -245,7 +245,7 @@ class AttributeValue(models.Model):
 
         # when value is invalid value (e.g. False, empty string) set 0
         # not to cause ValueError exception at other retrieval processing.
-        return obj_group.id if obj_group else ''
+        return str(obj_group.id) if obj_group else ''
 
 
 class Attribute(ACLBase):
@@ -335,7 +335,7 @@ class Attribute(ACLBase):
             return last_value.boolean != bool(recv_value)
 
         elif self.schema.type == AttrTypeValue['group']:
-            return last_value.value != recv_value
+            return last_value.value != AttributeValue.uniform_storable_for_group(recv_value)
 
         elif self.schema.type == AttrTypeValue['date']:
             return last_value.date != recv_value
@@ -399,15 +399,15 @@ class Attribute(ACLBase):
             # This is the case when input value is None, this returns True when
             # any available values are already exists.
             if not recv_value:
-                return any([(
+                return any([
                     Group.objects.filter(id=x.value, is_active=True).exists()
                     for x in last_value.data_array.all()
-                )])
+                ])
 
             return (
                 sorted([
                     AttributeValue.uniform_storable_for_group(v)
-                    for v in recv_value]) !=
+                    for v in recv_value if v]) !=
                 sorted([
                     x.value for x in last_value.data_array.all()
                     if Group.objects.filter(id=x.value, is_active=True).exists()

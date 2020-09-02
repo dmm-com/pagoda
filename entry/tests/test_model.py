@@ -447,6 +447,36 @@ class ModelTest(AironeTestCase):
         # Checks attitude of is_update
         self.assertTrue(attr.is_updated(date(9999, 12, 31)))
 
+    def test_for_group_attr_and_value(self):
+        test_group = Group.objects.create(name='g0')
+
+        # create test target Attribute and empty AttributeValue for it
+        attr = self.make_attr('attr_date', AttrTypeValue['group'])
+        attr.add_value(self._user, None)
+
+        # The cases when value will be updated
+        for v in [str(test_group.id), test_group.id, test_group]:
+            self.assertTrue(attr.is_updated(v))
+
+        # The cases when value won't be updated
+        for v in [None, '0', 0, '123456']:
+            self.assertFalse(attr.is_updated(v))
+
+    def test_for_array_group_attr_and_value(self):
+        test_groups = [Group.objects.create(name=x) for x in ['g0', 'g1']]
+
+        # create test target Attribute and empty AttributeValue for it
+        attr = self.make_attr('attr_date', AttrTypeValue['array_group'])
+        attr.add_value(self._user, None)
+
+        # The cases when value will be updated
+        for v in [[str(x.id) for x in test_groups], [x.id for x in test_groups], test_groups]:
+            self.assertTrue(attr.is_updated(v))
+
+        # The cases when value won't be updated
+        for v in [[], [None], None]:
+            self.assertFalse(attr.is_updated(v))
+
     def test_get_attribute_value_during_updating(self):
         user = User.objects.create(username='hoge')
 
@@ -1308,7 +1338,7 @@ class ModelTest(AironeTestCase):
              'checker': lambda x: (len(x) == 2 and x[0]['name'] == 'foo' and
                                    x[0]['id'].id == ref_entry.id and x[1]['name'] == 'bar' and
                                    x[1]['id'] is None)},
-            {'attr': 'group', 'input': 'Group', 'checker': lambda x: x == group.id},
+            {'attr': 'group', 'input': 'Group', 'checker': lambda x: x == str(group.id)},
             {'attr': 'date', 'input': date(2018, 12, 31),
              'checker': lambda x: x == date(2018, 12, 31)},
             {'attr': 'date', 'input': '2020-01-01', 'checker': lambda x: x == '2020-01-01'}
@@ -1317,6 +1347,7 @@ class ModelTest(AironeTestCase):
             attr = entry.attrs.get(name=info['attr'])
 
             converted_data = attr.convert_value_to_register(info['input'])
+
             self.assertTrue(info['checker'](converted_data))
 
             # create AttributeValue using converted value
