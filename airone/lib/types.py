@@ -63,7 +63,7 @@ class AttrTypeArrNamedObj(with_metaclass(MetaAttrType)):
 
 class AttrTypeArrGroup(with_metaclass(MetaAttrType)):
     NAME = 'array_group'
-    TYPE = _ATTR_OBJECT_TYPE | _ATTR_GROUP_TYPE
+    TYPE = _ATTR_GROUP_TYPE | _ATTR_ARRAY_TYPE
 
 
 class AttrTypeText(with_metaclass(MetaAttrType)):
