@@ -1186,7 +1186,7 @@ class ModelTest(AironeTestCase):
         entry.complement_attrs(user)
 
         attr_info = [
-            {'name': 'str','set_val': 'foo', 'exp_val': 'foo'},
+            {'name': 'str', 'set_val': 'foo', 'exp_val': 'foo'},
             {'name': 'obj', 'set_val': str(test_ref.id), 'exp_val': test_ref.name},
             {'name': 'obj', 'set_val': test_ref.id, 'exp_val': test_ref.name},
             {'name': 'obj', 'set_val': test_ref, 'exp_val': test_ref.name},
@@ -3040,7 +3040,7 @@ class ModelTest(AironeTestCase):
         entry.complement_attrs(user)
 
         attr_info = [
-            {'name': 'str','set_val': 'foo', 'exp_val': 'foo'},
+            {'name': 'str', 'set_val': 'foo', 'exp_val': 'foo'},
             {'name': 'obj', 'set_val': str(test_ref.id),
              'exp_val': ACLBase.objects.get(id=test_ref.id)},
             {'name': 'obj', 'set_val': test_ref.id,

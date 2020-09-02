@@ -5,7 +5,6 @@ from django.db import models
 from django.db.models import Q
 from django.core.cache import cache
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 
 from entity.models import EntityAttr, Entity
 from user.models import User
@@ -680,7 +679,7 @@ class Attribute(ACLBase):
                 for v in value:
                     # set AttributeValue for each values
                     co_attrv = _set_attrv((self.schema.type & ~AttrTypeValue['array']), v,
-                                         params=co_attrv_params)
+                                          params=co_attrv_params)
                     if co_attrv:
                         attrv_bulk.append(co_attrv)
 
@@ -785,8 +784,8 @@ class Attribute(ACLBase):
                            for v in value], [])
 
             elif self.schema.type & AttrTypeValue['group']:
-                return [x for x in
-                    [AttributeValue.uniform_storable_for_group(y) for y in value] if x]
+                return [x for x in [
+                    AttributeValue.uniform_storable_for_group(y) for y in value] if x]
 
         return None
 
