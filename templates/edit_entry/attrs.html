@@ -23,10 +23,10 @@
         <div class='col-10'>
       {% endif %}
 
-            {% if attr.type|bitwise_and:attr_type.entry %}
+      {% if attr.type|bitwise_and:attr_type.entry %}
 
         <ul class='list-group'>
-          <li class='list-group-item list-group-item-info airone-selected-items' attr_id='{{ attr.id }}' style="height: 30px; padding: 5px 15px;">{{ attr.last_referral.name }}</li>
+          <li class='list-group-item list-group-item-info airone-selected-items' attr_id='{{ attr.id }}' style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
         </ul>
         <!-- specify maximum size of list -->
         <select class="attr_value" attr_id="{{ attr.id }}" size=5 style="width: 100%" unfetched_value='true'>
@@ -35,8 +35,8 @@
           {% endif %}
 
           <!-- show selected referral entry on the top of list -->
-          {% if attr.last_referral %}
-            <option value="{{ attr.last_referral.id }}" selected='selected'>{{ attr.last_referral.name }}</option>
+          {% if attr.last_value %}
+            <option value="{{ attr.last_value.id }}" selected='selected'>{{ attr.last_value.name }}</option>
           {% endif %}
         </select>
 
@@ -52,20 +52,24 @@
           </div>
         </div>
       </div>
-    {% elif attr.type|bitwise_and:attr_type.entry %}
+
+      {% elif attr.type|bitwise_and:attr_type.entry %}
       <div class='row attr_referral' {% if attr.is_mandatory %}mandatory="true"{% endif %}>
-      {% if attr.type|bitwise_and:attr_type_value.named %}
-        <div class='col-3'>
-          <input type='text' class='form-control referral_key' attr_id="{{ attr.id }}" value="{{ attr.last_value }}" enabled="True" index="0"></input>
-        </div>
-        <div class='col-9'>
-      {% else %}
-        <div class='col-12'>
-      {% endif %}
+
+        {% if attr.type|bitwise_and:attr_type_value.named %}
+          <div class='col-3'>
+            <input type='text' class='form-control referral_key' attr_id="{{ attr.id }}" value="{{ attr.last_value.value }}" enabled="True" index="0"></input>
+          </div>
+          <div class='col-9'>
+        {% else %}
+          <div class='col-12'>
+        {% endif %}
 
         <!-- specify maximum size of list -->
         <ul class='list-group'>
-          <li class='list-group-item list-group-item-info airone-selected-items' attr_id='{{ attr.id }}' style="height: 30px; padding: 5px 15px;">{{ attr.last_referral.name }}</li>
+          {% if attr.last_value.referral %}
+          <li class='list-group-item list-group-item-info airone-selected-items' attr_id='{{ attr.id }}' style="height: 30px; padding: 5px 15px;">{{ attr.last_value.referral.name }}</li>
+          {% endif %}
         </ul>
 
         <select class="attr_value" attr_id="{{ attr.id }}" enabled="True" index='0' size='5' style="width: 100%" unfetched_value='true'>
@@ -74,8 +78,8 @@
           {% endif %}
 
           <!-- show selected referral entry on the top of list -->
-          {% if attr.last_referral %}
-          <option value="{{ attr.last_referral.id }}" selected='selected'>{{ attr.last_referral.name }}</option>
+          {% if attr.last_value.referral %}
+          <option value="{{ attr.last_value.referral.id }}" selected='selected'>{{ attr.last_value.referral.name }}</option>
           {% endif %}
         </select>
 
@@ -108,7 +112,7 @@
           {% endif %}
 
           {% for group in groups %}
-          <option value="{{ group.id }}"{% if group.id == attr.last_referral.id %} selected="selected" {% endif %}>{{ group.name }}</option>
+          <option value="{{ group.id }}"{% if group.id == attr.last_value.id %} selected="selected" {% endif %}>{{ group.name }}</option>
           {% endfor %}
       </select>
 

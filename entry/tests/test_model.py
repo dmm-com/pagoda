@@ -41,6 +41,26 @@ class ModelTest(AironeTestCase):
         self._complement_user.set_password(self._org_auto_complement_user)
         self._complement_user.save()
 
+    def _get_attrinfo_template(self, ref=None, group=None):
+        attrinfo = [
+            {'name': 'str', 'set_val': 'foo', 'exp_val': 'foo'},
+            {'name': 'bool', 'set_val': False, 'exp_val': False},
+            {'name': 'arr_str', 'set_val': ['foo', 'bar', 'baz'], 'exp_val': ['foo', 'bar', 'baz']},
+            {'name': 'date', 'set_val': date(2018, 12, 31), 'exp_val': date(2018, 12, 31)},
+        ]
+        if ref:
+            attrinfo.append({'name': 'obj', 'set_val': ref, 'exp_val': ref.name})
+            attrinfo.append({'name': 'name', 'set_val': {'name': 'bar', 'id': ref},
+                             'exp_val': {'bar': ref.name}})
+            attrinfo.append({'name': 'arr_obj', 'set_val': [ref], 'exp_val': [ref.name]})
+            attrinfo.append({'name': 'arr_name', 'set_val': [{'name': 'hoge', 'id': ref}],
+                             'exp_val': [{'hoge': ref.name}]})
+        if group:
+            attrinfo.append({'name': 'group', 'set_val': group, 'exp_val': group.name})
+            attrinfo.append({'name': 'arr_group', 'set_val': [group], 'exp_val': [group.name]})
+
+        return attrinfo
+
     def create_entity_with_all_type_attributes(self, user, ref_entity=None):
         """
         This is a test helper method to add attributes of all attribute-types
@@ -867,147 +887,92 @@ class ModelTest(AironeTestCase):
 
     def test_set_value_method(self):
         user = User.objects.create(username='hoge')
-        groups = [Group.objects.create(name=x) for x in ['g1', 'g2']]
+        test_groups = [Group.objects.create(name=x) for x in ['g1', 'g2']]
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name='Referred Entity', created_user=user)
-        for index in range(0, 10):
-            last_ref = Entry.objects.create(name='r-%s' % index, schema=ref_entity,
-                                            created_user=user)
+        ref_entry = Entry.objects.create(name='r0', schema=ref_entity, created_user=user)
 
-        attr_info = {
-            'str': {'type': AttrTypeValue['string'], 'value': 'foo',
-                    'invalid_values': [123, last_ref, True]},
-            'obj': {'type': AttrTypeValue['object'], 'value': str(last_ref.id)},
-            'name': {'type': AttrTypeValue['named_object'],
-                     'value': {'name': 'bar', 'id': str(last_ref.id)}},
-            'bool': {'type': AttrTypeValue['boolean'], 'value': False},
-            'arr_str': {'type': AttrTypeValue['array_string'], 'value': ['foo', 'bar', 'baz']},
-            'arr_obj': {'type': AttrTypeValue['array_object'],
-                        'value': [str(x.id) for x in Entry.objects.filter(schema=ref_entity)]},
-            'arr_name': {'type': AttrTypeValue['array_named_object'],
-                         'value': [
-                             {'name': 'hoge', 'id': str(last_ref.id)},
-                             {'name': 'fuga', 'boolean': False},  # specify boolean parameter
-                          ]},
-            'group': {'type': AttrTypeValue['group'], 'value': str(groups[0].id)},
-            'date': {'type': AttrTypeValue['date'], 'value': date(2018, 12, 31)},
-            'arr_group': {
-                'type': AttrTypeValue['array_group'],
-                'value': [str(x.id) for x in groups]
-            }
-        }
-
-        entity = Entity.objects.create(name='entity', created_user=user)
-        for attr_name, info in attr_info.items():
-            attr = EntityAttr.objects.create(name=attr_name,
-                                             type=info['type'],
-                                             created_user=user,
-                                             parent_entity=entity)
-
-            if info['type'] & AttrTypeValue['object']:
-                attr.referral.add(ref_entity)
-
-            entity.attrs.add(attr)
-
+        entity = self.create_entity_with_all_type_attributes(user)
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
         entry.complement_attrs(user)
 
-        for attr_name, info in attr_info.items():
-            attr = entry.attrs.get(name=attr_name)
-            attrv = attr.add_value(user, info['value'])
-
-            self.assertEqual(attrv, attr.get_latest_value())
-            self.assertEqual(attr.values.last().data_type, info['type'])
-
-            # check boolean parameter for each attrv
-            self.assertTrue(all(x.boolean is False for x in attrv.data_array.all()))
-            if attr_name == 'bool':
-                self.assertEqual(attrv.boolean, info['value'])
-            else:
-                self.assertFalse(attrv.boolean)
-
-            # checks that validation processing works well
-            if 'invalid_values' in info:
-                [self.assertEqual(attr.add_value(user, x).value,
-                                  str(x)) for x in info['invalid_values']]
-
-        # null-check of is_updated method for each type of Attributes
-        for (attr_name, info) in attr_info.items():
-            attr = entry.attrs.get(name=attr_name)
-
-            if info['type'] == AttrTypeValue['boolean']:
-                self.assertFalse(attr.is_updated(None))
-            else:
-                self.assertTrue(attr.is_updated(None))
-
-        # check update attr-value with specifying entry directly
-        new_ref = Entry.objects.get(schema=ref_entity, name='r-1')
-        entry.attrs.get(name='obj').add_value(user, new_ref)
-        entry.attrs.get(name='name').add_value(user, {'name': 'new_value', 'id': new_ref})
-        entry.attrs.get(name='arr_obj').add_value(user, [new_ref])
-        entry.attrs.get(name='arr_name').add_value(user, [{'name': 'new_value', 'id': new_ref}])
+        # set initial values for entry
+        attr_info = [
+            {'name': 'obj', 'val': ref_entry},
+            {'name': 'name', 'val': {'name': 'new_value', 'id': ref_entry}},
+            {'name': 'arr_obj', 'val': [ref_entry]},
+            {'name': 'arr_name', 'val': [{'name': 'new_value', 'id': ref_entry}]},
+            {'name': 'arr_group', 'val': test_groups},
+        ]
+        for info in attr_info:
+            attr = entry.attrs.get(schema__name=info['name'])
+            attr.add_value(user, info['val'])
 
         latest_value = entry.attrs.get(name='obj').get_latest_value()
-        self.assertEqual(latest_value.referral.id, new_ref.id)
+        self.assertEqual(latest_value.referral.id, ref_entry.id)
 
         latest_value = entry.attrs.get(name='name').get_latest_value()
         self.assertEqual(latest_value.value, 'new_value')
-        self.assertEqual(latest_value.referral.id, new_ref.id)
+        self.assertEqual(latest_value.referral.id, ref_entry.id)
 
         latest_value = entry.attrs.get(name='arr_obj').get_latest_value()
-        self.assertEqual(latest_value.data_array.count(), 1)
-        self.assertEqual(latest_value.data_array.last().referral.id, new_ref.id)
+        self.assertEqual([x.referral.id for x in latest_value.data_array.all()], [ref_entry.id])
 
         latest_value = entry.attrs.get(name='arr_name').get_latest_value()
-        self.assertEqual(latest_value.data_array.count(), 1)
-        self.assertEqual(latest_value.data_array.last().value, 'new_value')
-        self.assertEqual(latest_value.data_array.last().referral.id, new_ref.id)
+        self.assertEqual([(x.value, x.referral.id) for x in latest_value.data_array.all()],
+                         [('new_value', ref_entry.id)])
 
         latest_value = entry.attrs.get(name='arr_group').get_latest_value()
         self.assertEqual([int(x.value) for x in latest_value.data_array.all()],
-                         [x.id for x in groups])
+                         [x.id for x in test_groups])
 
-        # test to get attribute values of empty entry
-        entry1 = Entry.objects.create(name='entry1', schema=entity, created_user=user)
-        entry1.complement_attrs(user)
+    def test_get_available_attrs(self):
+        user = User.objects.create(username='hoge')
+        test_group = Group.objects.create(name='test-group')
 
-        results = entry1.get_available_attrs(user)
-        self.assertIsNone([x for x in results if x['name'] == 'group'][0]['last_referral'])
-        self.assertEqual([x for x in results if x['name'] == 'group'][0]['last_value'], '')
+        # create referred Entity and Entries
+        ref_entity = Entity.objects.create(name='Referred Entity', created_user=user)
+        ref_entry = Entry.objects.create(name='r0', schema=ref_entity, created_user=user)
+        aclbase_ref = ACLBase.objects.get(id=ref_entry.id)
 
-        # test add_value with boolean parameter
-        for attr_name, info in attr_info.items():
-            attr = entry.attrs.get(name=attr_name)
-            attrv = attr.add_value(user, info['value'], boolean=True)
+        entity = self.create_entity_with_all_type_attributes(user)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
 
-            # check boolean parameter for each attrv
-            if attr_name == 'bool':
-                self.assertEqual(attrv.boolean, info['value'])
+        # set initial values for entry
+        attrinfo = {}
+        for info in self._get_attrinfo_template(ref_entry, test_group):
+            attr = entry.attrs.get(schema__name=info['name'])
+            attr.add_value(user, info['set_val'])
+
+            if info['name'] not in attrinfo:
+                attrinfo[info['name']] = {}
+
+            attrinfo[info['name']]['attr'] = attr
+            if attr.schema.type == AttrTypeValue['named_object']:
+                attrinfo[info['name']]['exp_val'] = {'value': 'bar', 'referral': aclbase_ref}
+            elif attr.schema.type == AttrTypeValue['object']:
+                attrinfo[info['name']]['exp_val'] = aclbase_ref
+            elif attr.schema.type == AttrTypeValue['array_named_object']:
+                attrinfo[info['name']]['exp_val'] = [{'value': 'hoge', 'referral': aclbase_ref}]
+            elif attr.schema.type == AttrTypeValue['array_object']:
+                attrinfo[info['name']]['exp_val'] = [aclbase_ref]
+            elif attr.schema.type == AttrTypeValue['group']:
+                attrinfo[info['name']]['exp_val'] = test_group
+            elif attr.schema.type == AttrTypeValue['array_group']:
+                attrinfo[info['name']]['exp_val'] = [test_group]
             else:
-                self.assertTrue(attrv.boolean)
+                attrinfo[info['name']]['exp_val'] = info['exp_val']
 
-            for co_attrv in attrv.data_array.all():
-                if attr_name == 'arr_name' and co_attrv.value == 'fuga':
-                    self.assertFalse(co_attrv.boolean)
-                else:
-                    self.assertTrue(co_attrv.boolean)
+        results = entry.get_available_attrs(user)
+        entry_attrs = entry.attrs.all()
+        for result in results:
+            attr = attrinfo[result['name']]['attr']
 
-        # test add_value date as string
-        entry.attrs.get(name='date').add_value(user, '2020-01-01')
-        self.assertEqual(entry.attrs.get(name='date').get_latest_value().date, date(2020, 1, 1))
-
-        # test update each Attribute's values of array by specifying None
-        attr_name_arrays = [k for (k, v) in attr_info.items() if v['type'] & AttrTypeValue['array']]
-
-        self.assertEqual(len(attr_name_arrays), 4)
-        for attr_name in attr_name_arrays:
-            attr = entry.attrs.get(name=attr_name)
-            attr_value = attr.add_value(user, None)
-
-            self.assertEqual(attr.get_latest_value(), attr_value)
-            self.assertTrue(attr_value.get_status(AttributeValue.STATUS_DATA_ARRAY_PARENT))
-            self.assertEqual(attr_value.data_array.count(), 0)
+            self.assertEqual(result['id'], attr.id)
+            self.assertEqual(result['type'], attr.schema.type)
+            self.assertEqual(result['last_value'], attrinfo[attr.name]['exp_val'])
 
     def test_set_attrvalue_to_entry_attr_without_availabe_value(self):
         user = User.objects.create(username='hoge')
@@ -1103,13 +1068,13 @@ class ModelTest(AironeTestCase):
 
         # checks all set vaialbles can be got correctly
         available_attrs = entry.get_available_attrs(user)
-
         self.assertEqual(len(available_attrs), len(attr_info))
         for attr in available_attrs:
             if attr['name'] == 'obj':
-                self.assertEqual(attr['last_referral'].id, ref_entry.id)
+                self.assertEqual(attr['last_value'].id, ref_entry.id)
             elif attr['name'] == 'name':
-                self.assertEqual(attr['last_referral'].id, ref_entry.id)
+                self.assertEqual(attr['last_value']['value'], 'hoge')
+                self.assertEqual(attr['last_value']['referral'].id, ref_entry.id)
             elif attr['name'] == 'arr_obj':
                 self.assertEqual([x.id for x in attr['last_value']], [ref_entry.id])
             elif attr['name'] == 'arr_name':
@@ -1122,9 +1087,10 @@ class ModelTest(AironeTestCase):
         self.assertEqual(len(available_attrs), len(attr_info))
         for attr in available_attrs:
             if attr['name'] == 'obj':
-                self.assertEqual(attr['last_referral'], None)
+                self.assertIsNone(attr['last_value'])
             elif attr['name'] == 'name':
-                self.assertEqual(attr['last_referral'], None)
+                self.assertEqual(attr['last_value']['value'], 'hoge')
+                self.assertIsNone(attr['last_value']['referral'])
             elif attr['name'] == 'arr_obj':
                 self.assertEqual(attr['last_value'], [])
             elif attr['name'] == 'arr_name':
@@ -1164,9 +1130,10 @@ class ModelTest(AironeTestCase):
         self.assertEqual(len(available_attrs), len(attr_info))
         for attr in available_attrs:
             if attr['name'] == 'obj':
-                self.assertEqual(attr['last_referral'], None)
+                self.assertIsNone(attr['last_value'])
             elif attr['name'] == 'name':
-                self.assertEqual(attr['last_referral'], None)
+                self.assertEqual(attr['last_value']['value'], 'hoge')
+                self.assertIsNone(attr['last_value']['referral'])
             elif attr['name'] == 'arr_obj':
                 self.assertEqual(attr['last_value'], [])
             elif attr['name'] == 'arr_name':
@@ -2931,6 +2898,19 @@ class ModelTest(AironeTestCase):
             ret = Entry.search_entries(user, [], entry_name=test_suite['search_word'])
             self.assertEqual(ret['ret_count'], test_suite['ret_cnt'])
             self.assertEqual(ret['ret_values'][0]['entry']['name'], test_suite['ret_entry_name'])
+
+    def test_get_es_document(self):
+        user = User.objects.create(username='hoge')
+        test_group = Group.objects.create(name='test-group')
+
+        # create referred Entity and Entries
+        ref_entity = Entity.objects.create(name='Referred Entity', created_user=user)
+        ref_entry = Entry.objects.create(name='r0', schema=ref_entity, created_user=user)
+        aclbase_ref = ACLBase.objects.get(id=ref_entry.id)
+
+        entity = self.create_entity_with_all_type_attributes(user)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
 
     def test_get_es_document_when_referred_entry_was_deleted(self):
         # This entry refers self._entry which will be deleted later

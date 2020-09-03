@@ -1074,11 +1074,9 @@ class Entry(ACLBase):
             attrinfo['type'] = attr.schema.type
             attrinfo['is_mandatory'] = attr.schema.is_mandatory
             attrinfo['index'] = attr.schema.index
-            attrinfo['referrals'] = []
 
             # set last-value of current attributes
             attrinfo['last_value'] = ''
-            attrinfo['last_referral'] = None
             if attr.values.exists():
                 last_value = attr.get_latest_value()
                 if not last_value.data_type:
@@ -1088,9 +1086,11 @@ class Entry(ACLBase):
                 if last_value.data_type == AttrTypeStr or last_value.data_type == AttrTypeText:
                     attrinfo['last_value'] = last_value.value
 
-                elif (last_value.data_type == AttrTypeObj and last_value.referral and
-                        last_value.referral.is_active):
-                    attrinfo['last_referral'] = last_value.referral
+                elif last_value.data_type == AttrTypeObj:
+                    if last_value.referral and last_value.referral.is_active:
+                        attrinfo['last_value'] = last_value.referral
+                    else:
+                        attrinfo['last_value'] = None
 
                 elif last_value.data_type == AttrTypeArrStr:
                     # this dict-key 'last_value' is uniformed with all array types
@@ -1107,10 +1107,12 @@ class Entry(ACLBase):
                     attrinfo['last_value'] = last_value.date
 
                 elif last_value.data_type == AttrTypeValue['named_object']:
-                    attrinfo['last_value'] = last_value.value
+                    attrinfo['last_value'] = {'value': last_value.value}
 
                     if last_value.referral and last_value.referral.is_active:
-                        attrinfo['last_referral'] = last_value.referral
+                        attrinfo['last_value']['referral'] = last_value.referral
+                    else:
+                        attrinfo['last_value']['referral'] = None
 
                 elif last_value.data_type == AttrTypeValue['array_named_object']:
                     values = [x.value for x in last_value.data_array.all()]
@@ -1124,10 +1126,10 @@ class Entry(ACLBase):
                 elif last_value.data_type == AttrTypeValue['group'] and last_value.value:
                     group = Group.objects.filter(id=last_value.value)
                     if group:
-                        attrinfo['last_referral'] = group.first()
+                        attrinfo['last_value'] = group.first()
 
                 elif last_value.data_type == AttrTypeValue['array_group']:
-                    attrinfo['last_referral'] = [
+                    attrinfo['last_value'] = [
                         x for x in [
                             Group.objects.filter(id=v.value, is_active=True).first()
                             for v in last_value.data_array.all()
