@@ -2295,39 +2295,46 @@ class ModelTest(AironeTestCase):
         self.assertEqual(attrv, attr.get_latest_value())
         self.assertEqual(attr.values.count(), 1)
 
-    def test_utility_for_updating_attributes(self):
+    def test_add_to_attrv(self):
         user = User.objects.create(username='hoge')
         entity_ref = Entity.objects.create(name='Ref', created_user=user)
-        entry_refs = [Entry.objects.create(name='ref-%d' % i, schema=entity_ref,
-                                           created_user=user) for i in range(3)]
-        entity = Entity.objects.create(name='Entity', created_user=user)
+        entity = self.create_entity_with_all_type_attributes(user, entity_ref)
 
-        attrinfos = [
-            {'name': 'arr_str', 'type': AttrTypeValue['array_string'],
-             'value': ['foo']},
-            {'name': 'arr_obj', 'type': AttrTypeValue['array_object'], 'referral': entity_ref,
-             'value': [entry_refs[0]]},
-            {'name': 'arr_name', 'type': AttrTypeValue['array_named_object'],
-             'referral': entity_ref, 'value': [{'id': entry_refs[0], 'name': 'foo'}]},
-        ]
-        for info in attrinfos:
-            attr = EntityAttr.objects.create(name=info['name'],
-                                             type=info['type'],
-                                             created_user=user,
-                                             parent_entity=entity)
-            if 'referral' in info:
-                attr.referral.add(info['referral'])
-
-            entity.attrs.add(attr)
+        # create test groups but g2 is deleted
+        test_groups = [Group.objects.create(name=x) for x in ['g0', 'g1', 'g2-deleted']]
+        test_groups[2].delete()
 
         # initialize test entry
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
         entry.complement_attrs(user)
+        entry_refs = [Entry.objects.create(name='ref-%d' % i, schema=entity_ref,
+                                           created_user=user) for i in range(2)]
 
+        set_attrinfo = [
+            {'name': 'arr_str', 'value': ['foo']},
+            {'name': 'arr_obj', 'value': [entry_refs[0]]},
+            {'name': 'arr_name', 'value': [{'id': entry_refs[0], 'name': 'foo'}]},
+            {'name': 'arr_group', 'value': [test_groups[0]]}
+        ]
         attrs = {}
-        for info in attrinfos:
+        for info in set_attrinfo:
             attr = attrs[info['name']] = entry.attrs.get(schema__name=info['name'])
             attr.add_value(user, info['value'])
+
+        # test added invalid values
+        attrs['arr_str'].add_to_attrv(user, value='')
+        self.assertEqual([x.value for x in attrs['arr_str'].get_latest_value().data_array.all()],
+                         ['foo'])
+        attrs['arr_obj'].add_to_attrv(user, referral=None)
+        self.assertEqual([x.referral for x in attrs['arr_obj'].get_latest_value().data_array.all()],
+                         [ACLBase.objects.get(id=entry_refs[0].id)])
+        attrs['arr_name'].add_to_attrv(user, value='', referral=None)
+        self.assertEqual([(x.value, x.referral.name) for x in
+                          attrs['arr_name'].get_latest_value().data_array.all()],
+                         [('foo', 'ref-0')])
+        attrs['arr_group'].add_to_attrv(user, value=test_groups[2])
+        self.assertEqual([x.value for x in attrs['arr_group'].get_latest_value().data_array.all()],
+                         [str(test_groups[0].id)])
 
         # test append attrv
         attrs['arr_str'].add_to_attrv(user, value='bar')
@@ -2351,88 +2358,85 @@ class ModelTest(AironeTestCase):
                          sorted(['ref-0', 'ref-1']))
         self.assertEqual([x.boolean for x in attrv.data_array.filter(value='baz')], [True])
 
-        # test remove attrv
-        attrs['arr_str'].remove_from_attrv(user, value='foo')
-        attrv = attrs['arr_str'].get_latest_value()
-        self.assertEqual(attrv.data_array.count(), 1)
-        self.assertEqual(sorted([x.value for x in attrv.data_array.all()]),
-                         sorted(['bar']))
+        attrs['arr_group'].add_to_attrv(user, value=test_groups[1])
+        self.assertEqual([x.value for x in attrs['arr_group'].get_latest_value().data_array.all()],
+                         [str(test_groups[0].id), str(test_groups[1].id)])
 
-        attrs['arr_obj'].remove_from_attrv(user, referral=entry_refs[0])
-        attrv = attrs['arr_obj'].get_latest_value()
-        self.assertEqual(attrv.data_array.count(), 1)
-        self.assertEqual(sorted([x.referral.name for x in attrv.data_array.all()]),
-                         sorted(['ref-1']))
+    def test_remove_from_attrv(self):
+        user = User.objects.create(username='hoge')
+        entity_ref = Entity.objects.create(name='Ref', created_user=user)
+        entity = self.create_entity_with_all_type_attributes(user, entity_ref)
 
-        attrs['arr_name'].remove_from_attrv(user, referral=entry_refs[0])
-        attrv = attrs['arr_name'].get_latest_value()
-        self.assertEqual(attrv.data_array.count(), 1)
-        self.assertEqual(sorted([x.value for x in attrv.data_array.all()]),
-                         sorted(['baz']))
-        self.assertEqual(sorted([x.referral.name for x in attrv.data_array.all()]),
-                         sorted(['ref-1']))
-        self.assertEqual([x.boolean for x in attrv.data_array.filter(value='baz')], [True])
+        # create test groups but g1 is deleted
+        test_groups = [Group.objects.create(name=x) for x in ['g0', 'g1', 'g2-deleted']]
 
-        # test try to remove attrv with invalid value
+        # initialize test entry
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry_refs = [Entry.objects.create(name='ref-%d' % i, schema=entity_ref,
+                                           created_user=user) for i in range(2)]
+
+        set_attrinfo = [
+            {'name': 'arr_str', 'value': ['foo', 'bar']},
+            {'name': 'arr_obj', 'value': entry_refs},
+            {'name': 'arr_name', 'value': [
+                {'id': entry_refs[0], 'name': 'foo'},
+                {'id': entry_refs[1], 'name': 'bar'},
+            ]},
+            {'name': 'arr_group', 'value': test_groups}
+        ]
+        attrs = {}
+        for info in set_attrinfo:
+            attr = attrs[info['name']] = entry.attrs.get(schema__name=info['name'])
+            attr.add_value(user, info['value'])
+
+        # remove group2 after registering
+        test_groups[2].delete()
+
+        # test remove_from_attrv with invalid value
         attrs['arr_str'].remove_from_attrv(user, value=None)
         attrv = attrs['arr_str'].get_latest_value()
-        self.assertEqual(attrv.data_array.count(), 1)
         self.assertEqual(sorted([x.value for x in attrv.data_array.all()]),
-                         sorted(['bar']))
+                         sorted(['foo', 'bar']))
 
         attrs['arr_obj'].remove_from_attrv(user, referral=None)
         attrv = attrs['arr_obj'].get_latest_value()
-        self.assertEqual(attrv.data_array.count(), 1)
         self.assertEqual(sorted([x.referral.name for x in attrv.data_array.all()]),
-                         sorted(['ref-1']))
+                         sorted(['ref-0', 'ref-1']))
 
         attrs['arr_name'].remove_from_attrv(user, referral=None)
         attrv = attrs['arr_name'].get_latest_value()
-        self.assertEqual(attrv.data_array.count(), 1)
         self.assertEqual(sorted([x.value for x in attrv.data_array.all()]),
-                         sorted(['baz']))
+                         sorted(['foo', 'bar']))
+        self.assertEqual(sorted([x.referral.name for x in attrv.data_array.all()]),
+                         sorted(['ref-0', 'ref-1']))
+
+        attrs['arr_group'].remove_from_attrv(user, value=None)
+        self.assertEqual([x.value for x in attrs['arr_group'].get_latest_value().data_array.all()],
+                         [str(x.id) for x in test_groups])
+
+        # test remove_from_attrv with valid value
+        attrs['arr_str'].remove_from_attrv(user, value='foo')
+        attrv = attrs['arr_str'].get_latest_value()
+        self.assertEqual(sorted([x.value for x in attrv.data_array.all()]),
+                         sorted(['bar']))
+
+        attrs['arr_obj'].remove_from_attrv(user, referral=entry_refs[0])
+        attrv = attrs['arr_obj'].get_latest_value()
         self.assertEqual(sorted([x.referral.name for x in attrv.data_array.all()]),
                          sorted(['ref-1']))
 
-        # test to apply with empty value
-        attrs['arr_str'].add_value(user, [])
-        attrs['arr_obj'].add_value(user, [])
-        attrs['arr_name'].add_value(user, [{'name': 'foo', 'id': None}])
-
-        attrs['arr_str'].remove_from_attrv(user, value='foo')
-        attrs['arr_obj'].remove_from_attrv(user, referral=entry_refs[0])
         attrs['arr_name'].remove_from_attrv(user, referral=entry_refs[0])
+        attrv = attrs['arr_name'].get_latest_value()
+        self.assertEqual(sorted([x.value for x in attrv.data_array.all()]),
+                         sorted(['bar']))
+        self.assertEqual(sorted([x.referral.name for x in attrv.data_array.all()]),
+                         sorted(['ref-1']))
 
-        attrs['arr_str'].add_to_attrv(user, value='foo')
-        attrs['arr_obj'].add_to_attrv(user, referral=entry_refs[0])
-        attrs['arr_name'].add_to_attrv(user, referral=entry_refs[0])
-
-        self.assertEqual(attrs['arr_str'].get_latest_value().data_array.count(), 1)
-        self.assertEqual([x.value for x in attrs['arr_str'].get_latest_value().data_array.all()],
-                         ['foo'])
-        self.assertEqual(attrs['arr_obj'].get_latest_value().data_array.count(), 1)
-        self.assertEqual(
-            [x.referral.id for x in attrs['arr_obj'].get_latest_value().data_array.all()],
-            [entry_refs[0].id])
-        self.assertEqual(attrs['arr_name'].get_latest_value().data_array.count(), 2)
-        self.assertEqual(
-            [x.referral.id for x in attrs['arr_name'].get_latest_value().data_array.all()
-             if x.referral], [entry_refs[0].id])
-        self.assertEqual(
-            sorted([x.value for x in attrs['arr_name'].get_latest_value().data_array.all()]),
-            sorted(['', 'foo']))
-
-        # set value with blank value, then blank value will be ignored to regiter
-        attrs['arr_str'].add_value(user, ['foo', 'bar', ''])
-        attrs['arr_obj'].add_value(user, [entry_refs[0], entry_refs[1], None])
-        attrs['arr_name'].add_value(user, [
-            {'name': 'foo', 'id': None},
-            {'name': '', 'id': entry_refs[0]},
-            {'name': '', 'id': None},
-        ])
-        for attr in entry.attrs.all():
-            attrv = attr.get_latest_value()
-            self.assertEqual(attrv.data_array.count(), 2)
+        # This checks that both specified group and invalid groups are removed
+        attrs['arr_group'].remove_from_attrv(user, value=test_groups[1])
+        self.assertEqual([x.value for x in attrs['arr_group'].get_latest_value().data_array.all()],
+                         [str(test_groups[0].id)])
 
     def test_is_importable_data(self):
         check_data = [

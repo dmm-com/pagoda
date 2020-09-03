@@ -825,7 +825,8 @@ class Attribute(ACLBase):
 
                 updated_data = [
                     x.value for x in attrv.data_array.all()
-                    if x.value != AttributeValue.uniform_storable_for_group(value)
+                    if (x.value != AttributeValue.uniform_storable_for_group(value) and
+                        Group.objects.filter(id=x.value, is_active=True).exists())
                 ]
 
             if self.is_updated(updated_data):
@@ -838,28 +839,33 @@ class Attribute(ACLBase):
         attrv = self.get_latest_value()
         if self.schema.type & AttrTypeValue['array']:
 
+            updated_data = None
             if self.schema.type & AttrTypeValue['named']:
-                updated_data = [{
-                    'name': x.value,
-                    'boolean': x.boolean,
-                    'id': x.referral.id if x.referral else None,
-                } for x in attrv.data_array.all()] + [{
-                    'name': str(value),
-                    'boolean': boolean,
-                    'id': referral
-                }]
+                if value or referral:
+                    updated_data = [{
+                        'name': x.value,
+                        'boolean': x.boolean,
+                        'id': x.referral.id if x.referral else None,
+                    } for x in attrv.data_array.all()] + [{
+                        'name': str(value),
+                        'boolean': boolean,
+                        'id': referral
+                    }]
 
             elif self.schema.type & AttrTypeValue['string']:
-                updated_data = [x.value for x in attrv.data_array.all()] + [value]
+                if value:
+                    updated_data = [x.value for x in attrv.data_array.all()] + [value]
 
             elif self.schema.type & AttrTypeValue['object']:
-                updated_data = [x.referral.id for x in attrv.data_array.all()] + [referral]
+                if referral:
+                    updated_data = [x.referral.id for x in attrv.data_array.all()] + [referral]
 
             elif self.schema.type & AttrTypeValue['group']:
-                updated_data = ([x.value for x in attrv.data_array.all()] +
-                                [AttributeValue.uniform_storable_for_group(value)])
+                group_id = AttributeValue.uniform_storable_for_group(value)
+                if group_id:
+                    updated_data = [x.value for x in attrv.data_array.all()] + [group_id]
 
-            if self.is_updated(updated_data):
+            if updated_data and self.is_updated(updated_data):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
 
     def delete(self):
