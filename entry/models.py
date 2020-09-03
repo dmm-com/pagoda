@@ -1289,12 +1289,11 @@ class Entry(ACLBase):
                     attrinfo['referral_id'] = attrv.referral.id
 
             elif attr.type & AttrTypeValue['group']:
-                if attrv.value and Group.objects.filter(id=attrv.value).exists():
-                    group = Group.objects.get(id=attrv.value)
-                    attrinfo['value'] = truncate(group.name)
-                    attrinfo['referral_id'] = group.id
-                else:
-                    attrinfo['value'] = attrinfo['referral_id'] = ''
+                if attrv.value:
+                    group = Group.objects.filter(id=attrv.value, is_active=True).first()
+                    if group:
+                        attrinfo['value'] = truncate(group.name)
+                        attrinfo['referral_id'] = group.id
 
             # Basically register attribute information whatever value doesn't exist
             if not (attr.type & AttrTypeValue['array'] and not is_recursive):

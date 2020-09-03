@@ -44,6 +44,7 @@ class ModelTest(AironeTestCase):
     def _get_attrinfo_template(self, ref=None, group=None):
         attrinfo = [
             {'name': 'str', 'set_val': 'foo', 'exp_val': 'foo'},
+            {'name': 'text', 'set_val': 'bar', 'exp_val': 'bar'},
             {'name': 'bool', 'set_val': False, 'exp_val': False},
             {'name': 'arr_str', 'set_val': ['foo', 'bar', 'baz'], 'exp_val': ['foo', 'bar', 'baz']},
             {'name': 'date', 'set_val': date(2018, 12, 31), 'exp_val': date(2018, 12, 31)},
@@ -69,6 +70,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name='entity', created_user=user)
         attr_info = {
             'str': AttrTypeValue['string'],
+            'text': AttrTypeValue['text'],
             'obj': AttrTypeValue['object'],
             'name': AttrTypeValue['named_object'],
             'bool': AttrTypeValue['boolean'],
@@ -966,7 +968,6 @@ class ModelTest(AironeTestCase):
                 attrinfo[info['name']]['exp_val'] = info['exp_val']
 
         results = entry.get_available_attrs(user)
-        entry_attrs = entry.attrs.all()
         for result in results:
             attr = attrinfo[result['name']]['attr']
 
@@ -1397,6 +1398,7 @@ class ModelTest(AironeTestCase):
                         'value': [str(x.id) for x in Entry.objects.filter(schema=ref_entity)]},
             'arr_name': {'type': AttrTypeValue['array_named_object'],
                          'value': [{'name': 'hoge', 'id': str(ref_entry.id)}]},
+            'arr_group': {'type': AttrTypeValue['array_group'], 'value': [ref_group]},
         }
 
         entity = Entity.objects.create(name='entity', created_user=user)
@@ -1438,6 +1440,7 @@ class ModelTest(AironeTestCase):
             {'name': 'arr_str'},
             {'name': 'arr_obj'},
             {'name': 'arr_name'},
+            {'name': 'arr_group'},
         ])
         self.assertEqual(ret['ret_count'], 11)
         self.assertEqual(len(ret['ret_values']), 11)
@@ -1496,6 +1499,13 @@ class ModelTest(AironeTestCase):
                         self.assertTrue(_co_v)
                         self.assertEqual(_co_v[0]['id'], co_attrv.referral.id)
                         self.assertEqual(_co_v[0]['name'], co_attrv.referral.name)
+
+                elif attrname == 'arr_group':
+                    self.assertEqual(attrinfo['value'],
+                                     [{'id': ref_group.id, 'name': ref_group.name}])
+
+                else:
+                    assert('Invalid result was happend')
 
         # search entries with maximum entries to get
         ret = Entry.search_entries(user, [entity.id], [{'name': 'str'}], 5)
@@ -2906,11 +2916,47 @@ class ModelTest(AironeTestCase):
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name='Referred Entity', created_user=user)
         ref_entry = Entry.objects.create(name='r0', schema=ref_entity, created_user=user)
-        aclbase_ref = ACLBase.objects.get(id=ref_entry.id)
 
         entity = self.create_entity_with_all_type_attributes(user)
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
         entry.complement_attrs(user)
+
+        for info in self._get_attrinfo_template(ref_entry, test_group):
+            attr = entry.attrs.get(schema__name=info['name'])
+            attr.add_value(user, info['set_val'])
+
+        es_registering_value = entry.get_es_document()
+
+        # this test value that will be registered in elasticsearch
+        expected_values = {
+            'str': {'key': [''], 'value': ['foo'], 'referral_id': ['']},
+            'obj': {'key': [''], 'value': [ref_entry.name], 'referral_id': [ref_entry.id]},
+            'text': {'key': [''], 'value': ['bar'], 'referral_id': ['']},
+            'name': {'key': ['bar'], 'value': [ref_entry.name], 'referral_id': [ref_entry.id]},
+            'bool': {'key': [''], 'value': ['False'], 'referral_id': ['']},
+            'group': {'key': [''], 'value': [test_group.name], 'referral_id': [test_group.id]},
+            'date': {'key': [''], 'value': [''], 'referral_id': [''],
+                     'date_value': [date(2018, 12, 31)]},
+            'arr_str': {'key': ['', '', ''], 'value': ['foo', 'bar', 'baz'],
+                        'referral_id': ['', '', '']},
+            'arr_obj': {'key': [''], 'value': [ref_entry.name], 'referral_id': [ref_entry.id]},
+            'arr_name': {'key': ['hoge'], 'value': [ref_entry.name], 'referral_id': [ref_entry.id]},
+            'arr_group': {'key': [''], 'value': [test_group.name], 'referral_id': [test_group.id]},
+        }
+        # check all attributes are expected ones
+        self.assertEqual(set([x['name'] for x in es_registering_value['attr']]),
+                         set(expected_values.keys()))
+
+        # check all attribute contexts are expected ones
+        for attrname, attrinfo in expected_values.items():
+            attr = entry.attrs.get(schema__name=attrname)
+            set_attrs = [x for x in es_registering_value['attr'] if x['name'] == attrname]
+
+            self.assertTrue(all([x['type'] == attr.schema.type for x in set_attrs]))
+            for param_name in ['key', 'value', 'referral_id', 'date_value']:
+                if param_name in attrinfo:
+                    self.assertEqual(sorted([x[param_name] for x in set_attrs]),
+                                     sorted(attrinfo[param_name]))
 
     def test_get_es_document_when_referred_entry_was_deleted(self):
         # This entry refers self._entry which will be deleted later

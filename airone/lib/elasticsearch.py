@@ -727,7 +727,7 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
 
             ret_attrinfo['type'] = attrinfo['type']
             if (attrinfo['type'] == AttrTypeValue['string'] or
-                    attrinfo['type'] == AttrTypeValue['text']):
+                attrinfo['type'] == AttrTypeValue['text']):
 
                 if attrinfo['value']:
                     ret_attrinfo['value'] = attrinfo['value']
@@ -753,22 +753,23 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
                 if 'value' not in ret_attrinfo:
                     ret_attrinfo['value'] = []
 
-                if attrinfo['type'] == AttrTypeValue['array_string']:
+                if attrinfo['type'] & AttrTypeValue['named']:
+                    ret_attrinfo['value'].append({
+                        attrinfo['key']: {'id': attrinfo['referral_id'], 'name': attrinfo['value']}
+                    })
+
+                elif attrinfo['type'] & AttrTypeValue['string']:
                     if 'date_value' in attrinfo:
                         ret_attrinfo['value'].append(attrinfo['date_value'].split('T')[0])
                     else:
                         ret_attrinfo['value'].append(attrinfo['value'])
 
-                elif attrinfo['type'] == AttrTypeValue['array_object']:
+                elif attrinfo['type'] & (AttrTypeValue['object'] | AttrTypeValue['group']):
                     ret_attrinfo['value'].append({
                         'id': attrinfo['referral_id'],
                         'name': attrinfo['value']
                     })
 
-                elif attrinfo['type'] == AttrTypeValue['array_named_object']:
-                    ret_attrinfo['value'].append({
-                        attrinfo['key']: {'id': attrinfo['referral_id'], 'name': attrinfo['value']}
-                    })
 
         results['ret_values'].append(ret_info)
 
