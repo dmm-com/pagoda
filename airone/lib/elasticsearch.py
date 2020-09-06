@@ -727,7 +727,7 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
 
             ret_attrinfo['type'] = attrinfo['type']
             if (attrinfo['type'] == AttrTypeValue['string'] or
-                attrinfo['type'] == AttrTypeValue['text']):
+               attrinfo['type'] == AttrTypeValue['text']):
 
                 if attrinfo['value']:
                     ret_attrinfo['value'] = attrinfo['value']
@@ -769,7 +769,6 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
                         'id': attrinfo['referral_id'],
                         'name': attrinfo['value']
                     })
-
 
         results['ret_values'].append(ret_info)
 

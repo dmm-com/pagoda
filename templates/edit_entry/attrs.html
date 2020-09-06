@@ -9,10 +9,10 @@
       <div>
         <button type="button" class="btn btn-primary btn-sm" name='add_attr' attr_id="{{ attr.id }}">add row</button>
         <div class='array_element' attr_id="{{ attr.id }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}>
-        </div>
+      </div>
 
-        <!-- template of attribute value column -->
-        <div style="display:none" class='attr_value_template' id='template-{{ attr.id }}'>
+      <!-- template of attribute value column -->
+      <div style="display:none" class='attr_value_template' id='template-{{ attr.id }}'>
 
       {% if attr.type|bitwise_and:attr_type_value.named %}
         <div class='col-3'>
@@ -42,9 +42,26 @@
 
         <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}"/>
 
-            {% else %}
-              <input type='text' class='form-control attr_value' attr_id='{{ attr.id }}' index='0'/>
+      {% elif attr.type|bitwise_and:attr_type.group %}
+
+        <ul class='list-group'>
+          <li class='list-group-item list-group-item-info airone-selected-items' attr_id='{{ attr.id }}' style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
+        </ul>
+
+        <select class="attr_value" attr_id="{{ attr.id }}" index='0' size='5' style="width: 100%">
+            {% if not attr.is_mandatory %}
+            <option value='0'>- NOT SET -</option>
             {% endif %}
+
+            {% for group in groups %}
+            <option value="{{ group.id }}"{% if group.id == attr.last_value.id %} selected="selected" {% endif %}>{{ group.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}"/>
+
+      {% else %}
+        <input type='text' class='form-control attr_value' attr_id='{{ attr.id }}' index='0'/>
+      {% endif %}
 
           </div>
           <div class='col-2'>
@@ -67,19 +84,17 @@
 
         <!-- specify maximum size of list -->
         <ul class='list-group'>
-          {% if attr.last_value.referral %}
-          <li class='list-group-item list-group-item-info airone-selected-items' attr_id='{{ attr.id }}' style="height: 30px; padding: 5px 15px;">{{ attr.last_value.referral.name }}</li>
-          {% endif %}
+          <li class='list-group-item list-group-item-info airone-selected-items' attr_id='{{ attr.id }}' style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
         </ul>
 
-        <select class="attr_value" attr_id="{{ attr.id }}" enabled="True" index='0' size='5' style="width: 100%" unfetched_value='true'>
+        <select class="attr_value" attr_id="{{ attr.id }}" enabled="True" index='0' size='5' style="width: 100%" unfetched_value='true' {% if attr.is_mandatory %}mandatory="true"{% endif %}>
           {% if not attr.is_mandatory %}
           <option value='0'>- NOT SET -</option>
           {% endif %}
 
           <!-- show selected referral entry on the top of list -->
-          {% if attr.last_value.referral %}
-          <option value="{{ attr.last_value.referral.id }}" selected='selected'>{{ attr.last_value.referral.name }}</option>
+          {% if attr.last_value %}
+          <option value="{{ attr.last_value.id }}" selected='selected'>{{ attr.last_value.name }}</option>
           {% endif %}
         </select>
 
@@ -94,7 +109,7 @@
 
     {% elif attr.type == attr_type.date %}
 
-      <input type="date" class="attr_value" attr_id="{{ attr.id }}" enabled="True" value="{{ attr.last_value|date:"Y-m-d"}}" {%if attr.is_mandatory%}mandatory="true"{%endif%}/>
+      <input type="date" class="attr_value" attr_id="{{ attr.id }}" enabled="True" value="{{ attr.last_value|date:"Y-m-d"}}" {% if attr.is_mandatory %}mandatory="true"{% endif %} />
 
     {% elif attr.type == attr_type.boolean %}
 
@@ -105,7 +120,12 @@
       {% endif %}
 
     {% elif attr.type|bitwise_and:attr_type.group %}
+    <div class='row attr_referral' {% if attr.is_mandatory %}mandatory="true"{% endif %}>
+      <div class='col-12'>
 
+      <ul class='list-group'>
+        <li class='list-group-item list-group-item-info airone-selected-items' attr_id='{{ attr.id }}' style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
+      </ul>
       <select class="attr_value" attr_id="{{ attr.id }}" enabled="True" index='0' size='5' style="width: 100%" {% if attr.is_mandatory %}mandatory="true"{% endif %}>
           {% if not attr.is_mandatory %}
           <option value='0'>- NOT SET -</option>
@@ -115,7 +135,10 @@
           <option value="{{ group.id }}"{% if group.id == attr.last_value.id %} selected="selected" {% endif %}>{{ group.name }}</option>
           {% endfor %}
       </select>
+      <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}"/>
 
+      </div>
+    </div>
     {% else %}
 
       <input type="text" class="form-control attr_value" attr_id="{{ attr.id }}" enabled="True" value="{{ attr.last_value }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}/>

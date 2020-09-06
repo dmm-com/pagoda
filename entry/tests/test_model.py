@@ -953,11 +953,19 @@ class ModelTest(AironeTestCase):
 
             attrinfo[info['name']]['attr'] = attr
             if attr.schema.type == AttrTypeValue['named_object']:
-                attrinfo[info['name']]['exp_val'] = {'value': 'bar', 'referral': aclbase_ref}
+                attrinfo[info['name']]['exp_val'] = {
+                    'value': 'bar',
+                    'id': aclbase_ref.id,
+                    'name': aclbase_ref.name,
+                }
             elif attr.schema.type == AttrTypeValue['object']:
                 attrinfo[info['name']]['exp_val'] = aclbase_ref
             elif attr.schema.type == AttrTypeValue['array_named_object']:
-                attrinfo[info['name']]['exp_val'] = [{'value': 'hoge', 'referral': aclbase_ref}]
+                attrinfo[info['name']]['exp_val'] = [{
+                    'value': 'hoge',
+                    'id': aclbase_ref.id,
+                    'name': aclbase_ref.name,
+                }]
             elif attr.schema.type == AttrTypeValue['array_object']:
                 attrinfo[info['name']]['exp_val'] = [aclbase_ref]
             elif attr.schema.type == AttrTypeValue['group']:
@@ -1075,12 +1083,14 @@ class ModelTest(AironeTestCase):
                 self.assertEqual(attr['last_value'].id, ref_entry.id)
             elif attr['name'] == 'name':
                 self.assertEqual(attr['last_value']['value'], 'hoge')
-                self.assertEqual(attr['last_value']['referral'].id, ref_entry.id)
+                self.assertEqual(attr['last_value']['id'], ref_entry.id)
+                self.assertEqual(attr['last_value']['name'], ref_entry.name)
             elif attr['name'] == 'arr_obj':
                 self.assertEqual([x.id for x in attr['last_value']], [ref_entry.id])
             elif attr['name'] == 'arr_name':
                 self.assertEqual([x['value'] for x in attr['last_value']], ['hoge'])
-                self.assertEqual([x['referral'].id for x in attr['last_value']], [ref_entry.id])
+                self.assertEqual([x['id'] for x in attr['last_value']], [ref_entry.id])
+                self.assertEqual([x['name'] for x in attr['last_value']], [ref_entry.name])
 
         # delete referral entry, then get available attrs
         ref_entry.delete()
@@ -1091,12 +1101,12 @@ class ModelTest(AironeTestCase):
                 self.assertIsNone(attr['last_value'])
             elif attr['name'] == 'name':
                 self.assertEqual(attr['last_value']['value'], 'hoge')
-                self.assertIsNone(attr['last_value']['referral'])
+                self.assertFalse(any([x in attr['last_value'] for x in ['id', 'name']]))
             elif attr['name'] == 'arr_obj':
                 self.assertEqual(attr['last_value'], [])
             elif attr['name'] == 'arr_name':
                 self.assertEqual([x['value'] for x in attr['last_value']], ['hoge'])
-                self.assertEqual([x['referral'] for x in attr['last_value']], [None])
+                self.assertFalse(any([x in attr['last_value'] for x in ['id', 'name']]))
 
     def test_get_available_attrs_with_empty_referral(self):
         user = User.objects.create(username='hoge')
@@ -1134,12 +1144,12 @@ class ModelTest(AironeTestCase):
                 self.assertIsNone(attr['last_value'])
             elif attr['name'] == 'name':
                 self.assertEqual(attr['last_value']['value'], 'hoge')
-                self.assertIsNone(attr['last_value']['referral'])
+                self.assertFalse(any([x in attr['last_value'] for x in ['id', 'name']]))
             elif attr['name'] == 'arr_obj':
                 self.assertEqual(attr['last_value'], [])
             elif attr['name'] == 'arr_name':
                 self.assertEqual([x['value'] for x in attr['last_value']], ['hoge'])
-                self.assertEqual([x['referral'] for x in attr['last_value']], [None])
+                self.assertFalse(any([x in attr['last_value'] for x in ['id', 'name']]))
 
     def test_get_value_of_attrv(self):
         user = User.objects.create(username='hoge')

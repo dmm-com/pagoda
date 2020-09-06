@@ -15,6 +15,7 @@ from datetime import datetime, date
 from entry.models import Entry, Attribute
 from entity.models import Entity, EntityAttr
 from entry.settings import CONFIG
+from group.models import Group
 from pytz import timezone
 from user.models import User
 from natsort import natsorted
@@ -164,6 +165,26 @@ def get_attr_referrals(request, attr_id):
     """
     This returns entries that target attribute refers to.
     """
+
+    def _get_referral_objects(attr, model, query_params={}):
+        keyword = request.GET.get('keyword')
+        if keyword:
+            query_name = Q(name__icontains=keyword)
+        else:
+            query_name = Q()
+
+        return [{'id': x.id, 'name': x.name} for x in
+                model.objects.filter(Q(**query_params), query_name)[0:CONFIG.MAX_LIST_REFERRALS]]
+
+    def _get_referral_entries(attr):
+        return _get_referral_objects(attr, Entry, {
+            'schema__in': [x for x in attr.referral.all()],
+            'is_active': True
+        })
+
+    def _get_referral_groups(attr):
+        return _get_referral_objects(attr, Group, {'is_active': True})
+
     if (not Attribute.objects.filter(id=attr_id).exists() and
             not EntityAttr.objects.filter(id=attr_id).exists()):
         return HttpResponse('Failed to get target attribute(%s)' % attr_id, status=400)
@@ -174,23 +195,12 @@ def get_attr_referrals(request, attr_id):
     else:
         attr = EntityAttr.objects.get(id=attr_id)
 
-    if not attr.type & AttrTypeValue['object']:
+    if attr.type & AttrTypeValue['object']:
+        results = _get_referral_entries(attr)
+    elif attr.type & AttrTypeValue['group']:
+        results = _get_referral_groups(attr)
+    else:
         return HttpResponse('Target Attribute does not referring type', status=400)
-
-    results = []
-    for referral in attr.referral.all():
-        keyword = request.GET.get('keyword')
-        if keyword:
-            query_name_regex = Q(name__icontains=keyword)
-        else:
-            query_name_regex = Q()
-
-        results += [{'id': x.id, 'name': x.name}
-                    for x in Entry.objects.filter(Q(schema=referral, is_active=True),
-                                                  query_name_regex)]
-
-        if len(results) > CONFIG.MAX_LIST_REFERRALS:
-            break
 
     return JsonResponse(
         {'results': natsorted(results, key=lambda x: x['name'])[0:CONFIG.MAX_LIST_REFERRALS]})

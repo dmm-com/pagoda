@@ -8,6 +8,7 @@ from django.urls import reverse
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from entry.settings import CONFIG
+from group.models import Group
 
 
 class ViewTest(AironeViewTest):
@@ -204,7 +205,42 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.json()['total_count'], CONFIG.MAX_LIST_REFERRALS + 1)
         self.assertEqual(resp.json()['found_count'], 0)
 
-    def test_get_attr_referrals(self):
+    def test_get_attr_referrals_of_group(self):
+        user = self.guest_login()
+
+        # initialize instances to be used in this test case
+        groups = [Group.objects.create(name=x) for x in ['g-foo', 'g-bar', 'g-baz']]
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        for (name, type_index) in [('grp', 'group'), ('arr_group', 'array_group')]:
+            entity.attrs.add(EntityAttr.objects.create(**{
+                'name': name,
+                'type': AttrTypeValue[type_index],
+                'created_user': user,
+                'parent_entity': entity,
+            }))
+
+        # test to get groups through API calling of get_attr_referrals
+        for attr in entity.attrs.all():
+            resp = self.client.get(reverse('entry:api_v1:get_attr_referrals', args=[attr.id]))
+            self.assertEqual(resp.status_code, 200)
+
+            # This expects results has all groups information.
+            self.assertEqual(sorted(resp.json()['results'], key=lambda x: x['id']),
+                             [{'id': g.id, 'name': g.name} for g in Group.objects.all()])
+
+        # test to get groups which are only active and matched with keyword
+        groups[2].delete()
+        for attr in entity.attrs.all():
+            resp = self.client.get(reverse('entry:api_v1:get_attr_referrals', args=[attr.id]),
+                                   {'keyword': 'ba'})
+            self.assertEqual(resp.status_code, 200)
+
+            # This expects results has only information of 'g-bar' because 'g-foo' is
+            # not matched with keyword and 'g-baz' has already been deleted.
+            self.assertEqual(resp.json()['results'],
+                             [{'id': groups[1].id, 'name': groups[1].name}])
+
+    def test_get_attr_referrals_of_entry(self):
         admin = self.admin_login()
 
         # create Entity&Entries

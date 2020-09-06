@@ -1110,9 +1110,8 @@ class Entry(ACLBase):
                     attrinfo['last_value'] = {'value': last_value.value}
 
                     if last_value.referral and last_value.referral.is_active:
-                        attrinfo['last_value']['referral'] = last_value.referral
-                    else:
-                        attrinfo['last_value']['referral'] = None
+                        attrinfo['last_value']['id'] = last_value.referral.id
+                        attrinfo['last_value']['name'] = last_value.referral.name
 
                 elif last_value.data_type == AttrTypeValue['array_named_object']:
                     values = [x.value for x in last_value.data_array.all()]
@@ -1120,7 +1119,8 @@ class Entry(ACLBase):
 
                     attrinfo['last_value'] = sorted([{
                         'value': v,
-                        'referral': r if r and r.is_active else None,
+                        'id': r.id if r and r.is_active else None,
+                        'name': r.name if r and r.is_active else None,
                     } for (v, r) in zip(values, referrals)], key=lambda x: x['value'])
 
                 elif last_value.data_type == AttrTypeValue['group'] and last_value.value:

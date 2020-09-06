@@ -43,8 +43,8 @@
               <span class='url_conv'>{{ attr.last_value.value }}</span>
             </div>
             <div class='col-9'>
-              {% if attr.last_value.referral %}
-              <a href='/entry/show/{{ attr.last_value.referral.id }}'>{{ attr.last_value.referral.name }}</a>{% if attr.last_value.deleted %}(deleted){% endif %}
+              {% if attr.last_value.id %}
+              <a href='/entry/show/{{ attr.last_value.id }}'>{{ attr.last_value.name }}</a>{% if attr.last_value.deleted %}(deleted){% endif %}
               {% endif %}
             </div>
           </div>
@@ -58,7 +58,7 @@
                   <span class='url_conv'>{{ data.value }}</span>
                 </div>
                 <div class='col-9'>
-                  <a href='/entry/show/{{ data.referral.id }}'>{{ data.referral.name }}</a>{% if data.referral.deleted %}(deleted){% endif %}
+                  <a href='/entry/show/{{ data.id }}'>{{ data.name }}</a>
                 </div>
               </div>
             </li>
@@ -66,7 +66,18 @@
           </ul>
 
         {% elif attr.type == attr_type.group %}
-          <a href='/group/edit/{{ attr.last_value.id }}'>{{ attr.last_value.name }}</a>
+          <a href='/group'>{{ attr.last_value.name }}</a>
+
+        {% elif attr.type == attr_type.array_group %}
+          <ul class='list-group'>
+          {% for group in attr.last_value %}
+            <li class='list-group-item'>
+              <a href='/group/'>
+                {{ group.name }}
+              </a>
+            </li>
+          {% endfor %}
+          </ul>
 
         {% endif %}
         </td>
