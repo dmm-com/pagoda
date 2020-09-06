@@ -110,6 +110,15 @@
               </ul>
             </td>
 
+          {% elif attr.type == attr_type.array_group %}
+            <td>
+              <ul class='list-group'>
+              {% for value in attr.value %}
+                <li class='list-group-item'><a href='/group'>{{ value.name }}</a></li>
+              {% endfor %}
+              </ul>
+            </td>
+
           {% elif attr.type == attr_type.array_named_entry %}
             <td>
               <ul class='list-group'>
