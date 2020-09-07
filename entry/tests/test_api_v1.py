@@ -564,9 +564,9 @@ class ViewTest(AironeViewTest):
             # check order of former value and previous value
             for (index, history_value) in enumerate(attr_value_history):
                 if (attr.schema.type & AttrTypeValue['array'] and
-                    not history_value['curr']['value'] and
-                    not history_value['prev']):
-                        continue
+                   not history_value['curr']['value'] and
+                   not history_value['prev']):
+                    continue
 
                 if not history_value['prev'] or not history_value['prev']['value']:
                     # The oldest update history
