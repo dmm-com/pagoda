@@ -161,12 +161,15 @@ var filter_options = function(input_elem) {
     }
   });
 }
-var replace_options = function(elem_select, referrals) {
+var replace_options = function(elem_select, referrals, attr_id) {
   let elem_not_set = $('<option />').val(0).text('- NOT SET -');
   elem_select.empty();
 
+  console.log(`[onix-test/replace_options] attr_id: ${attr_id}`);
+  console.log($(`div[attr_id=${attr_id}]`).attr('mandatory'));
+
   // show 'NOT SET' and selected options regardless of input value
-  if (! elem_select.attr('mandatory')) {
+  if (! elem_select.attr('mandatory') && ! $(`div[attr_id=${attr_id}]`).attr('mandatory')) {
     elem_select.append(elem_not_set);
   }
 
@@ -204,7 +207,7 @@ var do_update_option = function(elem_select, attr_id, keyword) {
         keyword: keyword,
       },
     }).done(function(data){
-      replace_options(elem_select, data['results']);
+      replace_options(elem_select, data['results'], attr_id);
 
       // reset sending flag
       sending_request = false;

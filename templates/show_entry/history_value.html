@@ -9,17 +9,17 @@
 
 {% elif a_type == attr_type.array_string %}
   <ul class='list-group'>
-  {% for attrv in attrv.value %}
-    <li class='list-group-item'>{{ attrv }}</li>
+  {% for co_attrv in attrv.value %}
+    <li class='list-group-item'>{{ co_attrv }}</li>
   {% endfor %}
   </ul>
 
 {% elif a_type == attr_type.array_entry %}
   <ul class='list-group'>
-  {% for attrv in attrv.value %}
+  {% for co_attrv in attrv.value %}
     <li class='list-group-item'>
-      <a href='/entry/show/{{ attrv.id }}'>
-        {{ attrv.name }}
+      <a href='/entry/show/{{ co_attrv.id }}'>
+        {{ co_attrv.name }}
       </a>
     </li>
   {% endfor %}
@@ -41,20 +41,20 @@
         {{ attrv.value.value }}
       </div>
       <div class='col-9'>
-        <a href='/entry/show/{{ attrv.value.referral.id }}'>{{ attrv.value.referral.name }}</a>
+        <a href='/entry/show/{{ attrv.referral.id }}'>{{ attrv.referral.name }}</a>
       </div>
     </div>
 
 {% elif a_type == attr_type.array_named_entry %}
     <ul class='list-group'>
-    {% for attrv in attrv.value %}
+    {% for co_attrv in attrv.value %}
       <li class='list-group-item'>
         <div class='row'>
           <div class='col-3'>
-            {{ attrv.value }}
+            {{ co_attrv.value }}
           </div>
           <div class='col-9'>
-            <a href='/entry/show/{{ attrv.referral.id }}'>{{ attrv.referral.name }}</a>
+            <a href='/entry/show/{{ co_attrv.referral.id }}'>{{ co_attrv.referral.name }}</a>
           </div>
         </div>
       </li>
@@ -63,4 +63,16 @@
 
 {% elif a_type == attr_type.group %}
   <a href='/group/edit/{{ attrv.value.id}}'>{{ attrv.value.name }}</a>
+
+{% elif a_type == attr_type.array_group %}
+  <ul class='list-group'>
+  {% for co_attrv in attrv.value %}
+    <li class='list-group-item'>
+      <a href='/group'>
+        {{ co_attrv.name }}
+      </a>
+    </li>
+  {% endfor %}
+  </ul>
+
 {% endif %}

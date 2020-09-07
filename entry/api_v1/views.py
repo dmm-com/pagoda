@@ -226,7 +226,7 @@ def get_entry_history(request, entry_id):
         return HttpResponse("Specified entry doesn't exist", status=400)
 
     def json_serial(obj):
-        if isinstance(obj, ACLBase):
+        if isinstance(obj, ACLBase) or isinstance(obj, Group):
             return {'id': obj.id, 'name': obj.name}
         elif isinstance(obj, datetime):
             return obj.astimezone(timezone('Asia/Tokyo')).strftime('%b. %d, %Y, %I:%M %p')
