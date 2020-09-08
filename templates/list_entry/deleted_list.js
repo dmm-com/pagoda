@@ -234,7 +234,15 @@ function reconstruct_modal_body_for_entry(data) {
       }
 
     } else if(attr.type == {{ attr_type.group }}) {
-      elem_td.append($(`<a href='/group/edit/${ attr.value.id }'>${ attr.value.name }</a>`));
+      elem_td.append($(`<a href='/group/'>${ attr.value.name }</a>`));
+
+    } else if(attr.type == {{ attr_type.array_group }}) {
+      let elem_ul = $("<ul class='list-group'>");
+
+      for(var info of attr.value ) {
+        elem_ul.append($(`<li class='list-group-item'><a href='/group/'>${ info.name }</li>`));
+      }
+      elem_td.append(elem_ul);
 
     } else if(attr.type == {{ attr_type.date }}) {
       elem_td.append($(`<span>${ attr.value }</span>`));
