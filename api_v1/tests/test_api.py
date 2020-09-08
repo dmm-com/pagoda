@@ -36,7 +36,8 @@ class APITest(AironeViewTest):
     def test_post_entry(self):
         admin = self.admin_login()
 
-        # create referred Entity and Entries
+        # create referred Entity, Entries and Groups
+        test_groups = [Group.objects.create(name=x) for x in ['group1', 'group2']]
         ref_entity = Entity.objects.create(name='Referred Entity', created_user=admin)
         ref_e = []
         for index in range(0, 10):
@@ -51,6 +52,7 @@ class APITest(AironeViewTest):
             {'name': 'bool', 'type': AttrTypeValue['boolean']},
             {'name': 'date', 'type': AttrTypeValue['date']},
             {'name': 'group', 'type': AttrTypeValue['group']},
+            {'name': 'grps', 'type': AttrTypeValue['array_group']},
             {'name': 'text', 'type': AttrTypeValue['text']},
             {'name': 'vals', 'type': AttrTypeValue['array_string']},
             {'name': 'refs', 'type': AttrTypeValue['array_object'], 'ref': ref_entity},
@@ -77,7 +79,8 @@ class APITest(AironeViewTest):
                 'name': {'name': 'hoge', 'id': 'r-1'},
                 'bool': False,
                 'date': '2018-12-31',
-                'group': Group.objects.create(name='new_group').name,
+                'group': 'group1',
+                'grps': ['group1', 'group2'],
                 'text': 'fuga',
                 'vals': ['foo', 'bar'],
                 'refs': ['r-2', 'r-3'],
@@ -99,7 +102,7 @@ class APITest(AironeViewTest):
 
         new_entry = Entry.objects.get(id=ret_data['result'])
         self.assertEqual(new_entry.name, 'entry1')
-        self.assertEqual(new_entry.attrs.count(), 10)
+        self.assertEqual(new_entry.attrs.count(), len(attr_params))
 
         # checking new_entry is registered to the Elasticsearch
         res = self._es.get(index=settings.ES_CONFIG['INDEX'], doc_type='entry', id=new_entry.id)
@@ -114,7 +117,10 @@ class APITest(AironeViewTest):
             {'name': 'bool', 'check': lambda v: self.assertEqual(v.boolean, False)},
             {'name': 'date', 'check': lambda v: self.assertEqual(v.date, date(2018, 12, 31))},
             {'name': 'group', 'check': lambda v: self.assertEqual(
-                v.value, str(Group.objects.get(name='new_group').id))},
+                v.value, str(Group.objects.get(name='group1').id))},
+            {'name': 'grps', 'check': lambda v: self.assertEqual(
+                [x.value for x in v.data_array.all()], [str(x.id) for x in test_groups]
+            )},
             {'name': 'text', 'check': lambda v: self.assertEqual(v.value, 'fuga')},
             {'name': 'vals', 'check': lambda v: self.assertEqual(v.data_array.count(), 2)},
             {'name': 'vals', 'check': lambda v: self.assertEqual(
@@ -148,6 +154,7 @@ class APITest(AironeViewTest):
                 'ref': '',
                 'name': {},
                 'group': '',
+                'grps': [],
                 'text': '',
                 'vals': [],
                 'refs': [],
@@ -166,22 +173,14 @@ class APITest(AironeViewTest):
         for attr in new_entry.attrs.filter(is_active=True):
             attrv = attr.get_latest_value()
 
-            if attr.schema.name == 'val':
+            if attr.schema.name in ['val', 'group', 'text']:
                 self.assertEqual(attrv.value, '')
             elif attr.schema.name == 'ref':
                 self.assertIsNone(attrv.referral)
             elif attr.schema.name == 'name':
                 self.assertEqual(attrv.value, '')
                 self.assertIsNone(attrv.referral)
-            elif attr.schema.name == 'group':
-                self.assertEqual(attrv.value, '')
-            elif attr.schema.name == 'text':
-                self.assertEqual(attrv.value, '')
-            elif attr.schema.name == 'vals':
-                self.assertEqual(attrv.data_array.count(), 0)
-            elif attr.schema.name == 'refs':
-                self.assertEqual(attrv.data_array.count(), 0)
-            elif attr.schema.name == 'names':
+            elif attr.schema.name in ['vals', 'refs', 'names', 'grps']:
                 self.assertEqual(attrv.data_array.count(), 0)
 
     def test_edit_entry_by_api(self):
@@ -529,6 +528,7 @@ class APITest(AironeViewTest):
     def test_get_entry(self):
         user = self.admin_login()
 
+        test_groups = [Group.objects.create(name=x) for x in ['group1', 'group2']]
         ref_entity = Entity.objects.create(name='RefEntity', created_user=user)
         ref_entry = Entry.objects.create(name='RefEntry', created_user=user, schema=ref_entity)
 
@@ -539,6 +539,8 @@ class APITest(AironeViewTest):
                 'ref': {'type': AttrTypeValue['object'], 'value': ref_entry,
                         'referral': ref_entity},
                 'no_str': {'type': AttrTypeValue['string']},
+                'group': {'type': AttrTypeValue['group'], 'value': test_groups[0]},
+                'groups': {'type': AttrTypeValue['array_group'], 'value': test_groups},
             }
             for (name, info) in attr_info.items():
                 attr = EntityAttr.objects.create(name=name,
@@ -581,7 +583,13 @@ class APITest(AironeViewTest):
 
         entry = Entry.objects.get(name='entry-0', schema__name='hoge')
         self.assertEqual(results[0]['id'], entry.id)
+
+        # check responded attribute informations
         self.assertEqual(len(results[0]['attrs']), entry.attrs.count())
+        self.assertEqual([x for x in results[0]['attrs'] if x['name'] == 'group'],
+                         [{'name': 'group', 'value': 'group1'}])
+        self.assertEqual([x for x in results[0]['attrs'] if x['name'] == 'groups'],
+                         [{'name': 'groups', 'value': ['group1', 'group2']}])
 
         # the case to specify only 'entry' parameter
         resp = self.client.get('/api/v1/entry', {'entry': 'entry-0'})
@@ -613,12 +621,13 @@ class APITest(AironeViewTest):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]['id'],
                          Entry.objects.get(name='entry-1', schema__name='hoge').id)
-        self.assertEqual([x['name'] for x in results[0]['attrs']], ['no_str'])
+        self.assertEqual(sorted([x['name'] for x in results[0]['attrs']]),
+                         sorted(['no_str', 'group', 'groups']))
 
         resp = self.client.get('/api/v1/entry', {'entry': 'entry-2'})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(sorted([x['name'] for x in resp.json()[0]['attrs']]),
-                         sorted(['ref', 'no_str']))
+                         sorted(['ref', 'no_str', 'group', 'groups']))
 
     def test_get_entry_with_only_entity_parameter(self):
         user = self.admin_login()

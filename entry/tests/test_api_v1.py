@@ -227,7 +227,8 @@ class ViewTest(AironeViewTest):
 
             # This expects results has all groups information.
             self.assertEqual(sorted(resp.json()['results'], key=lambda x: x['id']),
-                             [{'id': g.id, 'name': g.name} for g in Group.objects.all()])
+                             sorted([{'id': g.id, 'name': g.name} for g in Group.objects.all()],
+                                    key=lambda x: x['id']))
 
         # test to get groups which are only active and matched with keyword
         groups[2].delete()

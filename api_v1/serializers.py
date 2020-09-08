@@ -1,6 +1,6 @@
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity
-from entry.models import Entry
+from entry.models import Entry, AttributeValue
 from group.models import Group
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -127,6 +127,10 @@ class PostEntrySerializer(serializers.Serializer):
                 return sum([[get_entry(r, v) for r in attr.referral.all() if is_entry(r, v)]
                             for v in value], [])
 
+            elif attr.type & AttrTypeValue['group']:
+                return [x for x in
+                        [AttributeValue.uniform_storable_for_group(v) for v in value] if x]
+
         elif attr.type & AttrTypeValue['string'] or attr.type & AttrTypeValue['text']:
             if not isinstance(value, str):
                 return None
@@ -168,17 +172,7 @@ class PostEntrySerializer(serializers.Serializer):
                 return None
 
         elif attr.type & AttrTypeValue['group']:
-            # This means not None but empty referral value
-            if not value:
-                return 0
-
-            if not isinstance(value, str):
-                return None
-
-            if not Group.objects.filter(name=value).exists():
-                return None
-
-            return str(Group.objects.get(name=value).id)
+            return AttributeValue.uniform_storable_for_group(value)
 
         return None
 
