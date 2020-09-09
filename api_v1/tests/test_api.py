@@ -52,7 +52,7 @@ class APITest(AironeViewTest):
             {'name': 'bool', 'type': AttrTypeValue['boolean']},
             {'name': 'date', 'type': AttrTypeValue['date']},
             {'name': 'group', 'type': AttrTypeValue['group']},
-            {'name': 'grps', 'type': AttrTypeValue['array_group']},
+            {'name': 'groups', 'type': AttrTypeValue['array_group']},
             {'name': 'text', 'type': AttrTypeValue['text']},
             {'name': 'vals', 'type': AttrTypeValue['array_string']},
             {'name': 'refs', 'type': AttrTypeValue['array_object'], 'ref': ref_entity},
@@ -80,7 +80,7 @@ class APITest(AironeViewTest):
                 'bool': False,
                 'date': '2018-12-31',
                 'group': 'group1',
-                'grps': ['group1', 'group2'],
+                'groups': ['group1', 'group2'],
                 'text': 'fuga',
                 'vals': ['foo', 'bar'],
                 'refs': ['r-2', 'r-3'],
@@ -118,7 +118,7 @@ class APITest(AironeViewTest):
             {'name': 'date', 'check': lambda v: self.assertEqual(v.date, date(2018, 12, 31))},
             {'name': 'group', 'check': lambda v: self.assertEqual(
                 v.value, str(Group.objects.get(name='group1').id))},
-            {'name': 'grps', 'check': lambda v: self.assertEqual(
+            {'name': 'groups', 'check': lambda v: self.assertEqual(
                 [x.value for x in v.data_array.all()], [str(x.id) for x in test_groups]
             )},
             {'name': 'text', 'check': lambda v: self.assertEqual(v.value, 'fuga')},
@@ -154,7 +154,7 @@ class APITest(AironeViewTest):
                 'ref': '',
                 'name': {},
                 'group': '',
-                'grps': [],
+                'groups': [],
                 'text': '',
                 'vals': [],
                 'refs': [],
@@ -180,7 +180,7 @@ class APITest(AironeViewTest):
             elif attr.schema.name == 'name':
                 self.assertEqual(attrv.value, '')
                 self.assertIsNone(attrv.referral)
-            elif attr.schema.name in ['vals', 'refs', 'names', 'grps']:
+            elif attr.schema.name in ['vals', 'refs', 'names', 'groups']:
                 self.assertEqual(attrv.data_array.count(), 0)
 
     def test_edit_entry_by_api(self):

@@ -167,11 +167,11 @@ def get_attr_referrals(request, attr_id):
     """
 
     def _get_referral_objects(attr, model, query_params={}):
+        query_name = Q()
+
         keyword = request.GET.get('keyword')
         if keyword:
             query_name = Q(name__icontains=keyword)
-        else:
-            query_name = Q()
 
         return [{'id': x.id, 'name': x.name} for x in
                 model.objects.filter(Q(**query_params), query_name)[0:CONFIG.MAX_LIST_REFERRALS]]
