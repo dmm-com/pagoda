@@ -31,7 +31,14 @@
             </div>
           </div>
           {% else %}
-            {% include "show_entry/history_value.html" with a_type=history.attr_type attrv=history.curr %}
+          <div class='container'>
+            <div class='row border'>
+              <div class='col-12 border-bottom'><center>初期値</center></div>
+              <div class='col-12 attr_val'>
+                {% include "show_entry/history_value.html" with a_type=history.attr_type attrv=history.curr %}
+              </div>
+            </div>
+          </div>
           {% endif %}
         </td>
 

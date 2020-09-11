@@ -211,7 +211,18 @@ function append_history_item(container, info) {
           </td>
     `);
   } else {
-    elem_tr.append(`<td>${ make_element_value_text(info.attr_type, info.curr) }</td>`);
+    elem_tr.append(`
+      <td>
+        <div class='container'>
+          <div class='row border'>
+            <div class='col-12 border-bottom'><center>初期値</center></div>
+            <div class='col-12 attr_val'>
+              ${ make_element_value_text(info.attr_type, info.curr) }
+            </div>
+          </div>
+        </div>
+      </td>
+    `);
   }
 
   // set previous current parameter infomations

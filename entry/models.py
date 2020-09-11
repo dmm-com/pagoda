@@ -1,10 +1,10 @@
+from collections.abc import Iterable
 from datetime import datetime, date
 
 from django.db import models
 from django.db.models import Q
 from django.core.cache import cache
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 
 from entity.models import EntityAttr, Entity
 from user.models import User
@@ -92,7 +92,7 @@ class AttributeValue(models.Model):
         """
         This returns registered value according to the type of Attribute
         """
-        def get_named_value(attrv):
+        def _get_named_value(attrv):
             if attrv.referral and attrv.referral.is_active:
                 if with_metainfo:
                     return {attrv.value: {'id': attrv.referral.id, 'name': attrv.referral.name}}
@@ -101,12 +101,24 @@ class AttributeValue(models.Model):
             else:
                 return {attrv.value: None}
 
-        def get_object_value(attrv):
+        def _get_object_value(attrv):
             if attrv.referral and attrv.referral.is_active:
                 if with_metainfo:
                     return {'id': attrv.referral.id, 'name': attrv.referral.name}
                 else:
                     return attrv.referral.name
+
+        def _get_group_value(attrv):
+            group = Group.objects.filter(id=attrv.value, is_active=True)
+            if not group:
+                return None
+            else:
+                group = group.first()
+
+            if with_metainfo:
+                return {'id': group.id, 'name': group.name}
+            else:
+                return group.name
 
         value = None
         if (self.parent_attr.schema.type == AttrTypeValue['string'] or
@@ -120,32 +132,26 @@ class AttributeValue(models.Model):
             value = self.date
 
         elif self.parent_attr.schema.type == AttrTypeValue['object']:
-            value = get_object_value(self)
+            value = _get_object_value(self)
 
         elif self.parent_attr.schema.type == AttrTypeValue['named_object']:
-            value = get_named_value(self)
+            value = _get_named_value(self)
 
         elif self.parent_attr.schema.type == AttrTypeValue['group'] and self.value:
-            group = Group.objects.filter(id=self.value)
-            if not group:
-                return None
-            else:
-                group = group.first()
-
-            if with_metainfo:
-                value = {'id': group.id, 'name': group.name}
-            else:
-                value = group.name
+            value = _get_group_value(self)
 
         elif self.parent_attr.schema.type & AttrTypeValue['array']:
-            if self.parent_attr.schema.type == AttrTypeValue['array_string']:
+            if self.parent_attr.schema.type & AttrTypeValue['named']:
+                value = [_get_named_value(x) for x in self.data_array.all()]
+
+            elif self.parent_attr.schema.type & AttrTypeValue['string']:
                 value = [x.value for x in self.data_array.all()]
 
-            elif self.parent_attr.schema.type == AttrTypeValue['array_object']:
-                value = [get_object_value(x) for x in self.data_array.all() if x.referral]
+            elif self.parent_attr.schema.type & AttrTypeValue['object']:
+                value = [_get_object_value(x) for x in self.data_array.all() if x.referral]
 
-            elif self.parent_attr.schema.type == AttrTypeValue['array_named_object']:
-                value = [get_named_value(x) for x in self.data_array.all()]
+            elif self.parent_attr.schema.type & AttrTypeValue['group']:
+                value = [x for x in [_get_group_value(y) for y in self.data_array.all()] if x]
 
         if with_metainfo:
             value = {'type': self.parent_attr.schema.type, 'value': value}
@@ -153,6 +159,9 @@ class AttributeValue(models.Model):
         return value
 
     def format_for_history(self):
+        def _get_group_value(attrv):
+            return Group.objects.filter(id=attrv.value, is_active=True).first()
+
         if not self.data_type:
             # complement data_type as the current type of Attribute
             self.data_type = self.parent_attr.schema.type
@@ -180,11 +189,10 @@ class AttributeValue(models.Model):
             } for x in self.data_array.all()], key=lambda x: x['value'])
 
         elif self.data_type == AttrTypeValue['group'] and self.value:
-            try:
-                group = Group.objects.get(id=self.value)
-                return {'id': group.id, 'name': group.name}
-            except ObjectDoesNotExist:
-                return {'id': '', 'name': ''}
+            return _get_group_value(self)
+
+        elif self.data_type == AttrTypeValue['array_group']:
+            return [y for y in [_get_group_value(x) for x in self.data_array.all()] if y]
 
         else:
             return self.value
@@ -210,6 +218,33 @@ class AttributeValue(models.Model):
                                   parent_attr=attr,
                                   data_type=attr.schema.type,
                                   **params)
+
+    # These are helper methods that chnages input value to storable value for each
+    # data type (e.g. case group type, this allows Group instance and int and str
+    # value that indicate specific group instance, and it returns id of its instance)
+    @classmethod
+    def uniform_storable_for_group(kls, val):
+        """
+        This converts input to group id value(str) to be able to store at AttributeValue.
+        And this expects input value as Group type instance, int value that indicate
+        ID of specific Group instance and name(str) value of specific Group instance.
+        """
+        obj_group = None
+        if isinstance(val, Group) and val.is_active:
+            obj_group = val
+
+        elif isinstance(val, str):
+            if val.isdigit():
+                obj_group = Group.objects.filter(id=val, is_active=True).first()
+            else:
+                obj_group = Group.objects.filter(name=val, is_active=True).first()
+
+        elif isinstance(val, int):
+            obj_group = Group.objects.filter(id=val, is_active=True).first()
+
+        # when value is invalid value (e.g. False, empty string) set 0
+        # not to cause ValueError exception at other retrieval processing.
+        return str(obj_group.id) if obj_group else ''
 
 
 class Attribute(ACLBase):
@@ -299,7 +334,7 @@ class Attribute(ACLBase):
             return last_value.boolean != bool(recv_value)
 
         elif self.schema.type == AttrTypeValue['group']:
-            return last_value.value != recv_value
+            return last_value.value != AttributeValue.uniform_storable_for_group(recv_value)
 
         elif self.schema.type == AttrTypeValue['date']:
             return last_value.date != recv_value
@@ -358,6 +393,25 @@ class Attribute(ACLBase):
 
             if sorted(cmp_curr) != sorted(cmp_recv):
                 return True
+
+        elif self.schema.type == AttrTypeValue['array_group']:
+            # This is the case when input value is None, this returns True when
+            # any available values are already exists.
+            if not recv_value:
+                return any([
+                    Group.objects.filter(id=x.value, is_active=True).exists()
+                    for x in last_value.data_array.all()
+                ])
+
+            return (
+                sorted([
+                    AttributeValue.uniform_storable_for_group(v)
+                    for v in recv_value if v]) !=
+                sorted([
+                    x.value for x in last_value.data_array.all()
+                    if Group.objects.filter(id=x.value, is_active=True).exists()
+                ])
+            )
 
         return False
 
@@ -472,6 +526,9 @@ class Attribute(ACLBase):
                                       is_latest=True).update(is_latest=False)
 
     def _validate_value(self, value):
+        def _is_group_object(val):
+            return isinstance(val, Group) or isinstance(val, int) or isinstance(val, str) or not val
+
         if self.schema.type & AttrTypeValue['array']:
             if value is None:
                 return True
@@ -486,6 +543,9 @@ class Attribute(ACLBase):
 
             if self.schema.type & AttrTypeValue['string']:
                 return True
+
+            if self.schema.type & AttrTypeValue['group']:
+                return all([_is_group_object(x) for x in value])
 
         if(self.schema.type & AttrTypeValue['named']):
             return isinstance(value, dict)
@@ -510,12 +570,81 @@ class Attribute(ACLBase):
                 return False
 
         if(self.schema.type & AttrTypeValue['group']):
-            return isinstance(value, Group) or not value or Group.objects.filter(id=value)
+            return _is_group_object(value)
 
         return False
 
     def add_value(self, user, value, boolean=False):
         """This method make AttributeValue and set it as the latest one"""
+
+        # This is a helper method to set AttributeType
+        def _set_attrv(attr_type, val, attrv=None, params={}):
+            if not attrv:
+                attrv = AttributeValue(**params)
+
+            # set attribute value according to the attribute-type
+            if attr_type == AttrTypeValue['string'] or attr_type == AttrTypeValue['text']:
+                attrv.boolean = boolean
+                attrv.value = str(val)
+                if not attrv.value:
+                    return None
+
+            if attr_type == AttrTypeValue['group']:
+                attrv.boolean = boolean
+                attrv.value = AttributeValue.uniform_storable_for_group(val)
+                if not attrv.value:
+                    return None
+
+            elif attr_type == AttrTypeValue['object']:
+                attrv.boolean = boolean
+                # set None if the referral entry is not specified
+                attrv.referral = None
+                if not val:
+                    pass
+                elif isinstance(val, Entry):
+                    attrv.referral = val
+                elif isinstance(val, str) or isinstance(val, int):
+                    ref_entry = Entry.objects.filter(id=val, is_active=True).first()
+                    if ref_entry:
+                        attrv.referral = ref_entry
+
+                if not attrv.referral:
+                    return
+
+            elif attr_type == AttrTypeValue['boolean']:
+                attrv.boolean = val
+
+            elif attr_type == AttrTypeValue['date']:
+                if isinstance(val, str):
+                    attrv.date = datetime.strptime(val, '%Y-%m-%d').date()
+                elif isinstance(val, date):
+                    attrv.date = val
+
+                attrv.boolean = boolean
+
+            elif attr_type == AttrTypeValue['named_object']:
+                attrv.value = val['name'] if 'name' in val else ''
+                if 'boolean' in val:
+                    attrv.boolean = val['boolean']
+                else:
+                    attrv.boolean = boolean
+
+                attrv.referral = None
+                if 'id' not in val or not val['id']:
+                    pass
+                elif isinstance(val['id'], str) or isinstance(val['id'], int):
+                    ref_entry = Entry.objects.filter(id=val['id'], is_active=True).first()
+                    if ref_entry:
+                        attrv.referral = ref_entry
+                elif isinstance(val['id'], Entry):
+                    attrv.referral = val['id']
+                else:
+                    attrv.referral = None
+
+                if not attrv.referral and not attrv.value:
+                    return
+
+            return attrv
 
         # checks the type of specified value is acceptable for this Attribute object
         if not self._validate_value(value):
@@ -529,64 +658,13 @@ class Attribute(ACLBase):
         # Initialize AttrValue as None, because this may not created
         # according to the specified parameters.
         attr_value = AttributeValue.create(user, self)
-
-        # set attribute value according to the attribute-type
-        if self.schema.type == AttrTypeValue['string'] or self.schema.type == AttrTypeValue['text']:
-            attr_value.boolean = boolean
-            attr_value.value = str(value)
-
-        if self.schema.type == AttrTypeValue['group']:
-            attr_value.boolean = boolean
-            if isinstance(value, Group):
-                attr_value.value = str(value.id)
-            else:
-                attr_value.value = value if value else ''
-
-        elif self.schema.type == AttrTypeValue['object']:
-            attr_value.boolean = boolean
-            # set None if the referral entry is not specified
-            attr_value.referral = None
-            if not value:
-                pass
-            elif isinstance(value, str) and Entry.objects.filter(id=value).exists():
-                attr_value.referral = Entry.objects.get(id=value)
-            elif isinstance(value, Entry):
-                attr_value.referral = value
-
-        elif self.schema.type == AttrTypeValue['boolean']:
-            attr_value.boolean = value
-
-        elif self.schema.type == AttrTypeValue['date']:
-            if isinstance(value, str):
-                attr_value.date = datetime.strptime(value, '%Y-%m-%d').date()
-            elif isinstance(value, date):
-                attr_value.date = value
-
-            attr_value.boolean = boolean
-
-        elif (self.schema.type == AttrTypeValue['named_object'] and
-              ('id' in value and value['id'] or 'name' in value and value['name'])):
-
-            attr_value.value = value['name']
-            attr_value.boolean = boolean
-
-            attr_value.referral = None
-            if not value['id']:
-                pass
-            elif isinstance(value['id'], str) and Entry.objects.filter(id=value['id']).exists():
-                attr_value.referral = Entry.objects.get(id=value['id'])
-            elif isinstance(value['id'], Entry):
-                attr_value.referral = value['id']
-            else:
-                attr_value.referral = None
-
-        elif self.schema.type & AttrTypeValue['array']:
+        if self.schema.type & AttrTypeValue['array']:
             attr_value.boolean = boolean
 
             # set status of parent data_array
             attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
-            if value:
+            if value and isinstance(value, Iterable):
                 co_attrv_params = {
                     'created_user': user,
                     'parent_attr': self,
@@ -598,38 +676,12 @@ class Attribute(ACLBase):
 
                 # create and append updated values
                 attrv_bulk = []
-                if self.schema.type == AttrTypeValue['array_string']:
-                    attrv_bulk = [AttributeValue(value=v, **co_attrv_params) for v in value if v]
-
-                elif self.schema.type == AttrTypeValue['array_object']:
-                    for v in value:
-                        if isinstance(v, Entry):
-                            attrv_bulk.append(AttributeValue(referral=v, **co_attrv_params))
-                        elif Entry.objects.filter(id=v).exists():
-                            attrv_bulk.append(AttributeValue(referral=Entry.objects.get(id=v),
-                                                             **co_attrv_params))
-
-                elif self.schema.type == AttrTypeValue['array_named_object']:
-                    for data in value:
-
-                        referral = None
-                        if 'id' not in data or not data['id']:
-                            pass
-                        elif isinstance(data['id'], Entry):
-                            referral = data['id']
-                        elif Entry.objects.filter(id=data['id']).exists():
-                            referral = Entry.objects.get(id=data['id'])
-
-                        if not referral and ('name' in data and not data['name']):
-                            continue
-
-                        # update boolean parameter if data has its value
-                        if 'boolean' in data:
-                            co_attrv_params['boolean'] = data['boolean']
-
-                        attrv_bulk.append(AttributeValue(
-                            referral=referral, value=data['name'] if 'name' in data else '',
-                            **co_attrv_params))
+                for v in value:
+                    # set AttributeValue for each values
+                    co_attrv = _set_attrv((self.schema.type & ~AttrTypeValue['array']), v,
+                                          params=co_attrv_params)
+                    if co_attrv:
+                        attrv_bulk.append(co_attrv)
 
                 # Create each leaf AttributeValue in bulk.
                 # This processing send only one query to the DB
@@ -639,6 +691,9 @@ class Attribute(ACLBase):
                 # set created leaf AttribueValues to the data_array parameter of
                 # parent AttributeValue
                 attr_value.data_array.add(*AttributeValue.objects.filter(parent_attrv=attr_value))
+
+        else:
+            _set_attrv(self.schema.type, value, attrv=attr_value)
 
         attr_value.save()
 
@@ -691,10 +746,12 @@ class Attribute(ACLBase):
                     return entryset[0]
 
         elif self.schema.type == AttrTypeValue['group']:
-            if isinstance(value, Group):
-                return value.id
-            elif isinstance(value, str) and Group.objects.filter(name=value).exists():
-                return Group.objects.get(name=value).id
+            # This avoids to return 0 when invaild value is specified because
+            # uniform_storable_for_group returns 0. By this check processing,
+            # this returns None whe it happens.
+            val = AttributeValue.uniform_storable_for_group(value)
+            if val:
+                return val
 
         elif self.schema.type == AttrTypeValue['boolean']:
             return value
@@ -712,19 +769,23 @@ class Attribute(ACLBase):
             if not isinstance(value, list):
                 return None
 
-            if self.schema.type == AttrTypeValue['array_string']:
-                return value
-
-            elif self.schema.type == AttrTypeValue['array_object']:
-                return sum([[get_entry(r, v)
-                           for r in self.schema.referral.all() if is_entry(r, v)]
-                           for v in value], [])
-
-            elif self.schema.type == AttrTypeValue['array_named_object']:
+            if self.schema.type & AttrTypeValue['named']:
                 if not all([isinstance(x, dict) for x in value]):
                     return None
 
                 return [get_named_object(x) for x in value]
+
+            elif self.schema.type & AttrTypeValue['string']:
+                return value
+
+            elif self.schema.type & AttrTypeValue['object']:
+                return sum([[get_entry(r, v)
+                           for r in self.schema.referral.all() if is_entry(r, v)]
+                           for v in value], [])
+
+            elif self.schema.type & AttrTypeValue['group']:
+                return [x for x in [
+                    AttributeValue.uniform_storable_for_group(y) for y in value] if x]
 
         return None
 
@@ -735,20 +796,7 @@ class Attribute(ACLBase):
         attrv = self.get_latest_value()
         if self.schema.type & AttrTypeValue['array']:
 
-            if self.schema.type == AttrTypeValue['array_string']:
-                if not value:
-                    return
-
-                updated_data = [x.value for x in attrv.data_array.all() if x.value != value]
-
-            elif self.schema.type == AttrTypeValue['array_object']:
-                if referral is None:
-                    return
-
-                updated_data = [x.referral.id for x in attrv.data_array.all()
-                                if x.referral and x.referral.id != referral.id]
-
-            elif self.schema.type == AttrTypeValue['array_named_object']:
+            if self.schema.type & AttrTypeValue['named']:
                 if referral is None:
                     return
 
@@ -757,6 +805,29 @@ class Attribute(ACLBase):
                     'id': x.referral.id if x.referral else None,
                     'boolean': x.boolean,
                 } for x in attrv.data_array.filter(~Q(referral__id=referral.id))]
+
+            elif self.schema.type & AttrTypeValue['string']:
+                if not value:
+                    return
+
+                updated_data = [x.value for x in attrv.data_array.all() if x.value != value]
+
+            elif self.schema.type & AttrTypeValue['object']:
+                if referral is None:
+                    return
+
+                updated_data = [x.referral.id for x in attrv.data_array.all()
+                                if x.referral and x.referral.id != referral.id]
+
+            elif self.schema.type & AttrTypeValue['group']:
+                if not value:
+                    return
+
+                updated_data = [
+                    x.value for x in attrv.data_array.all()
+                    if (x.value != AttributeValue.uniform_storable_for_group(value) and
+                        Group.objects.filter(id=x.value, is_active=True).exists())
+                ]
 
             if self.is_updated(updated_data):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
@@ -768,24 +839,33 @@ class Attribute(ACLBase):
         attrv = self.get_latest_value()
         if self.schema.type & AttrTypeValue['array']:
 
-            if self.schema.type == AttrTypeValue['array_string']:
-                updated_data = [x.value for x in attrv.data_array.all()] + [value]
+            updated_data = None
+            if self.schema.type & AttrTypeValue['named']:
+                if value or referral:
+                    updated_data = [{
+                        'name': x.value,
+                        'boolean': x.boolean,
+                        'id': x.referral.id if x.referral else None,
+                    } for x in attrv.data_array.all()] + [{
+                        'name': str(value),
+                        'boolean': boolean,
+                        'id': referral
+                    }]
 
-            elif self.schema.type == AttrTypeValue['array_object']:
-                updated_data = [x.referral.id for x in attrv.data_array.all()] + [referral]
+            elif self.schema.type & AttrTypeValue['string']:
+                if value:
+                    updated_data = [x.value for x in attrv.data_array.all()] + [value]
 
-            elif self.schema.type == AttrTypeValue['array_named_object']:
-                updated_data = [{
-                    'name': x.value,
-                    'boolean': x.boolean,
-                    'id': x.referral.id if x.referral else None,
-                } for x in attrv.data_array.all()] + [{
-                    'name': str(value),
-                    'boolean': boolean,
-                    'id': referral
-                }]
+            elif self.schema.type & AttrTypeValue['object']:
+                if referral:
+                    updated_data = [x.referral.id for x in attrv.data_array.all()] + [referral]
 
-            if self.is_updated(updated_data):
+            elif self.schema.type & AttrTypeValue['group']:
+                group_id = AttributeValue.uniform_storable_for_group(value)
+                if group_id:
+                    updated_data = [x.value for x in attrv.data_array.all()] + [group_id]
+
+            if updated_data and self.is_updated(updated_data):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
 
     def delete(self):
@@ -994,11 +1074,9 @@ class Entry(ACLBase):
             attrinfo['type'] = attr.schema.type
             attrinfo['is_mandatory'] = attr.schema.is_mandatory
             attrinfo['index'] = attr.schema.index
-            attrinfo['referrals'] = []
 
             # set last-value of current attributes
             attrinfo['last_value'] = ''
-            attrinfo['last_referral'] = None
             if attr.values.exists():
                 last_value = attr.get_latest_value()
                 if not last_value.data_type:
@@ -1008,9 +1086,11 @@ class Entry(ACLBase):
                 if last_value.data_type == AttrTypeStr or last_value.data_type == AttrTypeText:
                     attrinfo['last_value'] = last_value.value
 
-                elif (last_value.data_type == AttrTypeObj and last_value.referral and
-                        last_value.referral.is_active):
-                    attrinfo['last_referral'] = last_value.referral
+                elif last_value.data_type == AttrTypeObj:
+                    if last_value.referral and last_value.referral.is_active:
+                        attrinfo['last_value'] = last_value.referral
+                    else:
+                        attrinfo['last_value'] = None
 
                 elif last_value.data_type == AttrTypeArrStr:
                     # this dict-key 'last_value' is uniformed with all array types
@@ -1027,10 +1107,11 @@ class Entry(ACLBase):
                     attrinfo['last_value'] = last_value.date
 
                 elif last_value.data_type == AttrTypeValue['named_object']:
-                    attrinfo['last_value'] = last_value.value
+                    attrinfo['last_value'] = {'value': last_value.value}
 
                     if last_value.referral and last_value.referral.is_active:
-                        attrinfo['last_referral'] = last_value.referral
+                        attrinfo['last_value']['id'] = last_value.referral.id
+                        attrinfo['last_value']['name'] = last_value.referral.name
 
                 elif last_value.data_type == AttrTypeValue['array_named_object']:
                     values = [x.value for x in last_value.data_array.all()]
@@ -1038,13 +1119,22 @@ class Entry(ACLBase):
 
                     attrinfo['last_value'] = sorted([{
                         'value': v,
-                        'referral': r if r and r.is_active else None,
+                        'id': r.id if r and r.is_active else None,
+                        'name': r.name if r and r.is_active else None,
                     } for (v, r) in zip(values, referrals)], key=lambda x: x['value'])
 
                 elif last_value.data_type == AttrTypeValue['group'] and last_value.value:
                     group = Group.objects.filter(id=last_value.value)
                     if group:
-                        attrinfo['last_referral'] = group.first()
+                        attrinfo['last_value'] = group.first()
+
+                elif last_value.data_type == AttrTypeValue['array_group']:
+                    attrinfo['last_value'] = [
+                        x for x in [
+                            Group.objects.filter(id=v.value, is_active=True).first()
+                            for v in last_value.data_array.all()
+                        ] if x
+                    ]
 
             ret_attrs.append(attrinfo)
 
@@ -1199,12 +1289,11 @@ class Entry(ACLBase):
                     attrinfo['referral_id'] = attrv.referral.id
 
             elif attr.type & AttrTypeValue['group']:
-                if attrv.value and Group.objects.filter(id=attrv.value).exists():
-                    group = Group.objects.get(id=attrv.value)
-                    attrinfo['value'] = truncate(group.name)
-                    attrinfo['referral_id'] = group.id
-                else:
-                    attrinfo['value'] = attrinfo['referral_id'] = ''
+                if attrv.value:
+                    group = Group.objects.filter(id=attrv.value, is_active=True).first()
+                    if group:
+                        attrinfo['value'] = truncate(group.name)
+                        attrinfo['referral_id'] = group.id
 
             # Basically register attribute information whatever value doesn't exist
             if not (attr.type & AttrTypeValue['array'] and not is_recursive):

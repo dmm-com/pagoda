@@ -3,11 +3,13 @@ import json
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 
+from datetime import date
 from django.urls import reverse
 
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from entry.settings import CONFIG
+from group.models import Group
 
 
 class ViewTest(AironeViewTest):
@@ -204,7 +206,43 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.json()['total_count'], CONFIG.MAX_LIST_REFERRALS + 1)
         self.assertEqual(resp.json()['found_count'], 0)
 
-    def test_get_attr_referrals(self):
+    def test_get_attr_referrals_of_group(self):
+        user = self.guest_login()
+
+        # initialize instances to be used in this test case
+        groups = [Group.objects.create(name=x) for x in ['g-foo', 'g-bar', 'g-baz']]
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        for (name, type_index) in [('grp', 'group'), ('arr_group', 'array_group')]:
+            entity.attrs.add(EntityAttr.objects.create(**{
+                'name': name,
+                'type': AttrTypeValue[type_index],
+                'created_user': user,
+                'parent_entity': entity,
+            }))
+
+        # test to get groups through API calling of get_attr_referrals
+        for attr in entity.attrs.all():
+            resp = self.client.get(reverse('entry:api_v1:get_attr_referrals', args=[attr.id]))
+            self.assertEqual(resp.status_code, 200)
+
+            # This expects results has all groups information.
+            self.assertEqual(sorted(resp.json()['results'], key=lambda x: x['id']),
+                             sorted([{'id': g.id, 'name': g.name} for g in Group.objects.all()],
+                                    key=lambda x: x['id']))
+
+        # test to get groups which are only active and matched with keyword
+        groups[2].delete()
+        for attr in entity.attrs.all():
+            resp = self.client.get(reverse('entry:api_v1:get_attr_referrals', args=[attr.id]),
+                                   {'keyword': 'ba'})
+            self.assertEqual(resp.status_code, 200)
+
+            # This expects results has only information of 'g-bar' because 'g-foo' is
+            # not matched with keyword and 'g-baz' has already been deleted.
+            self.assertEqual(resp.json()['results'],
+                             [{'id': groups[1].id, 'name': groups[1].name}])
+
+    def test_get_attr_referrals_of_entry(self):
         admin = self.admin_login()
 
         # create Entity&Entries
@@ -450,44 +488,99 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp.json()['results']), 12)
 
     def test_get_entry_history(self):
+        def _get_exp_value(attr, attr_value):
+            if attr.schema.type & AttrTypeValue['named']:
+                return {'value': attr_value['name'],
+                        'referral': {'id': attr_value['id'].id, 'name': attr_value['id'].name}}
+            elif (attr.schema.type & AttrTypeValue['object'] or
+                  attr.schema.type & AttrTypeValue['group']):
+                return {'id': attr_value.id, 'name': attr_value.name}
+            elif attr.schema.type & AttrTypeValue['date']:
+                return str(attr_value)
+            else:
+                return attr_value
+
         user = self.guest_login()
 
-        # initialize Entity and Entry
+        # initialize Entity and Entry for this test
+        ref_entity = Entity.objects.create(name='Entity', created_user=user)
+        ref_entries = [Entry.objects.create(name=x, created_user=user, schema=ref_entity)
+                       for x in ['r0', 'r1']]
+        groups = [Group.objects.create(name=x) for x in ['g0', 'g1']]
+        attrinfo = {
+            'string': {'values': ['foo', 'bar']},
+            'object': {'values': [ref_entries[0], ref_entries[1]]},
+            'named_object': {'values': [{'name': x.name, 'id': x} for x in ref_entries]},
+            'array_object': {'values': [[ref_entries[0]], [ref_entries[1]]]},
+            'array_string': {'values': [['foo'], ['bar']]},
+            'array_named_object': {'values': [[{'name': 'foo', 'id': ref_entries[0]}],
+                                              [{'name': 'bar', 'id': ref_entries[1]}]]},
+            'array_group': {'values': [[groups[0]], [groups[1]]]},
+            'text': {'values': ['hoge', 'fuga']},
+            'boolean': {'values': [True, False]},
+            'group': {'values': [groups[0], groups[1]]},
+            'date': {'values': [date(2020, 1, 1), date(2021, 1, 1)]},
+        }
         entity = Entity.objects.create(name='Entity', created_user=user)
-        entity.attrs.add(EntityAttr.objects.create(**{
-            'name': 'attr',
-            'type': AttrTypeValue['string'],
-            'created_user': user,
-            'parent_entity': entity,
-        }))
+        for name in attrinfo.keys():
+            entity.attrs.add(EntityAttr.objects.create(**{
+                'name': name,
+                'type': AttrTypeValue[name],
+                'created_user': user,
+                'parent_entity': entity,
+            }))
 
         entry = Entry.objects.create(name='Entry', schema=entity, created_user=user)
         entry.complement_attrs(user)
-        attr = entry.attrs.first()
-        for index in range(5):
-            attr.add_value(user, 'value-%d' % index)
 
-        # check to get all history data
+        # set registering value for checking AttributeValue history
+        for attrname, info in attrinfo.items():
+            attr = entry.attrs.get(schema__name=attrname)
+            for value in info['values']:
+                attr.add_value(user, value)
+
+        # test sending request for the API endpoint of get_entry_history
         resp = self.client.get(reverse('entry:api_v1:get_entry_history', args=[entry.id]),
-                               {'count': 10})
+                               {'count': 100})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
 
         resp_data = resp.json()['results']
-        self.assertEqual(len(resp_data), 5)
-        self.assertEqual([x['curr']['value'] for x in resp_data],
-                         ['value-%d' % x for x in range(4, -1, -1)])
+        self.assertIsInstance(resp_data, list)
 
-        # check to get part of history data
-        resp = self.client.get(reverse('entry:api_v1:get_entry_history', args=[entry.id]),
-                               {'count': 2, 'index': 1})
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp['Content-Type'], 'application/json')
+        # This checks returned data has expected one
+        for attrname, info in attrinfo.items():
+            attr = entry.attrs.get(schema__name=attrname)
+            attr_value_history = [x for x in resp_data if x['attr_name'] == attrname]
 
-        resp_data = resp.json()['results']
-        self.assertEqual(len(resp_data), 2)
-        self.assertEqual([x['curr']['value'] for x in resp_data],
-                         ['value-%d' % x for x in range(3, 1, -1)])
+            if attr.schema.type & AttrTypeValue['array']:
+                exp_curr_value = [_get_exp_value(attr, x) for x in info['values'][1]]
+                exp_prev_value = [_get_exp_value(attr, x) for x in info['values'][0]]
+            else:
+                exp_curr_value = _get_exp_value(attr, info['values'][1])
+                exp_prev_value = _get_exp_value(attr, info['values'][0])
+
+            self.assertTrue(all([x['attr_id'] == attr.id for x in attr_value_history]))
+
+            # check order of former value and previous value
+            for (index, history_value) in enumerate(attr_value_history):
+                if (attr.schema.type & AttrTypeValue['array'] and
+                   not history_value['curr']['value'] and
+                   not history_value['prev']):
+                    continue
+
+                if not history_value['prev'] or not history_value['prev']['value']:
+                    # The oldest update history
+                    self.assertEqual(history_value['curr']['value'], exp_prev_value)
+                    if attr.schema.type & AttrTypeValue['array']:
+                        self.assertEqual(history_value['prev']['value'], [])
+                    else:
+                        self.assertEqual(history_value['prev'], None)
+
+                else:
+                    # The latest update history
+                    self.assertEqual(history_value['curr']['value'], exp_curr_value)
+                    self.assertEqual(history_value['prev']['value'], exp_prev_value)
 
     def test_get_entry_info(self):
         user = self.guest_login()

@@ -69,6 +69,19 @@ function make_attr_elem(attr) {
           elem_ul.append($(`<li class='list-group-item'>${ get_named_column(value) }</li>`));
         }
         new_elem.append(elem_ul);
+        break;
+
+      case {{ attr_type.array_group }}:
+        var elem_ul = $("<ul class='list-group'/>");
+        for(var value of attr.value) {
+          if(value) {
+            elem_ul.append($(`<li class='list-group-item'><a href='/group/'>${ value.name }</a></li>`));
+          } else {
+            elem_ul.append($(`<li class='list-group-item' />`));
+          }
+        }
+        new_elem.append(elem_ul);
+        break;
     }
   }
 
