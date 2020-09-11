@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.3.0
+
+### Added
+* Added new AttributeType `array group` that could contain multiple Group referral in an Attribute value
+
 ## v2.2.0
 
 ### Added
