@@ -320,9 +320,8 @@ class ViewTest(AironeViewTest):
                                 'application/json')
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(EntityAttr.objects.get(id=attr.id).type, AttrTypeObj)
-        self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.count(), 1)
-        self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.last().id, entity.id)
+        self.assertEqual(EntityAttr.objects.get(id=attr.id).type, AttrTypeStr)
+        self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.count(), 0)
 
     def test_post_edit_referral_attribute(self):
         user = self.admin_login()
@@ -356,16 +355,16 @@ class ViewTest(AironeViewTest):
                                 'application/json')
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(EntityAttr.objects.get(id=attrbase.id).type, AttrTypeStr)
-        self.assertEqual(EntityAttr.objects.get(id=attrbase.id).referral.count(), 0)
+        self.assertEqual(EntityAttr.objects.get(id=attrbase.id).type, AttrTypeObj)
+        self.assertEqual(EntityAttr.objects.get(id=attrbase.id).referral.count(), 1)
 
         # checks that the related Attribute is also changed
         self.assertEqual(Attribute.objects.get(id=attr.id).schema, attrbase)
         self.assertEqual(Attribute.objects.get(id=attr.id).schema.name, 'baz')
-        self.assertEqual(Attribute.objects.get(id=attr.id).schema.type, AttrTypeStr)
+        self.assertEqual(Attribute.objects.get(id=attr.id).schema.type, AttrTypeObj)
         self.assertTrue(Attribute.objects.get(id=attr.id).schema.is_mandatory)
         self.assertTrue(Attribute.objects.get(id=attr.id).schema.is_delete_in_chain)
-        self.assertEqual(Attribute.objects.get(id=attr.id).schema.referral.count(), 0)
+        self.assertEqual(Attribute.objects.get(id=attr.id).schema.referral.count(), 1)
 
     def test_post_edit_to_array_referral_attribute(self):
         user = self.admin_login()
@@ -396,9 +395,8 @@ class ViewTest(AironeViewTest):
                                 'application/json')
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(EntityAttr.objects.get(id=attr.id).type, AttrTypeArrObj)
-        self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.count(), 1)
-        self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.last().id, entity.id)
+        self.assertEqual(EntityAttr.objects.get(id=attr.id).type, AttrTypeStr)
+        self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.count(), 0)
 
     def test_post_create_with_invalid_referral_attr(self):
         self.admin_login()
@@ -721,7 +719,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity.attrs.last().referral.filter(id=r_entity1.id).count(), 1)
         self.assertEqual(entity.attrs.last().referral.filter(id=r_entity2.id).count(), 1)
 
-    def test_change_attribute_type(self):
+    def test_not_to_be_changed_attribute_type(self):
         user = self.admin_login()
 
         ref_entity = Entity.objects.create(name='ref_entity', created_user=user)
@@ -742,6 +740,8 @@ class ViewTest(AironeViewTest):
         entry.attrs.get(schema=attr1).add_value(user, 'hoge')
         entry.attrs.get(schema=attr2).add_value(user, 'fuga')
 
+        # This request try to change type of EntityAttr by specifying 'type' parameter in this
+        # request. But EntityAttr's type would never been changed once it had been created.
         params = {
             'name': 'new-entity',
             'note': 'hoge',
@@ -767,9 +767,11 @@ class ViewTest(AironeViewTest):
         self.assertIsNotNone(attrv)
         self.assertEqual(attrv.value, 'hoge')
 
-        # When a type of attribute value is clear, a new Attribute value will be created
+        # This checks data type of EntityAttr and AttributeValue wouldn't be changed.
         attrv = entry.attrs.get(schema=attr2).get_latest_value()
-        self.assertEqual(attrv.value, '')
+        self.assertEqual(attrv.value, 'fuga')
+        self.assertEqual(attrv.data_type, AttrTypeValue['string'])
+        self.assertEqual(EntityAttr.objects.get(name=attr2.name).type, AttrTypeValue['string'])
 
     def test_show_dashboard(self):
         user = self.admin_login()

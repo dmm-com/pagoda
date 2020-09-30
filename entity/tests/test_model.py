@@ -145,7 +145,6 @@ class ModelTest(TestCase):
         # initialize params which is same with the EntityAttr `attr`
         params = {
             'name': attr.name,
-            'type': attr.type,
             'refs': [entity.id],
             'index': attr.index,
             'is_mandatory': attr.is_mandatory,
@@ -158,11 +157,6 @@ class ModelTest(TestCase):
         # check to change name parameter
         changed_params = copy(params)
         changed_params['name'] = 'name (changed)'
-        self.assertTrue(attr.is_updated(**changed_params))
-
-        # check to change type parameter
-        changed_params = copy(params)
-        changed_params['type'] = AttrTypeValue['string']
         self.assertTrue(attr.is_updated(**changed_params))
 
         # check to change referrals parameter
