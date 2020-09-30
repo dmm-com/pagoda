@@ -355,9 +355,7 @@ class ComplexViewTest(AironeViewTest):
                                 json.dumps(params),
                                 'application/json')
 
+        # These check that request was succeeded, but attr type and values
+        # which are registered at that Attribute  would not be changed.
         self.assertEqual(resp.status_code, 200)
-
-        # checks that the cache will be updated after updating attr_type
-        ref_entries = ref_entry.get_referred_objects()
-        self.assertEqual(list(ref_entries), [])
-        self.assertEqual(ref_entries.count(), 0)
+        self.assertEqual(list(ref_entry.get_referred_objects()), [entry])
