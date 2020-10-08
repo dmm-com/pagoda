@@ -69,8 +69,8 @@
           {% elif attr.type == attr_type.boolean %}
             <td>{{ attr.value }}</td>
 
-            {% elif attr.type == attr_type.date %}
-              <td>{{ attr.value|date:"Y-m-d" }}</td>
+          {% elif attr.type == attr_type.date %}
+            <td>{{ attr.value }}</td>
 
           {% elif attr.type == attr_type.entry %}
             <td><a href='/entry/show/{{ attr.value.id }}'>{{ attr.value.name }}</a></td>
