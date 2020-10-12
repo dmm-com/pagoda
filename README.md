@@ -14,12 +14,12 @@ Here is the documentation to setup the development environment of AirOne.
 ## Installation of AirOne
 You have to install Python3.5+ to run AirOne like below (for the case of `ubuntu`).
 ```
-user@hostname:~$ $ sudo apt-get install python3 python3-pip virtualenv
+user@hostname:~$ sudo apt-get install python3 python3-pip virtualenv
 ```
 
 And you have to install RabbitMQ for executing heavy processing as background task using [Celery](http://docs.celeryproject.org/) and Memcached for caching backend.
 ```
-user@hostname:~$ $ sudo apt-get install rabbitmq-server memcached mysql-server python-dev libmysqlclient-dev
+user@hostname:~$ sudo apt-get install rabbitmq-server memcached mysql-server python-dev libmysqlclient-dev
 ```
 
 Then, you can install libraries on which AieOne depends by following after cloning this repository. But we recommand you to setup airone on the separated environment using virtualenv not to pollute system-wide python environment.
@@ -109,14 +109,14 @@ user@hostname:~$ sudo apt-get install -y oracle-java13-installer
 
 The way to install elasticsearch is quite easy like that.
 ```
-user@hostname:~$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.8.6.tar.gz
-user@hostname:~$ tar -xvf elasticsearch-6.8.6.tar.gz
+user@hostname:~$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.8.12.tar.gz
+user@hostname:~$ tar -xvf elasticsearch-6.8.12.tar.gz
 ```
 
 After installing it, you have to change configuration to accept connecting from AirOne nodes.
 ```diff
---- elasticsearch-6.8.6/config/elasticsearch.yml.old        2020-01-29 10:19:40.511687943 +0900
-+++ elasticsearch-6.8.6/config/elasticsearch.yml            2020-01-29 10:41:23.103687943 +0900
+--- elasticsearch-6.8.12/config/elasticsearch.yml.old        2020-01-29 10:19:40.511687943 +0900
++++ elasticsearch-6.8.12/config/elasticsearch.yml            2020-01-29 10:41:23.103687943 +0900
 @@ -52,7 +52,7 @@
  #
  # Set the bind address to a specific IP (IPv4 or IPv6):
@@ -135,7 +135,7 @@ user@hostname:~$ sudo sysctl vm.max_map_count=262144
 
 Finally, you can run ElasticSearch service like that.
 ```
-user@hostname:~$ elasticsearch-6.8.6/bin/elasticsearch
+user@hostname:~$ elasticsearch-6.8.12/bin/elasticsearch
 ```
 
 ## Run Nginx (Optional)
