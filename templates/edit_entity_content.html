@@ -40,7 +40,7 @@
             <td>
               <div class='row'>
                 <div class='col-4'>
-                  <select class="attr_type">
+                  <select class="attr_type" disabled="true">
                     {% for type in attr_types %}
                     <option value="{{ type.TYPE }}" {% if attr.type == type.TYPE %}selected="selected"{% endif %}>{{ type.NAME }}</option>
                     {% endfor %}
