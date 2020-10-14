@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.3.1
+
+### Fixed
+* Fixed a problem that date value won't be shown at advanced search result
+
 ## v2.3.0
 
 ### Added
