@@ -1,11 +1,12 @@
 from airone.lib.types import AttrTypeValue
 from copy import copy
 
+from airone.lib.test import DisableStderr
 from django.test import TestCase
 from user.models import User
 from entity.models import Entity
 from entity.models import EntityAttr
-from entity.admin import EntityResource
+from entity.admin import EntityResource, EntityAttrResource
 
 
 class ModelTest(TestCase):
@@ -117,8 +118,7 @@ class ModelTest(TestCase):
 
     def test_import_without_permission_parameter(self):
         user = User.objects.create(username='another_user')
-
-        entity = Entity(name='origin_name', created_user=user, is_public=False)
+        entity = Entity.objects.create(name='origin_name', created_user=user, is_public=False)
         entity.save()
 
         EntityResource.import_data_from_request({
@@ -130,6 +130,94 @@ class ModelTest(TestCase):
 
         self.assertEqual(Entity.objects.count(), 1)
         self.assertEqual(Entity.objects.last().name, 'origin_name')
+
+    def test_import_entity_attr_with_changing_type(self):
+        """
+        This checks the attribute type wouldn't be changed by specifying type.
+        """
+        user = self._test_user
+        entity = Entity.objects.create(name='Entity', created_user=user, is_public=False)
+        entity_attr = EntityAttr.objects.create(**{
+            'name': 'attr',
+            'type': AttrTypeValue['string'],
+            'created_user': user,
+            'parent_entity': entity,
+        })
+        entity.attrs.add(entity_attr)
+
+        EntityAttrResource.import_data_from_request({
+            'id': entity_attr.id,
+            'name': 'changed-attr',
+            'type': AttrTypeValue['array_string'],
+            'entity': entity.name,
+            'created_user': user.username
+        }, user)
+
+        entity_attr.refresh_from_db()
+        self.assertEqual(entity_attr.name, 'changed-attr')
+        self.assertEqual(entity_attr.type, AttrTypeValue['string'])
+
+    def test_import_entity_attr_without_specifying_type(self):
+        """
+        This import EntityAttr without specifying type parameter.
+        """
+        user = self._test_user
+        entity = Entity.objects.create(name='Entity', created_user=user, is_public=False)
+        entity_attr = EntityAttr.objects.create(**{
+            'name': 'attr',
+            'type': AttrTypeValue['string'],
+            'created_user': user,
+            'parent_entity': entity,
+        })
+        entity.attrs.add(entity_attr)
+
+        EntityAttrResource.import_data_from_request({
+            'id': entity_attr.id,
+            'name': 'changed-attr',
+            'entity': entity.name,
+            'created_user': user.username
+        }, user)
+
+        entity_attr.refresh_from_db()
+        self.assertEqual(entity_attr.name, 'changed-attr')
+        self.assertEqual(entity_attr.type, AttrTypeValue['string'])
+
+    def test_import_entity_attr_without_specifying_id(self):
+        """
+        This checks an attribute would be created by importing.
+        """
+        user = self._test_user
+        entity = Entity.objects.create(name='Entity', created_user=user, is_public=False)
+
+        EntityAttrResource.import_data_from_request({
+            'name': 'attr',
+            'type': AttrTypeValue['array_string'],
+            'entity': entity.name,
+            'created_user': user.username
+        }, user)
+
+        entity.refresh_from_db()
+        self.assertEqual([(x.name, x.type) for x in entity.attrs.all()],
+                         [('attr', AttrTypeValue['array_string'])])
+
+    def test_import_entity_attr_without_specifying_id_and_type(self):
+        """
+        This checks an attribute wouldn't be created by importing because of luck of parameters
+        """
+        user = self._test_user
+        entity = Entity.objects.create(name='Entity', created_user=user, is_public=False)
+
+        # This processing would be failed because 'type' parameter is necessary for creating
+        # a new EntityAttr instance by importing processing.
+        with DisableStderr():
+            EntityAttrResource.import_data_from_request({
+                'name': 'attr',
+                'entity': entity.name,
+                'created_user': user.username
+            }, user)
+
+        # This checks EntityAttr would not be created
+        self.assertFalse(EntityAttr.objects.filter(parent_entity=entity, is_active=True).exists())
 
     def test_is_update_method(self):
         user = User.objects.create(username='another_user')

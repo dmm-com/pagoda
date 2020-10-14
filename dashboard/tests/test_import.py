@@ -90,9 +90,9 @@ class ImportTest(AironeViewTest):
         # checks that warning messagees were outputted
         self.assertEqual(len(warning_messages), 3)
         self.assertTrue(re.match(r"^.*Entity.*Mandatory key doesn't exist$",
-                                 warning_messages[0]))
-        self.assertTrue(re.match(r"^.*EntityAttr.*Mandatory key doesn't exist$",
-                                 warning_messages[1]))
+                                 str(warning_messages[0])))
+        self.assertEqual("The parameter 'type' is mandatory when a new EntityAtter create",
+                         str(warning_messages[1]))
         self.assertEqual(str(warning_messages[2]), "refer to invalid entity object")
 
         self.assertEqual(Entity.objects.count(), 2)
