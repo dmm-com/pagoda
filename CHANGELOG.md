@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.4.0
+
+### Changed
+* Change implementation about editing Entity to disable to edit type of EntityAttr
+
 ## v2.3.1
 
 ### Fixed
