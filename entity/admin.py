@@ -43,7 +43,7 @@ class EntityAttrResource(AironeModelResource):
     _IMPORT_INFO = {
         'header':               ['id', 'name', 'type', 'refer', 'entity',
                                  'created_user', 'is_mandatory'],
-        'mandatory_keys':       ['name', 'type', 'entity', 'created_user'],
+        'mandatory_keys':       ['name', 'entity', 'created_user'],
         'resource_module':      'entity.admin',
         'resource_model_name':  'EntityAttrResource',
     }
@@ -78,5 +78,13 @@ class EntityAttrResource(AironeModelResource):
 
         if data['refer'] and not Entity.objects.filter(name=data['refer']).exists():
             raise RuntimeError('refer to invalid entity object')
+
+        # The processing fails when 'type' parameter is not existed for creating a new instance
+        if not instance.pk and not data['type']:
+            raise RuntimeError("The parameter 'type' is mandatory when a new EntityAtter create")
+
+        # Do not allow to change type when instance is already created
+        if instance.pk:
+            data['type'] = instance.type
 
         super(EntityAttrResource, self).import_obj(instance, data, dry_run)

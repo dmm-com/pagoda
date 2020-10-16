@@ -166,28 +166,16 @@ def do_edit(request, entity_id, recv_data):
 
             params = {
                 'name': attr['name'],
-                'type': attr['type'],
                 'refs': [int(x) for x in attr['ref_ids']],
                 'index': attr['row_index'],
                 'is_mandatory': attr['is_mandatory'],
                 'is_delete_in_chain': attr['is_delete_in_chain'],
             }
             if attr_obj.is_updated(**params):
-                # Especially if the type of Attribute is changed, clear the latest flag
-                # for each latest values if the attribute type is changed.
-                if attr_obj.type != int(attr['type']):
-                    attr_obj.unset_latest_flag()
-
                 attr_obj.name = attr['name']
-                attr_obj.type = attr['type']
                 attr_obj.is_mandatory = attr['is_mandatory']
                 attr_obj.is_delete_in_chain = attr['is_delete_in_chain']
                 attr_obj.index = int(attr['row_index'])
-
-                # the case of an attribute that has referral entry
-                attr_obj.referral.clear()
-                if int(attr['type']) & AttrTypeValue['object']:
-                    [attr_obj.referral.add(Entity.objects.get(id=x)) for x in attr['ref_ids']]
 
                 attr_obj.save()
 

@@ -24,10 +24,9 @@ class EntityAttr(ACLBase):
         super(ACLBase, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.EntityAttr
 
-    def is_updated(self, name, type, is_mandatory, is_delete_in_chain, index, refs):
+    def is_updated(self, name, is_mandatory, is_delete_in_chain, index, refs):
         # checks each parameters that are different between current object parameters
         if (self.name != name or
-                self.type != int(type) or
                 self.is_mandatory != is_mandatory or
                 self.is_delete_in_chain != is_delete_in_chain or
                 self.index != int(index) or
