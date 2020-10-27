@@ -3027,12 +3027,11 @@ class ModelTest(AironeTestCase):
             # set value to testing attribute
             attr.add_value(user, 'hoge')
 
-        # remove Attribute attr-deleted
-        entry.attrs.get(schema__name='attr-deleted').delete()
+        # remove EntityAttr attr-deleted
+        entity.attrs.get(name='attr-deleted').delete()
 
         # tests of get_attrv method
-        self.assertEqual(entry.get_attrv('attr'),
-                         entry.attrs.get(schema__name='attr').get_latest_value())
+        self.assertEqual(entry.get_attrv('attr').value, 'hoge')
         self.assertIsNone(entry.get_attrv('attr-deleted'))
         self.assertIsNone(entry.get_attrv('invalid-attribute-name'))
 
