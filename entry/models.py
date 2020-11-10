@@ -1467,11 +1467,13 @@ class Entry(ACLBase):
     def get_attrv(self, attr_name):
         """This returns specified attribute's value without permission check. Because
         this prioritizes performance (less frequency of sending query to Database) over
-        authorization safety.Don't to use this before permissoin check of specified attribute.
+        authorization safety.
+
+        CAUTION: Don't use this before permissoin check of specified attribute.
         """
         return AttributeValue.objects.filter(
             is_latest=True,
             parent_attr__name=attr_name,
-            parent_attr__is_active=True,
-            parent_attr__entry=self
+            parent_attr__schema__is_active=True,
+            parent_attr__parent_entry=self
         ).first()
