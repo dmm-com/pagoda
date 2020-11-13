@@ -177,6 +177,11 @@ def do_edit(request, entity_id, recv_data):
                 attr_obj.is_delete_in_chain = attr['is_delete_in_chain']
                 attr_obj.index = int(attr['row_index'])
 
+                # the case of an attribute that has referral entry
+                attr_obj.referral.clear()
+                if attr_obj.type & AttrTypeValue['object']:
+                    [attr_obj.referral.add(Entity.objects.get(id=x)) for x in attr['ref_ids']]
+
                 attr_obj.save()
 
         else:

@@ -356,7 +356,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(EntityAttr.objects.get(id=attrbase.id).type, AttrTypeObj)
-        self.assertEqual(EntityAttr.objects.get(id=attrbase.id).referral.count(), 1)
+        self.assertEqual(EntityAttr.objects.get(id=attrbase.id).referral.count(), 0)
 
         # checks that the related Attribute is also changed
         self.assertEqual(Attribute.objects.get(id=attr.id).schema, attrbase)
@@ -364,7 +364,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Attribute.objects.get(id=attr.id).schema.type, AttrTypeObj)
         self.assertTrue(Attribute.objects.get(id=attr.id).schema.is_mandatory)
         self.assertTrue(Attribute.objects.get(id=attr.id).schema.is_delete_in_chain)
-        self.assertEqual(Attribute.objects.get(id=attr.id).schema.referral.count(), 1)
+        self.assertEqual(Attribute.objects.get(id=attr.id).schema.referral.count(), 0)
 
     def test_post_edit_to_array_referral_attribute(self):
         user = self.admin_login()
