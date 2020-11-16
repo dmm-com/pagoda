@@ -291,7 +291,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity.attrs.count(), 2)
         self.assertEqual(entry.attrs.count(), 1)
 
-    def test_post_edit_string_attribute(self):
+    def test_post_edit_attribute_type(self):
         user = self.admin_login()
 
         entity = Entity.objects.create(name='hoge', note='fuga', created_user=user)
@@ -323,7 +323,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(EntityAttr.objects.get(id=attr.id).type, AttrTypeStr)
         self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.count(), 0)
 
-    def test_post_edit_referral_attribute(self):
+    def test_post_edit_attribute_referral(self):
         user = self.admin_login()
 
         entity = Entity.objects.create(name='hoge', note='fuga', created_user=user)
@@ -331,7 +331,6 @@ class ViewTest(AironeViewTest):
                                              type=AttrTypeObj,
                                              created_user=user,
                                              parent_entity=entity)
-        attrbase.referral.add(entity)
         entity.attrs.add(attrbase)
 
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
@@ -344,6 +343,7 @@ class ViewTest(AironeViewTest):
             'attrs': [{
                 'name': 'baz',
                 'type': str(AttrTypeStr),
+                'ref_ids': [entity.id],
                 'is_mandatory': True,
                 'is_delete_in_chain': True,
                 'row_index': '1',
@@ -355,8 +355,12 @@ class ViewTest(AironeViewTest):
                                 'application/json')
 
         self.assertEqual(resp.status_code, 200)
+
+        # This checks attribute type is not changed to specified Type, but
+        # attribute referrals are changed to specified one in the request.
         self.assertEqual(EntityAttr.objects.get(id=attrbase.id).type, AttrTypeObj)
-        self.assertEqual(EntityAttr.objects.get(id=attrbase.id).referral.count(), 0)
+        self.assertEqual([x.id for x in EntityAttr.objects.get(id=attrbase.id).referral.all()],
+                         [entity.id])
 
         # checks that the related Attribute is also changed
         self.assertEqual(Attribute.objects.get(id=attr.id).schema, attrbase)
@@ -364,7 +368,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Attribute.objects.get(id=attr.id).schema.type, AttrTypeObj)
         self.assertTrue(Attribute.objects.get(id=attr.id).schema.is_mandatory)
         self.assertTrue(Attribute.objects.get(id=attr.id).schema.is_delete_in_chain)
-        self.assertEqual(Attribute.objects.get(id=attr.id).schema.referral.count(), 0)
+        self.assertEqual([x.id for x in Attribute.objects.get(id=attr.id).schema.referral.all()],
+                         [entity.id])
 
     def test_post_edit_to_array_referral_attribute(self):
         user = self.admin_login()
