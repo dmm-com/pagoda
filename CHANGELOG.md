@@ -1,5 +1,11 @@
 # Changelog
 
+## in development
+
+### Fixed
+
+* Fixed a bug not to change referral values when entity was edited
+
 ## v2.4.0
 
 ### Changed
