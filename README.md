@@ -206,3 +206,47 @@ You can do it just by following command. The configurations about the database t
 ```
 user@hostname:~/airone/$ tools/register_es_document.py
 ```
+
+# Run with docker-compose
+
+
+```
+$ docker-compose up
+```
+
+## Setup database
+
+```
+$ mysql -uroot -h127.0.0.1 -e "GRANT ALL ON *.* to airone@'%' IDENTIFIED BY 'password'"
+```
+
+```
+$ mysql -uairone -h127.0.0.1 -ppassword -e 'create database airone'
+```
+
+```
+$ source venv/bin/activate
+$ ./tools/clear_and_initdb.sh
+```
+
+```
+$ source venv/bin/activate
+$ ./tools/register_user.sh admin
+Password:
+Succeed in register user (admin)
+```
+
+
+## Run AirOne
+
+```
+$ source venv/bin/activate
+$ python manage.py runserver 0:8000
+```
+
+## Run Celery
+
+```
+$ source venv/bin/activate
+$ celery -A airone worker -l info
+```
