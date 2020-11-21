@@ -209,9 +209,16 @@ user@hostname:~/airone/$ tools/register_es_document.py
 
 # Run with docker-compose
 
-
 ```
 $ docker-compose up
+```
+
+## Setup virtualenv
+
+```
+$ python -m venv venv
+$ source venv/bin/activate
+$ pip install -r requirements.txt
 ```
 
 ## Setup database
@@ -236,12 +243,11 @@ Password:
 Succeed in register user (admin)
 ```
 
-
 ## Run AirOne
 
 ```
 $ source venv/bin/activate
-$ python manage.py runserver 0:8000
+$ python manage.py runserver 0:8080
 ```
 
 ## Run Celery
