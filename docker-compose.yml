@@ -1,0 +1,41 @@
+version: '2.0'
+services:
+  mysql:
+    container_name: mysql
+    hostname: mysql
+    image: mysql:5.7@sha256:a6ab4c8534bda3415da6a5e7d0edac34722d198880c488ce69e1463be908f700
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      TZ: "Asia/Tokyo"
+
+  elasticsearch:
+    image: elasticsearch:6.8.13
+    container_name: elasticsearch
+    hostname: elasticsearch
+    environment:
+      transport.host: localhost
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+
+  rabbitmq:
+    image: rabbitmq:3.8-management-alpine
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    labels:
+      name: rabbitmq1
+
+  memcached:
+    image: memcached:1.6.8-alpine
+    container_name: memcached
+    hostname: memcached
+    ports:
+      - 11211:11211
