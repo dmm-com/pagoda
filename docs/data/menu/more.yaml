@@ -1,0 +1,13 @@
+---
+more:
+  - name: News
+    ref: "/posts"
+    icon: "notification"
+  - name: Releases
+    ref: "https://github.com/dmm-com/airone/releases"
+    external: true
+    icon: "download"
+  - name: "View Source"
+    ref: "https://github.com/dmm-com/airone"
+    external: true
+    icon: "github"
