@@ -19,8 +19,9 @@ fi
 
 cd gh-pages
 
-# clear old files and add new files
-rm -fR *
+# clear old files and Ciecle CI configuration not to run it.
+# Then, this adds new documentation files which are generaged by Hugo.
+rm -fR * ./circleci
 cp -r ../docs/public/* ./
 
 # commit to remote repository on the gh-pages branch
