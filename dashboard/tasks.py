@@ -54,7 +54,8 @@ def _csv_export(job, values, recv_data, has_referral):
 
             elif (vtype == AttrTypeValue['string'] or
                   vtype == AttrTypeValue['text'] or
-                  vtype == AttrTypeValue['boolean']):
+                  vtype == AttrTypeValue['boolean'] or
+                  vtype == AttrTypeValue['date']):
 
                 line_data.append(str(vval))
 
@@ -72,7 +73,8 @@ def _csv_export(job, values, recv_data, has_referral):
 
                 line_data.append("\n".join(natsorted(vval)))
 
-            elif vtype == AttrTypeValue['array_object']:
+            elif (vtype == AttrTypeValue['array_object'] or
+                  vtype == AttrTypeValue['array_group']):
 
                 line_data.append("\n".join(natsorted([x['name'] for x in vval])))
 
