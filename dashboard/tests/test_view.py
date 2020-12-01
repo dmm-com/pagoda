@@ -240,18 +240,21 @@ class ViewTest(AironeViewTest):
 
         ref_entity = Entity.objects.create(name='Referred Entity', created_user=user)
         ref_entry = Entry.objects.create(name='ref_entry', schema=ref_entity, created_user=user)
+        grp_entry = Group.objects.create(name='group_entry')
         attr_info = {
             'str': {'type': AttrTypeValue['string'], 'value': 'foo'},
+            'text': {'type': AttrTypeValue['text'], 'value': 'foo'},
+            'bool': {'type': AttrTypeValue['boolean'], 'value': True},
+            'date': {'type': AttrTypeValue['date'], 'value': '2020-01-01'},
+            'obj': {'type': AttrTypeValue['object'], 'value': ref_entry},
+            'grp': {'type': AttrTypeValue['group'], 'value': grp_entry},
             'name': {'type': AttrTypeValue['named_object'],
-                     'value': {'name': 'bar', 'id': ref_entry}},
-            'arr_str': {'type': AttrTypeValue['array_string'], 'value': ['foo', 'bar', 'baz']},
-            'arr_name': {
-                'type': AttrTypeValue['array_named_object'],
-                'value': [
-                    {'name': 'hoge', 'id': ref_entry.id},
-                    {'name': 'fuga', 'id': ref_entry.id}
-                ]
-            }
+                     'value': {'name': 'bar', 'id': ref_entry.id}},
+            'arr_str': {'type': AttrTypeValue['array_string'], 'value': ['foo']},
+            'arr_obj': {'type': AttrTypeValue['array_object'], 'value': [ref_entry]},
+            'arr_grp': {'type': AttrTypeValue['array_group'], 'value': [grp_entry]},
+            'arr_name': {'type': AttrTypeValue['array_named_object'],
+                         'value': [{'name': 'hoge', 'id': ref_entry.id}]}
         }
 
         entity = Entity.objects.create(name='Entity', created_user=user)
@@ -273,10 +276,12 @@ class ViewTest(AironeViewTest):
         entry.register_es()
 
         # send request to export data
-        exporting_attr_names = ['str', 'arr_str', 'name', 'arr_name']
+        exporting_attr_names = ['str', 'text', 'bool', 'date', 'obj', 'grp', 'name',
+                                'arr_str', 'arr_obj', 'arr_grp', 'arr_name']
         resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
             'entities': [entity.id],
-            'attrinfo': [{'name': x} for x in ['str', 'arr_str', 'name', 'arr_name']],
+            'attrinfo': [{'name': x} for x in ['str', 'text', 'bool', 'date', 'obj', 'grp', 'name',
+                                               'arr_str', 'arr_obj', 'arr_grp', 'arr_name']],
             'export_style': 'csv',
         }), 'application/json')
         self.assertEqual(resp.status_code, 200)
@@ -284,11 +289,13 @@ class ViewTest(AironeViewTest):
         # verifying result has referral entry's infomations
         csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
 
-        # checks all specified attributes and name are exported
-        self.assertEqual(len(csv_contents), entity.attrs.count() + 1)
-
-        # checks all data are exported in order of specified sequence
+        # checks all attribute are exported in order of specified sequence
         self.assertEqual(csv_contents[0], 'Name,Entity,%s' % ','.join(exporting_attr_names))
+
+        # checks all data value are exported
+        self.assertEqual(csv_contents[1], 'entry,Entity,foo,foo,True,2020-01-01,ref_entry,'
+                                          'group_entry,bar: ref_entry,foo,ref_entry,'
+                                          'group_entry,hoge: ref_entry')
 
     @patch('dashboard.tasks.export_search_result.delay',
            Mock(side_effect=dashboard_tasks.export_search_result))
