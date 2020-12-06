@@ -1,0 +1,26 @@
+---
+baseURL: http://airone-doc.dmmlabs.com/
+title: AirOne
+theme: hugo-geekdoc
+pygmentsUseClasses: true
+pygmentsCodeFences: true
+timeout: 180000
+
+# Geekdoc configuration
+disablePathToLower: true
+enableGitInfo: true
+
+# Needed for mermaid shortcodes
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+  tableOfContents:
+    startLevel: 1
+    endLevel: 9
+
+params:
+  geekdocToC: 3
+  geekdocLogo: /media/logo.png
+
+  geekdocSearch: true

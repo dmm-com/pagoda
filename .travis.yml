@@ -1,0 +1,9 @@
+language: go
+install:
+  - curl -LO https://github.com/gohugoio/hugo/releases/download/v0.74.3/hugo_0.74.3_Linux-64bit.deb
+  - sudo dpkg -i hugo_0.74.3_Linux-64bit.deb
+
+script: 
+  - sh -c 'cd docs; hugo'
+after_success:
+  - scripts/deploy_gh_pages.sh
