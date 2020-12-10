@@ -178,13 +178,11 @@ def do_create(request, entity_id, recv_data):
         return err
 
     if custom_view.is_custom("do_create_entry", entity.name):
-        (is_continue, resp, msg) = custom_view.call_custom(
+        # resp is HttpReponse instance or its subclass (e.g. JsonResponse)
+        resp = custom_view.call_custom(
             "do_create_entry", entity.name, request, recv_data, user, entity)
-        if not is_continue:
-            if isinstance(resp, int):
-                return HttpResponse(msg, status=resp)
-            elif isinstance(resp, JsonResponse):
-                return resp
+        if resp:
+            return resp
 
     # Create a new Entry object
     entry = Entry.objects.create(name=recv_data['entry_name'],
@@ -268,11 +266,12 @@ def do_edit(request, entry_id, recv_data):
         return HttpResponse('Target entry is now under processing', status=400)
 
     if custom_view.is_custom("do_edit_entry", entry.schema.name):
-        (is_continue, code, msg) = custom_view.call_custom(*[
+        # resp is HttpReponse instance or its subclass (e.g. JsonResponse)
+        resp = custom_view.call_custom(
             "do_edit_entry", entry.schema.name, request, recv_data, user, entry
-        ])
-        if not is_continue:
-            return HttpResponse(msg, status=code)
+        )
+        if resp:
+            return resp
 
     # update name of Entry object. If name would be updated, the elasticsearch data of entries that
     # refers this entry also be updated by creating REGISTERED_REFERRALS task.
@@ -561,7 +560,7 @@ def do_copy(request, entry_id, recv_data):
 
         if custom_view.is_custom("do_copy_entry", entry.schema.name):
             (is_continue, status, msg) = custom_view.call_custom(
-                "do_copy_entry", entry.schema.name, request, user, new_name)
+                "do_copy_entry", entry.schema.name, request, entry, recv_data, user, new_name)
             if not is_continue:
                 ret.append({
                     'status': 'success' if status else 'fail',

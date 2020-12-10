@@ -3448,7 +3448,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attr.get_latest_value(), attrv)
 
     @patch('custom_view.is_custom', Mock(return_value=True))
-    @patch('custom_view.call_custom', Mock(return_value=(False, 400, 'test')))
+    @patch('custom_view.call_custom', Mock(return_value=HttpResponse('test', status=400)))
     def test_call_custom_do_create_entry_return_int(self):
         self.admin_login()
 
@@ -3468,7 +3468,7 @@ class ViewTest(AironeViewTest):
 
     @patch('custom_view.is_custom', Mock(return_value=True))
     @patch('custom_view.call_custom',
-           Mock(return_value=(False, JsonResponse({'entry_id': 1, 'entry_name': 'fuga', }), '')))
+           Mock(return_value=JsonResponse({'entry_id': 1, 'entry_name': 'fuga', })))
     def test_call_custom_do_create_entry_return_json(self):
         self.admin_login()
 
