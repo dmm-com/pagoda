@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+  <h2>Google OAuth2 でログイン</h2>
+  <ul>
+    <li><a href="{% url 'social:begin' 'google-oauth2' %}">ログイン</a></li>
+  </ul>
+
+  <a href="{% url 'index' %}">戻る</a>
+{% endblock content %}

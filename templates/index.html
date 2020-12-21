@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        <p>{{ user.username }}さんがログイン中です</p>
+        <a href="{% url 'logout' %}">ログアウト</a>
+    {% else %}
+        <a href="{% url 'login' %}">ログインする</a>
+
+    {% endif %}
+
+{% endblock content %}
