@@ -72,6 +72,7 @@ MIDDLEWARE = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
+
 ROOT_URLCONF = 'airone.urls'
 
 PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
