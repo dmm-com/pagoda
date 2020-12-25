@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from api_v1.auth import AironeTokenAuth
@@ -14,6 +15,7 @@ from user.models import User as AironeUser
 
 class AccessTokenAPI(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, format=None):
         user = DjangoUser.objects.get(id=request.user.id)

@@ -508,7 +508,7 @@ class APITest(AironeViewTest):
     def test_failed_to_get_entry(self):
         # send request without login
         resp = self.client.get('/api/v1/entry')
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 401)
 
         user = self.guest_login()
 

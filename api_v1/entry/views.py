@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from entity.models import Entity
 from entry.models import Entry
@@ -22,6 +23,7 @@ from user.models import User
 
 class EntrySearchAPI(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @airone_profile
     def post(self, request, format=None):
@@ -69,6 +71,7 @@ class EntrySearchAPI(APIView):
 
 class EntryReferredAPI(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @airone_profile
     def get(self, request):
@@ -94,6 +97,7 @@ class EntryReferredAPI(APIView):
 
 class UpdateHistory(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @airone_profile
     def get(self, request):

@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from job.models import Job, JobOperation
 from job.settings import CONFIG as JOB_CONFIG
@@ -16,6 +17,7 @@ from api_v1.auth import AironeTokenAuth
 
 class JobAPI(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, format=None):
         """
@@ -82,6 +84,7 @@ class JobAPI(APIView):
 
 class SpecificJobAPI(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, job_id, format=None):
         job = Job.objects.filter(id=job_id).first()
@@ -108,6 +111,7 @@ class SpecificJobAPI(APIView):
 
 class SearchJob(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         """

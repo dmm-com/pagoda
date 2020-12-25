@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from api_v1.auth import AironeTokenAuth
 from airone.lib.acl import ACLType
@@ -22,6 +23,7 @@ from django.db.models import Q
 
 class EntryAPI(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, format=None):
         user = User.objects.get(id=request.user.id)
@@ -98,9 +100,6 @@ class EntryAPI(APIView):
 
     def get(self, request, *args, **kwargs):
         user = User.objects.filter(id=request.user.id).first()
-        if not user:
-            return Response({'result': 'You have to login AirOne to perform this request'},
-                            status=status.HTTP_400_BAD_REQUEST)
 
         # The parameter for entry is acceptable both id and name.
         param_entry_id = request.GET.get('entry_id')
@@ -141,10 +140,6 @@ class EntryAPI(APIView):
         return Response([x for x in retinfo if x])
 
     def delete(self, request, *args, **kwargs):
-        if not request.user.id:
-            return Response('You have to login AirOne to perform this request',
-                            status=status.HTTP_400_BAD_REQUEST)
-
         # checks mandatory parameters are specified
         if not all([x in request.data for x in ['entity', 'entry']]):
             return Response('Parameter "entity" and "entry" are mandatory',
