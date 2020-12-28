@@ -648,11 +648,13 @@ class APITest(AironeViewTest):
         resp = self.client.get('/api/v1/entry', {'entity': 'Entity'})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()), ENTRY_CONFIG.MAX_LIST_ENTRIES)
+        self.assertEqual([x['name'] for x in resp.json()], ['foo', 'bar'])
 
         # Send a request to get entries which are belonged to Entity with offset parameter
         resp = self.client.get('/api/v1/entry', {'entity': 'Entity', 'offset': '1'})
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()), len(entries) - ENTRY_CONFIG.MAX_LIST_ENTRIES)
+        self.assertEqual(len(resp.json()), ENTRY_CONFIG.MAX_LIST_ENTRIES)
+        self.assertEqual([x['name'] for x in resp.json()], ['bar', 'baz'])
 
     def test_get_deleted_entry(self):
         user = self.guest_login()
