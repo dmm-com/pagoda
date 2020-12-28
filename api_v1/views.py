@@ -132,7 +132,8 @@ class EntryAPI(APIView):
 
         param_offset = request.GET.get('offset', 0)
         retinfo = [x.to_dict(user) for x in
-                   Entry.objects.filter(query)[int(param_offset):ENTRY_CONFIG.MAX_LIST_ENTRIES]]
+                   Entry.objects.filter(query)[int(param_offset):
+                                               int(param_offset) + ENTRY_CONFIG.MAX_LIST_ENTRIES]]
         if not any(retinfo):
             return Response({'result': 'Failed to find entry'},
                             status=status.HTTP_404_NOT_FOUND)
