@@ -3,7 +3,20 @@
 ## in development
 
 ### Fixed
+* Fixed the upper limit when using offset of GET entry API
+* Fixed for API request without token results in exception error
 
+## v2.5.0
+
+### Added
+* Added docker-compose.yml
+
+### Changed
+* Changed custom_view before editing the entry
+
+### Fixed
+* Fixed for API request without token results in exception error
+* Fixed "date" and "array_group" is not output in exporting CSV with advanced search
 * Fixed a bug not to change referral values when entity was edited
 
 ## v2.4.0
