@@ -1,0 +1,41 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Test",
+            "type": "python",
+            "justMyCode": false,
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "test",
+            ],
+            "django": true
+        },
+        {
+            "name": "Django",
+            "type": "python",
+            "justMyCode": false,
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "runserver"
+            ],
+            "django": true,
+        },
+        {
+            "name": "Celery",
+            "type": "python",
+            "justMyCode": false,
+            "request": "launch",
+            "module": "celery",
+            "args": [
+                "-A",
+                "airone",
+                "worker",
+                "-l",
+                "info",
+            ]
+        },
+    ]
+}
