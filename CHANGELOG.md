@@ -3,6 +3,7 @@
 ## in development
 
 ### Fixed
+* Fixed the Refer of EntityAttr failing to import
 * Fixed the upper limit when using offset of GET entry API
 * Fixed for API request without token results in exception error
 
