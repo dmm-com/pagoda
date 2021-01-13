@@ -11,4 +11,4 @@ EntityAttr:
 - {created_user: admin, entity: entity, id: 6, is_mandatory: '0', name: attr-arr-str,
   refer: '', type: 1026}
 - {created_user: admin, entity: entity, id: 7, is_mandatory: '0', name: attr-arr-obj,
-  refer: entity2, type: 1025}
+  refer: "entity1,entity2", type: 1025}
