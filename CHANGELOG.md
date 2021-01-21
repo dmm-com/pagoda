@@ -2,6 +2,8 @@
 
 ## in development
 
+## v2.5.1
+
 ### Fixed
 * Fixed the Refer of EntityAttr failing to import
 * Fixed the upper limit when using offset of GET entry API
