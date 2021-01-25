@@ -8,11 +8,15 @@ from django.conf import settings
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute, AttributeValue
 from user.models import User
+from acl.models import ACLBase
 
 
 class ImportTest(AironeViewTest):
     def test_import_entity(self):
         self.admin_login()
+
+        user = User.objects.get(username='admin')
+        ACLBase.objects.create(id=10, name='entity1', created_user=user)
 
         fp = self.open_fixture_file('entity.yaml')
         resp = self.client.post(reverse('dashboard:do_import'), {'file': fp})
@@ -44,6 +48,8 @@ class ImportTest(AironeViewTest):
         self.assertEqual(entity.attrs.get(name='attr-arr-obj').type, atype.AttrTypeArrObj)
         self.assertFalse(entity.attrs.get(name='attr-str').is_mandatory)
         self.assertTrue(entity.attrs.get(name='attr-obj').is_mandatory)
+        self.assertEqual(entity.attrs.get(name='attr-obj').referral.count(), 1)
+        self.assertEqual(entity.attrs.get(name='attr-arr-obj').referral.count(), 2)
 
     def test_import_entity_with_unnecessary_param(self):
         self.admin_login()

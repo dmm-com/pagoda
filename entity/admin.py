@@ -3,7 +3,6 @@ from django.contrib import admin
 from .models import EntityAttr
 from .models import Entity
 from user.models import User
-from acl.models import ACLBase
 from airone.lib.resources import AironeModelResource
 
 admin.site.register(EntityAttr)
@@ -54,7 +53,7 @@ class EntityAttrResource(AironeModelResource):
     user = fields.Field(column_name='created_user', attribute='created_user',
                         widget=widgets.ForeignKeyWidget(User, 'username'))
     refer = fields.Field(column_name='refer', attribute='referral',
-                         widget=widgets.ManyToManyWidget(model=ACLBase, field='name'))
+                         widget=widgets.ManyToManyWidget(model=Entity, field='name'))
     entity = fields.Field(column_name='entity',
                           attribute='parent_entity',
                           widget=widgets.ForeignKeyWidget(model=Entity, field='name'))
@@ -76,7 +75,8 @@ class EntityAttrResource(AironeModelResource):
         if not Entity.objects.filter(name=data['entity']).exists():
             raise RuntimeError('failed to identify entity object')
 
-        if data['refer'] and not Entity.objects.filter(name=data['refer']).exists():
+        if data['refer'] and not all([Entity.objects.filter(name=x).exists()
+                                     for x in data['refer'].split(',')]):
             raise RuntimeError('refer to invalid entity object')
 
         # The processing fails when 'type' parameter is not existed for creating a new instance
