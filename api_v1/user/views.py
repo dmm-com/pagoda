@@ -2,6 +2,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.models import User as DjangoUser
 
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import BasicAuthentication
@@ -18,9 +19,11 @@ class AccessTokenAPI(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, format=None):
-        user = DjangoUser.objects.get(id=request.user.id)
+        user = AironeUser.objects.filter(id=request.user.id).first()
+        if not user:
+            return Response({'msg': 'failed to identify user'}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({'results': str(AironeUser(id=user.id).token)})
+        return Response({'results': str(user.token)})
 
     @method_decorator(csrf_protect)
     def put(self, request, format=None):

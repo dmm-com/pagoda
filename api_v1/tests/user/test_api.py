@@ -1,5 +1,7 @@
+import base64
 from airone.lib.test import AironeViewTest
 
+from rest_framework import HTTP_HEADER_ENCODING
 from rest_framework.authtoken.models import Token
 
 from user.models import User
@@ -42,3 +44,16 @@ class APITest(AironeViewTest):
         })
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()['results'], str(token))
+
+    def test_get_token_with_password(self):
+        user = User.objects.create(username='test-user')
+        user.set_password('password')
+        user.save()
+
+        auth_byte = (f'%s:%s' % ('test-user', 'password')).encode(HTTP_HEADER_ENCODING)
+        auth_info = base64.b64encode(auth_byte).decode(HTTP_HEADER_ENCODING)
+
+        resp = self.client.get('/api/v1/user/access_token', **{
+            'HTTP_AUTHORIZATION': 'Basic %s' % auth_info,
+        })
+        self.assertEqual(resp.status_code, 200)
