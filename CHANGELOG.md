@@ -2,6 +2,8 @@
 
 ## in development
 
+* Refactored the API handler for authentication to optimize DB query
+
 ## v2.5.1
 
 ### Fixed
