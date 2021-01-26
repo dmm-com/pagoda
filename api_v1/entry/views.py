@@ -80,8 +80,34 @@ class EntryReferredAPI(APIView):
             return Response({'result': 'Parameter "entry" is mandatory'},
                             status=status.HTTP_400_BAD_REQUEST)
 
+        # if entity param exists, add schema name to reduce filter execution time
+        param_entity = request.query_params.get('entity')
+        if param_entity:
+            entry_list = Entry.objects.filter(name=param_entry, is_active=True,
+                                              schema__name=param_entity)
+        else:
+            entry_list = Entry.objects.filter(name=param_entry, is_active=True)
+
         ret_data = []
-        for entry in Entry.objects.filter(name=param_entry, is_active=True):
+
+        # if target_entity param exists, add target entity to reduce filter execution time
+        param_target_entity = request.query_params.get('target_entity')
+        if param_target_entity:
+            entity = Entity.objects.get(name=param_target_entity)
+            for entry in entry_list:
+                ret_data.append({
+                    'id': entry.id,
+                    'entity': {'id': entry.schema.id, 'name': entry.schema.name},
+                    'referral': [{
+                        'id': x.id,
+                        'name': x.name,
+                        'entity': {'id': entity.id, 'name': entity.name},
+                    } for x in entry.get_referred_objects(entity_name=param_target_entity)]
+                })
+
+            return Response({'result': ret_data}, content_type='application/json; charset=UTF-8')
+
+        for entry in entry_list:
             ret_data.append({
                 'id': entry.id,
                 'entity': {'id': entry.schema.id, 'name': entry.schema.name},

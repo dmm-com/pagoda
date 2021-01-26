@@ -106,6 +106,7 @@ class APITest(AironeViewTest):
 
         entity_ref = Entity.objects.create(name='ref', created_user=user)
         entity = Entity.objects.create(name='E', created_user=user)
+        entity2 = Entity.objects.create(name='E2', created_user=user)
 
         # set EntityAttr that refers entity_ref
         attr_info = [
@@ -123,6 +124,7 @@ class APITest(AironeViewTest):
             })
             attr.referral.add(entity_ref)
             entity.attrs.add(attr)
+            entity2.attrs.add(attr)
 
         # create referred entries
         refs = [
@@ -138,6 +140,14 @@ class APITest(AironeViewTest):
         entry.attrs.get(name='r1').add_value(user, {'name': 'foo', 'id': refs[1]})
         entry.attrs.get(name='r2').add_value(user, [refs[2]])
         entry.attrs.get(name='r3').add_value(user, [{'name': 'bar', 'id': refs[3]}])
+
+        entry2 = Entry.objects.create(name='e2', schema=entity2, created_user=user)
+        entry2.complement_attrs(user)
+
+        entry2.attrs.get(name='r0').add_value(user, refs[0])
+        entry2.attrs.get(name='r1').add_value(user, {'name': 'foo', 'id': refs[1]})
+        entry2.attrs.get(name='r2').add_value(user, [refs[2]])
+        entry2.attrs.get(name='r3').add_value(user, [{'name': 'bar', 'id': refs[3]}])
 
         # send request without entry parameter
         resp = self.client.get('/api/v1/entry/referral')
@@ -161,6 +171,10 @@ class APITest(AironeViewTest):
                 'id': entry.id,
                 'name': entry.name,
                 'entity': {'id': entity.id, 'name': entity.name}
+            }, {
+                'id': entry2.id,
+                'name': entry2.name,
+                'entity': {'id': entity2.id, 'name': entity2.name}
             }])
 
         # check the case of no referred object
@@ -171,6 +185,42 @@ class APITest(AironeViewTest):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['id'], refs[4].id)
         self.assertEqual(result[0]['referral'], [])
+
+        # check the case of entity param exists
+        for index in range(0, 4):
+            resp = self.client.get('/api/v1/entry/referral?entry=%s&%s' %
+                                   (refs[index].name, entity.name))
+            self.assertEqual(resp.status_code, 200)
+
+            result = resp.json()['result']
+            self.assertEqual(len(result), 1)
+            self.assertEqual(result[0]['id'], refs[index].id)
+            self.assertEqual(result[0]['entity'], {'id': entity_ref.id, 'name': entity_ref.name})
+            self.assertEqual(result[0]['referral'], [{
+                'id': entry.id,
+                'name': entry.name,
+                'entity': {'id': entity.id, 'name': entity.name}
+            }, {
+                'id': entry2.id,
+                'name': entry2.name,
+                'entity': {'id': entity2.id, 'name': entity2.name}
+            }])
+
+        # check the case of target entity param exists
+        for index in range(0, 4):
+            resp = self.client.get('/api/v1/entry/referral?entry=%s&target_entity=%s' %
+                                   (refs[index].name, entity2.name))
+            self.assertEqual(resp.status_code, 200)
+
+            result = resp.json()['result']
+            self.assertEqual(len(result), 1)
+            self.assertEqual(result[0]['id'], refs[index].id)
+            self.assertEqual(result[0]['entity'], {'id': entity_ref.id, 'name': entity_ref.name})
+            self.assertEqual(result[0]['referral'], [{
+                'id': entry2.id,
+                'name': entry2.name,
+                'entity': {'id': entity2.id, 'name': entity2.name}
+            }])
 
     def test_search_with_large_size_parameter(self):
         LARGE_DATA = 'A' * 2048

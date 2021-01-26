@@ -555,6 +555,31 @@ class ModelTest(AironeTestCase):
             self.assertEqual(referred_entries.count(), 1)
             self.assertEqual(list(referred_entries), [self._entry])
 
+    def test_get_referred_objects_with_entity_param(self):
+        for i in range(3, 5):
+            entity = Entity.objects.create(name='Entity' + str(i), created_user=self._user)
+            entry = Entry.objects.create(name='entry' + str(i), created_user=self._user,
+                                         schema=entity)
+
+            attr = self.make_attr('attr_ref' + str(i), attrtype=AttrTypeValue['object'],
+                                  entity=entity, entry=entry)
+
+            # make a reference 'entry' object
+            attr.values.add(AttributeValue.objects.create(created_user=self._user,
+                                                          parent_attr=attr,
+                                                          referral=self._entry))
+
+            entry.attrs.add(attr)
+
+        # This function checks that this get_referred_objects method only get
+        # unique reference objects except for the self referred object.
+        referred_entries = self._entry.get_referred_objects()
+        self.assertEqual(referred_entries.count(), 2)
+
+        referred_entries = self._entry.get_referred_objects(entity_name='Entity3')
+        self.assertEqual(referred_entries.count(), 1)
+        self.assertEqual(referred_entries.first().name, 'entry3')
+
     def test_coordinating_attribute_with_dynamically_added_one(self):
         newattr = EntityAttr.objects.create(name='newattr',
                                             type=AttrTypeStr,
