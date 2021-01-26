@@ -18,9 +18,13 @@ class AccessTokenAPI(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, format=None):
-        user = DjangoUser.objects.get(id=request.user.id)
-
-        return Response({'results': str(AironeUser(id=user.id).token)})
+        # Getting user by "models.objects.get" is safe, because the "IsAuthenticated" which
+        # is specified in the permission_classes parameter guarantees that "request.user" is
+        # registered at the Database and authenticated.
+        # (c.f. https://www.django-rest-framework.org/api-guide/permissions/#isauthenticated)
+        return Response(
+            {'results': str(AironeUser.objects.get(id=request.user.id, is_active=True).token)}
+        )
 
     @method_decorator(csrf_protect)
     def put(self, request, format=None):
