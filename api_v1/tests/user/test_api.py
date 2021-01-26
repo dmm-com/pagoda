@@ -47,9 +47,6 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.json()['results'], str(token))
 
     def test_refresh_token_using_invalid_token(self):
-        user = User.objects.create(username='guest')
-        token = Token.objects.create(user=DjangoUser.objects.get(id=user.id))
-
         resp = self.client.get('/api/v1/user/access_token', **{
             'HTTP_AUTHORIZATION': 'Token %s' % 'invlaid-token',
         })
