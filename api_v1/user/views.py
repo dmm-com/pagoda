@@ -16,7 +16,6 @@ from user.models import User as AironeUser
 
 class AccessTokenAPI(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
     def get(self, request, format=None):
         user = AironeUser.objects.filter(id=request.user.id).first()
