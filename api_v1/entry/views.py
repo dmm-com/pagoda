@@ -92,20 +92,9 @@ class EntryReferredAPI(APIView):
 
         # if target_entity param exists, add target entity to reduce filter execution time
         param_target_entity = request.query_params.get('target_entity')
+        target_entity = None
         if param_target_entity:
-            entity = Entity.objects.get(name=param_target_entity)
-            for entry in entry_list:
-                ret_data.append({
-                    'id': entry.id,
-                    'entity': {'id': entry.schema.id, 'name': entry.schema.name},
-                    'referral': [{
-                        'id': x.id,
-                        'name': x.name,
-                        'entity': {'id': entity.id, 'name': entity.name},
-                    } for x in entry.get_referred_objects(entity_name=param_target_entity)]
-                })
-
-            return Response({'result': ret_data}, content_type='application/json; charset=UTF-8')
+            target_entity = Entity.objects.filter(name=param_target_entity, is_active=True).first()
 
         for entry in entry_list:
             ret_data.append({
@@ -114,10 +103,13 @@ class EntryReferredAPI(APIView):
                 'referral': [{
                     'id': x.id,
                     'name': x.name,
-                    'entity': {'id': x.schema.id, 'name': x.schema.name},
-                } for x in entry.get_referred_objects()]
+                    'entity': {
+                        # because getting the schema of the referral entry is slow
+                        'id': target_entity.id if target_entity else x.schema.id,
+                        'name': target_entity.name if target_entity else x.schema.name
+                    },
+                } for x in entry.get_referred_objects(entity_name=param_target_entity)]
             })
-
         return Response({'result': ret_data}, content_type='application/json; charset=UTF-8')
 
 
