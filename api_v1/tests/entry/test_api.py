@@ -188,8 +188,8 @@ class APITest(AironeViewTest):
 
         # check the case of entity param exists
         for index in range(0, 4):
-            resp = self.client.get('/api/v1/entry/referral?entry=%s&%s' %
-                                   (refs[index].name, entity.name))
+            resp = self.client.get('/api/v1/entry/referral?entry=%s&entity=%s' %
+                                   (refs[index].name, entity_ref.name))
             self.assertEqual(resp.status_code, 200)
 
             result = resp.json()['result']
@@ -220,6 +220,25 @@ class APITest(AironeViewTest):
                 'id': entry2.id,
                 'name': entry2.name,
                 'entity': {'id': entity2.id, 'name': entity2.name}
+            }])
+
+        # check the case of quiet param exists
+        for index in range(0, 4):
+            resp = self.client.get('/api/v1/entry/referral?entry=%s&quiet=1' % refs[index].name)
+            self.assertEqual(resp.status_code, 200)
+
+            result = resp.json()['result']
+            self.assertEqual(len(result), 1)
+            self.assertEqual(result[0]['id'], refs[index].id)
+            self.assertEqual(result[0]['entity'], {'id': entity_ref.id, 'name': entity_ref.name})
+            self.assertEqual(result[0]['referral'], [{
+                'id': entry.id,
+                'name': entry.name,
+                'entity': {}
+            }, {
+                'id': entry2.id,
+                'name': entry2.name,
+                'entity': {}
             }])
 
     def test_search_with_large_size_parameter(self):

@@ -1002,10 +1002,11 @@ class Entry(ACLBase):
                 ).values_list('parent_attr__parent_entry', flat=True)
 
         # if entity_name param exists, add schema name to reduce filter execution time
+        query = Q(pk__in=ids, is_active=True)
         if entity_name:
-            return Entry.objects.filter(pk__in=ids, schema__name=entity_name, is_active=True)
+            query &= Q(schema__name=entity_name)
 
-        return Entry.objects.filter(pk__in=ids, is_active=True)
+        return Entry.objects.filter(query)
 
     def may_append_attr(self, attr):
         """
