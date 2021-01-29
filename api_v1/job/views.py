@@ -12,6 +12,7 @@ from job.models import Job, JobOperation
 from job.settings import CONFIG as JOB_CONFIG
 from user.models import User
 
+from airone.lib.profile import airone_profile
 from api_v1.auth import AironeTokenAuth
 
 
@@ -19,6 +20,7 @@ class JobAPI(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
     permission_classes = (IsAuthenticated,)
 
+    @airone_profile
     def get(self, request, format=None):
         """
         This returns only jobs that are created by the user who sends this request.
@@ -60,6 +62,7 @@ class JobAPI(APIView):
             'constant': constant,
         }, content_type='application/json; charset=UTF-8')
 
+    @airone_profile
     def delete(self, request, format=None):
         """
         This cancels a specified Job.
@@ -86,6 +89,7 @@ class SpecificJobAPI(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
     permission_classes = (IsAuthenticated,)
 
+    @airone_profile
     def post(self, request, job_id, format=None):
         job = Job.objects.filter(id=job_id).first()
         if not job:
@@ -113,6 +117,7 @@ class SearchJob(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
     permission_classes = (IsAuthenticated,)
 
+    @airone_profile
     def get(self, request):
         """
         This returns jobs that are matched to the specified conditions in spite of who makes.
