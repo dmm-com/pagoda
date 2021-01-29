@@ -8,7 +8,6 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from airone.lib.acl import ACLType
-from airone.lib.log import Logger as AIRONE_LOGGER
 from airone.lib.profile import airone_profile
 from api_v1.auth import AironeTokenAuth
 from entity.models import Entity, EntityAttr

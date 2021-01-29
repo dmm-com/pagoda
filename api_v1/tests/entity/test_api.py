@@ -1,12 +1,10 @@
 import re
 
-from airone.lib.log import Logger as AIRONE_LOGGER
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 
 from django.conf import settings
 from entity.models import Entity, EntityAttr
-from user.models import User
 
 
 class APITest(AironeViewTest):
@@ -43,7 +41,8 @@ class APITest(AironeViewTest):
 
             # check output log format is expected
             self.assertEqual(len(log.output), 1)
-            self.assertTrue(re.match('.*\(user-id: \d+\) GET /api/v1/entity/attrs/,$', log.output[0]))
+            self.assertTrue(re.match('.*\(user-id: \d+\) GET /api/v1/entity/attrs/,$',  # noqa: W605
+                            log.output[0]))
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(sorted(resp.json()['result']), sorted(['foo', 'bar', 'hoge', 'fuga']))
