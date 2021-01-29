@@ -8,6 +8,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from airone.lib.acl import ACLType
+from airone.lib.profile import airone_profile
 from api_v1.auth import AironeTokenAuth
 from entity.models import Entity, EntityAttr
 from user.models import User
@@ -17,6 +18,7 @@ class EntityAttrsAPI(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
     permission_classes = (IsAuthenticated,)
 
+    @airone_profile
     def get(self, request, entity_ids, format=None):
         user = User.objects.get(id=request.user.id)
 

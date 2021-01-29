@@ -1,7 +1,8 @@
+from airone.lib.log import Logger as AIRONE_LOGGER
 from django.conf import settings
 from django.http.request import HttpRequest
+from rest_framework.request import Request as APIRequest
 from time import time
-from airone.lib.log import Logger as AIRONE_LOGGER
 
 
 class SimpleProfiler(object):
@@ -32,7 +33,8 @@ def airone_profile(func):
         req = None
         if isinstance(args[0], HttpRequest):
             req = args[0]
-        elif isinstance(args[1], HttpRequest):
+
+        elif isinstance(args[1], HttpRequest) or isinstance(args[1], APIRequest):
             # The case of decorating API handler, the HttpRequest object will be stored at
             # the second argument because an APIView object will be set at the first argument.
             req = args[1]
