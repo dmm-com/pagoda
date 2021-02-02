@@ -75,21 +75,32 @@ class EntryReferredAPI(APIView):
 
     @airone_profile
     def get(self, request):
+        # set each request parameters to description variables
+        param_entity = request.query_params.get('entity')
         param_entry = request.query_params.get('entry')
+        param_target_entity = request.query_params.get('target_entity')
+        param_quiet = request.query_params.get('quiet')
+
+        # validate input parameter
         if not param_entry:
             return Response({'result': 'Parameter "entry" is mandatory'},
                             status=status.HTTP_400_BAD_REQUEST)
 
+        # declare query to send DB according to input parameters
+        query = Q(name=param_entry, is_active=True)
+        if param_entity:
+            query &= Q(schema__name=param_entity)
+
         ret_data = []
-        for entry in Entry.objects.filter(name=param_entry, is_active=True):
+        for entry in Entry.objects.filter(query):
             ret_data.append({
                 'id': entry.id,
                 'entity': {'id': entry.schema.id, 'name': entry.schema.name},
                 'referral': [{
                     'id': x.id,
                     'name': x.name,
-                    'entity': {'id': x.schema.id, 'name': x.schema.name},
-                } for x in entry.get_referred_objects()]
+                    'entity': {} if param_quiet else {'id': x.schema.id, 'name': x.schema.name},
+                } for x in entry.get_referred_objects(entity_name=param_target_entity)]
             })
 
         return Response({'result': ret_data}, content_type='application/json; charset=UTF-8')

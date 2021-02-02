@@ -3,6 +3,7 @@
 ## in development
 
 * Refactored the API handler for authentication to optimize DB query
+* Added param of entry refferal API to reduce filter execution time
 
 ## v2.5.1
 

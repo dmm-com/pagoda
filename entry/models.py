@@ -992,7 +992,7 @@ class Entry(ACLBase):
 
         return attr
 
-    def get_referred_objects(self):
+    def get_referred_objects(self, entity_name=None):
         """
         This returns objects that refer current Entry in the AttributeValue
         """
@@ -1001,7 +1001,12 @@ class Entry(ACLBase):
                 Q(referral=self, parent_attrv__is_latest=True)
                 ).values_list('parent_attr__parent_entry', flat=True)
 
-        return Entry.objects.filter(pk__in=ids, is_active=True)
+        # if entity_name param exists, add schema name to reduce filter execution time
+        query = Q(pk__in=ids, is_active=True)
+        if entity_name:
+            query &= Q(schema__name=entity_name)
+
+        return Entry.objects.filter(query)
 
     def may_append_attr(self, attr):
         """
