@@ -30,14 +30,35 @@
       <div class="float-right">
       </div>
     </div>
+
+    <div class="col">
+      <div class="float-right">
+        {{ page_index_start|add:"1" }} - {{ page_index_end }} / {{ total_count }}
+
+        {% if page_index_start == 0 or entity_count == total_count %}
+          <button type="button" class="btn btn-sm btn-primary" disabled>＜</button>
+        {% else %}
+          <button type="button" id="prev_page" class="btn btn-sm btn-primary page_decrement">＜</button>
+        {% endif %}
+
+        {% if page_index_end >= total_count %}
+          <button type="button" class="btn btn-sm btn-primary" disabled>＞</button>
+        {% else %}
+          <button type="button" id="next_page" class="btn btn-sm btn-primary page_increment">＞</button>
+        {% endif %}
+      </div>
+    </div>
   </div>
 
   <div class="row">
     <div class="col">
-      <table class="table table-bordered">
+      <table class="table table-borderless">
         <thead>
           <tr>
-            <td>エンティティ名</td>
+            <td>
+              エンティティ名
+              <input id='narrow_down' text='text' placeholder='絞り込む' />
+            </td>
             <td>備考</td>
             <td></td>
             <td></td>
@@ -67,8 +88,77 @@
 
 {% block script %}
 <script>
+function handle_update_page(e) {
+  var url = new URL(window.location.href);
+  var params = url.searchParams;
+
+  // get parameter for page and convert it from string to integer
+  var page_param = isNaN(parseInt(params.get('page'))) ? 0 : parseInt(params.get('page'));
+
+  // update 'page' parameter in the GET parameters of current URL
+  if($(e.target).hasClass('page_increment')) {
+    params.set('page', page_param + 1);
+  } else {
+    params.set('page', page_param - 1);
+  }
+
+  // send request for update this page to change list page
+  location.href = `${ url.pathname }?${ params.toString() }`;
+}
+
+var sending_request = false;
+function handle_narrow_down(e) {
+  if(! (e.keyCode != 13 || sending_request)) {
+    // This prevent to sending multiple requests by hitting enter repeatedly
+    sending_request = true;
+
+    var url = new URL(window.location.href);
+    var params = url.searchParams;
+    var input_value = $(e.target).val();
+
+    /* This sets 'keyword' parameter to narrow down search result.
+     * In opposite, this deletes its parameter when an invalid value is specified.*/
+    if (input_value) {
+      params.set('keyword', input_value);
+    } else {
+      params.delete('keyword');
+    }
+
+    // send request for update same-page to narrow down list entries
+    location.href = `${ url.pathname }?${ params.toString() }`;
+  }
+}
+
+function initialize_page() {
+  var url = new URL(window.location.href);
+  var params = url.searchParams;
+
+  if (params.get('keyword')) {
+    $('#narrow_down').val(params.get('keyword'));
+  }
+}
+
+function initialize_entity_list_navigation() {
+  var url = new URL(window.location.href);
+  var params = url.searchParams;
+
+  if (params.get('keyword')) {
+    $('#narrow_down').val(params.get('keyword'));
+  }
+}
+
 $(document).ready(function() {
   $('.del-item').on('click', confirm_delete_table_item);
+
+  // This initializes navigation menu widgets
+  initialize_entity_list_navigation();
+
+  // register event handlers for changing page
+  $('#next_page').on('click', handle_update_page);
+  $('#prev_page').on('click', handle_update_page);
+
+  // register event handlers for narrow down result
+  $('#narrow_down').on('keyup', handle_narrow_down);
 });
 </script>
 {% endblock %}

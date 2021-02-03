@@ -5,6 +5,7 @@ import yaml
 
 from django.http import HttpResponse
 from django.http.response import JsonResponse
+from django.db.models import Q
 
 from .models import Entity
 from .models import EntityAttr
@@ -30,9 +31,35 @@ Logger = logging.getLogger(__name__)
 def index(request):
     user = User.objects.get(id=request.user.id)
 
-    entity_objects = Entity.objects.order_by('name').filter(is_active=True)
+    param_page_index = request.GET.get('page')
+    param_keyword = request.GET.get('keyword')
+
+    # This parameter enables to get entities partially when there are too many entries to return.
+    # When this parameter is emitted, this value will be treated as 0.
+    try:
+        if not param_page_index:
+            index_start = 0
+        else:
+            index_start = int(param_page_index) * CONFIG.MAX_LIST_ENTITIES
+
+    except ValueError:
+        # When an invalid value was specified, this ignores and treats it as 0.
+        index_start = 0
+
+    # Get entities under the conditions of specified parameters
+    query = Q(is_active=True)
+    if param_keyword:
+        query &= Q(name__icontains=param_keyword)
+
+    overall_entities = Entity.objects.filter(query).order_by('name')
+    return_entities = overall_entities[index_start:index_start + CONFIG.MAX_LIST_ENTITIES]
+
     context = {
-        'entities': [x for x in entity_objects if user.has_permission(x, ACLType.Readable)]
+        'entities': return_entities,
+        'entity_count': return_entities.count(),
+        'total_count': overall_entities.count(),
+        'page_index_start': index_start,
+        'page_index_end': index_start + return_entities.count(),
     }
     return render(request, 'list_entities.html', context)
 
