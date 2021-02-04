@@ -29,8 +29,6 @@ Logger = logging.getLogger(__name__)
 @airone_profile
 @http_get
 def index(request):
-    user = User.objects.get(id=request.user.id)
-
     param_page_index = request.GET.get('page')
     param_keyword = request.GET.get('keyword')
 
