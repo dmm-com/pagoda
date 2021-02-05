@@ -1,17 +1,20 @@
 import json
 import yaml
 
+from django.contrib.auth.models import Permission
 from django.urls import reverse
-from entity.models import Entity, EntityAttr
-from entity.settings import CONFIG
-from entry.models import Entry, Attribute
-from user.models import User, History
-from xml.etree import ElementTree
+
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeText
 from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
 from airone.lib.types import AttrTypeValue
-from django.contrib.auth.models import Permission
+
+from entity.models import Entity, EntityAttr
+from entity.settings import CONFIG
+from entry.models import Entry, Attribute
+from user.models import User, History
+from unittest import mock
+from xml.etree import ElementTree
 
 
 class ViewTest(AironeViewTest):
@@ -29,9 +32,6 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('entity:index'))
         self.assertEqual(resp.status_code, 200)
 
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNone(root.find('.//tbody/tr'))
-
     def test_index_with_objects(self):
         user = self.admin_login()
 
@@ -41,9 +41,35 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('entity:index'))
         self.assertEqual(resp.status_code, 200)
 
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNotNone(root.find('.//tbody/tr'))
-        self.assertEqual(len(root.findall('.//tbody/tr')), 1)
+    @mock.patch('entity.views.CONFIG.MAX_LIST_ENTITIES', 3)
+    def test_index_with_page_param(self):
+        user = self.guest_login()
+
+        # create test entities
+        [Entity.objects.create(name='e-%d' % i, created_user=user) for i in range(5)]
+
+        # send a request to get entities with page parameter and check returned context
+        resp = self.client.get('/entity/?page=1')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['entity_count'], 2)
+        self.assertEqual(resp.context['total_count'], 5)
+        self.assertEqual(resp.context['page_index_start'], 3)
+        self.assertEqual(resp.context['page_index_end'], 5)
+
+    def test_index_with_keyword_param(self):
+        user = self.guest_login()
+
+        # create test entities
+        [foo, _] = [Entity.objects.create(name=x, created_user=user) for x in ['FOO', 'BAR']]
+
+        # send a request to get entities with keyword parameter and check returned context
+        resp = self.client.get('/entity/?keyword=foo')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['entities'].first(), foo)
+        self.assertEqual(resp.context['entity_count'], 1)
+        self.assertEqual(resp.context['total_count'], 1)
+        self.assertEqual(resp.context['page_index_start'], 0)
+        self.assertEqual(resp.context['page_index_end'], 1)
 
     def test_create_get(self):
         user = User.objects.create(username='admin', is_superuser=True)
