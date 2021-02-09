@@ -1,10 +1,15 @@
 # Changelog
 
-## in development
+## v2.6.0
 
-* Refactored the API handler for authentication to optimize DB query
+### Added
 * Added param of entry refferal API to reduce filter execution time
+
+### Changed
 * Changing spec to show whole entity in the entity-list page regardless of thier permissions
+
+### Refactored 
+* Refactored the API handler for authentication to optimize DB query
 
 ## v2.5.1
 
