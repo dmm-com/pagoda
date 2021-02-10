@@ -101,7 +101,7 @@ DATABASES = {
         'NAME': 'airone',
         'USER': 'airone',
         'PASSWORD': 'password',
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
         'OPTIONS': {
             'charset': 'utf8mb4',
         }
