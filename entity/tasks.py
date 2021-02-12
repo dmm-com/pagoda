@@ -21,7 +21,7 @@ def edit_entity(self, job_id):
         user = User.objects.filter(id=job.user.id).first()
         entity = Entity.objects.filter(id=job.target.id, is_active=True).first()
         if not entity or not user:
-            # Abort when specified entry doesn't exist
+            # Abort when specified entity doesn't exist
             job.update(Job.STATUS['CANCELED'])
             return
 
@@ -99,8 +99,35 @@ def edit_entity(self, job_id):
                 # register History to register adding EntityAttr
                 history.add_attr(attr_obj)
 
-        # clear flag to specify this entry has been completed to edit
+        # clear flag to specify this entity has been completed to edit
         entity.del_status(Entity.STATUS_EDITING)
+
+        # update job status and save it
+        job.update(Job.STATUS['DONE'])
+
+
+@app.task(bind=True)
+def delete_entity(self, job_id):
+    job = Job.objects.get(id=job_id)
+
+    if job.proceed_if_ready():
+        # At the first time, update job status to prevent executing this job duplicately
+        job.update(Job.STATUS['PROCESSING'])
+
+        user = User.objects.filter(id=job.user.id).first()
+        entity = Entity.objects.filter(id=job.target.id, is_active=False).first()
+        if not entity or not user:
+            # Abort when specified entity doesn't exist
+            job.update(Job.STATUS['CANCELED'])
+            return
+
+        entity.delete()
+        history = user.seth_entity_del(entity)
+
+        # Delete all attributes which target Entity have
+        for attr in entity.attrs.all():
+            attr.delete()
+            history.del_attr(attr)
 
         # update job status and save it
         job.update(Job.STATUS['DONE'])

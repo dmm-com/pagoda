@@ -434,7 +434,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.count(), 0)
 
     @mock.patch('entity.tasks.edit_entity.delay', mock.Mock())
-    def test_post_edit_still_under_processing(self):
+    def test_post_edit_under_processing(self):
         user = self.admin_login()
 
         entity = Entity.objects.create(name='hoge', note='fuga', created_user=user)
@@ -660,6 +660,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(obj['Entity']), 1)
         self.assertEqual(obj['Entity'][0]['name'], 'entity1')
 
+    @mock.patch('entity.tasks.delete_entity.delay', mock.Mock(side_effect=tasks.delete_entity))
     def test_post_delete(self):
         user1 = self.admin_login()
 
@@ -740,6 +741,32 @@ class ViewTest(AironeViewTest):
         self.assertIsNotNone(entity)
         self.assertTrue(entity.is_active)
         self.assertTrue(EntityAttr.objects.get(name='puyo').is_active)
+
+    @mock.patch('entity.tasks.delete_entity.delay', mock.Mock())
+    def test_post_delete_under_processing(self):
+        user1 = self.admin_login()
+
+        entity1 = Entity.objects.create(name='entity1', created_user=user1)
+        entity1.save()
+
+        attr = EntityAttr.objects.create(name='attr-test',
+                                         created_user=user1,
+                                         is_mandatory=True,
+                                         type=AttrTypeStr,
+                                         parent_entity=entity1)
+        entity1.attrs.add(attr)
+
+        params = {}
+
+        # Call a new deleting entity
+        resp = self.client.post(reverse('entity:do_delete', args=[entity1.id]),
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        # Call the entity still processing again
+        resp = self.client.post(reverse('entity:do_delete', args=[entity1.id]),
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
 
     def test_post_create_entity_with_guest(self):
         self.guest_login()

@@ -296,20 +296,23 @@ def do_delete(request, entity_id, recv_data):
 
     entity = Entity.objects.get(id=entity_id)
 
-    # save deleting target name before do it
-    ret['name'] = entity.name
+    if not entity.is_active:
+        return HttpResponse('Target entity is now under processing', status=400)
 
     if Entry.objects.filter(schema=entity, is_active=True).exists():
         return HttpResponse('cannot delete Entity because one or more Entries are not deleted',
                             status=400)
 
-    entity.delete()
-    history = user.seth_entity_del(entity)
+    # save deleting target name before do it
+    ret['name'] = entity.name
 
-    # Delete all attributes which target Entity have
-    for attr in entity.attrs.all():
-        attr.delete()
-        history.del_attr(attr)
+    # set deleted flag in advance because deleting processing takes long time
+    entity.is_active = False
+    entity.save(update_fields=['is_active'])
+
+    # Create a new job to delete entry and run it
+    job = Job.new_delete_entity(user, entity)
+    job.run()
 
     return JsonResponse(ret)
 

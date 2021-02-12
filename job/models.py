@@ -261,7 +261,7 @@ class Job(models.Model):
                 JobOperation.EXPORT_SEARCH_RESULT.value: dashboard_task.export_search_result,
                 JobOperation.REGISTER_REFERRALS.value: entry_task.register_referrals,
                 JobOperation.EDIT_ENTITY.value: entity_task.edit_entity,
-                # JobOperation.DELETE_ENTITY.value: entity_task.delete_entity,
+                JobOperation.DELETE_ENTITY.value: entity_task.delete_entity,
             }
 
         return kls._METHOD_TABLE
