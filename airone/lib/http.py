@@ -194,6 +194,8 @@ def render(request, template, context={}):
             'EXPORT': JobOperation.EXPORT_ENTRY.value,
             'RESTORE': JobOperation.RESTORE_ENTRY.value,
             'EXPORT_SEARCH_RESULT': JobOperation.EXPORT_SEARCH_RESULT.value,
+            'EDIT_ENTITY': JobOperation.EDIT_ENTITY.value,
+            'DELETE_ENTITY': JobOperation.DELETE_ENTITY.value,
         }
     }
 
@@ -211,6 +213,7 @@ def render(request, template, context={}):
     # set Construct for Entity status
     context['STATUS_ENTITY'] = {}
     context['STATUS_ENTITY']['TOP_LEVEL'] = entity_models.Entity.STATUS_TOP_LEVEL
+    context['STATUS_ENTITY']['EDITING'] = entry_models.Entity.STATUS_EDITING
 
     # set Construct for Entry status
     context['STATUS_ENTRY'] = {}

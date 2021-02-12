@@ -85,6 +85,10 @@
               エクスポート
             {% elif job.operation|divmod:100 == JOB.OPERATION.RESTORE %}
               復旧
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EDIT_ENTITY %}
+              編集
+            {% elif job.operation|divmod:100 == JOB.OPERATION.DELETE_ENTITY %}
+              削除
             {% endif %}
             </td>
 

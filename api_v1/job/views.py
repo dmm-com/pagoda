@@ -46,6 +46,8 @@ class JobAPI(APIView):
                 'export': JobOperation.EXPORT_ENTRY.value,
                 'export_search_result': JobOperation.EXPORT_SEARCH_RESULT.value,
                 'restore': JobOperation.RESTORE_ENTRY.value,
+                'edit_entity': JobOperation.EDIT_ENTITY.value,
+                'delete_entity': JobOperation.DELETE_ENTITY.value,
             }
         }
 
