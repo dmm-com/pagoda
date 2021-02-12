@@ -45,6 +45,7 @@ class EntityAttr(ACLBase):
 
 class Entity(ACLBase):
     STATUS_TOP_LEVEL = 1 << 0
+    STATUS_EDITING = 1 << 1
 
     note = models.CharField(max_length=200)
     attrs = models.ManyToManyField(EntityAttr)

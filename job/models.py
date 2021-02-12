@@ -36,6 +36,8 @@ class JobOperation(Enum):
     RESTORE_ENTRY = 7
     EXPORT_SEARCH_RESULT = 8
     REGISTER_REFERRALS = 9
+    EDIT_ENTITY = 10
+    DELETE_ENTITY = 11
 
 
 class Job(models.Model):
@@ -246,6 +248,7 @@ class Job(models.Model):
         if not kls._METHOD_TABLE:
             entry_task = kls.get_task_module('entry.tasks')
             dashboard_task = kls.get_task_module('dashboard.tasks')
+            entity_task = kls.get_task_module('entity.tasks')
 
             kls._METHOD_TABLE = {
                 JobOperation.CREATE_ENTRY.value: entry_task.create_entry_attrs,
@@ -257,6 +260,8 @@ class Job(models.Model):
                 JobOperation.RESTORE_ENTRY.value: entry_task.restore_entry,
                 JobOperation.EXPORT_SEARCH_RESULT.value: dashboard_task.export_search_result,
                 JobOperation.REGISTER_REFERRALS.value: entry_task.register_referrals,
+                JobOperation.EDIT_ENTITY.value: entity_task.edit_entity,
+                # JobOperation.DELETE_ENTITY.value: entity_task.delete_entity,
             }
 
         return kls._METHOD_TABLE
@@ -318,6 +323,16 @@ class Job(models.Model):
     def new_register_referrals(kls, user, target):
         return kls._create_new_job(user, target, JobOperation.REGISTER_REFERRALS.value, '',
                                    json.dumps({}, default=_support_time_default, sort_keys=True))
+
+    @classmethod
+    def new_edit_entity(kls, user, target, text='', params={}):
+        return kls._create_new_job(user, target, JobOperation.EDIT_ENTITY.value, text,
+                                   json.dumps(params, default=_support_time_default,
+                                              sort_keys=True))
+
+    @classmethod
+    def new_delete_entity(kls, user, target, text='', params={}):
+        return kls._create_new_job(user, target, JobOperation.DELETE_ENTITY.value, text, params)
 
     def set_cache(self, value):
         with open('%s/job_%d' % (settings.AIRONE['FILE_STORE_PATH'], self.id), 'wb') as fp:
