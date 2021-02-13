@@ -2,8 +2,10 @@ import re
 
 from datetime import timedelta
 
+from django.contrib.auth import views as auth_views
 from django.http import HttpResponse
 from django.http.response import JsonResponse
+from django.urls import reverse_lazy
 
 from airone.lib.http import HttpResponseSeeOther
 from airone.lib.http import http_get, http_post
@@ -38,10 +40,10 @@ def create(request):
 
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: (
-        x['name'] and not User.objects.filter(username=x['name']).exists()
+            x['name'] and not User.objects.filter(username=x['name']).exists()
     )},
     {'name': 'email', 'type': str, 'checker': lambda x: (
-        x['email'] and not User.objects.filter(email=x['email']).exists()
+            x['email'] and not User.objects.filter(email=x['email']).exists()
     )},
     {'name': 'passwd', 'type': str, 'checker': lambda x: x['passwd']},
 ])
@@ -132,7 +134,6 @@ def do_edit(request, user_id, recv_data):
 
 @http_get
 def edit_passwd(request, user_id):
-
     user_grade = ''
     if (request.user.is_superuser):
         user_grade = 'super'
@@ -158,10 +159,9 @@ def edit_passwd(request, user_id):
     {'name': 'chk_passwd', 'type': str, 'checker': lambda x: x['chk_passwd']},
 ])
 def do_edit_passwd(request, user_id, recv_data):
-
     user = User.objects.get(id=user_id)
     # Identification
-    if(int(request.user.id) != int(user_id)):
+    if (int(request.user.id) != int(user_id)):
         return HttpResponse('You don\'t have permission to access this object', status=400)
 
     # Whether recv_data matches the old password
@@ -189,7 +189,6 @@ def do_edit_passwd(request, user_id, recv_data):
 ])
 @check_superuser
 def do_su_edit_passwd(request, user_id, recv_data):
-
     user = User.objects.get(id=user_id)
 
     # Whether the new password matches the check password
@@ -216,3 +215,22 @@ def do_delete(request, user_id, recv_data):
     user.delete()
 
     return JsonResponse(ret)
+
+
+class PasswordReset(auth_views.PasswordResetView):
+    email_template_name = 'password_reset_email.html'
+    success_url = reverse_lazy('user:password_reset_done')
+    template_name = 'password_reset_form.html'
+
+
+class PasswordResetDone(auth_views.PasswordResetDoneView):
+    template_name = 'password_reset_done.html'
+
+
+class PasswordResetConfirm(auth_views.PasswordResetConfirmView):
+    success_url = reverse_lazy('user:password_reset_complete')
+    template_name = 'password_reset_confirm.html'
+
+
+class PasswordResetComplete(auth_views.PasswordResetCompleteView):
+    template_name = 'password_reset_complete.html'
