@@ -238,7 +238,7 @@ $ ./tools/clear_and_initdb.sh
 
 ```
 $ source venv/bin/activate
-$ ./tools/register_user.sh admin
+$ ./tools/register_user.sh --superuser admin
 Password:
 Succeed in register user (admin)
 ```
