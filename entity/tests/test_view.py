@@ -90,10 +90,12 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp.context['entities']), 1)
         self.assertEqual(resp.context['entities'][0].id, entity_public.id)
 
+    @mock.patch('entity.tasks.create_entity.delay', mock.Mock(side_effect=tasks.create_entity))
     def test_create_post_without_login(self):
         resp = self.client.post(reverse('entity:do_create'), json.dumps({}), 'application/json')
         self.assertEqual(resp.status_code, 401)
 
+    @mock.patch('entity.tasks.create_entity.delay', mock.Mock(side_effect=tasks.create_entity))
     def test_create_post(self):
         self.admin_login()
 
@@ -487,6 +489,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 400)
 
+    @mock.patch('entity.tasks.create_entity.delay', mock.Mock(side_effect=tasks.create_entity))
     def test_post_create_with_valid_referral_attr(self):
         user = self.admin_login()
 
@@ -784,6 +787,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(Entity.objects.filter(name='hoge'))
 
+    @mock.patch('entity.tasks.create_entity.delay', mock.Mock(side_effect=tasks.create_entity))
     def test_create_entity_attr_with_multiple_referral(self):
         user = self.admin_login()
 

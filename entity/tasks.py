@@ -11,6 +11,47 @@ Logger = logging.getLogger(__name__)
 
 
 @app.task(bind=True)
+def create_entity(self, job_id):
+    job = Job.objects.get(id=job_id)
+
+    if job.proceed_if_ready():
+        # At the first time, update job status to prevent executing this job duplicately
+        job.update(Job.STATUS['PROCESSING'])
+
+        user = User.objects.filter(id=job.user.id).first()
+        entity = Entity.objects.filter(id=job.target.id, is_active=True).first()
+        if not entity or not user:
+            # Abort when specified entity doesn't exist
+            job.update(Job.STATUS['CANCELED'])
+            return
+
+        recv_data = json.loads(job.params)
+
+        # register history to modify Entity
+        history = user.seth_entity_add(entity)
+
+        for attr in recv_data['attrs']:
+            attr_base = EntityAttr.objects.create(name=attr['name'],
+                                                  type=int(attr['type']),
+                                                  is_mandatory=attr['is_mandatory'],
+                                                  is_delete_in_chain=attr['is_delete_in_chain'],
+                                                  created_user=user,
+                                                  parent_entity=entity,
+                                                  index=int(attr['row_index']))
+
+            if int(attr['type']) & AttrTypeValue['object']:
+                [attr_base.referral.add(Entity.objects.get(id=x)) for x in attr['ref_ids']]
+
+            entity.attrs.add(attr_base)
+
+            # register history to modify Entity
+            history.add_attr(attr_base)
+
+        # update job status and save it
+        job.update(Job.STATUS['DONE'])
+
+
+@app.task(bind=True)
 def edit_entity(self, job_id):
     job = Job.objects.get(id=job_id)
 

@@ -194,6 +194,7 @@ def render(request, template, context={}):
             'EXPORT': JobOperation.EXPORT_ENTRY.value,
             'RESTORE': JobOperation.RESTORE_ENTRY.value,
             'EXPORT_SEARCH_RESULT': JobOperation.EXPORT_SEARCH_RESULT.value,
+            'CREATE_ENTITY': JobOperation.CREATE_ENTITY.value,
             'EDIT_ENTITY': JobOperation.EDIT_ENTITY.value,
             'DELETE_ENTITY': JobOperation.DELETE_ENTITY.value,
         }

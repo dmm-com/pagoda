@@ -33,6 +33,7 @@ $(document).ready(function() {
           let target_name = '';
           switch(operation_type) {
             case data['constant']['operation']['create']:
+            case data['constant']['operation']['create_entity']:
               target_name = jobinfo['target']['name'];
               operation = '作成';
               break;
@@ -79,6 +80,7 @@ $(document).ready(function() {
                   // The case of export job, it has no target
                   link_url = `/job/download/${ jobinfo['id'] }`;
                   break;
+                case data['constant']['operation']['create_entity']:
                 case data['constant']['operation']['edit_entity']:
                 case data['constant']['operation']['delete_entity']:
                   // This indicates Entity-ID

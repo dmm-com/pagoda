@@ -36,8 +36,9 @@ class JobOperation(Enum):
     RESTORE_ENTRY = 7
     EXPORT_SEARCH_RESULT = 8
     REGISTER_REFERRALS = 9
-    EDIT_ENTITY = 10
-    DELETE_ENTITY = 11
+    CREATE_ENTITY = 10
+    EDIT_ENTITY = 11
+    DELETE_ENTITY = 12
 
 
 class Job(models.Model):
@@ -220,7 +221,7 @@ class Job(models.Model):
                          timedelta(seconds=kls._get_job_timeout()))
             dependent_job = (
                 Job.objects.filter(target=target, operation=operation, updated_at__gt=threshold)
-                .order_by('updated_at').last()
+                    .order_by('updated_at').last()
             )
 
         params = {
@@ -260,6 +261,7 @@ class Job(models.Model):
                 JobOperation.RESTORE_ENTRY.value: entry_task.restore_entry,
                 JobOperation.EXPORT_SEARCH_RESULT.value: dashboard_task.export_search_result,
                 JobOperation.REGISTER_REFERRALS.value: entry_task.register_referrals,
+                JobOperation.CREATE_ENTITY.value: entity_task.create_entity,
                 JobOperation.EDIT_ENTITY.value: entity_task.edit_entity,
                 JobOperation.DELETE_ENTITY.value: entity_task.delete_entity,
             }
@@ -323,6 +325,12 @@ class Job(models.Model):
     def new_register_referrals(kls, user, target):
         return kls._create_new_job(user, target, JobOperation.REGISTER_REFERRALS.value, '',
                                    json.dumps({}, default=_support_time_default, sort_keys=True))
+
+    @classmethod
+    def new_create_entity(kls, user, target, text='', params={}):
+        return kls._create_new_job(user, target, JobOperation.CREATE_ENTITY.value, text,
+                                   json.dumps(params, default=_support_time_default,
+                                              sort_keys=True))
 
     @classmethod
     def new_edit_entity(kls, user, target, text='', params={}):

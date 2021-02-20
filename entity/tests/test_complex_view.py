@@ -24,6 +24,7 @@ class ComplexViewTest(AironeViewTest):
 
     @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=entry_tasks.create_entry_attrs))
     @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=entry_tasks.edit_entry_attrs))
+    @patch('entity.tasks.create_entity.delay', Mock(side_effect=entity_tasks.create_entity))
     @patch('entity.tasks.edit_entity.delay', Mock(side_effect=entity_tasks.edit_entity))
     def test_add_attr_after_creating_entry(self):
         """
@@ -174,6 +175,7 @@ class ComplexViewTest(AironeViewTest):
         value_arr_obj = attr_arr_obj.values.last()
         self.assertEqual(value_arr_obj.data_array.count(), 1)
 
+    @patch('entity.tasks.create_entity.delay', Mock(side_effect=entity_tasks.create_entity))
     @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=entry_tasks.create_entry_attrs))
     def test_inherite_attribute_acl(self):
         """

@@ -221,25 +221,9 @@ def do_create(request, recv_data):
 
     entity.save()
 
-    # register history to modify Entity
-    history = user.seth_entity_add(entity)
-
-    for attr in recv_data['attrs']:
-        attr_base = EntityAttr.objects.create(name=attr['name'],
-                                              type=int(attr['type']),
-                                              is_mandatory=attr['is_mandatory'],
-                                              is_delete_in_chain=attr['is_delete_in_chain'],
-                                              created_user=user,
-                                              parent_entity=entity,
-                                              index=int(attr['row_index']))
-
-        if int(attr['type']) & AttrTypeValue['object']:
-            [attr_base.referral.add(Entity.objects.get(id=x)) for x in attr['ref_ids']]
-
-        entity.attrs.add(attr_base)
-
-        # register history to modify Entity
-        history.add_attr(attr_base)
+    # Create a new job to edit entity and run it
+    job = Job.new_create_entity(user, entity, params=recv_data)
+    job.run()
 
     return JsonResponse({
         'entity_id': entity.id,
