@@ -52,6 +52,12 @@
               {% endif %}
             {% elif job.operation|divmod:100 == JOB.OPERATION.IMPORT %}
               <td><a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
+            {% elif job.operation|divmod:100 == JOB.OPERATION.CREATE_ENTITY %}
+              <td><a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EDIT_ENTITY %}
+              <td><a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
+            {% elif job.operation|divmod:100 == JOB.OPERATION.DELETE_ENTITY %}
+              <td>{{ job.target.name }}</td>
             {% else %}
               <td><a href='/entry/show/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
             {% endif %}
