@@ -70,6 +70,7 @@ $(document).ready(function() {
               container.append(`<li class='dropdown-item job-status-processing' href='#'>[処理中/${operation}] ${ target_name }</li>`);
               break;
             case data['constant']['status']['done']:
+              var link_url = null;
               switch(operation_type) {
                 case data['constant']['operation']['import']:
                   // The case of import job, target-id indicates Entity-ID
@@ -83,15 +84,24 @@ $(document).ready(function() {
                 case data['constant']['operation']['create_entity']:
                 case data['constant']['operation']['edit_entity']:
                 case data['constant']['operation']['delete_entity']:
-                  // This indicates Entity-ID
-                  link_url = `/entry/${ jobinfo['target']['id'] }`;
+                  if (jobinfo['target']['is_active']){
+                    // This indicates Entity-ID
+                    link_url = `/entry/${ jobinfo['target']['id'] }`;
+                  } else {
+                    // Prevent to enter a deleted entity
+                    link_url = null;
+                  }
                   break;
                 default:
                   // This indicates Entry-ID by default
                   link_url = `/entry/show/${ jobinfo['target']['id'] }`;
               }
 
-              container.append(`<a class='dropdown-item job-status-done' href="${ link_url }">[完了/${operation}] ${ target_name }</a>`);
+              if (link_url !== null) {
+                container.append(`<a class='dropdown-item job-status-done' href="${ link_url }">[完了/${operation}] ${ target_name }</a>`);
+              } else {
+                container.append(`<li class='dropdown-item' href='#'>[完了/${operation}] ${ target_name }</li>`);
+              }
 
               break;
             case data['constant']['status']['error']:

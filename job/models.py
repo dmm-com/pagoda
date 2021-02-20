@@ -185,6 +185,7 @@ class Job(models.Model):
             'target': {
                 'id': self.target.id,
                 'name': self.target.name,
+                'is_active': self.target.is_active,
             } if self.target else {},
             'text': self.text,
             'status': self.status,
