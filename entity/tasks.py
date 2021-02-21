@@ -47,6 +47,9 @@ def create_entity(self, job_id):
             # register history to modify Entity
             history.add_attr(attr_base)
 
+        # clear flag to specify this entity has been completed to create
+        entity.del_status(Entity.STATUS_CREATING)
+
         # update job status and save it
         job.update(Job.STATUS['DONE'])
 

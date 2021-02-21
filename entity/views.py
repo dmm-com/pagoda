@@ -213,7 +213,8 @@ def do_create(request, recv_data):
     # create EntityAttr objects
     entity = Entity(name=recv_data['name'],
                     note=recv_data['note'],
-                    created_user=user)
+                    created_user=user,
+                    status=Entity.STATUS_CREATING)
 
     # set status parameters
     if recv_data['is_toplevel']:

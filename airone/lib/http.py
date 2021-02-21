@@ -214,6 +214,7 @@ def render(request, template, context={}):
     # set Construct for Entity status
     context['STATUS_ENTITY'] = {}
     context['STATUS_ENTITY']['TOP_LEVEL'] = entity_models.Entity.STATUS_TOP_LEVEL
+    context['STATUS_ENTITY']['CREATING'] = entry_models.Entity.STATUS_CREATING
     context['STATUS_ENTITY']['EDITING'] = entry_models.Entity.STATUS_EDITING
 
     # set Construct for Entry status
