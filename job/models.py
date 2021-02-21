@@ -222,7 +222,7 @@ class Job(models.Model):
                          timedelta(seconds=kls._get_job_timeout()))
             dependent_job = (
                 Job.objects.filter(target=target, operation=operation, updated_at__gt=threshold)
-                    .order_by('updated_at').last()
+                .order_by('updated_at').last()
             )
 
         params = {
