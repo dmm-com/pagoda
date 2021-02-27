@@ -11,6 +11,7 @@ from airone.lib.http import HttpResponseSeeOther
 from airone.lib.http import http_get, http_post
 from airone.lib.http import render
 from airone.lib.http import check_superuser
+from user.forms import UsernameBasedPasswordResetForm
 
 from rest_framework.authtoken.models import Token
 
@@ -221,6 +222,7 @@ class PasswordReset(auth_views.PasswordResetView):
     email_template_name = 'password_reset_email.html'
     success_url = reverse_lazy('user:password_reset_done')
     template_name = 'password_reset_form.html'
+    form_class = UsernameBasedPasswordResetForm
 
 
 class PasswordResetDone(auth_views.PasswordResetDoneView):
