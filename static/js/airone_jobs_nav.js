@@ -33,14 +33,17 @@ $(document).ready(function() {
           let target_name = '';
           switch(operation_type) {
             case data['constant']['operation']['create']:
+            case data['constant']['operation']['create_entity']:
               target_name = jobinfo['target']['name'];
               operation = '作成';
               break;
             case data['constant']['operation']['edit']:
+            case data['constant']['operation']['edit_entity']:
               target_name = jobinfo['target']['name'];
               operation = '編集';
               break;
             case data['constant']['operation']['delete']:
+            case data['constant']['operation']['delete_entity']:
               target_name = jobinfo['target']['name'];
               operation = '削除';
               break;
@@ -67,19 +70,38 @@ $(document).ready(function() {
               container.append(`<li class='dropdown-item job-status-processing' href='#'>[処理中/${operation}] ${ target_name }</li>`);
               break;
             case data['constant']['status']['done']:
-              if (operation_type == data['constant']['operation']['import']) {
-                // The case of import job, target-id indicates Entity-ID
-                link_url = `/entry/${ jobinfo['target']['id'] }`;
-              } else if (operation_type == data['constant']['operation']['export'] ||
-                         operation_type == data['constant']['operation']['export_search_result']) {
-                // The case of export job, it has no target
-                link_url = `/job/download/${ jobinfo['id'] }`;
-              } else {
-                // This indicates Entry-ID by default
-                link_url = `/entry/show/${ jobinfo['target']['id'] }`;
+              var link_url = null;
+              switch(operation_type) {
+                case data['constant']['operation']['import']:
+                  // The case of import job, target-id indicates Entity-ID
+                  link_url = `/entry/${ jobinfo['target']['id'] }`;
+                  break;
+                case data['constant']['operation']['export']:
+                case data['constant']['operation']['export_search_result']:
+                  // The case of export job, it has no target
+                  link_url = `/job/download/${ jobinfo['id'] }`;
+                  break;
+                case data['constant']['operation']['create_entity']:
+                case data['constant']['operation']['edit_entity']:
+                case data['constant']['operation']['delete_entity']:
+                  if (jobinfo['target']['is_active']){
+                    // This indicates Entity-ID
+                    link_url = `/entry/${ jobinfo['target']['id'] }`;
+                  } else {
+                    // Prevent to enter a deleted entity
+                    link_url = null;
+                  }
+                  break;
+                default:
+                  // This indicates Entry-ID by default
+                  link_url = `/entry/show/${ jobinfo['target']['id'] }`;
               }
 
-              container.append(`<a class='dropdown-item job-status-done' href="${ link_url }">[完了/${operation}] ${ target_name }</a>`);
+              if (link_url !== null) {
+                container.append(`<a class='dropdown-item job-status-done' href="${ link_url }">[完了/${operation}] ${ target_name }</a>`);
+              } else {
+                container.append(`<li class='dropdown-item' href='#'>[完了/${operation}] ${ target_name }</li>`);
+              }
 
               break;
             case data['constant']['status']['error']:
