@@ -266,8 +266,3 @@ LOGGING = {
 # If log dir is not exists create it.
 if not os.path.exists(os.path.dirname(LOGGING['handlers']['file']['filename'])):
     os.makedirs(os.path.dirname(LOGGING['handlers']['file']['filename']))
-
-# Email settings
-# https://docs.djangoproject.com/en/1.11/topics/email/
-# FIXME it MUST be replaced with a real settings for production
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
