@@ -1,5 +1,11 @@
 # Changelog
 
+## In development
+
+### Changed
+
+* Changed implementation of Entity to create, edit and delete it at Celery.
+
 ## v2.6.0
 
 ### Added
