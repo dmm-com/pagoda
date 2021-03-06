@@ -14,6 +14,6 @@ CONFIG = Settings({
     'OR_SEARCH_CHARACTER': '|',
     'ESCAPE_CHARACTERS': ['(', ')', '<', '"', '{', '[', '#', '~', '@', '+', '*', '.', '?'],
     'ESCAPE_CHARACTERS_REFERRALS_ENTRY': ['$', '(', '^', '|', '[', '+', '*', '.', '?'],
-    'ESCAPE_CHARACTERS_ENTRY_LIST': ['$', '(', '^', '\\', '|', '[', '+', '*', '.', '?'],
+    'ESCAPE_CHARACTERS_ENTRY_LIST': ['(', '\\', '|', '[', '+', '*', '.', '?'],
     'TIME_FORMAT': '%Y-%m-%dT%H:%M:%S',
 })

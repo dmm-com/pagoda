@@ -47,6 +47,15 @@ class ViewTest(AironeViewTest):
         self.assertTrue(
             all([x['name'] == 'e-10' or x['name'] == 'e-100' for x in resp.json()['results']]))
 
+        # send request with keyword parameter containing meta characters.
+        resp = self.client.get(reverse('entry:api_v1:get_entries', args=[entity.id]),
+                               {'keyword': '^e-10$'})
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertTrue('results' in resp.json())
+        self.assertEqual(len(resp.json()['results']), 1)
+        self.assertEqual(resp.json()['results'][0]['name'], 'e-10')
+
         # send request with invalid keyword parameter
         resp = self.client.get(reverse('entry:api_v1:get_entries', args=[entity.id]),
                                {'keyword': 'invalid-keyword'})
@@ -65,9 +74,8 @@ class ViewTest(AironeViewTest):
         """
         Check for cases with special characters
         """
-        add_chars = ['!', '"', '#', '$', '%', '\'', '(', ')', '-', '=', '^', '~', '@', '`',
-                     '[', ']', '{', '}', ';', '+', ':', '*', ',', '<', '>', '.', '/', '?', '_', ' '
-                     '&', '|']
+        add_chars = ['!', '"', '#', '%', '\'', '(', ')', '-', '=', '~', '@', '`', '[', ']', '{',
+                     '}', ';', '+', ':', '*', ',', '<', '>', '.', '/', '?', '_', ' ', '&', '|']
         test_suites = []
         for i, add_char in enumerate(add_chars):
             entry_name = 'test%s%s' % (i, add_char)
