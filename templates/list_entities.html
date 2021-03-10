@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load bitwise_tags %}
 
 {% block title %}List Entities{% endblock %}
 
@@ -68,7 +69,13 @@
           {% for entity in entities %}
           <tr>
             <td>
+              {% if entity.status|bitwise_and:STATUS_ENTITY.CREATING %}
+                {{ entity.name }} [作成中]
+              {% elif entity.status|bitwise_and:STATUS_ENTITY.EDITING %}
+                <a href='/entry/{{ entity.id }}'>{{ entity.name }} [編集中]</a>
+              {% else %}
                 <a href='/entry/{{ entity.id }}'>{{ entity.name }}</a>
+              {% endif %}
             </td>
             <td>{{ entity.note }}</td>
             <td>

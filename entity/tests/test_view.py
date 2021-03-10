@@ -14,6 +14,7 @@ from entity.settings import CONFIG
 from entry.models import Entry, Attribute
 from user.models import User, History
 from unittest import mock
+from entity import tasks
 from xml.etree import ElementTree
 
 
@@ -89,10 +90,12 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp.context['entities']), 1)
         self.assertEqual(resp.context['entities'][0].id, entity_public.id)
 
+    @mock.patch('entity.tasks.create_entity.delay', mock.Mock(side_effect=tasks.create_entity))
     def test_create_post_without_login(self):
         resp = self.client.post(reverse('entity:do_create'), json.dumps({}), 'application/json')
         self.assertEqual(resp.status_code, 401)
 
+    @mock.patch('entity.tasks.create_entity.delay', mock.Mock(side_effect=tasks.create_entity))
     def test_create_post(self):
         self.admin_login()
 
@@ -245,6 +248,7 @@ class ViewTest(AironeViewTest):
                                 'application/json')
         self.assertEqual(resp.status_code, 400)
 
+    @mock.patch('entity.tasks.edit_entity.delay', mock.Mock(side_effect=tasks.edit_entity))
     def test_post_edit_with_valid_params(self):
         user = self.admin_login()
 
@@ -284,6 +288,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(History.objects.filter(operation=History.ADD_ATTR).count(), 1)
         self.assertEqual(History.objects.filter(operation=History.MOD_ATTR).count(), 2)
 
+    @mock.patch('entity.tasks.edit_entity.delay', mock.Mock(side_effect=tasks.edit_entity))
     def test_post_edit_after_creating_entry(self):
         user = self.admin_login()
 
@@ -349,6 +354,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(EntityAttr.objects.get(id=attr.id).type, AttrTypeStr)
         self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.count(), 0)
 
+    @mock.patch('entity.tasks.edit_entity.delay', mock.Mock(side_effect=tasks.edit_entity))
     def test_post_edit_attribute_referral(self):
         user = self.admin_login()
 
@@ -429,6 +435,42 @@ class ViewTest(AironeViewTest):
         self.assertEqual(EntityAttr.objects.get(id=attr.id).type, AttrTypeStr)
         self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.count(), 0)
 
+    @mock.patch('entity.tasks.edit_entity.delay', mock.Mock())
+    def test_post_edit_under_processing(self):
+        user = self.admin_login()
+
+        entity = Entity.objects.create(name='hoge', note='fuga', created_user=user)
+        attr = EntityAttr.objects.create(name='puyo',
+                                         created_user=user,
+                                         is_mandatory=True,
+                                         type=AttrTypeStr,
+                                         parent_entity=entity)
+        entity.attrs.add(attr)
+
+        params = {
+            'name': 'foo',
+            'note': 'bar',
+            'is_toplevel': True,
+            'attrs': [
+                {'name': 'foo', 'type': str(AttrTypeStr), 'is_delete_in_chain': False,
+                 'is_mandatory': False, 'id': attr.id, 'row_index': '1'},
+                {'name': 'bar', 'type': str(AttrTypeStr), 'is_delete_in_chain': False,
+                 'is_mandatory': True, 'row_index': '2'},
+            ],
+        }
+
+        # Call a new editing entity
+        resp = self.client.post(reverse('entity:do_edit', args=[entity.id]),
+                                json.dumps(params),
+                                'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        # Call the entity still processing again
+        resp = self.client.post(reverse('entity:do_edit', args=[entity.id]),
+                                json.dumps(params),
+                                'application/json')
+        self.assertEqual(resp.status_code, 400)
+
     def test_post_create_with_invalid_referral_attr(self):
         self.admin_login()
 
@@ -447,6 +489,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 400)
 
+    @mock.patch('entity.tasks.create_entity.delay', mock.Mock(side_effect=tasks.create_entity))
     def test_post_create_with_valid_referral_attr(self):
         user = self.admin_login()
 
@@ -476,6 +519,7 @@ class ViewTest(AironeViewTest):
         self.assertFalse(any([x.is_mandatory for x in created_entity.attrs.all()]))
         self.assertTrue(all([x.is_delete_in_chain for x in created_entity.attrs.all()]))
 
+    @mock.patch('entity.tasks.edit_entity.delay', mock.Mock(side_effect=tasks.edit_entity))
     def test_post_delete_attribute(self):
         user = self.admin_login()
 
@@ -619,6 +663,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(obj['Entity']), 1)
         self.assertEqual(obj['Entity'][0]['name'], 'entity1')
 
+    @mock.patch('entity.tasks.delete_entity.delay', mock.Mock(side_effect=tasks.delete_entity))
     def test_post_delete(self):
         user1 = self.admin_login()
 
@@ -700,6 +745,32 @@ class ViewTest(AironeViewTest):
         self.assertTrue(entity.is_active)
         self.assertTrue(EntityAttr.objects.get(name='puyo').is_active)
 
+    @mock.patch('entity.tasks.delete_entity.delay', mock.Mock())
+    def test_post_delete_under_processing(self):
+        user1 = self.admin_login()
+
+        entity1 = Entity.objects.create(name='entity1', created_user=user1)
+        entity1.save()
+
+        attr = EntityAttr.objects.create(name='attr-test',
+                                         created_user=user1,
+                                         is_mandatory=True,
+                                         type=AttrTypeStr,
+                                         parent_entity=entity1)
+        entity1.attrs.add(attr)
+
+        params = {}
+
+        # Call a new deleting entity
+        resp = self.client.post(reverse('entity:do_delete', args=[entity1.id]),
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        # Call the entity still processing again
+        resp = self.client.post(reverse('entity:do_delete', args=[entity1.id]),
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+
     def test_post_create_entity_with_guest(self):
         self.guest_login()
 
@@ -716,6 +787,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(Entity.objects.filter(name='hoge'))
 
+    @mock.patch('entity.tasks.create_entity.delay', mock.Mock(side_effect=tasks.create_entity))
     def test_create_entity_attr_with_multiple_referral(self):
         user = self.admin_login()
 

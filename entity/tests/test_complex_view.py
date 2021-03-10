@@ -10,7 +10,8 @@ from django.urls import reverse
 
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, AttributeValue
-from entry import tasks
+from entry import tasks as entry_tasks
+from entity import tasks as entity_tasks
 
 from unittest.mock import patch
 from unittest.mock import Mock
@@ -21,8 +22,10 @@ class ComplexViewTest(AironeViewTest):
     This has complex tests that combine multiple requests across the inter-applicational
     """
 
-    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
-    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=entry_tasks.create_entry_attrs))
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=entry_tasks.edit_entry_attrs))
+    @patch('entity.tasks.create_entity.delay', Mock(side_effect=entity_tasks.create_entity))
+    @patch('entity.tasks.edit_entity.delay', Mock(side_effect=entity_tasks.edit_entity))
     def test_add_attr_after_creating_entry(self):
         """
         This test executes followings
@@ -172,7 +175,8 @@ class ComplexViewTest(AironeViewTest):
         value_arr_obj = attr_arr_obj.values.last()
         self.assertEqual(value_arr_obj.data_array.count(), 1)
 
-    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entity.tasks.create_entity.delay', Mock(side_effect=entity_tasks.create_entity))
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=entry_tasks.create_entry_attrs))
     def test_inherite_attribute_acl(self):
         """
         This test executes followings
@@ -258,6 +262,7 @@ class ComplexViewTest(AironeViewTest):
         self.assertEqual(Entry.objects.count(), 2)
         self.assertEqual(Entry.objects.get(name='entry2').attrs.count(), 0)
 
+    @patch('entity.tasks.edit_entity.delay', Mock(side_effect=entity_tasks.edit_entity))
     def test_cache_referred_entry_at_deleting_attr(self):
         user = self.admin_login()
 

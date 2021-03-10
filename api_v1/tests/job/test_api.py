@@ -52,6 +52,9 @@ class APITest(AironeViewTest):
             'export': JobOperation.EXPORT_ENTRY.value,
             'export_search_result': JobOperation.EXPORT_SEARCH_RESULT.value,
             'restore': JobOperation.RESTORE_ENTRY.value,
+            'create_entity': JobOperation.CREATE_ENTITY.value,
+            'edit_entity': JobOperation.EDIT_ENTITY.value,
+            'delete_entity': JobOperation.DELETE_ENTITY.value,
         })
         self.assertEqual(results['constant']['status'], {
             'processing': Job.STATUS['PROCESSING'],

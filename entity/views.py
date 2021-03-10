@@ -11,6 +11,7 @@ from .models import Entity
 from .models import EntityAttr
 from user.models import User, History
 from entry.models import Entry, AttributeValue
+from job.models import Job
 
 from airone.lib.types import AttrTypes, AttrTypeValue
 from airone.lib.http import http_get, http_post
@@ -147,12 +148,9 @@ def do_edit(request, entity_id, recv_data):
 
     entity = Entity.objects.get(id=entity_id)
 
-    # register history to modify Entity
-    history = user.seth_entity_mod(entity)
-
-    # check operation history detail
-    if entity.name != recv_data['name']:
-        history.mod_entity(entity, 'old name: "%s"' % (entity.name))
+    # prevent to show edit page under the processing
+    if entity.get_status(Entity.STATUS_EDITING):
+        return HttpResponse('Target entity is now under processing', status=400)
 
     # update status parameters
     if recv_data['is_toplevel']:
@@ -161,78 +159,18 @@ def do_edit(request, entity_id, recv_data):
         entity.del_status(Entity.STATUS_TOP_LEVEL)
 
     # update entity metatada informations to new ones
-    entity.name = recv_data['name']
-    entity.note = recv_data['note']
+    entity.set_status(Entity.STATUS_EDITING)
     entity.save()
 
-    # update processing for each attrs
-    for attr in recv_data['attrs']:
-        if 'deleted' in attr:
-            # In case of deleting attribute which has been already existed
-            attr_obj = EntityAttr.objects.get(id=attr['id'])
-            attr_obj.delete()
+    # Create a new job to edit entity and run it
+    job = Job.new_edit_entity(user, entity, params=recv_data)
+    job.run()
 
-            # register History to register deleting EntityAttr
-            history.del_attr(attr_obj)
-
-        elif 'id' in attr and EntityAttr.objects.filter(id=attr['id']).exists():
-            # In case of updating attribute which has been already existed
-            attr_obj = EntityAttr.objects.get(id=attr['id'])
-
-            # register operaion history if the parameters are changed
-            if attr_obj.name != attr['name']:
-                history.mod_attr(attr_obj, 'old name: "%s"' % (attr_obj.name))
-
-            if attr_obj.is_mandatory != attr['is_mandatory']:
-                if attr['is_mandatory']:
-                    history.mod_attr(attr_obj, 'set mandatory flag')
-                else:
-                    history.mod_attr(attr_obj, 'unset mandatory flag')
-
-            params = {
-                'name': attr['name'],
-                'refs': [int(x) for x in attr['ref_ids']],
-                'index': attr['row_index'],
-                'is_mandatory': attr['is_mandatory'],
-                'is_delete_in_chain': attr['is_delete_in_chain'],
-            }
-            if attr_obj.is_updated(**params):
-                attr_obj.name = attr['name']
-                attr_obj.is_mandatory = attr['is_mandatory']
-                attr_obj.is_delete_in_chain = attr['is_delete_in_chain']
-                attr_obj.index = int(attr['row_index'])
-
-                # the case of an attribute that has referral entry
-                attr_obj.referral.clear()
-                if attr_obj.type & AttrTypeValue['object']:
-                    [attr_obj.referral.add(Entity.objects.get(id=x)) for x in attr['ref_ids']]
-
-                attr_obj.save()
-
-        else:
-            # In case of creating new attribute
-            attr_obj = EntityAttr.objects.create(name=attr['name'],
-                                                 type=int(attr['type']),
-                                                 is_mandatory=attr['is_mandatory'],
-                                                 is_delete_in_chain=attr['is_delete_in_chain'],
-                                                 index=int(attr['row_index']),
-                                                 created_user=user,
-                                                 parent_entity=entity)
-
-            # append referral objects
-            if int(attr['type']) & AttrTypeValue['object']:
-                [attr_obj.referral.add(Entity.objects.get(id=x)) for x in attr['ref_ids']]
-
-            # add a new attribute on the existed Entries
-            entity.attrs.add(attr_obj)
-
-            # register History to register adding EntityAttr
-            history.add_attr(attr_obj)
-
+    new_name = recv_data['name']
     return JsonResponse({
         'entity_id': entity.id,
-        'entity_name': entity.name,
-        'msg': 'Success to update Entity "%s"' % entity.name,
+        'entity_name': new_name,
+        'msg': 'Success to schedule to update Entity "%s"' % new_name,
     })
 
 
@@ -275,7 +213,8 @@ def do_create(request, recv_data):
     # create EntityAttr objects
     entity = Entity(name=recv_data['name'],
                     note=recv_data['note'],
-                    created_user=user)
+                    created_user=user,
+                    status=Entity.STATUS_CREATING)
 
     # set status parameters
     if recv_data['is_toplevel']:
@@ -283,25 +222,9 @@ def do_create(request, recv_data):
 
     entity.save()
 
-    # register history to modify Entity
-    history = user.seth_entity_add(entity)
-
-    for attr in recv_data['attrs']:
-        attr_base = EntityAttr.objects.create(name=attr['name'],
-                                              type=int(attr['type']),
-                                              is_mandatory=attr['is_mandatory'],
-                                              is_delete_in_chain=attr['is_delete_in_chain'],
-                                              created_user=user,
-                                              parent_entity=entity,
-                                              index=int(attr['row_index']))
-
-        if int(attr['type']) & AttrTypeValue['object']:
-            [attr_base.referral.add(Entity.objects.get(id=x)) for x in attr['ref_ids']]
-
-        entity.attrs.add(attr_base)
-
-        # register history to modify Entity
-        history.add_attr(attr_base)
+    # Create a new job to edit entity and run it
+    job = Job.new_create_entity(user, entity, params=recv_data)
+    job.run()
 
     return JsonResponse({
         'entity_id': entity.id,
@@ -358,20 +281,23 @@ def do_delete(request, entity_id, recv_data):
 
     entity = Entity.objects.get(id=entity_id)
 
-    # save deleting target name before do it
-    ret['name'] = entity.name
+    if not entity.is_active:
+        return HttpResponse('Target entity is now under processing', status=400)
 
     if Entry.objects.filter(schema=entity, is_active=True).exists():
         return HttpResponse('cannot delete Entity because one or more Entries are not deleted',
                             status=400)
 
-    entity.delete()
-    history = user.seth_entity_del(entity)
+    # save deleting target name before do it
+    ret['name'] = entity.name
 
-    # Delete all attributes which target Entity have
-    for attr in entity.attrs.all():
-        attr.delete()
-        history.del_attr(attr)
+    # set deleted flag in advance because deleting processing takes long time
+    entity.is_active = False
+    entity.save(update_fields=['is_active'])
+
+    # Create a new job to delete entry and run it
+    job = Job.new_delete_entity(user, entity)
+    job.run()
 
     return JsonResponse(ret)
 
