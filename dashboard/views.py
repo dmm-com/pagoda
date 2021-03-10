@@ -32,8 +32,9 @@ def index(request):
     context = {}
     if request.user.is_authenticated() and User.objects.filter(id=request.user.id).exists():
         history = []
+        # Sort by newest attribute update date (id is auto increment)
         for attr_value in AttributeValue.objects.order_by(
-                'created_time').reverse()[:CONFIG.LAST_ENTRY_HISTORY]:
+                'id').reverse()[:CONFIG.LAST_ENTRY_HISTORY]:
             parent_attr = attr_value.parent_attr
             parent_entry = parent_attr.parent_entry
 

@@ -93,9 +93,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp.context['results']), 0)
 
     def test_show_dashboard_with_airone_user(self):
+        # prepare the data of the imported file
+        obj = yaml.safe_load(self.open_fixture_file('entry.yaml'))
+        obj_attrv_list = sorted(obj['AttributeValue'], key=lambda x: x['id'], reverse=True)
+        obj_entity_list = sorted(obj['Entity'], key=lambda x: x['id'])
+
         resp = self.client.get(reverse('dashboard:index'))
         self.assertEqual(resp.status_code, 200)
         self.assertIsNotNone(resp.context["version"])
+        for i, x in enumerate(resp.context["last_entries"]):
+            self.assertEqual(x['attr_value'].id, obj_attrv_list[i]['id'])
+        for i, x in enumerate(resp.context["navigator"]['entities']):
+            self.assertEqual(x.id, obj_entity_list[i]['id'])
 
     def test_show_dashboard_with_django_user(self):
         # create test user which is authenticated by Django, not AirOne
