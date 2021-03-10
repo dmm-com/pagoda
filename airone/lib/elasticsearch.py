@@ -211,21 +211,9 @@ def _get_regex_pattern(keyword):
         str: Regular expression pattern of argument
 
     """
-    chars = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS, keyword)
-
-    # Auto-fill '.*' if it doesn't have '^' and/or '$' explicitly
-    first = '.*'
-    last = '.*'
-    if len(chars) > 1:
-        if chars[0] == '^':
-            first = ''
-        if chars[-1] == '$':
-            last = ''
-
-    return '%s%s%s' % (
-        first,
-        ''.join(['[%s%s]' % (x.lower(), x.upper()) if x.isalpha() else x for x in chars]),
-        last)
+    return '.*%s.*' % ''.join(['[%s%s]' % (
+        x.lower(), x.upper()) if x.isalpha() else x for x in prepend_escape_character(
+        CONFIG.ESCAPE_CHARACTERS, keyword)])
 
 
 def prepend_escape_character(escape_character_list, keyword):

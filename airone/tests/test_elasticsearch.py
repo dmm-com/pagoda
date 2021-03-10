@@ -16,11 +16,3 @@ class ElasticSearchTest(unittest.TestCase):
         # A keyword with meta characters should be escaped
         pattern = elasticsearch._get_regex_pattern('key...word')
         self.assertEqual(pattern, '.*[kK][eE][yY]\\.\\.\\.[wW][oO][rR][dD].*')
-
-        # A keyword with meta characters with '^' and/or '$'
-        pattern = elasticsearch._get_regex_pattern('^keyword')
-        self.assertEqual(pattern, '^[kK][eE][yY][wW][oO][rR][dD].*')
-        pattern = elasticsearch._get_regex_pattern('keyword$')
-        self.assertEqual(pattern, '.*[kK][eE][yY][wW][oO][rR][dD]$')
-        pattern = elasticsearch._get_regex_pattern('^keyword$')
-        self.assertEqual(pattern, '^[kK][eE][yY][wW][oO][rR][dD]$')
