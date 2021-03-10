@@ -87,6 +87,7 @@ You can start AirOne as following and can browse from `http://hostname:8080/` (P
 ```
 user@hostname:~/$ cd airone
 user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone/$ python3 manage.py collectstatic
 (virtualenv) user@hostname:~/airone/$ python3 manage.py runserver 0:8080
 ```
 
@@ -247,6 +248,7 @@ Succeed in register user (admin)
 
 ```
 $ source venv/bin/activate
+$ python manage.py collectstatic
 $ python manage.py runserver 0:8080
 ```
 

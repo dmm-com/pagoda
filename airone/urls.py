@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.views.generic import RedirectView
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 from api_v1.urls import urlpatterns as api_v1_urlpatterns
 
@@ -22,3 +23,5 @@ urlpatterns = [
 for extension in settings.AIRONE['EXTENSIONS']:
     urlpatterns.append(url(r'^extension/%s' % extension,
                            include('%s.urls' % extension, namespace=extension)))
+
+urlpatterns += staticfiles_urlpatterns()
