@@ -605,7 +605,7 @@ def execute_query(query):
     return res
 
 
-def make_search_results(results, res, hint_attrs, limit, hint_referral):
+def make_search_results(res, hint_attrs, limit, hint_referral):
     """Acquires and returns the attribute values held by each search result
 
     When the condition of reference entry is specified, the entry to reference is acquired.
@@ -644,6 +644,28 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
 
     """
     from entry.models import Entry, AttributeValue
+
+    def _is_matched_keyword(attrname, attrvalue):
+        """
+        This methods returns True when
+
+          1. specified attribute information in this method (attrname, attrvalue)
+             matched the expected attribute information of hint_attrs which is a
+             parameter of make_search_results method using regex.
+
+          2. matched hint_attr information doesn't have "keyword" information or
+             blank value.
+
+        Args:
+          - attrname(str): ...
+          - attrvalue(str): ...
+        """
+        pass
+
+    results = {
+        'ret_count': 0,
+        'ret_values': []
+    }
 
     # set numbers of found entries
     results['ret_count'] = res['hits']['total']
@@ -730,7 +752,10 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
                attrinfo['type'] == AttrTypeValue['text']):
 
                 if attrinfo['value']:
-                    ret_attrinfo['value'] = attrinfo['value']
+
+                    if _is_matched_keyword(attrinfo['name'], attrinfo['value']):
+                        ret_attrinfo['value'] = attrinfo['value']
+
                 elif 'date_value' in attrinfo and attrinfo['date_value']:
                     ret_attrinfo['value'] = attrinfo['date_value'].split('T')[0]
 
