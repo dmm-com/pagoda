@@ -1420,19 +1420,17 @@ class Entry(ACLBase):
                 the acquired entry and the attribute value of the entry are returned.
 
         """
-        results = {
-            'ret_count': 0,
-            'ret_values': []
-        }
-
+        # make query for elasticsearch to retrieve data user wants
         query = make_query(hint_entity_ids, hint_attrs, entry_name, or_match)
 
-        res = execute_query(query)
+        # sending request to elasticsearch with making query
+        resp = execute_query(query)
 
         if 'status' in res and res['status'] == 404:
-            return results
+            return {'ret_count', 0, 'ret_values': []}
 
-        return make_search_results(results, res, hint_attrs, limit, hint_referral)
+        # retrieve data from database on the basis of the result of elasticsearch
+        return make_search_results(resp, hint_attrs, limit, hint_referral)
 
     @classmethod
     def get_all_es_docs(kls):

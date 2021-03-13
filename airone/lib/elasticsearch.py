@@ -605,7 +605,7 @@ def execute_query(query):
     return res
 
 
-def make_search_results(results, res, hint_attrs, limit, hint_referral):
+def make_search_results(res, hint_attrs, limit, hint_referral):
     """Acquires and returns the attribute values held by each search result
 
     When the condition of reference entry is specified, the entry to reference is acquired.
