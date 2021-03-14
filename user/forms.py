@@ -1,3 +1,10 @@
+# Copyright (c) Django Software Foundation and individual contributors.
+# All rights reserved.
+#
+# It partially reuses the original implementation at django.contrib.auth.forms.PasswordResetForm
+# with supporting username based email resolution.
+#
+
 from django import forms
 from django.contrib.auth.forms import UserModel, UsernameField
 from django.contrib.auth.tokens import default_token_generator
@@ -11,7 +18,6 @@ from django.utils.http import urlsafe_base64_encode
 class UsernameBasedPasswordResetForm(forms.Form):
     """
     A customized PasswordResetForm to send only an email relating to a given username.
-    It partially reuses django.contrib.auth.forms.PasswordResetForm
     """
 
     username = UsernameField(max_length=254)
