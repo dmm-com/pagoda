@@ -17,6 +17,7 @@ from .models import ACLBase
 Logger = logging.getLogger(__name__)
 
 
+@airone_profile
 @http_get
 @check_permission(ACLBase, ACLType.Full)
 def index(request, obj_id):

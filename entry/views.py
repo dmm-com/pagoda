@@ -386,6 +386,7 @@ def refer(request, entry_id):
     return render(request, 'show_entry_refer.html', context)
 
 
+@airone_profile
 @http_get
 def export(request, entity_id):
     user = User.objects.get(id=request.user.id)
@@ -425,6 +426,7 @@ def export(request, entity_id):
     })
 
 
+@airone_profile
 @http_get
 def import_data(request, entity_id):
     if not Entity.objects.filter(id=entity_id, is_active=True).exists():
@@ -433,6 +435,7 @@ def import_data(request, entity_id):
     return render(request, 'import_entry.html', {'entity': Entity.objects.get(id=entity_id)})
 
 
+@airone_profile
 @http_file_upload
 def do_import_data(request, entity_id, context):
     user = User.objects.get(id=request.user.id)
@@ -464,6 +467,7 @@ def do_import_data(request, entity_id, context):
     return HttpResponseSeeOther('/entry/%s/' % entity_id)
 
 
+@airone_profile
 @http_post([])  # check only that request is POST, id will be given by url
 @check_permission(Entry, ACLType.Full)
 def do_delete(request, entry_id, recv_data):

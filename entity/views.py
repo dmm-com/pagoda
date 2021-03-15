@@ -63,6 +63,7 @@ def index(request):
     return render(request, 'list_entities.html', context)
 
 
+@airone_profile
 @http_get
 def create(request):
     user = User.objects.get(id=request.user.id)
@@ -174,6 +175,7 @@ def do_edit(request, entity_id, recv_data):
     })
 
 
+@airone_profile
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: (
         x['name'] and not Entity.objects.filter(name=x['name']).exists()
@@ -233,6 +235,7 @@ def do_create(request, recv_data):
     })
 
 
+@airone_profile
 @http_get
 def export(request):
     user = User.objects.get(id=request.user.id)
@@ -270,6 +273,7 @@ def export(request):
     return get_download_response(output, 'entity.yaml')
 
 
+@airone_profile
 @http_post([])
 @check_permission(Entity, ACLType.Full)
 def do_delete(request, entity_id, recv_data):
@@ -302,6 +306,7 @@ def do_delete(request, entity_id, recv_data):
     return JsonResponse(ret)
 
 
+@airone_profile
 @http_get
 def history(request, entity_id):
     if not Entity.objects.filter(id=entity_id).exists():
@@ -318,6 +323,7 @@ def history(request, entity_id):
     return render(request, 'history_entity.html', context)
 
 
+@airone_profile
 @http_get
 def dashboard(request, entity_id):
     if not Entity.objects.filter(id=entity_id).exists():
@@ -387,6 +393,7 @@ def dashboard(request, entity_id):
     return render(request, 'dashboard_entity.html', context)
 
 
+@airone_profile
 @http_get
 def conf_dashboard(request, entity_id):
     if not Entity.objects.filter(id=entity_id).exists():
@@ -404,6 +411,7 @@ def conf_dashboard(request, entity_id):
     return render(request, 'conf_dashboard_entity.html', context)
 
 
+@airone_profile
 @http_post([
     {'name': 'attrs', 'type': list,
      'checker': lambda x: all([EntityAttr.objects.filter(id=v).exists() for v in x['attrs']])}

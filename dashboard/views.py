@@ -51,11 +51,13 @@ def index(request):
     return render(request, 'dashboard_user_top.html', context)
 
 
+@airone_profile
 @http_get
 def import_data(request):
     return render(request, 'import.html', {})
 
 
+@airone_profile
 @http_file_upload
 def do_import_data(request, context):
     user = User.objects.get(id=request.user.id)
@@ -88,6 +90,7 @@ def do_import_data(request, context):
     return HttpResponseSeeOther('/dashboard/')
 
 
+@airone_profile
 @http_get
 def search(request):
     query = request.GET.get('query')
@@ -130,6 +133,7 @@ def search(request):
     })
 
 
+@airone_profile
 @http_get
 def advanced_search(request):
     entities = [x for x in Entity.objects.filter(is_active=True).order_by('name')

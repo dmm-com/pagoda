@@ -3,9 +3,11 @@
 ## In development
 
 ### Changed
-
 * Changed implementation of Entity to create, edit and delete it at Celery.
 * Changed to show unauthorized entity on the dashboard
+
+### Fixed
+* Fixed some request logs not output
 
 ## v2.6.0
 
