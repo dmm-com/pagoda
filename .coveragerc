@@ -1,12 +1,5 @@
 [run]
 branch = True
-source =
-  acl
-  airone
-  dashboard
-  entity
-  entry
-  group
 omit =
   */migrations/*
   */tests/*
