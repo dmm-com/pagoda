@@ -29,7 +29,7 @@ def http_get(func):
         if request.method != 'GET':
             return HttpResponse('Invalid HTTP method is specified', status=400)
 
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             return HttpResponseSeeOther('/dashboard/login?next=%s' % request.path)
 
         return func(*args, **kwargs)
@@ -64,7 +64,7 @@ def check_superuser(func):
     def wrapper(*args, **kwargs):
         request = args[0]
 
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             return HttpResponseSeeOther('/dashboard/login')
 
         if not request.user.is_superuser:
@@ -82,7 +82,7 @@ def http_post(validator=[]):
             if request.method != 'POST':
                 return HttpResponse('Invalid HTTP method is specified', status=400)
 
-            if not request.user.is_authenticated():
+            if not request.user.is_authenticated:
                 return HttpResponse('You have to login to execute this operation', status=401)
 
             try:
@@ -106,7 +106,7 @@ def http_post_form(validator=[]):
             if request.method != 'POST':
                 return HttpResponse('Invalid HTTP method is specified', status=400)
 
-            if not request.user.is_authenticated():
+            if not request.user.is_authenticated:
                 return HttpResponse('You have to login to execute this operation', status=401)
 
             recv_data = {}

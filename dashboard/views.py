@@ -30,7 +30,7 @@ Logger = logging.getLogger(__name__)
 @airone_profile
 def index(request):
     context = {}
-    if request.user.is_authenticated() and User.objects.filter(id=request.user.id).exists():
+    if request.user.is_authenticated and User.objects.filter(id=request.user.id).exists():
         history = []
         # Sort by newest attribute update date (id is auto increment)
         for attr_value in AttributeValue.objects.order_by(
