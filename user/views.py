@@ -17,7 +17,7 @@ from .models import User
 
 @http_get
 def index(request):
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return HttpResponseSeeOther('/dashboard/login')
 
     user = User.objects.get(id=request.user.id)
