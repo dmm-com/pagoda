@@ -22,6 +22,6 @@ urlpatterns = [
 
 for extension in settings.AIRONE['EXTENSIONS']:
     urlpatterns.append(url(r'^extension/%s' % extension,
-                           include('%s.urls' % extension, extension)))
+                           include(('%s.urls' % extension, extension))))
 
 urlpatterns += staticfiles_urlpatterns()
