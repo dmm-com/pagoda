@@ -30,7 +30,7 @@ def http_get(func):
             return HttpResponse('Invalid HTTP method is specified', status=400)
 
         if not request.user.is_authenticated:
-            return HttpResponseSeeOther('/dashboard/login?next=%s' % request.path)
+            return HttpResponseSeeOther('/auth/login?next=%s' % request.path)
 
         return func(*args, **kwargs)
     return wrapper
@@ -65,7 +65,7 @@ def check_superuser(func):
         request = args[0]
 
         if not request.user.is_authenticated:
-            return HttpResponseSeeOther('/dashboard/login')
+            return HttpResponseSeeOther('/auth/login')
 
         if not request.user.is_superuser:
             return HttpResponse('This page needs administrative permission to access', status=400)

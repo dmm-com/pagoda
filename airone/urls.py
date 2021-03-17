@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^api-auth/', include(('rest_framework.urls', 'rest_framework'))),
     url(r'^api/v1/', include(api_v1_urlpatterns)),
     url(r'^job/', include(('job.urls', 'job'))),
+    url(r'^auth/', include(('django.contrib.auth.urls', 'auth'))),
 ]
 
 for extension in settings.AIRONE['EXTENSIONS']:
