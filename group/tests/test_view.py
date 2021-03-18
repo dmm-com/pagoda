@@ -7,8 +7,6 @@ from group.models import Group
 from user.models import User
 from airone.lib.test import AironeViewTest
 
-from xml.etree import ElementTree
-
 
 class ViewTest(AironeViewTest):
     def test_index_without_login(self):
@@ -20,10 +18,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse('group:index'))
         self.assertEqual(resp.status_code, 200)
-
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertEqual(len(root.findall('.//tbody/tr')), 0,
-                         "no group should be displayed at initial state")
+        self.assertEqual(resp.context['groups'], [])
 
     def test_index_with_objects(self):
         self.admin_login()
@@ -35,12 +30,10 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse('group:index'))
         self.assertEqual(resp.status_code, 200)
-
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertEqual(len(root.findall('.//tbody/tr')), 1,
-                         "1 group should be displayed after created")
-        self.assertEqual(len(root.findall('.//tbody/tr/td/ul/li')), 1,
-                         "1 user should be displayed after created")
+        self.assertEqual(len(resp.context['groups']), 1)
+        self.assertEqual(resp.context['groups'][0]['id'], group.id)
+        self.assertEqual(resp.context['groups'][0]['name'], group.name)
+        self.assertEqual(list(resp.context['groups'][0]['members']), [user])
 
     def test_index_with_inactive_user(self):
         self.admin_login()
@@ -57,19 +50,21 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse('group:index'))
         self.assertEqual(resp.status_code, 200)
-
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertEqual(len(root.findall('.//tbody/tr/td/ul/li')), 1,
-                         "1 active user should be displayed")
+        self.assertEqual(len(resp.context['groups']), 1)
+        self.assertEqual(resp.context['groups'][0]['id'], group.id)
+        self.assertEqual(resp.context['groups'][0]['name'], group.name)
+        self.assertEqual(list(resp.context['groups'][0]['members']), [user1])
 
     def test_create_get(self):
         self.admin_login()
 
         resp = self.client.get(reverse('group:create'))
         self.assertEqual(resp.status_code, 200)
-
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNotNone(root.find('.//form'))
+        self.assertEqual(len(resp.context['groups']), 1)
+        self.assertEqual(resp.context['groups']['id'], 0)
+        self.assertEqual(resp.context['groups']['name'], '-- ALL --')
+        self.assertEqual(list(resp.context['groups']['members']),
+                         list(User.objects.filter(is_active=True)))
 
     def test_create_post_without_login(self):
         resp = self.client.post(reverse('group:do_create'), json.dumps({}), 'application/json')
