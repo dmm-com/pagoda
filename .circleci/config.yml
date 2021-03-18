@@ -30,7 +30,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install tox coverage
+            pip install tox coverage codecov
       - run:
           name: Wait for MySQL is available
           command: dockerize -wait tcp://127.0.0.1:3306 -timeout 120s
@@ -50,6 +50,11 @@ jobs:
           paths:
             - venv
             - .tox/py36
+      - run:
+          name: Coverage
+          command: |
+            . venv/bin/activate
+            codecov
 
   python35:
     docker:
@@ -101,11 +106,6 @@ jobs:
           paths:
             - venv
             - .tox/py35
-      - run:
-          name: Coverage
-          command: |
-            . venv/bin/activate
-            ./coverage.sh
 
   pep8:
     docker:
