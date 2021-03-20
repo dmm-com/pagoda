@@ -584,6 +584,25 @@ def _make_an_attribute_filter(hint, keyword):
     return adding_cond
 
 
+def _is_matched_keyword(attrname, attrvalue, hint_attrs):
+    """
+    This methods returns True when
+
+      1. specified attribute information in this method (attrname, attrvalue)
+         matched the expected attribute information of hint_attrs which is a
+         parameter of make_search_results method using regex.
+
+      2. matched hint_attr information doesn't have "keyword" information or
+         blank value.
+
+    Args:
+      - attrname(str): ...
+      - attrvalue(str): ...
+    """
+    # TODO implement it
+    return True
+
+
 def execute_query(query):
     """Run a search query.
 
@@ -645,30 +664,11 @@ def make_search_results(res, hint_attrs, limit, hint_referral):
     """
     from entry.models import Entry, AttributeValue
 
-    def _is_matched_keyword(attrname, attrvalue):
-        """
-        This methods returns True when
-
-          1. specified attribute information in this method (attrname, attrvalue)
-             matched the expected attribute information of hint_attrs which is a
-             parameter of make_search_results method using regex.
-
-          2. matched hint_attr information doesn't have "keyword" information or
-             blank value.
-
-        Args:
-          - attrname(str): ...
-          - attrvalue(str): ...
-        """
-        pass
-
+    # set numbers of found entries
     results = {
-        'ret_count': 0,
+        'ret_count': res['hits']['total'],
         'ret_values': []
     }
-
-    # set numbers of found entries
-    results['ret_count'] = res['hits']['total']
 
     # get django objects from the hit information from Elasticsearch
     hit_entry_ids = [x['_id'] for x in res['hits']['hits']]
@@ -753,7 +753,7 @@ def make_search_results(res, hint_attrs, limit, hint_referral):
 
                 if attrinfo['value']:
 
-                    if _is_matched_keyword(attrinfo['name'], attrinfo['value']):
+                    if _is_matched_keyword(attrinfo['name'], attrinfo['value'], hint_attrs):
                         ret_attrinfo['value'] = attrinfo['value']
 
                 elif 'date_value' in attrinfo and attrinfo['date_value']:
