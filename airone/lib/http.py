@@ -15,7 +15,7 @@ from user.models import User, History
 from job.models import Job, JobOperation
 
 from airone.lib.types import AttrTypes, AttrTypeValue
-from airone.lib.acl import ACLObjType, ACLType
+from airone.lib.acl import ACLObjType
 from django.conf import settings
 
 
@@ -156,20 +156,17 @@ def http_file_upload(func):
 
 
 def render(request, template, context={}):
-    if User.objects.filter(id=request.user.id).exists():
-        user = User.objects.get(id=request.user.id)
-
-        # added default parameters for navigate
-        entity_objects = entity_models.Entity.objects.order_by('name').filter(is_active=True)
-        context['navigator'] = {
-            'entities': [x for x in entity_objects if user.has_permission(x, ACLType.Readable)],
-            'acl_objtype': {
-                'entity': ACLObjType.Entity,
-                'entry': ACLObjType.Entry,
-                'attrbase': ACLObjType.EntityAttr,
-                'attr': ACLObjType.EntryAttr,
-            }
+    # added default parameters for navigate
+    entity_objects = entity_models.Entity.objects.order_by('name').filter(is_active=True)
+    context['navigator'] = {
+        'entities': [x for x in entity_objects],
+        'acl_objtype': {
+            'entity': ACLObjType.Entity,
+            'entry': ACLObjType.Entry,
+            'attrbase': ACLObjType.EntityAttr,
+            'attr': ACLObjType.EntryAttr,
         }
+    }
 
     # set constants for operation history
     context['OPERATION_HISTORY'] = {
@@ -194,6 +191,9 @@ def render(request, template, context={}):
             'EXPORT': JobOperation.EXPORT_ENTRY.value,
             'RESTORE': JobOperation.RESTORE_ENTRY.value,
             'EXPORT_SEARCH_RESULT': JobOperation.EXPORT_SEARCH_RESULT.value,
+            'CREATE_ENTITY': JobOperation.CREATE_ENTITY.value,
+            'EDIT_ENTITY': JobOperation.EDIT_ENTITY.value,
+            'DELETE_ENTITY': JobOperation.DELETE_ENTITY.value,
         }
     }
 
@@ -211,6 +211,8 @@ def render(request, template, context={}):
     # set Construct for Entity status
     context['STATUS_ENTITY'] = {}
     context['STATUS_ENTITY']['TOP_LEVEL'] = entity_models.Entity.STATUS_TOP_LEVEL
+    context['STATUS_ENTITY']['CREATING'] = entry_models.Entity.STATUS_CREATING
+    context['STATUS_ENTITY']['EDITING'] = entry_models.Entity.STATUS_EDITING
 
     # set Construct for Entry status
     context['STATUS_ENTRY'] = {}

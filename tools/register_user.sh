@@ -1,4 +1,5 @@
 #!/bin/bash
+set -ue
 
 show_usage() {
   echo "usage: $0 [options] username"
@@ -67,6 +68,7 @@ if not user:
  
 user.is_superuser = ${IS_ADMIN}
 user.set_password('${PASSWORD}')
+user.email = '${USERNAME}@example.com'
 user.save()
 EOS
 
