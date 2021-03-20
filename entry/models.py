@@ -1426,8 +1426,8 @@ class Entry(ACLBase):
         # sending request to elasticsearch with making query
         resp = execute_query(query)
 
-        if 'status' in res and res['status'] == 404:
-            return {'ret_count', 0, 'ret_values': []}
+        if 'status' in resp and resp['status'] == 404:
+            return {'ret_count': 0, 'ret_values': []}
 
         # retrieve data from database on the basis of the result of elasticsearch
         return make_search_results(resp, hint_attrs, limit, hint_referral)
