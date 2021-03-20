@@ -561,4 +561,3 @@ class ViewTest(TestCase):
         form_with_ldap_user.is_valid()
         resp = view.form_valid(form_with_ldap_user)
         self.assertEqual(resp.status_code, 400)
-
