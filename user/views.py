@@ -224,6 +224,18 @@ class PasswordReset(auth_views.PasswordResetView):
     template_name = 'password_reset_form.html'
     form_class = UsernameBasedPasswordResetForm
 
+    def form_valid(self, form):
+        # additionally validate if the user can reset its password
+        username = form.cleaned_data['username']
+        user = User.objects.filter(username=username).first()
+        if not user:
+            return HttpResponse('user does not exist', status=400)
+        if user.authenticate_type != User.AUTH_TYPE_LOCAL:
+            return HttpResponse('This user is authenticated without AirOne local way(like LDAP).'
+                                'Please confirm your authenticate information.', status=400)
+
+        return super(PasswordReset, self).form_valid(form)
+
 
 class PasswordResetDone(auth_views.PasswordResetDoneView):
     template_name = 'password_reset_done.html'
