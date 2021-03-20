@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.8.0
+
+### Changed
+* Added password-reset feature
+
 ## v2.7.0
 
 ### Changed
