@@ -1,6 +1,7 @@
 import json
 import importlib
 import urllib.parse
+from urllib.parse import quote
 import codecs
 
 from django.http import HttpResponseRedirect
@@ -30,7 +31,8 @@ def http_get(func):
             return HttpResponse('Invalid HTTP method is specified', status=400)
 
         if not request.user.is_authenticated():
-            return HttpResponseSeeOther('/dashboard/login?next=%s' % request.path)
+            return HttpResponseSeeOther('/dashboard/login?next=%s?%s' %
+                                        (request.path, quote(request.GET.urlencode())))
 
         return func(*args, **kwargs)
     return wrapper

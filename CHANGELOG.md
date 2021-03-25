@@ -2,12 +2,12 @@
 
 ## In development
 
-### Added
-* Added the function to make a query request to the slave DB
+### Fixed
+* Fixed not being redirected to the original URL after login
+
+## v2.7.0
 
 ### Changed
-* Changed requesting DB to slave at Entry.get_referred_objects
-* Changed requesting DB to slave at User.has_permission
 * Changed implementation of Entity to create, edit and delete it at Celery.
 * Changed to show unauthorized entity on the dashboard
 
