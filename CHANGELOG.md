@@ -2,12 +2,15 @@
 
 ## In development
 
+### Fixed
+* Fixed not being redirected to the original URL after login
+* Fixed some request logs not output
+
+## v2.7.0
+
 ### Changed
 * Changed implementation of Entity to create, edit and delete it at Celery.
 * Changed to show unauthorized entity on the dashboard
-
-### Fixed
-* Fixed some request logs not output
 
 ## v2.6.0
 
