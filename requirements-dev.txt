@@ -5,7 +5,7 @@ mock==2.0.0
 coverage>=4.4.1
 celery==4.2.0
 flower==0.9.3
-pyyaml==5.2
+pyyaml==5.4
 kombu==4.2.1
 python-memcached==1.59
 djangorestframework==3.9.1
