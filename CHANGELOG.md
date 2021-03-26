@@ -2,6 +2,9 @@
 
 ## In development
 
+### Added
+* Added handler to report celery exception errors
+
 ### Fixed
 * Fixed not being redirected to the original URL after login
 
