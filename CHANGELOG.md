@@ -1,8 +1,13 @@
 # Changelog
 
+## In development
+
+### Fixed
+* Fixed not being redirected to the original URL after login
+
 ## v2.8.0
 
-### Changed
+### Added
 * Added password-reset feature
 
 ## v2.7.0
