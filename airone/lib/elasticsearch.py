@@ -211,9 +211,14 @@ def _get_regex_pattern(keyword):
         str: Regular expression pattern of argument
 
     """
+    escaped = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS, keyword)
+
+    # Elasticsearch doesn't support anchor operators,
+    # so it supports both ignoring it and handle it as a normal character
+    chars = escaped.replace('^', '^?').replace('$', '$?')
+
     return '.*%s.*' % ''.join(['[%s%s]' % (
-        x.lower(), x.upper()) if x.isalpha() else x for x in prepend_escape_character(
-        CONFIG.ESCAPE_CHARACTERS, keyword)])
+        x.lower(), x.upper()) if x.isalpha() else x for x in chars])
 
 
 def prepend_escape_character(escape_character_list, keyword):
@@ -584,22 +589,20 @@ def _make_an_attribute_filter(hint, keyword):
     return adding_cond
 
 
-def _is_matched_keyword(attrname, attrvalue, hint_attrs):
+def _is_matched_entry(attrs, hint_attrs):
     """
-    This methods returns True when
-
-      1. specified attribute information in this method (attrname, attrvalue)
-         matched the expected attribute information of hint_attrs which is a
-         parameter of make_search_results method using regex.
-
-      2. matched hint_attr information doesn't have "keyword" information or
-         blank value.
-
-    Args:
-      - attrname(str): ...
-      - attrvalue(str): ...
+    Predicate if an entry matches hint attrs
     """
-    # TODO implement it
+    hint_keywords = {h['name']: h['keyword'] for h in hint_attrs}
+
+    for attr in attrs:
+        tpe = attr['type']
+        if tpe == AttrTypeValue['string'] or tpe == AttrTypeValue['text']:
+            hint_keyword = hint_keywords.get(attr['name'])
+            if hint_keyword and 'value' in attr and re.search(r'[\\^|\\$]', hint_keyword):
+                if not re.search(hint_keyword, attr['value']):
+                    return False
+
     return True
 
 
@@ -719,6 +722,10 @@ def make_search_results(res, hint_attrs, limit, hint_referral):
         ][0]
 
     for (entry, hit_attrs) in sorted(hit_infos.items(), key=lambda x: x[0].name):
+        # ignore an entry doesn't match hint attrs
+        if not _is_matched_entry(hit_attrs, hint_attrs):
+            continue
+
         ret_info = {
             'entity': {'id': entry.schema.id, 'name': entry.schema.name},
             'entry': {'id': entry.id, 'name': entry.name},
@@ -752,9 +759,7 @@ def make_search_results(res, hint_attrs, limit, hint_referral):
                attrinfo['type'] == AttrTypeValue['text']):
 
                 if attrinfo['value']:
-
-                    if _is_matched_keyword(attrinfo['name'], attrinfo['value'], hint_attrs):
-                        ret_attrinfo['value'] = attrinfo['value']
+                    ret_attrinfo['value'] = attrinfo['value']
 
                 elif 'date_value' in attrinfo and attrinfo['date_value']:
                     ret_attrinfo['value'] = attrinfo['date_value'].split('T')[0]

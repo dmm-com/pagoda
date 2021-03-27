@@ -32,6 +32,10 @@ class ElasticSearchTest(TestCase):
         p2 = elasticsearch._get_regex_pattern('key@@@word')
         self.assertEqual(p2, '.*[kK][eE][yY]\\@\\@\\@[wW][oO][rR][dD].*')
 
+        # with anchor operators
+        p2 = elasticsearch._get_regex_pattern('^keyword$')
+        self.assertEqual(p2, '.*^?[kK][eE][yY][wW][oO][rR][dD]$?.*')
+
     def test_make_key_for_each_block_of_keywords(self):
         key1 = elasticsearch._make_key_for_each_block_of_keywords(
             {'name': 'name'}, 'keyword', True)
@@ -43,18 +47,32 @@ class ElasticSearchTest(TestCase):
 
     def test_is_matched_keyword(self):
         # if it has the same value with a hint
-        self.assertTrue(elasticsearch._is_matched_keyword(
-            attrname='attr',
-            attrvalue='keyword',
+        self.assertTrue(elasticsearch._is_matched_entry(
+            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeStr.TYPE}],
             hint_attrs=[{'name': 'attr', 'keyword': 'keyword'}]
         ))
 
-        # TODO if it matches with a regexp hint
+        # if a hint has ^ and/or $, it matches with the keyword as a regexp
+        self.assertTrue(elasticsearch._is_matched_entry(
+            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeStr.TYPE}],
+            hint_attrs=[{'name': 'attr', 'keyword': '^keyword'}]
+        ))
+        self.assertFalse(elasticsearch._is_matched_entry(
+            attrs=[{'name': 'attr', 'value': '111keyword', 'type': AttrTypeStr.TYPE}],
+            hint_attrs=[{'name': 'attr', 'keyword': '^keyword'}]
+        ))
+        self.assertTrue(elasticsearch._is_matched_entry(
+            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeStr.TYPE}],
+            hint_attrs=[{'name': 'attr', 'keyword': 'keyword$'}]
+        ))
+        self.assertFalse(elasticsearch._is_matched_entry(
+            attrs=[{'name': 'attr', 'value': 'keyword111', 'type': AttrTypeStr.TYPE}],
+            hint_attrs=[{'name': 'attr', 'keyword': 'keyword$'}]
+        ))
 
         # if a hint is blank
-        self.assertTrue(elasticsearch._is_matched_keyword(
-            attrname='attr',
-            attrvalue='keyword',
+        self.assertTrue(elasticsearch._is_matched_entry(
+            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeStr.TYPE}],
             hint_attrs=[{'name': 'attr', 'keyword': ''}]
         ))
 
@@ -174,7 +192,8 @@ class ElasticSearchTest(TestCase):
             }
         }
 
-        results = elasticsearch.make_search_results(res, None, 100, False)
+        hint_attrs = [{'name': 'test_attr', 'keyword': ''}]
+        results = elasticsearch.make_search_results(res, hint_attrs, 100, False)
 
         self.assertEqual(results['ret_count'], 1)
         self.assertEqual(results['ret_values'], [
