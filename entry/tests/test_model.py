@@ -2936,7 +2936,7 @@ class ModelTest(AironeTestCase):
             entry.register_es()
 
             test_suites.append({
-                'search_word': add_char, 'ret_cnt': 1, 'ret_entry_name': entry_name
+                'search_word': entry_name, 'ret_cnt': 1, 'ret_entry_name': entry_name
             })
 
         for test_suite in test_suites:

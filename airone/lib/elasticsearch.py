@@ -593,13 +593,15 @@ def _is_matched_entry(attrs, hint_attrs):
     """
     Predicate if an entry matches hint attrs
     """
-    hint_keywords = {h['name']: h['keyword'] for h in hint_attrs}
+    hint_keywords = {h['name']: h['keyword'] for h in hint_attrs if 'keyword' in h}
 
     for attr in attrs:
         tpe = attr['type']
         if tpe == AttrTypeValue['string'] or tpe == AttrTypeValue['text']:
-            hint_keyword = hint_keywords.get(attr['name'])
-            if hint_keyword and 'value' in attr and re.search(r'[\\^|\\$]', hint_keyword):
+            hint_keyword = hint_keywords.get(attr['name'], '')
+
+            # it checks anchor operators if it exists because its not supported by Elasticsearch
+            if len(hint_keyword) > 1 and (hint_keyword[0] == '^' or hint_keyword[-1] == '$'):
                 if not re.search(hint_keyword, attr['value']):
                     return False
 
@@ -760,7 +762,6 @@ def make_search_results(res, hint_attrs, limit, hint_referral):
 
                 if attrinfo['value']:
                     ret_attrinfo['value'] = attrinfo['value']
-
                 elif 'date_value' in attrinfo and attrinfo['date_value']:
                     ret_attrinfo['value'] = attrinfo['date_value'].split('T')[0]
 
