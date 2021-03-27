@@ -153,12 +153,15 @@ class ElasticSearchTest(TestCase):
         })
 
     def test_make_search_results(self):
-        entry = Entry.objects.create(name='test_entry', schema=self._entity, created_user=self._user)
+        entry = Entry.objects.create(name='test_entry',
+                                     schema=self._entity,
+                                     created_user=self._user)
         attr = Attribute.objects.create(name='test_attr',
                                         schema=self._entity_attr,
                                         created_user=self._user,
                                         parent_entry=entry)
-        attr_value = AttributeValue.objects.create(value='test_attr_value', created_user=self._user,
+        attr_value = AttributeValue.objects.create(value='test_attr_value',
+                                                   created_user=self._user,
                                                    parent_attr=attr)
         attr.values.add(attr_value)
         attr.save()
