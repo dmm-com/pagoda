@@ -1,4 +1,3 @@
-import logging
 import re
 import io
 import yaml
@@ -23,8 +22,6 @@ from airone.lib.acl import ACLType
 from airone.lib.profile import airone_profile
 
 from .settings import CONFIG
-
-Logger = logging.getLogger(__name__)
 
 
 @airone_profile

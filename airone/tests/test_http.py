@@ -17,10 +17,13 @@ class AirOneHTTPTest(unittest.TestCase):
             return 'mock_response'
 
         test_suites = [
-            {'get_url': '/test', 'resp_url': '/dashboard/login?next=/test?'},
-            {'get_url': '/日本語', 'resp_url': '/dashboard/login?next=/%E6%97%A5%E6%9C%AC%E8%AA%9E?'},
+            {'get_url': '/test',
+             'resp_url': ['/dashboard/login?next=/test?']},
+            {'get_url': '/日本語',
+             'resp_url': ['/dashboard/login?next=/%E6%97%A5%E6%9C%AC%E8%AA%9E?']},
             {'get_url': '/test?query1=1&query2=test',
-             'resp_url': '/dashboard/login?next=/test?query1%3D1%26query2%3Dtest'},
+             'resp_url': ['/dashboard/login?next=/test?query1%3D1%26query2%3Dtest',
+                          '/dashboard/login?next=/test?query2%3Dtest%26query1%3D1']},
         ]
 
         for i in test_suites:
@@ -30,4 +33,5 @@ class AirOneHTTPTest(unittest.TestCase):
             resp = mock_handler(request)
 
             self.assertEqual(resp.status_code, 303)
-            self.assertEqual(resp.url, i['resp_url'])
+            # Use assertIn because dict doesn't keep the key order if it's less than python 3.6
+            self.assertIn(resp.url, i['resp_url'])

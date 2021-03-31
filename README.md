@@ -1,4 +1,5 @@
 [![CircleCI](https://circleci.com/gh/dmm-com/airone.svg?style=svg&circle-token=2e12c068b0ed1bab9d0c2d72529d5ee1da9b53b4)](https://circleci.com/gh/dmm-com/airone)
+[![codecov](https://codecov.io/gh/dmm-com/airone/branch/master/graph/badge.svg)](https://codecov.io/gh/dmm-com/airone)
 
 # AirOne
 This is a yet another DCIM(Data Center Infrastructure Management).

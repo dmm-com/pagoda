@@ -2,9 +2,9 @@ import csv
 import custom_view
 import io
 import json
-import logging
 import yaml
 
+from airone.lib.log import Logger
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 from airone.celery import app
@@ -13,8 +13,6 @@ from entry.models import Entry, Attribute
 from user.models import User
 from datetime import datetime
 from job.models import Job
-
-Logger = logging.getLogger(__name__)
 
 
 def _merge_referrals_by_index(ref_list, name_list):

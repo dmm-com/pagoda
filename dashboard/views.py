@@ -1,4 +1,3 @@
-import logging
 import yaml
 
 from airone.lib.http import render
@@ -6,6 +5,7 @@ from airone.lib.http import http_get, http_post
 from airone.lib.http import http_file_upload
 from airone.lib.http import HttpResponseSeeOther
 from airone.lib.profile import airone_profile
+from airone.lib.log import Logger
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from entity.admin import EntityResource, EntityAttrResource
@@ -23,8 +23,6 @@ IMPORT_INFOS = [
     {'model': 'Attribute', 'resource': AttrResource},
     {'model': 'AttributeValue', 'resource': AttrValueResource},
 ]
-
-Logger = logging.getLogger(__name__)
 
 
 @airone_profile
