@@ -114,10 +114,7 @@ def create_entry_attrs(self, job_id):
             # has already been created or is creating by other process. In that case, this job
             # do nothing about that Attribute instance.
             attr = entry.add_attribute_from_base(entity_attr, user)
-            if not attr:
-                continue
-
-            if not any([int(x['id']) == attr.schema.id for x in recv_data['attrs']]):
+            if not attr or not any([int(x['id']) == attr.schema.id for x in recv_data['attrs']]):
                 continue
 
             # When job is canceled during this processing, abort it after deleting the created entry
