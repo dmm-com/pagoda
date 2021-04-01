@@ -52,7 +52,7 @@ class AironeTestCase(TestCase):
 
         entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
         for attr_info in attrs:
-            entity_attr = EntityAttr.objects.create(**{
+            EntityAttr.objects.create(**{
                 'name': attr_info['name'],
                 'type': _get_entity_attr_params(attr_info, 'type', AttrTypeValue['string']),
                 'is_mandatory': _get_entity_attr_params(attr_info, 'is_mandatory', False),
@@ -62,6 +62,7 @@ class AironeTestCase(TestCase):
             entity.attrs.add()
 
         return entity
+
 
 class AironeViewTest(AironeTestCase):
     def setUp(self):
