@@ -1,3 +1,4 @@
+import json
 import yaml
 
 from airone.lib.http import render
@@ -148,6 +149,16 @@ def advanced_search_result(request):
     is_all_entities = request.GET.get('is_all_entities') == 'true'
     has_referral = request.GET.get('has_referral') == 'true'
 
+    # XXX build hint attrs from JSON encoded params, or attr[]
+    # to filter search results with attribute keywords experimentally
+    hint_attrs = [{'name': x} for x in recv_attr]
+    attrinfo = request.GET.get('attrinfo')
+    if attrinfo:
+        try:
+            hint_attrs = json.loads(attrinfo)
+        except json.JSONDecodeError:
+            return HttpResponse("The attrinfo parameter is not JSON", status=400)
+
     if not is_all_entities and (not recv_entity or not recv_attr):
         return HttpResponse("The attr[] and entity[] parameters are required", status=400)
     elif is_all_entities and not recv_attr:
@@ -168,7 +179,7 @@ def advanced_search_result(request):
         'attrs': recv_attr,
         'results': Entry.search_entries(user,
                                         entities,
-                                        [{'name': x} for x in recv_attr],
+                                        hint_attrs,
                                         CONFIG.MAXIMUM_SEARCH_RESULTS,
                                         hint_referral=has_referral),
         'max_num': CONFIG.MAXIMUM_SEARCH_RESULTS,
