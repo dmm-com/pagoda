@@ -170,6 +170,22 @@ $(document).ready(function() {
         $('#entry_count').text(`(${ data.result.ret_count } 件)`);
 
         reconstruct_tbody(data.result.ret_values);
+
+        // XXX preserve permalnk to the advanced_search view (not entry-search API)
+        // to filter search results with attribute keywords experimentally
+        const attrinfo = get_attrinfo();
+        let params = ['attrinfo=' + encodeURIComponent(JSON.stringify(attrinfo))];
+        for (const entity of '{{ entities }}'.split(',')) {
+            params.push('entity[]=' +  entity);
+        }
+        for (const attr of attrinfo) {
+          params.push('attr[]=' +  attr.name);
+        }
+        {% if has_referral %}
+        params.push('has_referral=' + $('.narrow_down_referral').val());
+        {% endif %}
+        window.history.pushState('', '', 'advanced_search_result?' + params.join('&'));
+
       }).fail(function(data){
         MessageBox.error(data.responseText);
       });
