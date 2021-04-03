@@ -97,7 +97,8 @@ def search(request):
 
     target_models = [Entry, AttributeValue]
 
-    search_results = sum([x.search(query) for x in target_models], [])
+    modified_query = query.strip()
+    search_results = sum([x.search(modified_query) for x in target_models], [])
     dic = {}
 
     for result in search_results:
@@ -124,7 +125,8 @@ def search(request):
     results.sort(key=lambda x: x['object'].name)
 
     return render(request, 'show_search_results.html', {
-        'results': results
+        'search_query': modified_query,
+        'results': results,
     })
 
 
