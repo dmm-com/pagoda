@@ -1,13 +1,10 @@
 import json
-import logging
 
 from airone.lib.types import AttrTypeValue
 from airone.celery import app
 from entity.models import Entity, EntityAttr
 from user.models import User
 from job.models import Job
-
-Logger = logging.getLogger(__name__)
 
 
 @app.task(bind=True)
