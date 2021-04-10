@@ -669,12 +669,6 @@ def make_search_results(res, hint_attrs, limit, hint_referral):
     """
     from entry.models import Entry, AttributeValue
 
-    # set numbers of found entries
-    results = {
-        'ret_count': res['hits']['total'],
-        'ret_values': []
-    }
-
     # get django objects from the hit information from Elasticsearch
     hit_entry_ids = [x['_id'] for x in res['hits']['hits']]
     if isinstance(hint_referral, str) and hint_referral:
@@ -708,9 +702,6 @@ def make_search_results(res, hint_attrs, limit, hint_referral):
                     ).values_list('referral', flat=True)
 
         hit_entries = Entry.objects.filter(pk__in=filtered_ids, is_active=True)
-
-        # reset matched count by filtered results by hint_referral parameter
-        results['ret_count'] = len(hit_entries)
     else:
         hit_entries = Entry.objects.filter(id__in=hit_entry_ids, is_active=True)
 
@@ -723,6 +714,7 @@ def make_search_results(res, hint_attrs, limit, hint_referral):
             x['_source']['attr'] for x in res['hits']['hits'] if int(x['_id']) == entry.id
         ][0]
 
+    ret_values = []
     for (entry, hit_attrs) in sorted(hit_infos.items(), key=lambda x: x[0].name):
         # ignore an entry doesn't match hint attrs
         if not _is_matched_entry(hit_attrs, hint_attrs):
@@ -801,9 +793,12 @@ def make_search_results(res, hint_attrs, limit, hint_referral):
                         'name': attrinfo['value']
                     })
 
-        results['ret_values'].append(ret_info)
+        ret_values.append(ret_info)
 
-    return results
+    return {
+        'ret_count': len(ret_values),
+        'ret_values': ret_values,
+    }
 
 
 def is_date_check(value):
