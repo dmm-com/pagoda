@@ -30,11 +30,11 @@
           {% if user.is_superuser %}
           <tr>
             <th>名前</th>
-            <td><input type="text" name="name" value="{{ user_name }}" required/><br/></td>
+            <td><input type="text" name="name" value="{{ user_name }}" required="required" /><br/></td>
           </tr>
           <tr>
             <th>メールアドレス</th>
-            <td><input type="email" name="email" value="{{ user_email }}" required/><br/></td>
+            <td><input type="email" name="email" value="{{ user_email }}" required="required" /><br/></td>
           </tr>
           <tr>
             <th>管理者権限を付与</th>
