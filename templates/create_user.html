@@ -57,6 +57,8 @@ $('#create-form').submit(function(){
     MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, `Success to create User "${username}"`);
 
     location.href = '/user/';
+  }).fail(function(resp){
+      MessageBox.error(resp.responseText);
   });
 
   return false;
