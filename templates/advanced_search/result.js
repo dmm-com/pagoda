@@ -171,16 +171,13 @@ $(document).ready(function() {
 
         reconstruct_tbody(data.result.ret_values);
 
-        // XXX preserve permalnk to the advanced_search view (not entry-search API)
-        // to filter search results with attribute keywords experimentally
-        const attrinfo = get_attrinfo();
-        let params = ['attrinfo=' + encodeURIComponent(JSON.stringify(attrinfo))];
+        // preserve a permalnk via pushState API to the advanced_search view (not entry-search API)
+        // to filter search results with attribute keywords
+        let params = [];
         for (const entity of '{{ entities }}'.split(',')) {
             params.push('entity[]=' +  entity);
         }
-        for (const attr of attrinfo) {
-          params.push('attr[]=' +  attr.name);
-        }
+        params.push('attrinfo=' + encodeURIComponent(JSON.stringify(get_attrinfo())));
         {% if has_referral %}
         params.push('has_referral=' + $('.narrow_down_referral').val());
         {% endif %}
