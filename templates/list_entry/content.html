@@ -1,5 +1,24 @@
 {% include 'list_entry/nav_search.html'%}
 
+<!-- TODO fix styles for paginator -->
+<nav aria-label="Page navigator">
+    <ul class="pagination">
+        <li><a href="?page=1" class="page-link">first</a></li>
+        {% if page_obj.has_previous %}
+            <li><a href="?page={{ page_obj.previous_page_number }}" class="page-link">＜</a></li>
+        {% endif %}
+
+        {% for link_page in page_obj.paginator.page_range %}
+            <li><a href="?page={{ link_page }}" class="page-link">{{ link_page }}</a></li>
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li><a href="?page={{ page_obj.next_page_number }}" class="page-link">＞</a></li>
+        {% endif %}
+        <li><a href="?page={{ page_obj.paginator.num_pages }}" class="page-link">last</a></li>
+    </ul>
+</nav>
+
 {% load bitwise_tags %}
 <div class="row">
   <div class="col">
@@ -12,7 +31,7 @@
         </tr>
       </thead>
       <tbody id='entry_container'>
-        {% for entry in entries %}
+        {% for entry in page_obj %}
 
         <tr>
           {% if entry.status|bitwise_and:STATUS_ENTRY.CREATING %}

@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
 from django.shortcuts import redirect
 from django.urls import reverse
 from urllib.parse import urlencode
@@ -86,6 +87,8 @@ def _validate_input(recv_data, obj):
 @http_get
 @check_permission(Entity, ACLType.Readable)
 def index(request, entity_id):
+    page = request.GET.get('page', 1)
+
     if not Entity.objects.filter(id=entity_id).exists():
         return HttpResponse('Failed to get entity of specified id', status=400)
 
@@ -98,16 +101,18 @@ def index(request, entity_id):
 
     entries = Entry.objects.order_by('name').filter(schema=entity, is_active=True)
 
+    # TODO remove
     total_count = list_count = len(entries)
-    if(len(entries) > CONFIG.MAX_LIST_ENTRIES):
-        entries = entries[0:CONFIG.MAX_LIST_ENTRIES]
-        list_count = CONFIG.MAX_LIST_ENTRIES
+
+    p = Paginator(entries, CONFIG.MAX_LIST_ENTRIES)
+    page_obj = p.page(page)
 
     context = {
         'entity': entity,
         'entries': entries,
         'total_count': total_count,
         'list_count': list_count,
+        'page_obj': page_obj,
     }
 
     if custom_view.is_custom("list_entry", entity.name):
@@ -115,6 +120,7 @@ def index(request, entity_id):
         return custom_view.call_custom("list_entry", entity.name, request, entity, context)
     else:
         # list ordinal view
+        # TODO use page_obj
         return render(request, 'list_entry.html', context)
 
 
