@@ -23,19 +23,6 @@ class ElasticSearchTest(TestCase):
                                        parent_entity=self._entity)
         self._entity_attr.save()
 
-        self._entry = Entry.objects.create(name='test_entry',
-                                           schema=self._entity,
-                                           created_user=self._user)
-        self._attr = Attribute.objects.create(name='test_attr',
-                                              schema=self._entity_attr,
-                                              created_user=self._user,
-                                              parent_entry=self._entry)
-        self._attr_value = AttributeValue.objects.create(value='test_attr_value',
-                                                         created_user=self._user,
-                                                         parent_attr=self._attr)
-        self._attr.values.add(self._attr_value)
-        self._attr.save()
-
     def test_get_regex_pattern(self):
         # without escape character
         p1 = elasticsearch._get_regex_pattern('keyword')
@@ -166,85 +153,68 @@ class ElasticSearchTest(TestCase):
         })
 
     def test_make_search_results(self):
+        entry = Entry.objects.create(name='test_entry',
+                                     schema=self._entity,
+                                     created_user=self._user)
+        attr = Attribute.objects.create(name='test_attr',
+                                        schema=self._entity_attr,
+                                        created_user=self._user,
+                                        parent_entry=entry)
+        attr_value = AttributeValue.objects.create(value='test_attr_value',
+                                                   created_user=self._user,
+                                                   parent_attr=attr)
+        attr.values.add(attr_value)
+        attr.save()
+
         res = {
             'hits': {
                 'total': 1,
                 'hits': [
                     {
                         '_type': 'entry',
-                        '_id': self._entry.id,
+                        '_id': entry.id,
                         '_source': {
                             'entity': {
-                                'id': self._entry.id,
-                                'name': self._entry.name
+                                'id': entry.id,
+                                'name': entry.name
                             },
-                            'name': self._entry.name,
+                            'name': entry.name,
                             'attr': [
                                 {
-                                    'name': self._attr.name,
-                                    'type': self._attr.schema.type,
+                                    'name': attr.name,
+                                    'type': attr.schema.type,
                                     'key': '',
-                                    'value': self._attr_value.value,
+                                    'value': attr_value.value,
                                     'referral_id': ''
                                 }
                             ]
                         },
-                        'sort': [self._entry.name]
+                        'sort': [entry.name]
                     }
                 ]
             }
         }
 
-        # Empty keyword should be handled as wildcard
-        results_with_empty_keyword = elasticsearch.make_search_results(
-            res, [{'name': self._attr.name, 'keyword': ''}], 100, False)
-        self.assertEqual(results_with_empty_keyword['ret_count'], 1)
-        self.assertEqual(results_with_empty_keyword['ret_values'], [
+        hint_attrs = [{'name': 'test_attr', 'keyword': ''}]
+        results = elasticsearch.make_search_results(res, hint_attrs, 100, False)
+
+        self.assertEqual(results['ret_count'], 1)
+        self.assertEqual(results['ret_values'], [
             {
                 'entity': {
                     'id': self._entity.id,
                     'name': self._entity.name,
                 },
                 'entry': {
-                    'id': self._entry.id,
-                    'name': self._entry.name
+                    'id': entry.id,
+                    'name': entry.name
                 },
                 'attrs': {
-                    self._attr.name:
+                    attr.name:
                         {
-                            'type': self._attr.schema.type,
-                            'value': self._attr_value.value,
+                            'type': attr.schema.type,
+                            'value': attr_value.value,
                         }
                 },
             }
         ])
-
-        # With a matched keyword
-        results_with_matched_keyword = elasticsearch.make_search_results(
-            res, [{'name': self._attr.name, 'keyword': self._attr_value.value}], 100, False)
-        self.assertEqual(results_with_matched_keyword['ret_count'], 1)
-        self.assertEqual(results_with_matched_keyword['ret_values'], [
-            {
-                'entity': {
-                    'id': self._entity.id,
-                    'name': self._entity.name,
-                },
-                'entry': {
-                    'id': self._entry.id,
-                    'name': self._entry.name
-                },
-                'attrs': {
-                    self._attr.name:
-                        {
-                            'type': self._attr.schema.type,
-                            'value': self._attr_value.value,
-                        }
-                },
-            }
-        ])
-
-        # With a mismatched keyword
-        results_with_mismatched_keyword = elasticsearch.make_search_results(
-            res, [{'name': self._attr.name, 'keyword': '^mismatched$'}], 100, False)
-        self.assertEqual(results_with_mismatched_keyword['ret_count'], 0)
-        self.assertEqual(results_with_mismatched_keyword['ret_values'], [])
