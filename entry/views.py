@@ -101,17 +101,14 @@ def index(request, entity_id):
 
     entries = Entry.objects.order_by('name').filter(schema=entity, is_active=True)
 
-    # TODO remove
-    total_count = list_count = len(entries)
-
-    p = Paginator(entries, CONFIG.MAX_LIST_ENTRIES)
+    # p = Paginator(entries, CONFIG.MAX_LIST_ENTRIES)
+    p = Paginator(entries, 2)
     page_obj = p.page(page)
 
     context = {
         'entity': entity,
         'entries': entries,
-        'total_count': total_count,
-        'list_count': list_count,
+        'total_count': len(entries),
         'page_obj': page_obj,
     }
 
@@ -120,7 +117,6 @@ def index(request, entity_id):
         return custom_view.call_custom("list_entry", entity.name, request, entity, context)
     else:
         # list ordinal view
-        # TODO use page_obj
         return render(request, 'list_entry.html', context)
 
 
