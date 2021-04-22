@@ -61,9 +61,9 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('group:create'))
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.context['groups']), 1)
-        self.assertEqual(resp.context['groups']['id'], 0)
-        self.assertEqual(resp.context['groups']['name'], '-- ALL --')
-        self.assertEqual(list(resp.context['groups']['members']),
+        self.assertEqual(resp.context['groups'][0]['id'], 0)
+        self.assertEqual(resp.context['groups'][0]['name'], '-- ALL --')
+        self.assertEqual(list(resp.context['groups'][0]['members']),
                          list(User.objects.filter(is_active=True)))
 
     def test_create_post_without_login(self):
