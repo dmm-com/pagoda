@@ -6,6 +6,7 @@
 
 * Changed implementation of Entity to create, edit and delete it at Celery.
 * Changed to show unauthorized entity on the dashboard
+* Update Django version from v1.11 to v2.2 (LTS)
 
 ## v2.6.0
 
