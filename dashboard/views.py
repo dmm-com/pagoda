@@ -4,7 +4,6 @@ from airone.lib.http import render
 from airone.lib.http import http_get, http_post
 from airone.lib.http import http_file_upload
 from airone.lib.http import HttpResponseSeeOther
-from airone.lib.log import Logger
 from airone.lib.profile import airone_profile
 from airone.lib.log import Logger
 from django.http import HttpResponse
