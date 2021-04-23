@@ -1,14 +1,16 @@
+import logging
 import mock
 import re
 
+from acl.models import ACLBase
 from airone.lib.test import AironeViewTest
 from airone.lib import types as atype
+from airone.lib.log import Logger
 from django.urls import reverse
 from django.conf import settings
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute, AttributeValue
 from user.models import User
-from acl.models import ACLBase
 
 
 class ImportTest(AironeViewTest):
@@ -53,84 +55,63 @@ class ImportTest(AironeViewTest):
 
     def test_import_entity_with_unnecessary_param(self):
         self.admin_login()
-        warning_messages = []
 
         fp = self.open_fixture_file('entity_with_unnecessary_param.yaml')
-        with mock.patch('dashboard.views.Logger') as lg_mock:
-            def side_effect(message):
-                warning_messages.append(message)
-
-            lg_mock.warning = mock.Mock(side_effect=side_effect)
-
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
             resp = self.client.post(reverse('dashboard:do_import'), {'file': fp})
             self.assertEqual(resp.status_code, 303)
-        fp.close()
 
-        # checks that warning messagees were outputted
-        self.assertEqual(len(warning_messages), 2)
-        self.assertTrue(re.match(r'^.*Entity.*Unnecessary key is specified$',
-                                 warning_messages[0]))
-        self.assertTrue(re.match(r'^.*EntityAttr.*Unnecessary key is specified$',
-                                 warning_messages[1]))
+            # checks that warning messagees were outputted
+            self.assertEqual(len(warning_log.output), 2)
+            self.assertTrue(re.match(r'^.*Entity.*Unnecessary key is specified$',
+                                     warning_log.output[0]))
+            self.assertTrue(re.match(r'^.*EntityAttr.*Unnecessary key is specified$',
+                                     warning_log.output[1]))
+        fp.close()
 
         self.assertEqual(Entity.objects.count(), 2)
         self.assertEqual(EntityAttr.objects.count(), 3)
 
-    @mock.patch('import_export.resources.logging')
-    def test_import_entity_without_mandatory_param(self, mock_logger):
+    def test_import_entity_without_mandatory_param(self):
         self.admin_login()
-        warning_messages = []
 
         fp = self.open_fixture_file('entity_without_mandatory_param.yaml')
-        with mock.patch('dashboard.views.Logger') as lg_mock:
-            def side_effect(message):
-                warning_messages.append(message)
-
-            lg_mock.warning = mock.Mock(side_effect=side_effect)
-            mock_logger.exception = mock.Mock(side_effect=side_effect)
-
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
             resp = self.client.post(reverse('dashboard:do_import'), {'file': fp})
             self.assertEqual(resp.status_code, 303)
+
+            # checks that warning messagees were outputted
+            self.assertEqual(len(warning_log.output), 3)
+            self.assertRegex(warning_log.output[0],
+                             "Entity.*Mandatory key doesn't exist$")
+            self.assertRegex(warning_log.output[1],
+                             "The parameter 'type' is mandatory when a new EntityAtter create$")
+            self.assertRegex(warning_log.output[2],
+                             "refer to invalid entity object$")
         fp.close()
 
-        # checks that warning messagees were outputted
-        self.assertEqual(len(warning_messages), 3)
-        self.assertTrue(re.match(r"^.*Entity.*Mandatory key doesn't exist$",
-                                 str(warning_messages[0])))
-        self.assertEqual("The parameter 'type' is mandatory when a new EntityAtter create",
-                         str(warning_messages[1]))
-        self.assertEqual(str(warning_messages[2]), "refer to invalid entity object")
-
-        self.assertEqual(Entity.objects.count(), 2)
-
         # checks not to create EntityAttr that refers invalid object
+        self.assertEqual(Entity.objects.count(), 2)
         self.assertEqual(EntityAttr.objects.count(), 2)
         self.assertEqual(EntityAttr.objects.filter(name='attr-arr-obj').count(), 0)
 
     def test_import_entity_with_spoofing_user(self):
         self.admin_login()
-        warning_messages = []
 
         # A user who creates original mock object
         user = User.objects.create(username='test-user')
-
         Entity.objects.create(id=3, name='baz-original', created_user=user)
 
         fp = self.open_fixture_file('entity.yaml')
-        with mock.patch('import_export.resources.logging') as lg_mock:
-            def side_effect(message):
-                warning_messages.append(str(message))
-
-            lg_mock.exception = mock.Mock(side_effect=side_effect)
-
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
             resp = self.client.post(reverse('dashboard:do_import'), {'file': fp})
             self.assertEqual(resp.status_code, 303)
-        fp.close()
 
-        # checks to show warning messages
-        msg = r"failed to identify entity object"
-        self.assertEqual(len(warning_messages), 4)
-        self.assertTrue(all([re.match(msg, x) for x in warning_messages]))
+            # checks to show warning messages
+            self.assertEqual(len(warning_log.output), 4)
+            for warn_msg in warning_log.output:
+                self.assertRegex(warn_msg, "failed to identify entity object$")
+        fp.close()
 
         # checks that import data doens't appied
         entity = Entity.objects.get(id=3)
@@ -225,17 +206,16 @@ class ImportTest(AironeViewTest):
 
     def test_import_entity_with_duplicate_entity(self):
         self.admin_login()
-        warning_messages = []
 
         fp = self.open_fixture_file('entity_with_duplication.yaml')
-        with mock.patch('import_export.resources.logging') as lg_mock:
-            def side_effect(message):
-                warning_messages.append(str(message))
-
-            lg_mock.exception = mock.Mock(side_effect=side_effect)
-
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
             resp = self.client.post(reverse('dashboard:do_import'), {'file': fp})
             self.assertEqual(resp.status_code, 303)
+
+            # checks that an exception caused by the duplicate entity is occurred
+            self.assertEqual(len(warning_log.output), 1)
+            self.assertRegex(warning_log.output[0],
+                             '^WARNING.*There is a duplicate entity object \(entity\)$')
         fp.close()
 
         # checks that the duplicate object wouldn't be created
@@ -243,23 +223,18 @@ class ImportTest(AironeViewTest):
         self.assertEqual(EntityAttr.objects.count(), 4)
         self.assertEqual(Entity.objects.get(name='entity').note, 'note1')
 
-        # checks that an exception caused by the duplicate entity is occurred
-        self.assertEqual(len(warning_messages), 1)
-        self.assertTrue("There is a duplicate entity object (entity)" == warning_messages[0])
-
     def test_import_entry_with_duplicate_entry(self):
         self.admin_login()
-        warning_messages = []
 
         fp = self.open_fixture_file('entry_with_duplication.yaml')
-        with mock.patch('import_export.resources.logging') as lg_mock:
-            def side_effect(message):
-                warning_messages.append(str(message))
-
-            lg_mock.exception = mock.Mock(side_effect=side_effect)
-
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
             resp = self.client.post(reverse('dashboard:do_import'), {'file': fp})
             self.assertEqual(resp.status_code, 303)
+
+            # checks that an exception caused by the duplicate entity is occurred
+            self.assertEqual(len(warning_log.output), 1)
+            self.assertRegex(warning_log.output[0],
+                             '^WARNING.*There is a duplicate entry object$')
         fp.close()
 
         entity = Entity.objects.get(name='Server')
@@ -269,28 +244,22 @@ class ImportTest(AironeViewTest):
         self.assertEqual(Entry.objects.filter(schema=entity, name='srv001').count(), 1)
         self.assertEqual(Entry.objects.get(schema=entity, name='srv001').id, 14)
 
-        self.assertEqual(len(warning_messages), 1)
-        self.assertTrue("There is a duplicate entry object" == warning_messages[0])
-
     def test_import_entry_referring_invalid_schema(self):
         self.admin_login()
-        warning_messages = []
 
         fp = self.open_fixture_file('entry_with_invalid_schema.yaml')
-        with mock.patch('import_export.resources.logging') as lg_mock:
-            def side_effect(message):
-                warning_messages.append(str(message))
-
-            lg_mock.exception = mock.Mock(side_effect=side_effect)
-
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
             resp = self.client.post(reverse('dashboard:do_import'), {'file': fp})
             self.assertEqual(resp.status_code, 303)
+
+            # checks that an exception caused by invalid input
+            self.assertEqual(len(warning_log.output), 1)
+            self.assertRegex(warning_log.output[0],
+                             "^WARNING.*Specified entity\(invalid_schema\) doesn't exist$")
         fp.close()
 
         # checks that the duplicate object wouldn't be created
         self.assertEqual(Entry.objects.count(), 2)
-        self.assertEqual(len(warning_messages), 1)
-        self.assertTrue("Specified entity(invalid_schema) doesn't exist" == warning_messages[0])
 
     def test_import_entity_with_max_file_size(self):
         self.admin_login()
