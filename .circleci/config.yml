@@ -145,7 +145,7 @@ workflows:
   build_and_test:
     jobs:
       - python36
-      - python38
+      # - python38
       - pep8
       - build_gh_page:
           filters:

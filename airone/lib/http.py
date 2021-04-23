@@ -1,6 +1,7 @@
 import json
 import importlib
 import urllib.parse
+from urllib.parse import quote
 import codecs
 
 from django.http import HttpResponseRedirect
@@ -30,7 +31,8 @@ def http_get(func):
             return HttpResponse('Invalid HTTP method is specified', status=400)
 
         if not request.user.is_authenticated:
-            return HttpResponseSeeOther('/auth/login?next=%s' % request.path)
+            return HttpResponseSeeOther('/auth/login?next=%s?%s' %
+                                        (request.path, quote(request.GET.urlencode())))
 
         return func(*args, **kwargs)
     return wrapper
@@ -91,33 +93,6 @@ def http_post(validator=[]):
                 return HttpResponse('Failed to parse string to JSON', status=400)
 
             if not _is_valid(kwargs['recv_data'], validator):
-                return HttpResponse('Invalid parameters are specified', status=400)
-
-            return func(*args, **kwargs)
-        return http_post_handler
-    return _decorator
-
-
-def http_post_form(validator=[]):
-    def _decorator(func):
-        def http_post_handler(*args, **kwargs):
-            request = args[0]
-
-            if request.method != 'POST':
-                return HttpResponse('Invalid HTTP method is specified', status=400)
-
-            if not request.user.is_authenticated:
-                return HttpResponse('You have to login to execute this operation', status=401)
-
-            recv_data = {}
-            for x in validator:
-                val = request.POST.get(x['name'])
-                if val:
-                    recv_data[x['name']] = json.loads(val)
-
-            if _is_valid(recv_data, validator):
-                kwargs['recv_data'] = recv_data
-            else:
                 return HttpResponse('Invalid parameters are specified', status=400)
 
             return func(*args, **kwargs)

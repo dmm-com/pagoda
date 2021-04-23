@@ -2,8 +2,16 @@
 
 ## In development
 
-### Changed
+### Added
+* Added handler to report celery exception errors
 
+### Fixed
+* Fixed not being redirected to the original URL after login
+* Fixed the log message was not output to django.log
+
+## v2.7.0
+
+### Changed
 * Changed implementation of Entity to create, edit and delete it at Celery.
 * Changed to show unauthorized entity on the dashboard
 * Update Django version from v1.11 to v2.2 (LTS)

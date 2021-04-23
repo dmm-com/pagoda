@@ -6,6 +6,7 @@ from airone.lib.http import http_file_upload
 from airone.lib.http import HttpResponseSeeOther
 from airone.lib.log import Logger
 from airone.lib.profile import airone_profile
+from airone.lib.log import Logger
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from entity.admin import EntityResource, EntityAttrResource
@@ -97,7 +98,8 @@ def search(request):
 
     target_models = [Entry, AttributeValue]
 
-    search_results = sum([x.search(query) for x in target_models], [])
+    modified_query = query.strip()
+    search_results = sum([x.search(modified_query) for x in target_models], [])
     dic = {}
 
     for result in search_results:
@@ -124,7 +126,8 @@ def search(request):
     results.sort(key=lambda x: x['object'].name)
 
     return render(request, 'show_search_results.html', {
-        'results': results
+        'search_query': modified_query,
+        'results': results,
     })
 
 
