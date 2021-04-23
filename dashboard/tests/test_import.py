@@ -215,7 +215,7 @@ class ImportTest(AironeViewTest):
             # checks that an exception caused by the duplicate entity is occurred
             self.assertEqual(len(warning_log.output), 1)
             self.assertRegex(warning_log.output[0],
-                             '^WARNING.*There is a duplicate entity object \(entity\)$')
+                             '^WARNING.*There is a duplicate entity object \\(entity\\)$')
         fp.close()
 
         # checks that the duplicate object wouldn't be created
@@ -255,7 +255,7 @@ class ImportTest(AironeViewTest):
             # checks that an exception caused by invalid input
             self.assertEqual(len(warning_log.output), 1)
             self.assertRegex(warning_log.output[0],
-                             "^WARNING.*Specified entity\(invalid_schema\) doesn't exist$")
+                             "^WARNING.*Specified entity\\(invalid_schema\\) doesn't exist$")
         fp.close()
 
         # checks that the duplicate object wouldn't be created

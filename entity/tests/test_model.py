@@ -1,7 +1,6 @@
 from airone.lib.types import AttrTypeValue
 from copy import copy
 
-from airone.lib.test import DisableStderr
 from django.test import TestCase
 from user.models import User
 from entity.models import Entity

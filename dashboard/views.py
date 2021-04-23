@@ -1,4 +1,3 @@
-import logging
 import yaml
 
 from airone.lib.http import render

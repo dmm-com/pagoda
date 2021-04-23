@@ -4,7 +4,6 @@ from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 
 from datetime import date
-from django.urls import reverse
 
 from entity.models import Entity, EntityAttr
 from entry.models import Entry

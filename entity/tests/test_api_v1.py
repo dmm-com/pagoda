@@ -1,7 +1,4 @@
 from airone.lib.test import AironeViewTest
-
-from django.urls import reverse
-
 from entity.models import Entity
 
 

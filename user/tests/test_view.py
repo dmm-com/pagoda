@@ -3,7 +3,6 @@ import json
 from django.test import TestCase, Client
 from django.urls import reverse
 from user.models import User
-from xml.etree import ElementTree
 
 
 class ViewTest(TestCase):
