@@ -1432,7 +1432,7 @@ class Entry(ACLBase):
         if 'status' in res and res['status'] == 404:
             return results
 
-        return make_search_results(results, res, hint_attrs, limit, hint_referral)
+        return make_search_results(res, limit, hint_referral)
 
     @classmethod
     def get_all_es_docs(kls):

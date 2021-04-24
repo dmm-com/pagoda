@@ -1,5 +1,6 @@
 import json
 import re
+from typing import Any, Dict, List, Optional, Tuple
 
 from datetime import datetime
 from django.conf import settings
@@ -44,7 +45,7 @@ class ESS(Elasticsearch):
                                        size=settings.ES_CONFIG['MAXIMUM_RESULTS_NUM'], *args,
                                        **kwargs)
 
-    def recreate_index(self):
+    def recreate_index(self) -> None:
         self.indices.delete(index=self._index, ignore=[400, 404])
         self.indices.create(index=self._index, ignore=400, body=json.dumps({
             'mappings': {
@@ -122,7 +123,8 @@ __all__ = [
 ]
 
 
-def make_query(hint_entity_ids, hint_attrs, entry_name, or_match):
+def make_query(hint_entity_ids: List[str], hint_attrs: List[Dict[str, str]], entry_name: str,
+               or_match: bool) -> Dict[str, str]:
     """Create a search query for Elasticsearch.
 
     Do the following:
@@ -146,7 +148,7 @@ def make_query(hint_entity_ids, hint_attrs, entry_name, or_match):
     """
 
     # Making a query to send ElasticSearch by the specified parameters
-    query = {
+    query: Dict = {
         "query": {
             "bool": {
                 'filter': [],
@@ -185,7 +187,7 @@ def make_query(hint_entity_ids, hint_attrs, entry_name, or_match):
             }
         })
 
-    attr_query = {}
+    attr_query: Dict = {}
 
     # filter attribute by keywords
     for hint in [x for x in hint_attrs if 'name' in x and 'keyword' in x and x['keyword']]:
@@ -199,7 +201,7 @@ def make_query(hint_entity_ids, hint_attrs, entry_name, or_match):
     return query
 
 
-def _get_regex_pattern(keyword):
+def _get_regex_pattern(keyword: str) -> str:
     """Create a regex pattern pattern.
 
     Create a regular expression pattern of the string received as an argument.
@@ -216,7 +218,7 @@ def _get_regex_pattern(keyword):
         CONFIG.ESCAPE_CHARACTERS, keyword)])
 
 
-def prepend_escape_character(escape_character_list, keyword):
+def prepend_escape_character(escape_character_list: List[str], keyword: str) -> str:
     """Add escape character.
 
     If the argument 'keyword' contains the characters specified in 'escape_character_list',
@@ -233,7 +235,7 @@ def prepend_escape_character(escape_character_list, keyword):
     return ''.join(['\\' + x if x in escape_character_list else x for x in list(keyword)])
 
 
-def _get_hint_keyword_val(keyword):
+def _get_hint_keyword_val(keyword: str) -> str:
     """Null character conversion processing.
 
     Args:
@@ -251,7 +253,7 @@ def _get_hint_keyword_val(keyword):
     return keyword
 
 
-def _make_entry_name_query(entry_name):
+def _make_entry_name_query(entry_name: str) -> Dict[str, str]:
     """Create a search query for the entry name.
 
     Divides the search string with OR.
@@ -266,7 +268,7 @@ def _make_entry_name_query(entry_name):
         dict[str, str]: Entry name search query
 
     """
-    entry_name_or_query = {
+    entry_name_or_query: Dict = {
         'bool': {
             'should': []
         }
@@ -275,7 +277,7 @@ def _make_entry_name_query(entry_name):
     # Split and process keywords with 'or'
     for keyword_divided_or in entry_name.split(CONFIG.OR_SEARCH_CHARACTER):
 
-        entry_name_and_query = {
+        entry_name_and_query: Dict = {
             'bool': {
                 'filter': []
             }
@@ -303,7 +305,8 @@ def _make_entry_name_query(entry_name):
     return entry_name_or_query
 
 
-def _parse_or_search(hint, or_match, attr_query):
+def _parse_or_search(hint: Dict[str, str], or_match: bool, attr_query: Dict[str, str])\
+        -> Dict[str, str]:
     """Performs keyword analysis processing.
 
     The search keyword is separated by OR and passed to the next process.
@@ -319,7 +322,7 @@ def _parse_or_search(hint, or_match, attr_query):
             by 'OR' and return.
 
     """
-    duplicate_keys = []
+    duplicate_keys: List = []
 
     # Split and process keywords with 'or'
     for keyword_divided_or in hint['keyword'].split(CONFIG.OR_SEARCH_CHARACTER):
@@ -329,7 +332,8 @@ def _parse_or_search(hint, or_match, attr_query):
     return attr_query
 
 
-def _parse_and_search(hint, keyword_divided_or, or_match, attr_query, duplicate_keys):
+def _parse_and_search(hint: Dict[str, str], keyword_divided_or: str, or_match: bool,
+                      attr_query: Dict[str, Any], duplicate_keys: List[str]) -> Dict[str, str]:
     """Analyze the keywords separated by `OR`
 
     Keywords separated by OR are separated by AND.
@@ -387,7 +391,7 @@ def _parse_and_search(hint, keyword_divided_or, or_match, attr_query, duplicate_
     return attr_query
 
 
-def _make_key_for_each_block_of_keywords(hint, keyword, or_match):
+def _make_key_for_each_block_of_keywords(hint: Dict[str, str], keyword: str, or_match: bool) -> str:
     """Create a key for each block of minimal keywords.
 
     Create a key for each block of keywords.
@@ -410,7 +414,8 @@ def _make_key_for_each_block_of_keywords(hint, keyword, or_match):
     return keyword if or_match else keyword + '_' + hint['name']
 
 
-def _build_queries_along_keywords(hint_attrs, attr_query, or_match):
+def _build_queries_along_keywords(hint_attrs: List[Dict[str, str]], attr_query: Dict[str, str],
+                                  or_match: bool) -> Dict[str, str]:
     """Build queries along search terms.
 
     Do the following:
@@ -443,11 +448,11 @@ def _build_queries_along_keywords(hint_attrs, attr_query, or_match):
 
     # Get the keyword.
     hints = [x for x in hint_attrs if x['keyword']] if not or_match else [hint_attrs[0]]
-    res_query = {}
+    res_query: Dict[str, Any] = {}
 
     for hint in hints:
-        and_query = {}
-        or_query = {}
+        and_query: Dict[str, Any] = {}
+        or_query: Dict[str, Any] = {}
 
         # Split keyword by 'or'
         for keyword_divided_or in hint['keyword'].split(CONFIG.OR_SEARCH_CHARACTER):
@@ -492,7 +497,7 @@ def _build_queries_along_keywords(hint_attrs, attr_query, or_match):
     return res_query
 
 
-def _make_an_attribute_filter(hint, keyword):
+def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, Dict]:
     """creates an attribute filter from keywords.
 
     For the attribute set in the name of hint, create a filter for filtering search keywords.
@@ -521,10 +526,9 @@ def _make_an_attribute_filter(hint, keyword):
         dict[str, str]: Created attribute filter
 
     """
-    cond_attr = []
-    cond_attr.append({
+    cond_attr: List[Dict] = [{
         'term': {'attr.name': hint['name']}
-    })
+    }]
 
     date_results = _is_date(keyword)
     if date_results:
@@ -567,24 +571,23 @@ def _make_an_attribute_filter(hint, keyword):
             cond_attr.append({'bool': {'should': cond_val}})
 
         else:
-            cond_val_tmp = [{'bool': {'must_not': {'exists': {'field': 'attr.date_value'}}}}]
-            cond_val_tmp.append({'bool': {'should': cond_val}})
+            cond_val_tmp = [{'bool': {'must_not': {'exists': {'field': 'attr.date_value'}}}},
+                            {'bool': {'should': cond_val}}]
             cond_attr.append({'bool': {'must': cond_val_tmp}})
 
-    adding_cond = {
+    return {
         'nested': {
             'path': 'attr',
             'query': {
-                'bool': {}
+                'bool': {
+                    'filter': cond_attr
+                }
             }
         }
     }
-    adding_cond['nested']['query']['bool']['filter'] = cond_attr
-
-    return adding_cond
 
 
-def execute_query(query):
+def execute_query(query: Dict[str, str]) -> Dict[str, str]:
     """Run a search query.
 
     Args:
@@ -605,7 +608,7 @@ def execute_query(query):
     return res
 
 
-def make_search_results(results, res, hint_attrs, limit, hint_referral):
+def make_search_results(res: Dict[str, Any], limit: int, hint_referral: str) -> Dict[str, str]:
     """Acquires and returns the attribute values held by each search result
 
     When the condition of reference entry is specified, the entry to reference is acquired.
@@ -630,10 +633,7 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
     5. When all entries have been processed, the search results are returned.
 
     Args:
-        results (dict[str, str]): Variable for final search result storage
         res (`str`, optional): Search results for Elasticsearch
-        hint_entity_ids (list(str)): Entity ID specified in the search condition input
-        hint_attrs (list(dict[str, str])): A list of search strings and attribute sets
         limit (int): Maximum number of search results to return
         hint_referral (str): Input value used to refine the reference entry.
             Use only for advanced searches.
@@ -646,7 +646,9 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
     from entry.models import Entry, AttributeValue
 
     # set numbers of found entries
-    results['ret_count'] = res['hits']['total']
+    results = {
+        'ret_count': res['hits']['total'],
+    }
 
     # get django objects from the hit information from Elasticsearch
     hit_entry_ids = [x['_id'] for x in res['hits']['hits']]
@@ -687,7 +689,7 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
     else:
         hit_entries = Entry.objects.filter(id__in=hit_entry_ids, is_active=True)
 
-    hit_infos = {}
+    hit_infos: Dict = {}
     for entry in hit_entries:
         if len(hit_infos) >= limit:
             break
@@ -697,7 +699,7 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
         ][0]
 
     for (entry, hit_attrs) in sorted(hit_infos.items(), key=lambda x: x[0].name):
-        ret_info = {
+        ret_info: Dict[str, Any] = {
             'entity': {'id': entry.schema.id, 'name': entry.schema.name},
             'entry': {'id': entry.id, 'name': entry.name},
             'attrs': {},
@@ -775,7 +777,7 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
     return results
 
 
-def is_date_check(value):
+def is_date_check(value: str) -> Optional[Tuple[str, datetime]]:
     try:
         for delimiter in ['-', '/']:
             date_format = '%%Y%(del)s%%m%(del)s%%d' % {'del': delimiter}
@@ -786,7 +788,7 @@ def is_date_check(value):
                     return (value[0],
                             datetime.strptime(value[1:].split(' ')[0], date_format))
                 else:
-                    return ('', datetime.strptime(value.split(' ')[0], date_format))
+                    return '', datetime.strptime(value.split(' ')[0], date_format)
 
     except ValueError:
         # When datetime.strptie raised ValueError, it means value parameter maches date
@@ -797,7 +799,7 @@ def is_date_check(value):
     return None
 
 
-def _is_date(value):
+def _is_date(value: str) -> Optional[List]:
     # checks all specified value is date format
     result = [is_date_check(x) for x in value.split(' ') if x]
 
