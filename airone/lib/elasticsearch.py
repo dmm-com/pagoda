@@ -648,6 +648,7 @@ def make_search_results(res: Dict[str, Any], limit: int, hint_referral: str) -> 
     # set numbers of found entries
     results = {
         'ret_count': res['hits']['total'],
+        'ret_values': [],
     }
 
     # get django objects from the hit information from Elasticsearch
