@@ -126,6 +126,25 @@ jobs:
             . venv/bin/activate
             tox
 
+  mypy:
+    docker:
+      - image: circleci/python:3.8
+    environment:
+      TOXENV: "mypy"
+    steps:
+      - checkout
+      - run:
+          name: Install tox tox-pyenv
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install tox
+      - run:
+          name: mypy
+          command: |
+            . venv/bin/activate
+            tox
+
   build_gh_page:
     docker:
       - image: cibuilds/hugo:0.74
@@ -147,6 +166,7 @@ workflows:
       - python36
       # - python38
       - pep8
+      - mypy
       - build_gh_page:
           filters:
             branches:
