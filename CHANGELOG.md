@@ -9,6 +9,11 @@
 * Fixed not being redirected to the original URL after login
 * Fixed the log message was not output to django.log
 
+## v2.8.0
+
+### Added
+* Added password-reset feature
+
 ## v2.7.0
 
 ### Changed
