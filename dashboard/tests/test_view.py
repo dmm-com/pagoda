@@ -92,6 +92,12 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(len(resp.context['results']), 0)
 
+    def test_search_entry_from_value_with_unnecessary_whitespaces(self):
+        resp = self.client.get(reverse('dashboard:search'), {'query': '  hoge  '})
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual(len(resp.context['results']), 1)
+
     def test_show_dashboard_with_airone_user(self):
         # prepare the data of the imported file
         obj = yaml.safe_load(self.open_fixture_file('entry.yaml'))

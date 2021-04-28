@@ -2,10 +2,18 @@
 
 ## In development
 
+### Added
+* Added handler to report celery exception errors
+
 ### Fixed
 * Fixed not being redirected to the original URL after login
 * Fixed some request logs not output
 * Fixed the log message was not output to django.log
+
+## v2.8.0
+
+### Added
+* Added password-reset feature
 
 ## v2.7.0
 

@@ -1,5 +1,7 @@
 import os
 from celery import Celery
+from celery.signals import task_failure
+from django.core.mail import mail_admins
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'airone.settings')
@@ -14,3 +16,24 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
+
+
+@task_failure.connect()
+def celery_task_failure_email(**kwargs):
+    """This event handler is for reporting by email when an exception error in celery."""
+
+    subject = "ERROR Celery Task {sender.name}".format(**kwargs)
+    message = """
+Task Name: {sender.name}
+Task ID: {task_id}
+Task args: {args}
+Task kwargs: {kwargs}
+
+raised exception:
+{exception!r}
+
+full traceback:
+{einfo}
+""".format(**kwargs)
+
+    mail_admins(subject, message)

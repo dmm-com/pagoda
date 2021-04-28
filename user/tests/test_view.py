@@ -2,7 +2,9 @@ import json
 
 from django.test import TestCase, Client
 from django.urls import reverse
+from user.forms import UsernameBasedPasswordResetForm
 from user.models import User
+from user.views import PasswordReset
 from xml.etree import ElementTree
 
 
@@ -12,8 +14,10 @@ class ViewTest(TestCase):
         self.guest = self._create_user('guest', 'guest@example.com')
         self.admin = self._create_user('admin', 'admin@example.com', True)
 
-    def _create_user(self, name, email='email', is_superuser=False):
-        user = User(username=name, email=email, is_superuser=is_superuser)
+    def _create_user(self, name, email='email', is_superuser=False,
+                     authenticate_type=User.AUTH_TYPE_LOCAL):
+        user = User(username=name, email=email, is_superuser=is_superuser,
+                    authenticate_type=authenticate_type)
         user.set_password(name)
         user.save()
 
@@ -108,7 +112,7 @@ class ViewTest(TestCase):
                                 'application/json')
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(User.objects.count(), count+1)  # user should be created
+        self.assertEqual(User.objects.count(), count + 1)  # user should be created
         self.assertEqual(User.objects.last().username, 'hoge')
         self.assertNotEqual(User.objects.last().password, 'puyo')
         self.assertFalse(User.objects.last().is_superuser)
@@ -178,7 +182,7 @@ class ViewTest(TestCase):
         user = User.objects.create(username='test', email='test@example.com')
 
         params = {
-            'name':  'hoge',  # update guest => hoge
+            'name': 'hoge',  # update guest => hoge
             'email': 'hoge@example.com',
             'is_superuser': True,
         }
@@ -192,7 +196,7 @@ class ViewTest(TestCase):
         count = User.objects.count()
 
         params = {
-            'name':  'hoge',  # update guest => hoge
+            'name': 'hoge',  # update guest => hoge
             'email': 'hoge@example.com',
             'is_superuser': True,
         }
@@ -210,7 +214,7 @@ class ViewTest(TestCase):
         user = User.objects.get(username='guest')
 
         params = {
-            'name': 'admin',          # duplicated
+            'name': 'admin',  # duplicated
             'email': 'guest@example.com',
         }
         resp = self.client.post(reverse('user:do_edit', args=[user.id]),
@@ -346,7 +350,6 @@ class ViewTest(TestCase):
         self.assertIsNotNone(root.find('.//form'))
 
     def test_edit_passwd_post_without_login(self):
-
         params = {
             'id': self.guest.id,
             'old_passwd': 'guest',
@@ -493,7 +496,7 @@ class ViewTest(TestCase):
         # user should not deleted from DB
         self.assertEqual(User.objects.count(), user_count)
         # active user should be decreased
-        self.assertEqual(self._get_active_user_count(), active_user_count-1)
+        self.assertEqual(self._get_active_user_count(), active_user_count - 1)
 
         # user should be inactive
         user = User.objects.get(username__icontains="%s_deleted_" % name)
@@ -540,3 +543,21 @@ class ViewTest(TestCase):
 
         self.assertEqual(resp.status_code, 400)
         self.assertTrue(User.objects.get(username='testuser').is_active)
+
+    def test_password_reset_with_invalid_username(self):
+        user = self._create_user('testuser', authenticate_type=User.AUTH_TYPE_LDAP)
+
+        # testing this view class requires a complicated client.
+        # instead of that, we call the override method directly for now.
+        # see also django tests/auth_tests/client.py
+        view = PasswordReset()
+
+        form_with_unknown_user = UsernameBasedPasswordResetForm({'username': 'unknown'})
+        form_with_unknown_user.is_valid()
+        resp = view.form_valid(form_with_unknown_user)
+        self.assertEqual(resp.status_code, 400)
+
+        form_with_ldap_user = UsernameBasedPasswordResetForm({'username': user.username})
+        form_with_ldap_user.is_valid()
+        resp = view.form_valid(form_with_ldap_user)
+        self.assertEqual(resp.status_code, 400)

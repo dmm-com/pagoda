@@ -54,6 +54,27 @@ Then, you should restart MySQL server to apply for this configuration.
 user@hostname:~$ sudo service mysql restart
 ```
 
+### Setting-up Email configuration
+
+This step is optional. You can skip it if you don't use email notifications.
+
+AirOne supports email based notification, now it's mainly used for password-reset. You can set email backend, with like this config:
+
+```
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'xxx'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = 'xxx'
+EMAIL_HOST_PASSWORD = 'xxx'
+EMAIL_USE_TLS = True
+```
+
+If you hope to just try it in your local environment, you can use stdout instead:
+
+```
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+```
+
 ### Initialize AirOne configuratoin
 This command makes database schema using the [django Migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/), and makes default user account.
 ```
