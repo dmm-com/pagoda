@@ -69,7 +69,7 @@ MessageBox._showMessage = function(text, style) {
     '<button type="button" class="close" data-dismiss="alert" aria-label="close">' +
       '<span aria-hidden="true">&times;</span>' +
     '</button>' + text + '</div>';
-  $(".airone-messagebox").append(content);
+  $(".airone-messagebox").html(content);
   $(".alert").alert();
 };
 
