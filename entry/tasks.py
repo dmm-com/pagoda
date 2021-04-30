@@ -107,9 +107,12 @@ def create_entry_attrs(self, job_id):
             if not entity_attr.is_active or not user.has_permission(entity_attr, ACLType.Readable):
                 continue
 
-            # create Attibute object that contains AttributeValues
+            # This creates Attibute object that contains AttributeValues.
+            # But the add_attribute_from_base may return None when target Attribute instance
+            # has already been created or is creating by other process. In that case, this job
+            # do nothing about that Attribute instance.
             attr = entry.add_attribute_from_base(entity_attr, user)
-            if not any([int(x['id']) == attr.schema.id for x in recv_data['attrs']]):
+            if not attr or not any([int(x['id']) == attr.schema.id for x in recv_data['attrs']]):
                 continue
 
             # When job is canceled during this processing, abort it after deleting the created entry

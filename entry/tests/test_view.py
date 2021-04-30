@@ -3619,3 +3619,41 @@ class ViewTest(AironeViewTest):
         self.assertEqual(ret['ret_count'], 1)
         self.assertEqual(ret['ret_values'][0]['entry']['name'], 'entry')
         self.assertEqual(ret['ret_values'][0]['attrs']['ref']['value']['name'], 'changed_name')
+
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    def test_run_create_entry_task_duplicately(self):
+        user = self.guest_login()
+
+        # initialize data for test
+        entity = self.create_entity(user, 'Entity', [{'name': 'hoge'}])
+
+        # sending a request to create Entry
+        params = {'entry_name': 'entry', 'attrs': []}
+        for entity_attr in entity.attrs.all():
+            params['attrs'].append({
+                'id': entity_attr.id,
+                'type': entity_attr.type,
+                'value': [{'data': 'hoge', 'index': 0}],
+                'referral_key': [],
+            })
+        resp = self.client.post(reverse('entry:do_create', args=[entity.id]),
+                                json.dumps(params),
+                                'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        # This confirms above sending request create expected Job and Entry instances
+        entry = Entry.objects.get(name='entry', schema=entity, is_active=True)
+        job = Job.objects.last()
+        self.assertEqual(job.target.id, entry.id)
+        self.assertEqual(job.status, Job.STATUS['DONE'])
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
+
+        # Rerun creating that entry job (This is core processing of this test)
+        job.status = Job.STATUS['PREPARING']
+        job.save()
+        job.run(will_delay=False)
+
+        # This confirms unexpected Attribute instances were not created
+        # when creating job was run duplicately.
+        self.assertEqual(Entry.objects.get(id=entry.id).attrs.count(),
+                         Entity.objects.get(id=entity.id).attrs.count())
