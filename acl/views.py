@@ -14,6 +14,7 @@ from user.models import User
 from .models import ACLBase
 
 
+@airone_profile
 @http_get
 @check_permission(ACLBase, ACLType.Full)
 def index(request, obj_id):

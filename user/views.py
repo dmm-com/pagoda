@@ -2,19 +2,24 @@ import re
 
 from datetime import timedelta
 
+from django.contrib.auth import views as auth_views
 from django.http import HttpResponse
 from django.http.response import JsonResponse
+from django.urls import reverse_lazy
 
 from airone.lib.http import HttpResponseSeeOther
 from airone.lib.http import http_get, http_post
 from airone.lib.http import render
 from airone.lib.http import check_superuser
+from airone.lib.profile import airone_profile
+from user.forms import UsernameBasedPasswordResetForm
 
 from rest_framework.authtoken.models import Token
 
 from .models import User
 
 
+@airone_profile
 @http_get
 def index(request):
     if not request.user.is_authenticated:
@@ -31,17 +36,19 @@ def index(request):
     return render(request, 'list_user.html', context)
 
 
+@airone_profile
 @http_get
 def create(request):
     return render(request, 'create_user.html')
 
 
+@airone_profile
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: (
-        x['name'] and not User.objects.filter(username=x['name']).exists()
+            x['name'] and not User.objects.filter(username=x['name']).exists()
     )},
     {'name': 'email', 'type': str, 'checker': lambda x: (
-        x['email'] and not User.objects.filter(email=x['email']).exists()
+            x['email'] and not User.objects.filter(email=x['email']).exists()
     )},
     {'name': 'passwd', 'type': str, 'checker': lambda x: x['passwd']},
 ])
@@ -62,6 +69,7 @@ def do_create(request, recv_data):
     return JsonResponse({})
 
 
+@airone_profile
 @http_get
 def edit(request, user_id):
     current_user = User.objects.get(id=request.user.id)
@@ -84,6 +92,7 @@ def edit(request, user_id):
     return render(request, 'edit_user.html', context)
 
 
+@airone_profile
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: x['name']},
     {'name': 'email', 'type': str, 'checker': lambda x: x['email']},
@@ -130,9 +139,9 @@ def do_edit(request, user_id, recv_data):
     return JsonResponse({})
 
 
+@airone_profile
 @http_get
 def edit_passwd(request, user_id):
-
     user_grade = ''
     if (request.user.is_superuser):
         user_grade = 'super'
@@ -152,16 +161,16 @@ def edit_passwd(request, user_id):
     return render(request, 'edit_passwd.html', context)
 
 
+@airone_profile
 @http_post([
     {'name': 'old_passwd', 'type': str, 'checker': lambda x: x['old_passwd']},
     {'name': 'new_passwd', 'type': str, 'checker': lambda x: x['new_passwd']},
     {'name': 'chk_passwd', 'type': str, 'checker': lambda x: x['chk_passwd']},
 ])
 def do_edit_passwd(request, user_id, recv_data):
-
     user = User.objects.get(id=user_id)
     # Identification
-    if(int(request.user.id) != int(user_id)):
+    if (int(request.user.id) != int(user_id)):
         return HttpResponse('You don\'t have permission to access this object', status=400)
 
     # Whether recv_data matches the old password
@@ -183,13 +192,13 @@ def do_edit_passwd(request, user_id, recv_data):
     return JsonResponse({})
 
 
+@airone_profile
 @http_post([
     {'name': 'new_passwd', 'type': str, 'checker': lambda x: x['new_passwd']},
     {'name': 'chk_passwd', 'type': str, 'checker': lambda x: x['chk_passwd']},
 ])
 @check_superuser
 def do_su_edit_passwd(request, user_id, recv_data):
-
     user = User.objects.get(id=user_id)
 
     # Whether the new password matches the check password
@@ -203,6 +212,7 @@ def do_su_edit_passwd(request, user_id, recv_data):
     return JsonResponse({})
 
 
+@airone_profile
 @http_post([])
 @check_superuser
 def do_delete(request, user_id, recv_data):
@@ -216,3 +226,35 @@ def do_delete(request, user_id, recv_data):
     user.delete()
 
     return JsonResponse(ret)
+
+
+class PasswordReset(auth_views.PasswordResetView):
+    email_template_name = 'password_reset_email.html'
+    success_url = reverse_lazy('user:password_reset_done')
+    template_name = 'password_reset_form.html'
+    form_class = UsernameBasedPasswordResetForm
+
+    def form_valid(self, form):
+        # additionally validate if the user can reset its password
+        username = form.cleaned_data['username']
+        user = User.objects.filter(username=username).first()
+        if not user:
+            return HttpResponse('user does not exist', status=400)
+        if user.authenticate_type != User.AUTH_TYPE_LOCAL:
+            return HttpResponse('This user is authenticated without AirOne local way(like LDAP).'
+                                'Please confirm your authenticate information.', status=400)
+
+        return super(PasswordReset, self).form_valid(form)
+
+
+class PasswordResetDone(auth_views.PasswordResetDoneView):
+    template_name = 'password_reset_done.html'
+
+
+class PasswordResetConfirm(auth_views.PasswordResetConfirmView):
+    success_url = reverse_lazy('user:password_reset_complete')
+    template_name = 'password_reset_confirm.html'
+
+
+class PasswordResetComplete(auth_views.PasswordResetCompleteView):
+    template_name = 'password_reset_complete.html'
