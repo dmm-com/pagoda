@@ -1787,6 +1787,29 @@ class ModelTest(AironeTestCase):
             self.assertEqual(ret['ret_count'], 0)
             self.assertEqual(ret['ret_values'], [])
 
+    def test_search_entries_with_regex_hint_attrs(self):
+        user = User.objects.create(username='hoge')
+
+        entity = Entity.objects.create(name='entity', created_user=user)
+        attr = EntityAttr.objects.create(name='attr',
+                                         type=AttrTypeValue['string'],
+                                         created_user=user,
+                                         parent_entity=entity)
+        entity.attrs.add(attr)
+
+        for value in ['100', '101', '200']:
+            entry = Entry.objects.create(name=value, schema=entity, created_user=user)
+            entry.complement_attrs(user)
+            entry.attrs.get(schema=attr).add_value(user, value)
+            entry.register_es()
+
+        resp = Entry.search_entries(user, [entity.id], [{'name': attr.name, 'keyword': '^10'}])
+        self.assertEqual(resp['ret_count'], 2)
+        resp = Entry.search_entries(user, [entity.id], [{'name': attr.name, 'keyword': '00$'}])
+        self.assertEqual(resp['ret_count'], 2)
+        resp = Entry.search_entries(user, [entity.id], [{'name': attr.name, 'keyword': '^100$'}])
+        self.assertEqual(resp['ret_count'], 1)
+
     def test_register_entry_to_elasticsearch(self):
         ENTRY_COUNTS = 10
         user = User.objects.create(username='hoge')
