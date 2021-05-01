@@ -181,7 +181,7 @@ def advanced_search_result(request):
         entities = recv_entity
 
     return render(request, 'advanced_search_result.html', {
-        'attrs': attr_names,
+        'hint_attrs': hint_attrs,
         'results': Entry.search_entries(user,
                                         entities,
                                         hint_attrs,

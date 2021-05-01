@@ -99,8 +99,8 @@ function reconstruct_tbody(results) {
 
     new_elem_entry.append(`<th><a href='/entry/show/${ result.entry.id }/'>${ result.entry.name } [${ result.entity.name}]</a></th>`);
 
-    {% for attrname in attrs %}
-      new_elem_entry.append(make_attr_elem(result.attrs['{{ attrname }}']));
+    {% for hint_attr in hint_attrs %}
+      new_elem_entry.append(make_attr_elem(result.attrs['{{ hint_attr.name }}']));
     {% endfor %}
 
     {% if has_referral %}
