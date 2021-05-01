@@ -726,6 +726,8 @@ def make_search_results(res, hint_attrs, limit, hint_referral):
     for (entry, hit_attrs) in sorted(hit_infos.items(), key=lambda x: x[0].name):
         # ignore an entry doesn't match hint attrs
         if not _is_matched_entry(hit_attrs, hint_attrs):
+            # subtract number from hitted count because it will be ignored
+            results['ret_count'] -= 1
             continue
 
         ret_info = {
