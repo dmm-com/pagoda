@@ -53,7 +53,9 @@
       {% endif %}
     </tr>
   </thead>
+
   <tbody id='main_table'>
+  <!--  React
     {% for result in results.ret_values %}
     <tr>
       <th><a href='/entry/show/{{ result.entry.id }}'>{{ result.entry.name }} [{{ result.entity.name }}]</a></th>
@@ -159,8 +161,19 @@
       {% endif %}
     </tr>
     {% endfor %}
+  -->
   </tbody>
 </table>
+
+<!-- testing for React -->
+<script>
+const results = [{'entry': {'id': 1, 'name': 'test'}, 'entity': {'name': 'test'}, 'attrs': [{'value': 'test'}]}];
+const entities = '{{ entities }}'.split(',');
+ReactDOM.render(
+    React.createElement(MainTable, {'entities': entities, 'results': results}, null),
+    document.getElementById('main_table')
+);
+</script>
 
 <div class="modal fade" id="renew_search_attr_condition" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-lg modal-dialog modal-dialog-centered" role="document">
