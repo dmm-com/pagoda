@@ -14,5 +14,6 @@ urlpatterns = [
     url(r'^dashboard/config/register/(\d+)$', views.do_conf_dashboard, name='do_conf_dashboard'),
     url(r'^do_delete/(\d+)$', views.do_delete, name='do_delete'),
     url(r'^history/(\d+)$', views.history, name='history'),
-    url(r'^api/v1/', include('entity.api_v1.urls', namespace='entity.api_v1', app_name='api_v1')),
+    url(r'^api/v1/', include(('entity.api_v1.urls', 'entity.api_v1'))),
+    url(r'^auth/', include('django.contrib.auth.urls')),
 ]

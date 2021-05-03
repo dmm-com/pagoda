@@ -295,7 +295,7 @@ def do_import_user_and_group(request, context):
                                     (user_data['username'], group_name), status=400)
             new_groups.append(new_group)
 
-        user.groups = new_groups
+        user.groups.set(new_groups)
         user.save()
 
     return HttpResponseSeeOther('/group/')

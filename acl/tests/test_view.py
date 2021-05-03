@@ -10,7 +10,6 @@ from entry.models import Entry, Attribute
 
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
-from xml.etree import ElementTree
 
 
 class ViewTest(AironeViewTest):
@@ -46,9 +45,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse('acl:index', args=[self._aclobj.id]))
         self.assertEqual(resp.status_code, 200)
-
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNotNone(root.find('.//form'))
+        self.assertEqual([x['name'] for x in resp.context['members']], ['admin'])
 
     def test_index_with_objects(self):
         self.admin_login()
@@ -57,9 +54,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse('acl:index', args=[self._aclobj.id]))
         self.assertEqual(resp.status_code, 200)
-
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNotNone(root.find('.//table/tbody/tr/td'))
+        self.assertEqual([x['name'] for x in resp.context['members']], ['admin', 'hoge'])
 
     def test_get_acl_set(self):
         self.admin_login()
