@@ -2,6 +2,7 @@ import pytz
 
 from api_v1.auth import AironeTokenAuth
 from airone.lib.profile import airone_profile
+from airone.lib.db import get_slave_db
 from django.conf import settings
 from django.db.models import Q
 
@@ -92,7 +93,7 @@ class EntryReferredAPI(APIView):
             query &= Q(schema__name=param_entity)
 
         ret_data = []
-        for entry in Entry.objects.filter(query):
+        for entry in Entry.objects.using(get_slave_db()).filter(query):
             ret_data.append({
                 'id': entry.id,
                 'entity': {'id': entry.schema.id, 'name': entry.schema.name},

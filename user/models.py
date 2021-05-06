@@ -3,6 +3,7 @@ from importlib import import_module
 from django.db import models
 from django.contrib.auth.models import User as DjangoUser
 from airone.lib.acl import ACLTypeBase
+from airone.lib.db import get_slave_db
 from group.models import Group
 
 from rest_framework.authtoken.models import Token
@@ -33,16 +34,17 @@ class User(DjangoUser):
 
     def _user_has_permission(self, target_obj, permission_level):
         return any([permission_level.id <= x.get_aclid()
-                   for x in self.permissions.all() if target_obj.id == x.get_objid()])
+                   for x in self.permissions.using(get_slave_db()).all()
+                   if target_obj.id == x.get_objid()])
 
     def _group_has_permission(self, target_obj, permission_level, groups):
         return any(sum([[permission_level.id <= x.get_aclid()
-                   for x in g.permissions.all() if target_obj.id == x.get_objid()] for g in groups],
-                   []))
+                   for x in g.permissions.using(get_slave_db()).all()
+                   if target_obj.id == x.get_objid()] for g in groups], []))
 
     def is_permitted(self, target_obj, permission_level, groups=[]):
         if not groups:
-            groups = self.groups.all()
+            groups = self.groups.using(get_slave_db()).all()
 
         return (self._user_has_permission(target_obj, permission_level) or
                 self._group_has_permission(target_obj, permission_level, groups))
