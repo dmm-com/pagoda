@@ -596,8 +596,9 @@ def _is_matched_entry(attrs, hint_attrs):
     hint_keywords = {h['name']: h['keyword'] for h in hint_attrs if 'keyword' in h}
 
     for attr in attrs:
-        tpe = attr['type']
-        if tpe == AttrTypeValue['string'] or tpe == AttrTypeValue['text']:
+        if attr['type'] in (AttrTypeValue['boolean'], AttrTypeValue['group'],
+                            AttrTypeValue['named_object'], AttrTypeValue['object'],
+                            AttrTypeValue['string'], AttrTypeValue['text']):
             hint_keyword = hint_keywords.get(attr['name'], '')
 
             # it checks anchor operators if it exists because its not supported by Elasticsearch
