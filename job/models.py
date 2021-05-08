@@ -343,6 +343,12 @@ class Job(models.Model):
     def new_delete_entity(kls, user, target, text='', params={}):
         return kls._create_new_job(user, target, JobOperation.DELETE_ENTITY.value, text, params)
 
+    @classmethod
+    def new_customview_edit(kls, user, target, operation, text='', params={}):
+        return kls._create_new_job(user, target, operation, text,
+                                   json.dumps(params, default=_support_time_default,
+                                              sort_keys=True))
+
     def set_cache(self, value):
         with open('%s/job_%d' % (settings.AIRONE['FILE_STORE_PATH'], self.id), 'wb') as fp:
             pickle.dump(value, fp)

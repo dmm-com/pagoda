@@ -28,6 +28,14 @@ class ModelTest(AironeTestCase):
             {'method': 'new_edit', 'op': JobOperation.EDIT_ENTRY.value},
             {'method': 'new_delete', 'op': JobOperation.DELETE_ENTRY.value},
             {'method': 'new_copy', 'op': JobOperation.COPY_ENTRY.value},
+            {'method': 'new_import', 'op': JobOperation.IMPORT_ENTRY.value},
+            {'method': 'new_export', 'op': JobOperation.EXPORT_ENTRY.value},
+            {'method': 'new_restore', 'op': JobOperation.RESTORE_ENTRY.value},
+            {'method': 'new_export_search_result', 'op': JobOperation.EXPORT_SEARCH_RESULT.value},
+            {'method': 'new_register_referrals', 'op': JobOperation.REGISTER_REFERRALS.value},
+            {'method': 'new_create_entity', 'op': JobOperation.CREATE_ENTITY.value},
+            {'method': 'new_edit_entity', 'op': JobOperation.EDIT_ENTITY.value},
+            {'method': 'new_delete_entity', 'op': JobOperation.DELETE_ENTITY.value},
         ]
         for info in jobinfos:
             job = getattr(Job, info['method'])(self.guest, self.entry)
@@ -37,6 +45,9 @@ class ModelTest(AironeTestCase):
             self.assertEqual(job.target_type, Job.TARGET_ENTRY)
             self.assertEqual(job.status, Job.STATUS['PREPARING'])
             self.assertEqual(job.operation, info['op'])
+
+        job = getattr(Job, 'new_customview_edit')(self.guest, self.entry, operation=100)
+        self.assertEqual(job.operation, 100)
 
     def test_get_object(self):
         params = {
