@@ -1,16 +1,18 @@
 <div class="row">
     <div class="col">
         <div class="float-left">
-            <h5 id='entry_count'> {{ page_obj | length }} / {{ total_count }} エントリ</h5>
-            <input id='narrow_down_entries' text='text' placeholder='絞り込む'/>
-            <p></p>
+            <h5 id='entry_count'> {{ page_obj | length }} / {{ page_obj.paginator.count }} エントリ</h5>
+            <form method='get'>
+                <input name="keyword" type='text' value="{{ keyword | default:"" }}" placeholder='絞り込む'/>
+                <input name="page" type="hidden" value="1" />
+            </form>
         </div>
     </div>
 
     <div class="col">
         <div class="float-right">
             <nav aria-label="Page navigator">
-                {{ page_obj.start_index }} - {{ page_obj.end_index }} / {{ total_count }}
+                {{ page_obj.start_index | default:"0" }} - {{ page_obj.end_index | default:"0" }} / {{ page_obj.paginator.count }}
 
                 {% if page_obj.has_previous %}
                     <button type="button" class="btn btn-sm btn-primary" onclick="location.href='?page={{ page_obj.previous_page_number }}'">＜</button>

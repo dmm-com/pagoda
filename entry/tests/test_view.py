@@ -132,6 +132,22 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('entry:index', args=[entity.id]))
         self.assertEqual(resp.status_code, 200)
 
+    def test_get_index_with_page(self):
+        self.admin_login()
+
+        resp = self.client.get(reverse('entry:index', args=[self._entity.id]), {'page': 1})
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.get(reverse('entry:index', args=[self._entity.id]), {'page': 100})
+        self.assertEqual(resp.status_code, 400)
+        resp = self.client.get(reverse('entry:index', args=[self._entity.id]), {'page': 'invalid'})
+        self.assertEqual(resp.status_code, 400)
+
+    def test_get_index_with_keyword(self):
+        self.admin_login()
+
+        resp = self.client.get(reverse('entry:index', args=[self._entity.id]), {'keyword': 'test'})
+        self.assertEqual(resp.status_code, 200)
+
     def test_get_with_inferior_user_permission(self):
         user = self.guest_login()
 

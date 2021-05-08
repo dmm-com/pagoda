@@ -8,12 +8,13 @@ from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import redirect
 from django.urls import reverse
 from urllib.parse import urlencode
 from datetime import datetime
 
+from airone.lib.elasticsearch import prepend_escape_character
 from airone.lib.http import http_get, http_post, check_permission, render
 from airone.lib.http import http_file_upload
 from airone.lib.http import HttpResponseSeeOther
@@ -88,6 +89,7 @@ def _validate_input(recv_data, obj):
 @check_permission(Entity, ACLType.Readable)
 def index(request, entity_id):
     page = request.GET.get('page', 1)
+    keyword = request.GET.get('keyword', None)
 
     if not Entity.objects.filter(id=entity_id).exists():
         return HttpResponse('Failed to get entity of specified id', status=400)
@@ -99,16 +101,25 @@ def index(request, entity_id):
         if resp:
             return resp
 
-    entries = Entry.objects.order_by('name').filter(schema=entity, is_active=True)
+    if keyword:
+        name_pattern = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS_ENTRY_LIST, keyword)
+        entries = Entry.objects.order_by('name').filter(schema=entity, is_active=True,
+                                                        name__iregex=name_pattern)
+    else:
+        entries = Entry.objects.order_by('name').filter(schema=entity, is_active=True)
 
-    # p = Paginator(entries, CONFIG.MAX_LIST_ENTRIES)
-    p = Paginator(entries, 2)
-    page_obj = p.page(page)
+    p = Paginator(entries, CONFIG.MAX_LIST_ENTRIES)
+    try:
+        page_obj = p.page(page)
+    except PageNotAnInteger:
+        return HttpResponse('Invalid page number. It must be unsigned integer', status=400)
+    except EmptyPage:
+        return HttpResponse('Invalid page number. The page doesn\'t have anything', status=400)
 
     context = {
         'entity': entity,
         'entries': entries,
-        'total_count': len(entries),
+        'keyword': keyword,
         'page_obj': page_obj,
     }
 
