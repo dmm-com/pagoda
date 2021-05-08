@@ -118,7 +118,6 @@ def index(request, entity_id):
 
     context = {
         'entity': entity,
-        'entries': entries,
         'keyword': keyword,
         'page_obj': page_obj,
     }
@@ -614,28 +613,35 @@ def do_copy(request, entry_id, recv_data):
 @http_get
 @check_permission(Entity, ACLType.Full)
 def restore(request, entity_id):
+    page = request.GET.get('page', 1)
+    keyword = request.GET.get('keyword', None)
+
     entity = Entity.objects.filter(id=entity_id, is_active=True).first()
     if not entity:
         return HttpResponse('Failed to get entity of specified id', status=400)
 
     # get all deleted entries that correspond to the entity, the specififcation of
     # 'status=0' is necessary to prevent getting entries that were under processing.
-    entries = Entry.objects.filter(schema=entity, status=0,
-                                   is_active=False).order_by('-updated_time')
+    if keyword:
+        name_pattern = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS_ENTRY_LIST, keyword)
+        entries = Entry.objects.filter(schema=entity, status=0, is_active=False,
+                                       name__iregex=name_pattern).order_by('-updated_time')
+    else:
+        entries = Entry.objects.filter(schema=entity, status=0,
+                                       is_active=False).order_by('-updated_time')
 
-    total_count = list_count = entries.count()
-    if(len(entries) > CONFIG.MAX_LIST_ENTRIES):
-        entries = entries[:CONFIG.MAX_LIST_ENTRIES]
-        list_count = CONFIG.MAX_LIST_ENTRIES
+    p = Paginator(entries, CONFIG.MAX_LIST_ENTRIES)
+    try:
+        page_obj = p.page(page)
+    except PageNotAnInteger:
+        return HttpResponse('Invalid page number. It must be unsigned integer', status=400)
+    except EmptyPage:
+        return HttpResponse('Invalid page number. The page doesn\'t have anything', status=400)
 
-    # The 'search_name' is a keyword to be able to find out an entry which will be listed.
-    # Specifying an empty string ('') displays all inactive entries.
     return render(request, 'list_deleted_entry.html', {
         'entity': entity,
-        'entries': entries,
-        'total_count': total_count,
-        'list_count': list_count,
-        'search_name': request.GET.get('search_name', ''),
+        'keyword': keyword,
+        'page_obj': page_obj,
     })
 
 
@@ -740,4 +746,4 @@ def revert_attrv(request, recv_data):
 
 def _redirect_restore_entry(entry):
     return redirect('{}?{}'.format(reverse('entry:restore', args=[entry.schema.id]),
-                                   urlencode({'search_name': entry.name})))
+                                   urlencode({'keyword': entry.name})))

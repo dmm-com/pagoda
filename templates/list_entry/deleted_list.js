@@ -124,15 +124,6 @@ $(document).ready(function() {
     $('#modal_initial_body').show();
     $('#modal_actual_body').hide();
   })
-
-  var keyword = `{{ search_name }}`;
-  if (keyword) {
-    // This is the process when transitioning from the delete job
-    sending_request = true;
-
-    $("#narrow_down_entries").val(keyword);
-    search_entries(keyword);
-  }
 });
 
 function reconstruct_modal_body_for_job(job) {
