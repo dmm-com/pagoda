@@ -33,18 +33,21 @@ class User(DjangoUser):
         return Token.objects.get_or_create(user=self)[0]
 
     def _user_has_permission(self, target_obj, permission_level):
+        slave_db = get_slave_db()
         return any([permission_level.id <= x.get_aclid()
-                   for x in self.permissions.using(get_slave_db()).all()
+                   for x in self.permissions.using(slave_db).all()
                    if target_obj.id == x.get_objid()])
 
     def _group_has_permission(self, target_obj, permission_level, groups):
+        slave_db = get_slave_db()
         return any(sum([[permission_level.id <= x.get_aclid()
-                   for x in g.permissions.using(get_slave_db()).all()
+                   for x in g.permissions.using(slave_db).all()
                    if target_obj.id == x.get_objid()] for g in groups], []))
 
     def is_permitted(self, target_obj, permission_level, groups=[]):
         if not groups:
-            groups = self.groups.using(get_slave_db()).all()
+            slave_db = get_slave_db()
+            groups = self.groups.using(slave_db).all()
 
         return (self._user_has_permission(target_obj, permission_level) or
                 self._group_has_permission(target_obj, permission_level, groups))
