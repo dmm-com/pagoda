@@ -93,7 +93,8 @@ class EntryReferredAPI(APIView):
             query &= Q(schema__name=param_entity)
 
         ret_data = []
-        for entry in Entry.objects.using(get_slave_db()).filter(query):
+        slave_db = get_slave_db()
+        for entry in Entry.objects.using(slave_db).filter(query):
             ret_data.append({
                 'id': entry.id,
                 'entity': {'id': entry.schema.id, 'name': entry.schema.name},
