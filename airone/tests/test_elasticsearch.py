@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from airone.lib import elasticsearch
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrTypeStr
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
 from user.models import User
@@ -17,7 +17,7 @@ class ElasticSearchTest(TestCase):
         self._entity.save()
 
         self._entity_attr = EntityAttr(name='test',
-                                       type=AttrTypeValue['string'],
+                                       type=AttrTypeStr,
                                        is_mandatory=True,
                                        created_user=self._user,
                                        parent_entity=self._entity)
@@ -48,48 +48,33 @@ class ElasticSearchTest(TestCase):
     def test_is_matched_keyword(self):
         # if it has the same value with a hint
         self.assertTrue(elasticsearch._is_matched_entry(
-            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeValue['string']}],
+            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeStr.TYPE}],
             hint_attrs=[{'name': 'attr', 'keyword': 'keyword'}]
         ))
 
         # if a hint has ^ and/or $, it matches with the keyword as a regexp
         self.assertTrue(elasticsearch._is_matched_entry(
-            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeValue['string']}],
+            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeStr.TYPE}],
             hint_attrs=[{'name': 'attr', 'keyword': '^keyword'}]
         ))
         self.assertFalse(elasticsearch._is_matched_entry(
-            attrs=[{'name': 'attr', 'value': '111keyword', 'type': AttrTypeValue['string']}],
+            attrs=[{'name': 'attr', 'value': '111keyword', 'type': AttrTypeStr.TYPE}],
             hint_attrs=[{'name': 'attr', 'keyword': '^keyword'}]
         ))
         self.assertTrue(elasticsearch._is_matched_entry(
-            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeValue['string']}],
+            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeStr.TYPE}],
             hint_attrs=[{'name': 'attr', 'keyword': 'keyword$'}]
         ))
         self.assertFalse(elasticsearch._is_matched_entry(
-            attrs=[{'name': 'attr', 'value': 'keyword111', 'type': AttrTypeValue['string']}],
+            attrs=[{'name': 'attr', 'value': 'keyword111', 'type': AttrTypeStr.TYPE}],
             hint_attrs=[{'name': 'attr', 'keyword': 'keyword$'}]
         ))
 
         # if a hint is blank
         self.assertTrue(elasticsearch._is_matched_entry(
-            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeValue['string']}],
+            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeStr.TYPE}],
             hint_attrs=[{'name': 'attr', 'keyword': ''}]
         ))
-
-        # If an entry type is supported, regex filter works
-        for t in ['boolean', 'group', 'named_object', 'object', 'string', 'text']:
-            self.assertFalse(elasticsearch._is_matched_entry(
-                attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeValue[t]}],
-                hint_attrs=[{'name': 'attr', 'keyword': '^should-not-be-matched$'}]
-            ))
-
-        # If an entry type is unsupported, regex filter always passes
-        for t in ['date', 'array', 'array_group', 'array_named_object', 'array_object',
-                  'array_string']:
-            self.assertTrue(elasticsearch._is_matched_entry(
-                attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeValue[t]}],
-                hint_attrs=[{'name': 'attr', 'keyword': '^should-not-be-matched$'}]
-            ))
 
     def test_make_query(self):
         query = elasticsearch.make_query(
