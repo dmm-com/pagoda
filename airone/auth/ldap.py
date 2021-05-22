@@ -1,9 +1,8 @@
-import ldap3
+import ldap
 
 from django.conf import settings
 from airone.lib.log import Logger
 from user.models import User
-from ldap3.core.exceptions import LDAPException
 
 CONF_LDAP = settings.AUTH_CONFIG['LDAP']
 
@@ -48,11 +47,12 @@ class LDAPBackend(object):
     @classmethod
     def is_authenticated(kls, username, password):
         try:
-            c = ldap3.Connection(CONF_LDAP['SERVER_ADDRESS'],
-                                 user=CONF_LDAP['USER_FILTER'].format(username=username),
-                                 password=password)
-            return c.bind()
-        except LDAPException as e:
+            o = ldap.initialize(CONF_LDAP['SERVER_ADDRESS'])
+            o.protocol_version = ldap.VERSION3
+            o.simple_bind_s(who=CONF_LDAP['USER_FILTER'].format(username=username), cred=password)
+            o.unbind_s()
+            return True
+        except ldap.LDAPError as e:
             Logger.error(str(e))
 
             return False

@@ -23,6 +23,11 @@ And you have to install RabbitMQ for executing heavy processing as background ta
 user@hostname:~$ sudo apt-get install rabbitmq-server memcached mysql-server python-dev libmysqlclient-dev
 ```
 
+You have to install OpenLDAP library if you use LDAP.
+```
+user@hostname:~$ sudo apt-get install libldap2-dev  libsasl2-dev
+```
+
 Then, you can install libraries on which AieOne depends by following after cloning this repository. But we recommand you to setup airone on the separated environment using virtualenv not to pollute system-wide python environment.
 ```
 user@hostname:~$ cd airone
