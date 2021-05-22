@@ -15,13 +15,13 @@
                 {{ page_obj.start_index | default:"0" }} - {{ page_obj.end_index | default:"0" }} / {{ page_obj.paginator.count }}
 
                 {% if page_obj.has_previous %}
-                    <button type="button" class="btn btn-sm btn-primary" onclick="location.href='?page={{ page_obj.previous_page_number }}'">＜</button>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="location.href='?page={{ page_obj.previous_page_number }}&keyword={{ keyword | default:"" }}'">＜</button>
                 {% else %}
                     <button type="button" class="btn btn-sm btn-primary" disabled>＜</button>
                 {% endif %}
 
                 {% if page_obj.has_next %}
-                    <button type="button" class="btn btn-sm btn-primary" onclick="location.href='?page={{ page_obj.next_page_number }}'">＞</button>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="location.href='?page={{ page_obj.next_page_number }}&keyword={{ keyword | default:"" }}'">＞</button>
                 {% else %}
                     <button type="button" class="btn btn-sm btn-primary" disabled>＞</button>
                 {% endif %}
