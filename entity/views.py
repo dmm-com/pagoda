@@ -1,6 +1,7 @@
 import re
 import io
 import yaml
+import json
 
 from django.http import HttpResponse
 from django.http.response import JsonResponse
@@ -426,3 +427,18 @@ def do_conf_dashboard(request, entity_id, recv_data):
         attr.save(update_fields=['is_summarized'])
 
     return JsonResponse({'msg': 'Success to update dashboard'})
+
+
+@airone_profile
+@http_get
+@check_permission(Entity, ACLType.Full)
+def settings(request, entity_id):
+    # entity of specifying id
+    entity = Entity.objects.get(id=entity_id)
+
+    return render(request, 'settings_entity.html', {
+        'entity': entity,
+        'is_enabled_webhook': entity.is_enabled_webhook,
+        'webhook_url': entity.webhook_url,
+        'webhook_headers': json.loads(entity.webhook_headers) if entity.webhook_headers else {},
+    })

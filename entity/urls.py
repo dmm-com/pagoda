@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'^do_create$', views.do_create, name='do_create'),
     url(r'^edit/(\d+)$', views.edit, name='edit'),
     url(r'^do_edit/(\d+)$', views.do_edit, name='do_edit'),
+    url(r'^settings/(\d+)$', views.settings, name='settings'),
     url(r'^export/$', views.export, name='export'),
     url(r'^dashboard/(\d+)$', views.dashboard, name='dashboard'),
     url(r'^dashboard/config/(\d+)$', views.conf_dashboard, name='conf_dashboard'),

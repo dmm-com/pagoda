@@ -51,6 +51,11 @@ class Entity(ACLBase):
     note = models.CharField(max_length=200)
     attrs = models.ManyToManyField(EntityAttr)
 
+    # These are Webhook configurations parameters
+    is_enabled_webhook = models.BooleanField(default=False)
+    webhook_url = models.URLField()
+    webhook_headers = models.TextField()
+
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entity
