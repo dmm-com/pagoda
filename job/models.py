@@ -354,15 +354,18 @@ class Job(models.Model):
 
     @classmethod
     def new_notify_create_entry(kls, user, target, text='', params={}):
-        return kls._create_new_job(user, target, JobOperation.NOTIFY_CREATE_ENTRY.value, text, params)
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_CREATE_ENTRY.value,
+                                   text, params)
 
     @classmethod
     def new_notify_update_entry(kls, user, target, text='', params={}):
-        return kls._create_new_job(user, target, JobOperation.NOTIFY_UPDATE_ENTRY.value, text, params)
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_UPDATE_ENTRY.value,
+                                   text, params)
 
     @classmethod
     def new_notify_delete_entry(kls, user, target, text='', params={}):
-        return kls._create_new_job(user, target, JobOperation.NOTIFY_DELETE_ENTRY.value, text, params)
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_DELETE_ENTRY.value,
+                                   text, params)
 
     def set_cache(self, value):
         with open('%s/job_%d' % (settings.AIRONE['FILE_STORE_PATH'], self.id), 'wb') as fp:
