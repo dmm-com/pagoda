@@ -3657,3 +3657,83 @@ class ViewTest(AironeViewTest):
         # when creating job was run duplicately.
         self.assertEqual(Entry.objects.get(id=entry.id).attrs.count(),
                          Entity.objects.get(id=entity.id).attrs.count())
+
+    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.notify_create_entry.delay', Mock(side_effect=tasks.notify_create_entry))
+    @patch('entry.tasks.notify_entry_create', Mock(return_value=Mock()))
+    def test_notify_event_of_creating_entry(self):
+        self.admin_login()
+
+        # register webhook informtion to the entity
+        self._entity.is_enabled_webhook = True
+        self._entity.webhook_url = 'https://www.example.com'
+        self._entity.save()
+
+        resp = self.client.post(reverse('entry:do_create', args=[self._entity.id]),
+                                json.dumps({'entry_name': 'hoge', 'attrs': []}),
+                                'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        # check there are creating job and notification job
+        entry = Entry.objects.get(name='hoge', schema=self._entity, is_active=True)
+        self.assertEqual(Job.objects.filter(target=entry).count(), 2)
+        self.assertTrue([x.status == Job.STATUS['DONE'] for x in Job.objects.filter(target=entry)])
+
+        # check Job dependent structure
+        job_create = Job.objects.get(target=entry, operation=JobOperation.CREATE_ENTRY.value)
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
+        self.assertEqual(job_notify.dependent_job, job_create)
+        self.assertIsNone(job_create.dependent_job)
+
+    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.notify_update_entry.delay', Mock(side_effect=tasks.notify_update_entry))
+    @patch('entry.tasks.notify_entry_update', Mock(return_value=Mock()))
+    def test_notify_event_of_updating_entry(self):
+        user = self.admin_login()
+        entry = Entry.objects.create(name='entry', schema=self._entity, created_user=user)
+
+        # register webhook informtion to the entity
+        self._entity.is_enabled_webhook = True
+        self._entity.webhook_url = 'https://www.example.com'
+        self._entity.save()
+
+        resp = self.client.post(reverse('entry:do_edit', args=[entry.id]),
+                                json.dumps({'entry_name': 'changed-entry', 'attrs': []}),
+                                'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        # check there are creating job, registering referrals job  and notification job
+        self.assertEqual(Job.objects.filter(target=entry).count(), 3)
+        self.assertTrue([x.status == Job.STATUS['DONE'] for x in Job.objects.filter(target=entry)])
+
+        # check Job dependent structure
+        job_edit = Job.objects.get(target=entry, operation=JobOperation.EDIT_ENTRY.value)
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
+        self.assertEqual(job_notify.dependent_job, job_edit)
+        self.assertIsNone(job_edit.dependent_job)
+
+    @patch('entry.tasks.delete_entry.delay', Mock(side_effect=tasks.delete_entry))
+    @patch('entry.tasks.notify_delete_entry.delay', Mock(side_effect=tasks.notify_delete_entry))
+    @patch('entry.tasks.notify_entry_delete', Mock(return_value=Mock()))
+    def test_notify_event_of_deleting_entry(self):
+        user = self.admin_login()
+        entry = Entry.objects.create(name='entry', schema=self._entity, created_user=user)
+
+        # register webhook informtion to the entity
+        self._entity.is_enabled_webhook = True
+        self._entity.webhook_url = 'https://www.example.com'
+        self._entity.save()
+
+        resp = self.client.post(reverse('entry:do_delete', args=[entry.id]),
+                                json.dumps({}), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        # check there are creating job and notification job
+        self.assertEqual(Job.objects.filter(target=entry).count(), 2)
+        self.assertTrue([x.status == Job.STATUS['DONE'] for x in Job.objects.filter(target=entry)])
+
+        # check Job dependent structure
+        job_delete = Job.objects.get(target=entry, operation=JobOperation.DELETE_ENTRY.value)
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_DELETE_ENTRY.value)
+        self.assertEqual(job_delete.dependent_job, job_notify)
+        self.assertIsNone(job_notify.dependent_job)

@@ -4,8 +4,12 @@ import io
 import json
 import yaml
 
-from airone.lib.log import Logger
 from airone.lib.acl import ACLType
+from airone.lib.event_notification import notify_entry_create
+from airone.lib.event_notification import notify_entry_update
+from airone.lib.event_notification import notify_entry_delete
+from airone.lib.job import may_schedule_until_job_is_ready
+from airone.lib.log import Logger
 from airone.lib.types import AttrTypeValue
 from airone.celery import app
 from entity.models import Entity, EntityAttr
@@ -420,3 +424,34 @@ def register_referrals(self, job_id):
 
     if not job.is_canceled():
         job.update(Job.STATUS['DONE'])
+
+
+def _notify_event(notification_method, object_id, user):
+    entry = Entry.objects.filter(id=object_id, is_active=True).first()
+    if not entry:
+        return (Job.STATUS['ERROR'], "Failed to get job.target (%s)" % object_id)
+
+    try:
+        resp = notification_method(entry, user)
+        if not resp.ok:
+            return (Job.STATUS['ERROR'], resp.text)
+    except Exception:
+        return (Job.STATUS['ERROR'], "Failed to send request to API handler")
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def notify_create_entry(self, job):
+    return _notify_event(notify_entry_create, job.target.id, job.user)
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def notify_update_entry(self, job):
+    return _notify_event(notify_entry_update, job.target.id, job.user)
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def notify_delete_entry(self, job):
+    return _notify_event(notify_entry_delete, job.target.id, job.user)
