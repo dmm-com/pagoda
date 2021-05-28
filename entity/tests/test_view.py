@@ -15,7 +15,6 @@ from entry.models import Entry, Attribute
 from user.models import User, History
 from unittest import mock
 from entity import tasks
-from xml.etree import ElementTree
 
 
 class ViewTest(AironeViewTest):
@@ -82,9 +81,6 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse('entity:create'))
         self.assertEqual(resp.status_code, 200)
-
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNotNone(root.find('.//form'))
 
         # checks that prohibited entity for logined-user to show isn't be returned
         self.assertEqual(len(resp.context['entities']), 1)
@@ -223,9 +219,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse('entity:edit', args=[entity.id]))
         self.assertEqual(resp.status_code, 200)
-
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNotNone(root.find('.//tr/td/div/div/select'))
+        self.assertEqual(resp.context['entity'], entity)
 
     def test_post_edit_without_login(self):
         resp = self.client.post(reverse('entity:do_edit', args=[0]), '{}', 'application/json')

@@ -6,7 +6,7 @@ from acl import views as acl_views
 urlpatterns = [
     url(r'^(\d+)/$', views.index, name='index'),
     url(r'^acl/(\d+)/$', acl_views.index, name='acl'),
-    url(r'^api/v1/', include('entry.api_v1.urls', namespace='entry.api_v1', app_name='api_v1')),
+    url(r'^api/v1/', include(('entry.api_v1.urls', 'entry.api_v1'))),
     url(r'^copy/(\d+)/$', views.copy, name='copy'),
     url(r'^create/(\d+)/$', views.create, name='create'),
     url(r'^do_copy/(\d+)$', views.do_copy, name='do_copy'),

@@ -1,13 +1,10 @@
 import os
 import logging
 import subprocess
-import pymysql
 import errno
 import importlib
 
 from airone.lib.log import Logger
-
-pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

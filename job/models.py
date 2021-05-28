@@ -84,10 +84,10 @@ class Job(models.Model):
         JobOperation.REGISTER_REFERRALS.value,
     ]
 
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    target = models.ForeignKey(ACLBase, null=True)
+    target = models.ForeignKey(ACLBase, null=True, on_delete=models.SET_NULL)
     target_type = models.IntegerField(default=0)
     status = models.IntegerField(default=0)
     operation = models.IntegerField(default=0)
@@ -100,7 +100,7 @@ class Job(models.Model):
 
     # This describes dependent jobs. Before executing a job processing, this must check this value.
     # When this has another job, this job have to wait until it would be finished.
-    dependent_job = models.ForeignKey('Job', null=True)
+    dependent_job = models.ForeignKey('Job', null=True, on_delete=models.SET_NULL)
 
     def may_schedule(self):
         # When there is dependent job, this re-send a request to run same job
