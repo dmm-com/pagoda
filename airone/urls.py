@@ -13,7 +13,7 @@ urlpatterns = [
     url(r'^group/', include(('group.urls', 'group'))),
     url(r'^entity/', include(('entity.urls', 'entity'))),
     url(r'^dashboard/', include(('dashboard.urls', 'dashboard'))),
-    url(r'^new-ui/dashboard/', include(('dashboard.urls_for_new_ui', 'dashboard_for_new_ui'))),
+    url(r'^new-ui/', include(('dashboard.urls_for_new_ui', 'dashboard_for_new_ui'))),
     url(r'^entry/', include(('entry.urls', 'entry'))),
     url(r'^admin/', admin.site.urls),
     url(r'^api-auth/', include(('rest_framework.urls', 'rest_framework'))),

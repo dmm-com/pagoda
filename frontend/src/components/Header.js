@@ -1,4 +1,5 @@
-import React from "react";
+import React, {useState} from 'react';
+import {useHistory, useLocation} from 'react-router-dom';
 import {grey} from '@material-ui/core/colors';
 import {fade, makeStyles} from '@material-ui/core/styles';
 import AccountBox from '@material-ui/icons/AccountBox';
@@ -17,6 +18,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import {Menu, MenuItem} from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -70,32 +72,65 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Header(props) {
     const classes = useStyles();
+    const history = useHistory();
+    const location = useLocation();
+
+    const handleChange = (event, value) => {
+        history.push(value);
+    };
+
+    const [userAnchorEl, setUserAnchorEl] = useState();
+    const handleClickUser = (event) => {
+        setUserAnchorEl(event.currentTarget);
+    };
+    const handleCloseUser = (event) => {
+        setUserAnchorEl(null);
+    };
 
     return (
         <div className={classes.root}>
             <AppBar position="static">
                 <Toolbar>
                     <Typography variant="h6" className={classes.title}>AirOne(New UI)</Typography>
+
                     <Tabs
+                        value={location.pathname}
+                        onChange={handleChange}
                         variant="scrollable"
                         scrollButtons="on"
                         indicatorColor="primary"
                         textColor="primary"
                         aria-label="scrollable force tabs example"
                     >
-                        <Tab label="エンティティ・エントリ一覧" icon={<ViewListIcon/>} style={{color: grey[50]}}/>
-                        <Tab label="高度な検索" icon={<FindInPageIcon/>} style={{color: grey[50]}}/>
-                        <Tab label="ユーザ管理" icon={<PersonIcon/>} style={{color: grey[50]}}/>
-                        <Tab label="グループ管理" icon={<GroupIcon/>} style={{color: grey[50]}}/>
+                        <Tab label="エンティティ・エントリ一覧" value="/new-ui/" icon={<ViewListIcon/>}
+                             style={{color: grey[50]}}/>
+                        <Tab label="高度な検索" value="/new-ui/advanced_search" icon={<FindInPageIcon/>}
+                             style={{color: grey[50]}}/>
+                        <Tab label="ユーザ管理" value="/new-ui/user" icon={<PersonIcon/>}
+                             style={{color: grey[50]}}/>
+                        <Tab label="グループ管理" value="/new-ui/group" icon={<GroupIcon/>}
+                             style={{color: grey[50]}}/>
                     </Tabs>
+
                     <Box className={classes.menu}>
-                        <IconButton style={{color: grey[50]}}>
+                        <IconButton aria-controls="user-menu" aria-haspopup="true" onClick={handleClickUser}
+                                    style={{color: grey[50]}}>
                             <AccountBox/>
                         </IconButton>
+                        <Menu id="user-menu"
+                              anchorEl={userAnchorEl}
+                              open={Boolean(userAnchorEl)}
+                              onClose={handleCloseUser}
+                              keepMounted>
+                            <MenuItem>ユーザ設定</MenuItem>
+                            <MenuItem>ログアウト</MenuItem>
+                        </Menu>
+
                         <IconButton style={{color: grey[50]}}>
                             <FormatListBulletedIcon/>
                         </IconButton>
                     </Box>
+
                     <div className={classes.search}>
                         <div className={classes.searchIcon}>
                             <SearchIcon/>
