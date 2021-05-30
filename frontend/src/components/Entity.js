@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import Button from "@material-ui/core/Button";
-import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
+import {Breadcrumbs, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import {Link} from "react-router-dom";
 import EditIcon from '@material-ui/icons/Edit';
@@ -31,6 +31,10 @@ export default function Entity(props) {
 
     return (
         <div className="container-fluid">
+            <Breadcrumbs aria-label="breadcrumb">
+                <Typography color="textPrimary">エンティティ一覧</Typography>
+            </Breadcrumbs>
+
             <div className="row">
                 <div className="col">
                     <div className="float-left">
@@ -74,8 +78,7 @@ export default function Entity(props) {
                                             className={classes.button}
                                             startIcon={<EditIcon/>}
                                             component={Link}
-                                            to={`/entity/edit/${entity.id}`}
-                                        >
+                                            to={`/entity/edit/${entity.id}`}>
                                             エンティティ編集
                                         </Button>
                                         <Button
@@ -84,8 +87,7 @@ export default function Entity(props) {
                                             className={classes.button}
                                             startIcon={<HistoryIcon/>}
                                             component={Link}
-                                            to={`/entity/history/${entity.id}`}
-                                        >
+                                            to={`/entity/history/${entity.id}`}>
                                             変更履歴
                                         </Button>
                                         <Button
@@ -94,8 +96,7 @@ export default function Entity(props) {
                                             className={classes.button}
                                             startIcon={<GroupIcon/>}
                                             component={Link}
-                                            to={`/acl/${entity.id}`}
-                                        >
+                                            to={`/acl/${entity.id}`}>
                                             ACL
                                         </Button>
                                         <Button
@@ -104,8 +105,7 @@ export default function Entity(props) {
                                             className={classes.button}
                                             startIcon={<DeleteIcon/>}
                                             component={Link}
-                                            to={`/entity/do_delete/${entity.id}`}
-                                        >
+                                            to={`/entity/do_delete/${entity.id}`}>
                                             削除
                                         </Button>
                                     </TableCell>

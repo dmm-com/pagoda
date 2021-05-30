@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {useHistory, useLocation} from 'react-router-dom';
+import {Link, useHistory, useLocation} from 'react-router-dom';
 import {grey} from '@material-ui/core/colors';
 import {fade, makeStyles} from '@material-ui/core/styles';
 import AccountBox from '@material-ui/icons/AccountBox';
@@ -29,6 +29,7 @@ const useStyles = makeStyles((theme) => ({
     },
     title: {
         flexGrow: 1,
+        color: "white"
     },
 
     search: {
@@ -91,7 +92,13 @@ export default function Header(props) {
         <div className={classes.root}>
             <AppBar position="static">
                 <Toolbar>
-                    <Typography variant="h6" className={classes.title}>AirOne(New UI)</Typography>
+                    <Typography
+                        variant="h6"
+                        className={classes.title}
+                        component={Link}
+                        to="/new-ui/">
+                        AirOne(New UI)
+                    </Typography>
 
                     <Tabs
                         value={location.pathname}
