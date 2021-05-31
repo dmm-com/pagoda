@@ -262,6 +262,11 @@ def copy_entry(self, job_id):
         # update job status and save it
         job.update(Job.STATUS['DONE'], 'original entry: %s' % src_entry.name, dest_entry)
 
+        # create and run event notification job
+        if dest_entry.schema.is_enabled_webhook:
+            job_notify_event = Job.new_notify_create_entry(user, dest_entry)
+            job_notify_event.run()
+
 
 @app.task(bind=True)
 def import_entries(self, job_id):
@@ -308,9 +313,16 @@ def import_entries(self, job_id):
             if not entry:
                 entry = Entry.objects.create(name=entry_data['name'], schema=entity,
                                              created_user=user)
+
+                # create job to notify create event to the WebHook URL
+                job_notify = Job.new_notify_create_entry(user, entry)
+
+            elif not user.has_permission(entry, ACLType.Writable):
+                continue
+
             else:
-                if not user.has_permission(entry, ACLType.Writable):
-                    continue
+                # create job to notify edit event to the WebHook URL
+                job_notify = Job.new_notify_update_entry(user, entry)
 
             entry.complement_attrs(user)
             for attr_name, value in entry_data['attrs'].items():
@@ -337,6 +349,10 @@ def import_entries(self, job_id):
 
             # register entry to the Elasticsearch
             entry.register_es()
+
+            # run notification job
+            if entry.schema.is_enabled_webhook:
+                job_notify.run()
 
         # update job status and save it except for the case that target job is canceled.
         if not job.is_canceled():
@@ -435,7 +451,7 @@ def _notify_event(notification_method, object_id, user):
         resp = notification_method(entry, user)
         if not resp.ok:
             return (Job.STATUS['ERROR'], resp.text)
-    except Exception:
+    except Exception as e:
         return (Job.STATUS['ERROR'], "Failed to send request to API handler")
 
 

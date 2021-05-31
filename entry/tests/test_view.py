@@ -3737,3 +3737,72 @@ class ViewTest(AironeViewTest):
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_DELETE_ENTRY.value)
         self.assertEqual(job_delete.dependent_job, job_notify)
         self.assertIsNone(job_notify.dependent_job)
+
+    @patch('entry.tasks.copy_entry.delay', Mock(side_effect=tasks.copy_entry))
+    @patch('entry.tasks.notify_create_entry.delay', Mock(side_effect=tasks.notify_create_entry))
+    @patch('entry.tasks.notify_entry_create', Mock(return_value=Mock()))
+    def test_notify_event_of_creating_entry_when_copying_entry(self):
+        user = self.admin_login()
+        entry = Entry.objects.create(name='entry', created_user=user, schema=self._entity)
+
+        # register webhook informtion to the entity
+        self._entity.is_enabled_webhook = True
+        self._entity.webhook_url = 'https://www.example.com'
+        self._entity.save()
+
+        resp = self.client.post(reverse('entry:do_copy', args=[entry.id]),
+                                json.dumps({'entries': 'copied_entry\n'}), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        # check there are creating job and notification job
+        copied_entry = Entry.objects.get(name='copied_entry', schema=self._entity, is_active=True)
+        job_copy = Job.objects.get(target=copied_entry, operation=JobOperation.COPY_ENTRY.value)
+        self.assertEqual(job_copy.status, Job.STATUS['DONE'])
+
+        job_notify = Job.objects.get(target=copied_entry,
+                                     operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
+        self.assertEqual(job_notify.status, Job.STATUS['DONE'])
+
+    @patch('entry.tasks.import_entries.delay', Mock(side_effect=tasks.import_entries))
+    @patch('entry.tasks.notify_create_entry.delay', Mock(side_effect=tasks.notify_create_entry))
+    @patch('entry.tasks.notify_entry_create', Mock(return_value=Mock()))
+    def test_notify_event_of_creating_entry_when_importing_entry(self):
+        self.admin_login()
+
+        # register webhook informtion to the entity
+        self._entity.is_enabled_webhook = True
+        self._entity.webhook_url = 'https://www.example.com'
+        self._entity.save()
+
+        fp = self.open_fixture_file('import_data02.yaml')
+        resp = self.client.post(reverse('entry:do_import', args=[self._entity.id]), {'file': fp})
+
+        # check there are creating job and notification job
+        entry = Entry.objects.get(name='entry', schema=self._entity, is_active=True)
+        job_import = Job.objects.get(target=self._entity, operation=JobOperation.IMPORT_ENTRY.value)
+        self.assertEqual(job_import.status, Job.STATUS['DONE'])
+
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
+        self.assertEqual(job_notify.status, Job.STATUS['DONE'])
+
+    @patch('entry.tasks.import_entries.delay', Mock(side_effect=tasks.import_entries))
+    @patch('entry.tasks.notify_update_entry.delay', Mock(side_effect=tasks.notify_update_entry))
+    @patch('entry.tasks.notify_entry_create', Mock(return_value=Mock()))
+    def test_notify_event_of_updating_entry_when_importing_entry(self):
+        self.admin_login()
+        entry = Entry.objects.create(name='entry', schema=self._entity, is_active=True)
+
+        # register webhook informtion to the entity
+        self._entity.is_enabled_webhook = True
+        self._entity.webhook_url = 'https://www.example.com'
+        self._entity.save()
+
+        fp = self.open_fixture_file('import_data02.yaml')
+        resp = self.client.post(reverse('entry:do_import', args=[self._entity.id]), {'file': fp})
+
+        # check there are creating job and notification job
+        job_import = Job.objects.get(target=self._entity, operation=JobOperation.IMPORT_ENTRY.value)
+        self.assertEqual(job_import.status, Job.STATUS['DONE'])
+
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
+        self.assertEqual(job_notify.status, Job.STATUS['DONE'])
