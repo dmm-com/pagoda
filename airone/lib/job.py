@@ -1,7 +1,9 @@
+import functools
 from job.models import Job
 
 
 def may_schedule_until_job_is_ready(func):
+    @functools.wraps(func)
     def wrapper(kls, job_id):
         job = Job.objects.get(id=job_id)
         if job.proceed_if_ready():

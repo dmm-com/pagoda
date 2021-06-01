@@ -12,6 +12,7 @@ from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute, AttributeValue
 from entry import tasks
 from group.models import Group
+from job.models import Job, JobOperation
 from user.models import User
 
 from entry.settings import CONFIG as ENTRY_CONFIG
@@ -26,6 +27,9 @@ class APITest(AironeViewTest):
 
         # dump originl configuration data
         self._orig_entry_config = copy.copy(ENTRY_CONFIG.conf)
+
+        # clear test data
+        self._test_data = {}
 
     def tearDown(self):
         super(APITest, self).tearDown()
@@ -183,8 +187,15 @@ class APITest(AironeViewTest):
             elif attr.schema.name in ['vals', 'refs', 'names', 'groups']:
                 self.assertEqual(attrv.data_array.count(), 0)
 
-    def test_edit_entry_by_api(self):
+    @mock.patch('entry.tasks.notify_update_entry.delay')
+    def test_edit_entry_by_api(self, mock_notify_update_entry):
         user = self.guest_login()
+
+        # declare notification mock
+        self._test_data['notify_update_entry_is_called'] = False
+        def notify_side_effect(*args, **kwargs):
+            self._test_data['notify_update_entry_is_called'] = True
+        mock_notify_update_entry.side_effect = notify_side_effect
 
         entity_ref = Entity.objects.create(name='Ref', created_user=user)
         entity = Entity.objects.create(name='Entity', created_user=user)
@@ -211,6 +222,7 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post('/api/v1/entry', json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
+        self.assertFalse(self._test_data['notify_update_entry_is_called'])
 
         entry.refresh_from_db()
         self.assertEqual(entry.name, 'e-1')
@@ -237,6 +249,7 @@ class APITest(AironeViewTest):
         resp = self.client.post('/api/v1/entry', json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(entry.attrs.first().get_latest_value().referral.id, entry_ref.id)
+        self.assertFalse(self._test_data['notify_update_entry_is_called'])
 
     def test_post_entry_with_token(self):
         admin = User.objects.create(username='admin', is_superuser='True')
@@ -687,12 +700,19 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
     @mock.patch('entry.tasks.delete_entry.delay', mock.Mock(side_effect=tasks.delete_entry))
-    def test_delete_entry(self):
+    @mock.patch('entry.tasks.notify_delete_entry.delay')
+    def test_delete_entry(self, mock_notify_delete_entry):
         # wrapper to send delete request in this test
         def send_request(param):
             return self.client.delete('/api/v1/entry', json.dumps(param), 'application/json')
 
         admin = self.admin_login()
+
+        # declare notification mock
+        self._test_data['notify_delete_entry_is_called'] = False
+        def notify_side_effect(*args, **kwargs):
+            self._test_data['notify_delete_entry_is_called'] = True
+        mock_notify_delete_entry.side_effect = notify_side_effect
 
         entity1 = Entity.objects.create(name='Entity1', created_user=admin)
         entity2 = Entity.objects.create(name='Entity2', created_user=admin, is_public=False)
@@ -747,6 +767,9 @@ class APITest(AironeViewTest):
         # checks specified entry would be deleted
         entry11.refresh_from_db()
         self.assertFalse(entry11.is_active)
+
+        # checks delete notification wasn't invoked
+        self.assertFalse(self._test_data['notify_delete_entry_is_called'])
 
     @mock.patch('api_v1.auth.datetime')
     def test_expiring_token_lifetime(self, dt_mock):
@@ -807,8 +830,15 @@ class APITest(AironeViewTest):
         # updated attributes would be blank because requesting value is same with current one
         self.assertEqual(ret_data['updated_attrs'], {})
 
-    def test_create_entry_that_has_user_authorized_attribute(self):
+    @mock.patch('entry.tasks.notify_create_entry.delay')
+    def test_create_entry_that_has_user_authorized_attribute(self, mock_notify_create_entry):
         users = {x: User.objects.create(username=x, is_superuser=False) for x in ['_u1', '_u2']}
+
+        # declare notification mock
+        self._test_data['notify_create_entry_is_called'] = False
+        def notify_side_effect(*args, **kwargs):
+            self._test_data['notify_create_entry_is_called'] = True
+        mock_notify_create_entry.side_effect = notify_side_effect
 
         # initialize Entity and Entry
         entity = Entity.objects.create(name='Entity', created_user=users['_u1'])
@@ -851,3 +881,102 @@ class APITest(AironeViewTest):
         self.assertFalse(any([u.has_permission(attr, ACLType.Full) for u
                               in User.objects.filter(is_active=True, is_superuser=False)
                               if u.username not in ['_u1', '_u2']]))
+
+        # Check notify_event is not called
+        self.assertFalse(self._test_data['notify_create_entry_is_called'])
+
+    @mock.patch('entry.tasks.notify_entry_create', mock.Mock(return_value=mock.Mock()))
+    @mock.patch('entry.tasks.notify_create_entry.delay',
+                mock.Mock(side_effect=tasks.notify_create_entry))
+    def test_notify_event_of_creating_entry_when_create_entry(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        entity.is_enabled_webhook = True
+        entity.webhook_url = 'https://www.example.com'
+        entity.save()
+
+        params = {
+            'name': 'entry1',
+            'entity': entity.name,
+            'attrs': {}
+        }
+        resp = self.client.post('/api/v1/entry', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        # check notification event was invoked
+        entry = Entry.objects.get(id=resp.json()['result'])
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
+        self.assertEqual(job_notify.status, Job.STATUS['DONE'])
+
+    @mock.patch('entry.tasks.notify_entry_update', mock.Mock(return_value=mock.Mock()))
+    @mock.patch('entry.tasks.notify_update_entry.delay',
+                mock.Mock(side_effect=tasks.notify_update_entry))
+    def test_notify_event_of_updating_entry(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        entity.is_enabled_webhook = True
+        entity.webhook_url = 'https://www.example.com'
+        entity.save()
+
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+
+        params = {
+            'name': entry.name,
+            'entity': entity.name,
+            'attrs': {}
+        }
+        resp = self.client.post('/api/v1/entry', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        # check notification event was invoked
+        entry = Entry.objects.get(id=resp.json()['result'])
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
+        self.assertEqual(job_notify.status, Job.STATUS['DONE'])
+
+    @mock.patch('entry.tasks.notify_entry_update', mock.Mock(return_value=mock.Mock()))
+    @mock.patch('entry.tasks.notify_update_entry.delay',
+                mock.Mock(side_effect=tasks.notify_update_entry))
+    def test_notify_event_of_updating_entry_with_specifying_id(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        entity.is_enabled_webhook = True
+        entity.webhook_url = 'https://www.example.com'
+        entity.save()
+
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+
+        params = {
+            'id': entry.id,
+            'name': 'changed-entry-id',
+            'entity': entity.name,
+            'attrs': {}
+        }
+        resp = self.client.post('/api/v1/entry', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        # check notification event was invoked
+        entry = Entry.objects.get(id=resp.json()['result'])
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
+        self.assertEqual(job_notify.status, Job.STATUS['DONE'])
+
+    @mock.patch('entry.tasks.delete_entry.delay', mock.Mock(side_effect=tasks.delete_entry))
+    @mock.patch('entry.tasks.notify_entry_delete', mock.Mock(return_value=mock.Mock()))
+    @mock.patch('entry.tasks.notify_delete_entry.delay',
+                mock.Mock(side_effect=tasks.notify_delete_entry))
+    def test_notify_event_of_deleting_entry(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        entity.is_enabled_webhook = True
+        entity.webhook_url = 'https://www.example.com'
+        entity.save()
+
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+
+        resp = self.client.delete('/api/v1/entry', json.dumps({
+            'entity': entity.name,
+            'entry': entry.name,
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_DELETE_ENTRY.value)
+        self.assertEqual(job_notify.status, Job.STATUS['DONE'])

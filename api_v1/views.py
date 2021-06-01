@@ -14,7 +14,7 @@ from airone.lib.acl import ACLType
 from airone.lib.profile import airone_profile
 from entity.models import Entity
 from entry.models import Entry
-from job.models import Job
+from job.models import Job, JobOperation
 from user.models import User
 
 from entry.settings import CONFIG as ENTRY_CONFIG
@@ -70,15 +70,24 @@ class EntryAPI(APIView):
             entry.name = sel.validated_data['name']
             entry.set_status(Entry.STATUS_EDITING)
 
+            # create job to notify entry event to the registered WebHook
+            job_notify = Job.new_notify_update_entry(user, entry)
+
         elif Entry.objects.filter(**entry_condition).exists():
             entry = Entry.objects.get(**entry_condition)
             entry.set_status(Entry.STATUS_EDITING)
+
+            # create job to notify entry event to the registered WebHook
+            job_notify = Job.new_notify_update_entry(user, entry)
 
         else:
             entry = Entry.objects.create(created_user=user,
                                          status=Entry.STATUS_CREATING,
                                          **entry_condition)
             resp_data['is_created'] = True
+
+            # create job to notify entry event to the registered WebHook
+            job_notify = Job.new_notify_create_entry(user, entry)
 
         entry.complement_attrs(user)
         for name, value in sel.validated_data['attrs'].items():
@@ -95,6 +104,12 @@ class EntryAPI(APIView):
 
         # register target Entry to the Elasticsearch
         entry.register_es()
+
+        # run notification job if it's necessary
+        if entry.schema.is_enabled_webhook:
+            job_notify.run()
+        else:
+            job_notify.delete()
 
         entry.del_status(Entry.STATUS_CREATING | Entry.STATUS_EDITING)
 
@@ -170,6 +185,15 @@ class EntryAPI(APIView):
         if entry.is_active:
             # create a new Job to delete entry and run it
             job = Job.new_delete(user, entry)
+
+            # create and run notify delete entry task
+            if entity.is_enabled_webhook and entity.is_active:
+                job_notify = Job.new_notify_delete_entry(user, entry)
+                job_notify.run()
+
+                job.dependent_job = job_notify
+                job.save(update_fields=['dependent_job'])
+
             job.run()
 
         return Response({'id': entry.id})

@@ -16,6 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from entity.models import Entity
 from entry.models import Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
+from job.models import Job
 
 from datetime import datetime
 
