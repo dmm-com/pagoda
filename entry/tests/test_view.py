@@ -3776,7 +3776,7 @@ class ViewTest(AironeViewTest):
 
         fp = self.open_fixture_file('import_data02.yaml')
         resp = self.client.post(reverse('entry:do_import', args=[self._entity.id]), {'file': fp})
-        self.assertEqual(resp.status_code, 200)
+        self.assertRedirects(resp, '/entry/%s/' % self._entity.id, status_code=303)
 
         # check there are creating job and notification job
         entry = Entry.objects.get(name='entry', schema=self._entity, is_active=True)
@@ -3800,7 +3800,7 @@ class ViewTest(AironeViewTest):
 
         fp = self.open_fixture_file('import_data02.yaml')
         resp = self.client.post(reverse('entry:do_import', args=[self._entity.id]), {'file': fp})
-        self.assertEqual(resp.status_code, 200)
+        self.assertRedirects(resp, '/entry/%s/' % self._entity.id, status_code=303)
 
         # check there are creating job and notification job
         job_import = Job.objects.get(target=self._entity, operation=JobOperation.IMPORT_ENTRY.value)
