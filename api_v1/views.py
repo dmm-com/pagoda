@@ -14,7 +14,7 @@ from airone.lib.acl import ACLType
 from airone.lib.profile import airone_profile
 from entity.models import Entity
 from entry.models import Entry
-from job.models import Job, JobOperation
+from job.models import Job
 from user.models import User
 
 from entry.settings import CONFIG as ENTRY_CONFIG

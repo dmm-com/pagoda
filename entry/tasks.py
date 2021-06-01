@@ -451,7 +451,7 @@ def _notify_event(notification_method, object_id, user):
         resp = notification_method(entry, user)
         if not resp.ok:
             return (Job.STATUS['ERROR'], resp.text)
-    except Exception as e:
+    except Exception:
         return (Job.STATUS['ERROR'], "Failed to send request to API handler")
 
 

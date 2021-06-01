@@ -193,6 +193,7 @@ class APITest(AironeViewTest):
 
         # declare notification mock
         self._test_data['notify_update_entry_is_called'] = False
+
         def notify_side_effect(*args, **kwargs):
             self._test_data['notify_update_entry_is_called'] = True
         mock_notify_update_entry.side_effect = notify_side_effect
@@ -710,6 +711,7 @@ class APITest(AironeViewTest):
 
         # declare notification mock
         self._test_data['notify_delete_entry_is_called'] = False
+
         def notify_side_effect(*args, **kwargs):
             self._test_data['notify_delete_entry_is_called'] = True
         mock_notify_delete_entry.side_effect = notify_side_effect
@@ -836,6 +838,7 @@ class APITest(AironeViewTest):
 
         # declare notification mock
         self._test_data['notify_create_entry_is_called'] = False
+
         def notify_side_effect(*args, **kwargs):
             self._test_data['notify_create_entry_is_called'] = True
         mock_notify_create_entry.side_effect = notify_side_effect
