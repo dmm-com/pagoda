@@ -353,6 +353,8 @@ def import_entries(self, job_id):
             # run notification job
             if entry.schema.is_enabled_webhook:
                 job_notify.run()
+            else:
+                job_notify.delete()
 
         # update job status and save it except for the case that target job is canceled.
         if not job.is_canceled():
@@ -443,7 +445,7 @@ def register_referrals(self, job_id):
 
 
 def _notify_event(notification_method, object_id, user):
-    entry = Entry.objects.filter(id=object_id, is_active=True).first()
+    entry = Entry.objects.filter(id=object_id).first()
     if not entry:
         return (Job.STATUS['ERROR'], "Failed to get job.target (%s)" % object_id)
 

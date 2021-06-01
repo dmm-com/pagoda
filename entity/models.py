@@ -1,6 +1,7 @@
 from django.db import models
 from airone.lib.acl import ACLObjType
 from acl.models import ACLBase
+from webhook.models import Webhook
 
 
 class EntityAttr(ACLBase):
@@ -51,10 +52,8 @@ class Entity(ACLBase):
     note = models.CharField(max_length=200)
     attrs = models.ManyToManyField(EntityAttr)
 
-    # These are Webhook configurations parameters
-    is_enabled_webhook = models.BooleanField(default=False)
-    webhook_url = models.URLField()
-    webhook_headers = models.TextField()
+    # This indicates informatoin where to send request for notification
+    webhooks = models.ManyToManyField(Webhook, default=[], related_name='registered_entity')
 
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)
