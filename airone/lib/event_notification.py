@@ -10,11 +10,7 @@ def _send_request_to_webhook_endpoint(entry, user, event_type):
 
     payload = {
         'event': event_type,
-        'data': {
-            'name': entry.name,
-            'schema': entry.schema.name,
-            'attrs': entry.get_available_attrs(user),
-        }
+        'data': entry.to_dict(user),
     }
     return requests.post(entry.schema.webhook_url,
                          data=json.dumps(payload),

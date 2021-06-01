@@ -29,8 +29,7 @@ class EventNotificationTest(AironeViewTest):
             self.assertEqual(url, 'https://example.com')
             self.assertEqual(headers, {'Content-Type': 'application/json'})
             self.assertEqual(json.loads(data)['event'], 'entry.create')
-            self.assertEqual(json.loads(data)['data']['name'], 'e')
-            self.assertEqual(json.loads(data)['data']['schema'], 'test-entity')
+            self.assertEqual(json.loads(data)['data'], self.entry.to_dict(self.user))
             self.assertFalse(verify)
             return 'test-response'
 
@@ -45,6 +44,7 @@ class EventNotificationTest(AironeViewTest):
         def side_effect(url, data, headers, verify):
             self._test_data['is_post_called'] = True
             self.assertEqual(json.loads(data)['event'], 'entry.update')
+            self.assertEqual(json.loads(data)['data'], self.entry.to_dict(self.user))
             return 'test-response'
 
         # call notification method and check response
@@ -58,6 +58,7 @@ class EventNotificationTest(AironeViewTest):
         def side_effect(url, data, headers, verify):
             self._test_data['is_post_called'] = True
             self.assertEqual(json.loads(data)['event'], 'entry.delete')
+            self.assertEqual(json.loads(data)['data'], self.entry.to_dict(self.user))
             return 'test-response'
 
         # call notification method and check response
