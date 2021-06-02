@@ -1,0 +1,386 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Entity{% endblock %}
+
+{% block nav_sub_header %}
+  {% with "edit_entity" as path %}
+  {% include 'navigation.html' %}
+  {% endwith %}
+{% endblock %}
+
+{% block head %}
+<style type="text/css"><!--
+
+#add_webhook {
+  margin: 5px 0px 10px;
+}
+
+.setting-row {
+  margin: 0px 0px 0px 3px;
+}
+
+.setting-content {
+  padding: 10px;
+}
+
+.padding-right {
+  padding: 0px 10px 0px 0px;
+}
+
+.webhook_status {
+  width: 20px;
+  height: 20px;
+  margin: 0px 10px 0px 0px;
+}
+
+--></style>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+{% load bitwise_tags %}
+
+<div class="container-fluid">
+  {% include 'entity_edit_tab.html' with tab='settings' %}
+</div>
+
+<div class='tab-content'>
+  <div class="container-fluid">
+
+    <div class="row border setting-row">
+      <div class="col-2 border rounded-left d-flex align-items-center">
+        <h5>Notifications</h5>
+      </div>
+      <div class="col-10 border rounded-right setting-content">
+        <ul class='list-group'>
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class='d-flex align-items-center'>Webhooks</h5>
+            <button type="button" class="btn btn-primary btn-sm" id='add_webhook'
+              data-toggle="modal" data-target="#WebhookModal">
+              Add Webhook
+            </button>
+          </div>
+        </ul>
+
+        <ul class="list-group">
+          {% for webhook in webhooks %}
+          <li class="list-group-item">
+            <div class="d-flex w-100 justify-content-between">
+              <div class='d-flex align-items-center'>
+
+                {% if webhook.is_enabled %}
+                  {% if webhook.is_verified %}
+                    <img src='/static/images/checked.png' class='webhook_status'/>
+                  {% else %}
+                    <img src='/static/images/warning.png' class='webhook_status'/>
+                  {% endif %}
+
+                  <a href='#'>{{ webhook.url }}</a>
+                {% else %}
+                  <img class='webhook_status invisible'/>
+                  <span class='text-muted'>{{ webhook.url }}</span>
+                {% endif %}
+              </div>
+
+              <div>
+                <div class="btn-group">
+                  <button class='btn btn-sm btn-outline-secondary show_edit_webhook' type='button' webhook_index={{ forloop.counter0 }}>Edit</button>
+                  <button class='btn btn-sm btn-outline-danger show_delete_webhook' type='button' webhook_index={{ forloop.counter0 }}>Delete</button>
+                </div>
+              </div>
+            </div>
+            <small>{{ webhook.label }}</small>
+          </li>
+          {% endfor %}
+
+        </ul>
+      </div>
+    </div>
+    <!-- end of setting-row -->
+
+  </div>
+  <!-- end of container-fluid -->
+
+</div>
+<!-- end of tab-content -->
+
+<!-- Create and Edit Webhook Modal Window's context -->
+<div class="modal fade" id="WebhookModal" tabindex="-1" role="dialog" aria-labelledby="WebhookModal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="WebhookModalTitle">Webhook の登録</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- start of modal-body -->
+
+        <h6>Webhook URL</h6>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <div class="input-group-text">
+              <span class='text-secondary padding-right'>有効化</span>
+              {% if is_enabled_webhook %}
+              <input type="checkbox" id='is_enabled_webhook' checked/>
+              {% else %}
+              <input type="checkbox" id='is_enabled_webhook'/>
+              {% endif %}
+            </div>
+          </div>
+          <input type="text" class="form-control" id='webhook_url' value='{{ webhook_url }}' placeholder='Webhook endpoint URL'/>
+          <div class='invalid-feedback' id='webhook_url_error'></div>
+        </div>
+        <p class='text-secondary small'>
+          エントリを作成、編集、削除した際に、記載した URL に対して POST リクエストメッセージを送信します。
+        </p>
+
+        <h6>Label (Optional)</h6>
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" id='webhook_label' value='{{ label }}' placeholder='Label'/>
+        </div>
+        <p class='text-secondary small'>
+          Webhook URL の説明を必要に応じてご入力ください。
+        </p>
+
+        <h6>Additional Headers (Optional)</h6>
+        <div id='header-lines'>
+          {% for key, value in webhook_headers.items %}
+          <div class="input-group mb-3 header-info">
+            <input type="text" class="form-control header-key" placeholder='key' value='{{ key }}' />
+            <input type="text" class="form-control header-value" placeholder='vlaue' value='{{ value }}'/>
+            <div class="input-group-append">
+              <button class="btn btn-outline-danger delete-header-info" type="button">-</button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="float-right">
+          <button type='button' id='add-header-info' class='btn btn-primary' id='add-header-info'>+</button>
+        </div>
+
+        <p class='text-secondary small'>
+          ここで入力した情報を、リクエストのヘッダ情報に付加します。必要に応じてご入力ください。
+        </p>
+
+        <!-- end of modal-body -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id='save_settings'>Register</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Webhook Modal Window's context -->
+<div class="modal fade" id="deleteWebhook" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Webhook の削除</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+				<h6>(WebhookURL) <span class='webhook_url'></span></h6>
+				を削除してもよろしいですか？
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id='deleteWebhook'>Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+
+var webhooks = [];
+{% for webhook in webhooks %}
+  webhooks.push({
+    id: {{ webhook.id }},
+    url: '{{ webhook.url }}',
+    label: '{{ webhook.label }}',
+    is_enabled: '{{ webhook.is_enabled }}' == 'True',
+    is_verified: '{{ webhook.is_verified }}' == 'True',
+    headers: JSON.parse('{{ webhook.headers | safe | escape }}'),
+  })
+{% endfor %}
+
+var target_webhook_index = undefined;
+var save_settings = function(e){
+  // collect header lines
+  var header_lines = Array();
+  $('.header-info').each(function(i, elem) {
+    let key = $(elem).find('.header-key').val();
+
+    if (key) {
+      header_lines.push({
+        key: key,
+        value: $(elem).find('.header-value').val(),
+      });
+    }
+  });
+
+  // When URL input is invalid, this won't accept to submit
+  if (! $('#webhook_label').val()) {
+    $('#webhook_url_error').text('この項目の入力は必須です');
+    $('#webhook_url').addClass('is-invalid');
+    return false;
+  }
+
+  var request_params = {
+    'label': $('#webhook_label').val(),
+    'webhook_url': $('#webhook_url').val(),
+    'request_headers': header_lines,
+    'is_enabled': $('#is_enabled_webhook').is(':checked'),
+  }
+  if (target_webhook_index) {
+    request_params.id = webhooks[target_webhook_index].id;
+  }
+
+  console.log('[onix/save_settings(10)] ### request_params');
+  console.log(request_params);
+
+  $.ajax({
+    type: 'POST',
+    url: "/webhook/api/v1/set/{{ entity.id }}",
+    data: JSON.stringify(request_params),
+    headers: {
+      'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+    }
+  }).done(function(data) {
+    MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, "Success to change settings of ({{ entity.name }})");
+
+    location.reload();
+  }).fail(function(data) {
+    MessageBox.error(data.responseText);
+  });
+
+  // remove all header-info input elements in the modal and close it
+  $('.header-info').remove();
+  $('#WebhookModal').modal('hide');
+}
+
+var create_header_input_element = function() {
+  var template = $(
+    `<div class="input-group mb-3 header-info">` +
+      `<input type="text" class="form-control header-key" placeholder='key'/>` +
+      `<input type="text" class="form-control header-value" placeholder='vlaue'/>` +
+      `<div class="input-group-append">` +
+        `<button class="btn btn-outline-danger delete-header-info" type="button">-</button>` +
+      `</div>` +
+    `</div>`);
+
+  // register event handler of adding element
+  template.find('.delete-header-info').on('click', delete_header_info);
+
+  return template;
+}
+
+var add_header_info = function(e) {
+  $('#header-lines').append(create_header_input_element());
+}
+
+var delete_header_info = function(e) {
+  $(e.target).closest('.header-info').remove();
+}
+
+var show_webhook_modal = function(e) {
+  console.log('[onix/show_webhook_modal(00)]');
+}
+
+var hide_webhook_modal = function(e) {
+  // remove all input elements
+  $('#webhook_url').val('');
+  $('#webhook_label').val('');
+  $('#is_enabled_webhook').prop('checked', false);
+
+  // remove class of invalid input
+  $('#webhook_url').removeClass('is-invalid');
+
+  // remove all header-info input elements
+  $('.header-info').remove();
+}
+
+var create_webhook = function(e) {
+  // clear editing webhook_id;
+  target_webhook_index = undefined;
+
+  // show creating modal window
+  $('#WebhookModal').modal('show');
+}
+
+var show_edit_webhook = function(e) {
+  var index = $(e.target).attr("webhook_index")
+  console.log(`[onix/edit_webhook(00)] index: ${ index }`);
+  console.log(webhooks[index]);
+
+  // set editing webhook_id;
+  target_webhook_index = index;
+
+  // set input form elements
+  $('#webhook_url').val(webhooks[index].url);
+  $('#webhook_label').val(webhooks[index].label);
+  $('#is_enabled_webhook').prop('checked', webhooks[index].is_enabled);
+
+  // create header input form elements
+  for (const [key, value] of Object.entries(webhooks[index].headers)) {
+    var header_elem = create_header_input_element();
+
+    console.log(`[onix/edit_webhook(10)] (key, value) = (${ key }, ${ value })`);
+    header_elem.find('.header-key').val(key);
+    header_elem.find('.header-value').val(value);
+
+    $('#header-lines').append(header_elem);
+  }
+
+  $('#WebhookModal').modal('show');
+}
+
+var show_delete_webhook = function(e) {
+  var index = $(e.target).attr("webhook_index");
+
+  console.log(`[onix/delete_webhook(00)] ${ index }`);
+
+	// update target_webhook_index
+	target_webhook_index = index;
+
+	$('#deleteWebhook .webhook_url').text(webhooks[index].url);
+	$('#deleteWebhook').modal('show');
+}
+
+var do_delete_webhook = function(e) {
+  $.ajax({
+    type: 'DELETE',
+    url: `/webhook/api/v1/del/${ webhooks[target_webhook_index].id }`,
+    headers: {
+      'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+    }
+  }).done(function(data) {
+    MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, `Success to delete Webhook (${ webhooks[target_webhook_index].url })`);
+
+    location.reload();
+  }).fail(function(data) {
+    MessageBox.error(data.responseText);
+  });
+}
+
+$(document).ready(function() {
+  $('#save_settings').on('click', save_settings);
+  $('#add-header-info').on('click', add_header_info);
+  $('.delete-header-info').on('click', delete_header_info);
+  $('#WebhookModal').on('shown.bs.modal', show_webhook_modal);
+  $('#WebhookModal').on('hide.bs.modal', hide_webhook_modal);
+  $('.show_edit_webhook').on('click', show_edit_webhook);
+  $('.show_delete_webhook').on('click', show_delete_webhook);
+  $('#deleteWebhook').on('click', do_delete_webhook);
+});
+</script>
+{% endblock %}
