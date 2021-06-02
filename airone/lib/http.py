@@ -195,7 +195,7 @@ def render(request, template, context={}):
     context['STATUS_ENTRY']['EDITING'] = entry_models.Entry.STATUS_EDITING
 
     # set Version
-    context['version'] = settings.AIRONE['VERSION']
+    context['version'] = settings.AIRONE['VERSION'].decode("utf-8") 
 
     return django_render(request, template, context)
 
