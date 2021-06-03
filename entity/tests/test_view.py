@@ -980,27 +980,3 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(EntityAttr.objects.filter(parent_entity=entity,
                                                    is_summarized=True).count(), 0)
-
-    def test_get_settings(self):
-        user = self.admin_login()
-
-        entity = Entity(name='test-entity', created_user=user)
-        entity.is_enabled_webhook = True
-        entity.webhook_url = 'https://example.com'
-        entity.save()
-
-        resp = self.client.get('/entity/settings/%s' % entity.id)
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.context['entity'], entity)
-        self.assertEqual(resp.context['webhook_url'], entity.webhook_url)
-        self.assertEqual(resp.context['webhook_headers'], {})
-
-    def test_get_settings_without_permission(self):
-        self.guest_login()
-        test_user = User.objects.create(username='test-user', is_superuser=False)
-        entity = Entity.objects.create(name='test-entity', created_user=test_user, is_public=False)
-
-        resp = self.client.get('/entity/settings/%s' % entity.id)
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content.decode('utf-8'),
-                         "You don't have permission to access this object")

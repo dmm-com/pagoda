@@ -152,6 +152,10 @@ def create_entry_attrs(self, job_id):
         if not job.is_canceled():
             job.update(Job.STATUS['DONE'])
 
+            # Send notification to the webhook URL
+            job_notify_event = Job.new_notify_create_entry(user, entry)
+            job_notify_event.run()
+
     elif job.is_canceled():
         # When job is canceled before starting, created entry should be deleted.
         entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
@@ -198,6 +202,10 @@ def edit_entry_attrs(self, job_id):
 
         # update job status and save it
         job.update(Job.STATUS['DONE'])
+
+        # running job to notify changing entry event
+        job_notify_event = Job.new_notify_update_entry(user, entry)
+        job_notify_event.run()
 
 
 @app.task(bind=True)
@@ -263,9 +271,8 @@ def copy_entry(self, job_id):
         job.update(Job.STATUS['DONE'], 'original entry: %s' % src_entry.name, dest_entry)
 
         # create and run event notification job
-        if dest_entry.schema.is_enabled_webhook:
-            job_notify_event = Job.new_notify_create_entry(user, dest_entry)
-            job_notify_event.run()
+        job_notify_event = Job.new_notify_create_entry(user, dest_entry)
+        job_notify_event.run()
 
 
 @app.task(bind=True)
@@ -351,10 +358,7 @@ def import_entries(self, job_id):
             entry.register_es()
 
             # run notification job
-            if entry.schema.is_enabled_webhook:
-                job_notify.run()
-            else:
-                job_notify.delete()
+            job_notify.run()
 
         # update job status and save it except for the case that target job is canceled.
         if not job.is_canceled():
@@ -450,11 +454,10 @@ def _notify_event(notification_method, object_id, user):
         return (Job.STATUS['ERROR'], "Failed to get job.target (%s)" % object_id)
 
     try:
-        resp = notification_method(entry, user)
-        if not resp.ok:
-            return (Job.STATUS['ERROR'], resp.text)
-    except Exception:
-        return (Job.STATUS['ERROR'], "Failed to send request to API handler")
+        notification_method(entry, user)
+
+    except Exception as e:
+        return (Job.STATUS['ERROR'], str(e))
 
 
 @app.task(bind=True)

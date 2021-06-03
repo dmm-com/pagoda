@@ -208,6 +208,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(AttributeValue.objects.count(), 0)
 
     @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
+    @patch('entry.tasks.notify_create_entry.delay', Mock(side_effect=tasks.notify_create_entry))
+    @patch('entry.tasks.notify_entry_create', Mock(return_value=Mock()))
     def test_post_create_entry(self):
         user = self.admin_login()
 
@@ -246,16 +248,19 @@ class ViewTest(AironeViewTest):
             attrv = AttributeValue.objects.get(parent_attr__name=attrinfo['name'], is_latest=True)
             self.assertEqual(attrinfo['value'], attrv.value)
 
-        # checks job was created
-        job = Job.objects.filter(user=user)
-        self.assertEqual(job.count(), 1)
-
-        # checks each parameters of the job are as expected
-        obj = job.first()
-        self.assertEqual(obj.target.id, entry.id)
-        self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
-        self.assertEqual(obj.status, Job.STATUS['DONE'])
-        self.assertEqual(obj.operation, JobOperation.CREATE_ENTRY.value)
+        # checks created jobs and its params are as expected
+        jobs = Job.objects.filter(user=user, target=entry)
+        job_expectations = [
+            {'operation': JobOperation.CREATE_ENTRY, 'status': Job.STATUS['DONE']},
+            {'operation': JobOperation.NOTIFY_CREATE_ENTRY, 'status': Job.STATUS['DONE']},
+        ]
+        self.assertEqual(jobs.count(), len(job_expectations))
+        for expectation in job_expectations:
+            obj = jobs.get(operation=expectation['operation'].value)
+            self.assertEqual(obj.target.id, entry.id)
+            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.status, expectation['status'])
+            self.assertIsNone(obj.dependent_job)
 
         # checks specify part of attribute parameter then set AttributeValue
         # which is only specified one
@@ -556,6 +561,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
 
     @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
+    @patch('entry.tasks.notify_update_entry.delay', Mock(side_effect=tasks.notify_update_entry))
+    @patch('entry.tasks.notify_entry_update', Mock(return_value=Mock()))
     def test_post_edit_with_valid_param(self):
         user = self.admin_login()
 
@@ -609,20 +616,20 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp['ret_values'][0]['entity']['id'], entity.id)
         self.assertEqual(resp['ret_values'][0]['entry']['id'], entry.id)
 
-        # checks job was created
-        job = Job.objects.filter(user=user)
-        self.assertEqual(job.count(), 2)
-
-        # checks each parameters of the job are as expected
+        # checks created jobs and its params are as expected
+        jobs = Job.objects.filter(user=user, target=entry)
         job_expectations = [
             {'operation': JobOperation.EDIT_ENTRY, 'status': Job.STATUS['DONE']},
             {'operation': JobOperation.REGISTER_REFERRALS, 'status': Job.STATUS['PREPARING']},
+            {'operation': JobOperation.NOTIFY_UPDATE_ENTRY, 'status': Job.STATUS['DONE']},
         ]
+        self.assertEqual(jobs.count(), len(job_expectations))
         for expectation in job_expectations:
-            obj = job.get(operation=expectation['operation'].value)
+            obj = jobs.get(operation=expectation['operation'].value)
             self.assertEqual(obj.target.id, entry.id)
             self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
             self.assertEqual(obj.status, expectation['status'])
+            self.assertIsNone(obj.dependent_job)
 
         # checks specify part of attribute parameter then set AttributeValue
         # which is only specified one
@@ -1106,6 +1113,8 @@ class ViewTest(AironeViewTest):
             self.assertEqual(data, '"%s,""ENTRY""",' % type_name + case[2])
 
     @patch('entry.tasks.delete_entry.delay', Mock(side_effect=tasks.delete_entry))
+    @patch('entry.tasks.notify_delete_entry.delay', Mock(side_effect=tasks.notify_delete_entry))
+    @patch('entry.tasks.notify_entry_delete', Mock(return_value=Mock()))
     def test_post_delete_entry(self):
         user = self.admin_login()
 
@@ -1121,6 +1130,22 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Entry.objects.count(), entry_count)
+
+        # checks created jobs and its params are as expected
+        jobs = Job.objects.filter(user=user, target=entry)
+        job_expectations = [
+            {'operation': JobOperation.DELETE_ENTRY, 'status': Job.STATUS['DONE'],
+             'dependent_job': jobs.get(operation=JobOperation.NOTIFY_DELETE_ENTRY.value)},
+            {'operation': JobOperation.NOTIFY_DELETE_ENTRY, 'status': Job.STATUS['DONE'],
+             'dependent_job': None},
+        ]
+        self.assertEqual(jobs.count(), len(job_expectations))
+        for expectation in job_expectations:
+            obj = jobs.get(operation=expectation['operation'].value)
+            self.assertEqual(obj.target.id, entry.id)
+            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.status, expectation['status'])
+            self.assertEqual(obj.dependent_job, expectation['dependent_job'])
 
         entry = Entry.objects.last()
         self.assertFalse(entry.is_active)
@@ -1657,6 +1682,7 @@ class ViewTest(AironeViewTest):
     @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
     @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
     @patch('entry.tasks.delete_entry.delay', Mock(side_effect=tasks.delete_entry))
+    @patch('entry.tasks.notify_delete_entry.delay', Mock(side_effect=tasks.notify_delete_entry))
     def test_referred_entry_cache(self):
         user = self.admin_login()
 
@@ -1780,17 +1806,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(list(ref_entry2.get_referred_objects()), [])
         self.assertEqual(list(ref_entry3.get_referred_objects()), [])
 
-        # checks jobs were created
-        self.assertEqual(Job.objects.filter(user=user).count(), 4)
-
-        job = Job.objects.filter(user=user, operation=JobOperation.DELETE_ENTRY.value)
-        self.assertEqual(job.count(), 1)
-
-        # checks each parameters of the job are as expected
-        obj = job.first()
-        self.assertEqual(obj.target.id, entry.id)
-        self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
-        self.assertEqual(obj.status, Job.STATUS['DONE'])
+        # checks jobs were created as expected
+        expected_job_infos = [
+            {'op': JobOperation.CREATE_ENTRY, 'count': 1},
+            {'op': JobOperation.EDIT_ENTRY, 'count': 2},
+            {'op': JobOperation.DELETE_ENTRY, 'count': 1},
+            {'op': JobOperation.NOTIFY_CREATE_ENTRY, 'count': 1},
+            {'op': JobOperation.NOTIFY_UPDATE_ENTRY, 'count': 2},
+            {'op': JobOperation.NOTIFY_DELETE_ENTRY, 'count': 1},
+        ]
+        for info in expected_job_infos:
+            self.assertEqual(Job.objects.filter(user=user, operation=info['op'].value).count(),
+                             info['count'])
 
         # checking for the cases of sending invalid referral parameters
         requests = [
@@ -2211,19 +2238,22 @@ class ViewTest(AironeViewTest):
         res = self._es.indices.stats(index=settings.ES_CONFIG['INDEX'])
         self.assertEqual(res['_all']['total']['segments']['count'], 3)
 
-        # checks jobs were created
-        self.assertEqual(Job.objects.filter(user=user).count(), 3)
-
-        jobs = Job.objects.filter(user=user, operation=JobOperation.COPY_ENTRY.value)
-
-        self.assertEqual(jobs.count(), 3)
-        for obj in jobs.all():
+        # checks jobs were created as expected
+        copy_jobs = Job.objects.filter(user=user, operation=JobOperation.COPY_ENTRY.value)
+        self.assertEqual(copy_jobs.count(), 3)
+        for obj in copy_jobs.all():
             self.assertTrue(any([obj.target.name == x for x in ['foo', 'bar', 'baz']]))
             self.assertEqual(obj.text, 'original entry: %s' % entry.name)
             self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
             self.assertEqual(obj.status, Job.STATUS['DONE'])
             self.assertNotEqual(obj.created_at, obj.updated_at)
             self.assertTrue((obj.updated_at - obj.created_at).total_seconds() > 0)
+
+        # check notification jobs were create in the copy entry's processing
+        notify_jobs = Job.objects.filter(operation=JobOperation.NOTIFY_CREATE_ENTRY.value,
+                                         status=Job.STATUS['PREPARING'],
+                                         user=user)
+        self.assertEqual(notify_jobs.count(), copy_jobs.count())
 
     @patch('entry.tasks.copy_entry.delay', Mock(side_effect=tasks.copy_entry))
     def test_post_copy_after_job_creating(self):
@@ -2388,11 +2418,6 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 303)
         self.assertTrue(Entry.objects.filter(name='Entry', schema=entity))
 
-        # check job status
-        job = Job.objects.filter(target=entity).last()
-        self.assertEqual(job.status, Job.STATUS['DONE'])
-        self.assertEqual(job.text, '')
-
         entry = Entry.objects.get(name='Entry', schema=entity)
         checklist = [
             {'attr': 'str', 'checker': lambda x: x.value == 'foo'},
@@ -2416,6 +2441,18 @@ class ViewTest(AironeViewTest):
 
             self.assertIsNotNone(attrv)
             self.assertTrue(info['checker'](attrv))
+
+        # checks created jobs and its params are as expected
+        jobs = Job.objects.filter(user=user)
+        job_expectations = [
+            {'operation': JobOperation.IMPORT_ENTRY, 'status': Job.STATUS['DONE']},
+            {'operation': JobOperation.NOTIFY_CREATE_ENTRY, 'status': Job.STATUS['PREPARING']},
+        ]
+        self.assertEqual(jobs.count(), len(job_expectations))
+        for expectation in job_expectations:
+            obj = jobs.get(operation=expectation['operation'].value)
+            self.assertEqual(obj.status, expectation['status'])
+            self.assertIsNone(obj.dependent_job)
 
         # checks that created entry was registered to the Elasticsearch
         res = self._es.get(index=settings.ES_CONFIG['INDEX'], doc_type='entry', id=entry.id)
@@ -3509,6 +3546,18 @@ class ViewTest(AironeViewTest):
         self.client.post(reverse('entry:do_import', args=[self._entity.id]), {'file': fp})
         fp.close()
 
+        # checks created jobs and its params are as expected
+        jobs = Job.objects.filter(user=user)
+        job_expectations = [
+            {'operation': JobOperation.IMPORT_ENTRY, 'status': Job.STATUS['DONE']},
+            {'operation': JobOperation.NOTIFY_UPDATE_ENTRY, 'status': Job.STATUS['PREPARING']},
+        ]
+        self.assertEqual(jobs.count(), len(job_expectations))
+        for expectation in job_expectations:
+            obj = jobs.get(operation=expectation['operation'].value)
+            self.assertEqual(obj.status, expectation['status'])
+            self.assertIsNone(obj.dependent_job)
+
         # Check attribute value
         self.assertEqual(
             entry.attrs.get(schema__name='test', is_active=True).get_latest_value().value, 'fuga')
@@ -3643,168 +3692,27 @@ class ViewTest(AironeViewTest):
 
         # This confirms above sending request create expected Job and Entry instances
         entry = Entry.objects.get(name='entry', schema=entity, is_active=True)
-        job = Job.objects.last()
-        self.assertEqual(job.target.id, entry.id)
-        self.assertEqual(job.status, Job.STATUS['DONE'])
-        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
+        # checks created jobs and its params are as expected
+        jobs = Job.objects.filter(user=user, target=entry)
+        job_expectations = [
+            {'operation': JobOperation.CREATE_ENTRY, 'status': Job.STATUS['DONE']},
+            {'operation': JobOperation.NOTIFY_CREATE_ENTRY, 'status': Job.STATUS['PREPARING']},
+        ]
+        self.assertEqual(jobs.count(), len(job_expectations))
+        for expectation in job_expectations:
+            obj = jobs.get(operation=expectation['operation'].value)
+            self.assertEqual(obj.target.id, entry.id)
+            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.status, expectation['status'])
+            self.assertIsNone(obj.dependent_job)
 
         # Rerun creating that entry job (This is core processing of this test)
-        job.status = Job.STATUS['PREPARING']
-        job.save()
-        job.run(will_delay=False)
+        job_create = Job.objects.get(user=user, operation=JobOperation.CREATE_ENTRY.value)
+        job_create.status = Job.STATUS['PREPARING']
+        job_create.save()
+        job_create.run(will_delay=False)
 
         # This confirms unexpected Attribute instances were not created
         # when creating job was run duplicately.
         self.assertEqual(Entry.objects.get(id=entry.id).attrs.count(),
                          Entity.objects.get(id=entity.id).attrs.count())
-
-    @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
-    @patch('entry.tasks.notify_create_entry.delay', Mock(side_effect=tasks.notify_create_entry))
-    @patch('entry.tasks.notify_entry_create', Mock(return_value=Mock()))
-    def test_notify_event_of_creating_entry(self):
-        self.admin_login()
-
-        # register webhook informtion to the entity
-        self._entity.is_enabled_webhook = True
-        self._entity.webhook_url = 'https://www.example.com'
-        self._entity.save()
-
-        resp = self.client.post(reverse('entry:do_create', args=[self._entity.id]),
-                                json.dumps({'entry_name': 'hoge', 'attrs': []}),
-                                'application/json')
-        self.assertEqual(resp.status_code, 200)
-
-        # check there are creating job and notification job
-        entry = Entry.objects.get(name='hoge', schema=self._entity, is_active=True)
-        self.assertEqual(Job.objects.filter(target=entry).count(), 2)
-        self.assertTrue([x.status == Job.STATUS['DONE'] for x in Job.objects.filter(target=entry)])
-
-        # check Job dependent structure
-        job_create = Job.objects.get(target=entry, operation=JobOperation.CREATE_ENTRY.value)
-        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
-        self.assertEqual(job_notify.dependent_job, job_create)
-        self.assertIsNone(job_create.dependent_job)
-
-    @patch('entry.tasks.edit_entry_attrs.delay', Mock(side_effect=tasks.edit_entry_attrs))
-    @patch('entry.tasks.notify_update_entry.delay', Mock(side_effect=tasks.notify_update_entry))
-    @patch('entry.tasks.notify_entry_update', Mock(return_value=Mock()))
-    def test_notify_event_of_updating_entry(self):
-        user = self.admin_login()
-        entry = Entry.objects.create(name='entry', schema=self._entity, created_user=user)
-
-        # register webhook informtion to the entity
-        self._entity.is_enabled_webhook = True
-        self._entity.webhook_url = 'https://www.example.com'
-        self._entity.save()
-
-        resp = self.client.post(reverse('entry:do_edit', args=[entry.id]),
-                                json.dumps({'entry_name': 'changed-entry', 'attrs': []}),
-                                'application/json')
-        self.assertEqual(resp.status_code, 200)
-
-        # check there are creating job, registering referrals job  and notification job
-        self.assertEqual(Job.objects.filter(target=entry).count(), 3)
-        self.assertTrue([x.status == Job.STATUS['DONE'] for x in Job.objects.filter(target=entry)])
-
-        # check Job dependent structure
-        job_edit = Job.objects.get(target=entry, operation=JobOperation.EDIT_ENTRY.value)
-        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
-        self.assertEqual(job_notify.dependent_job, job_edit)
-        self.assertIsNone(job_edit.dependent_job)
-
-    @patch('entry.tasks.delete_entry.delay', Mock(side_effect=tasks.delete_entry))
-    @patch('entry.tasks.notify_delete_entry.delay', Mock(side_effect=tasks.notify_delete_entry))
-    @patch('entry.tasks.notify_entry_delete', Mock(return_value=Mock()))
-    def test_notify_event_of_deleting_entry(self):
-        user = self.admin_login()
-        entry = Entry.objects.create(name='entry', schema=self._entity, created_user=user)
-
-        # register webhook informtion to the entity
-        self._entity.is_enabled_webhook = True
-        self._entity.webhook_url = 'https://www.example.com'
-        self._entity.save()
-
-        resp = self.client.post(reverse('entry:do_delete', args=[entry.id]),
-                                json.dumps({}), 'application/json')
-        self.assertEqual(resp.status_code, 200)
-
-        # check there are creating job and notification job
-        self.assertEqual(Job.objects.filter(target=entry).count(), 2)
-        self.assertTrue([x.status == Job.STATUS['DONE'] for x in Job.objects.filter(target=entry)])
-
-        # check Job dependent structure
-        job_delete = Job.objects.get(target=entry, operation=JobOperation.DELETE_ENTRY.value)
-        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_DELETE_ENTRY.value)
-        self.assertEqual(job_delete.dependent_job, job_notify)
-        self.assertIsNone(job_notify.dependent_job)
-
-    @patch('entry.tasks.copy_entry.delay', Mock(side_effect=tasks.copy_entry))
-    @patch('entry.tasks.notify_create_entry.delay', Mock(side_effect=tasks.notify_create_entry))
-    @patch('entry.tasks.notify_entry_create', Mock(return_value=Mock()))
-    def test_notify_event_of_creating_entry_when_copying_entry(self):
-        user = self.admin_login()
-        entry = Entry.objects.create(name='entry', created_user=user, schema=self._entity)
-
-        # register webhook informtion to the entity
-        self._entity.is_enabled_webhook = True
-        self._entity.webhook_url = 'https://www.example.com'
-        self._entity.save()
-
-        resp = self.client.post(reverse('entry:do_copy', args=[entry.id]),
-                                json.dumps({'entries': 'copied_entry\n'}), 'application/json')
-        self.assertEqual(resp.status_code, 200)
-
-        # check there are creating job and notification job
-        copied_entry = Entry.objects.get(name='copied_entry', schema=self._entity, is_active=True)
-        job_copy = Job.objects.get(target=copied_entry, operation=JobOperation.COPY_ENTRY.value)
-        self.assertEqual(job_copy.status, Job.STATUS['DONE'])
-
-        job_notify = Job.objects.get(target=copied_entry,
-                                     operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
-        self.assertEqual(job_notify.status, Job.STATUS['DONE'])
-
-    @patch('entry.tasks.import_entries.delay', Mock(side_effect=tasks.import_entries))
-    @patch('entry.tasks.notify_create_entry.delay', Mock(side_effect=tasks.notify_create_entry))
-    @patch('entry.tasks.notify_entry_create', Mock(return_value=Mock()))
-    def test_notify_event_of_creating_entry_when_importing_entry(self):
-        self.admin_login()
-
-        # register webhook informtion to the entity
-        self._entity.is_enabled_webhook = True
-        self._entity.webhook_url = 'https://www.example.com'
-        self._entity.save()
-
-        fp = self.open_fixture_file('import_data02.yaml')
-        resp = self.client.post(reverse('entry:do_import', args=[self._entity.id]), {'file': fp})
-        self.assertRedirects(resp, '/entry/%s/' % self._entity.id, status_code=303)
-
-        # check there are creating job and notification job
-        entry = Entry.objects.get(name='entry', schema=self._entity, is_active=True)
-        job_import = Job.objects.get(target=self._entity, operation=JobOperation.IMPORT_ENTRY.value)
-        self.assertEqual(job_import.status, Job.STATUS['DONE'])
-
-        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
-        self.assertEqual(job_notify.status, Job.STATUS['DONE'])
-
-    @patch('entry.tasks.import_entries.delay', Mock(side_effect=tasks.import_entries))
-    @patch('entry.tasks.notify_update_entry.delay', Mock(side_effect=tasks.notify_update_entry))
-    @patch('entry.tasks.notify_entry_create', Mock(return_value=Mock()))
-    def test_notify_event_of_updating_entry_when_importing_entry(self):
-        self.admin_login()
-        entry = Entry.objects.create(name='entry', schema=self._entity, is_active=True)
-
-        # register webhook informtion to the entity
-        self._entity.is_enabled_webhook = True
-        self._entity.webhook_url = 'https://www.example.com'
-        self._entity.save()
-
-        fp = self.open_fixture_file('import_data02.yaml')
-        resp = self.client.post(reverse('entry:do_import', args=[self._entity.id]), {'file': fp})
-        self.assertRedirects(resp, '/entry/%s/' % self._entity.id, status_code=303)
-
-        # check there are creating job and notification job
-        job_import = Job.objects.get(target=self._entity, operation=JobOperation.IMPORT_ENTRY.value)
-        self.assertEqual(job_import.status, Job.STATUS['DONE'])
-
-        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
-        self.assertEqual(job_notify.status, Job.STATUS['DONE'])

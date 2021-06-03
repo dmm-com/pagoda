@@ -6,6 +6,7 @@ from airone.lib.http import check_permission
 from airone.lib.http import http_post
 from airone.lib.profile import airone_profile
 
+from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import HttpResponse
 from django.http.response import JsonResponse

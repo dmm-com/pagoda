@@ -1,7 +1,6 @@
 import re
 import io
 import yaml
-import json
 
 from django.http import HttpResponse
 from django.http.response import JsonResponse

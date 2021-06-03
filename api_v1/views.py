@@ -105,11 +105,8 @@ class EntryAPI(APIView):
         # register target Entry to the Elasticsearch
         entry.register_es()
 
-        # run notification job if it's necessary
-        if entry.schema.is_enabled_webhook:
-            job_notify.run()
-        else:
-            job_notify.delete()
+        # run notification job
+        job_notify.run()
 
         entry.del_status(Entry.STATUS_CREATING | Entry.STATUS_EDITING)
 
@@ -187,12 +184,11 @@ class EntryAPI(APIView):
             job = Job.new_delete(user, entry)
 
             # create and run notify delete entry task
-            if entity.is_enabled_webhook and entity.is_active:
-                job_notify = Job.new_notify_delete_entry(user, entry)
-                job_notify.run()
+            job_notify = Job.new_notify_delete_entry(user, entry)
+            job_notify.run()
 
-                job.dependent_job = job_notify
-                job.save(update_fields=['dependent_job'])
+            job.dependent_job = job_notify
+            job.save(update_fields=['dependent_job'])
 
             job.run()
 

@@ -4,7 +4,6 @@ from airone.lib.test import AironeViewTest
 from entity.models import Entity
 
 from unittest import mock
-from user.models import User
 from webhook.models import Webhook
 
 
@@ -75,7 +74,7 @@ class APITest(AironeViewTest):
         mock_requests.post.return_value = mock_resp
 
         resp = self.client.post('/webhook/api/v1/%s' % entity.id, json.dumps({
-            'id': 999999, #invlaid webhook id
+            'id': 999999,  # invlaid webhook id
             'webhook_url': 'https://example.com',
             'label': 'test endpoint',
             'request_headers': [{'key': 'content-type', 'value': 'application/json'}],

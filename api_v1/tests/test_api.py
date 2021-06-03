@@ -223,7 +223,7 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post('/api/v1/entry', json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
-        self.assertFalse(self._test_data['notify_update_entry_is_called'])
+        self.assertTrue(self._test_data['notify_update_entry_is_called'])
 
         entry.refresh_from_db()
         self.assertEqual(entry.name, 'e-1')
@@ -250,7 +250,7 @@ class APITest(AironeViewTest):
         resp = self.client.post('/api/v1/entry', json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(entry.attrs.first().get_latest_value().referral.id, entry_ref.id)
-        self.assertFalse(self._test_data['notify_update_entry_is_called'])
+        self.assertTrue(self._test_data['notify_update_entry_is_called'])
 
     def test_post_entry_with_token(self):
         admin = User.objects.create(username='admin', is_superuser='True')
@@ -701,20 +701,14 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
     @mock.patch('entry.tasks.delete_entry.delay', mock.Mock(side_effect=tasks.delete_entry))
-    @mock.patch('entry.tasks.notify_delete_entry.delay')
-    def test_delete_entry(self, mock_notify_delete_entry):
+    @mock.patch('entry.tasks.notify_delete_entry.delay',
+                mock.Mock(side_effect=tasks.notify_delete_entry))
+    def test_delete_entry(self):
         # wrapper to send delete request in this test
         def send_request(param):
             return self.client.delete('/api/v1/entry', json.dumps(param), 'application/json')
 
         admin = self.admin_login()
-
-        # declare notification mock
-        self._test_data['notify_delete_entry_is_called'] = False
-
-        def notify_side_effect(*args, **kwargs):
-            self._test_data['notify_delete_entry_is_called'] = True
-        mock_notify_delete_entry.side_effect = notify_side_effect
 
         entity1 = Entity.objects.create(name='Entity1', created_user=admin)
         entity2 = Entity.objects.create(name='Entity2', created_user=admin, is_public=False)
@@ -769,9 +763,6 @@ class APITest(AironeViewTest):
         # checks specified entry would be deleted
         entry11.refresh_from_db()
         self.assertFalse(entry11.is_active)
-
-        # checks delete notification wasn't invoked
-        self.assertFalse(self._test_data['notify_delete_entry_is_called'])
 
     @mock.patch('api_v1.auth.datetime')
     def test_expiring_token_lifetime(self, dt_mock):
@@ -886,7 +877,7 @@ class APITest(AironeViewTest):
                               if u.username not in ['_u1', '_u2']]))
 
         # Check notify_event is not called
-        self.assertFalse(self._test_data['notify_create_entry_is_called'])
+        self.assertTrue(self._test_data['notify_create_entry_is_called'])
 
     @mock.patch('entry.tasks.notify_entry_create', mock.Mock(return_value=mock.Mock()))
     @mock.patch('entry.tasks.notify_create_entry.delay',
@@ -894,10 +885,6 @@ class APITest(AironeViewTest):
     def test_notify_event_of_creating_entry_when_create_entry(self):
         user = self.guest_login()
         entity = Entity.objects.create(name='Entity', created_user=user)
-        entity.is_enabled_webhook = True
-        entity.webhook_url = 'https://www.example.com'
-        entity.save()
-
         params = {
             'name': 'entry1',
             'entity': entity.name,
@@ -917,10 +904,6 @@ class APITest(AironeViewTest):
     def test_notify_event_of_updating_entry(self):
         user = self.guest_login()
         entity = Entity.objects.create(name='Entity', created_user=user)
-        entity.is_enabled_webhook = True
-        entity.webhook_url = 'https://www.example.com'
-        entity.save()
-
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
 
         params = {
@@ -942,10 +925,6 @@ class APITest(AironeViewTest):
     def test_notify_event_of_updating_entry_with_specifying_id(self):
         user = self.guest_login()
         entity = Entity.objects.create(name='Entity', created_user=user)
-        entity.is_enabled_webhook = True
-        entity.webhook_url = 'https://www.example.com'
-        entity.save()
-
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
 
         params = {
@@ -969,10 +948,6 @@ class APITest(AironeViewTest):
     def test_notify_event_of_deleting_entry(self):
         user = self.guest_login()
         entity = Entity.objects.create(name='Entity', created_user=user)
-        entity.is_enabled_webhook = True
-        entity.webhook_url = 'https://www.example.com'
-        entity.save()
-
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
 
         resp = self.client.delete('/api/v1/entry', json.dumps({
