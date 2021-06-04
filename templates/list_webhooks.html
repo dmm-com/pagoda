@@ -229,7 +229,7 @@ var save_settings = function(e){
   });
 
   // When URL input is invalid, this won't accept to submit
-  if (! $('#webhook_label').val()) {
+  if (! $('#webhook_url').val()) {
     $('#webhook_url_error').text('この項目の入力は必須です');
     $('#webhook_url').addClass('is-invalid');
     return false;
