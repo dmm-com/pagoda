@@ -2,7 +2,7 @@
   "name": "airone",
   "version": "1.0.0",
   "description": "[![CircleCI](https://circleci.com/gh/dmm-com/airone.svg?style=svg&circle-token=2e12c068b0ed1bab9d0c2d72529d5ee1da9b53b4)](https://circleci.com/gh/dmm-com/airone)",
-  "main": "index.js",
+  "main": "App.js",
   "directories": {
     "doc": "docs"
   },

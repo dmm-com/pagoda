@@ -1,22 +1,12 @@
-import {makeStyles} from "@material-ui/core/styles";
-import {grey} from "@material-ui/core/colors";
 import React, {useEffect, useState} from "react";
-import {Breadcrumbs, Select} from "@material-ui/core";
+import {Select} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import {Link} from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
-
-const useStyles = makeStyles((theme) => ({
-    breadcrumbs: {
-        padding: theme.spacing(1),
-        marginBottom: theme.spacing(1),
-        backgroundColor: grey[300],
-    },
-}));
+import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
 
 export default function AdvancedSearch(props) {
-    const classes = useStyles();
     const [entities, setEntities] = useState([]);
 
     useEffect(() => {
@@ -40,10 +30,10 @@ export default function AdvancedSearch(props) {
 
     return (
         <div className="container-fluid">
-            <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumbs}>
+            <AironeBreadcrumbs>
                 <Typography component={Link} to='/new-ui/'>Top</Typography>
                 <Typography color="textPrimary">高度な検索</Typography>
-            </Breadcrumbs>
+            </AironeBreadcrumbs>
 
             <Typography variant="h5">検索条件:</Typography>
 

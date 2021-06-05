@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import Button from "@material-ui/core/Button";
-import {Breadcrumbs, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
+import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import {Link} from "react-router-dom";
 import EditIcon from '@material-ui/icons/Edit';
@@ -9,7 +9,7 @@ import GroupIcon from '@material-ui/icons/Group';
 import DeleteIcon from '@material-ui/icons/Delete';
 import {makeStyles} from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
-import {grey} from "@material-ui/core/colors";
+import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -17,11 +17,6 @@ const useStyles = makeStyles((theme) => ({
     },
     entityName: {
         margin: theme.spacing(1),
-    },
-    breadcrumbs: {
-        padding: theme.spacing(1),
-        marginBottom: theme.spacing(1),
-        backgroundColor: grey[300],
     },
 }));
 
@@ -37,10 +32,10 @@ export default function Entity(props) {
 
     return (
         <div className="container-fluid">
-            <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumbs}>
+            <AironeBreadcrumbs>
                 <Typography component={Link} to='/new-ui/'>Top</Typography>
                 <Typography color="textPrimary">エンティティ一覧</Typography>
-            </Breadcrumbs>
+            </AironeBreadcrumbs>
 
             <div className="row">
                 <div className="col">

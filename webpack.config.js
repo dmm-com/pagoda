@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   entry: {
-    index: "./frontend/src/index.js"
+    index: "./frontend/src/App.js"
   },
   output: {
     filename: "main.js",

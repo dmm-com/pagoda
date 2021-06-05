@@ -1,14 +1,12 @@
 import {makeStyles} from "@material-ui/core/styles";
-import {grey} from "@material-ui/core/colors";
 import React, {useEffect, useState} from "react";
-import {Breadcrumbs, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
+import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import {Link} from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
-import EditIcon from "@material-ui/icons/Edit";
-import DeleteIcon from "@material-ui/icons/Delete";
 import SettingsIcon from '@material-ui/icons/Settings';
+import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -16,11 +14,6 @@ const useStyles = makeStyles((theme) => ({
     },
     entityName: {
         margin: theme.spacing(1),
-    },
-    breadcrumbs: {
-        padding: theme.spacing(1),
-        marginBottom: theme.spacing(1),
-        backgroundColor: grey[300],
     },
 }));
 
@@ -46,11 +39,11 @@ export default function SearchResults(props) {
 
     return (
         <div className="container-fluid">
-            <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumbs}>
+            <AironeBreadcrumbs>
                 <Typography component={Link} to='/new-ui/'>Top</Typography>
                 <Typography component={Link} to='/new-ui/advanced_search'>高度な検索</Typography>
                 <Typography color="textPrimary">検索結果</Typography>
-            </Breadcrumbs>
+            </AironeBreadcrumbs>
 
             <div className="row">
                 <div className="col">

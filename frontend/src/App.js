@@ -6,16 +6,16 @@ import {
     Route,
 } from "react-router-dom";
 import Grid from '@material-ui/core/Grid';
-import LeftMenu from "./LeftMenu";
-import Header from "./Header";
-import Entity from "./Entity";
-import Entry from "./Entry";
-import Dashboard from "./Dashboard";
-import User from "./User";
-import Group from "./Group";
-import Job from "./Job";
-import SearchResults from "./SearchResults";
-import AdvancedSearch from "./AdvancedSearch";
+import LeftMenu from "./components/LeftMenu";
+import Header from "./components/Header";
+import Entity from "./pages/Entity";
+import Entry from "./pages/Entry";
+import Dashboard from "./pages/Dashboard";
+import User from "./pages/User";
+import Group from "./pages/Group";
+import Job from "./pages/Job";
+import SearchResults from "./pages/SearchResults";
+import AdvancedSearch from "./pages/AdvancedSearch";
 
 function App() {
     return (

@@ -1,8 +1,6 @@
 import {makeStyles} from "@material-ui/core/styles";
-import {grey} from "@material-ui/core/colors";
 import React, {useEffect, useState} from "react";
 import {
-    Breadcrumbs,
     List,
     ListItem,
     Table,
@@ -17,6 +15,7 @@ import {Link} from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import DeleteIcon from "@material-ui/icons/Delete";
+import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -24,11 +23,6 @@ const useStyles = makeStyles((theme) => ({
     },
     entityName: {
         margin: theme.spacing(1),
-    },
-    breadcrumbs: {
-        padding: theme.spacing(1),
-        marginBottom: theme.spacing(1),
-        backgroundColor: grey[300],
     },
 }));
 
@@ -56,10 +50,10 @@ export default function Group(props) {
 
     return (
         <div className="container-fluid">
-            <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumbs}>
+            <AironeBreadcrumbs>
                 <Typography component={Link} to='/new-ui/'>Top</Typography>
                 <Typography color="textPrimary">グループ管理</Typography>
-            </Breadcrumbs>
+            </AironeBreadcrumbs>
 
             <div className="row">
                 <div className="col">
