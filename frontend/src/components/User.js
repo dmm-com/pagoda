@@ -1,14 +1,12 @@
-import React, {useEffect, useState} from "react";
-import Button from "@material-ui/core/Button";
 import {Breadcrumbs, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
-import Paper from "@material-ui/core/Paper";
-import {Link} from "react-router-dom";
-import EditIcon from '@material-ui/icons/Edit';
-import HistoryIcon from '@material-ui/icons/History';
-import GroupIcon from '@material-ui/icons/Group';
-import DeleteIcon from '@material-ui/icons/Delete';
-import {makeStyles} from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
+import {Link} from "react-router-dom";
+import Button from "@material-ui/core/Button";
+import Paper from "@material-ui/core/Paper";
+import EditIcon from "@material-ui/icons/Edit";
+import DeleteIcon from "@material-ui/icons/Delete";
+import React, {useEffect, useState} from "react";
+import {makeStyles} from "@material-ui/core/styles";
 import {grey} from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
@@ -25,21 +23,27 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function Entity(props) {
+export default function User(props) {
     const classes = useStyles();
-    const [entities, setEntities] = useState([]);
+    const [users, setUsers] = useState([]);
 
     useEffect(() => {
-        fetch('/entity/api/v1/get_entities')
-            .then(resp => resp.json())
-            .then(data => setEntities(data.entities));
+        // TODO implement internal API then call it here
+        setUsers([
+            {
+                id: 1,
+                name: 'test',
+                email: 'test@example.com',
+                created_at: '',
+            },
+        ])
     }, []);
 
     return (
         <div className="container-fluid">
             <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumbs}>
                 <Typography component={Link} to='/new-ui/'>Top</Typography>
-                <Typography color="textPrimary">エンティティ一覧</Typography>
+                <Typography color="textPrimary">ユーザ管理</Typography>
             </Breadcrumbs>
 
             <div className="row">
@@ -58,26 +62,21 @@ export default function Entity(props) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>
-                                <span className={classes.entityName}>エンティティ名</span>
-                                <input className={classes.entityName} text='text' placeholder='絞り込む'/>
-                            </TableCell>
-                            <TableCell><Typography>備考</Typography></TableCell>
+                            <TableCell><Typography>名前</Typography></TableCell>
+                            <TableCell><Typography>メールアドレス</Typography></TableCell>
+                            <TableCell><Typography>作成日時</Typography></TableCell>
+                            <TableCell align="right"/>
+                            <TableCell align="right"/>
                             <TableCell align="right"/>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {entities.map((entity) => {
+                        {users.map((user) => {
                             return (
                                 <TableRow>
-                                    <TableCell>
-                                        <Typography
-                                            component={Link}
-                                            to={`/new-ui/entities/${entity.id}`}>
-                                            {entity.name}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell><Typography>{entity.note}</Typography></TableCell>
+                                    <TableCell><Typography>{user.name}</Typography></TableCell>
+                                    <TableCell><Typography>{user.email}</Typography></TableCell>
+                                    <TableCell><Typography>{user.created_at}</Typography></TableCell>
                                     <TableCell align="right">
                                         <Button
                                             variant="contained"
@@ -85,34 +84,29 @@ export default function Entity(props) {
                                             className={classes.button}
                                             startIcon={<EditIcon/>}
                                             component={Link}
-                                            to={`/entity/edit/${entity.id}`}>
-                                            エンティティ編集
+                                            to={`/user/${user.id}/edit`}>
+                                            編集
                                         </Button>
+                                    </TableCell>
+                                    <TableCell align="right">
                                         <Button
                                             variant="contained"
                                             color="primary"
                                             className={classes.button}
-                                            startIcon={<HistoryIcon/>}
+                                            startIcon={<EditIcon/>}
                                             component={Link}
-                                            to={`/entity/history/${entity.id}`}>
-                                            変更履歴
+                                            to={`/user/${user.id}/edit_passwd`}>
+                                            パスワード変更
                                         </Button>
+                                    </TableCell>
+                                    <TableCell align="right">
                                         <Button
                                             variant="contained"
                                             color="primary"
-                                            className={classes.button}
-                                            startIcon={<GroupIcon/>}
-                                            component={Link}
-                                            to={`/acl/${entity.id}`}>
-                                            ACL
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            color="secondary"
                                             className={classes.button}
                                             startIcon={<DeleteIcon/>}
                                             component={Link}
-                                            to={`/entity/do_delete/${entity.id}`}>
+                                            to={`/user/${user.id}/delete`}>
                                             削除
                                         </Button>
                                     </TableCell>

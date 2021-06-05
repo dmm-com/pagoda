@@ -10,6 +10,12 @@ import LeftMenu from "./LeftMenu";
 import Header from "./Header";
 import Entity from "./Entity";
 import Entry from "./Entry";
+import Dashboard from "./Dashboard";
+import User from "./User";
+import Group from "./Group";
+import Job from "./Job";
+import SearchResults from "./SearchResults";
+import AdvancedSearch from "./AdvancedSearch";
 
 function App() {
     return (
@@ -26,19 +32,28 @@ function App() {
                 <Grid item xs={10}>
                     <Switch>
                         <Route path="/new-ui/advanced_search">
-                            高度な検索
+                            <AdvancedSearch/>
                         </Route>
                         <Route path="/new-ui/user">
-                            ユーザ管理
+                            <User/>
                         </Route>
                         <Route path="/new-ui/group">
-                            グループ管理
+                            <Group/>
                         </Route>
                         <Route path="/new-ui/entities/:entityId">
-                            <Entry />
+                            <Entry/>
+                        </Route>
+                        <Route path="/new-ui/entities">
+                            <Entity/>
+                        </Route>
+                        <Route path="/new-ui/jobs">
+                            <Job/>
+                        </Route>
+                        <Route path="/new-ui/search">
+                            <SearchResults/>
                         </Route>
                         <Route path="/">
-                            <Entity/>
+                            <Dashboard/>
                         </Route>
                     </Switch>
                 </Grid>

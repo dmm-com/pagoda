@@ -18,7 +18,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import {Menu, MenuItem} from "@material-ui/core";
+import {Divider, Menu, MenuItem, TableCell} from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -88,6 +88,14 @@ export default function Header(props) {
         setUserAnchorEl(null);
     };
 
+    const [jobAnchorEl, setJobAnchorEl] = useState();
+    const handleClickJob = (event) => {
+        setJobAnchorEl(event.currentTarget);
+    };
+    const handleCloseJob = (event) => {
+        setJobAnchorEl(null);
+    };
+
     return (
         <div className={classes.root}>
             <AppBar position="static">
@@ -100,6 +108,7 @@ export default function Header(props) {
                         AirOne(New UI)
                     </Typography>
 
+                    {/*
                     <Tabs
                         value={location.pathname}
                         onChange={handleChange}
@@ -118,6 +127,7 @@ export default function Header(props) {
                         <Tab label="グループ管理" value="/new-ui/group" icon={<GroupIcon/>}
                              style={{color: grey[50]}}/>
                     </Tabs>
+                    */}
 
                     <Box className={classes.menu}>
                         <IconButton aria-controls="user-menu" aria-haspopup="true" onClick={handleClickUser}
@@ -133,9 +143,25 @@ export default function Header(props) {
                             <MenuItem>ログアウト</MenuItem>
                         </Menu>
 
-                        <IconButton style={{color: grey[50]}}>
+                        <IconButton aria-controls="job-menu" aria-haspopup="true" onClick={handleClickJob}
+                                    style={{color: grey[50]}}>
                             <FormatListBulletedIcon/>
                         </IconButton>
+                        <Menu id="job-menu"
+                              anchorEl={jobAnchorEl}
+                              open={Boolean(jobAnchorEl)}
+                              onClose={handleCloseJob}
+                              keepMounted>
+                            <MenuItem>実行タスクなし</MenuItem>
+                            <Divider light/>
+                            <MenuItem>
+                                <Typography
+                                    component={Link}
+                                    to={`/new-ui/jobs`}>
+                                    ジョブ一覧
+                                </Typography>
+                            </MenuItem>
+                        </Menu>
                     </Box>
 
                     <div className={classes.search}>
@@ -150,7 +176,13 @@ export default function Header(props) {
                             }}
                             inputProps={{'aria-label': 'search'}}
                         />
-                        <Button variant="contained">検索</Button>
+                        <Button
+                            variant="contained"
+                            component={Link}
+                            to={`/new-ui/search`}
+                        >
+                            検索
+                        </Button>
                     </div>
                 </Toolbar>
             </AppBar>
