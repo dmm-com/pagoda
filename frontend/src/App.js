@@ -16,6 +16,9 @@ import Group from "./pages/Group";
 import Job from "./pages/Job";
 import SearchResults from "./pages/SearchResults";
 import AdvancedSearch from "./pages/AdvancedSearch";
+import EditEntry from "./pages/EditEntity";
+
+const basePath = '/new-ui/';
 
 function App() {
     return (
@@ -31,30 +34,15 @@ function App() {
 
                 <Grid item xs={10}>
                     <Switch>
-                        <Route path="/new-ui/advanced_search">
-                            <AdvancedSearch/>
-                        </Route>
-                        <Route path="/new-ui/user">
-                            <User/>
-                        </Route>
-                        <Route path="/new-ui/group">
-                            <Group/>
-                        </Route>
-                        <Route path="/new-ui/entities/:entityId">
-                            <Entry/>
-                        </Route>
-                        <Route path="/new-ui/entities">
-                            <Entity/>
-                        </Route>
-                        <Route path="/new-ui/jobs">
-                            <Job/>
-                        </Route>
-                        <Route path="/new-ui/search">
-                            <SearchResults/>
-                        </Route>
-                        <Route path="/">
-                            <Dashboard/>
-                        </Route>
+                        <Route path={basePath + "advanced_search"} component={AdvancedSearch}/>
+                        <Route path={basePath + "user"} component={User}/>
+                        <Route path={basePath + "group"} component={Group}/>
+                        <Route path={basePath + "entities/:entityId/entries/:entryId"} component={EditEntry}/>
+                        <Route path={basePath + "entities/:entityId"} component={Entry}/>
+                        <Route path={basePath + "entities"} component={Entity}/>
+                        <Route path={basePath + "jobs"} component={Job}/>
+                        <Route path={basePath + "search"} component={SearchResults}/>
+                        <Route path="/" component={Dashboard}/>
                     </Switch>
                 </Grid>
             </Grid>

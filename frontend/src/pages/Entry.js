@@ -2,7 +2,16 @@ import React, {useEffect, useState} from "react";
 import Button from "@material-ui/core/Button";
 import {useParams, Link} from "react-router-dom";
 import {makeStyles} from "@material-ui/core/styles";
-import {Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
+import {
+    Divider,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TablePagination,
+    TableRow
+} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -25,6 +34,9 @@ export default function Entry(props) {
     const [tabValue, setTabValue] = useState(1);
     const [updated, setUpdated] = useState(false);
 
+    const [page, setPage] = React.useState(0);
+    const [rowsPerPage, setRowsPerPage] = React.useState(100);
+
     useEffect(() => {
         getEntries(entityId)
             .then(resp => resp.json())
@@ -39,6 +51,15 @@ export default function Entry(props) {
     const handleDelete = (event, entryId) => {
         deleteEntry(entryId)
             .then(_ => setUpdated(true));
+    };
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(+event.target.value);
+        setPage(0);
     };
 
     return (
@@ -57,7 +78,7 @@ export default function Entry(props) {
                             color="primary"
                             className={classes.button}
                             component={Link}
-                            to={`/entry/create/${entityId}`}>
+                            to={`/new-ui/entities/${entityId}/entries/1`}>
                             エントリ作成
                         </Button>
                         <Button
@@ -111,39 +132,50 @@ export default function Entry(props) {
             </div>
 
             <div hidden={tabValue !== 1}>
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell><Typography>エントリ名</Typography></TableCell>
-                                <TableCell align="right"/>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {entries.map((entry) => {
-                                return (
-                                    <TableRow>
-                                        <TableCell>
-                                            <Typography>{entry.name}</Typography>
-                                        </TableCell>
-                                        <TableCell align="right">
-                                            <ConfirmableButton
-                                                variant="contained"
-                                                color="secondary"
-                                                className={classes.button}
-                                                startIcon={<DeleteIcon/>}
-                                                component={Link}
-                                                dialogTitle="本当に削除しますか？"
-                                                onClickYes={(e) => handleDelete(e, entry.id)}>
-                                                削除
-                                            </ConfirmableButton>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                <Paper>
+                    <TableContainer component={Paper}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell><Typography>エントリ名</Typography></TableCell>
+                                    <TableCell align="right"/>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {entries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((entry) => {
+                                    return (
+                                        <TableRow>
+                                            <TableCell>
+                                                <Typography>{entry.name}</Typography>
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <ConfirmableButton
+                                                    variant="contained"
+                                                    color="secondary"
+                                                    className={classes.button}
+                                                    startIcon={<DeleteIcon/>}
+                                                    component={Link}
+                                                    dialogTitle="本当に削除しますか？"
+                                                    onClickYes={(e) => handleDelete(e, entry.id)}>
+                                                    削除
+                                                </ConfirmableButton>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <TablePagination
+                        rowsPerPageOptions={[100, 250, 1000]}
+                        component="div"
+                        count={entries.length}
+                        rowsPerPage={rowsPerPage}
+                        page={page}
+                        onChangePage={handleChangePage}
+                        onChangeRowsPerPage={handleChangeRowsPerPage}
+                    />
+                </Paper>
             </div>
 
             <div hidden={tabValue !== 2}>

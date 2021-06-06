@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import Button from "@material-ui/core/Button";
-import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
+import {Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow} from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import {Link} from "react-router-dom";
 import EditIcon from '@material-ui/icons/Edit';
@@ -24,12 +24,23 @@ const useStyles = makeStyles((theme) => ({
 export default function Entity(props) {
     const classes = useStyles();
     const [entities, setEntities] = useState([]);
+    const [page, setPage] = React.useState(0);
+    const [rowsPerPage, setRowsPerPage] = React.useState(100);
 
     useEffect(() => {
         getEntities()
             .then(resp => resp.json())
             .then(data => setEntities(data.entities));
     }, []);
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(+event.target.value);
+        setPage(0);
+    };
 
     return (
         <div className="container-fluid">
@@ -50,74 +61,86 @@ export default function Entity(props) {
                 </div>
             </div>
 
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>
-                                <span className={classes.entityName}>エンティティ名</span>
-                                <input className={classes.entityName} text='text' placeholder='絞り込む'/>
-                            </TableCell>
-                            <TableCell><Typography>備考</Typography></TableCell>
-                            <TableCell align="right"/>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {entities.map((entity) => {
-                            return (
-                                <TableRow>
-                                    <TableCell>
-                                        <Typography
-                                            component={Link}
-                                            to={`/new-ui/entities/${entity.id}`}>
-                                            {entity.name}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell><Typography>{entity.note}</Typography></TableCell>
-                                    <TableCell align="right">
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            className={classes.button}
-                                            startIcon={<EditIcon/>}
-                                            component={Link}
-                                            to={`/entity/edit/${entity.id}`}>
-                                            エンティティ編集
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            className={classes.button}
-                                            startIcon={<HistoryIcon/>}
-                                            component={Link}
-                                            to={`/entity/history/${entity.id}`}>
-                                            変更履歴
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            className={classes.button}
-                                            startIcon={<GroupIcon/>}
-                                            component={Link}
-                                            to={`/acl/${entity.id}`}>
-                                            ACL
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            color="secondary"
-                                            className={classes.button}
-                                            startIcon={<DeleteIcon/>}
-                                            component={Link}
-                                            to={`/entity/do_delete/${entity.id}`}>
-                                            削除
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <Paper>
+
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>
+                                    <span className={classes.entityName}>エンティティ名</span>
+                                    <input className={classes.entityName} text='text' placeholder='絞り込む'/>
+                                </TableCell>
+                                <TableCell><Typography>備考</Typography></TableCell>
+                                <TableCell align="right"/>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {entities.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((entity) => {
+                                return (
+                                    <TableRow>
+                                        <TableCell>
+                                            <Typography
+                                                component={Link}
+                                                to={`/new-ui/entities/${entity.id}`}>
+                                                {entity.name}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell><Typography>{entity.note}</Typography></TableCell>
+                                        <TableCell align="right">
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                className={classes.button}
+                                                startIcon={<EditIcon/>}
+                                                component={Link}
+                                                to={`/entity/edit/${entity.id}`}>
+                                                エンティティ編集
+                                            </Button>
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                className={classes.button}
+                                                startIcon={<HistoryIcon/>}
+                                                component={Link}
+                                                to={`/entity/history/${entity.id}`}>
+                                                変更履歴
+                                            </Button>
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                className={classes.button}
+                                                startIcon={<GroupIcon/>}
+                                                component={Link}
+                                                to={`/acl/${entity.id}`}>
+                                                ACL
+                                            </Button>
+                                            <Button
+                                                variant="contained"
+                                                color="secondary"
+                                                className={classes.button}
+                                                startIcon={<DeleteIcon/>}
+                                                component={Link}
+                                                to={`/entity/do_delete/${entity.id}`}>
+                                                削除
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    rowsPerPageOptions={[100, 250, 1000]}
+                    component="div"
+                    count={entities.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onChangePage={handleChangePage}
+                    onChangeRowsPerPage={handleChangeRowsPerPage}
+                />
+            </Paper>
         </div>
     );
 }
