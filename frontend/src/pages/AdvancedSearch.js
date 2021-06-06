@@ -38,41 +38,45 @@ export default function AdvancedSearch(props) {
             <Typography variant="h5">検索条件:</Typography>
 
             <div className="row">
-                <Typography>検索するエンティティ</Typography>
-                <Select
-                    multiple
-                    native
-                    variant="outlined"
-                >
-                    {entities.map((entity) => (
-                        <option key="entities" value={entity.id}>
-                            {entity.name}
-                        </option>
-                    ))}
-                </Select>
+                <div className="col">
+                    <Typography>検索するエンティティ</Typography>
+                    <Select
+                        multiple
+                        native
+                        variant="outlined"
+                    >
+                        {entities.map((entity) => (
+                            <option key="entities" value={entity.id}>
+                                {entity.name}
+                            </option>
+                        ))}
+                    </Select>
+                </div>
             </div>
 
             <div className="row">
-                <Typography>検索する属性</Typography>
-                <Select
-                    multiple
-                    native
-                    variant="outlined"
-                >
-                    {entities.map((entity) => {
-                        return (
-                            <optgroup label={entity.name}>
-                                {
-                                    entity.attributes.map((attribute) => (
-                                        <option key="attribute" value={attribute.id}>
-                                            {attribute.name}
-                                        </option>
-                                    ))
-                                }
-                            </optgroup>
-                        );
-                    })}
-                </Select>
+                <div className="col">
+                    <Typography>検索する属性</Typography>
+                    <Select
+                        multiple
+                        native
+                        variant="outlined"
+                    >
+                        {entities.map((entity) => {
+                            return (
+                                <optgroup label={entity.name}>
+                                    {
+                                        entity.attributes.map((attribute) => (
+                                            <option key="attribute" value={attribute.id}>
+                                                {attribute.name}
+                                            </option>
+                                        ))
+                                    }
+                                </optgroup>
+                            );
+                        })}
+                    </Select>
+                </div>
             </div>
 
             <Grid container justify="flex-end">

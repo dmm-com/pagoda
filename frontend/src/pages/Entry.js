@@ -2,13 +2,15 @@ import React, {useEffect, useState} from "react";
 import Button from "@material-ui/core/Button";
 import {useParams, Link} from "react-router-dom";
 import {makeStyles} from "@material-ui/core/styles";
-import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
+import {Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import {deleteEntry, getEntries} from "../utils/AironeAPIClient";
+import ConfirmableButton from "../components/ConfirmableButton";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -20,16 +22,23 @@ export default function Entry(props) {
     const classes = useStyles();
     let {entityId} = useParams();
     const [entries, setEntries] = useState([]);
-    const [tabValue, setTabValue] = useState(0);
+    const [tabValue, setTabValue] = useState(1);
+    const [updated, setUpdated] = useState(false);
 
     useEffect(() => {
-        fetch(`/entry/api/v1/get_entries/${entityId}`)
+        getEntries(entityId)
             .then(resp => resp.json())
-            .then(data => setEntries(data.results));
-    }, []);
+            .then(data => setEntries(data.results))
+            .then(_ => setUpdated(false));
+    }, [updated]);
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
+    };
+
+    const handleDelete = (event, entryId) => {
+        deleteEntry(entryId)
+            .then(_ => setUpdated(true));
     };
 
     return (
@@ -88,6 +97,8 @@ export default function Entry(props) {
                 </div>
             </div>
 
+            <Divider />
+
             <Tabs value={tabValue} onChange={handleTabChange}>
                 <Tab label="ダッシュボード" index={0}/>
                 <Tab label="エントリ一覧" index={1}/>
@@ -116,15 +127,16 @@ export default function Entry(props) {
                                             <Typography>{entry.name}</Typography>
                                         </TableCell>
                                         <TableCell align="right">
-                                            <Button
+                                            <ConfirmableButton
                                                 variant="contained"
                                                 color="secondary"
                                                 className={classes.button}
                                                 startIcon={<DeleteIcon/>}
                                                 component={Link}
-                                                to={`/entry/do_delete/${entry.id}`}>
+                                                dialogTitle="本当に削除しますか？"
+                                                onClickYes={(e) => handleDelete(e, entry.id)}>
                                                 削除
-                                            </Button>
+                                            </ConfirmableButton>
                                         </TableCell>
                                     </TableRow>
                                 );

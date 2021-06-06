@@ -10,6 +10,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import {makeStyles} from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import {getEntities} from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -25,7 +26,7 @@ export default function Entity(props) {
     const [entities, setEntities] = useState([]);
 
     useEffect(() => {
-        fetch('/entity/api/v1/get_entities')
+        getEntities()
             .then(resp => resp.json())
             .then(data => setEntities(data.entities));
     }, []);
