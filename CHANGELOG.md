@@ -1,5 +1,9 @@
 # Changelog
 
+## In development
+### Added
+* Added `^` and `$` operators on filtering `text` and `string` typed attributes in advanced search result
+
 ## v3.0.0
 
 ### Added
