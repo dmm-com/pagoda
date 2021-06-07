@@ -5,7 +5,7 @@ from acl.models import ACLBase
 
 class EntityAttr(ACLBase):
     # This parameter is needed to make a relationship to the corresponding Entity at importing
-    parent_entity = models.ForeignKey('Entity')
+    parent_entity = models.ForeignKey('Entity', on_delete=models.SET_NULL, null=True)
 
     type = models.IntegerField(default=0)
     is_mandatory = models.BooleanField(default=False)

@@ -9,7 +9,8 @@ CONF_LDAP = settings.AUTH_CONFIG['LDAP']
 
 class LDAPBackend(object):
     # This method is called by Django to authenticate user by specified username and password.
-    def authenticate(self, username=None, password=None):
+    def authenticate(self, request, username=None, password=None):
+
         # check authentication with local database at first.
         user = User.objects.filter(username=username,
                                    authenticate_type=User.AUTH_TYPE_LOCAL,

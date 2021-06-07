@@ -22,8 +22,8 @@ from .models import User
 @airone_profile
 @http_get
 def index(request):
-    if not request.user.is_authenticated():
-        return HttpResponseSeeOther('/dashboard/login')
+    if not request.user.is_authenticated:
+        return HttpResponseSeeOther('/auth/login')
 
     user = User.objects.get(id=request.user.id)
 

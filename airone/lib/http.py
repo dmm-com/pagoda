@@ -30,8 +30,8 @@ def http_get(func):
         if request.method != 'GET':
             return HttpResponse('Invalid HTTP method is specified', status=400)
 
-        if not request.user.is_authenticated():
-            return HttpResponseSeeOther('/dashboard/login?next=%s?%s' %
+        if not request.user.is_authenticated:
+            return HttpResponseSeeOther('/auth/login?next=%s?%s' %
                                         (request.path, quote(request.GET.urlencode())))
 
         return func(*args, **kwargs)
@@ -66,8 +66,8 @@ def check_superuser(func):
     def wrapper(*args, **kwargs):
         request = args[0]
 
-        if not request.user.is_authenticated():
-            return HttpResponseSeeOther('/dashboard/login')
+        if not request.user.is_authenticated:
+            return HttpResponseSeeOther('/auth/login')
 
         if not request.user.is_superuser:
             return HttpResponse('This page needs administrative permission to access', status=400)
@@ -84,7 +84,7 @@ def http_post(validator=[]):
             if request.method != 'POST':
                 return HttpResponse('Invalid HTTP method is specified', status=400)
 
-            if not request.user.is_authenticated():
+            if not request.user.is_authenticated:
                 return HttpResponse('You have to login to execute this operation', status=401)
 
             try:
@@ -195,7 +195,7 @@ def render(request, template, context={}):
     context['STATUS_ENTRY']['EDITING'] = entry_models.Entry.STATUS_EDITING
 
     # set Version
-    context['version'] = settings.AIRONE['VERSION']
+    context['version'] = settings.AIRONE['VERSION'].decode("utf-8")
 
     return django_render(request, template, context)
 
