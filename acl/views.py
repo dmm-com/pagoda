@@ -1,5 +1,3 @@
-import logging
-
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 
@@ -7,6 +5,7 @@ from airone.lib.acl import ACLType, ACLObjType
 from airone.lib.http import http_get, http_post, render
 from airone.lib.http import check_permission
 from airone.lib.profile import airone_profile
+from airone.lib.log import Logger
 
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute
@@ -14,9 +13,8 @@ from group.models import Group
 from user.models import User
 from .models import ACLBase
 
-Logger = logging.getLogger(__name__)
 
-
+@airone_profile
 @http_get
 @check_permission(ACLBase, ACLType.Full)
 def index(request, obj_id):

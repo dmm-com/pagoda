@@ -2,8 +2,10 @@ import inspect
 import sys
 import os
 
+from airone.lib.types import AttrTypeValue
 from django.test import TestCase, Client, override_settings
 from django.conf import settings
+from entity.models import Entity, EntityAttr
 from user.models import User
 from .elasticsearch import ESS
 
@@ -29,6 +31,37 @@ class AironeTestCase(TestCase):
         # shutil.rmtree(settings.AIRONE['FILE_STORE_PATH'])
         for fname in os.listdir(settings.AIRONE['FILE_STORE_PATH']):
             os.unlink(os.path.join(settings.AIRONE['FILE_STORE_PATH'], fname))
+
+    def create_entity(self, user, name, attrs=[], is_public=True):
+        """
+        This is a helper method to create Entity for test. This method has following parameters.
+        * user      : describes user instance which will be registered on creating Entity
+        * name      : describes name of Entity to be created
+        * is_public : same parameter of creating Entity [True by default]
+        * attrs     : describes EntityAttrs to attach creating Entity
+                      and expects to have following information
+          - name : indicates name of creating EntityAttr
+          - type : indicates type of creating EntityAttr [string by default]
+          - is_mandatory : same parameter of EntityAttr [False by default]
+        """
+        def _get_entity_attr_params(attr_info, attr_param, default_value):
+            if attr_param in attr_info and attr_info[attr_param]:
+                return attr_info[attr_param]
+            else:
+                return default_value
+
+        entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
+        for attr_info in attrs:
+            EntityAttr.objects.create(**{
+                'name': attr_info['name'],
+                'type': _get_entity_attr_params(attr_info, 'type', AttrTypeValue['string']),
+                'is_mandatory': _get_entity_attr_params(attr_info, 'is_mandatory', False),
+                'parent_entity': entity,
+                'created_user': user,
+            })
+            entity.attrs.add()
+
+        return entity
 
 
 class AironeViewTest(AironeTestCase):

@@ -20,7 +20,7 @@
         <th>Note</th>
       </tr>
       {% for result in results %}
-      <tr>
+      <tr {% if result.object.name == search_query %} class="table-primary" {% endif %}>
         {% if result.type == "Entity" %}
           <td><a href="/entry/{{ result.object.id }}/">{{ result.object.name }}</a></td>
         {% else %}
@@ -35,8 +35,4 @@
     該当情報なし
   {% endif %}
 </div>
-{% endblock %}
-
-{% block script %}
-  {% include 'show_search_results/js.html' %}
 {% endblock %}

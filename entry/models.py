@@ -18,6 +18,7 @@ from airone.lib.types import AttrTypeValue
 from airone.lib.elasticsearch import (
     ESS, make_query, execute_query, make_search_results, is_date_check)
 from airone.lib import auto_complement
+from airone.lib.db import get_slave_db
 
 from .settings import CONFIG
 
@@ -29,11 +30,12 @@ class AttributeValue(models.Model):
     MAXIMUM_VALUE_SIZE = (1 << 16)
 
     value = models.TextField()
-    referral = models.ForeignKey(ACLBase, null=True, related_name='referred_attr_value')
+    referral = models.ForeignKey(ACLBase, null=True, related_name='referred_attr_value',
+                                 on_delete=models.SET_NULL)
     data_array = models.ManyToManyField('AttributeValue')
     created_time = models.DateTimeField(auto_now_add=True)
-    created_user = models.ForeignKey(User)
-    parent_attr = models.ForeignKey('Attribute')
+    created_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    parent_attr = models.ForeignKey('Attribute', on_delete=models.SET_NULL, null=True)
     status = models.IntegerField(default=0)
     boolean = models.BooleanField(default=False)
     date = models.DateField(null=True)
@@ -56,7 +58,8 @@ class AttributeValue(models.Model):
 
     # This indicates the parent AttributeValue object, this parameter is usefull to identify
     # leaf AttriuteValue objects.
-    parent_attrv = models.ForeignKey('AttributeValue', null=True, related_name='child')
+    parent_attrv = models.ForeignKey('AttributeValue', null=True, related_name='child',
+                                     on_delete=models.SET_NULL)
 
     def set_status(self, val):
         self.status |= val
@@ -251,8 +254,8 @@ class Attribute(ACLBase):
     values = models.ManyToManyField(AttributeValue)
 
     # This parameter is needed to make a relationship with corresponding EntityAttr
-    schema = models.ForeignKey(EntityAttr)
-    parent_entry = models.ForeignKey('Entry')
+    schema = models.ForeignKey(EntityAttr, on_delete=models.SET_NULL, null=True)
+    parent_entry = models.ForeignKey('Entry', on_delete=models.SET_NULL, null=True)
 
     def __init__(self, *args, **kwargs):
         super(Attribute, self).__init__(*args, **kwargs)
@@ -928,7 +931,7 @@ class Entry(ACLBase):
     STATUS_COMPLEMENTING_ATTRS = 1 << 2
 
     attrs = models.ManyToManyField(Attribute)
-    schema = models.ForeignKey(Entity)
+    schema = models.ForeignKey(Entity, on_delete=models.SET_NULL, null=True)
 
     def __init__(self, *args, **kwargs):
         super(Entry, self).__init__(*args, **kwargs)
@@ -996,7 +999,8 @@ class Entry(ACLBase):
         """
         This returns objects that refer current Entry in the AttributeValue
         """
-        ids = AttributeValue.objects.filter(
+        slave_db = get_slave_db()
+        ids = AttributeValue.objects.using(slave_db).filter(
                 Q(referral=self, is_latest=True) |
                 Q(referral=self, parent_attrv__is_latest=True)
                 ).values_list('parent_attr__parent_entry', flat=True)
@@ -1006,7 +1010,7 @@ class Entry(ACLBase):
         if entity_name:
             query &= Q(schema__name=entity_name)
 
-        return Entry.objects.filter(query)
+        return Entry.objects.using(slave_db).filter(query)
 
     def may_append_attr(self, attr):
         """

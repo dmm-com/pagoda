@@ -1,4 +1,5 @@
 [![CircleCI](https://circleci.com/gh/dmm-com/airone.svg?style=svg&circle-token=2e12c068b0ed1bab9d0c2d72529d5ee1da9b53b4)](https://circleci.com/gh/dmm-com/airone)
+[![codecov](https://codecov.io/gh/dmm-com/airone/branch/master/graph/badge.svg)](https://codecov.io/gh/dmm-com/airone)
 
 # AirOne
 This is a yet another DCIM(Data Center Infrastructure Management).
@@ -51,6 +52,27 @@ character-set-server = utf8mb4
 Then, you should restart MySQL server to apply for this configuration.
 ```
 user@hostname:~$ sudo service mysql restart
+```
+
+### Setting-up Email configuration
+
+This step is optional. You can skip it if you don't use email notifications.
+
+AirOne supports email based notification, now it's mainly used for password-reset. You can set email backend, with like this config:
+
+```
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'xxx'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = 'xxx'
+EMAIL_HOST_PASSWORD = 'xxx'
+EMAIL_USE_TLS = True
+```
+
+If you hope to just try it in your local environment, you can use stdout instead:
+
+```
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ```
 
 ### Initialize AirOne configuratoin
@@ -214,11 +236,23 @@ user@hostname:~/airone/$ tools/register_es_document.py
 $ docker-compose up
 ```
 
+## Confirm Python version
+
+```
+$ pyenv versions
+  system
+* 3.6.9 (set by /home/ubuntu/airone/.python-version)
+  3.8.2
+$ python -V
+Python 3.6.9
+```
+
 ## Setup virtualenv
 
 ```
-$ python -m venv venv
-$ source venv/bin/activate
+$ python -mvenv .venv
+$ source .venv/bin/activate
+$ pip install --upgrade pip
 $ pip install -r requirements.txt
 ```
 
@@ -233,28 +267,46 @@ $ mysql -uairone -h127.0.0.1 -ppassword -e 'create database airone'
 ```
 
 ```
-$ source venv/bin/activate
+$ source .venv/bin/activate
 $ ./tools/clear_and_initdb.sh
 ```
 
 ```
-$ source venv/bin/activate
+$ source .venv/bin/activate
 $ ./tools/register_user.sh --superuser admin
 Password:
 Succeed in register user (admin)
 ```
 
-## Run AirOne
-
-```
-$ source venv/bin/activate
-$ python manage.py collectstatic
-$ python manage.py runserver 0:8080
-```
-
 ## Run Celery
 
 ```
-$ source venv/bin/activate
+$ source .venv/bin/activate
 $ celery -A airone worker -l info
+```
+
+## Setup Static files
+
+Use [WhiteNose](http://whitenoise.evans.io/) for serving static files.
+
+```
+$ source .venv/bin/activate
+$ python manage.py collectstatic
+ 
+You have requested to collect static files at the destination
+location as specified in your settings:
+ 
+    /home/ubuntu/GitHub/airone/static_root
+ 
+This will overwrite existing files!
+Are you sure you want to do this?
+ 
+Type 'yes' to continue, or 'no' to cancel: yes
+```
+
+## Run AirOne
+
+```
+$ source .venv/bin/activate
+$ gunicorn airone.wsgi:application --bind=0.0.0.0:8080 --workers=3
 ```

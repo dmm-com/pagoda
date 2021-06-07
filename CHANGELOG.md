@@ -1,9 +1,23 @@
 # Changelog
 
-## In development
+## v3.0.0
+
+### Added
+* Added handler to report celery exception errors
+* Added password-reset feature
+* Added perform client-side validation on users form
+
+### Changed
+* Update Django version from v1.11 to v2.2 (LTS)
+* Droped python3.5 support
 
 ### Fixed
 * Fixed not being redirected to the original URL after login
+* Fixed some request logs not output
+* Fixed the log message was not output to django.log
+* Fixed the search form on the nav bar cannot handle whitespaces appropriately
+* Fixed a bug at the background processing of creating Entry
+* Fixed show error messages on create-user
 
 ## v2.7.0
 

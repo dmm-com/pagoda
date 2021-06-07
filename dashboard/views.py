@@ -1,4 +1,3 @@
-import logging
 import yaml
 
 from airone.lib.http import render
@@ -6,6 +5,7 @@ from airone.lib.http import http_get, http_post
 from airone.lib.http import http_file_upload
 from airone.lib.http import HttpResponseSeeOther
 from airone.lib.profile import airone_profile
+from airone.lib.log import Logger
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from entity.admin import EntityResource, EntityAttrResource
@@ -24,13 +24,11 @@ IMPORT_INFOS = [
     {'model': 'AttributeValue', 'resource': AttrValueResource},
 ]
 
-Logger = logging.getLogger(__name__)
-
 
 @airone_profile
 def index(request):
     context = {}
-    if request.user.is_authenticated() and User.objects.filter(id=request.user.id).exists():
+    if request.user.is_authenticated and User.objects.filter(id=request.user.id).exists():
         history = []
         # Sort by newest attribute update date (id is auto increment)
         for attr_value in AttributeValue.objects.order_by(
@@ -51,11 +49,13 @@ def index(request):
     return render(request, 'dashboard_user_top.html', context)
 
 
+@airone_profile
 @http_get
 def import_data(request):
     return render(request, 'import.html', {})
 
 
+@airone_profile
 @http_file_upload
 def do_import_data(request, context):
     user = User.objects.get(id=request.user.id)
@@ -88,6 +88,7 @@ def do_import_data(request, context):
     return HttpResponseSeeOther('/dashboard/')
 
 
+@airone_profile
 @http_get
 def search(request):
     query = request.GET.get('query')
@@ -99,7 +100,8 @@ def search(request):
 
     target_models = [Entry, AttributeValue]
 
-    search_results = sum([x.search(query) for x in target_models], [])
+    modified_query = query.strip()
+    search_results = sum([x.search(modified_query) for x in target_models], [])
     dic = {}
 
     for result in search_results:
@@ -126,10 +128,12 @@ def search(request):
     results.sort(key=lambda x: x['object'].name)
 
     return render(request, 'show_search_results.html', {
-        'results': results
+        'search_query': modified_query,
+        'results': results,
     })
 
 
+@airone_profile
 @http_get
 def advanced_search(request):
     entities = [x for x in Entity.objects.filter(is_active=True).order_by('name')

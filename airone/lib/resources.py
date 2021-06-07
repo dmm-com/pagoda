@@ -81,4 +81,4 @@ class AironeModelResource(ModelResource):
         dataset = tablib.Dataset([x in data and data[x] or '' for x in self._IMPORT_INFO['header']],
                                  headers=self._IMPORT_INFO['header'])
 
-        return resource.import_data(dataset)
+        return resource.import_data(dataset, raise_errors=True)

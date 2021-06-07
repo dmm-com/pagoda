@@ -9,7 +9,7 @@
       {% if user.is_authenticated %}
       <li class='navbar'>{% include 'nav_user.html' %}</li>
       {% else %}
-      <li class="navbar"><a href="/dashboard/login" class="nav-link">ログイン</a></li>
+      <li class="navbar"><a href="{% url 'auth:login' %}" class="nav-link">ログイン</a></li>
       {% endif %}
       <li class='navbar'>{% include 'nav_jobs.html' %}
       </li>
@@ -17,7 +17,7 @@
   </div>
   <div>
     <form class="form-inline" action="/dashboard/search/" id="navbar-search-form">
-      <input name='query' class="form-control" type="text" placeholder="Search"/>
+      <input name='query' class="form-control" type="text" placeholder="Search" value="{{ search_query|default:"" }}" />
       <button class="btn btn-outline-secondary" type="submit" form="navbar-search-form">検索</button>
     </form>
   </div>
