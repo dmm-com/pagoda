@@ -16,7 +16,8 @@ import Group from "./pages/Group";
 import Job from "./pages/Job";
 import SearchResults from "./pages/SearchResults";
 import AdvancedSearch from "./pages/AdvancedSearch";
-import EditEntry from "./pages/EditEntity";
+import EditEntity from "./pages/EditEntity";
+import EditEntry from "./pages/EditEntry";
 
 const basePath = '/new-ui/';
 
@@ -37,7 +38,8 @@ function App() {
                         <Route path={basePath + "advanced_search"} component={AdvancedSearch}/>
                         <Route path={basePath + "user"} component={User}/>
                         <Route path={basePath + "group"} component={Group}/>
-                        <Route path={basePath + "entities/:entityId/entries/:entryId"} component={EditEntry}/>
+                        <Route path={basePath + "entities/:entityId/entries/new"} component={EditEntry}/>
+                        <Route path={basePath + "entities/new"} component={EditEntity}/>
                         <Route path={basePath + "entities/:entityId"} component={Entry}/>
                         <Route path={basePath + "entities"} component={Entity}/>
                         <Route path={basePath + "jobs"} component={Job}/>

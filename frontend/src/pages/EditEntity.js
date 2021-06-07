@@ -9,7 +9,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // TODO implement it
-export default function EditEntry(props) {
+export default function EditEntity(props) {
     const classes = useStyles();
     const [entity, setEntity] = useState({attributes: []});
 

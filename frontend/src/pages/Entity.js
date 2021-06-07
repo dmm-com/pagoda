@@ -52,7 +52,14 @@ export default function Entity(props) {
             <div className="row">
                 <div className="col">
                     <div className="float-left">
-                        <Button className={classes.button} variant="outlined" color="primary">新規作成</Button>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            className={classes.button}
+                            component={Link}
+                            to={`/new-ui/entities/new`}>
+                            エンティティ作成
+                        </Button>
                         <Button className={classes.button} variant="outlined" color="secondary">エクスポート</Button>
                         <Button className={classes.button} variant="outlined" color="secondary">インポート</Button>
                     </div>

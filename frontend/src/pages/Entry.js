@@ -78,7 +78,7 @@ export default function Entry(props) {
                             color="primary"
                             className={classes.button}
                             component={Link}
-                            to={`/new-ui/entities/${entityId}/entries/1`}>
+                            to={`/new-ui/entities/${entityId}/entries/new`}>
                             エントリ作成
                         </Button>
                         <Button
