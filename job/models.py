@@ -39,6 +39,9 @@ class JobOperation(Enum):
     CREATE_ENTITY = 10
     EDIT_ENTITY = 11
     DELETE_ENTITY = 12
+    NOTIFY_CREATE_ENTRY = 13
+    NOTIFY_UPDATE_ENTRY = 14
+    NOTIFY_DELETE_ENTRY = 15
 
 
 class Job(models.Model):
@@ -82,6 +85,9 @@ class Job(models.Model):
     # These are the jobs that should be proceeded transparently.
     HIDDEN_OPERATIONS = [
         JobOperation.REGISTER_REFERRALS.value,
+        JobOperation.NOTIFY_CREATE_ENTRY.value,
+        JobOperation.NOTIFY_UPDATE_ENTRY.value,
+        JobOperation.NOTIFY_DELETE_ENTRY.value,
     ]
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -265,6 +271,9 @@ class Job(models.Model):
                 JobOperation.CREATE_ENTITY.value: entity_task.create_entity,
                 JobOperation.EDIT_ENTITY.value: entity_task.edit_entity,
                 JobOperation.DELETE_ENTITY.value: entity_task.delete_entity,
+                JobOperation.NOTIFY_CREATE_ENTRY.value: entry_task.notify_create_entry,
+                JobOperation.NOTIFY_UPDATE_ENTRY.value: entry_task.notify_update_entry,
+                JobOperation.NOTIFY_DELETE_ENTRY.value: entry_task.notify_delete_entry,
             }
 
         return kls._METHOD_TABLE
@@ -342,6 +351,21 @@ class Job(models.Model):
     @classmethod
     def new_delete_entity(kls, user, target, text='', params={}):
         return kls._create_new_job(user, target, JobOperation.DELETE_ENTITY.value, text, params)
+
+    @classmethod
+    def new_notify_create_entry(kls, user, target, text='', params={}):
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_CREATE_ENTRY.value,
+                                   text, params)
+
+    @classmethod
+    def new_notify_update_entry(kls, user, target, text='', params={}):
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_UPDATE_ENTRY.value,
+                                   text, params)
+
+    @classmethod
+    def new_notify_delete_entry(kls, user, target, text='', params={}):
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_DELETE_ENTRY.value,
+                                   text, params)
 
     def set_cache(self, value):
         with open('%s/job_%d' % (settings.AIRONE['FILE_STORE_PATH'], self.id), 'wb') as fp:

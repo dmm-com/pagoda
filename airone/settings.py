@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'dashboard',
     'entry',
     'job',
+    'webhook',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

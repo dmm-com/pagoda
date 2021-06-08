@@ -7,6 +7,10 @@
   result (#97). But there is a limitation that it could available only for
   'text' and 'string' typed attributes (see also #129).
 
+* Added a new feature to be able to notify 3rd party systems through with
+  calling webhook endpoints when Entry is created, edited and deleted.
+  (NOTE: This requires to change DB schema. see also #135)
+
 ### Fixed
 * Fixed a bug that entries which are searched in an editing page's form would
   not be found (#124).
