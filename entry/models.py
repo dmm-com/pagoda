@@ -91,7 +91,7 @@ class AttributeValue(models.Model):
 
         return cloned_value
 
-    def get_value(self, with_metainfo=False):
+    def get_value(self, with_metainfo=False, serialize=False):
         """
         This returns registered value according to the type of Attribute
         """
@@ -132,7 +132,10 @@ class AttributeValue(models.Model):
             value = self.boolean
 
         elif self.parent_attr.schema.type == AttrTypeValue['date']:
-            value = self.date
+            if serialize:
+                value = str(self.date)
+            else:
+                value = self.date
 
         elif self.parent_attr.schema.type == AttrTypeValue['object']:
             value = _get_object_value(self)
@@ -1168,7 +1171,7 @@ class Entry(ACLBase):
             },
             'attrs': [{
                 'name': x.schema.name,
-                'value': x.get_latest_value().get_value()
+                'value': x.get_latest_value().get_value(serialize=True)
             } for x in attrs]
         }
 
