@@ -80,6 +80,7 @@ class ElasticSearchTest(TestCase):
         query = elasticsearch.make_query(
             hint_entity_ids=['1'],
             hint_attrs=[{'name': 'a1', 'keyword': 'a'}, {'name': 'a2', 'keyword': ''}],
+            hint_attr_value=None,
             entry_name='entry1',
             or_match=False,
         )

@@ -1396,7 +1396,7 @@ class Entry(ACLBase):
 
     @classmethod
     def search_entries(kls, user, hint_entity_ids, hint_attrs=[], limit=CONFIG.MAX_LIST_ENTRIES,
-                       entry_name=None, or_match=False, hint_referral=False):
+                       entry_name=None, or_match=False, hint_referral=False, hint_attr_value=None):
         """Main method called from simple search and advanced search.
 
         Do the following:
@@ -1425,7 +1425,7 @@ class Entry(ACLBase):
 
         """
         # make query for elasticsearch to retrieve data user wants
-        query = make_query(hint_entity_ids, hint_attrs, entry_name, or_match)
+        query = make_query(hint_entity_ids, hint_attrs, hint_attr_value, entry_name, or_match)
 
         # sending request to elasticsearch with making query
         resp = execute_query(query)
