@@ -3,24 +3,38 @@
 ## In development
 
 ### Added
+* Added `^` and `$` operators on filtering attribute values in advanced search
+  result (#97). But there is a limitation that it could available only for
+  'text' and 'string' typed attributes (see also #129).
+
+### Fixed
+* Fixed a bug that entries which are searched in an editing page's form would
+  not be found (#124).
+
+## v3.0.0
+
+### Added
 * Added handler to report celery exception errors
+* Added password-reset feature
+* Added perform client-side validation on users form
+
+### Changed
+* Update Django version from v1.11 to v2.2 (LTS)
+* Droped python3.5 support
 
 ### Fixed
 * Fixed not being redirected to the original URL after login
 * Fixed some request logs not output
 * Fixed the log message was not output to django.log
-
-## v2.8.0
-
-### Added
-* Added password-reset feature
+* Fixed the search form on the nav bar cannot handle whitespaces appropriately
+* Fixed a bug at the background processing of creating Entry
+* Fixed show error messages on create-user
 
 ## v2.7.0
 
 ### Changed
 * Changed implementation of Entity to create, edit and delete it at Celery.
 * Changed to show unauthorized entity on the dashboard
-* Update Django version from v1.11 to v2.2 (LTS)
 
 ## v2.6.0
 

@@ -174,7 +174,8 @@ def get_attr_referrals(request, attr_id):
             query_name = Q(name__icontains=keyword)
 
         return [{'id': x.id, 'name': x.name} for x in
-                model.objects.filter(Q(**query_params), query_name)[0:CONFIG.MAX_LIST_REFERRALS]]
+                model.objects.filter(Q(**query_params), query_name).order_by('name')
+                [0:CONFIG.MAX_LIST_REFERRALS]]
 
     def _get_referral_entries(attr):
         return _get_referral_objects(attr, Entry, {
