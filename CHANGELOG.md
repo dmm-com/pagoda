@@ -1,8 +1,15 @@
 # Changelog
 
 ## In development
+
 ### Added
-* Added `^` and `$` operators on filtering `text` and `string` typed attributes in advanced search result
+* Added `^` and `$` operators on filtering attribute values in advanced search
+  result (#97). But there is a limitation that it could available only for
+  'text' and 'string' typed attributes (see also #129).
+
+### Fixed
+* Fixed a bug that entries which are searched in an editing page's form would
+  not be found (#124).
 
 ## v3.0.0
 
