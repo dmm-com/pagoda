@@ -149,6 +149,7 @@ def advanced_search_result(request):
     is_all_entities = request.GET.get('is_all_entities') == 'true'
     has_referral = request.GET.get('has_referral') == 'true'
     attrinfo = request.GET.get('attrinfo')
+    entry_name = request.GET.get('entry_name')
 
     # check entity params
     if not is_all_entities:
@@ -186,11 +187,13 @@ def advanced_search_result(request):
                                         entities,
                                         hint_attrs,
                                         CONFIG.MAXIMUM_SEARCH_RESULTS,
+                                        entry_name,
                                         hint_referral=has_referral),
         'max_num': CONFIG.MAXIMUM_SEARCH_RESULTS,
         'entities': ','.join([str(x) for x in entities]),
         'has_referral': has_referral,
         'is_all_entities': is_all_entities,
+        'entry_name': entry_name,
     })
 
 

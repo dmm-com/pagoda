@@ -177,6 +177,7 @@ $(document).ready(function() {
         for (const entity of '{{ entities }}'.split(',')) {
             params.push('entity[]=' +  entity);
         }
+        params.push('entry_name=' + $('.hint_entry_name').val());
         params.push('attrinfo=' + encodeURIComponent(JSON.stringify(get_attrinfo())));
         {% if has_referral %}
         params.push('has_referral=' + $('.narrow_down_referral').val());

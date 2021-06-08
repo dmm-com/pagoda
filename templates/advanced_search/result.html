@@ -36,7 +36,7 @@
     <tr>
       <th>
         Name<br/>
-        <input type='text' class='input-sm narrow_down_entries hint_entry_name' attrname='{{ attrname }}'></input>
+        <input type='text' class='input-sm narrow_down_entries hint_entry_name' attrname='{{ attrname }}' value="{{ entry_name|default_if_none:'' }}"></input>
       </th>
       {% for hint_attr in hint_attrs %}
       <th>
