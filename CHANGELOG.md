@@ -14,6 +14,7 @@
 ### Fixed
 * Fixed a bug that entries which are searched in an editing page's form would
   not be found (#124).
+* Fixed a search query timeout for long keywords (#145)
 
 ## v3.0.0
 

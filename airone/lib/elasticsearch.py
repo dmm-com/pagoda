@@ -122,7 +122,7 @@ __all__ = [
 ]
 
 
-def make_query(hint_entity_ids, hint_attrs, entry_name, or_match):
+def make_query(hint_entity_ids, hint_attrs, hint_attr_value, entry_name, or_match):
     """Create a search query for Elasticsearch.
 
     Do the following:
@@ -180,6 +180,18 @@ def make_query(hint_entity_ids, hint_attrs, entry_name, or_match):
                         'should': [
                             {'term': {'attr.name': x['name']}} for x in hint_attrs if 'name' in x
                         ]
+                    }
+                }
+            }
+        })
+
+    if hint_attr_value:
+        query['query']['bool']['filter'].append({
+            'nested': {
+                'path': 'attr',
+                'query': {
+                    'wildcard': {
+                        'attr.value': "*" + str(hint_attr_value) + "*"
                     }
                 }
             }
