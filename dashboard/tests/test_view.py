@@ -106,7 +106,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse('dashboard:index'))
         self.assertEqual(resp.status_code, 200)
-        self.assertIsNotNone(resp.context["version"])
+        self.assertIsInstance(resp.context["version"], str)
         for i, x in enumerate(resp.context["last_entries"]):
             self.assertEqual(x['attr_value'].id, obj_attrv_list[i]['id'])
         for i, x in enumerate(resp.context["navigator"]['entities']):
