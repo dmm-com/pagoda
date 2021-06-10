@@ -182,7 +182,12 @@ class ViewTest(AironeViewTest):
         # test to show advanced_search_result page
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
             'entity[]': [x.id for x in Entity.objects.filter(name__regex='^entity-')],
-            'attr[]': ['attr'],
+            'attr[]': ['attr'],  # an older param will be deprecated
+        })
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'entity[]': [x.id for x in Entity.objects.filter(name__regex='^entity-')],
+            'attrinfo': json.dumps([{'name': 'attr'}]),  # A newer param
         })
         self.assertEqual(resp.status_code, 200)
 
@@ -232,8 +237,22 @@ class ViewTest(AironeViewTest):
                 job.get_cache()
 
         # test to show advanced_search_result page without mandatory params
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {})
+        self.assertEqual(resp.status_code, 400)
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'entity[]': [x.id for x in Entity.objects.filter(name__regex='^entity-')],
+        })
+        self.assertEqual(resp.status_code, 400)
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'is_all_entities': 'true',
+        })
+        self.assertEqual(resp.status_code, 400)
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
             'attr[]': ['attr'],
+        })
+        self.assertEqual(resp.status_code, 400)
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'attrinfo': json.dumps([{'name': 'attr'}]),
         })
         self.assertEqual(resp.status_code, 400)
 

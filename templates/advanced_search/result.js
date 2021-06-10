@@ -99,8 +99,8 @@ function reconstruct_tbody(results) {
 
     new_elem_entry.append(`<th><a href='/entry/show/${ result.entry.id }/'>${ result.entry.name } [${ result.entity.name}]</a></th>`);
 
-    {% for attrname in attrs %}
-      new_elem_entry.append(make_attr_elem(result.attrs['{{ attrname }}']));
+    {% for hint_attr in hint_attrs %}
+      new_elem_entry.append(make_attr_elem(result.attrs['{{ hint_attr.name }}']));
     {% endfor %}
 
     {% if has_referral %}
@@ -170,6 +170,20 @@ $(document).ready(function() {
         $('#entry_count').text(`(${ data.result.ret_count } 件)`);
 
         reconstruct_tbody(data.result.ret_values);
+
+        // preserve a permalnk via pushState API to the advanced_search view (not entry-search API)
+        // to filter search results with attribute keywords
+        let params = [];
+        for (const entity of '{{ entities }}'.split(',')) {
+            params.push('entity[]=' +  entity);
+        }
+        params.push('entry_name=' + $('.hint_entry_name').val());
+        params.push('attrinfo=' + encodeURIComponent(JSON.stringify(get_attrinfo())));
+        {% if has_referral %}
+        params.push('has_referral=' + $('.narrow_down_referral').val());
+        {% endif %}
+        window.history.pushState('', '', 'advanced_search_result?' + params.join('&'));
+
       }).fail(function(data){
         MessageBox.error(data.responseText);
       });
