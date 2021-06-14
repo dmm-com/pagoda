@@ -12,7 +12,7 @@
         </tr>
       </thead>
       <tbody id='entry_container'>
-        {% for entry in entries %}
+        {% for entry in page_obj %}
 
         <tr>
           {% if entry.status|bitwise_and:STATUS_ENTRY.CREATING %}

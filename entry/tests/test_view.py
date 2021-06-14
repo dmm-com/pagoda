@@ -132,6 +132,22 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('entry:index', args=[entity.id]))
         self.assertEqual(resp.status_code, 200)
 
+    def test_get_index_with_page(self):
+        self.admin_login()
+
+        resp = self.client.get(reverse('entry:index', args=[self._entity.id]), {'page': 1})
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.get(reverse('entry:index', args=[self._entity.id]), {'page': 100})
+        self.assertEqual(resp.status_code, 400)
+        resp = self.client.get(reverse('entry:index', args=[self._entity.id]), {'page': 'invalid'})
+        self.assertEqual(resp.status_code, 400)
+
+    def test_get_index_with_keyword(self):
+        self.admin_login()
+
+        resp = self.client.get(reverse('entry:index', args=[self._entity.id]), {'keyword': 'test'})
+        self.assertEqual(resp.status_code, 200)
+
     def test_get_with_inferior_user_permission(self):
         user = self.guest_login()
 
@@ -3066,7 +3082,7 @@ class ViewTest(AironeViewTest):
             resp = self.client.get(reverse(test_suite, args=[entry.id]))
             self.assertEqual(resp.status_code, 302)
             self.assertEqual(resp.url,
-                             '/entry/restore/{}/?search_name={}'.format(entity.id, entry.name))
+                             '/entry/restore/{}/?keyword={}'.format(entity.id, entry.name))
 
     def test_not_to_show_under_processing_entry(self):
         user = self.guest_login()
@@ -3156,23 +3172,28 @@ class ViewTest(AironeViewTest):
         # to check that entries that are set status would not be listed at restore page
         entries[1].set_status(Entry.STATUS_CREATING)
 
-        resp = self.client.get(reverse('entry:restore', args=[entity.id]))
+        resp = self.client.get(reverse('entry:restore', args=[entity.id]), {'page': 1})
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.context['entries']), 2)
-        self.assertEqual(len(resp.context['entries']), resp.context['list_count'])
-        self.assertEqual(len(resp.context['entries']), resp.context['total_count'])
+        self.assertEqual(resp.context['entity'].id, entity.id)
+        self.assertEqual(len(resp.context['page_obj']), 2)
 
         # check listing entries are ordered by desc
-        self.assertEqual(resp.context['entries'][0].name.find('e-2'), 0)
-        self.assertEqual(resp.context['entries'][1].name.find('e-0'), 0)
+        self.assertEqual(resp.context['page_obj'][0].name.find('e-2'), 0)
+        self.assertEqual(resp.context['page_obj'][1].name.find('e-0'), 0)
 
         # If called from other than the job list,
         # confirm that the search keyword has not been entered
-        self.assertEqual(resp.context['search_name'], '')
+        self.assertIsNone(resp.context['keyword'])
 
         # If called from the job list, make sure that the search keyword has been entered
-        resp = self.client.get('/entry/restore/%d/?search_name=%s' % (entity.id, entries[0].name))
-        self.assertEqual(resp.context['search_name'], entries[0].name)
+        resp = self.client.get('/entry/restore/%d/?keyword=%s' % (entity.id, entries[0].name))
+        self.assertEqual(resp.context['keyword'], entries[0].name)
+
+        # If the page is invalid
+        resp = self.client.get(reverse('entry:restore', args=[entity.id]), {'page': 100})
+        self.assertEqual(resp.status_code, 400)
+        resp = self.client.get(reverse('entry:restore', args=[entity.id]), {'page': 'invalid'})
+        self.assertEqual(resp.status_code, 400)
 
     @patch('entry.tasks.restore_entry.delay', Mock(side_effect=tasks.restore_entry))
     def test_restore_entry(self):

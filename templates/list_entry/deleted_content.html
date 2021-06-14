@@ -12,7 +12,7 @@
         </tr>
       </thead>
       <tbody id='entry_container'>
-        {% for entry in entries %}
+        {% for entry in page_obj %}
         {% if entry.status == 0 %}
         <tr>
           <td><a class='show_deleted_entry' data-toggle="modal" data-target="#deleted_entry_info" href='#' entry_id='{{ entry.id }}'>{{ entry.name }}</a></td>
