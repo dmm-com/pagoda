@@ -12,6 +12,9 @@
 * Added a feature to be able to pagenate Entries in the list page for each
   Entities (#114).
 
+### Changed
+* Replace ldap3 with python-ldap for solving license problem (#134).
+
 ### Fixed
 * Fixed a bug that entries which are searched in an editing page's form would
   not be found (#124).
