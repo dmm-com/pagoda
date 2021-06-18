@@ -23,6 +23,26 @@ export function getAdvancedSearchResults(entityIds, attributeIds, isAllEntities,
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
+export function createEntity(name, note, attrs) {
+    return fetch(
+        `/entity/do_create`,
+        {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({
+                name: name,
+                note: note,
+                is_toplevel: false,
+                attrs: attrs,
+            }),
+        }
+    );
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
 export function createEntry(entityId, name, attrs) {
     return fetch(
         `/entry/do_create/${entityId}/`,
