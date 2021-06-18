@@ -6,10 +6,14 @@
 * Added `^` and `$` operators on filtering attribute values in advanced search
   result (#97). But there is a limitation that it could available only for
   'text' and 'string' typed attributes (see also #129).
-
 * Added a new feature to be able to notify 3rd party systems through with
   calling webhook endpoints when Entry is created, edited and deleted.
   (NOTE: This requires to change DB schema. see also #135)
+* Added a feature to be able to pagenate Entries in the list page for each
+  Entities (#114).
+
+### Changed
+* Replace ldap3 with python-ldap for solving license problem (#134).
 
 ### Fixed
 * Fixed a bug that entries which are searched in an editing page's form would
