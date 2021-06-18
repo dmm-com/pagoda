@@ -43,8 +43,7 @@ export default function AdvancedSearch(props) {
                     <Select
                         multiple
                         native
-                        variant="outlined"
-                    >
+                        variant="outlined">
                         {entities.map((entity) => (
                             <option key="entities" value={entity.id}>
                                 {entity.name}

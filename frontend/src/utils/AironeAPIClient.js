@@ -43,6 +43,20 @@ export function createEntity(name, note, attrs) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
+export function deleteEntity(entityId) {
+    return fetch(
+        `/entity/do_delete/${entityId}`,
+        {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({}),
+        }
+    );
+}
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
 export function createEntry(entityId, name, attrs) {
     return fetch(
         `/entry/do_create/${entityId}/`,

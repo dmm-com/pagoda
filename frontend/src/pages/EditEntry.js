@@ -45,13 +45,14 @@ export default function EditEntry(props) {
     const handleSubmit = (event) => {
         const attrs = Object.keys(attributes).map((name) => {
             return {
-                id: '3',
+                id: '4',
                 type: '2',
                 value: [{'data': attributes[name]}],
             };
         });
         createEntry(entityId, name, attrs)
-            .then(resp => console.log(resp));
+            .then(resp => resp.json())
+            .then(data => history.push(`/new-ui/entities/${entityId}/entries/${data.entry_id}`));
 
         event.preventDefault();
     };
@@ -69,7 +70,8 @@ export default function EditEntry(props) {
                 <div className='row'>
                     <div className="col">
                         <div className="float-right">
-                            <Button className={classes.button} type="submit" variant="contained" color="secondary">保存</Button>
+                            <Button className={classes.button} type="submit" variant="contained"
+                                    color="secondary">保存</Button>
                         </div>
                         <Table className="table table-bordered">
                             <TableBody>

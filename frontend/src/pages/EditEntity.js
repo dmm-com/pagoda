@@ -3,7 +3,7 @@ import {makeStyles} from "@material-ui/core/styles";
 import {Table, TableBody, TableCell, TableFooter, TableHead, TableRow} from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import GroupIcon from "@material-ui/icons/Group";
-import {Link} from "react-router-dom";
+import {Link, useHistory} from "react-router-dom";
 import DeleteIcon from "@material-ui/icons/Delete";
 import {createEntity} from "../utils/AironeAPIClient";
 
@@ -15,6 +15,8 @@ const useStyles = makeStyles((theme) => ({
 
 export default function EditEntity(props) {
     const classes = useStyles();
+    const history = useHistory();
+
     const [name, setName] = useState("");
     const [note, setNote] = useState("");
     const [attributes, setAttributes] = useState([]);
@@ -45,7 +47,8 @@ export default function EditEntity(props) {
             return attr;
         });
         createEntity(name, note, attrs_with_index)
-            .then(resp => console.log(resp));
+            .then(resp => resp.json())
+            .then(data => history.push('/new-ui/entities/' + data.entity_id));
 
         event.preventDefault();
     };

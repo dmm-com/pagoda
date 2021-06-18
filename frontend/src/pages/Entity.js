@@ -10,7 +10,8 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import {makeStyles} from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
-import {getEntities} from "../utils/AironeAPIClient";
+import {deleteEntity, getEntities} from "../utils/AironeAPIClient";
+import ConfirmableButton from "../components/ConfirmableButton";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -26,12 +27,14 @@ export default function Entity(props) {
     const [entities, setEntities] = useState([]);
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(100);
+    const [updated, setUpdated] = useState(false);
 
     useEffect(() => {
         getEntities()
             .then(resp => resp.json())
-            .then(data => setEntities(data.entities));
-    }, []);
+            .then(data => setEntities(data.entities))
+            .then(_ => setUpdated(false));
+    }, [updated]);
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -40,6 +43,11 @@ export default function Entity(props) {
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(+event.target.value);
         setPage(0);
+    };
+
+    const handleDelete = (event, entityId) => {
+        deleteEntity(entityId)
+            .then(_ => setUpdated(true));
     };
 
     return (
@@ -122,15 +130,16 @@ export default function Entity(props) {
                                                 to={`/acl/${entity.id}`}>
                                                 ACL
                                             </Button>
-                                            <Button
+                                            <ConfirmableButton
                                                 variant="contained"
                                                 color="secondary"
                                                 className={classes.button}
                                                 startIcon={<DeleteIcon/>}
                                                 component={Link}
-                                                to={`/entity/do_delete/${entity.id}`}>
+                                                dialogTitle="本当に削除しますか？"
+                                                onClickYes={(e) => handleDelete(e, entity.id)}>
                                                 削除
-                                            </Button>
+                                            </ConfirmableButton>
                                         </TableCell>
                                     </TableRow>
                                 );

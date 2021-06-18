@@ -74,7 +74,6 @@ const useStyles = makeStyles((theme) => ({
 export default function Header(props) {
     const classes = useStyles();
     const history = useHistory();
-    const location = useLocation();
 
     const handleChange = (event, value) => {
         history.push(value);

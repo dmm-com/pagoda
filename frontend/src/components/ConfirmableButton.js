@@ -20,7 +20,7 @@ export default function ConfirmableButton(props) {
     };
 
     return (
-        <div>
+        <span>
             <Button onClick={handleOpen} {...props} />
             <Dialog
                 open={open}
@@ -38,7 +38,7 @@ export default function ConfirmableButton(props) {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </div>
+        </span>
     );
 }
 
