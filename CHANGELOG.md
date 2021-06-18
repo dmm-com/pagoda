@@ -25,7 +25,11 @@
 
 ### Changed
 * Update Django version from v1.11 to v2.2 (LTS)
-* Droped python3.5 support
+* Droped Python 3.5 support
+* Support Python 3.8
+  * Update Celery and Kombu version
+    * Celery from v4.2.0 to v4.4.7
+    * Kombu  from v4.2.1 to v4.6.11
 
 ### Fixed
 * Fixed not being redirected to the original URL after login

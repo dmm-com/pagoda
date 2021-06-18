@@ -237,6 +237,14 @@ user@hostname:~/airone/$ tools/register_es_document.py
 
 # Run with docker-compose
 
+Install Packages for mysqlclient
+
+```
+$ sudo apt-get install -y libmysqlclient-dev
+```
+
+Run middlewares with docker-compose
+
 ```
 $ docker-compose up
 ```

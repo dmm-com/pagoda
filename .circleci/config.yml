@@ -30,6 +30,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
+            pip install --upgrade pip
             pip install tox coverage codecov
       - run:
           name: Wait for MySQL is available
@@ -90,6 +91,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
+            pip install --upgrade pip
             pip install tox coverage
       - run:
           name: Wait for MySQL is available
@@ -127,6 +129,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
+            pip install --upgrade pip
             pip install tox
       - run:
           name: Install additional dependencies
@@ -158,7 +161,7 @@ workflows:
   build_and_test:
     jobs:
       - python36
-      # - python38
+      - python38
       - pep8
       - build_gh_page:
           filters:
