@@ -1,4 +1,4 @@
-from airone.lib.http import http_get, http_post
+from airone.lib.http import http_get
 from airone.lib.http import render
 from airone.lib.profile import airone_profile
 
