@@ -11,6 +11,7 @@ import {
 import Typography from "@material-ui/core/Typography";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
 import {createEntry} from "../utils/AironeAPIClient";
+import Button from "@material-ui/core/Button";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -19,7 +20,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function EditEntry(props) {
-    const {entityId} = useParams();
+    const classes = useStyles();
+    const {entityId, entryId} = useParams();
     const [name, setName] = useState('');
     const [attributes, setAttributes] = useState([]);
 
@@ -36,9 +38,8 @@ export default function EditEntry(props) {
     };
 
     const onChangeAttribute = (event) => {
-        let updated = {};
-        updated[event.target.name] = event.target.value;
-        setAttributes({...attributes, ...updated});
+        attributes[event.target.name] = event.target.value;
+        setAttributes({...attributes});
     };
 
     const handleSubmit = (event) => {
@@ -68,7 +69,7 @@ export default function EditEntry(props) {
                 <div className='row'>
                     <div className="col">
                         <div className="float-right">
-                            <input type="submit" value="保存"/>
+                            <Button className={classes.button} type="submit" variant="contained" color="secondary">保存</Button>
                         </div>
                         <Table className="table table-bordered">
                             <TableBody>

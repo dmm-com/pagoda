@@ -146,7 +146,11 @@ export default function Entry(props) {
                                     return (
                                         <TableRow>
                                             <TableCell>
-                                                <Typography>{entry.name}</Typography>
+                                                <Typography
+                                                    component={Link}
+                                                    to={`/new-ui/entities/${entityId}/entries/${entry.id}`}>
+                                                    {entry.name}
+                                                </Typography>
                                             </TableCell>
                                             <TableCell align="right">
                                                 <ConfirmableButton

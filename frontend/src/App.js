@@ -39,6 +39,7 @@ function App() {
                         <Route path={basePath + "user"} component={User}/>
                         <Route path={basePath + "group"} component={Group}/>
                         <Route path={basePath + "entities/:entityId/entries/new"} component={EditEntry}/>
+                        <Route path={basePath + "entities/:entityId/entries/:entryId"} component={EditEntry}/>
                         <Route path={basePath + "entities/new"} component={EditEntity}/>
                         <Route path={basePath + "entities/:entityId"} component={Entry}/>
                         <Route path={basePath + "entities"} component={Entity}/>

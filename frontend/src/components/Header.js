@@ -140,7 +140,9 @@ export default function Header(props) {
                               onClose={handleCloseUser}
                               keepMounted>
                             <MenuItem>ユーザ設定</MenuItem>
-                            <MenuItem>ログアウト</MenuItem>
+                            <MenuItem>
+                                <a href="/auth/logout/">ログアウト</a>
+                            </MenuItem>
                         </Menu>
 
                         <IconButton aria-controls="job-menu" aria-haspopup="true" onClick={handleClickJob}
