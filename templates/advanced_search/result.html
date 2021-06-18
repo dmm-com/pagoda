@@ -36,12 +36,12 @@
     <tr>
       <th>
         Name<br/>
-        <input type='text' class='input-sm narrow_down_entries hint_entry_name' attrname='{{ attrname }}'></input>
+        <input type='text' class='input-sm narrow_down_entries hint_entry_name' attrname='{{ attrname }}' value="{{ entry_name|default_if_none:'' }}"></input>
       </th>
-      {% for attrname in attrs %}
+      {% for hint_attr in hint_attrs %}
       <th>
-        {{ attrname }}<br/>
-        <input type='text' class='input-sm narrow_down_entries hint_attr_value' attrname='{{ attrname }}'></input>
+        {{ hint_attr.name }}<br/>
+        <input type='text' class='input-sm narrow_down_entries hint_attr_value' attrname='{{ hint_attr.name }}' value="{{ hint_attr.keyword|default_if_none:'' }}"></input>
       </th>
       {% endfor %}
 
@@ -58,8 +58,8 @@
     <tr>
       <th><a href='/entry/show/{{ result.entry.id }}'>{{ result.entry.name }} [{{ result.entity.name }}]</a></th>
 
-      {% for attrname in attrs %}
-        {% with result.attrs|get_item:attrname as attr %}
+      {% for hint_attr in hint_attrs %}
+        {% with result.attrs|get_item:hint_attr.name as attr %}
           {% if attr.type == attr_type.string %}
             <td>{{ attr.value }}</td>
 
@@ -200,8 +200,8 @@
       <div class="col-md-5">
         <label class="col-label">検索対象の属性</label>
         <select multiple="on" id="modal_condition_selected_attr" class="form-control" size='9'>
-          {% for attrname in attrs %}
-          <option value='{{ attrname }}'>{{ attrname }}</option>
+          {% for hint_attr in hint_attrs %}
+          <option value='{{ hint_attr.name }}'>{{ hint_attr.name }}</option>
           {% endfor %}
         </select>
       </div>

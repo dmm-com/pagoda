@@ -91,7 +91,7 @@ class AttributeValue(models.Model):
 
         return cloned_value
 
-    def get_value(self, with_metainfo=False):
+    def get_value(self, with_metainfo=False, serialize=False):
         """
         This returns registered value according to the type of Attribute
         """
@@ -132,7 +132,10 @@ class AttributeValue(models.Model):
             value = self.boolean
 
         elif self.parent_attr.schema.type == AttrTypeValue['date']:
-            value = self.date
+            if serialize:
+                value = str(self.date)
+            else:
+                value = self.date
 
         elif self.parent_attr.schema.type == AttrTypeValue['object']:
             value = _get_object_value(self)
@@ -1168,7 +1171,7 @@ class Entry(ACLBase):
             },
             'attrs': [{
                 'name': x.schema.name,
-                'value': x.get_latest_value().get_value()
+                'value': x.get_latest_value().get_value(serialize=True)
             } for x in attrs]
         }
 
@@ -1396,7 +1399,7 @@ class Entry(ACLBase):
 
     @classmethod
     def search_entries(kls, user, hint_entity_ids, hint_attrs=[], limit=CONFIG.MAX_LIST_ENTRIES,
-                       entry_name=None, or_match=False, hint_referral=False):
+                       entry_name=None, or_match=False, hint_referral=False, hint_attr_value=None):
         """Main method called from simple search and advanced search.
 
         Do the following:
@@ -1424,19 +1427,17 @@ class Entry(ACLBase):
                 the acquired entry and the attribute value of the entry are returned.
 
         """
-        results = {
-            'ret_count': 0,
-            'ret_values': []
-        }
+        # make query for elasticsearch to retrieve data user wants
+        query = make_query(hint_entity_ids, hint_attrs, hint_attr_value, entry_name, or_match)
 
-        query = make_query(hint_entity_ids, hint_attrs, entry_name, or_match)
+        # sending request to elasticsearch with making query
+        resp = execute_query(query)
 
-        res = execute_query(query)
+        if 'status' in resp and resp['status'] == 404:
+            return {'ret_count': 0, 'ret_values': []}
 
-        if 'status' in res and res['status'] == 404:
-            return results
-
-        return make_search_results(results, res, hint_attrs, limit, hint_referral)
+        # retrieve data from database on the basis of the result of elasticsearch
+        return make_search_results(resp, hint_attrs, limit, hint_referral)
 
     @classmethod
     def get_all_es_docs(kls):

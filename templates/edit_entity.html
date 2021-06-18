@@ -9,6 +9,10 @@
 {% endblock %}
 
 {% block content %}
+<div class="container-fluid">
+  {% include 'entity_edit_tab.html' with tab='edit' %}
+</div>
+
 <form id="edit-form" name="edit-form" url="/entity/do_edit/{{ entity.id }}" method="post">
   {% include 'edit_entity_content.html' %}
 </form>

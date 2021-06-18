@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'dashboard',
     'entry',
     'job',
+    'webhook',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -176,8 +177,10 @@ try:
     outs, errs = proc.communicate(timeout=1)
     # if `git describe --tags` prints some string to stdout, use the result as version
     # else use 'unknown' as version (e.g. untagged git repository)
-    if outs != b'':
+    if isinstance(outs, str):
         AIRONE['VERSION'] = outs.strip()
+    elif isinstance(outs, bytes):
+        AIRONE['VERSION'] = outs.decode('utf-8').strip()
     else:
         logging.getLogger(__name__).warning('could not describe airone version from git')
 

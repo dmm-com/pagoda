@@ -1,3 +1,4 @@
+import json
 import yaml
 
 from airone.lib.http import render
@@ -153,34 +154,52 @@ def advanced_search_result(request):
     recv_attr = request.GET.getlist('attr[]')
     is_all_entities = request.GET.get('is_all_entities') == 'true'
     has_referral = request.GET.get('has_referral') == 'true'
+    attrinfo = request.GET.get('attrinfo')
+    entry_name = request.GET.get('entry_name')
 
-    if not is_all_entities and (not recv_entity or not recv_attr):
-        return HttpResponse("The attr[] and entity[] parameters are required", status=400)
-    elif is_all_entities and not recv_attr:
-        return HttpResponse("The attr[] parameters are required", status=400)
+    # check entity params
+    if not is_all_entities:
+        if not recv_entity:
+            return HttpResponse("The entity[] parameters are required", status=400)
+        if not all(
+                [Entity.objects.filter(id=x, is_active=True).exists() for x in recv_entity]):
+            return HttpResponse("Invalid entity ID is specified", status=400)
 
-    if not is_all_entities and not all(
-            [Entity.objects.filter(id=x, is_active=True).exists() for x in recv_entity]):
-        return HttpResponse("Invalid entity ID is specified", status=400)
+    # check attribute params
+    if not recv_attr and not attrinfo:
+        return HttpResponse("The attr[] or attrinfo parameters is required", status=400)
+
+    # build hint attrs from JSON encoded params,
+    # or attr[] the older param to keep backward compatibility
+    # TODO deprecate attr[]
+    hint_attrs = [{'name': x} for x in recv_attr]
+    if attrinfo:
+        try:
+            hint_attrs = json.loads(attrinfo)
+        except json.JSONDecodeError:
+            return HttpResponse("The attrinfo parameter is not JSON", status=400)
+    attr_names = [x['name'] for x in hint_attrs]
 
     if is_all_entities:
         attrs = sum(
-            [list(EntityAttr.objects.filter(name=x, is_active=True)) for x in recv_attr], [])
+            [list(EntityAttr.objects.filter(name=x, is_active=True)) for x in attr_names], [])
         entities = list(set([x.parent_entity.id for x in attrs if x]))
     else:
         entities = recv_entity
 
     return render(request, 'advanced_search_result.html', {
-        'attrs': recv_attr,
+        'hint_attrs': hint_attrs,
         'results': Entry.search_entries(user,
                                         entities,
-                                        [{'name': x} for x in recv_attr],
+                                        hint_attrs,
                                         CONFIG.MAXIMUM_SEARCH_RESULTS,
+                                        entry_name,
                                         hint_referral=has_referral),
         'max_num': CONFIG.MAXIMUM_SEARCH_RESULTS,
         'entities': ','.join([str(x) for x in entities]),
         'has_referral': has_referral,
         'is_all_entities': is_all_entities,
+        'entry_name': entry_name,
     })
 
 

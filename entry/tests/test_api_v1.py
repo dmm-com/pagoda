@@ -311,6 +311,15 @@ class ViewTest(AironeViewTest):
         for i, res in enumerate(resp.json()['results']):
             self.assertEqual(res['name'], 'e-%s' % targets[i])
 
+        # send request with keywords that hit more than MAX_LIST_REFERRALS
+        Entry.objects.create(name='e', schema=ref_entity, created_user=admin)
+
+        resp = self.client.get('/entry/api/v1/get_attr_referrals/%d/' % attr.id,
+                               {'keyword': 'e'})
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual(resp.json()['results'][0]['name'], 'e')
+
     def test_get_attr_referrals_with_entity_attr(self):
         """
         This test is needed because the get_attr_referrals API will receive an ID

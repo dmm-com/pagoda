@@ -122,7 +122,7 @@ __all__ = [
 ]
 
 
-def make_query(hint_entity_ids, hint_attrs, entry_name, or_match):
+def make_query(hint_entity_ids, hint_attrs, hint_attr_value, entry_name, or_match):
     """Create a search query for Elasticsearch.
 
     Do the following:
@@ -185,6 +185,18 @@ def make_query(hint_entity_ids, hint_attrs, entry_name, or_match):
             }
         })
 
+    if hint_attr_value:
+        query['query']['bool']['filter'].append({
+            'nested': {
+                'path': 'attr',
+                'query': {
+                    'wildcard': {
+                        'attr.value': "*" + str(hint_attr_value) + "*"
+                    }
+                }
+            }
+        })
+
     attr_query = {}
 
     # filter attribute by keywords
@@ -211,9 +223,14 @@ def _get_regex_pattern(keyword):
         str: Regular expression pattern of argument
 
     """
+    escaped = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS, keyword)
+
+    # Elasticsearch doesn't support anchor operators,
+    # so it supports both ignoring it and handle it as a normal character
+    chars = escaped.replace('^', '^?').replace('$', '$?')
+
     return '.*%s.*' % ''.join(['[%s%s]' % (
-        x.lower(), x.upper()) if x.isalpha() else x for x in prepend_escape_character(
-        CONFIG.ESCAPE_CHARACTERS, keyword)])
+        x.lower(), x.upper()) if x.isalpha() else x for x in chars])
 
 
 def prepend_escape_character(escape_character_list, keyword):
@@ -584,6 +601,25 @@ def _make_an_attribute_filter(hint, keyword):
     return adding_cond
 
 
+def _is_matched_entry(attrs, hint_attrs):
+    """
+    Predicate if an entry matches hint attrs
+    """
+    hint_keywords = {h['name']: h['keyword'] for h in hint_attrs if 'keyword' in h}
+
+    for attr in attrs:
+        tpe = attr['type']
+        if tpe == AttrTypeValue['string'] or tpe == AttrTypeValue['text']:
+            hint_keyword = hint_keywords.get(attr['name'], '')
+
+            # it checks anchor operators if it exists because its not supported by Elasticsearch
+            if len(hint_keyword) > 1 and (hint_keyword[0] == '^' or hint_keyword[-1] == '$'):
+                if not re.search(hint_keyword, attr['value']):
+                    return False
+
+    return True
+
+
 def execute_query(query):
     """Run a search query.
 
@@ -605,7 +641,7 @@ def execute_query(query):
     return res
 
 
-def make_search_results(results, res, hint_attrs, limit, hint_referral):
+def make_search_results(res, hint_attrs, limit, hint_referral):
     """Acquires and returns the attribute values held by each search result
 
     When the condition of reference entry is specified, the entry to reference is acquired.
@@ -646,7 +682,10 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
     from entry.models import Entry, AttributeValue
 
     # set numbers of found entries
-    results['ret_count'] = res['hits']['total']
+    results = {
+        'ret_count': res['hits']['total'],
+        'ret_values': []
+    }
 
     # get django objects from the hit information from Elasticsearch
     hit_entry_ids = [x['_id'] for x in res['hits']['hits']]
@@ -697,6 +736,12 @@ def make_search_results(results, res, hint_attrs, limit, hint_referral):
         ][0]
 
     for (entry, hit_attrs) in sorted(hit_infos.items(), key=lambda x: x[0].name):
+        # ignore an entry doesn't match hint attrs
+        if not _is_matched_entry(hit_attrs, hint_attrs):
+            # subtract number from hitted count because it will be ignored
+            results['ret_count'] -= 1
+            continue
+
         ret_info = {
             'entity': {'id': entry.schema.id, 'name': entry.schema.name},
             'entry': {'id': entry.id, 'name': entry.name},

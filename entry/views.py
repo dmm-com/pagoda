@@ -8,11 +8,13 @@ from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import redirect
 from django.urls import reverse
 from urllib.parse import urlencode
 from datetime import datetime
 
+from airone.lib.elasticsearch import prepend_escape_character
 from airone.lib.http import http_get, http_post, check_permission, render
 from airone.lib.http import http_file_upload
 from airone.lib.http import HttpResponseSeeOther
@@ -86,6 +88,9 @@ def _validate_input(recv_data, obj):
 @http_get
 @check_permission(Entity, ACLType.Readable)
 def index(request, entity_id):
+    page = request.GET.get('page', 1)
+    keyword = request.GET.get('keyword', None)
+
     if not Entity.objects.filter(id=entity_id).exists():
         return HttpResponse('Failed to get entity of specified id', status=400)
 
@@ -96,18 +101,25 @@ def index(request, entity_id):
         if resp:
             return resp
 
-    entries = Entry.objects.order_by('name').filter(schema=entity, is_active=True)
+    if keyword:
+        name_pattern = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS_ENTRY_LIST, keyword)
+        entries = Entry.objects.order_by('name').filter(schema=entity, is_active=True,
+                                                        name__iregex=name_pattern)
+    else:
+        entries = Entry.objects.order_by('name').filter(schema=entity, is_active=True)
 
-    total_count = list_count = len(entries)
-    if(len(entries) > CONFIG.MAX_LIST_ENTRIES):
-        entries = entries[0:CONFIG.MAX_LIST_ENTRIES]
-        list_count = CONFIG.MAX_LIST_ENTRIES
+    p = Paginator(entries, CONFIG.MAX_LIST_ENTRIES)
+    try:
+        page_obj = p.page(page)
+    except PageNotAnInteger:
+        return HttpResponse('Invalid page number. It must be unsigned integer', status=400)
+    except EmptyPage:
+        return HttpResponse('Invalid page number. The page doesn\'t have anything', status=400)
 
     context = {
         'entity': entity,
-        'entries': entries,
-        'total_count': total_count,
-        'list_count': list_count,
+        'keyword': keyword,
+        'page_obj': page_obj,
     }
 
     if custom_view.is_custom("list_entry", entity.name):
@@ -191,8 +203,8 @@ def do_create(request, entity_id, recv_data):
                                  status=Entry.STATUS_CREATING)
 
     # Create a new job to create entry and run it
-    job = Job.new_create(user, entry, params=recv_data)
-    job.run()
+    job_create_entry = Job.new_create(user, entry, params=recv_data)
+    job_create_entry.run()
 
     return JsonResponse({
         'entry_id': entry.id,
@@ -250,7 +262,6 @@ def edit(request, entry_id):
 def do_edit(request, entry_id, recv_data):
     user = User.objects.get(id=request.user.id)
     entry = Entry.objects.get(id=entry_id)
-    tasks = []
 
     # checks that a same name entry corresponding to the entity is existed.
     query = Q(schema=entry.schema, name=recv_data['entry_name']) & ~Q(id=entry.id)
@@ -275,21 +286,24 @@ def do_edit(request, entry_id, recv_data):
 
     # update name of Entry object. If name would be updated, the elasticsearch data of entries that
     # refers this entry also be updated by creating REGISTERED_REFERRALS task.
+    job_register_referrals = None
     if entry.name != recv_data['entry_name']:
-        tasks.append(Job.new_register_referrals(user, entry))
+        job_register_referrals = Job.new_register_referrals(user, entry)
 
     entry.name = recv_data['entry_name']
 
     # set flags that indicates target entry is under processing
     entry.set_status(Entry.STATUS_EDITING)
-
     entry.save()
 
-    # Create a new job to edit entry
-    tasks.append(Job.new_edit(user, entry, params=recv_data))
+    # Create new jobs to edit entry and notify it to registered webhook endpoint if it's necessary
+    job_edit_entry = Job.new_edit(user, entry, params=recv_data)
+    job_edit_entry.run()
 
-    # Run all tasks which are created in this request
-    [t.run() for t in tasks]
+    # running job of re-register referrals because of chaning entry's name
+    if job_register_referrals:
+        job_register_referrals.dependent_job = job_edit_entry
+        job_register_referrals.run()
 
     return JsonResponse({
         'entry_id': entry.id,
@@ -500,8 +514,21 @@ def do_delete(request, entry_id, recv_data):
     user.seth_entry_del(entry)
 
     # Create a new job to delete entry and run it
-    job = Job.new_delete(user, entry)
-    job.run()
+    job_delete_entry = Job.new_delete(user, entry)
+    job_notify_event = Job.new_notify_delete_entry(user, entry)
+
+    # This prioritizes notifying job rather than deleting entry
+    if job_delete_entry.dependent_job:
+        job_notify_event.dependent_job = job_delete_entry.dependent_job
+
+    job_notify_event.save(update_fields=['dependent_job'])
+    job_notify_event.run()
+
+    # This update dependent job of deleting entry job
+    job_delete_entry.dependent_job = job_notify_event
+    job_delete_entry.save(update_fields=['dependent_job'])
+
+    job_delete_entry.run()
 
     return JsonResponse(ret)
 
@@ -605,28 +632,35 @@ def do_copy(request, entry_id, recv_data):
 @http_get
 @check_permission(Entity, ACLType.Full)
 def restore(request, entity_id):
+    page = request.GET.get('page', 1)
+    keyword = request.GET.get('keyword', None)
+
     entity = Entity.objects.filter(id=entity_id, is_active=True).first()
     if not entity:
         return HttpResponse('Failed to get entity of specified id', status=400)
 
     # get all deleted entries that correspond to the entity, the specififcation of
     # 'status=0' is necessary to prevent getting entries that were under processing.
-    entries = Entry.objects.filter(schema=entity, status=0,
-                                   is_active=False).order_by('-updated_time')
+    if keyword:
+        name_pattern = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS_ENTRY_LIST, keyword)
+        entries = Entry.objects.filter(schema=entity, status=0, is_active=False,
+                                       name__iregex=name_pattern).order_by('-updated_time')
+    else:
+        entries = Entry.objects.filter(schema=entity, status=0,
+                                       is_active=False).order_by('-updated_time')
 
-    total_count = list_count = entries.count()
-    if(len(entries) > CONFIG.MAX_LIST_ENTRIES):
-        entries = entries[:CONFIG.MAX_LIST_ENTRIES]
-        list_count = CONFIG.MAX_LIST_ENTRIES
+    p = Paginator(entries, CONFIG.MAX_LIST_ENTRIES)
+    try:
+        page_obj = p.page(page)
+    except PageNotAnInteger:
+        return HttpResponse('Invalid page number. It must be unsigned integer', status=400)
+    except EmptyPage:
+        return HttpResponse('Invalid page number. The page doesn\'t have anything', status=400)
 
-    # The 'search_name' is a keyword to be able to find out an entry which will be listed.
-    # Specifying an empty string ('') displays all inactive entries.
     return render(request, 'list_deleted_entry.html', {
         'entity': entity,
-        'entries': entries,
-        'total_count': total_count,
-        'list_count': list_count,
-        'search_name': request.GET.get('search_name', ''),
+        'keyword': keyword,
+        'page_obj': page_obj,
     })
 
 
@@ -731,4 +765,4 @@ def revert_attrv(request, recv_data):
 
 def _redirect_restore_entry(entry):
     return redirect('{}?{}'.format(reverse('entry:restore', args=[entry.schema.id]),
-                                   urlencode({'search_name': entry.name})))
+                                   urlencode({'keyword': entry.name})))
