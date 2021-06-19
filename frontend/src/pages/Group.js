@@ -16,6 +16,7 @@ import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import {getGroups} from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -31,21 +32,8 @@ export default function Group(props) {
     const [groups, setGroups] = useState([]);
 
     useEffect(() => {
-        // TODO implement internal API then call it here
-        setGroups([
-            {
-                id: 1,
-                name: 'test',
-                members: [
-                    {
-                        name: 'user1',
-                    },
-                    {
-                        name: 'user2',
-                    },
-                ],
-            },
-        ])
+        getGroups()
+            .then(data => setGroups(data));
     }, []);
 
     return (

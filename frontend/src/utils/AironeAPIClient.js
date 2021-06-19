@@ -55,6 +55,7 @@ export function deleteEntity(entityId) {
         }
     );
 }
+
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
 export function createEntry(entityId, name, attrs) {
@@ -87,3 +88,52 @@ export function deleteEntry(entryId) {
         }
     );
 }
+
+export function getUsers() {
+    return new Promise((resolve, _) => {
+        resolve([
+            {
+                id: 1,
+                name: 'test',
+                email: 'test@example.com',
+                created_at: '',
+            },
+        ]);
+    })
+}
+
+export function getGroups() {
+    return new Promise((resolve, _) => {
+        resolve([
+            {
+                id: 1,
+                name: 'test',
+                members: [
+                    {
+                        name: 'user1',
+                    },
+                    {
+                        name: 'user2',
+                    },
+                ],
+            },
+        ]);
+    })
+}
+
+export function getJobs() {
+    return new Promise((resolve, _) => {
+        resolve([
+            {
+                id: 1,
+                entry: 'entry1',
+                operation: '作成',
+                status: '完了',
+                duration: '1s',
+                created_at: '1st Jan 0:00pm',
+                note: '',
+            },
+        ]);
+    })
+}
+

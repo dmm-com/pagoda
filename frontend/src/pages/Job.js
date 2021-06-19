@@ -15,6 +15,7 @@ import {Link} from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import {getJobs} from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -30,18 +31,8 @@ export default function Job(props) {
     const [jobs, setJobs] = useState([]);
 
     useEffect(() => {
-        // TODO implement internal API then call it here
-        setJobs([
-            {
-                id: 1,
-                entry: 'entry1',
-                operation: '作成',
-                status: '完了',
-                duration: '1s',
-                created_at: '1st Jan 0:00pm',
-                note: '',
-            },
-        ])
+        getJobs()
+            .then(data => setJobs(data));
     }, []);
 
     return (

@@ -1,4 +1,4 @@
-import {Breadcrumbs, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
+import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import {Link} from "react-router-dom";
 import Button from "@material-ui/core/Button";
@@ -7,8 +7,8 @@ import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import React, {useEffect, useState} from "react";
 import {makeStyles} from "@material-ui/core/styles";
-import {grey} from "@material-ui/core/colors";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import {getUsers} from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -24,15 +24,8 @@ export default function User(props) {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
-        // TODO implement internal API then call it here
-        setUsers([
-            {
-                id: 1,
-                name: 'test',
-                email: 'test@example.com',
-                created_at: '',
-            },
-        ])
+        getUsers()
+            .then(data => setUsers(data));
     }, []);
 
     return (
