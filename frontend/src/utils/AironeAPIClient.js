@@ -1,24 +1,47 @@
 import {getCsrfToken} from "./DjangoUtils";
 
-export function getEntities(entityId) {
+export function getEntity(entityId) {
+    return new Promise((resolve, _) => {
+        resolve({
+            name: '',
+            note: '',
+            attributes: [],
+        });
+    });
+}
+
+export function getEntities() {
     return fetch('/entity/api/v1/get_entities');
+}
+
+export function getEntry(entityId, entryId) {
+    return new Promise((resolve, _) => {
+        resolve({
+            name: 'test',
+            attributes: [
+                {
+                    name: 'a1',
+                    value: 'aaa',
+                },
+            ],
+        });
+    });
 }
 
 export function getEntries(entityId) {
     return fetch(`/entry/api/v1/get_entries/${entityId}`);
 }
 
-export function getAdvancedSearchResults(entityIds, attributeIds, isAllEntities, hasReferral) {
-    let params = new URLSearchParams();
-    entityIds.forEach(id => params.append('entity', id));
-    attributeIds.forEach(id => params.append('attr', id));
-    params.append('is_all_entities', isAllEntities);
-    params.append('has_referral', hasReferral);
-
-    let url = new URL('/dashboard/advanced_search');
-    url.searchParams = params;
-
-    return fetch(url.toString());
+export function getAdvancedSearchResults() {
+    return new Promise((resolve, _) => {
+        resolve([
+            {
+                name: 'test',
+                attr1: 'val1',
+                attr2: 'val2',
+            },
+        ]);
+    });
 }
 
 // NOTE it calls non-API endpoint
@@ -89,6 +112,7 @@ export function deleteEntry(entryId) {
     );
 }
 
+// FIXME implement internal API then call it
 export function getUsers() {
     return new Promise((resolve, _) => {
         resolve([
@@ -99,9 +123,10 @@ export function getUsers() {
                 created_at: '',
             },
         ]);
-    })
+    });
 }
 
+// FIXME implement internal API then call it
 export function getGroups() {
     return new Promise((resolve, _) => {
         resolve([
@@ -118,9 +143,10 @@ export function getGroups() {
                 ],
             },
         ]);
-    })
+    });
 }
 
+// FIXME implement internal API then call it
 export function getJobs() {
     return new Promise((resolve, _) => {
         resolve([
@@ -134,6 +160,6 @@ export function getJobs() {
                 note: '',
             },
         ]);
-    })
+    });
 }
 

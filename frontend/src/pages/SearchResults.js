@@ -7,6 +7,7 @@ import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import SettingsIcon from '@material-ui/icons/Settings';
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import {getAdvancedSearchResults} from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -22,14 +23,8 @@ export default function SearchResults(props) {
     const [results, setResults] = useState([]);
 
     useEffect(() => {
-        // TODO implement internal API then call it here
-        setResults([
-            {
-                name: 'test',
-                attr1: 'val1',
-                attr2: 'val2',
-            },
-        ])
+        getAdvancedSearchResults()
+            .then(data => setResults(data));
     }, []);
 
     let fields = [];

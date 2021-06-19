@@ -10,7 +10,7 @@ import {
 } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
-import {createEntry} from "../utils/AironeAPIClient";
+import {createEntry, getEntity, getEntry} from "../utils/AironeAPIClient";
 import Button from "@material-ui/core/Button";
 
 const useStyles = makeStyles((theme) => ({
@@ -26,11 +26,13 @@ export default function EditEntry(props) {
     const [attributes, setAttributes] = useState([]);
 
     useEffect(() => {
-        // TODO get entity, then fill entry
-        setName('test');
-        setAttributes({
-            a1: 'aaa',
-        });
+        if (entryId !== undefined) {
+            getEntry(entityId, entryId)
+                .then(data => {
+                    setName(data.name);
+                    setAttributes(data.attributes);
+                });
+        }
     }, []);
 
     const onChangeName = (event) => {
@@ -39,15 +41,21 @@ export default function EditEntry(props) {
 
     const onChangeAttribute = (event) => {
         attributes[event.target.name] = event.target.value;
-        setAttributes({...attributes});
+        const updated = attributes.map(attribute => {
+            if (attribute.name === event.target.name) {
+                attribute.value = event.target.value;
+            }
+            return attribute;
+        })
+        setAttributes(updated);
     };
 
     const handleSubmit = (event) => {
-        const attrs = Object.keys(attributes).map((name) => {
+        const attrs = attributes.map((attribute) => {
             return {
                 id: '4',
                 type: '2',
-                value: [{'data': attributes[name]}],
+                value: [{'data': attribute.name}],
             };
         });
         createEntry(entityId, name, attrs)
@@ -93,11 +101,11 @@ export default function EditEntry(props) {
                     </TableHead>
                     <TableBody>
                         {
-                            Object.keys(attributes).map((name) =>
+                            attributes.map((attribute) =>
                                 <TableRow>
-                                    <TableCell>{name}</TableCell>
+                                    <TableCell>{attribute.name}</TableCell>
                                     <TableCell>
-                                        <input type="text" name={name} value={attributes[name]}
+                                        <input type="text" name={attribute.name} value={attribute.value}
                                                onChange={onChangeAttribute}/>
                                     </TableCell>
                                 </TableRow>
