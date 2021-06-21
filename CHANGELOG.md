@@ -11,6 +11,8 @@
   (NOTE: This requires to change DB schema. see also #135)
 * Added a feature to be able to pagenate Entries in the list page for each
   Entities (#114).
+* Added "django.contrib.humanize" to the INSTALLED_APPS to be able to handle
+  data as a human touched one.
 
 ### Changed
 * Replace ldap3 with python-ldap for solving license problem (#134).
