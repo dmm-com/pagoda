@@ -2644,7 +2644,7 @@ class ModelTest(AironeTestCase):
         ret_dict = entry.to_dict(user, with_metainfo=True)
         expected_attrinfos = [
             {'name': 'str', 'value': {'type': AttrTypeValue['string'], 'value': 'foo'}},
-            {'name': 'text', 'value':{'type': AttrTypeValue['text'], 'value': 'bar'} },
+            {'name': 'text', 'value': {'type': AttrTypeValue['text'], 'value': 'bar'}},
             {'name': 'bool', 'value': {'type': AttrTypeValue['boolean'], 'value': False}},
             {'name': 'date', 'value': {'type': AttrTypeValue['date'], 'value': '2018-12-31'}},
             {'name': 'arr_str', 'value': {
