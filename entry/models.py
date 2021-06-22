@@ -1152,7 +1152,7 @@ class Entry(ACLBase):
 
         return sorted(ret_attrs, key=lambda x: x['index'])
 
-    def to_dict(self, user):
+    def to_dict(self, user, with_metainfo=False):
         # check permissions for each entry, entity and attrs
         if (not user.has_permission(self.schema, ACLType.Readable) or
                 not user.has_permission(self, ACLType.Readable)):
@@ -1171,7 +1171,7 @@ class Entry(ACLBase):
             },
             'attrs': [{
                 'name': x.schema.name,
-                'value': x.get_latest_value().get_value(serialize=True)
+                'value': x.get_latest_value().get_value(serialize=True, with_metainfo=with_metainfo)
             } for x in attrs]
         }
 
