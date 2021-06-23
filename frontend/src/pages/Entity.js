@@ -69,7 +69,14 @@ export default function Entity(props) {
                             エンティティ作成
                         </Button>
                         <Button className={classes.button} variant="outlined" color="secondary">エクスポート</Button>
-                        <Button className={classes.button} variant="outlined" color="secondary">インポート</Button>
+                        <Button
+                            variant="outlined"
+                            color="secondary"
+                            className={classes.button}
+                            component={Link}
+                            to={`/new-ui/import`}>
+                            インポート
+                        </Button>
                     </div>
                     <div className="float-right">
                     </div>
@@ -96,7 +103,7 @@ export default function Entity(props) {
                                         <TableCell>
                                             <Typography
                                                 component={Link}
-                                                to={`/new-ui/entities/${entity.id}`}>
+                                                to={`/new-ui/entities/${entity.id}/entries`}>
                                                 {entity.name}
                                             </Typography>
                                         </TableCell>
@@ -108,7 +115,7 @@ export default function Entity(props) {
                                                 className={classes.button}
                                                 startIcon={<EditIcon/>}
                                                 component={Link}
-                                                to={`/entity/edit/${entity.id}`}>
+                                                to={`/new-ui/entities/${entity.id}`}>
                                                 エンティティ編集
                                             </Button>
                                             <Button

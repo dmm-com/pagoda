@@ -45,7 +45,7 @@ export default function User(props) {
                             variant="outlined"
                             color="secondary"
                             component={Link}
-                            to={`/new-ui/group/import`}>
+                            to={`/new-ui/import`}>
                             インポート
                         </Button>
                     </div>

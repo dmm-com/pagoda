@@ -70,7 +70,7 @@ export default function EditEntry(props) {
             <AironeBreadcrumbs>
                 <Typography component={Link} to='/new-ui/'>Top</Typography>
                 <Typography component={Link} to='/new-ui/entities'>エンティティ一覧</Typography>
-                <Typography component={Link} to={`/new-ui/entities/${entityId}`}>{entityId}</Typography>
+                <Typography component={Link} to={`/new-ui/entities/${entityId}/entries`}>{entityId}</Typography>
                 <Typography color="textPrimary">編集</Typography>
             </AironeBreadcrumbs>
 

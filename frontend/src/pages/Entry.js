@@ -66,7 +66,7 @@ export default function Entry(props) {
         <div>
             <AironeBreadcrumbs>
                 <Typography component={Link} to='/new-ui/'>Top</Typography>
-                <Typography component={Link} to='/new-ui/entities'>エンティティ一覧</Typography>
+                <Typography component={Link} to={`/new-ui/entities`}>エンティティ一覧</Typography>
                 <Typography color="textPrimary">エントリ一覧</Typography>
             </AironeBreadcrumbs>
 
@@ -85,28 +85,28 @@ export default function Entry(props) {
                             variant="contained"
                             className={classes.button}
                             component={Link}
-                            to={`/entity/edit/${entityId}`}>
+                            to={`/new-ui/entities/${entityId}`}>
                             エンティティ編集
                         </Button>
                         <Button
                             variant="contained"
                             className={classes.button}
                             component={Link}
-                            to={`/acl/${entityId}`}>
+                            to={`/new-ui/acl/${entityId}`}>
                             エンティティの ACL
                         </Button>
                         <Button
-                            variant="contained"
+                            variant="outlined"
                             color="secondary"
                             className={classes.button}>
                             エクスポート
                         </Button>
                         <Button
-                            variant="contained"
-                            color="secondary"
                             className={classes.button}
+                            variant="outlined"
+                            color="secondary"
                             component={Link}
-                            to={`/entry/import/${entityId}`}>
+                            to={`/new-ui/import`}>
                             インポート
                         </Button>
                         <Button

@@ -39,18 +39,19 @@ function App() {
                 <Grid item xs={10}>
                     <Switch>
                         <Route path={basePath + "advanced_search"} component={AdvancedSearch}/>
-                        <Route path={basePath + "user"} component={User}/>
-                        <Route path={basePath + "group/import"} component={Import}/>
-                        <Route path={basePath + "group"} component={Group}/>
-                        <Route path={basePath + "acl/:objectId"} component={ACL}/>
                         <Route path={basePath + "entities/:entityId/entries/new"} component={EditEntry}/>
                         <Route path={basePath + "entities/:entityId/entries/:entryId"} component={EditEntry}/>
+                        <Route path={basePath + "entities/:entityId/entries"} component={Entry}/>
                         <Route path={basePath + "entities/:entityId/history"} component={OperationHistory}/>
                         <Route path={basePath + "entities/new"} component={EditEntity}/>
-                        <Route path={basePath + "entities/:entityId"} component={Entry}/>
+                        <Route path={basePath + "entities/:entityId"} component={EditEntity}/>
                         <Route path={basePath + "entities"} component={Entity}/>
+                        <Route path={basePath + "group"} component={Group}/>
+                        <Route path={basePath + "import"} component={Import}/>
                         <Route path={basePath + "jobs"} component={Job}/>
+                        <Route path={basePath + "acl/:objectId"} component={ACL}/>
                         <Route path={basePath + "search"} component={SearchResults}/>
+                        <Route path={basePath + "user"} component={User}/>
                         <Route path="/" component={Dashboard}/>
                     </Switch>
                 </Grid>

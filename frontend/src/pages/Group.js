@@ -48,7 +48,14 @@ export default function Group(props) {
                     <div className="float-left">
                         <Button className={classes.button} variant="outlined" color="primary">新規作成</Button>
                         <Button className={classes.button} variant="outlined" color="secondary">エクスポート</Button>
-                        <Button className={classes.button} variant="outlined" color="secondary">インポート</Button>
+                        <Button
+                            variant="outlined"
+                            color="secondary"
+                            className={classes.button}
+                            component={Link}
+                            to={`/new-ui/import`}>
+                            インポート
+                        </Button>
                     </div>
                     <div className="float-right">
                     </div>
