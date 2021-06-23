@@ -21,6 +21,8 @@ import EditEntry from "./pages/EditEntry";
 import OperationHistory from "./pages/OperationHistory";
 import ACL from "./pages/ACL";
 import Import from "./pages/Import";
+import EditUser from "./pages/EditUser";
+import EditUserPassword from "./pages/EditUserPassword";
 
 const basePath = '/new-ui/';
 
@@ -46,12 +48,15 @@ function App() {
                         <Route path={basePath + "entities/new"} component={EditEntity}/>
                         <Route path={basePath + "entities/:entityId"} component={EditEntity}/>
                         <Route path={basePath + "entities"} component={Entity}/>
-                        <Route path={basePath + "group"} component={Group}/>
+                        <Route path={basePath + "groups"} component={Group}/>
                         <Route path={basePath + "import"} component={Import}/>
                         <Route path={basePath + "jobs"} component={Job}/>
                         <Route path={basePath + "acl/:objectId"} component={ACL}/>
                         <Route path={basePath + "search"} component={SearchResults}/>
-                        <Route path={basePath + "user"} component={User}/>
+                        <Route path={basePath + "users/new"} component={EditUser}/>
+                        <Route path={basePath + "users/:userId/password"} component={EditUserPassword}/>
+                        <Route path={basePath + "users/:userId"} component={EditUser}/>
+                        <Route path={basePath + "users"} component={User}/>
                         <Route path="/" component={Dashboard}/>
                     </Switch>
                 </Grid>

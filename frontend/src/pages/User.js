@@ -38,7 +38,14 @@ export default function User(props) {
             <div className="row">
                 <div className="col">
                     <div className="float-left">
-                        <Button className={classes.button} variant="outlined" color="primary">新規作成</Button>
+                        <Button
+                            className={classes.button}
+                            variant="outlined"
+                            color="primary"
+                            component={Link}
+                            to={`/new-ui/users/new`}>
+                            新規作成
+                        </Button>
                         <Button className={classes.button} variant="outlined" color="secondary">エクスポート</Button>
                         <Button
                             className={classes.button}
@@ -80,7 +87,7 @@ export default function User(props) {
                                             className={classes.button}
                                             startIcon={<EditIcon/>}
                                             component={Link}
-                                            to={`/user/${user.id}/edit`}>
+                                            to={`/new-ui/users/${user.id}`}>
                                             編集
                                         </Button>
                                     </TableCell>
@@ -91,7 +98,7 @@ export default function User(props) {
                                             className={classes.button}
                                             startIcon={<EditIcon/>}
                                             component={Link}
-                                            to={`/user/${user.id}/edit_passwd`}>
+                                            to={`/new-ui/users/${user.id}/password`}>
                                             パスワード変更
                                         </Button>
                                     </TableCell>

@@ -50,7 +50,7 @@ export default function Dashboard(props) {
                     variant="contained"
                     color="primary"
                     component={Link}
-                    to={`/new-ui/user`}
+                    to={`/new-ui/users`}
                 >
                     ユーザ管理 &#x000bb;
                 </Button>
@@ -60,7 +60,7 @@ export default function Dashboard(props) {
                     variant="contained"
                     color="primary"
                     component={Link}
-                    to={`/new-ui/group`}
+                    to={`/new-ui/groups`}
                 >
                     グループ管理 &#x000bb;
                 </Button>
