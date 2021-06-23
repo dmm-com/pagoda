@@ -14,6 +14,27 @@ export function getEntities() {
     return fetch('/entity/api/v1/get_entities');
 }
 
+export function getEntityHistory(entityId) {
+    return new Promise((resolve, _) => {
+        resolve([
+            {
+                user: {
+                    username: 'test',
+                },
+                operation: (1 << 0) + (1 << 3), // ADD_ENTITY
+                details: [
+                    {
+                        operation: (1 << 1) + (1 << 4), // MOD_ATTR
+                        target_obj: 'test_attr',
+                        text: 'mod test_attr',
+                    },
+                ],
+                time: '2021-01-01 00:00:00',
+            }
+        ]);
+    });
+}
+
 export function getEntry(entityId, entryId) {
     return new Promise((resolve, _) => {
         resolve({
@@ -41,6 +62,33 @@ export function getAdvancedSearchResults() {
                 attr2: 'val2',
             },
         ]);
+    });
+}
+
+export function getACL(objectId) {
+    return new Promise((resolve, _) => {
+        resolve({
+            object: {
+                name: 'entity1',
+                is_public: true,
+            },
+            acltypes: [
+                {
+                    id: 1,
+                    name: 'Nothing',
+                },
+                {
+                    id: 2,
+                    name: 'Full Controllable',
+                },
+            ],
+            members: [
+                {
+                    name: 'admin',
+                    current_permission: 1,
+                },
+            ],
+        });
     });
 }
 
@@ -163,3 +211,22 @@ export function getJobs() {
     });
 }
 
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateACL(objectId, objectType, acl, defaultPermission) {
+    return fetch(
+        `/acl/set`,
+        {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({
+                object_id: objectId,
+                object_type: objectType,
+                acl: acl,
+                default_permission: defaultPermission,
+            }),
+        }
+    );
+}

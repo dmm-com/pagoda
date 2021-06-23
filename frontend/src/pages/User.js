@@ -40,7 +40,14 @@ export default function User(props) {
                     <div className="float-left">
                         <Button className={classes.button} variant="outlined" color="primary">新規作成</Button>
                         <Button className={classes.button} variant="outlined" color="secondary">エクスポート</Button>
-                        <Button className={classes.button} variant="outlined" color="secondary">インポート</Button>
+                        <Button
+                            className={classes.button}
+                            variant="outlined"
+                            color="secondary"
+                            component={Link}
+                            to={`/new-ui/group/import`}>
+                            インポート
+                        </Button>
                     </div>
                     <div className="float-right">
                     </div>

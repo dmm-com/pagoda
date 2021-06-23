@@ -77,7 +77,6 @@ export default function Entity(props) {
             </div>
 
             <Paper>
-
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead>
@@ -118,7 +117,7 @@ export default function Entity(props) {
                                                 className={classes.button}
                                                 startIcon={<HistoryIcon/>}
                                                 component={Link}
-                                                to={`/entity/history/${entity.id}`}>
+                                                to={`/new-ui/entities/${entity.id}/history`}>
                                                 変更履歴
                                             </Button>
                                             <Button
@@ -127,7 +126,7 @@ export default function Entity(props) {
                                                 className={classes.button}
                                                 startIcon={<GroupIcon/>}
                                                 component={Link}
-                                                to={`/acl/${entity.id}`}>
+                                                to={`/new-ui/acl/${entity.id}`}>
                                                 ACL
                                             </Button>
                                             <ConfirmableButton
