@@ -190,8 +190,8 @@ def make_query(hint_entity_ids, hint_attrs, hint_attr_value, entry_name, or_matc
             'nested': {
                 'path': 'attr',
                 'query': {
-                    'wildcard': {
-                        'attr.value': "*" + str(hint_attr_value) + "*"
+                    'regexp': {
+                        'attr.value': ".*" + _get_regex_pattern(str(hint_attr_value)) + ".*"
                     }
                 }
             }

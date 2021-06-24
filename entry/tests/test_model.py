@@ -1598,6 +1598,11 @@ class ModelTest(AironeTestCase):
         self.assertEqual(ret['ret_count'], 1)
         self.assertEqual(ret['ret_values'][0]['entry']['name'], 'e-0')
 
+        # check whether keyword would be insensitive case
+        ret = Entry.search_entries(user, [entity.id], hint_attr_value='FOO-0')
+        self.assertEqual(ret['ret_count'], 1)
+        self.assertEqual(ret['ret_values'][0]['entry']['name'], 'e-0')
+
     def test_search_entries_with_hint_referral(self):
         user = User.objects.create(username='hoge')
 
