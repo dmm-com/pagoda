@@ -17,6 +17,7 @@ import Paper from "@material-ui/core/Paper";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
 import {getGroups} from "../utils/AironeAPIClient";
+import ConfirmableButton from "../components/ConfirmableButton";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -36,6 +37,10 @@ export default function Group(props) {
             .then(data => setGroups(data));
     }, []);
 
+    const handleDelete = (event, groupId) => {
+        // TODO call delete API
+    };
+
     return (
         <div className="container-fluid">
             <AironeBreadcrumbs>
@@ -46,7 +51,14 @@ export default function Group(props) {
             <div className="row">
                 <div className="col">
                     <div className="float-left">
-                        <Button className={classes.button} variant="outlined" color="primary">新規作成</Button>
+                        <Button
+                            className={classes.button}
+                            variant="outlined"
+                            color="primary"
+                            component={Link}
+                            to={`/new-ui/groups/new`}>
+                            新規作成
+                        </Button>
                         <Button className={classes.button} variant="outlined" color="secondary">エクスポート</Button>
                         <Button
                             variant="outlined"
@@ -75,7 +87,13 @@ export default function Group(props) {
                         {groups.map((group) => {
                             return (
                                 <TableRow>
-                                    <TableCell><Typography>{group.name}</Typography></TableCell>
+                                    <TableCell>
+                                        <Typography
+                                            component={Link}
+                                            to={`/new-ui/groups/${group.id}`}>
+                                            {group.name}
+                                        </Typography>
+                                    </TableCell>
                                     <TableCell align="right">
                                         <List>
                                             {group.members.map((member) => {
@@ -86,15 +104,16 @@ export default function Group(props) {
                                         </List>
                                     </TableCell>
                                     <TableCell align="right">
-                                        <Button
+                                        <ConfirmableButton
                                             variant="contained"
-                                            color="primary"
+                                            color="secondary"
                                             className={classes.button}
                                             startIcon={<DeleteIcon/>}
                                             component={Link}
-                                            to={`/groups/${group.id}/delete`}>
+                                            dialogTitle="本当に削除しますか？"
+                                            onClickYes={(e) => handleDelete(e, group.id)}>
                                             削除
-                                        </Button>
+                                        </ConfirmableButton>
                                     </TableCell>
                                 </TableRow>
                             );

@@ -8,7 +8,8 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import React, {useEffect, useState} from "react";
 import {makeStyles} from "@material-ui/core/styles";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
-import {getUsers} from "../utils/AironeAPIClient";
+import {deleteEntry, getUsers} from "../utils/AironeAPIClient";
+import ConfirmableButton from "../components/ConfirmableButton";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -27,6 +28,10 @@ export default function User(props) {
         getUsers()
             .then(data => setUsers(data));
     }, []);
+
+    const handleDelete = (event, userId) => {
+        // TODO call delete API
+    };
 
     return (
         <div className="container-fluid">
@@ -103,15 +108,16 @@ export default function User(props) {
                                         </Button>
                                     </TableCell>
                                     <TableCell align="right">
-                                        <Button
+                                        <ConfirmableButton
                                             variant="contained"
-                                            color="primary"
+                                            color="secondary"
                                             className={classes.button}
                                             startIcon={<DeleteIcon/>}
                                             component={Link}
-                                            to={`/user/${user.id}/delete`}>
+                                            dialogTitle="本当に削除しますか？"
+                                            onClickYes={(e) => handleDelete(e, user.id)}>
                                             削除
-                                        </Button>
+                                        </ConfirmableButton>
                                     </TableCell>
                                 </TableRow>
                             );
