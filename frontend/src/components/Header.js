@@ -1,24 +1,19 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Link, useHistory, useLocation} from 'react-router-dom';
 import {grey} from '@material-ui/core/colors';
 import {fade, makeStyles} from '@material-ui/core/styles';
 import AccountBox from '@material-ui/icons/AccountBox';
-import FindInPageIcon from '@material-ui/icons/FindInPage';
 import FormatListBulletedIcon from '@material-ui/icons/FormatListBulleted';
-import GroupIcon from '@material-ui/icons/Group';
-import PersonIcon from '@material-ui/icons/Person';
 import SearchIcon from '@material-ui/icons/Search';
-import ViewListIcon from '@material-ui/icons/ViewList';
 import AppBar from '@material-ui/core/AppBar';
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
 import IconButton from '@material-ui/core/IconButton';
 import InputBase from '@material-ui/core/InputBase';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import {Divider, Menu, MenuItem, TableCell} from "@material-ui/core";
+import {Badge, Divider, Menu, MenuItem, TableCell} from "@material-ui/core";
+import {getEntry, getRecentJobs} from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -74,6 +69,13 @@ const useStyles = makeStyles((theme) => ({
 export default function Header(props) {
     const classes = useStyles();
     const history = useHistory();
+
+    const [recentJobs, setRecentJobs] = useState([]);
+    useEffect(() => {
+        getRecentJobs()
+            .then(data => data.json())
+            .then(data => setRecentJobs(data['result']));
+    }, []);
 
     const handleChange = (event, value) => {
         history.push(value);
@@ -146,14 +148,26 @@ export default function Header(props) {
 
                         <IconButton aria-controls="job-menu" aria-haspopup="true" onClick={handleClickJob}
                                     style={{color: grey[50]}}>
-                            <FormatListBulletedIcon/>
+                            <Badge badgeContent={recentJobs.length} color="secondary">
+                                <FormatListBulletedIcon/>
+                            </Badge>
                         </IconButton>
                         <Menu id="job-menu"
                               anchorEl={jobAnchorEl}
                               open={Boolean(jobAnchorEl)}
                               onClose={handleCloseJob}
                               keepMounted>
-                            <MenuItem>実行タスクなし</MenuItem>
+                            {
+                                recentJobs.map((recentJob) =>
+                                    <MenuItem>
+                                        <Typography
+                                            component={Link}
+                                            to={`/new-ui/jobs/${recentJob.id}`}>
+                                            {recentJob.target.name}
+                                        </Typography>
+                                    </MenuItem>
+                                )
+                            }
                             <Divider light/>
                             <MenuItem>
                                 <Typography

@@ -25,28 +25,53 @@ const useStyles = makeStyles((theme) => ({
     button: {
         margin: theme.spacing(1),
     },
+    entryName: {
+        margin: theme.spacing(1),
+    },
 }));
 
 export default function Entry(props) {
     const classes = useStyles();
     let {entityId} = useParams();
-    const [entries, setEntries] = useState([]);
+
     const [tabValue, setTabValue] = useState(1);
-    const [updated, setUpdated] = useState(false);
+
+    const [keyword, setKeyword] = useState("");
+    const [entries, setEntries] = useState([]);
+    const [filteredEntries, setFilteredEntries] = useState([]);
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(100);
 
+    const [updated, setUpdated] = useState(false);
+
     useEffect(() => {
         getEntries(entityId)
             .then(resp => resp.json())
-            .then(data => setEntries(data.results))
-            .then(_ => setUpdated(false));
+            .then(data => {
+                setEntries(data.results);
+                setFilteredEntries(data.results);
+            });
+        setUpdated(false);
     }, [updated]);
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
     };
+
+    const onChangeKeyword = (event) => {
+        setKeyword(event.target.value);
+    }
+
+    const onKeyPressKeyword = (event) => {
+        if (event.key === 'Enter' && keyword) {
+            setFilteredEntries(entries.filter((entry) => {
+                return entry.name.indexOf(keyword) !== -1;
+            }));
+        } else {
+            setFilteredEntries(entries);
+        }
+    }
 
     const handleDelete = (event, entryId) => {
         deleteEntry(entryId)
@@ -118,7 +143,7 @@ export default function Entry(props) {
                 </div>
             </div>
 
-            <Divider />
+            <Divider/>
 
             <Tabs value={tabValue} onChange={handleTabChange}>
                 <Tab label="ダッシュボード" index={0}/>
@@ -137,12 +162,17 @@ export default function Entry(props) {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell><Typography>エントリ名</Typography></TableCell>
+                                    <TableCell>
+                                        <span className={classes.entryName}>エントリ名</span>
+                                        <input className={classes.entryName} text='text' placeholder='絞り込む'
+                                               value={keyword}
+                                               onChange={onChangeKeyword} onKeyPress={onKeyPressKeyword}/>
+                                    </TableCell>
                                     <TableCell align="right"/>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {entries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((entry) => {
+                                {filteredEntries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((entry) => {
                                     return (
                                         <TableRow>
                                             <TableCell>
@@ -173,7 +203,7 @@ export default function Entry(props) {
                     <TablePagination
                         rowsPerPageOptions={[100, 250, 1000]}
                         component="div"
-                        count={entries.length}
+                        count={filteredEntries.length}
                         rowsPerPage={rowsPerPage}
                         page={page}
                         onChangePage={handleChangePage}

@@ -16,7 +16,7 @@ import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import DeleteIcon from "@material-ui/icons/Delete";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
-import {getGroups} from "../utils/AironeAPIClient";
+import {deleteGroup, getGroups} from "../utils/AironeAPIClient";
 import ConfirmableButton from "../components/ConfirmableButton";
 
 const useStyles = makeStyles((theme) => ({
@@ -31,14 +31,17 @@ const useStyles = makeStyles((theme) => ({
 export default function Group(props) {
     const classes = useStyles();
     const [groups, setGroups] = useState([]);
+    const [updated, setUpdated] = useState(false);
 
     useEffect(() => {
         getGroups()
             .then(data => setGroups(data));
+        setUpdated(true);
     }, []);
 
     const handleDelete = (event, groupId) => {
-        // TODO call delete API
+        deleteGroup(groupId)
+            .then(_ => setUpdated(true));
     };
 
     return (

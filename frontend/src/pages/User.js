@@ -8,7 +8,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import React, {useEffect, useState} from "react";
 import {makeStyles} from "@material-ui/core/styles";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
-import {deleteEntry, getUsers} from "../utils/AironeAPIClient";
+import {deleteUser, getUsers} from "../utils/AironeAPIClient";
 import ConfirmableButton from "../components/ConfirmableButton";
 
 const useStyles = makeStyles((theme) => ({
@@ -23,14 +23,17 @@ const useStyles = makeStyles((theme) => ({
 export default function User(props) {
     const classes = useStyles();
     const [users, setUsers] = useState([]);
+    const [updated, setUpdated] = useState(false);
 
     useEffect(() => {
         getUsers()
             .then(data => setUsers(data));
-    }, []);
+        setUpdated(true);
+    }, [updated]);
 
     const handleDelete = (event, userId) => {
-        // TODO call delete API
+        deleteUser(userId)
+            .then(_ => setUpdated(true));
     };
 
     return (
@@ -74,8 +77,6 @@ export default function User(props) {
                             <TableCell><Typography>メールアドレス</Typography></TableCell>
                             <TableCell><Typography>作成日時</Typography></TableCell>
                             <TableCell align="right"/>
-                            <TableCell align="right"/>
-                            <TableCell align="right"/>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -95,8 +96,6 @@ export default function User(props) {
                                             to={`/new-ui/users/${user.id}`}>
                                             編集
                                         </Button>
-                                    </TableCell>
-                                    <TableCell align="right">
                                         <Button
                                             variant="contained"
                                             color="primary"
@@ -106,8 +105,6 @@ export default function User(props) {
                                             to={`/new-ui/users/${user.id}/password`}>
                                             パスワード変更
                                         </Button>
-                                    </TableCell>
-                                    <TableCell align="right">
                                         <ConfirmableButton
                                             variant="contained"
                                             color="secondary"

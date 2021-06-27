@@ -174,6 +174,21 @@ export function getUsers() {
     });
 }
 
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function deleteUser(userId) {
+    return fetch(
+        `/user/do_delete/${userId}`,
+        {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({}),
+        }
+    );
+}
+
 // FIXME implement internal API then call it
 export function getGroups() {
     return new Promise((resolve, _) => {
@@ -194,6 +209,21 @@ export function getGroups() {
     });
 }
 
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function deleteGroup(groupId) {
+    return fetch(
+        `/gruop/do_delete/${groupId}`,
+        {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify({}),
+        }
+    );
+}
+
 // FIXME implement internal API then call it
 export function getJobs() {
     return new Promise((resolve, _) => {
@@ -209,6 +239,10 @@ export function getJobs() {
             },
         ]);
     });
+}
+
+export function getRecentJobs() {
+    return fetch(`/api/v1/job/`);
 }
 
 // NOTE it calls non-API endpoint

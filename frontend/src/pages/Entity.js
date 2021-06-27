@@ -24,17 +24,39 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Entity(props) {
     const classes = useStyles();
+
+    const [keyword, setKeyword] = useState("");
     const [entities, setEntities] = useState([]);
+    const [filteredEntities, setFilteredEntities] = useState([]);
+
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(100);
+
     const [updated, setUpdated] = useState(false);
 
     useEffect(() => {
         getEntities()
             .then(resp => resp.json())
-            .then(data => setEntities(data.entities))
-            .then(_ => setUpdated(false));
+            .then(data => {
+                setEntities(data.entities);
+                setFilteredEntities(data.entities);
+            });
+        setUpdated(false);
     }, [updated]);
+
+    const onChangeKeyword = (event) => {
+        setKeyword(event.target.value);
+    }
+
+    const onKeyPressKeyword = (event) => {
+        if (event.key === 'Enter' && keyword) {
+            setFilteredEntities(entities.filter((entity) => {
+                return entity.name.indexOf(keyword) !== -1;
+            }));
+        } else {
+            setFilteredEntities(entities);
+        }
+    }
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -90,73 +112,72 @@ export default function Entity(props) {
                             <TableRow>
                                 <TableCell>
                                     <span className={classes.entityName}>エンティティ名</span>
-                                    <input className={classes.entityName} text='text' placeholder='絞り込む'/>
+                                    <input className={classes.entityName} text='text' placeholder='絞り込む' value={keyword}
+                                           onChange={onChangeKeyword} onKeyPress={onKeyPressKeyword}/>
                                 </TableCell>
                                 <TableCell><Typography>備考</Typography></TableCell>
                                 <TableCell align="right"/>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {entities.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((entity) => {
-                                return (
-                                    <TableRow>
-                                        <TableCell>
-                                            <Typography
-                                                component={Link}
-                                                to={`/new-ui/entities/${entity.id}/entries`}>
-                                                {entity.name}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell><Typography>{entity.note}</Typography></TableCell>
-                                        <TableCell align="right">
-                                            <Button
-                                                variant="contained"
-                                                color="primary"
-                                                className={classes.button}
-                                                startIcon={<EditIcon/>}
-                                                component={Link}
-                                                to={`/new-ui/entities/${entity.id}`}>
-                                                エンティティ編集
-                                            </Button>
-                                            <Button
-                                                variant="contained"
-                                                color="primary"
-                                                className={classes.button}
-                                                startIcon={<HistoryIcon/>}
-                                                component={Link}
-                                                to={`/new-ui/entities/${entity.id}/history`}>
-                                                変更履歴
-                                            </Button>
-                                            <Button
-                                                variant="contained"
-                                                color="primary"
-                                                className={classes.button}
-                                                startIcon={<GroupIcon/>}
-                                                component={Link}
-                                                to={`/new-ui/acl/${entity.id}`}>
-                                                ACL
-                                            </Button>
-                                            <ConfirmableButton
-                                                variant="contained"
-                                                color="secondary"
-                                                className={classes.button}
-                                                startIcon={<DeleteIcon/>}
-                                                component={Link}
-                                                dialogTitle="本当に削除しますか？"
-                                                onClickYes={(e) => handleDelete(e, entity.id)}>
-                                                削除
-                                            </ConfirmableButton>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
+                            {filteredEntities.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((entity) =>
+                                <TableRow>
+                                    <TableCell>
+                                        <Typography
+                                            component={Link}
+                                            to={`/new-ui/entities/${entity.id}/entries`}>
+                                            {entity.name}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell><Typography>{entity.note}</Typography></TableCell>
+                                    <TableCell align="right">
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            className={classes.button}
+                                            startIcon={<EditIcon/>}
+                                            component={Link}
+                                            to={`/new-ui/entities/${entity.id}`}>
+                                            エンティティ編集
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            className={classes.button}
+                                            startIcon={<HistoryIcon/>}
+                                            component={Link}
+                                            to={`/new-ui/entities/${entity.id}/history`}>
+                                            変更履歴
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            className={classes.button}
+                                            startIcon={<GroupIcon/>}
+                                            component={Link}
+                                            to={`/new-ui/acl/${entity.id}`}>
+                                            ACL
+                                        </Button>
+                                        <ConfirmableButton
+                                            variant="contained"
+                                            color="secondary"
+                                            className={classes.button}
+                                            startIcon={<DeleteIcon/>}
+                                            component={Link}
+                                            dialogTitle="本当に削除しますか？"
+                                            onClickYes={(e) => handleDelete(e, entity.id)}>
+                                            削除
+                                        </ConfirmableButton>
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>
                 <TablePagination
                     rowsPerPageOptions={[100, 250, 1000]}
                     component="div"
-                    count={entities.length}
+                    count={filteredEntities.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onChangePage={handleChangePage}

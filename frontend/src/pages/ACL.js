@@ -40,6 +40,7 @@ export default function ACL(props) {
         <div className="container-fluid">
             <AironeBreadcrumbs>
                 <Typography component={Link} to='/new-ui/'>Top</Typography>
+                <Typography color="textPrimary">ACL</Typography>
             </AironeBreadcrumbs>
 
             <Typography>{object.name} の ACL 設定</Typography>

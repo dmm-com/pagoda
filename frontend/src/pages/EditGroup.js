@@ -4,7 +4,7 @@ import Button from "@material-ui/core/Button";
 import {Link, useParams} from "react-router-dom";
 import {Select, Table, TableBody, TableCell, TableHead, TableRow} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
-import {getGroups} from "../utils/AironeAPIClient";
+import {getGroups, getUsers} from "../utils/AironeAPIClient";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
@@ -20,12 +20,8 @@ export default function EditGroup(props) {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
-        setUsers([
-            {
-                id: 1,
-                name: 'test',
-            },
-        ])
+        getUsers()
+            .then(data => setUsers(data));
     }, []);
 
     const onSubmit = (event) => {

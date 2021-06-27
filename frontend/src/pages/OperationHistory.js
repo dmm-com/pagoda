@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from "react";
 import {Table, TableBody, TableCell, TableHead, TableRow, Typography} from "@material-ui/core";
 import {getEntityHistory} from "../utils/AironeAPIClient";
+import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import {Link} from "react-router-dom";
 
 const Operations = {
     ADD: 1 << 0,
@@ -32,9 +34,13 @@ export default function OperationHistory(props) {
             .then(data => setHistory(data));
     }, []);
 
-    console.log(history);
     return (
         <div className="container">
+            <AironeBreadcrumbs>
+                <Typography component={Link} to='/new-ui/'>Top</Typography>
+                <Typography color="textPrimary">変更履歴</Typography>
+            </AironeBreadcrumbs>
+
             <Table className="table">
                 <TableHead>
                     <TableRow>

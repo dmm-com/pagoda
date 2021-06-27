@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {useParams, Link} from "react-router-dom";
+import {useParams, Link, useHistory} from "react-router-dom";
 import {makeStyles} from "@material-ui/core/styles";
 import {
     Table,
@@ -21,6 +21,8 @@ const useStyles = makeStyles((theme) => ({
 
 export default function EditEntry(props) {
     const classes = useStyles();
+    const history = useHistory();
+
     const {entityId, entryId} = useParams();
     const [name, setName] = useState('');
     const [attributes, setAttributes] = useState([]);
@@ -60,7 +62,7 @@ export default function EditEntry(props) {
         });
         createEntry(entityId, name, attrs)
             .then(resp => resp.json())
-            .then(data => history.push(`/new-ui/entities/${entityId}/entries/${data.entry_id}`));
+            .then(_ => history.push(`/new-ui/entities/${entityId}/entries`));
 
         event.preventDefault();
     };
