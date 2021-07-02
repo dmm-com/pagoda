@@ -1,13 +1,10 @@
 import os
 import logging
 import subprocess
-import pymysql
 import errno
 import importlib
 
 from airone.lib.log import Logger
-
-pymysql.install_as_MySQLdb()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -46,12 +43,14 @@ INSTALLED_APPS = [
     'dashboard',
     'entry',
     'job',
+    'webhook',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'import_export',
     'rest_framework',
     'rest_framework.authtoken',
@@ -179,8 +178,10 @@ try:
     outs, errs = proc.communicate(timeout=1)
     # if `git describe --tags` prints some string to stdout, use the result as version
     # else use 'unknown' as version (e.g. untagged git repository)
-    if outs != b'':
+    if isinstance(outs, str):
         AIRONE['VERSION'] = outs.strip()
+    elif isinstance(outs, bytes):
+        AIRONE['VERSION'] = outs.decode('utf-8').strip()
     else:
         logging.getLogger(__name__).warning('could not describe airone version from git')
 

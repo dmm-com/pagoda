@@ -4,8 +4,12 @@ import io
 import json
 import yaml
 
-from airone.lib.log import Logger
 from airone.lib.acl import ACLType
+from airone.lib.event_notification import notify_entry_create
+from airone.lib.event_notification import notify_entry_update
+from airone.lib.event_notification import notify_entry_delete
+from airone.lib.job import may_schedule_until_job_is_ready
+from airone.lib.log import Logger
 from airone.lib.types import AttrTypeValue
 from airone.celery import app
 from entity.models import Entity, EntityAttr
@@ -107,9 +111,12 @@ def create_entry_attrs(self, job_id):
             if not entity_attr.is_active or not user.has_permission(entity_attr, ACLType.Readable):
                 continue
 
-            # create Attibute object that contains AttributeValues
+            # This creates Attibute object that contains AttributeValues.
+            # But the add_attribute_from_base may return None when target Attribute instance
+            # has already been created or is creating by other process. In that case, this job
+            # do nothing about that Attribute instance.
             attr = entry.add_attribute_from_base(entity_attr, user)
-            if not any([int(x['id']) == attr.schema.id for x in recv_data['attrs']]):
+            if not attr or not any([int(x['id']) == attr.schema.id for x in recv_data['attrs']]):
                 continue
 
             # When job is canceled during this processing, abort it after deleting the created entry
@@ -144,6 +151,10 @@ def create_entry_attrs(self, job_id):
         # update job status and save it except for the case that target job is canceled.
         if not job.is_canceled():
             job.update(Job.STATUS['DONE'])
+
+            # Send notification to the webhook URL
+            job_notify_event = Job.new_notify_create_entry(user, entry)
+            job_notify_event.run()
 
     elif job.is_canceled():
         # When job is canceled before starting, created entry should be deleted.
@@ -191,6 +202,10 @@ def edit_entry_attrs(self, job_id):
 
         # update job status and save it
         job.update(Job.STATUS['DONE'])
+
+        # running job to notify changing entry event
+        job_notify_event = Job.new_notify_update_entry(user, entry)
+        job_notify_event.run()
 
 
 @app.task(bind=True)
@@ -255,6 +270,10 @@ def copy_entry(self, job_id):
         # update job status and save it
         job.update(Job.STATUS['DONE'], 'original entry: %s' % src_entry.name, dest_entry)
 
+        # create and run event notification job
+        job_notify_event = Job.new_notify_create_entry(user, dest_entry)
+        job_notify_event.run()
+
 
 @app.task(bind=True)
 def import_entries(self, job_id):
@@ -301,9 +320,16 @@ def import_entries(self, job_id):
             if not entry:
                 entry = Entry.objects.create(name=entry_data['name'], schema=entity,
                                              created_user=user)
+
+                # create job to notify create event to the WebHook URL
+                job_notify = Job.new_notify_create_entry(user, entry)
+
+            elif not user.has_permission(entry, ACLType.Writable):
+                continue
+
             else:
-                if not user.has_permission(entry, ACLType.Writable):
-                    continue
+                # create job to notify edit event to the WebHook URL
+                job_notify = Job.new_notify_update_entry(user, entry)
 
             entry.complement_attrs(user)
             for attr_name, value in entry_data['attrs'].items():
@@ -330,6 +356,9 @@ def import_entries(self, job_id):
 
             # register entry to the Elasticsearch
             entry.register_es()
+
+            # run notification job
+            job_notify.run()
 
         # update job status and save it except for the case that target job is canceled.
         if not job.is_canceled():
@@ -417,3 +446,33 @@ def register_referrals(self, job_id):
 
     if not job.is_canceled():
         job.update(Job.STATUS['DONE'])
+
+
+def _notify_event(notification_method, object_id, user):
+    entry = Entry.objects.filter(id=object_id).first()
+    if not entry:
+        return (Job.STATUS['ERROR'], "Failed to get job.target (%s)" % object_id)
+
+    try:
+        notification_method(entry, user)
+
+    except Exception as e:
+        return (Job.STATUS['ERROR'], str(e))
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def notify_create_entry(self, job):
+    return _notify_event(notify_entry_create, job.target.id, job.user)
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def notify_update_entry(self, job):
+    return _notify_event(notify_entry_update, job.target.id, job.user)
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def notify_delete_entry(self, job):
+    return _notify_event(notify_entry_delete, job.target.id, job.user)

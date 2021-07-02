@@ -30,8 +30,8 @@ def http_get(func):
         if request.method != 'GET':
             return HttpResponse('Invalid HTTP method is specified', status=400)
 
-        if not request.user.is_authenticated():
-            return HttpResponseSeeOther('/dashboard/login?next=%s?%s' %
+        if not request.user.is_authenticated:
+            return HttpResponseSeeOther('/auth/login?next=%s?%s' %
                                         (request.path, quote(request.GET.urlencode())))
 
         return func(*args, **kwargs)
@@ -66,8 +66,8 @@ def check_superuser(func):
     def wrapper(*args, **kwargs):
         request = args[0]
 
-        if not request.user.is_authenticated():
-            return HttpResponseSeeOther('/dashboard/login')
+        if not request.user.is_authenticated:
+            return HttpResponseSeeOther('/auth/login')
 
         if not request.user.is_superuser:
             return HttpResponse('This page needs administrative permission to access', status=400)
@@ -84,7 +84,7 @@ def http_post(validator=[]):
             if request.method != 'POST':
                 return HttpResponse('Invalid HTTP method is specified', status=400)
 
-            if not request.user.is_authenticated():
+            if not request.user.is_authenticated:
                 return HttpResponse('You have to login to execute this operation', status=401)
 
             try:
@@ -93,33 +93,6 @@ def http_post(validator=[]):
                 return HttpResponse('Failed to parse string to JSON', status=400)
 
             if not _is_valid(kwargs['recv_data'], validator):
-                return HttpResponse('Invalid parameters are specified', status=400)
-
-            return func(*args, **kwargs)
-        return http_post_handler
-    return _decorator
-
-
-def http_post_form(validator=[]):
-    def _decorator(func):
-        def http_post_handler(*args, **kwargs):
-            request = args[0]
-
-            if request.method != 'POST':
-                return HttpResponse('Invalid HTTP method is specified', status=400)
-
-            if not request.user.is_authenticated():
-                return HttpResponse('You have to login to execute this operation', status=401)
-
-            recv_data = {}
-            for x in validator:
-                val = request.POST.get(x['name'])
-                if val:
-                    recv_data[x['name']] = json.loads(val)
-
-            if _is_valid(recv_data, validator):
-                kwargs['recv_data'] = recv_data
-            else:
                 return HttpResponse('Invalid parameters are specified', status=400)
 
             return func(*args, **kwargs)

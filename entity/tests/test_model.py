@@ -1,7 +1,6 @@
 from airone.lib.types import AttrTypeValue
 from copy import copy
 
-from airone.lib.test import DisableStderr
 from django.test import TestCase
 from user.models import User
 from entity.models import Entity
@@ -209,12 +208,16 @@ class ModelTest(TestCase):
 
         # This processing would be failed because 'type' parameter is necessary for creating
         # a new EntityAttr instance by importing processing.
-        with DisableStderr():
+        with self.assertRaises(RuntimeError) as cm:
             EntityAttrResource.import_data_from_request({
                 'name': 'attr',
                 'entity': entity.name,
                 'created_user': user.username
             }, user)
+
+        # Check assert exception message
+        self.assertEqual(cm.exception.args[0],
+                         "The parameter 'type' is mandatory when a new EntityAtter create")
 
         # This checks EntityAttr would not be created
         self.assertFalse(EntityAttr.objects.filter(parent_entity=entity, is_active=True).exists())

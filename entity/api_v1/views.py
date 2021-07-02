@@ -3,6 +3,7 @@ from airone.lib.http import http_get
 from airone.lib.acl import ACLType
 
 from entity.models import Entity
+
 from django.http.response import JsonResponse
 from user.models import User
 

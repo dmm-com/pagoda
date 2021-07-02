@@ -8,6 +8,7 @@ from django.db.models import Q
 # libraries of AirOne
 from airone.lib.http import get_download_response
 from airone.lib.http import http_get, render
+from airone.lib.profile import airone_profile
 
 # related models in AirOne
 from job.models import Job, JobOperation
@@ -17,6 +18,7 @@ from user.models import User
 from .settings import CONFIG
 
 
+@airone_profile
 @http_get
 def index(request):
     user = User.objects.get(id=request.user.id)
@@ -52,6 +54,7 @@ def index(request):
     return render(request, 'list_jobs.html', context)
 
 
+@airone_profile
 @http_get
 def download(request, job_id):
     user = User.objects.get(id=request.user.id)

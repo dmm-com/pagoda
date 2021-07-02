@@ -3,6 +3,7 @@ from importlib import import_module
 from django.db import models
 from django.contrib.auth.models import User as DjangoUser
 from airone.lib.acl import ACLTypeBase
+from airone.lib.db import get_slave_db
 from group.models import Group
 
 from rest_framework.authtoken.models import Token
@@ -32,17 +33,21 @@ class User(DjangoUser):
         return Token.objects.get_or_create(user=self)[0]
 
     def _user_has_permission(self, target_obj, permission_level):
+        slave_db = get_slave_db()
         return any([permission_level.id <= x.get_aclid()
-                   for x in self.permissions.all() if target_obj.id == x.get_objid()])
+                   for x in self.permissions.using(slave_db).all()
+                   if target_obj.id == x.get_objid()])
 
     def _group_has_permission(self, target_obj, permission_level, groups):
+        slave_db = get_slave_db()
         return any(sum([[permission_level.id <= x.get_aclid()
-                   for x in g.permissions.all() if target_obj.id == x.get_objid()] for g in groups],
-                   []))
+                   for x in g.permissions.using(slave_db).all()
+                   if target_obj.id == x.get_objid()] for g in groups], []))
 
     def is_permitted(self, target_obj, permission_level, groups=[]):
         if not groups:
-            groups = self.groups.all()
+            slave_db = get_slave_db()
+            groups = self.groups.using(slave_db).all()
 
         return (self._user_has_permission(target_obj, permission_level) or
                 self._group_has_permission(target_obj, permission_level, groups))
@@ -177,9 +182,10 @@ class History(models.Model):
     DEL_ENTRY = OP_DEL + TARGET_ENTRY
 
     target_obj = models.ForeignKey(import_module('acl.models').ACLBase,
-                                   related_name='referred_target_obj')
+                                   related_name='referred_target_obj',
+                                   on_delete=models.SET_NULL, null=True)
     time = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     operation = models.IntegerField(default=0)
     text = models.CharField(max_length=512)
     is_detail = models.BooleanField(default=False)

@@ -30,6 +30,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
+            pip install --upgrade pip
             pip install tox coverage codecov
       - run:
           name: Wait for MySQL is available
@@ -40,6 +41,10 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y default-mysql-client
             mysql -uroot -h127.0.0.1 -ppassword -e "GRANT ALL ON *.* to airone@'%' IDENTIFIED BY 'password'"
+      - run:
+          name: Install additional dependencies
+          command: |
+            sudo apt-get install -y libldap2-dev libsasl2-dev
       - run:
           name: Testing
           command: |
@@ -86,6 +91,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
+            pip install --upgrade pip
             pip install tox coverage
       - run:
           name: Wait for MySQL is available
@@ -96,6 +102,10 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y default-mysql-client
             mysql -uroot -h127.0.0.1 -ppassword -e "GRANT ALL ON *.* to airone@'%' IDENTIFIED BY 'password'"
+      - run:
+          name: Install additional dependencies
+          command: |
+            sudo apt-get install -y libldap2-dev libsasl2-dev
       - run:
           name: Testing
           command: |
@@ -119,7 +129,13 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
+            pip install --upgrade pip
             pip install tox
+      - run:
+          name: Install additional dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libldap2-dev libsasl2-dev
       - run:
           name: flake8
           command: |
@@ -164,7 +180,7 @@ workflows:
   build_and_test:
     jobs:
       - python36
-      # - python38
+      - python38
       - pep8
       - mypy
       - build_gh_page:

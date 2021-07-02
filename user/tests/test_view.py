@@ -2,8 +2,9 @@ import json
 
 from django.test import TestCase, Client
 from django.urls import reverse
+from user.forms import UsernameBasedPasswordResetForm
 from user.models import User
-from xml.etree import ElementTree
+from user.views import PasswordReset
 
 
 class ViewTest(TestCase):
@@ -12,8 +13,10 @@ class ViewTest(TestCase):
         self.guest = self._create_user('guest', 'guest@example.com')
         self.admin = self._create_user('admin', 'admin@example.com', True)
 
-    def _create_user(self, name, email='email', is_superuser=False):
-        user = User(username=name, email=email, is_superuser=is_superuser)
+    def _create_user(self, name, email='email', is_superuser=False,
+                     authenticate_type=User.AUTH_TYPE_LOCAL):
+        user = User(username=name, email=email, is_superuser=is_superuser,
+                    authenticate_type=authenticate_type)
         user.set_password(name)
         user.save()
 
@@ -46,9 +49,10 @@ class ViewTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(list(resp.context['users']), [self.guest, self.admin])
 
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNotNone(root.find('.//table'))
-        self.assertEqual(len(root.findall('.//tbody/tr')), self._get_active_user_count())
+        # Check context of response
+        self.assertTemplateUsed(template_name='list_user.html')
+        self.assertEqual([x.username for x in resp.context['users']],
+                         [x.username for x in User.objects.filter(is_active=True)])
 
     def test_create_get_without_login(self):
         resp = self.client.get(reverse('user:create'))
@@ -60,8 +64,7 @@ class ViewTest(TestCase):
         resp = self.client.get(reverse('user:create'))
         self.assertEqual(resp.status_code, 200)
 
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNotNone(root.find('.//form'))
+        self.assertTemplateUsed(template_name='create_user.html')
 
     def test_create_post_without_login(self):
         count = User.objects.count()
@@ -108,7 +111,7 @@ class ViewTest(TestCase):
                                 'application/json')
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(User.objects.count(), count+1)  # user should be created
+        self.assertEqual(User.objects.count(), count + 1)  # user should be created
         self.assertEqual(User.objects.last().username, 'hoge')
         self.assertNotEqual(User.objects.last().password, 'puyo')
         self.assertFalse(User.objects.last().is_superuser)
@@ -148,37 +151,25 @@ class ViewTest(TestCase):
         resp = self.client.get(reverse('user:edit', args=[0]))
         self.assertEqual(resp.status_code, 303)
 
-    def test_edit_get_with_login(self):
+    def test_edit_get_page(self):
         self._admin_login()
 
-        user = User.objects.get(username='guest')
-        resp = self.client.get(reverse('user:edit', args=[user.id]))
-        self.assertEqual(resp.status_code, 200)
+        for username in ['guest', 'admin']:
+            user = User.objects.get(username='admin')
+            resp = self.client.get(reverse('user:edit', args=[user.id]))
+            self.assertEqual(resp.status_code, 200)
 
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNotNone(root.find('.//form'))
-
-        # checks that we can't find AccessToken of other's
-        self.assertFalse(any(['AccessToken' == x.text for x in root.findall('.//table/tr/th')]))
-
-    def test_edit_get_for_logined_user(self):
-        self._admin_login()
-
-        user = User.objects.get(username='admin')
-        resp = self.client.get(reverse('user:edit', args=[user.id]))
-        self.assertEqual(resp.status_code, 200)
-
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNotNone(root.find('.//form'))
-
-        # checks that we can see AccessToken of mine
-        self.assertTrue(any(['AccessToken' == x.text for x in root.findall('.//table/tr/th')]))
+            # Check context of response
+            self.assertTemplateUsed(template_name='edit_user.html')
+            self.assertEqual(resp.context['user_name'], user.username)
+            self.assertEqual(resp.context['token'], user.token)
+            self.assertEqual(resp.context['token_lifetime'], user.token_lifetime)
 
     def test_edit_post_without_login(self):
         user = User.objects.create(username='test', email='test@example.com')
 
         params = {
-            'name':  'hoge',  # update guest => hoge
+            'name': 'hoge',  # update guest => hoge
             'email': 'hoge@example.com',
             'is_superuser': True,
         }
@@ -192,7 +183,7 @@ class ViewTest(TestCase):
         count = User.objects.count()
 
         params = {
-            'name':  'hoge',  # update guest => hoge
+            'name': 'hoge',  # update guest => hoge
             'email': 'hoge@example.com',
             'is_superuser': True,
         }
@@ -210,7 +201,7 @@ class ViewTest(TestCase):
         user = User.objects.get(username='guest')
 
         params = {
-            'name': 'admin',          # duplicated
+            'name': 'admin',  # duplicated
             'email': 'guest@example.com',
         }
         resp = self.client.post(reverse('user:do_edit', args=[user.id]),
@@ -332,8 +323,11 @@ class ViewTest(TestCase):
         resp = self.client.get(reverse('user:edit_passwd', args=[user.id]))
         self.assertEqual(resp.status_code, 200)
 
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNotNone(root.find('.//form'))
+        # Check context of response
+        self.assertTemplateUsed(template_name='edit_passwd.html')
+        self.assertEqual(resp.context['user_id'], user.id)
+        self.assertEqual(resp.context['user_name'], user.username)
+        self.assertEqual(resp.context['user_grade'], 'self')
 
     def test_edit_passwd_get_with_admin_login(self):
         self._admin_login()
@@ -342,11 +336,13 @@ class ViewTest(TestCase):
         resp = self.client.get(reverse('user:edit_passwd', args=[user.id]))
         self.assertEqual(resp.status_code, 200)
 
-        root = ElementTree.fromstring(resp.content.decode('utf-8'))
-        self.assertIsNotNone(root.find('.//form'))
+        # Check context of response
+        self.assertTemplateUsed(template_name='edit_passwd.html')
+        self.assertEqual(resp.context['user_id'], user.id)
+        self.assertEqual(resp.context['user_name'], user.username)
+        self.assertEqual(resp.context['user_grade'], 'super')
 
     def test_edit_passwd_post_without_login(self):
-
         params = {
             'id': self.guest.id,
             'old_passwd': 'guest',
@@ -493,7 +489,7 @@ class ViewTest(TestCase):
         # user should not deleted from DB
         self.assertEqual(User.objects.count(), user_count)
         # active user should be decreased
-        self.assertEqual(self._get_active_user_count(), active_user_count-1)
+        self.assertEqual(self._get_active_user_count(), active_user_count - 1)
 
         # user should be inactive
         user = User.objects.get(username__icontains="%s_deleted_" % name)
@@ -540,3 +536,21 @@ class ViewTest(TestCase):
 
         self.assertEqual(resp.status_code, 400)
         self.assertTrue(User.objects.get(username='testuser').is_active)
+
+    def test_password_reset_with_invalid_username(self):
+        user = self._create_user('testuser', authenticate_type=User.AUTH_TYPE_LDAP)
+
+        # testing this view class requires a complicated client.
+        # instead of that, we call the override method directly for now.
+        # see also django tests/auth_tests/client.py
+        view = PasswordReset()
+
+        form_with_unknown_user = UsernameBasedPasswordResetForm({'username': 'unknown'})
+        form_with_unknown_user.is_valid()
+        resp = view.form_valid(form_with_unknown_user)
+        self.assertEqual(resp.status_code, 400)
+
+        form_with_ldap_user = UsernameBasedPasswordResetForm({'username': user.username})
+        form_with_ldap_user.is_valid()
+        resp = view.form_valid(form_with_ldap_user)
+        self.assertEqual(resp.status_code, 400)

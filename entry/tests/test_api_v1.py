@@ -4,7 +4,6 @@ from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 
 from datetime import date
-from django.urls import reverse
 
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
@@ -23,7 +22,7 @@ class ViewTest(AironeViewTest):
             Entry.objects.create(name=name, schema=entity, created_user=admin)
 
         # send request without keyword
-        resp = self.client.get(reverse('entry:api_v1:get_entries', args=[entity.id]))
+        resp = self.client.get('/entry/api/v1/get_entries/%d/' % entity.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
 
@@ -31,14 +30,14 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp.json()['results']), CONFIG.MAX_LIST_ENTRIES)
 
         # send request with empty keyword
-        resp = self.client.get(reverse('entry:api_v1:get_entries', args=[entity.id]),
+        resp = self.client.get('/entry/api/v1/get_entries/%d/' % entity.id,
                                {'keyword': ''})
         self.assertEqual(resp.status_code, 200)
         self.assertTrue('results' in resp.json())
         self.assertEqual(len(resp.json()['results']), CONFIG.MAX_LIST_ENTRIES)
 
         # send request with keyword parameter
-        resp = self.client.get(reverse('entry:api_v1:get_entries', args=[entity.id]),
+        resp = self.client.get('/entry/api/v1/get_entries/%d/' % entity.id,
                                {'keyword': '10'})
         self.assertEqual(resp.status_code, 200)
 
@@ -48,7 +47,7 @@ class ViewTest(AironeViewTest):
             all([x['name'] == 'e-10' or x['name'] == 'e-100' for x in resp.json()['results']]))
 
         # send request with invalid keyword parameter
-        resp = self.client.get(reverse('entry:api_v1:get_entries', args=[entity.id]),
+        resp = self.client.get('/entry/api/v1/get_entries/%d/' % entity.id,
                                {'keyword': 'invalid-keyword'})
         self.assertEqual(resp.status_code, 200)
 
@@ -56,7 +55,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp.json()['results']), 0)
 
         # send request to check keyword would be insensitive case
-        resp = self.client.get(reverse('entry:api_v1:get_entries', args=[entity.id]),
+        resp = self.client.get('/entry/api/v1/get_entries/%d/' % entity.id,
                                {'keyword': 'E-0'})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()['results']), 1)
@@ -79,7 +78,7 @@ class ViewTest(AironeViewTest):
             })
 
         for test_suite in test_suites:
-            resp = self.client.get(reverse('entry:api_v1:get_entries', args=[entity.id]),
+            resp = self.client.get('/entry/api/v1/get_entries/%s/' % entity.id,
                                    {'keyword': test_suite['search_word']})
             ret_cnt = test_suite['ret_cnt'] if test_suite[
                 'search_word'] != '-' else CONFIG.MAX_LIST_ENTRIES
@@ -125,7 +124,7 @@ class ViewTest(AironeViewTest):
                 Entry.objects.create(name=name, schema=entity, created_user=admin)
 
         entity_ids = ','.join([str(x.id) for x in Entity.objects.all()])
-        resp = self.client.get(reverse('entry:api_v1:get_entries', args=[entity_ids]))
+        resp = self.client.get('/entry/api/v1/get_entries/%s/' % entity_ids)
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
@@ -142,13 +141,13 @@ class ViewTest(AironeViewTest):
             entry.delete()
 
         # confirms that there is no active entry in this entity
-        resp = self.client.get(reverse('entry:api_v1:get_entries', args=[entity.id]))
+        resp = self.client.get('/entry/api/v1/get_entries/%d/' % entity.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
         self.assertEqual(resp.json()['results'], [])
 
         # confirms that deleted entries are got when 'is_active=False' is specified
-        resp = self.client.get(reverse('entry:api_v1:get_entries', args=[entity.id]), {
+        resp = self.client.get('/entry/api/v1/get_entries/%d/' % entity.id, {
             'keyword': 'ba',
             'is_active': False,
         })
@@ -181,7 +180,7 @@ class ViewTest(AironeViewTest):
             ref_attr.add_value(admin, ref_entry)
 
         # send request without keyword
-        resp = self.client.get(reverse('entry:api_v1:get_referrals', args=[ref_entry.id]))
+        resp = self.client.get('/entry/api/v1/get_referrals/%d/' % ref_entry.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
 
@@ -191,7 +190,7 @@ class ViewTest(AironeViewTest):
             all(['id' in x and 'name' in x and 'entity' in x for x in resp.json()['entries']]))
 
         # send request with keyword parameter
-        resp = self.client.get(reverse('entry:api_v1:get_referrals', args=[ref_entry.id]),
+        resp = self.client.get('/entry/api/v1/get_referrals/%d/' % ref_entry.id,
                                {'keyword': 'e-10'})
         self.assertEqual(resp.status_code, 200)
 
@@ -199,7 +198,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.json()['found_count'], 1)
 
         # send request with invalid keyword parameter
-        resp = self.client.get(reverse('entry:api_v1:get_referrals', args=[ref_entry.id]),
+        resp = self.client.get('/entry/api/v1/get_referrals/%d/' % ref_entry.id,
                                {'keyword': 'invalid_keyword'})
         self.assertEqual(resp.status_code, 200)
 
@@ -222,7 +221,7 @@ class ViewTest(AironeViewTest):
 
         # test to get groups through API calling of get_attr_referrals
         for attr in entity.attrs.all():
-            resp = self.client.get(reverse('entry:api_v1:get_attr_referrals', args=[attr.id]))
+            resp = self.client.get('/entry/api/v1/get_attr_referrals/%d/' % attr.id)
             self.assertEqual(resp.status_code, 200)
 
             # This expects results has all groups information.
@@ -233,7 +232,7 @@ class ViewTest(AironeViewTest):
         # test to get groups which are only active and matched with keyword
         groups[2].delete()
         for attr in entity.attrs.all():
-            resp = self.client.get(reverse('entry:api_v1:get_attr_referrals', args=[attr.id]),
+            resp = self.client.get('/entry/api/v1/get_attr_referrals/%d/' % attr.id,
                                    {'keyword': 'ba'})
             self.assertEqual(resp.status_code, 200)
 
@@ -269,16 +268,16 @@ class ViewTest(AironeViewTest):
         attr = entry.attrs.get(name='Refer')
 
         # try to get entries without keyword
-        resp = self.client.get(reverse('entry:api_v1:get_attr_referrals', args=[attr.id]))
+        resp = self.client.get('/entry/api/v1/get_attr_referrals/%s/' % attr.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()['results']), CONFIG.MAX_LIST_REFERRALS)
 
         # specify invalid Attribute ID
-        resp = self.client.get(reverse('entry:api_v1:get_attr_referrals', args=[9999]))
+        resp = self.client.get('/entry/api/v1/get_attr_referrals/9999/')
         self.assertEqual(resp.status_code, 400)
 
         # speify valid Attribute ID and a enalbed keyword
-        resp = self.client.get(reverse('entry:api_v1:get_attr_referrals', args=[attr.id]),
+        resp = self.client.get('/entry/api/v1/get_attr_referrals/%s/' % attr.id,
                                {'keyword': 'e-1'})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
@@ -288,7 +287,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp.json()['results']), 11)
 
         # speify valid Attribute ID and a unabailabe keyword
-        resp = self.client.get(reverse('entry:api_v1:get_attr_referrals', args=[attr.id]),
+        resp = self.client.get('/entry/api/v1/get_attr_referrals/%s/' % attr.id,
                                {'keyword': 'hoge'})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()['results']), 0)
@@ -298,7 +297,7 @@ class ViewTest(AironeViewTest):
             Entry.objects.create(name='e-%s' % index, schema=ref_entity, created_user=admin)
 
         # Run with 'e-1' as keyword
-        resp = self.client.get(reverse('entry:api_v1:get_attr_referrals', args=[attr.id]),
+        resp = self.client.get('/entry/api/v1/get_attr_referrals/%s/' % attr.id,
                                {'keyword': 'e-1'})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
@@ -311,6 +310,15 @@ class ViewTest(AironeViewTest):
         targets = [1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 100, 101, 110, 111]
         for i, res in enumerate(resp.json()['results']):
             self.assertEqual(res['name'], 'e-%s' % targets[i])
+
+        # send request with keywords that hit more than MAX_LIST_REFERRALS
+        Entry.objects.create(name='e', schema=ref_entity, created_user=admin)
+
+        resp = self.client.get('/entry/api/v1/get_attr_referrals/%d/' % attr.id,
+                               {'keyword': 'e'})
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual(resp.json()['results'][0]['name'], 'e')
 
     def test_get_attr_referrals_with_entity_attr(self):
         """
@@ -335,7 +343,7 @@ class ViewTest(AironeViewTest):
         entity_attr.referral.add(ref_entity)
         entity.attrs.add(entity_attr)
 
-        resp = self.client.get(reverse('entry:api_v1:get_attr_referrals', args=[entity_attr.id]),
+        resp = self.client.get('/entry/api/v1/get_attr_referrals/%s/' % entity_attr.id,
                                {'keyword': 'e-1'})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
@@ -390,7 +398,7 @@ class ViewTest(AironeViewTest):
                 {'type': 'entry', 'value': str(Entry.objects.get(name='r-6').id)},
             ],
         }
-        resp = self.client.post(reverse('entry:api_v1:search_entries', args=[entity.id]),
+        resp = self.client.post('/entry/api/v1/search_entries/%s' % entity.id,
                                 json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
@@ -406,7 +414,7 @@ class ViewTest(AironeViewTest):
                 {'type': 'text', 'value': 'abcd'},
             ],
         }
-        resp = self.client.post(reverse('entry:api_v1:search_entries', args=[entity.id]),
+        resp = self.client.post('/entry/api/v1/search_entries/%s' % entity.id,
                                 json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
@@ -420,7 +428,7 @@ class ViewTest(AironeViewTest):
                 {'type': 'entry', 'value': str(Entry.objects.get(name='r-5').id)},
             ],
         }
-        resp = self.client.post(reverse('entry:api_v1:search_entries', args=[entity.id]),
+        resp = self.client.post('/entry/api/v1/search_entries/%s' % entity.id,
                                 json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
@@ -435,7 +443,7 @@ class ViewTest(AironeViewTest):
                 {'type': 'entry', 'value': str(Entry.objects.get(name='r-6').id)},
             ],
         }
-        resp = self.client.post(reverse('entry:api_v1:search_entries', args=[entity.id]),
+        resp = self.client.post('/entry/api/v1/search_entries/%s' % entity.id,
                                 json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
@@ -448,7 +456,7 @@ class ViewTest(AironeViewTest):
                 {'type': 'text', 'value': '6'},
             ],
         }
-        resp = self.client.post(reverse('entry:api_v1:search_entries', args=[entity.id]),
+        resp = self.client.post('/entry/api/v1/search_entries/%s' % entity.id,
                                 json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
@@ -466,7 +474,7 @@ class ViewTest(AironeViewTest):
                 {'type': 'text', 'value': '2'},
             ],
         }
-        resp = self.client.post(reverse('entry:api_v1:search_entries', args=[entity.id]),
+        resp = self.client.post('/entry/api/v1/search_entries/%s' % entity.id,
                                 json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
@@ -481,7 +489,7 @@ class ViewTest(AironeViewTest):
                 {'type': 'text', 'value': '2'},
             ],
         }
-        resp = self.client.post(reverse('entry:api_v1:search_entries', args=[entity.id]),
+        resp = self.client.post('/entry/api/v1/search_entries/%s' % entity.id,
                                 json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
@@ -540,7 +548,7 @@ class ViewTest(AironeViewTest):
                 attr.add_value(user, value)
 
         # test sending request for the API endpoint of get_entry_history
-        resp = self.client.get(reverse('entry:api_v1:get_entry_history', args=[entry.id]),
+        resp = self.client.get('/entry/api/v1/get_entry_history/%d/' % entry.id,
                                {'count': 100})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp['Content-Type'], 'application/json')
@@ -599,10 +607,10 @@ class ViewTest(AironeViewTest):
         entry.attrs.first().add_value(user, 'hoge')
 
         # send request with invalid entry_id
-        resp = self.client.get(reverse('entry:api_v1:get_entry_info', args=[9999]))
+        resp = self.client.get('/entry/api/v1/get_entry_info/9999')
         self.assertEqual(resp.status_code, 400)
 
         # send request with valid entry_id
-        resp = self.client.get(reverse('entry:api_v1:get_entry_info', args=[entry.id]))
+        resp = self.client.get('/entry/api/v1/get_entry_info/%d' % entry.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()['id'], entry.id)

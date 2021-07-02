@@ -18,6 +18,7 @@ from airone.lib.types import AttrTypeValue
 from airone.lib.elasticsearch import (
     ESS, make_query, execute_query, make_search_results, is_date_check)
 from airone.lib import auto_complement
+from airone.lib.db import get_slave_db
 
 from .settings import CONFIG
 
@@ -29,11 +30,12 @@ class AttributeValue(models.Model):
     MAXIMUM_VALUE_SIZE = (1 << 16)
 
     value = models.TextField()
-    referral = models.ForeignKey(ACLBase, null=True, related_name='referred_attr_value')
+    referral = models.ForeignKey(ACLBase, null=True, related_name='referred_attr_value',
+                                 on_delete=models.SET_NULL)
     data_array = models.ManyToManyField('AttributeValue')
     created_time = models.DateTimeField(auto_now_add=True)
-    created_user = models.ForeignKey(User)
-    parent_attr = models.ForeignKey('Attribute')
+    created_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    parent_attr = models.ForeignKey('Attribute', on_delete=models.SET_NULL, null=True)
     status = models.IntegerField(default=0)
     boolean = models.BooleanField(default=False)
     date = models.DateField(null=True)
@@ -56,7 +58,8 @@ class AttributeValue(models.Model):
 
     # This indicates the parent AttributeValue object, this parameter is usefull to identify
     # leaf AttriuteValue objects.
-    parent_attrv = models.ForeignKey('AttributeValue', null=True, related_name='child')
+    parent_attrv = models.ForeignKey('AttributeValue', null=True, related_name='child',
+                                     on_delete=models.SET_NULL)
 
     def set_status(self, val):
         self.status |= val
@@ -88,7 +91,7 @@ class AttributeValue(models.Model):
 
         return cloned_value
 
-    def get_value(self, with_metainfo=False):
+    def get_value(self, with_metainfo=False, serialize=False):
         """
         This returns registered value according to the type of Attribute
         """
@@ -129,7 +132,10 @@ class AttributeValue(models.Model):
             value = self.boolean
 
         elif self.parent_attr.schema.type == AttrTypeValue['date']:
-            value = self.date
+            if serialize:
+                value = str(self.date)
+            else:
+                value = self.date
 
         elif self.parent_attr.schema.type == AttrTypeValue['object']:
             value = _get_object_value(self)
@@ -251,8 +257,8 @@ class Attribute(ACLBase):
     values = models.ManyToManyField(AttributeValue)
 
     # This parameter is needed to make a relationship with corresponding EntityAttr
-    schema = models.ForeignKey(EntityAttr)
-    parent_entry = models.ForeignKey('Entry')
+    schema = models.ForeignKey(EntityAttr, on_delete=models.SET_NULL, null=True)
+    parent_entry = models.ForeignKey('Entry', on_delete=models.SET_NULL, null=True)
 
     def __init__(self, *args, **kwargs):
         super(Attribute, self).__init__(*args, **kwargs)
@@ -928,7 +934,7 @@ class Entry(ACLBase):
     STATUS_COMPLEMENTING_ATTRS = 1 << 2
 
     attrs = models.ManyToManyField(Attribute)
-    schema = models.ForeignKey(Entity)
+    schema = models.ForeignKey(Entity, on_delete=models.SET_NULL, null=True)
 
     def __init__(self, *args, **kwargs):
         super(Entry, self).__init__(*args, **kwargs)
@@ -996,7 +1002,8 @@ class Entry(ACLBase):
         """
         This returns objects that refer current Entry in the AttributeValue
         """
-        ids = AttributeValue.objects.filter(
+        slave_db = get_slave_db()
+        ids = AttributeValue.objects.using(slave_db).filter(
                 Q(referral=self, is_latest=True) |
                 Q(referral=self, parent_attrv__is_latest=True)
                 ).values_list('parent_attr__parent_entry', flat=True)
@@ -1006,7 +1013,7 @@ class Entry(ACLBase):
         if entity_name:
             query &= Q(schema__name=entity_name)
 
-        return Entry.objects.filter(query)
+        return Entry.objects.using(slave_db).filter(query)
 
     def may_append_attr(self, attr):
         """
@@ -1145,7 +1152,7 @@ class Entry(ACLBase):
 
         return sorted(ret_attrs, key=lambda x: x['index'])
 
-    def to_dict(self, user):
+    def to_dict(self, user, with_metainfo=False):
         # check permissions for each entry, entity and attrs
         if (not user.has_permission(self.schema, ACLType.Readable) or
                 not user.has_permission(self, ACLType.Readable)):
@@ -1164,7 +1171,7 @@ class Entry(ACLBase):
             },
             'attrs': [{
                 'name': x.schema.name,
-                'value': x.get_latest_value().get_value()
+                'value': x.get_latest_value().get_value(serialize=True, with_metainfo=with_metainfo)
             } for x in attrs]
         }
 
@@ -1392,7 +1399,7 @@ class Entry(ACLBase):
 
     @classmethod
     def search_entries(kls, user, hint_entity_ids, hint_attrs=[], limit=CONFIG.MAX_LIST_ENTRIES,
-                       entry_name=None, or_match=False, hint_referral=False):
+                       entry_name=None, or_match=False, hint_referral=False, hint_attr_value=None):
         """Main method called from simple search and advanced search.
 
         Do the following:
@@ -1420,19 +1427,17 @@ class Entry(ACLBase):
                 the acquired entry and the attribute value of the entry are returned.
 
         """
-        results = {
-            'ret_count': 0,
-            'ret_values': []
-        }
+        # make query for elasticsearch to retrieve data user wants
+        query = make_query(hint_entity_ids, hint_attrs, hint_attr_value, entry_name, or_match)
 
-        query = make_query(hint_entity_ids, hint_attrs, entry_name, or_match)
+        # sending request to elasticsearch with making query
+        resp = execute_query(query)
 
-        res = execute_query(query)
+        if 'status' in resp and resp['status'] == 404:
+            return {'ret_count': 0, 'ret_values': []}
 
-        if 'status' in res and res['status'] == 404:
-            return results
-
-        return make_search_results(res, limit, hint_referral)
+        # retrieve data from database on the basis of the result of elasticsearch
+        return make_search_results(resp, hint_attrs, limit, hint_referral)
 
     @classmethod
     def get_all_es_docs(kls):

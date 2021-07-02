@@ -1,13 +1,51 @@
 # Changelog
 
-## In development
+## v3.1.0
+
+### Added
+* Added `^` and `$` operators on filtering attribute values in advanced search
+  result (#97). But there is a limitation that it could available only for
+  'text' and 'string' typed attributes (see also #129).
+* Added a new feature to be able to notify 3rd party systems through with
+  calling webhook endpoints when Entry is created, edited and deleted.
+  (NOTE: This requires to change DB schema. see also #135)
+* Added a feature to be able to pagenate Entries in the list page for each
+  Entities (#114).
+* Added "django.contrib.humanize" to the INSTALLED_APPS to be able to handle
+  data as a human touched one.
+* Expanded Entry.to_dict to be able to more detail information.
+
+### Changed
+* Replace ldap3 with python-ldap for solving license problem (#134).
+* Support Python 3.8
+  * Update Celery and Kombu version
+    * Celery from v4.2.0 to v4.4.7
+    * Kombu  from v4.2.1 to v4.6.11
+
+### Fixed
+* Fixed a bug that entries which are searched in an editing page's form would
+  not be found (#124).
+* Fixed a search query timeout for long keywords (#145)
+* Fixed a minor problem about version displaying
+
+## v3.0.0
 
 ### Added
 * Added handler to report celery exception errors
+* Added password-reset feature
+* Added perform client-side validation on users form
+
+### Changed
+* Update Django version from v1.11 to v2.2 (LTS)
+* Droped Python 3.5 support
 
 ### Fixed
 * Fixed not being redirected to the original URL after login
+* Fixed some request logs not output
 * Fixed the log message was not output to django.log
+* Fixed the search form on the nav bar cannot handle whitespaces appropriately
+* Fixed a bug at the background processing of creating Entry
+* Fixed show error messages on create-user
 
 ## v2.7.0
 
