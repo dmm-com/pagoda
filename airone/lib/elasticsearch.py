@@ -123,8 +123,8 @@ __all__ = [
 ]
 
 
-def make_query(hint_entity_ids: List[str], hint_attrs: List[Dict[str, str]], hint_attr_value, entry_name: str,
-               or_match: bool) -> Dict[str, str]:
+def make_query(hint_entity_ids: List[str], hint_attrs: List[Dict[str, str]],
+               hint_attr_value: Optional[Any], entry_name: str, or_match: bool) -> Dict[str, str]:
     """Create a search query for Elasticsearch.
 
     Do the following:
