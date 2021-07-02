@@ -156,6 +156,10 @@ jobs:
             . venv/bin/activate
             pip install tox
       - run:
+          name: Install additional dependencies
+          command: |
+            sudo apt-get install -y libldap2-dev libsasl2-dev
+      - run:
           name: mypy
           command: |
             . venv/bin/activate
