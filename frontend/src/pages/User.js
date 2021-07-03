@@ -27,6 +27,7 @@ export default function User(props) {
 
     useEffect(() => {
         getUsers()
+            .then(resp => resp.json())
             .then(data => setUsers(data));
         setUpdated(true);
     }, [updated]);
@@ -83,9 +84,9 @@ export default function User(props) {
                         {users.map((user) => {
                             return (
                                 <TableRow>
-                                    <TableCell><Typography>{user.name}</Typography></TableCell>
+                                    <TableCell><Typography>{user.username}</Typography></TableCell>
                                     <TableCell><Typography>{user.email}</Typography></TableCell>
-                                    <TableCell><Typography>{user.created_at}</Typography></TableCell>
+                                    <TableCell><Typography>{user.date_joined}</Typography></TableCell>
                                     <TableCell align="right">
                                         <Button
                                             variant="contained"

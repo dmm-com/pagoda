@@ -160,18 +160,12 @@ export function deleteEntry(entryId) {
     );
 }
 
-// FIXME implement internal API then call it
+export function getUser(userId) {
+    return fetch(`/user/api/v2/users/${userId}`);
+}
+
 export function getUsers() {
-    return new Promise((resolve, _) => {
-        resolve([
-            {
-                id: 1,
-                name: 'test',
-                email: 'test@example.com',
-                created_at: '',
-            },
-        ]);
-    });
+    return fetch('/user/api/v2/users');
 }
 
 // NOTE it calls non-API endpoint

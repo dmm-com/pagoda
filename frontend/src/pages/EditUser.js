@@ -5,6 +5,7 @@ import {Link, useParams} from "react-router-dom";
 import {Table, TableBody, TableCell, TableHead, TableRow} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import {getUser} from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -19,6 +20,18 @@ export default function EditUser(props) {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        if (userId) {
+            getUser(userId)
+                .then(resp => resp.json())
+                .then(data => {
+                    setName(data.username);
+                    setEmail(data.email);
+                    setIsAdmin(data.is_superuser);
+                });
+        }
+    }, []);
 
     const onSubmit = (event) => {
         event.preventDefault();
@@ -53,7 +66,8 @@ export default function EditUser(props) {
                         <TableRow>
                             <TableHead>名前</TableHead>
                             <TableCell>
-                                <input type="text" name="name" value={name} onChange={onChangeName} required="required"/>
+                                <input type="text" name="name" value={name} onChange={onChangeName}
+                                       required="required"/>
                             </TableCell>
                         </TableRow>
                         <TableRow>
