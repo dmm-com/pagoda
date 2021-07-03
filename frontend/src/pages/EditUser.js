@@ -19,7 +19,10 @@ export default function EditUser(props) {
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [isSuperuser, setIsSuperuser] = useState(false);
+    const [token, setToken] = useState("");
+    const [tokenLifetime, setTokenLifetime] = useState(0);
+    const [tokenExpire, setTokenExpire] = useState("");
 
     useEffect(() => {
         if (userId) {
@@ -28,7 +31,10 @@ export default function EditUser(props) {
                 .then(data => {
                     setName(data.username);
                     setEmail(data.email);
-                    setIsAdmin(data.is_superuser);
+                    setIsSuperuser(data.is_superuser);
+                    setToken(data.token);
+                    setTokenLifetime(data.token_lifetime);
+                    setTokenExpire(data.token_expire);
                 });
         }
     }, []);
@@ -45,8 +51,8 @@ export default function EditUser(props) {
         setEmail(event.target.value);
     };
 
-    const onChangeIsAdmin = (event) => {
-        setIsAdmin(event.target.value);
+    const onChangeIsSuperuser = (event) => {
+        setIsSuperuser(event.target.value);
     };
 
     return (
@@ -66,51 +72,53 @@ export default function EditUser(props) {
                         <TableRow>
                             <TableHead>名前</TableHead>
                             <TableCell>
-                                <input type="text" name="name" value={name} onChange={onChangeName}
-                                       required="required"/>
+                                {django_context.user.is_superuser
+                                    ? <input type="text" name="name" value={name} onChange={onChangeName}
+                                             required="required"/>
+                                    : <Typography>{name}</Typography>
+                                }
                             </TableCell>
                         </TableRow>
                         <TableRow>
                             <TableHead>メールアドレス</TableHead>
                             <TableCell>
-                                <input type="email" name="email" value={email} onChange={onChangeEmail}
-                                       required="required"/>
+                                {django_context.user.is_superuser
+                                    ? <input type="email" name="email" value={email} onChange={onChangeEmail}
+                                             required="required"/>
+                                    : <Typography>{email}</Typography>
+                                }
                             </TableCell>
                         </TableRow>
+                        {django_context.user.is_superuser &&
                         <TableRow>
                             <TableHead>管理者権限を付与</TableHead>
                             <TableCell>
                                 <input type="checkbox" name="is_superuser"
-                                       value={isAdmin} onChange={onChangeIsAdmin}/>
+                                       value={isSuperuser} onChange={onChangeIsSuperuser}/>
                             </TableCell>
                         </TableRow>
-                        {/*
-                    {
-                        (() => {
-                            if (props.token) {
-                                return <TableRow>
-                                    <TableHead>AccessToken</TableHead>
-                                    <TableCell>
-                                        <p id='access_token'>{props.token}</p>
-                                        <button type='button' id='refresh_token'
-                                                className='btn btn-primary btn-sm'>Refresh
-                                        </button>
-                                    </TableCell>
-                                </TableRow>;
-                            }
-                        })()
-                    }
-                    <TableRow>
-                        <TableHead>AccessToken の有効期間 [sec]</TableHead>
-                        <TableCell>
-                            <p>
-                                <input type="text" name="token_lifetime" value={props.token.lifetime}/>
-                                (0 ~ 10^8 の範囲の整数を指定してください(0 を入力した場合は期限は無期限になります))
-                            </p>
-                            有効期限：{props.token.expire}
-                        </TableCell>
-                    </TableRow>
-                    */}
+                        }
+                        {token &&
+                        <TableRow>
+                            <TableHead>AccessToken</TableHead>
+                            <TableCell>
+                                <p id='access_token'>{token}</p>
+                                <button type='button' id='refresh_token'
+                                        className='btn btn-primary btn-sm'>Refresh
+                                </button>
+                            </TableCell>
+                        </TableRow>
+                        }
+                        <TableRow>
+                            <TableHead>AccessToken の有効期間 [sec]</TableHead>
+                            <TableCell>
+                                <p>
+                                    <input type="text" name="token_lifetime" value={tokenLifetime}/>
+                                    (0 ~ 10^8 の範囲の整数を指定してください(0 を入力した場合は期限は無期限になります))
+                                </p>
+                                有効期限：{tokenExpire}
+                            </TableCell>
+                        </TableRow>
                     </TableBody>
                 </Table>
             </form>

@@ -106,7 +106,7 @@ export default function Header(props) {
                         className={classes.title}
                         component={Link}
                         to="/new-ui/">
-                        AirOne(New UI)
+                        AirOne(New UI) {django_context.version}
                     </Typography>
 
                     {/*

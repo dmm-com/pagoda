@@ -14,19 +14,24 @@ class ViewTest(AironeViewTest):
         return user
 
     def test_get_user(self):
-        self.guest_login()
+        login_user = self.guest_login()
 
-        origin = self._create_user('test', 'test@example.com')
-
-        resp = self.client.get('/user/api/v2/users/%s' % origin.id)
+        resp = self.client.get('/user/api/v2/users/%s' % login_user.id)
         self.assertEqual(resp.status_code, 200)
 
         body = resp.json()
-        self.assertEqual(body['id'], origin.id)
-        self.assertEqual(body['username'], origin.username)
-        self.assertEqual(body['email'], origin.email)
-        self.assertEqual(body['is_superuser'], origin.is_superuser)
-        self.assertEqual(body['date_joined'], origin.date_joined)
+        self.assertEqual(body['id'], login_user.id)
+        self.assertEqual(body['username'], login_user.username)
+        self.assertEqual(body['email'], login_user.email)
+        self.assertEqual(body['is_superuser'], login_user.is_superuser)
+        self.assertEqual(body['date_joined'], login_user.date_joined.isoformat())
+        self.assertNotEqual(body['token'], '')
+        self.assertEqual(body['token_lifetime'], login_user.token_lifetime)
+        self.assertIsNotNone(body['token_expire'])
+
+        other = self._create_user('test1', 'test1@example.com')
+        resp = self.client.get('/user/api/v2/users/%s' % other.id)
+        self.assertEqual(resp.status_code, 400)
 
     def test_list_user(self):
         login_user = self.guest_login()
@@ -47,4 +52,4 @@ class ViewTest(AironeViewTest):
             self.assertEqual(x['username'], origins[i].username)
             self.assertEqual(x['email'], origins[i].email)
             self.assertEqual(x['is_superuser'], origins[i].is_superuser)
-            self.assertEqual(x['date_joined'], origins[i].date_joined)
+            self.assertEqual(x['date_joined'], origins[i].date_joined.isoformat())

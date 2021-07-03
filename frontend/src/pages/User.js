@@ -28,7 +28,13 @@ export default function User(props) {
     useEffect(() => {
         getUsers()
             .then(resp => resp.json())
-            .then(data => setUsers(data));
+            .then(data => {
+                if (django_context.user.is_superuser) {
+                    setUsers(data);
+                } else {
+                    setUsers(data.filter(d => d.id === django_context.user.id));
+                }
+            });
         setUpdated(true);
     }, [updated]);
 
