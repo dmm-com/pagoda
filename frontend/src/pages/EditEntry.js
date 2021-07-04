@@ -9,7 +9,7 @@ import {
     TableRow,
 } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import {createEntry, getEntity, getEntry} from "../utils/AironeAPIClient";
 import Button from "@material-ui/core/Button";
 

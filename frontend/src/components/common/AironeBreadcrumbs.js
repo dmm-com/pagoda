@@ -2,6 +2,8 @@ import {Breadcrumbs} from "@material-ui/core";
 import React from "react";
 import {makeStyles} from "@material-ui/core/styles";
 import {grey} from "@material-ui/core/colors";
+import PropTypes from "prop-types";
+import CreateButton from "./CreateButton";
 
 const useStyles = makeStyles((theme) => ({
     breadcrumbs: {
@@ -20,3 +22,7 @@ export default function AironeBreadcrumbs(props) {
         </Breadcrumbs>
     );
 }
+
+AironeBreadcrumbs.propTypes = {
+    children: PropTypes.element.isRequired,
+};

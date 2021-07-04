@@ -4,7 +4,7 @@ import Typography from "@material-ui/core/Typography";
 import {Link} from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 
 export default function AdvancedSearch(props) {
     const [entities, setEntities] = useState([]);

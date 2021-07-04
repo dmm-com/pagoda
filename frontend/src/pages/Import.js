@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import {getACL} from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import Typography from "@material-ui/core/Typography";
 import {Link, useParams} from "react-router-dom";
 import Button from "@material-ui/core/Button";

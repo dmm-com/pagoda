@@ -15,9 +15,11 @@ import {Link} from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import DeleteIcon from "@material-ui/icons/Delete";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import {deleteGroup, getGroups} from "../utils/AironeAPIClient";
-import ConfirmableButton from "../components/ConfirmableButton";
+import ConfirmableButton from "../components/common/ConfirmableButton";
+import CreateButton from "../components/common/CreateButton";
+import DeleteButton from "../components/common/DeleteButton";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -54,14 +56,7 @@ export default function Group(props) {
             <div className="row">
                 <div className="col">
                     <div className="float-left">
-                        <Button
-                            className={classes.button}
-                            variant="outlined"
-                            color="primary"
-                            component={Link}
-                            to={`/new-ui/groups/new`}>
-                            新規作成
-                        </Button>
+                        <CreateButton to={`/new-ui/groups/new`}>新規作成</CreateButton>
                         <Button className={classes.button} variant="outlined" color="secondary">エクスポート</Button>
                         <Button
                             variant="outlined"
@@ -107,16 +102,10 @@ export default function Group(props) {
                                         </List>
                                     </TableCell>
                                     <TableCell align="right">
-                                        <ConfirmableButton
-                                            variant="contained"
-                                            color="secondary"
-                                            className={classes.button}
-                                            startIcon={<DeleteIcon/>}
-                                            component={Link}
-                                            dialogTitle="本当に削除しますか？"
-                                            onClickYes={(e) => handleDelete(e, group.id)}>
+                                        <DeleteButton
+                                            onConfirmed={(e) => handleDelete(e, group.id)}>
                                             削除
-                                        </ConfirmableButton>
+                                        </DeleteButton>
                                     </TableCell>
                                 </TableRow>
                             );

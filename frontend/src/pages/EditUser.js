@@ -4,7 +4,7 @@ import Button from "@material-ui/core/Button";
 import {Link, useParams} from "react-router-dom";
 import {Table, TableBody, TableCell, TableHead, TableRow} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
     button: {

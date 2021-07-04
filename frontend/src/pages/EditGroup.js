@@ -5,7 +5,7 @@ import {Link, useParams} from "react-router-dom";
 import {Select, Table, TableBody, TableCell, TableHead, TableRow} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import {getGroups, getUsers} from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
     button: {

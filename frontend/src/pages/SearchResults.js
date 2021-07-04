@@ -6,7 +6,7 @@ import {Link} from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import SettingsIcon from '@material-ui/icons/Settings';
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import {getAdvancedSearchResults} from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({

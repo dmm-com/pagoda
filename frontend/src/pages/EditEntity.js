@@ -6,7 +6,7 @@ import {Link, useHistory, useParams} from "react-router-dom";
 import DeleteIcon from "@material-ui/icons/Delete";
 import {createEntity, getEntity} from "../utils/AironeAPIClient";
 import {AttributeTypes} from "../utils/Constants";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import Typography from "@material-ui/core/Typography";
 
 const useStyles = makeStyles((theme) => ({

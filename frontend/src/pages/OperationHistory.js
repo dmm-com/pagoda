@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {Table, TableBody, TableCell, TableHead, TableRow, Typography} from "@material-ui/core";
 import {getEntityHistory} from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import {Link} from "react-router-dom";
 
 const Operations = {
