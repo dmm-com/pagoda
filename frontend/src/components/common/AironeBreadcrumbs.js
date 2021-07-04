@@ -13,12 +13,12 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function AironeBreadcrumbs(props) {
+export default function AironeBreadcrumbs({children}) {
     const classes = useStyles();
 
     return (
         <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumbs}>
-            {props.children}
+            {children}
         </Breadcrumbs>
     );
 }

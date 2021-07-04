@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function SearchResults(props) {
+export default function SearchResults({}) {
     const classes = useStyles();
     const [results, setResults] = useState([]);
 

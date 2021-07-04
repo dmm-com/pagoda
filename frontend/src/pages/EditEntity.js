@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function EditEntity(props) {
+export default function EditEntity({}) {
     const classes = useStyles();
     const history = useHistory();
     const {entityId} = useParams();

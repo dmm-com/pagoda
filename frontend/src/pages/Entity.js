@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function Entity(props) {
+export default function Entity({}) {
     const classes = useStyles();
 
     const [keyword, setKeyword] = useState("");

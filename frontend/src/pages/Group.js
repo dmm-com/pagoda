@@ -14,10 +14,8 @@ import Typography from "@material-ui/core/Typography";
 import {Link} from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
-import DeleteIcon from "@material-ui/icons/Delete";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import {deleteGroup, getGroups} from "../utils/AironeAPIClient";
-import ConfirmableButton from "../components/common/ConfirmableButton";
 import CreateButton from "../components/common/CreateButton";
 import DeleteButton from "../components/common/DeleteButton";
 
@@ -30,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function Group(props) {
+export default function Group({}) {
     const classes = useStyles();
     const [groups, setGroups] = useState([]);
     const [updated, setUpdated] = useState(false);

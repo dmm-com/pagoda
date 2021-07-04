@@ -13,7 +13,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function EditGroup(props) {
+export default function EditGroup({}) {
     const classes = useStyles();
 
     const [name, setName] = useState("");

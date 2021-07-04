@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function EditUser(props) {
+export default function EditUser({}) {
     const classes = useStyles();
     const {userId} = useParams();
 

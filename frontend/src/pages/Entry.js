@@ -14,12 +14,10 @@ import {
 } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
-import DeleteIcon from "@material-ui/icons/Delete";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import {deleteEntry, getEntries} from "../utils/AironeAPIClient";
-import ConfirmableButton from "../components/common/ConfirmableButton";
 import EditButton from "../components/common/EditButton";
 import CreateButton from "../components/common/CreateButton";
 import DeleteButton from "../components/common/DeleteButton";
@@ -33,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function Entry(props) {
+export default function Entry({}) {
     const classes = useStyles();
     let {entityId} = useParams();
 

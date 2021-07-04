@@ -26,7 +26,7 @@ const TargetOperation = {
     DEL_ENTRY: Operations.DEL + Targets.ENTRY,
 }
 
-export default function OperationHistory(props) {
+export default function OperationHistory({}) {
     const [history, setHistory] = useState([]);
 
     useEffect(() => {

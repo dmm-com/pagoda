@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function Import(props) {
+export default function Import({}) {
     const classes = useStyles();
     const [files, setFiles] = useState([]);
     const filesRef = useRef(null);

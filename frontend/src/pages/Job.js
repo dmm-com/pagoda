@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function Job(props) {
+export default function Job({}) {
     const classes = useStyles();
     const [jobs, setJobs] = useState([]);
 

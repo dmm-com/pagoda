@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function User(props) {
+export default function User({}) {
     const classes = useStyles();
     const [users, setUsers] = useState([]);
     const [updated, setUpdated] = useState(false);

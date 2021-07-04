@@ -6,7 +6,7 @@ import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 
-export default function AdvancedSearch(props) {
+export default function AdvancedSearch({}) {
     const [entities, setEntities] = useState([]);
 
     useEffect(() => {

@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function EditEntry(props) {
+export default function EditEntry({}) {
     const classes = useStyles();
     const history = useHistory();
 

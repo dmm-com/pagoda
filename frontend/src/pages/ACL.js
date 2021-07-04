@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function ACL(props) {
+export default function ACL({}) {
     const classes = useStyles();
     const {objectId} = useParams();
 
