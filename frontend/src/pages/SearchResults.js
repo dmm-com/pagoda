@@ -58,23 +58,21 @@ export default function SearchResults({}) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {fields.map((field) => {
-                                return <TableCell><Typography>{field}</Typography></TableCell>;
-                            })}
+                            {fields.map((field) =>
+                                <TableCell><Typography>{field}</Typography></TableCell>
+                            )}
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {results.map((result) => {
-                            return (
-                                <TableRow>
-                                    {fields.map((field) => {
-                                        if (field in result) {
-                                            return <TableCell><Typography>{result[field]}</Typography></TableCell>;
-                                        }
-                                    })}
-                                </TableRow>
-                            );
-                        })}
+                        {results.map((result) =>
+                            <TableRow>
+                                {fields.map((field) => {
+                                    if (field in result) {
+                                        return <TableCell><Typography>{result[field]}</Typography></TableCell>;
+                                    }
+                                })}
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>

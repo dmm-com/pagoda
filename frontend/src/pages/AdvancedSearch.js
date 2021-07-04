@@ -61,19 +61,17 @@ export default function AdvancedSearch({}) {
                         native
                         variant="outlined"
                     >
-                        {entities.map((entity) => {
-                            return (
-                                <optgroup label={entity.name}>
-                                    {
-                                        entity.attributes.map((attribute) => (
-                                            <option key="attribute" value={attribute.id}>
-                                                {attribute.name}
-                                            </option>
-                                        ))
-                                    }
-                                </optgroup>
-                            );
-                        })}
+                        {entities.map((entity) =>
+                            <optgroup label={entity.name}>
+                                {
+                                    entity.attributes.map((attribute) => (
+                                        <option key="attribute" value={attribute.id}>
+                                            {attribute.name}
+                                        </option>
+                                    ))
+                                }
+                            </optgroup>
+                        )}
                     </Select>
                 </div>
             </div>

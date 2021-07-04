@@ -110,7 +110,8 @@ export default function EditEntity({}) {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>サイドバーに表示</TableCell>
-                                        <TableCell><input type="checkbox" value={isTopLevel} onChange={onChangeIsTopLevel}/></TableCell>
+                                        <TableCell><input type="checkbox" value={isTopLevel}
+                                                          onChange={onChangeIsTopLevel}/></TableCell>
                                     </TableRow>
                                 </TableBody>
                             </Table>
@@ -127,48 +128,47 @@ export default function EditEntity({}) {
 
                                 <TableBody id='sortdata'>
                                     {
-                                        attributes.map((attr, index) => {
-                                            return (
-                                                <TableRow className="attr">
-                                                    <TableCell>
-                                                        <input type="text" className="attr_name" value={attr.name}
-                                                               onChange={(e) => onChangeAttributeValue(e, index, "name")}/>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Select value={attr.type}
-                                                                onChange={(e) => onChangeAttributeValue(e, index, "type")}>
-                                                            {
-                                                                Object.keys(AttributeTypes).map(typename => {
-                                                                    return <MenuItem
-                                                                        value={AttributeTypes[typename]}>{typename}</MenuItem>;
-                                                                })
-                                                            }
-                                                        </Select>
-                                                    </TableCell>
+                                        attributes.map((attr, index) =>
+                                            <TableRow className="attr">
+                                                <TableCell>
+                                                    <input type="text" className="attr_name" value={attr.name}
+                                                           onChange={(e) => onChangeAttributeValue(e, index, "name")}/>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Select value={attr.type}
+                                                            onChange={(e) => onChangeAttributeValue(e, index, "type")}>
+                                                        {
+                                                            Object.keys(AttributeTypes).map(typename => {
+                                                                return <MenuItem
+                                                                    value={AttributeTypes[typename]}>{typename}</MenuItem>;
+                                                            })
+                                                        }
+                                                    </Select>
+                                                </TableCell>
 
-                                                    <TableCell>
-                                                        <div>
-                                                            <input type="checkbox" className="is_mandatory"
-                                                                   onChange={(e) => onChangeAttributeValue(e, index, "is_mandatory")}/> 必須
-                                                        </div>
-                                                        <div>
-                                                            <input type="checkbox" className="is_delete_in_chain"
-                                                                   onChange={(e) => onChangeAttributeValue(e, index, "is_delete_in_chain")}/> 関連削除
-                                                        </div>
-                                                    </TableCell>
+                                                <TableCell>
+                                                    <div>
+                                                        <input type="checkbox" className="is_mandatory"
+                                                               onChange={(e) => onChangeAttributeValue(e, index, "is_mandatory")}/> 必須
+                                                    </div>
+                                                    <div>
+                                                        <input type="checkbox" className="is_delete_in_chain"
+                                                               onChange={(e) => onChangeAttributeValue(e, index, "is_delete_in_chain")}/> 関連削除
+                                                    </div>
+                                                </TableCell>
 
-                                                    <TableCell>
-                                                        <Button
-                                                            variant="contained"
-                                                            color="secondary"
-                                                            className={classes.button}
-                                                            startIcon={<DeleteIcon/>}
-                                                            onClick={(e) => deleteAttribute(e, index)}>
-                                                            削除
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>)
-                                        })
+                                                <TableCell>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="secondary"
+                                                        className={classes.button}
+                                                        startIcon={<DeleteIcon/>}
+                                                        onClick={(e) => deleteAttribute(e, index)}>
+                                                        削除
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        )
                                     }
                                 </TableBody>
                             </Table>

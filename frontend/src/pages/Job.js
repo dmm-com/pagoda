@@ -66,42 +66,40 @@ export default function Job({}) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {jobs.map((job) => {
-                            return (
-                                <TableRow>
-                                    <TableCell><Typography>{job.entry}</Typography></TableCell>
-                                    <TableCell><Typography>{job.operation}</Typography></TableCell>
-                                    <TableCell><Typography>{job.status}</Typography></TableCell>
-                                    <TableCell><Typography>{job.duration}</Typography></TableCell>
-                                    <TableCell><Typography>{job.created_at}</Typography></TableCell>
-                                    <TableCell align="right"><Typography>{job.note}</Typography></TableCell>
-                                    <TableCell align="right">
-                                        <List>
-                                            <ListItem>
-                                                <Button
-                                                    variant="contained"
-                                                    color="primary"
-                                                    className={classes.button}
-                                                    component={Link}
-                                                    to={`/jobs/${job.id}/rerun`}>
-                                                    Re-run
-                                                </Button>
-                                            </ListItem>
-                                            <ListItem>
-                                                <Button
-                                                    variant="contained"
-                                                    color="secondary"
-                                                    className={classes.button}
-                                                    component={Link}
-                                                    to={`/jobs/${job.id}/cancel`}>
-                                                    Cancel
-                                                </Button>
-                                            </ListItem>
-                                        </List>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
+                        {jobs.map((job) =>
+                            <TableRow>
+                                <TableCell><Typography>{job.entry}</Typography></TableCell>
+                                <TableCell><Typography>{job.operation}</Typography></TableCell>
+                                <TableCell><Typography>{job.status}</Typography></TableCell>
+                                <TableCell><Typography>{job.duration}</Typography></TableCell>
+                                <TableCell><Typography>{job.created_at}</Typography></TableCell>
+                                <TableCell align="right"><Typography>{job.note}</Typography></TableCell>
+                                <TableCell align="right">
+                                    <List>
+                                        <ListItem>
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                className={classes.button}
+                                                component={Link}
+                                                to={`/jobs/${job.id}/rerun`}>
+                                                Re-run
+                                            </Button>
+                                        </ListItem>
+                                        <ListItem>
+                                            <Button
+                                                variant="contained"
+                                                color="secondary"
+                                                className={classes.button}
+                                                component={Link}
+                                                to={`/jobs/${job.id}/cancel`}>
+                                                Cancel
+                                            </Button>
+                                        </ListItem>
+                                    </List>
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>

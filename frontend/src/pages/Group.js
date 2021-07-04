@@ -92,11 +92,9 @@ export default function Group({}) {
                                     </TableCell>
                                     <TableCell align="right">
                                         <List>
-                                            {group.members.map((member) => {
-                                                return (
-                                                    <ListItem>{member.name}</ListItem>
-                                                );
-                                            })}
+                                            {group.members.map((member) =>
+                                                <ListItem>{member.name}</ListItem>
+                                            )}
                                         </List>
                                     </TableCell>
                                     <TableCell align="right">

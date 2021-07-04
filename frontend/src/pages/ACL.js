@@ -69,25 +69,23 @@ export default function ACL({}) {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {members.map((member) => {
-                                return (
-                                    <TableRow>
-                                        <TableCell><Typography>{member.name}</Typography></TableCell>
-                                        <TableCell align="left">
-                                            <select name="acl">
-                                                {acltypes.map((acltype) => {
-                                                    if (acltype.id === member.current_permission) {
-                                                        return <option value={acltype.id}
-                                                                       selected="selected">{acltype.name}</option>;
-                                                    } else {
-                                                        return <option value={acltype.id}>{acltype.name}</option>;
-                                                    }
-                                                })}
-                                            </select>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
+                            {members.map((member) =>
+                                <TableRow>
+                                    <TableCell><Typography>{member.name}</Typography></TableCell>
+                                    <TableCell align="left">
+                                        <select name="acl">
+                                            {acltypes.map((acltype) => {
+                                                if (acltype.id === member.current_permission) {
+                                                    return <option value={acltype.id}
+                                                                   selected="selected">{acltype.name}</option>;
+                                                } else {
+                                                    return <option value={acltype.id}>{acltype.name}</option>;
+                                                }
+                                            })}
+                                        </select>
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>

@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from "react";
 import {makeStyles} from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
-import {Link, useParams} from "react-router-dom";
-import {Select, Table, TableBody, TableCell, TableHead, TableRow} from "@material-ui/core";
+import {Link} from "react-router-dom";
+import {Select} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
-import {getGroups, getUsers} from "../utils/AironeAPIClient";
+import {getUsers} from "../utils/AironeAPIClient";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
@@ -51,11 +51,11 @@ export default function EditGroup({}) {
                         multiple
                         native
                         variant="outlined">
-                        {users.map((user) => (
+                        {users.map((user) =>
                             <option value={user.id}>
                                 {user.name}
                             </option>
-                        ))}
+                        )}
                     </Select>
                 </div>
                 <Button className={classes.button} type="submit" variant="contained"
