@@ -1,5 +1,5 @@
 import { makeStyles } from "@material-ui/core/styles";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import Button from "@material-ui/core/Button";
 import {
   MenuItem,
@@ -23,17 +23,17 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function EntityForm({
-  initName,
-  initNote,
-  initIsTopLevel,
-  initAttributes,
+  initName = "",
+  initNote = "",
+  initIsTopLevel = false,
+  initAttributes = [],
 }) {
   const classes = useStyles();
   const history = useHistory();
 
-  const nameRef = useRef(initName);
-  const noteRef = useRef(initNote);
-  const isTopLevelRef = useRef(initIsTopLevel);
+  const [name, setName] = useState(initName);
+  const [note, setNote] = useState(initNote);
+  const [isTopLevel, setIsTopLevel] = useState(initIsTopLevel);
   const [attributes, setAttributes] = useState(initAttributes);
 
   const handleChangeAttributeValue = (event, index, key) => {
@@ -64,7 +64,7 @@ export default function EntityForm({
       attr["type"] = String(attr.type);
       return attr;
     });
-    createEntity(nameRef.current.value, noteRef.current.value, attrs_with_index)
+    createEntity(name, note, attrs_with_index)
       .then((resp) => resp.json())
       .then((data) => history.push("/new-ui/entities/" + data.entity_id));
 
@@ -91,19 +91,34 @@ export default function EntityForm({
                 <TableRow>
                   <TableCell>エンティティ名</TableCell>
                   <TableCell>
-                    <input type="text" name="name" ref={nameRef} />
+                    <input
+                      type="text"
+                      name="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>備考</TableCell>
                   <TableCell>
-                    <input type="text" name="note" size="50" ref={noteRef} />
+                    <input
+                      type="text"
+                      name="note"
+                      size="50"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                    />
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>サイドバーに表示</TableCell>
                   <TableCell>
-                    <input type="checkbox" ref={isTopLevelRef} />
+                    <input
+                      type="checkbox"
+                      value={isTopLevel}
+                      onChange={(e) => setIsTopLevel(e.target.value)}
+                    />
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -212,8 +227,8 @@ export default function EntityForm({
 }
 
 EntityForm.propTypes = {
-  initName: PropTypes.string.isRequired,
-  initNote: PropTypes.string.isRequired,
-  initIsTopLevel: PropTypes.bool.isRequired,
-  initAttributes: PropTypes.array.isRequired,
+  initName: PropTypes.string,
+  initNote: PropTypes.string,
+  initIsTopLevel: PropTypes.bool,
+  initAttributes: PropTypes.array,
 };
