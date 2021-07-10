@@ -23,10 +23,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function EntityForm({
-  initName = "",
-  initNote = "",
-  initIsTopLevel = false,
-  initAttributes = [],
+  initName,
+  initNote,
+  initIsTopLevel,
+  initAttributes,
 }) {
   const classes = useStyles();
   const history = useHistory();
@@ -64,7 +64,7 @@ export default function EntityForm({
       attr["type"] = String(attr.type);
       return attr;
     });
-    createEntity(name, note, attrs_with_index)
+    createEntity(nameRef.current.value, noteRef.current.value, attrs_with_index)
       .then((resp) => resp.json())
       .then((data) => history.push("/new-ui/entities/" + data.entity_id));
 
@@ -212,8 +212,8 @@ export default function EntityForm({
 }
 
 EntityForm.propTypes = {
-  initName: PropTypes.string,
-  initNote: PropTypes.string,
-  initIsTopLevel: PropTypes.bool,
-  initAttributes: PropTypes.array,
+  initName: PropTypes.string.isRequired,
+  initNote: PropTypes.string.isRequired,
+  initIsTopLevel: PropTypes.bool.isRequired,
+  initAttributes: PropTypes.array.isRequired,
 };

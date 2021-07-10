@@ -28,12 +28,14 @@ export default function EditEntity({}) {
         <Typography color="textPrimary">エンティティ編集</Typography>
       </AironeBreadcrumbs>
 
-      <EntityForm
-        initName={entity.name}
-        initNote={entity.note}
-        initIsTopLevel={entity.isTopLevel}
-        initAttributes={entity.attributes}
-      />
+      {!entity.loading && (
+        <EntityForm
+          initName={entity.value.name}
+          initNote={entity.value.note}
+          initIsTopLevel={entity.value.isTopLevel}
+          initAttributes={entity.value.attributes}
+        />
+      )}
     </div>
   );
 }

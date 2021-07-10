@@ -7,6 +7,15 @@ import { render } from "@testing-library/react";
 
 import EntityForm from "./EntityForm";
 
-test("should render a component", function () {
-  expect(() => render(<EntityForm />)).not.toThrow();
+test("should render a component with essential props", function () {
+  expect(() =>
+    render(
+      <EntityForm
+        initName={""}
+        initNote={""}
+        initIsTopLevel={false}
+        initAttributes={[]}
+      />
+    )
+  ).not.toThrow();
 });
