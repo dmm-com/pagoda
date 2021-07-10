@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { grey } from "@material-ui/core/colors";
 import { fade, makeStyles } from "@material-ui/core/styles";
 import AccountBox from "@material-ui/icons/AccountBox";
@@ -12,8 +12,9 @@ import IconButton from "@material-ui/core/IconButton";
 import InputBase from "@material-ui/core/InputBase";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import { Badge, Divider, Menu, MenuItem, TableCell } from "@material-ui/core";
-import { getEntry, getRecentJobs } from "../utils/AironeAPIClient";
+import { Badge, Divider, Menu, MenuItem } from "@material-ui/core";
+import { getRecentJobs } from "../utils/AironeAPIClient";
+import { useAsync } from "react-use";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -68,34 +69,17 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Header({}) {
   const classes = useStyles();
-  const history = useHistory();
 
-  const [recentJobs, setRecentJobs] = useState([]);
-  useEffect(() => {
-    getRecentJobs()
-      .then((data) => data.json())
-      .then((data) => setRecentJobs(data["result"]));
-  }, []);
-
-  const handleChange = (event, value) => {
-    history.push(value);
-  };
+  useEffect(() => {}, []);
 
   const [userAnchorEl, setUserAnchorEl] = useState();
-  const handleClickUser = (event) => {
-    setUserAnchorEl(event.currentTarget);
-  };
-  const handleCloseUser = (event) => {
-    setUserAnchorEl(null);
-  };
-
   const [jobAnchorEl, setJobAnchorEl] = useState();
-  const handleClickJob = (event) => {
-    setJobAnchorEl(event.currentTarget);
-  };
-  const handleCloseJob = (event) => {
-    setJobAnchorEl(null);
-  };
+
+  const recentJobs = useAsync(async () => {
+    return getRecentJobs()
+      .then((data) => data.json())
+      .then((data) => data["result"]);
+  });
 
   return (
     <div className={classes.root}>
@@ -110,32 +94,11 @@ export default function Header({}) {
             AirOne(New UI)
           </Typography>
 
-          {/*
-                    <Tabs
-                        value={location.pathname}
-                        onChange={handleChange}
-                        variant="scrollable"
-                        scrollButtons="on"
-                        indicatorColor="primary"
-                        textColor="primary"
-                        aria-label="scrollable force tabs example"
-                    >
-                        <Tab label="エンティティ・エントリ一覧" value="/new-ui/" icon={<ViewListIcon/>}
-                             style={{color: grey[50]}}/>
-                        <Tab label="高度な検索" value="/new-ui/advanced_search" icon={<FindInPageIcon/>}
-                             style={{color: grey[50]}}/>
-                        <Tab label="ユーザ管理" value="/new-ui/user" icon={<PersonIcon/>}
-                             style={{color: grey[50]}}/>
-                        <Tab label="グループ管理" value="/new-ui/group" icon={<GroupIcon/>}
-                             style={{color: grey[50]}}/>
-                    </Tabs>
-                    */}
-
           <Box className={classes.menu}>
             <IconButton
               aria-controls="user-menu"
               aria-haspopup="true"
-              onClick={handleClickUser}
+              onClick={(e) => setUserAnchorEl(e.currentTarget)}
               style={{ color: grey[50] }}
             >
               <AccountBox />
@@ -144,7 +107,7 @@ export default function Header({}) {
               id="user-menu"
               anchorEl={userAnchorEl}
               open={Boolean(userAnchorEl)}
-              onClose={handleCloseUser}
+              onClose={() => setUserAnchorEl(null)}
               keepMounted
             >
               <MenuItem>ユーザ設定</MenuItem>
@@ -156,30 +119,33 @@ export default function Header({}) {
             <IconButton
               aria-controls="job-menu"
               aria-haspopup="true"
-              onClick={handleClickJob}
+              onClick={(e) => setJobAnchorEl(e.currentTarget)}
               style={{ color: grey[50] }}
             >
-              <Badge badgeContent={recentJobs.length} color="secondary">
-                <FormatListBulletedIcon />
-              </Badge>
+              {!recentJobs.loading && (
+                <Badge badgeContent={recentJobs.value.length} color="secondary">
+                  <FormatListBulletedIcon />
+                </Badge>
+              )}
             </IconButton>
             <Menu
               id="job-menu"
               anchorEl={jobAnchorEl}
               open={Boolean(jobAnchorEl)}
-              onClose={handleCloseJob}
+              onClose={(e) => setJobAnchorEl(null)}
               keepMounted
             >
-              {recentJobs.map((recentJob) => (
-                <MenuItem>
-                  <Typography
-                    component={Link}
-                    to={`/new-ui/jobs/${recentJob.id}`}
-                  >
-                    {recentJob.target.name}
-                  </Typography>
-                </MenuItem>
-              ))}
+              {!recentJobs.loading &&
+                recentJobs.value.map((recentJob) => (
+                  <MenuItem>
+                    <Typography
+                      component={Link}
+                      to={`/new-ui/jobs/${recentJob.id}`}
+                    >
+                      {recentJob.target.name}
+                    </Typography>
+                  </MenuItem>
+                ))}
               <Divider light />
               <MenuItem>
                 <Typography component={Link} to={`/new-ui/jobs`}>
