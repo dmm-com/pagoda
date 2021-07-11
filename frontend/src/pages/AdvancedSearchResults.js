@@ -21,12 +21,13 @@ export default function AdvancedSearchResults({}) {
 
   const params = new URLSearchParams(location.search);
   const entityIds = params.getAll("entity");
+  const entryName = params.has("entry_name") ? params.get("entry_name") : "";
   const attrInfo = params.has("attrinfo")
     ? JSON.parse(params.get("attrinfo"))
     : [];
 
   const results = useAsync(async () => {
-    return searchEntries(entityIds, "", attrInfo)
+    return searchEntries(entityIds, entryName, attrInfo)
       .then((resp) => resp.json())
       .then((data) => data.result.ret_values);
   });

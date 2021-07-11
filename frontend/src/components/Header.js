@@ -97,6 +97,8 @@ export default function Header({}) {
     setJobAnchorEl(null);
   };
 
+  const [entryQuery, setEntryQuery] = useState("");
+
   return (
     <div className={classes.root}>
       <AppBar position="static">
@@ -200,8 +202,13 @@ export default function Header({}) {
                 input: classes.inputInput,
               }}
               inputProps={{ "aria-label": "search" }}
+              onChange={(e) => setEntryQuery(e.target.value)}
             />
-            <Button variant="contained" component={Link} to={`/new-ui/search`}>
+            <Button
+              variant="contained"
+              component={Link}
+              to={`/new-ui/search?entry_name=${entryQuery}`}
+            >
               検索
             </Button>
           </div>
