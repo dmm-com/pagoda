@@ -35,6 +35,10 @@ export function getEntityHistory(entityId) {
   });
 }
 
+export function getEntityAttrs(entityIds) {
+  return fetch(`/api/v1/entity/attrs/${entityIds.join(",")}`);
+}
+
 export function getEntry(entityId, entryId) {
   return new Promise((resolve, _) => {
     resolve({
@@ -51,6 +55,28 @@ export function getEntry(entityId, entryId) {
 
 export function getEntries(entityId) {
   return fetch(`/entry/api/v1/get_entries/${entityId}`);
+}
+
+// FIXME it should be better to implement a new internal API than this
+export function searchEntries(
+  entityIds = [],
+  entryName = "",
+  attrInfo = [],
+  entryLimit = 99999
+) {
+  return fetch(`/api/v1/entry/search`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify({
+      entities: entityIds,
+      entry_name: entryName,
+      attrinfo: attrInfo,
+      entry_limit: entryLimit,
+    }),
+  });
 }
 
 export function getAdvancedSearchResults() {

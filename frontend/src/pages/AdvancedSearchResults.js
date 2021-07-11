@@ -1,42 +1,35 @@
 import { makeStyles } from "@material-ui/core/styles";
-import React, { useEffect, useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@material-ui/core";
+import React from "react";
 import Typography from "@material-ui/core/Typography";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Button from "@material-ui/core/Button";
-import Paper from "@material-ui/core/Paper";
 import SettingsIcon from "@material-ui/icons/Settings";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { getAdvancedSearchResults } from "../utils/AironeAPIClient";
+import { searchEntries } from "../utils/AironeAPIClient";
+import { useAsync } from "react-use";
+import SearchResults from "../components/entry/SearchResults";
 
 const useStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
-  entityName: {
-    margin: theme.spacing(1),
-  },
 }));
 
-export default function SearchResults({}) {
+export default function AdvancedSearchResults({}) {
   const classes = useStyles();
-  const [results, setResults] = useState([]);
+  const location = useLocation();
 
-  useEffect(() => {
-    getAdvancedSearchResults().then((data) => setResults(data));
-  }, []);
+  const params = new URLSearchParams(location.search);
+  const entityIds = params.getAll("entity");
+  const attrInfo = params.has("attrinfo")
+    ? JSON.parse(params.get("attrinfo"))
+    : [];
 
-  let fields = [];
-  if (results.length > 0) {
-    fields = Object.keys(results[0]);
-  }
+  const results = useAsync(async () => {
+    return searchEntries(entityIds, "", attrInfo)
+      .then((resp) => resp.json())
+      .then((data) => data.result.ret_values);
+  });
 
   return (
     <div className="container-fluid">
@@ -53,7 +46,9 @@ export default function SearchResults({}) {
       <div className="row">
         <div className="col">
           <div className="float-left">
-            <Typography>検索結果: ({results.length} 件)</Typography>
+            {!results.loading && (
+              <Typography>検索結果: ({results.value.length} 件)</Typography>
+            )}
             <Button
               className={classes.button}
               variant="outlined"
@@ -81,34 +76,7 @@ export default function SearchResults({}) {
         </div>
       </div>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              {fields.map((field) => (
-                <TableCell>
-                  <Typography>{field}</Typography>
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {results.map((result) => (
-              <TableRow>
-                {fields.map((field) => {
-                  if (field in result) {
-                    return (
-                      <TableCell>
-                        <Typography>{result[field]}</Typography>
-                      </TableCell>
-                    );
-                  }
-                })}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {!results.loading && <SearchResults results={results.value} />}
     </div>
   );
 }

@@ -10,7 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import User from "./pages/User";
 import Group from "./pages/Group";
 import Job from "./pages/Job";
-import SearchResults from "./pages/SearchResults";
+import AdvancedSearchResults from "./pages/AdvancedSearchResults";
 import AdvancedSearch from "./pages/AdvancedSearch";
 import EditEntity from "./pages/EditEntity";
 import EditEntry from "./pages/EditEntry";
@@ -69,7 +69,10 @@ function App() {
             <Route path={basePath + "import"} component={Import} />
             <Route path={basePath + "jobs"} component={Job} />
             <Route path={basePath + "acl/:objectId"} component={ACL} />
-            <Route path={basePath + "search"} component={SearchResults} />
+            <Route
+              path={basePath + "search"}
+              component={AdvancedSearchResults}
+            />
             <Route path={basePath + "users/new"} component={EditUser} />
             <Route
               path={basePath + "users/:userId/password"}
