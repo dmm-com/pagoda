@@ -332,3 +332,9 @@ $ gunicorn airone.wsgi:application --bind=0.0.0.0:8080 --workers=3
 $ npm install
 $ npm run build
 ```
+
+You can also auto-format .js files with [prettier](https://prettier.io/):
+
+```
+$ npx prettier --write frontend/
+```
