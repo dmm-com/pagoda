@@ -5,6 +5,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
 } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
@@ -19,6 +20,9 @@ export default function SearchResults({
 }) {
   const location = useLocation();
   const history = useHistory();
+
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(100);
 
   const [entryFilter, entryFilterDispatcher] = useReducer((_, event) => {
     return event.target.value;
@@ -54,55 +58,77 @@ export default function SearchResults({
     }
   };
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
+
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>
-              <Typography>Name</Typography>
-              <input
-                text="text"
-                placeholder="絞り込む"
-                defaultValue={defaultEntryFilter}
-                onChange={entryFilterDispatcher}
-                onKeyPress={handleKeyPress}
-              />
-            </TableCell>
-            {attrNames.map((attrName) => (
+    <Paper>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
               <TableCell>
-                <Typography>{attrName}</Typography>
+                <Typography>Name</Typography>
                 <input
                   text="text"
                   placeholder="絞り込む"
-                  defaultValue={defaultAttrsFilter[attrName] || ""}
-                  onChange={(e) =>
-                    attrsFilterDispatcher({ event: e, name: attrName })
-                  }
+                  defaultValue={defaultEntryFilter}
+                  onChange={entryFilterDispatcher}
                   onKeyPress={handleKeyPress}
                 />
               </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {results.map((result) => (
-            <TableRow>
-              <TableCell>
-                <Typography>{result.entry.name}</Typography>
-              </TableCell>
               {attrNames.map((attrName) => (
                 <TableCell>
-                  {result.attrs[attrName] && (
-                    <Typography>{result.attrs[attrName].value}</Typography>
-                  )}
+                  <Typography>{attrName}</Typography>
+                  <input
+                    text="text"
+                    placeholder="絞り込む"
+                    defaultValue={defaultAttrsFilter[attrName] || ""}
+                    onChange={(e) =>
+                      attrsFilterDispatcher({ event: e, name: attrName })
+                    }
+                    onKeyPress={handleKeyPress}
+                  />
                 </TableCell>
               ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {results
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((result) => (
+                <TableRow>
+                  <TableCell>
+                    <Typography>{result.entry.name}</Typography>
+                  </TableCell>
+                  {attrNames.map((attrName) => (
+                    <TableCell>
+                      {result.attrs[attrName] && (
+                        <Typography>{result.attrs[attrName].value}</Typography>
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[100, 250, 1000]}
+        component="div"
+        count={results.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onChangePage={handleChangePage}
+        onChangeRowsPerPage={handleChangeRowsPerPage}
+      />
+    </Paper>
   );
 }
 
