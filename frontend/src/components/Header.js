@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import {Link, useHistory} from "react-router-dom";
 import { grey } from "@material-ui/core/colors";
 import { fade, makeStyles } from "@material-ui/core/styles";
 import AccountBox from "@material-ui/icons/AccountBox";
@@ -69,8 +69,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Header({}) {
   const classes = useStyles();
-
-  useEffect(() => {}, []);
+  const history = useHistory();
 
   const [userAnchorEl, setUserAnchorEl] = useState();
   const [jobAnchorEl, setJobAnchorEl] = useState();
@@ -82,6 +81,12 @@ export default function Header({}) {
   });
 
   const [entryQuery, setEntryQuery] = useState("");
+
+  const handleSearchQuery = (event) => {
+    if (event.key === "Enter") {
+      history.push(`/new-ui/search?entry_name=${entryQuery}`);
+    }
+  };
 
   return (
     <div className={classes.root}>
@@ -169,6 +174,7 @@ export default function Header({}) {
               }}
               inputProps={{ "aria-label": "search" }}
               onChange={(e) => setEntryQuery(e.target.value)}
+              onKeyPress={handleSearchQuery}
             />
             <Button
               variant="contained"
