@@ -166,9 +166,13 @@ jobs:
           command: |
             npm install
       - run:
-          name: Check format
+          name: lint
           command: |
-            npx prettier --check frontend/
+            npm run lint
+      - run:
+          name: test
+          command: |
+            npm run test
 
 workflows:
   version: 2

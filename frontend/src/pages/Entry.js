@@ -1,26 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Button from "@material-ui/core/Button";
 import { useParams, Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
-import {
-  Divider,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-} from "@material-ui/core";
+import { Divider } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
-import Paper from "@material-ui/core/Paper";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { deleteEntry, getEntries } from "../utils/AironeAPIClient";
+import { getEntries } from "../utils/AironeAPIClient";
 import EditButton from "../components/common/EditButton";
 import CreateButton from "../components/common/CreateButton";
-import DeleteButton from "../components/common/DeleteButton";
+import EntryList from "../components/entry/EntryList";
+import { useAsync } from "react-use";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -37,56 +28,14 @@ export default function Entry({}) {
 
   const [tabValue, setTabValue] = useState(1);
 
-  const [keyword, setKeyword] = useState("");
-  const [entries, setEntries] = useState([]);
-  const [filteredEntries, setFilteredEntries] = useState([]);
-
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(100);
-
-  const [updated, setUpdated] = useState(false);
-
-  useEffect(() => {
-    getEntries(entityId)
+  const entries = useAsync(async () => {
+    return getEntries(entityId)
       .then((resp) => resp.json())
-      .then((data) => {
-        setEntries(data.results);
-        setFilteredEntries(data.results);
-      });
-    setUpdated(false);
-  }, [updated]);
+      .then((data) => data.results);
+  });
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
-  };
-
-  const onChangeKeyword = (event) => {
-    setKeyword(event.target.value);
-  };
-
-  const onKeyPressKeyword = (event) => {
-    if (event.key === "Enter" && keyword) {
-      setFilteredEntries(
-        entries.filter((entry) => {
-          return entry.name.indexOf(keyword) !== -1;
-        })
-      );
-    } else {
-      setFilteredEntries(entries);
-    }
-  };
-
-  const handleDelete = (event, entryId) => {
-    deleteEntry(entryId).then((_) => setUpdated(true));
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
   };
 
   return (
@@ -153,60 +102,9 @@ export default function Entry({}) {
       <div hidden={tabValue !== 0}>ダッシュボード</div>
 
       <div hidden={tabValue !== 1}>
-        <Paper>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <span className={classes.entryName}>エントリ名</span>
-                    <input
-                      className={classes.entryName}
-                      text="text"
-                      placeholder="絞り込む"
-                      value={keyword}
-                      onChange={onChangeKeyword}
-                      onKeyPress={onKeyPressKeyword}
-                    />
-                  </TableCell>
-                  <TableCell align="right" />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredEntries
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((entry) => (
-                    <TableRow>
-                      <TableCell>
-                        <Typography
-                          component={Link}
-                          to={`/new-ui/entities/${entityId}/entries/${entry.id}`}
-                        >
-                          {entry.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right">
-                        <DeleteButton
-                          onConfirmed={(e) => handleDelete(e, entry.id)}
-                        >
-                          削除
-                        </DeleteButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <TablePagination
-            rowsPerPageOptions={[100, 250, 1000]}
-            component="div"
-            count={filteredEntries.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onChangePage={handleChangePage}
-            onChangeRowsPerPage={handleChangeRowsPerPage}
-          />
-        </Paper>
+        {!entries.loading && (
+          <EntryList entityId={entityId} entries={entries.value} />
+        )}
       </div>
 
       <div hidden={tabValue !== 2}>ダッシュボードの設定</div>
