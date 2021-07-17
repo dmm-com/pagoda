@@ -36,6 +36,7 @@ export default function EntryList({ entityId, entries }) {
   const [rowsPerPage, setRowsPerPage] = React.useState(100);
 
   const handleKeyPressKeyword = (event) => {
+    let updated = new URLSearchParams(location.search);
     if (event.key === "Enter") {
       setKeyword(keywordRef.current.value);
     }

@@ -8,6 +8,7 @@ import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import { searchEntries } from "../utils/AironeAPIClient";
 import { useAsync } from "react-use";
 import SearchResults from "../components/entry/SearchResults";
+import Box from "@material-ui/core/Box";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -38,44 +39,33 @@ export default function AdvancedSearchResults({}) {
         <Typography component={Link} to="/new-ui/">
           Top
         </Typography>
-        <Typography component={Link} to="/new-ui/advanced_search">
-          高度な検索
-        </Typography>
+        {attrInfo.length > 0 && (
+          <Typography component={Link} to="/new-ui/advanced_search">
+            高度な検索
+          </Typography>
+        )}
         <Typography color="textPrimary">検索結果</Typography>
       </AironeBreadcrumbs>
 
-      <div className="row">
-        <div className="col">
-          <div className="float-left">
-            {!results.loading && (
-              <Typography>検索結果: ({results.value.length} 件)</Typography>
-            )}
-            <Button
-              className={classes.button}
-              variant="outlined"
-              startIcon={<SettingsIcon />}
-              color="default"
-            >
-              高度な検索
-            </Button>
-            <Button
-              className={classes.button}
-              variant="outlined"
-              color="primary"
-            >
-              YAML 出力
-            </Button>
-            <Button
-              className={classes.button}
-              variant="outlined"
-              color="primary"
-            >
-              CSV 出力
-            </Button>
-          </div>
-          <div className="float-right"></div>
-        </div>
-      </div>
+      <Box m={1}>
+        {!results.loading && (
+          <Typography>検索結果: ({results.value.length} 件)</Typography>
+        )}
+        <Button
+          className={classes.button}
+          variant="outlined"
+          startIcon={<SettingsIcon />}
+          color="default"
+        >
+          高度な検索
+        </Button>
+        <Button className={classes.button} variant="outlined" color="primary">
+          YAML 出力
+        </Button>
+        <Button className={classes.button} variant="outlined" color="primary">
+          CSV 出力
+        </Button>
+      </Box>
 
       {!results.loading && <SearchResults results={results.value} />}
     </div>

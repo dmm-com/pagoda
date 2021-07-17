@@ -7,6 +7,7 @@ import Grid from "@material-ui/core/Grid";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import { useAsync } from "react-use";
 import { getEntities, getEntityAttrs } from "../utils/AironeAPIClient";
+import Box from "@material-ui/core/Box";
 
 function multipleSelectedValues(event) {
   return Array.from(event.target.options, (o) => o)
@@ -55,43 +56,39 @@ export default function AdvancedSearch({}) {
 
       <Typography variant="h5">検索条件:</Typography>
 
-      <div className="row">
-        <div className="col">
-          <Typography>検索するエンティティ</Typography>
-          <Select
-            multiple
-            native
-            variant="outlined"
-            onChange={(e) => setSelectedEntityIds(multipleSelectedValues(e))}
-          >
-            {!entities.loading &&
-              entities.value.map((entity) => (
-                <option key="entities" value={entity.id}>
-                  {entity.name}
-                </option>
-              ))}
-          </Select>
-        </div>
-      </div>
+      <Box m={1}>
+        <Typography>検索するエンティティ</Typography>
+        <Select
+          multiple
+          native
+          variant="outlined"
+          onChange={(e) => setSelectedEntityIds(multipleSelectedValues(e))}
+        >
+          {!entities.loading &&
+            entities.value.map((entity) => (
+              <option key="entities" value={entity.id}>
+                {entity.name}
+              </option>
+            ))}
+        </Select>
+      </Box>
 
-      <div className="row">
-        <div className="col">
-          <Typography>検索する属性</Typography>
-          <Select
-            multiple
-            native
-            variant="outlined"
-            onChange={(e) => setSelectedAttrs(multipleSelectedValues(e))}
-          >
-            {!attrs.loading &&
-              attrs.value.map((attr) => (
-                <option key="attribute" value={attr}>
-                  {attr}
-                </option>
-              ))}
-          </Select>
-        </div>
-      </div>
+      <Box m={1}>
+        <Typography>検索する属性</Typography>
+        <Select
+          multiple
+          native
+          variant="outlined"
+          onChange={(e) => setSelectedAttrs(multipleSelectedValues(e))}
+        >
+          {!attrs.loading &&
+            attrs.value.map((attr) => (
+              <option key="attribute" value={attr}>
+                {attr}
+              </option>
+            ))}
+        </Select>
+      </Box>
 
       <Grid container justify="flex-end">
         <Grid item xs={1}>
