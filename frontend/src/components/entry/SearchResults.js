@@ -10,34 +10,49 @@ import {
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import PropTypes from "prop-types";
+import { useHistory, useLocation } from "react-router-dom";
 
-export default function SearchResults({ results }) {
-  const [entryFilter, entryFilterDispatcher] = useReducer((state, event) => {
-    if (event.key === "Enter") {
-      return event.target.value;
-    }
-    return state;
-  }, "");
+export default function SearchResults({
+  results,
+  defaultEntryFilter = "",
+  defaultAttrsFilter = {},
+}) {
+  const location = useLocation();
+  const history = useHistory();
+
+  const [entryFilter, entryFilterDispatcher] = useReducer((_, event) => {
+    return event.target.value;
+  }, defaultEntryFilter);
   const [attrsFilter, attrsFilterDispatcher] = useReducer(
     (state, { event, name }) => {
-      if (event.key === "Enter") {
-        return { ...state, [name]: event.target.value };
-      }
-      return state;
+      return { ...state, [name]: event.target.value };
     },
-    {}
+    defaultAttrsFilter
   );
 
   const attrNames = results.length > 0 ? Object.keys(results[0].attrs) : [];
 
-  const filtered = results
-    .filter((r) => r.entry.name.includes(entryFilter))
-    .filter((r) =>
-      attrNames.every((name) => {
-        const target = r.attrs[name].value || "";
-        return target.includes(attrsFilter[name] || "");
-      })
-    );
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      const params = new URLSearchParams(location.search);
+      params.set("entry_name", entryFilter);
+      params.set(
+        "attrinfo",
+        JSON.stringify(
+          Object.keys(attrsFilter).map((key) => {
+            return { name: key, keyword: attrsFilter[key] };
+          })
+        )
+      );
+
+      // simply reload with the new params
+      history.push({
+        pathname: location.pathname,
+        search: "?" + params.toString(),
+      });
+      history.go(0);
+    }
+  };
 
   return (
     <TableContainer component={Paper}>
@@ -49,7 +64,9 @@ export default function SearchResults({ results }) {
               <input
                 text="text"
                 placeholder="絞り込む"
-                onKeyPress={entryFilterDispatcher}
+                defaultValue={defaultEntryFilter}
+                onChange={entryFilterDispatcher}
+                onKeyPress={handleKeyPress}
               />
             </TableCell>
             {attrNames.map((attrName) => (
@@ -58,16 +75,18 @@ export default function SearchResults({ results }) {
                 <input
                   text="text"
                   placeholder="絞り込む"
-                  onKeyPress={(e) =>
+                  defaultValue={defaultAttrsFilter[attrName] || ""}
+                  onChange={(e) =>
                     attrsFilterDispatcher({ event: e, name: attrName })
                   }
+                  onKeyPress={handleKeyPress}
                 />
               </TableCell>
             ))}
           </TableRow>
         </TableHead>
         <TableBody>
-          {filtered.map((result) => (
+          {results.map((result) => (
             <TableRow>
               <TableCell>
                 <Typography>{result.entry.name}</Typography>
@@ -89,4 +108,6 @@ export default function SearchResults({ results }) {
 
 SearchResults.propTypes = {
   results: PropTypes.array.isRequired,
+  defaultEntryFilter: PropTypes.string,
+  defaultAttrsFilter: PropTypes.object,
 };

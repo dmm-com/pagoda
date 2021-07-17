@@ -67,7 +67,15 @@ export default function AdvancedSearchResults({}) {
         </Button>
       </Box>
 
-      {!results.loading && <SearchResults results={results.value} />}
+      {!results.loading && (
+        <SearchResults
+          results={results.value}
+          defaultEntryFilter={entryName}
+          defaultAttrsFilter={Object.fromEntries(
+            attrInfo.map((i) => [i["name"], i["keyword"] || ""])
+          )}
+        />
+      )}
     </div>
   );
 }
