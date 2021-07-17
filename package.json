@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "build": "webpack build --mode production"
+    "build": "webpack build --mode development"
   },
   "repository": {
     "type": "git",
