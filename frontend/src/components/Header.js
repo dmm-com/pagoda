@@ -135,7 +135,7 @@ export default function Header({}) {
               onClose={(e) => setJobAnchorEl(null)}
               keepMounted
             >
-              {!recentJobs.loading &&
+              {!recentJobs.loading && recentJobs.value.length > 0 ? (
                 recentJobs.value.map((recentJob) => (
                   <MenuItem>
                     <Typography
@@ -145,7 +145,12 @@ export default function Header({}) {
                       {recentJob.target.name}
                     </Typography>
                   </MenuItem>
-                ))}
+                ))
+              ) : (
+                <MenuItem>
+                  <Typography>実行タスクなし</Typography>
+                </MenuItem>
+              )}
               <Divider light />
               <MenuItem>
                 <Typography component={Link} to={`/new-ui/jobs`}>
