@@ -2,6 +2,8 @@ import re
 import io
 import yaml
 
+import custom_view
+
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.db.models import Q
@@ -208,6 +210,9 @@ def do_create(request, recv_data):
 
     # get user object that current access
     user = User.objects.get(id=request.user.id)
+
+    if custom_view.is_custom('create_entity'):
+        resp = custom_view.call_custom('create_entity', recv_data['name'], )
 
     # create EntityAttr objects
     entity = Entity(name=recv_data['name'],
