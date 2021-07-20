@@ -152,6 +152,11 @@ def do_edit(request, entity_id, recv_data):
     if entity.get_status(Entity.STATUS_EDITING):
         return HttpResponse('Target entity is now under processing', status=400)
 
+    if custom_view.is_custom('edit_entity'):
+        resp = custom_view.call_custom('edit_entity', entity, recv_data['name'], recv_data['attrs'])
+        if resp:
+            return resp
+
     # update status parameters
     if recv_data['is_toplevel']:
         entity.set_status(Entity.STATUS_TOP_LEVEL)
@@ -212,7 +217,9 @@ def do_create(request, recv_data):
     user = User.objects.get(id=request.user.id)
 
     if custom_view.is_custom('create_entity'):
-        resp = custom_view.call_custom('create_entity', recv_data['name'], )
+        resp = custom_view.call_custom('create_entity', recv_data['name'], recv_data['attrs'])
+        if resp:
+            return resp
 
     # create EntityAttr objects
     entity = Entity(name=recv_data['name'],
@@ -293,6 +300,11 @@ def do_delete(request, entity_id, recv_data):
     if Entry.objects.filter(schema=entity, is_active=True).exists():
         return HttpResponse('cannot delete Entity because one or more Entries are not deleted',
                             status=400)
+
+    if custom_view.is_custom('delete_entity'):
+        resp = custom_view.call_custom('delete_entity', entity)
+        if resp:
+            return resp
 
     # save deleting target name before do it
     ret['name'] = entity.name
