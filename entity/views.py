@@ -153,7 +153,8 @@ def do_edit(request, entity_id, recv_data):
         return HttpResponse('Target entity is now under processing', status=400)
 
     if custom_view.is_custom('edit_entity'):
-        resp = custom_view.call_custom('edit_entity', None, entity, recv_data['name'], recv_data['attrs'])
+        resp = custom_view.call_custom('edit_entity', None, entity, recv_data['name'],
+                                       recv_data['attrs'])
         if resp:
             return resp
 
