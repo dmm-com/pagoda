@@ -991,11 +991,12 @@ class ViewTest(AironeViewTest):
     def test_create_entity_with_customview(self, mock_call_custom):
         self.guest_login()
 
-        def side_effect(handler_name, entity_name, entity_attrs):
+        def side_effect(handler_name, spec_name, entity_name, entity_attrs):
             self._test_data['is_call_custom_called'] = True
 
             # Check specified parameters are expected
             self.assertEqual(handler_name, 'create_entity')
+            self.assertIsNone(spec_name)
             self.assertEqual(entity_name, params['name'])
             self.assertEqual(entity_attrs, params['attrs'])
 
@@ -1020,11 +1021,12 @@ class ViewTest(AironeViewTest):
     def test_edit_entity_with_customview(self, mock_call_custom):
         user = self.guest_login()
 
-        def side_effect(handler_name, entity, entity_name, entity_attrs):
+        def side_effect(handler_name, spec_name, entity, entity_name, entity_attrs):
             self._test_data['is_call_custom_called'] = True
 
             # Check specified parameters are expected
             self.assertEqual(handler_name, 'edit_entity')
+            self.assertIsNone(spec_name)
             self.assertEqual(entity, entity_test)
             self.assertEqual(entity_name, params['name'])
             self.assertEqual(entity_attrs, params['attrs'])
@@ -1049,11 +1051,12 @@ class ViewTest(AironeViewTest):
     def test_delete_entity_with_customview(self, mock_call_custom):
         user = self.guest_login()
 
-        def side_effect(handler_name, entity):
+        def side_effect(handler_name, spec_name, entity):
             self._test_data['is_call_custom_called'] = True
 
             # Check specified parameters are expected
             self.assertEqual(handler_name, 'delete_entity')
+            self.assertIsNone(spec_name)
             self.assertEqual(entity, entity_test)
 
         mock_call_custom.side_effect = side_effect

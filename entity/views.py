@@ -153,7 +153,7 @@ def do_edit(request, entity_id, recv_data):
         return HttpResponse('Target entity is now under processing', status=400)
 
     if custom_view.is_custom('edit_entity'):
-        resp = custom_view.call_custom('edit_entity', entity, recv_data['name'], recv_data['attrs'])
+        resp = custom_view.call_custom('edit_entity', None, entity, recv_data['name'], recv_data['attrs'])
         if resp:
             return resp
 
@@ -217,7 +217,7 @@ def do_create(request, recv_data):
     user = User.objects.get(id=request.user.id)
 
     if custom_view.is_custom('create_entity'):
-        resp = custom_view.call_custom('create_entity', recv_data['name'], recv_data['attrs'])
+        resp = custom_view.call_custom('create_entity', None, recv_data['name'], recv_data['attrs'])
         if resp:
             return resp
 
@@ -302,7 +302,7 @@ def do_delete(request, entity_id, recv_data):
                             status=400)
 
     if custom_view.is_custom('delete_entity'):
-        resp = custom_view.call_custom('delete_entity', entity)
+        resp = custom_view.call_custom('delete_entity', None, entity)
         if resp:
             return resp
 
