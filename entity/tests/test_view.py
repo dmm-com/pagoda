@@ -21,6 +21,10 @@ class ViewTest(AironeViewTest):
     """
     This has simple tests that check basic functionality
     """
+    def setUp(self):
+        super(ViewTest, self).setUp()
+        # clear data which is used in individual tests
+        self._test_data = {}
 
     def test_index_without_login(self):
         resp = self.client.get(reverse('entity:index'))
@@ -980,3 +984,23 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(EntityAttr.objects.filter(parent_entity=entity,
                                                    is_summarized=True).count(), 0)
+
+    @mock.patch('custom_view.is_custom', mock.Mock(return_value=True))
+    @mock.patch('custom_view.call_custom')
+    def test_create_entity_with_customview(self, mock_call_custom):
+        def side_effect(*args, **kwargs):
+
+        mock_call_custom.side_effect = side_effect
+
+        self.guest_login()
+        params = {
+            'name': 'hoge',
+            'note': 'fuga',
+            'is_toplevel': True,
+            'attrs': [],
+        }
+        resp = self.client.post(reverse('entity:do_create'),
+                                json.dumps(params),
+                                'application/json')
+
+        self.assertEqual(resp.status_code, 200)
