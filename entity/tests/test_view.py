@@ -23,6 +23,7 @@ class ViewTest(AironeViewTest):
     """
     def setUp(self):
         super(ViewTest, self).setUp()
+
         # clear data which is used in individual tests
         self._test_data = {}
 
@@ -988,19 +989,84 @@ class ViewTest(AironeViewTest):
     @mock.patch('custom_view.is_custom', mock.Mock(return_value=True))
     @mock.patch('custom_view.call_custom')
     def test_create_entity_with_customview(self, mock_call_custom):
-        def side_effect(*args, **kwargs):
+        self.guest_login()
+
+        def side_effect(handler_name, entity_name, entity_attrs):
+            self._test_data['is_call_custom_called'] = True
+
+            # Check specified parameters are expected
+            self.assertEqual(handler_name, 'create_entity')
+            self.assertEqual(entity_name, params['name'])
+            self.assertEqual(entity_attrs, params['attrs'])
 
         mock_call_custom.side_effect = side_effect
 
-        self.guest_login()
         params = {
             'name': 'hoge',
             'note': 'fuga',
             'is_toplevel': True,
-            'attrs': [],
+            'attrs': [
+                {'name': 'foo', 'type': str(AttrTypeStr), 'is_delete_in_chain': False,
+                 'is_mandatory': True, 'row_index': '1', 'ref_ids': []},
+            ],
         }
-        resp = self.client.post(reverse('entity:do_create'),
-                                json.dumps(params),
-                                'application/json')
+        resp = self.client.post(reverse('entity:do_create'), json.dumps(params), 'application/json')
 
         self.assertEqual(resp.status_code, 200)
+        self.assertTrue(self._test_data['is_call_custom_called'])
+
+    @mock.patch('custom_view.is_custom', mock.Mock(return_value=True))
+    @mock.patch('custom_view.call_custom')
+    def test_edit_entity_with_customview(self, mock_call_custom):
+        user = self.guest_login()
+
+        def side_effect(handler_name, entity, entity_name, entity_attrs):
+            self._test_data['is_call_custom_called'] = True
+
+            # Check specified parameters are expected
+            self.assertEqual(handler_name, 'edit_entity')
+            self.assertEqual(entity, entity_test)
+            self.assertEqual(entity_name, params['name'])
+            self.assertEqual(entity_attrs, params['attrs'])
+
+        mock_call_custom.side_effect = side_effect
+
+        entity_test = Entity.objects.create(name='hoge', note='fuga', created_user=user)
+        params = {
+            'name': 'hoge-changed',
+            'note': 'fuga',
+            'is_toplevel': True,
+            'attrs': [],
+        }
+        resp = self.client.post(reverse('entity:do_edit', args=[entity_test.id]),
+                                json.dumps(params), 'application/json')
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(self._test_data['is_call_custom_called'])
+
+    @mock.patch('custom_view.is_custom', mock.Mock(return_value=True))
+    @mock.patch('custom_view.call_custom')
+    def test_delete_entity_with_customview(self, mock_call_custom):
+        user = self.guest_login()
+
+        def side_effect(handler_name, entity):
+            self._test_data['is_call_custom_called'] = True
+
+            # Check specified parameters are expected
+            self.assertEqual(handler_name, 'delete_entity')
+            self.assertEqual(entity, entity_test)
+
+        mock_call_custom.side_effect = side_effect
+
+        entity_test = Entity.objects.create(name='hoge', note='fuga', created_user=user)
+        params = {
+            'name': 'hoge-changed',
+            'note': 'fuga',
+            'is_toplevel': True,
+            'attrs': [],
+        }
+        resp = self.client.post(reverse('entity:do_delete', args=[entity_test.id]),
+                                json.dumps(params), 'application/json')
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(self._test_data['is_call_custom_called'])
