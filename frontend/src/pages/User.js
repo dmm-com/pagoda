@@ -14,9 +14,12 @@ import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import { deleteUser, getUsers } from "../utils/AironeAPIClient";
-import ConfirmableButton from "../components/ConfirmableButton";
+import ConfirmableButton from "../components/common/ConfirmableButton";
+import EditButton from "../components/common/EditButton";
+import CreateButton from "../components/common/CreateButton";
+import DeleteButton from "../components/common/DeleteButton";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -27,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function User(props) {
+export default function User({}) {
   const classes = useStyles();
   const [users, setUsers] = useState([]);
   const [updated, setUpdated] = useState(false);
@@ -53,15 +56,7 @@ export default function User(props) {
       <div className="row">
         <div className="col">
           <div className="float-left">
-            <Button
-              className={classes.button}
-              variant="outlined"
-              color="primary"
-              component={Link}
-              to={`/new-ui/users/new`}
-            >
-              新規作成
-            </Button>
+            <CreateButton to={`/new-ui/users/new`}>新規作成</CreateButton>
             <Button
               className={classes.button}
               variant="outlined"
@@ -100,54 +95,35 @@ export default function User(props) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users.map((user) => {
-              return (
-                <TableRow>
-                  <TableCell>
-                    <Typography>{user.name}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography>{user.email}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography>{user.created_at}</Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      className={classes.button}
-                      startIcon={<EditIcon />}
-                      component={Link}
-                      to={`/new-ui/users/${user.id}`}
-                    >
-                      編集
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      className={classes.button}
-                      startIcon={<EditIcon />}
-                      component={Link}
-                      to={`/new-ui/users/${user.id}/password`}
-                    >
-                      パスワード変更
-                    </Button>
-                    <ConfirmableButton
-                      variant="contained"
-                      color="secondary"
-                      className={classes.button}
-                      startIcon={<DeleteIcon />}
-                      component={Link}
-                      dialogTitle="本当に削除しますか？"
-                      onClickYes={(e) => handleDelete(e, user.id)}
-                    >
-                      削除
-                    </ConfirmableButton>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {users.map((user) => (
+              <TableRow>
+                <TableCell>
+                  <Typography>{user.name}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography>{user.email}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography>{user.created_at}</Typography>
+                </TableCell>
+                <TableCell align="right">
+                  <EditButton to={`/new-ui/users/${user.id}`}>編集</EditButton>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className={classes.button}
+                    startIcon={<EditIcon />}
+                    component={Link}
+                    to={`/new-ui/users/${user.id}/password`}
+                  >
+                    パスワード変更
+                  </Button>
+                  <DeleteButton onConfirmed={(e) => handleDelete(e, user.id)}>
+                    削除
+                  </DeleteButton>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>

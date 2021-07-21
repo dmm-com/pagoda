@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import { getEntityHistory } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import { Link } from "react-router-dom";
 
 const Operations = {
@@ -33,7 +33,7 @@ const TargetOperation = {
   DEL_ENTRY: Operations.DEL + Targets.ENTRY,
 };
 
-export default function OperationHistory(props) {
+export default function OperationHistory({}) {
   const [history, setHistory] = useState([]);
 
   useEffect(() => {

@@ -1,14 +1,19 @@
 import Button from "@material-ui/core/Button";
-import {
-  Dialog,
-  DialogActions,
-  DialogTitle,
-  TableCell,
-} from "@material-ui/core";
+import { Dialog, DialogActions, DialogTitle } from "@material-ui/core";
 import React from "react";
 import PropTypes from "prop-types";
 
-export default function ConfirmableButton(props) {
+export default function ConfirmableButton({
+  variant,
+  color,
+  className,
+  startIcon,
+  component,
+  to,
+  children,
+  dialogTitle,
+  onClickYes,
+}) {
   const [open, setOpen] = React.useState(false);
 
   const handleOpen = () => {
@@ -21,19 +26,29 @@ export default function ConfirmableButton(props) {
 
   const handleConfirmed = (event) => {
     setOpen(false);
-    props.onClickYes(event);
+    onClickYes(event);
   };
 
   return (
     <span>
-      <Button onClick={handleOpen} {...props} />
+      <Button
+        variant={variant}
+        color={color}
+        className={className}
+        startIcon={startIcon}
+        component={component}
+        to={to}
+        onClick={handleOpen}
+      >
+        {children}
+      </Button>
       <Dialog
         open={open}
         onClose={handleClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">{props.dialogTitle}</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{dialogTitle}</DialogTitle>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
             No

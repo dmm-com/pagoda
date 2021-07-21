@@ -14,12 +14,13 @@ import {
 } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
-import DeleteIcon from "@material-ui/icons/Delete";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import { deleteEntry, getEntries } from "../utils/AironeAPIClient";
-import ConfirmableButton from "../components/ConfirmableButton";
+import EditButton from "../components/common/EditButton";
+import CreateButton from "../components/common/CreateButton";
+import DeleteButton from "../components/common/DeleteButton";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -30,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Entry(props) {
+export default function Entry({}) {
   const classes = useStyles();
   let { entityId } = useParams();
 
@@ -103,23 +104,12 @@ export default function Entry(props) {
       <div className="row">
         <div className="col">
           <div className="float-left">
-            <Button
-              variant="contained"
-              color="primary"
-              className={classes.button}
-              component={Link}
-              to={`/new-ui/entities/${entityId}/entries/new`}
-            >
+            <CreateButton to={`/new-ui/entities/${entityId}/entries/new`}>
               エントリ作成
-            </Button>
-            <Button
-              variant="contained"
-              className={classes.button}
-              component={Link}
-              to={`/new-ui/entities/${entityId}`}
-            >
+            </CreateButton>
+            <EditButton to={`/new-ui/entities/${entityId}`}>
               エンティティ編集
-            </Button>
+            </EditButton>
             <Button
               variant="contained"
               className={classes.button}
@@ -185,33 +175,25 @@ export default function Entry(props) {
               <TableBody>
                 {filteredEntries
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((entry) => {
-                    return (
-                      <TableRow>
-                        <TableCell>
-                          <Typography
-                            component={Link}
-                            to={`/new-ui/entities/${entityId}/entries/${entry.id}`}
-                          >
-                            {entry.name}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <ConfirmableButton
-                            variant="contained"
-                            color="secondary"
-                            className={classes.button}
-                            startIcon={<DeleteIcon />}
-                            component={Link}
-                            dialogTitle="本当に削除しますか？"
-                            onClickYes={(e) => handleDelete(e, entry.id)}
-                          >
-                            削除
-                          </ConfirmableButton>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  .map((entry) => (
+                    <TableRow>
+                      <TableCell>
+                        <Typography
+                          component={Link}
+                          to={`/new-ui/entities/${entityId}/entries/${entry.id}`}
+                        >
+                          {entry.name}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <DeleteButton
+                          onConfirmed={(e) => handleDelete(e, entry.id)}
+                        >
+                          削除
+                        </DeleteButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
