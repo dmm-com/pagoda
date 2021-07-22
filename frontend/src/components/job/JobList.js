@@ -57,7 +57,7 @@ export default function JobList({ jobs }) {
           {jobs.map((job) => (
             <TableRow>
               <TableCell>
-                <Typography>{job.entry}</Typography>
+                <Typography>{job.target && job.target.name}</Typography>
               </TableCell>
               <TableCell>
                 <Typography>{job.operation}</Typography>
@@ -66,7 +66,7 @@ export default function JobList({ jobs }) {
                 <Typography>{job.status}</Typography>
               </TableCell>
               <TableCell>
-                <Typography>{job.duration}</Typography>
+                <Typography>{job.passed_time} s</Typography>
               </TableCell>
               <TableCell>
                 <Typography>{job.created_at}</Typography>
