@@ -2,6 +2,8 @@ import { Breadcrumbs } from "@material-ui/core";
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { grey } from "@material-ui/core/colors";
+import PropTypes from "prop-types";
+import CreateButton from "./CreateButton";
 
 const useStyles = makeStyles((theme) => ({
   breadcrumbs: {
@@ -11,12 +13,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function AironeBreadcrumbs(props) {
+export default function AironeBreadcrumbs({ children }) {
   const classes = useStyles();
 
   return (
     <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumbs}>
-      {props.children}
+      {children}
     </Breadcrumbs>
   );
 }
+
+AironeBreadcrumbs.propTypes = {
+  children: PropTypes.element.isRequired,
+};

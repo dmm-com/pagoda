@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getACL } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import Typography from "@material-ui/core/Typography";
 import { Link, useParams } from "react-router-dom";
 import Button from "@material-ui/core/Button";
@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ACL(props) {
+export default function ACL({}) {
   const classes = useStyles();
   const { objectId } = useParams();
 
@@ -91,32 +91,30 @@ export default function ACL(props) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {members.map((member) => {
-                return (
-                  <TableRow>
-                    <TableCell>
-                      <Typography>{member.name}</Typography>
-                    </TableCell>
-                    <TableCell align="left">
-                      <select name="acl">
-                        {acltypes.map((acltype) => {
-                          if (acltype.id === member.current_permission) {
-                            return (
-                              <option value={acltype.id} selected="selected">
-                                {acltype.name}
-                              </option>
-                            );
-                          } else {
-                            return (
-                              <option value={acltype.id}>{acltype.name}</option>
-                            );
-                          }
-                        })}
-                      </select>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {members.map((member) => (
+                <TableRow>
+                  <TableCell>
+                    <Typography>{member.name}</Typography>
+                  </TableCell>
+                  <TableCell align="left">
+                    <select name="acl">
+                      {acltypes.map((acltype) => {
+                        if (acltype.id === member.current_permission) {
+                          return (
+                            <option value={acltype.id} selected="selected">
+                              {acltype.name}
+                            </option>
+                          );
+                        } else {
+                          return (
+                            <option value={acltype.id}>{acltype.name}</option>
+                          );
+                        }
+                      })}
+                    </select>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>

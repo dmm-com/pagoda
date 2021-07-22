@@ -10,8 +10,8 @@ import {
   TableRow,
 } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
 import { getUser } from "../utils/AironeAPIClient";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EditUser(props) {
+export default function EditUser({}) {
   const classes = useStyles();
   const { userId } = useParams();
 

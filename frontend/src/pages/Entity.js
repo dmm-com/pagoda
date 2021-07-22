@@ -11,15 +11,15 @@ import {
 } from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import { Link } from "react-router-dom";
-import EditIcon from "@material-ui/icons/Edit";
 import HistoryIcon from "@material-ui/icons/History";
 import GroupIcon from "@material-ui/icons/Group";
-import DeleteIcon from "@material-ui/icons/Delete";
 import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import { deleteEntity, getEntities } from "../utils/AironeAPIClient";
-import ConfirmableButton from "../components/ConfirmableButton";
+import EditButton from "../components/common/EditButton";
+import CreateButton from "../components/common/CreateButton";
+import DeleteButton from "../components/common/DeleteButton";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Entity(props) {
+export default function Entity({}) {
   const classes = useStyles();
 
   const [keyword, setKeyword] = useState("");
@@ -93,15 +93,9 @@ export default function Entity(props) {
       <div className="row">
         <div className="col">
           <div className="float-left">
-            <Button
-              variant="outlined"
-              color="primary"
-              className={classes.button}
-              component={Link}
-              to={`/new-ui/entities/new`}
-            >
+            <CreateButton to={`/new-ui/entities/new`}>
               エンティティ作成
-            </Button>
+            </CreateButton>
             <Button
               className={classes.button}
               variant="outlined"
@@ -162,16 +156,9 @@ export default function Entity(props) {
                       <Typography>{entity.note}</Typography>
                     </TableCell>
                     <TableCell align="right">
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        className={classes.button}
-                        startIcon={<EditIcon />}
-                        component={Link}
-                        to={`/new-ui/entities/${entity.id}`}
-                      >
+                      <EditButton to={`/new-ui/entities/${entity.id}`}>
                         エンティティ編集
-                      </Button>
+                      </EditButton>
                       <Button
                         variant="contained"
                         color="primary"
@@ -192,17 +179,11 @@ export default function Entity(props) {
                       >
                         ACL
                       </Button>
-                      <ConfirmableButton
-                        variant="contained"
-                        color="secondary"
-                        className={classes.button}
-                        startIcon={<DeleteIcon />}
-                        component={Link}
-                        dialogTitle="本当に削除しますか？"
-                        onClickYes={(e) => handleDelete(e, entity.id)}
+                      <DeleteButton
+                        onConfirmed={(e) => handleDelete(e, entity.id)}
                       >
                         削除
-                      </ConfirmableButton>
+                      </DeleteButton>
                     </TableCell>
                   </TableRow>
                 ))}

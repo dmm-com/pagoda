@@ -4,9 +4,9 @@ import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 
-export default function AdvancedSearch(props) {
+export default function AdvancedSearch({}) {
   const [entities, setEntities] = useState([]);
 
   useEffect(() => {
@@ -56,17 +56,15 @@ export default function AdvancedSearch(props) {
         <div className="col">
           <Typography>検索する属性</Typography>
           <Select multiple native variant="outlined">
-            {entities.map((entity) => {
-              return (
-                <optgroup label={entity.name}>
-                  {entity.attributes.map((attribute) => (
-                    <option key="attribute" value={attribute.id}>
-                      {attribute.name}
-                    </option>
-                  ))}
-                </optgroup>
-              );
-            })}
+            {entities.map((entity) => (
+              <optgroup label={entity.name}>
+                {entity.attributes.map((attribute) => (
+                  <option key="attribute" value={attribute.id}>
+                    {attribute.name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
           </Select>
         </div>
       </div>

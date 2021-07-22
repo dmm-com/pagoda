@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function LeftMenu(props) {
+export default function LeftMenu({}) {
   const classes = useStyles();
   const [entities, setEntities] = useState([]);
 
