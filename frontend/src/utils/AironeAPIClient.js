@@ -1,4 +1,5 @@
 import { getCsrfToken } from "./DjangoUtils";
+import fileDownload from "js-file-download";
 
 export function getEntity(entityId) {
   return new Promise((resolve, _) => {
@@ -33,6 +34,13 @@ export function getEntityHistory(entityId) {
       },
     ]);
   });
+}
+
+// NOTE it calls non-API endpoint
+export function downloadExportedEntities(filename) {
+  return fetch("/entity/export/")
+    .then((resp) => resp.blob())
+    .then((blob) => fileDownload(blob, filename));
 }
 
 export function getEntry(entityId, entryId) {
@@ -148,6 +156,11 @@ export function deleteEntry(entryId) {
   });
 }
 
+// NOTE it calls non-API endpoint
+export function exportEntries(entityId, format) {
+  return fetch(`/entry/export/${entityId}?format=${format}`);
+}
+
 // FIXME implement internal API then call it
 export function getUsers() {
   return new Promise((resolve, _) => {
@@ -172,6 +185,13 @@ export function deleteUser(userId) {
     },
     body: JSON.stringify({}),
   });
+}
+
+// NOTE it calls non-API endpoint
+export function downloadExportedUsers(filename) {
+  return fetch("/user/export/")
+    .then((resp) => resp.blob())
+    .then((blob) => fileDownload(blob, filename));
 }
 
 // FIXME implement internal API then call it
@@ -204,6 +224,13 @@ export function deleteGroup(groupId) {
     },
     body: JSON.stringify({}),
   });
+}
+
+// NOTE it calls non-API endpoint
+export function downloadExportedGroups(filename) {
+  return fetch("/group/export/")
+    .then((resp) => resp.blob())
+    .then((blob) => fileDownload(blob, filename));
 }
 
 // FIXME implement internal API then call it

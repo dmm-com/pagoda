@@ -11,12 +11,14 @@ import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import EditIcon from "@material-ui/icons/Edit";
-import DeleteIcon from "@material-ui/icons/Delete";
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { deleteUser, getUsers } from "../utils/AironeAPIClient";
-import ConfirmableButton from "../components/common/ConfirmableButton";
+import {
+  deleteUser,
+  downloadExportedUsers,
+  getUsers,
+} from "../utils/AironeAPIClient";
 import EditButton from "../components/common/EditButton";
 import CreateButton from "../components/common/CreateButton";
 import DeleteButton from "../components/common/DeleteButton";
@@ -61,6 +63,7 @@ export default function User({}) {
               className={classes.button}
               variant="outlined"
               color="secondary"
+              onClick={() => downloadExportedUsers("user.yaml")}
             >
               エクスポート
             </Button>

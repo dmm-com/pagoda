@@ -9,7 +9,7 @@ import Tabs from "@material-ui/core/Tabs";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import EntryList from "../components/entry/EntryList";
 import { useAsync } from "react-use";
-import { getEntries } from "../utils/AironeAPIClient";
+import { exportEntries, getEntries } from "../utils/AironeAPIClient";
 import CreateButton from "../components/common/CreateButton";
 import EditButton from "../components/common/EditButton";
 
@@ -71,8 +71,16 @@ export default function Entry({}) {
               variant="outlined"
               color="secondary"
               className={classes.button}
+              onClick={() => exportEntries(entityId, "YAML")}
             >
-              エクスポート
+              YAML でエクスポート
+            </Button>
+            <Button
+              variant="contained"
+              className={classes.button}
+              onClick={() => exportEntries(entityId, "YAML")}
+            >
+              CSV でエクスポート
             </Button>
             <Button
               className={classes.button}
@@ -82,9 +90,6 @@ export default function Entry({}) {
               to={`/new-ui/import`}
             >
               インポート
-            </Button>
-            <Button variant="contained" className={classes.button}>
-              CSV で出力
             </Button>
           </div>
         </div>

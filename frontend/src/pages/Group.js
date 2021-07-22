@@ -15,7 +15,11 @@ import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { deleteGroup, getGroups } from "../utils/AironeAPIClient";
+import {
+  deleteGroup,
+  downloadExportedGroups,
+  getGroups,
+} from "../utils/AironeAPIClient";
 import CreateButton from "../components/common/CreateButton";
 import DeleteButton from "../components/common/DeleteButton";
 
@@ -59,6 +63,7 @@ export default function Group({}) {
               className={classes.button}
               variant="outlined"
               color="secondary"
+              onClick={() => downloadExportedGroups("user_group.yaml")}
             >
               エクスポート
             </Button>
