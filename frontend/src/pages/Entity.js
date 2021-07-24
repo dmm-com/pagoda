@@ -56,7 +56,7 @@ export default function Entity({}) {
               color="secondary"
               className={classes.button}
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/entities/import`}
             >
               インポート
             </Button>

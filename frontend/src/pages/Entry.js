@@ -87,7 +87,7 @@ export default function Entry({}) {
               variant="outlined"
               color="secondary"
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/entities/${entityId}/entries/import`}
             >
               インポート
             </Button>

@@ -72,7 +72,7 @@ export default function User({}) {
               variant="outlined"
               color="secondary"
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/users/import`}
             >
               インポート
             </Button>

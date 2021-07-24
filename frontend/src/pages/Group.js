@@ -72,7 +72,7 @@ export default function Group({}) {
               color="secondary"
               className={classes.button}
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/groups/import`}
             >
               インポート
             </Button>
