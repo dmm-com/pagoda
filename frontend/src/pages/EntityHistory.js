@@ -9,7 +9,8 @@ import {
 } from "@material-ui/core";
 import { getEntityHistory } from "../utils/AironeAPIClient";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { Link } from "react-router-dom";
+import {Link, useParams} from "react-router-dom";
+import {useAsync} from "react-use";
 
 const Operations = {
   ADD: 1 << 0,
@@ -34,12 +35,14 @@ const TargetOperation = {
 };
 
 export default function OperationHistory({}) {
-  const [history, setHistory] = useState([]);
+  const { entityId } = useParams();
 
-  useEffect(() => {
-    getEntityHistory().then((data) => setHistory(data));
-  }, []);
+  const history = useAsync(async() => {
+    return getEntityHistory(entityId)
+        .then(resp => resp.json());
+  });
 
+  console.log(history);
   return (
     <div className="container">
       <AironeBreadcrumbs>
@@ -60,7 +63,7 @@ export default function OperationHistory({}) {
         </TableHead>
 
         <TableBody>
-          {history.map((column) => (
+          {!history.loading && history.value.map((column) => (
             <TableRow>
               <TableCell>{column.user.username}</TableCell>
               <TableCell>
@@ -102,7 +105,7 @@ export default function OperationHistory({}) {
                             }
                           })()}
                         </TableCell>
-                        <TableCell>{detail.target_obj}</TableCell>
+                        <TableCell>{detail.target_obj.name}</TableCell>
                         <TableCell>{detail.text}</TableCell>
                       </TableRow>
                     ))}
