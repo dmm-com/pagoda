@@ -14,7 +14,7 @@ import SearchResults from "./pages/SearchResults";
 import AdvancedSearch from "./pages/AdvancedSearch";
 import EditEntity from "./pages/EditEntity";
 import EditEntry from "./pages/EditEntry";
-import OperationHistory from "./pages/OperationHistory";
+import EntityHistory from "./pages/EntityHistory";
 import ACL from "./pages/ACL";
 import Import from "./pages/Import";
 import EditUser from "./pages/EditUser";
@@ -55,7 +55,7 @@ function App() {
             />
             <Route
               path={basePath + "entities/:entityId/history"}
-              component={OperationHistory}
+              component={EntityHistory}
             />
             <Route path={basePath + "entities/new"} component={EditEntity} />
             <Route

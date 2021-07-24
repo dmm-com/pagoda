@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Table,
   TableBody,
@@ -9,8 +9,8 @@ import {
 } from "@material-ui/core";
 import { getEntityHistory } from "../utils/AironeAPIClient";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import {Link, useParams} from "react-router-dom";
-import {useAsync} from "react-use";
+import { Link, useParams } from "react-router-dom";
+import { useAsync } from "react-use";
 
 const Operations = {
   ADD: 1 << 0,
@@ -34,20 +34,21 @@ const TargetOperation = {
   DEL_ENTRY: Operations.DEL + Targets.ENTRY,
 };
 
-export default function OperationHistory({}) {
+export default function EntityHistory({}) {
   const { entityId } = useParams();
 
-  const history = useAsync(async() => {
-    return getEntityHistory(entityId)
-        .then(resp => resp.json());
+  const history = useAsync(async () => {
+    return getEntityHistory(entityId).then((resp) => resp.json());
   });
 
-  console.log(history);
   return (
     <div className="container">
       <AironeBreadcrumbs>
         <Typography component={Link} to="/new-ui/">
           Top
+        </Typography>
+        <Typography component={Link} to={`/new-ui/entities`}>
+          エンティティ一覧
         </Typography>
         <Typography color="textPrimary">変更履歴</Typography>
       </AironeBreadcrumbs>
@@ -63,58 +64,59 @@ export default function OperationHistory({}) {
         </TableHead>
 
         <TableBody>
-          {!history.loading && history.value.map((column) => (
-            <TableRow>
-              <TableCell>{column.user.username}</TableCell>
-              <TableCell>
-                {(() => {
-                  switch (column.operation) {
-                    case TargetOperation.ADD_ENTITY:
-                      return <Typography>作成</Typography>;
-                    case TargetOperation.MOD_ENTITY:
-                      return <Typography>変更</Typography>;
-                    case TargetOperation.DEL_ENTITY:
-                      return <Typography>削除</Typography>;
-                    default:
-                      return (
-                        <Typography>
-                          {column.operation} ({TargetOperation.ADD_ENTITY})
-                        </Typography>
-                      );
-                  }
-                })()}
-              </TableCell>
-              <TableCell>
-                <Table>
-                  <TableBody>
-                    {column.details.map((detail) => (
-                      <TableRow>
-                        <TableCell>
-                          {(() => {
-                            switch (detail.operation) {
-                              case TargetOperation.MOD_ENTITY:
-                                return <Typography>変更</Typography>;
-                              case TargetOperation.ADD_ATTR:
-                                return <Typography>属性追加</Typography>;
-                              case TargetOperation.MOD_ATTR:
-                                return <Typography>属性変更</Typography>;
-                              case TargetOperation.DEL_ATTR:
-                                return <Typography>属性削除</Typography>;
-                              default:
-                                return <Typography />;
-                            }
-                          })()}
-                        </TableCell>
-                        <TableCell>{detail.target_obj.name}</TableCell>
-                        <TableCell>{detail.text}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableCell>
-              <TableCell>{column.time}</TableCell>
-            </TableRow>
-          ))}
+          {!history.loading &&
+            history.value.map((column) => (
+              <TableRow>
+                <TableCell>{column.user.username}</TableCell>
+                <TableCell>
+                  {(() => {
+                    switch (column.operation) {
+                      case TargetOperation.ADD_ENTITY:
+                        return <Typography>作成</Typography>;
+                      case TargetOperation.MOD_ENTITY:
+                        return <Typography>変更</Typography>;
+                      case TargetOperation.DEL_ENTITY:
+                        return <Typography>削除</Typography>;
+                      default:
+                        return (
+                          <Typography>
+                            {column.operation} ({TargetOperation.ADD_ENTITY})
+                          </Typography>
+                        );
+                    }
+                  })()}
+                </TableCell>
+                <TableCell>
+                  <Table>
+                    <TableBody>
+                      {column.details.map((detail) => (
+                        <TableRow>
+                          <TableCell>
+                            {(() => {
+                              switch (detail.operation) {
+                                case TargetOperation.MOD_ENTITY:
+                                  return <Typography>変更</Typography>;
+                                case TargetOperation.ADD_ATTR:
+                                  return <Typography>属性追加</Typography>;
+                                case TargetOperation.MOD_ATTR:
+                                  return <Typography>属性変更</Typography>;
+                                case TargetOperation.DEL_ATTR:
+                                  return <Typography>属性削除</Typography>;
+                                default:
+                                  return <Typography />;
+                              }
+                            })()}
+                          </TableCell>
+                          <TableCell>{detail.target_obj.name}</TableCell>
+                          <TableCell>{detail.text}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableCell>
+                <TableCell>{column.time}</TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
     </div>

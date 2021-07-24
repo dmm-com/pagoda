@@ -15,24 +15,7 @@ export function getEntities() {
 }
 
 export function getEntityHistory(entityId) {
-  return new Promise((resolve, _) => {
-    resolve([
-      {
-        user: {
-          username: "test",
-        },
-        operation: (1 << 0) + (1 << 3), // ADD_ENTITY
-        details: [
-          {
-            operation: (1 << 1) + (1 << 4), // MOD_ATTR
-            target_obj: "test_attr",
-            text: "mod test_attr",
-          },
-        ],
-        time: "2021-01-01 00:00:00",
-      },
-    ]);
-  });
+  return fetch(`/entity/api/v2/history/${entityId}`);
 }
 
 export function getEntry(entityId, entryId) {
