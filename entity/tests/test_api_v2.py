@@ -1,8 +1,8 @@
 import json
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeText
-from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
+from airone.lib.types import AttrTypeStr, AttrTypeText
+from airone.lib.types import AttrTypeArrStr
 from airone.lib.types import AttrTypeValue
 from django.urls import reverse
 from entity import tasks
@@ -14,7 +14,7 @@ from unittest import mock
 class ViewTest(AironeViewTest):
     @mock.patch('entity.tasks.create_entity.delay', mock.Mock(side_effect=tasks.create_entity))
     def test_history(self):
-        user = self.guest_login()
+        self.guest_login()
 
         params = {
             'name': 'hoge',
