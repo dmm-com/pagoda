@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { grey } from "@material-ui/core/colors";
 import { fade, makeStyles } from "@material-ui/core/styles";
@@ -69,8 +69,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Header({}) {
   const classes = useStyles();
-
-  useEffect(() => {}, []);
 
   const [userAnchorEl, setUserAnchorEl] = useState();
   const [jobAnchorEl, setJobAnchorEl] = useState();

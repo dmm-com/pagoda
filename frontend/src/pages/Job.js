@@ -1,19 +1,8 @@
 import { makeStyles } from "@material-ui/core/styles";
-import React, { useEffect, useState } from "react";
-import {
-  List,
-  ListItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@material-ui/core";
+import React from "react";
 import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
-import Paper from "@material-ui/core/Paper";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import { getJobs } from "../utils/AironeAPIClient";
 import { useAsync } from "react-use";
