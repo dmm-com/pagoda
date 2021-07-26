@@ -9,6 +9,7 @@
 * Fixed the result being different depending on the hint_attr_value of
   search_entries (#158)
 * Fixed a problem in the processing of import entry (#159)
+* Fixed LDAP error output due to authentication failed (#179)
 
 ## v3.1.0
 
