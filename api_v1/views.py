@@ -120,10 +120,15 @@ class EntryAPI(APIView):
         param_entry_id = request.GET.get('entry_id')
         param_entry_name = request.GET.get('entry')
         param_entity = request.GET.get('entity')
+        param_offset = request.GET.get('offset', '0')
         if not (param_entry_name or param_entry_id or param_entity):
             return Response(
                     {'result': 'Parameter any of "entry", "entry_id" or "entity" is mandatory'},
                     status=status.HTTP_400_BAD_REQUEST)
+
+        if not param_offset.isdigit():
+            return Response({'result': 'Parameter "offset" is numerically'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         entity = None
         if param_entity:
@@ -145,7 +150,6 @@ class EntryAPI(APIView):
         elif param_entry_name:
             query = Q(query, name=param_entry_name)
 
-        param_offset = request.GET.get('offset', 0)
         retinfo = [x.to_dict(user) for x in
                    Entry.objects.filter(query)[int(param_offset):
                                                int(param_offset) + ENTRY_CONFIG.MAX_LIST_ENTRIES]]
