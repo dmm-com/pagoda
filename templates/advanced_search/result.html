@@ -56,27 +56,27 @@
   <tbody id='main_table'>
     {% for result in results.ret_values %}
     <tr>
-      <th><a href='/entry/show/{{ result.entry.id }}'>{{ result.entry.name }} [{{ result.entity.name }}]</a></th>
+      <th id='entry_name'><a href='/entry/show/{{ result.entry.id }}'>{{ result.entry.name }} [{{ result.entity.name }}]</a></th>
 
       {% for hint_attr in hint_attrs %}
         {% with result.attrs|get_item:hint_attr.name as attr %}
           {% if attr.type == attr_type.string %}
-            <td>{{ attr.value }}</td>
+            <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
 
           {% elif attr.type == attr_type.textarea %}
-            <td>{{ attr.value }}</td>
+            <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
 
           {% elif attr.type == attr_type.boolean %}
-            <td>{{ attr.value }}</td>
+            <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
 
           {% elif attr.type == attr_type.date %}
-            <td>{{ attr.value }}</td>
+            <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
 
           {% elif attr.type == attr_type.entry %}
-            <td><a href='/entry/show/{{ attr.value.id }}'>{{ attr.value.name }}</a></td>
+            <td id='{{ hint_attr.name }}'><a href='/entry/show/{{ attr.value.id }}'>{{ attr.value.name }}</a></td>
 
           {% elif attr.type == attr_type.named_entry %}
-            <td>
+            <td id='{{ hint_attr.name }}'>
               {% for key, value in attr.value.items %}
               <div class='row'>
                 <div class='col'>
@@ -90,10 +90,10 @@
             </td>
 
           {% elif attr.type == attr_type.group %}
-            <td><a href='/group/'>{{ attr.value.name }}</a></td>
+            <td id='{{ hint_attr.name }}'><a href='/group/'>{{ attr.value.name }}</a></td>
 
           {% elif attr.type == attr_type.array_string %}
-            <td>
+            <td id='{{ hint_attr.name }}'>
               <ul class='list-group'>
               {% for value in attr.value %}
                 <li class='list-group-item'>{{ value }}</li>
@@ -102,7 +102,7 @@
             </td>
 
           {% elif attr.type == attr_type.array_entry %}
-            <td>
+            <td id='{{ hint_attr.name }}'>
               <ul class='list-group'>
               {% for value in attr.value %}
                 <li class='list-group-item'><a href='/entry/show/{{ value.id }}'>{{ value.name }}</a></li>
@@ -111,7 +111,7 @@
             </td>
 
           {% elif attr.type == attr_type.array_group %}
-            <td>
+            <td id='{{ hint_attr.name }}'>
               <ul class='list-group'>
               {% for value in attr.value %}
                 <li class='list-group-item'><a href='/group'>{{ value.name }}</a></li>
@@ -120,7 +120,7 @@
             </td>
 
           {% elif attr.type == attr_type.array_named_entry %}
-            <td>
+            <td id='{{ hint_attr.name }}'>
               <ul class='list-group'>
               {% for item in attr.value %}
                 {% for key, value in item.items %}
@@ -140,14 +140,14 @@
             </td>
 
           {% else %}
-            <td></td>
+            <td id='{{ hint_attr.name }}'></td>
 
           {% endif %}
         {% endwith %}
       {% endfor %}
 
       {% if has_referral %}
-      <td>
+      <td id='referral'>
         <ul class='list-group'>
           {% for referral in result.referrals %}
           <li class='list-group-item'>
