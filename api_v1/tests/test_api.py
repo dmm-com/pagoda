@@ -958,3 +958,33 @@ class APITest(AironeViewTest):
 
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_DELETE_ENTRY.value)
         self.assertEqual(job_notify.status, Job.STATUS['DONE'])
+
+    def test_update_entry_that_has_deleted_attribute(self):
+        """
+        This is a test for #186 (Failed to update an entry that has deleted attribute via API)
+        """
+        user = self.guest_login()
+
+        # create Entity and Entry which are used in this test case
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        attr_params = {'name': 'attr', 'type': AttrTypeValue['string'],
+                       'created_user': user, 'parent_entity': entity}
+        entity.attrs.add(EntityAttr.objects.create(**attr_params))
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
+
+        # delete and create EntityAttr, then complement Entry Attribute
+        entity.attrs.get(name='attr').delete()
+        entity.attrs.add(EntityAttr.objects.create(**attr_params))
+        entry.complement_attrs(user)
+
+        params = {
+            'entity': entity.name,
+            'id': entry.id,
+            'name': entry.name,
+            'attrs': {
+                'attr': 'hoge'
+            }
+        }
+        resp = self.client.post('/api/v1/entry', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
