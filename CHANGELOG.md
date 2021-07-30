@@ -10,6 +10,7 @@
   search_entries (#158)
 * Fixed a problem in the processing of import entry (#159)
 * Fixed LDAP error output due to authentication failed (#179)
+* Fixed a bug that raises an exception at API handler of update entry (#186)
 
 ## v3.1.0
 
