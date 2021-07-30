@@ -68,7 +68,8 @@ MessageBox._showMessage = function(text, style) {
   var content = '<div class="alert alert-dismissible ' + style + ' fade show in" role="alert">'+
     '<button type="button" class="close" data-dismiss="alert" aria-label="close">' +
       '<span aria-hidden="true">&times;</span>' +
-    '</button>' + text + '</div>';
+    '</button>' +
+    '<a id="message">' + text + '</a></div>';
   $(".airone-messagebox").html(content);
   $(".alert").alert();
 };

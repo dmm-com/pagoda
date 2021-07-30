@@ -95,7 +95,7 @@ class EntryAPI(APIView):
             if not entry.attrs.filter(name=name).exists():
                 continue
 
-            attr = entry.attrs.get(name=name)
+            attr = entry.attrs.get(schema__name=name, is_active=True)
             if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(value):
                 attr.add_value(user, value)
 
