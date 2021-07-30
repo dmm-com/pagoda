@@ -10,6 +10,7 @@
   search_entries (#158)
 * Fixed a problem in the processing of import entry (#159)
 * Fixed a warning log with an SSL connection to the extarnal (#182)
+* Fixed a bug that raises an exception at API handler of update entry (#186)
 
 ## v3.1.0
 

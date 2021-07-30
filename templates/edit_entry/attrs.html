@@ -4,7 +4,7 @@
   <td>
     {% if attr.is_mandatory %}<strong>(*)</strong>{% endif %}{{ attr.name }}
   </td>
-  <td>
+  <td id='{{ attr.name }}'>
     {% if attr.type|bitwise_and:attr_type_value.array %}
       <div>
         <button type="button" class="btn btn-primary btn-sm" name='add_attr' attr_id="{{ attr.id }}">add row</button>
