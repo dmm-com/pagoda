@@ -14,6 +14,9 @@ import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import DeleteButton from "../common/DeleteButton";
 import PropTypes from "prop-types";
+import { deleteEntry, restoreEntry } from "../../utils/AironeAPIClient";
+import ConfirmableButton from "../common/ConfirmableButton";
+import RestoreIcon from "@material-ui/icons/Restore";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -24,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EntryList({ entityId, entries }) {
+export default function EntryList({ entityId, entries, restoreMode = false }) {
   const classes = useStyles();
   const history = useHistory();
 
@@ -42,6 +45,10 @@ export default function EntryList({ entityId, entries }) {
 
   const handleDelete = (event, entryId) => {
     deleteEntry(entryId).then((_) => history.go(0));
+  };
+
+  const handleRestore = (event, entryId) => {
+    restoreEntry(entryId).then((_) => history.go(0));
   };
 
   const handleChangePage = (event, newPage) => {
@@ -90,11 +97,25 @@ export default function EntryList({ entityId, entries }) {
                     </Typography>
                   </TableCell>
                   <TableCell align="right">
-                    <DeleteButton
-                      onConfirmed={(e) => handleDelete(e, entry.id)}
-                    >
-                      削除
-                    </DeleteButton>
+                    {restoreMode ? (
+                      <ConfirmableButton
+                        variant="contained"
+                        color="primary"
+                        className={classes.button}
+                        startIcon={<RestoreIcon />}
+                        component={Link}
+                        dialogTitle="本当に復旧しますか？"
+                        onClickYes={(e) => handleRestore(e, entry.id)}
+                      >
+                        Restore
+                      </ConfirmableButton>
+                    ) : (
+                      <DeleteButton
+                        onConfirmed={(e) => handleDelete(e, entry.id)}
+                      >
+                        削除
+                      </DeleteButton>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -117,4 +138,5 @@ export default function EntryList({ entityId, entries }) {
 EntryList.propTypes = {
   entityId: PropTypes.number.isRequired,
   entries: PropTypes.array.isRequired,
+  restoreMode: PropTypes.bool,
 };

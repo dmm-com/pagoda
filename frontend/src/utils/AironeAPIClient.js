@@ -49,8 +49,11 @@ export function getEntry(entityId, entryId) {
   });
 }
 
-export function getEntries(entityId) {
-  return fetch(`/entry/api/v1/get_entries/${entityId}`);
+export function getEntries(entityId, isActive = true) {
+  const isActiveParam = isActive ? "True" : "False";
+  return fetch(
+    `/entry/api/v1/get_entries/${entityId}?is_active=${isActiveParam}`
+  );
 }
 
 export function getAdvancedSearchResults() {
@@ -140,6 +143,18 @@ export function createEntry(entityId, name, attrs) {
 // FIXME implement internal API then call it
 export function deleteEntry(entryId) {
   return fetch(`/entry/do_delete/${entryId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({}),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function restoreEntry(entryId) {
+  return fetch(`/entry/do_restore/${entryId}/`, {
     method: "POST",
     headers: {
       "X-CSRFToken": getCsrfToken(),
