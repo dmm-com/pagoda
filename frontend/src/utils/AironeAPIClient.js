@@ -148,6 +148,42 @@ export function deleteEntry(entryId) {
   });
 }
 
+export function copyEntry(entryId, entries) {
+  return fetch(`/entry/do_copy/${entryId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      entries: entries,
+    }),
+  });
+}
+
+export function getEntryHistory(entryId) {
+  return new Promise((resolve, _) => {
+    resolve([
+      {
+        attr_name: "test",
+        prev: {
+          created_user: "admin",
+          created_time: new Date().toDateString(),
+          value: "before",
+        },
+        curr: {
+          created_user: "admin",
+          created_time: new Date().toDateString(),
+          value: "after",
+        },
+      },
+    ]);
+  });
+}
+
+export function getReferredEntries(entryId) {
+  return fetch(`/entry/api/v1/get_referrals/${entryId}`);
+}
+
 // FIXME implement internal API then call it
 export function getUsers() {
   return new Promise((resolve, _) => {

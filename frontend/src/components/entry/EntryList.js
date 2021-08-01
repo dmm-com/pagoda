@@ -14,7 +14,6 @@ import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import DeleteButton from "../common/DeleteButton";
 import PropTypes from "prop-types";
-import EntityList from "../entity/EntityList";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -85,7 +84,7 @@ export default function EntryList({ entityId, entries }) {
                   <TableCell>
                     <Typography
                       component={Link}
-                      to={`/new-ui/entities/${entityId}/entries/${entry.id}`}
+                      to={`/new-ui/entities/${entityId}/entries/${entry.id}/show`}
                     >
                       {entry.name}
                     </Typography>

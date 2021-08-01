@@ -20,6 +20,7 @@ import Import from "./pages/Import";
 import EditUser from "./pages/EditUser";
 import EditUserPassword from "./pages/EditUserPassword";
 import EditGroup from "./pages/EditGroup";
+import ShowEntry from "./pages/ShowEntry";
 
 const basePath = "/new-ui/";
 
@@ -46,6 +47,10 @@ function App() {
               component={EditEntry}
             />
             <Route
+              path={basePath + "entities/:entityId/entries/:entryId/show"}
+              component={ShowEntry}
+            />
+            <Route
               path={basePath + "entities/:entityId/entries/:entryId"}
               component={EditEntry}
             />
@@ -68,7 +73,7 @@ function App() {
             <Route path={basePath + "groups"} component={Group} />
             <Route path={basePath + "import"} component={Import} />
             <Route path={basePath + "jobs"} component={Job} />
-            <Route path={basePath + "acl/:objectId"} component={ACL} />
+            <Route path={basePath + "acl/:entityId"} component={ACL} />
             <Route path={basePath + "search"} component={SearchResults} />
             <Route path={basePath + "users/new"} component={EditUser} />
             <Route
