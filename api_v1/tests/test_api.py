@@ -670,6 +670,19 @@ class APITest(AironeViewTest):
         self.assertEqual(len(resp.json()), ENTRY_CONFIG.MAX_LIST_ENTRIES)
         self.assertEqual([x['name'] for x in resp.json()], ['bar', 'baz'])
 
+    def test_get_entry_with_invalid_offset(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        Entry.objects.create(name='entry', schema=entity, created_user=user)
+
+        # Send a request with an invalid offset parameter
+        offset_params = ['-1', 'str']
+        for param in offset_params:
+            resp = self.client.get('/api/v1/entry', {'entity': 'Entity', 'offset': param})
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.json()['result'], 'Parameter "offset" is numerically')
+
     def test_get_deleted_entry(self):
         user = self.guest_login()
 

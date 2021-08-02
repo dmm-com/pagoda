@@ -12,6 +12,7 @@
 * Fixed `urls` to avoid some warnings (#174)
 * Fixed LDAP error output due to authentication failed (#179)
 * Fixed a warning log with an SSL connection to the extarnal (#182)
+* Fixed an exception error when specifying an invalid offset in GET entry API (#183)
 * Fixed a bug that raises an exception at API handler of update entry (#186)
 
 ## v3.1.0
