@@ -39,7 +39,7 @@ class EntityResource(AironeModelResource):
 
         # Set event handler for custom-view. When it returns not None, then it abort to import.
         if custom_view.is_custom('import_entity'):
-            error = custom_view.call_custom('import_entity', None, data)
+            error = custom_view.call_custom('import_entity', None, instance, data)
             if error:
                 raise RuntimeError(error)
 
