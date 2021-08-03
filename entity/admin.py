@@ -37,6 +37,12 @@ class EntityResource(AironeModelResource):
             if 'id' not in data or not data['id'] or entity.id != data['id']:
                 raise RuntimeError('There is a duplicate entity object (%s)' % data['name'])
 
+        # Set event handler for custom-view. When it returns not None, then it abort to import.
+        if custom_view.is_custom('import_entity'):
+            error = custom_view.call_custom('import_entity', None, data)
+            if error:
+                raise RuntimeError(error)
+
         super(EntityResource, self).import_obj(instance, data, dry_run)
 
 
@@ -86,8 +92,8 @@ class EntityAttrResource(AironeModelResource):
             raise RuntimeError("The parameter 'type' is mandatory when a new EntityAtter create")
 
         # Set event handler for custom-view. When it returns not None, then it abort to import.
-        if custom_view.is_custom('import_obj'):
-            error = custom_view.call_custom('import_obj')
+        if custom_view.is_custom('import_entity_attr'):
+            error = custom_view.call_custom('import_entity_attr', None, data)
             if error:
                 raise RuntimeError(error)
 
