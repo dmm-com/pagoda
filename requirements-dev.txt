@@ -21,3 +21,4 @@ requests==2.20.0
 mypy
 types-six
 types-requests
+requests-html==0.10.0
