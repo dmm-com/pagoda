@@ -1,3 +1,5 @@
+import custom_view
+
 from import_export import fields, widgets
 from django.contrib import admin
 from .models import EntityAttr
@@ -82,6 +84,12 @@ class EntityAttrResource(AironeModelResource):
         # The processing fails when 'type' parameter is not existed for creating a new instance
         if not instance.pk and not data['type']:
             raise RuntimeError("The parameter 'type' is mandatory when a new EntityAtter create")
+
+        # Set event handler for custom-view. When it returns not None, then it abort to import.
+        if custom_view.is_custom('import_obj'):
+            error = custom_view.call_custom('import_obj')
+            if error:
+                raise RuntimeError(error)
 
         # Do not allow to change type when instance is already created
         if instance.pk:
