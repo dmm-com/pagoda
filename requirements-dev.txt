@@ -1,6 +1,8 @@
 six==1.10.0
 django-import-export==2.5.0
 django==3.2.4
+social-auth-app-django==4.0.0
+social-auth-core==3.3.0
 mock==2.0.0
 coverage>=4.4.1
 celery==4.4.7

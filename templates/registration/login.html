@@ -9,6 +9,14 @@
         <input name="next" type="hidden" value="{{ request.GET.next }}"></input>
       {% endif %}
     </form>
-    <p>If you forget your password, you can <a href="{% url 'user:password_reset' %}">Reset Password</a>.</p>
+    <p>
+      <a href="{% url 'social:begin' 'google-oauth2' %}">Google OAuth</a>
+    </p>
+    <p>
+      If you forget your password, you can <a href="{% url 'user:password_reset' %}">Reset Password</a>.
+    </p>
+    <p>
+      <a href="{% url 'index' %}">戻る</a>
+    </p>
   </body>
 </html>
