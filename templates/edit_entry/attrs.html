@@ -4,6 +4,10 @@
   <td>
     {% if attr.is_mandatory %}<strong>(*)</strong>{% endif %}{{ attr.name }}
   </td>
+  {% if not attr.id %}
+  <td>
+    <span>Attribute not found.</span>
+  {% else %}
   <td id='{{ attr.name }}'>
     {% if attr.type|bitwise_and:attr_type_value.array %}
       <div>
@@ -144,10 +148,13 @@
       <input type="text" class="form-control attr_value" attr_id="{{ attr.id }}" enabled="True" value="{{ attr.last_value }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}/>
 
     {% endif %}
+  {% endif %}
   </td>
   {% if is_edit %}
   <td>
-    <a href="/acl/{{ attr.id }}"><button type="button" class="btn btn-info btn-sm">ACL</button></a>
+    {% if attr.id %}
+      <a href="/acl/{{ attr.id }}"><button type="button" class="btn btn-info btn-sm">ACL</button></a>
+    {% endif %}
   </td>
   {% endif %}
 </tr>

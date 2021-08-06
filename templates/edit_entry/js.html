@@ -4,6 +4,7 @@ var get_register_attrs = function(base) {
   var attrs = []
 
   {% for attr in attributes %}
+  {% if attr.id %}
   attrs.push({
     'id': '{{ attr.id }}',
     'type': '{{ attr.type }}',
@@ -18,6 +19,7 @@ var get_register_attrs = function(base) {
       return {'data': $(e).val(), 'index': $(e).attr('index')};
     }).get(),
   });
+  {% endif %}
   {% endfor %}
 
   return attrs;

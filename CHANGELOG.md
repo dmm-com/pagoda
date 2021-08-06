@@ -5,6 +5,7 @@
 ### Changed
 * Update Django to version 3.2.4 LTS (#153)
 * Changed to complement_attrs when adding the attribute of the entity (#166)
+* Changed not to complement attribute values with GET method (#166)
 
 ### Fixed
 * Fixed the result being different depending on the hint_attr_value of

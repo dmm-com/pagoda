@@ -954,6 +954,19 @@ class ModelTest(AironeTestCase):
         self.assertEqual([int(x.value) for x in latest_value.data_array.all()],
                          [x.id for x in test_groups])
 
+    def test_get_missing_attrs(self):
+        user = User.objects.create(username='hoge')
+        entity = self.create_entity_with_all_type_attributes(user)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+
+        missing_attrs = entry.get_missing_attrs()
+        self.assertEqual(sorted(missing_attrs, key=lambda x: x.id),
+                         [x for x in entity.attrs.all()])
+
+        entry.complement_attrs(user)
+        missing_attrs = entry.get_missing_attrs()
+        self.assertEqual(missing_attrs, [])
+
     def test_get_available_attrs(self):
         user = User.objects.create(username='hoge')
         test_group = Group.objects.create(name='test-group')

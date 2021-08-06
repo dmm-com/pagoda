@@ -230,7 +230,7 @@ def edit(request, entry_id):
     if not entry.is_active:
         return _redirect_restore_entry(entry)
 
-    entry.complement_attrs(user)
+    missing_attrs = entry.get_missing_attrs()
 
     context = {
         'entry': entry,
@@ -239,6 +239,15 @@ def edit(request, entry_id):
         'form_url': '/entry/do_edit/%s' % entry.id,
         'redirect_url': '/entry/show/%s' % entry.id,
     }
+
+    context['attributes'].extend([{
+        'id': None,
+        'name': x.name,
+        'type': x.type,
+        'is_mandatory': x.is_mandatory,
+        'index': x.index,
+        'last_value': ''
+    } for x in missing_attrs])
 
     if custom_view.is_custom("edit_entry", entry.schema.name):
         # show custom view
@@ -329,13 +338,22 @@ def show(request, entry_id):
     if not entry.is_active:
         return _redirect_restore_entry(entry)
 
-    # create new attributes which are appended after creation of Entity
-    entry.complement_attrs(user)
+    # check for new attributes which are appended after creation of Entity
+    missing_attrs = entry.get_missing_attrs()
 
     context = {
         'entry': entry,
         'attributes': entry.get_available_attrs(user),
     }
+
+    context['attributes'].extend([{
+        'id': None,
+        'name': x.name,
+        'type': x.type,
+        'is_mandatory': x.is_mandatory,
+        'index': x.index,
+        'last_value': ''
+    } for x in missing_attrs])
 
     if custom_view.is_custom("show_entry", entry.schema.name):
         # show custom view

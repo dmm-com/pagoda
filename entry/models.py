@@ -19,6 +19,7 @@ from airone.lib.elasticsearch import (
     ESS, make_query, execute_query, make_search_results, is_date_check)
 from airone.lib import auto_complement
 from airone.lib.db import get_slave_db
+from airone.lib.log import Logger
 
 from .settings import CONFIG
 
@@ -1071,6 +1072,21 @@ class Entry(ACLBase):
             # When multiple requests to add new Attribute came here, multiple Attriutes
             # might be existed. If there were, this would delete new one.
             self.may_remove_duplicate_attr(newattr)
+
+    def get_missing_attrs(self):
+        """
+        This method returns the missing attributes as an array.
+        Returns empty unless the entity is editting.
+        """
+        missing_attrs = []
+        for attr_id in (set(self.schema.attrs.filter(is_active=True).values_list('id', flat=True)) -
+                        set(self.attrs.filter(is_active=True).values_list('schema', flat=True))):
+            entity_attr = self.schema.attrs.get(id=attr_id)
+            missing_attrs.append(entity_attr)
+            Logger.warning('attribute(%s) does not exist in entry(%s)' %
+                           (entity_attr.name, self.name))
+
+        return missing_attrs
 
     def get_available_attrs(self, user, permission=ACLType.Readable, get_referral_entries=False,
                             is_active=True):
