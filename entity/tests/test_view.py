@@ -314,7 +314,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(entity.attrs.count(), 2)
-        self.assertEqual(entry.attrs.count(), 1)
+        self.assertEqual(entry.attrs.count(), 2)
 
     def test_post_edit_attribute_type(self):
         user = self.admin_login()

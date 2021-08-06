@@ -3,6 +3,7 @@ import json
 from airone.lib.types import AttrTypeValue
 from airone.celery import app
 from entity.models import Entity, EntityAttr
+from entry.models import Entry
 from user.models import User
 from job.models import Job
 
@@ -77,6 +78,7 @@ def edit_entity(self, job_id):
         entity.note = recv_data['note']
 
         # update processing for each attrs
+        is_new_attr = False
         for attr in recv_data['attrs']:
             if 'deleted' in attr:
                 # In case of deleting attribute which has been already existed
@@ -121,6 +123,7 @@ def edit_entity(self, job_id):
                     attr_obj.save()
 
             else:
+                is_new_attr = True
                 # In case of creating new attribute
                 attr_obj = EntityAttr.objects.create(name=attr['name'],
                                                      type=int(attr['type']),
@@ -139,6 +142,15 @@ def edit_entity(self, job_id):
 
                 # register History to register adding EntityAttr
                 history.add_attr(attr_obj)
+
+        # if a new attribute is added, it complements the attribute of the created entry
+        if is_new_attr:
+            created_entry_list = Entry.objects.filter(schema=entity, is_active=True)
+            total_count = len(created_entry_list)
+            for (index, entry) in enumerate(created_entry_list):
+                entry.complement_attrs(user)
+                job.text = 'Now Editing... (progress: [%5d/%5d])' % (index + 1, total_count)
+                job.save(update_fields=['text'])
 
         # clear flag to specify this entity has been completed to edit
         entity.del_status(Entity.STATUS_EDITING)

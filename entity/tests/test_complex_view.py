@@ -109,10 +109,6 @@ class ComplexViewTest(AironeViewTest):
                                 'application/json')
         self.assertEqual(resp.status_code, 200)
 
-        # Checks that the Attributes associated to the added EntityAttrs are not created
-        self.assertEqual(entity.attrs.count(), 3)
-        self.assertEqual(entry.attrs.count(), 1)
-
         resp = self.client.get(reverse('entry:show', args=[entry.id]))
         self.assertEqual(resp.status_code, 200)
 
