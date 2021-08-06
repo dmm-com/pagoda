@@ -4,6 +4,7 @@
 
 ### Changed
 * Update Django to version 3.2.4 LTS (#153)
+* Changed the HTTP method on the entry.export page from GET to POST (#166)
 
 ### Fixed
 * Fixed the result being different depending on the hint_attr_value of
