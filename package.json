@@ -7,7 +7,9 @@
     "doc": "docs"
   },
   "scripts": {
-    "build": "webpack build --mode development",
+    "build": "npm run build:development",
+    "build:development": "webpack build --mode development",
+    "build:production": "webpack build --mode production",
     "lint": "npx prettier --check frontend/",
     "fmt": "npx prettier --write frontend/",
     "test": "npx jest frontend"
