@@ -1,70 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { useParams, Link, useHistory } from "react-router-dom";
-import { makeStyles } from "@material-ui/core/styles";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-} from "@material-ui/core";
+import React from "react";
+import { useParams, Link } from "react-router-dom";
 import Typography from "@material-ui/core/Typography";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
-import { createEntry, getEntity, getEntry } from "../utils/AironeAPIClient";
-import Button from "@material-ui/core/Button";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { getEntry } from "../utils/AironeAPIClient";
+import { useAsync } from "react-use";
+import EntryForm from "../components/entry/EntryForm";
 
-const useStyles = makeStyles((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-}));
-
-export default function EditEntry(props) {
-  const classes = useStyles();
-  const history = useHistory();
-
+export default function EditEntry({}) {
   const { entityId, entryId } = useParams();
-  const [name, setName] = useState("");
-  const [attributes, setAttributes] = useState([]);
 
-  useEffect(() => {
+  const entry = useAsync(async () => {
     if (entryId !== undefined) {
-      getEntry(entityId, entryId).then((data) => {
-        setName(data.name);
-        setAttributes(data.attributes);
-      });
+      return getEntry(entityId, entryId);
     }
-  }, []);
-
-  const onChangeName = (event) => {
-    setName(event.target.value);
-  };
-
-  const onChangeAttribute = (event) => {
-    attributes[event.target.name] = event.target.value;
-    const updated = attributes.map((attribute) => {
-      if (attribute.name === event.target.name) {
-        attribute.value = event.target.value;
-      }
-      return attribute;
-    });
-    setAttributes(updated);
-  };
-
-  const handleSubmit = (event) => {
-    const attrs = attributes.map((attribute) => {
-      return {
-        id: "4",
-        type: "2",
-        value: [{ data: attribute.name }],
-      };
-    });
-    createEntry(entityId, name, attrs)
-      .then((resp) => resp.json())
-      .then((_) => history.push(`/new-ui/entities/${entityId}/entries`));
-
-    event.preventDefault();
-  };
+    return Promise.resolve({});
+  });
 
   return (
     <div>
@@ -84,54 +34,14 @@ export default function EditEntry(props) {
         <Typography color="textPrimary">編集</Typography>
       </AironeBreadcrumbs>
 
-      <form onSubmit={handleSubmit}>
-        <div className="row">
-          <div className="col">
-            <div className="float-right">
-              <Button
-                className={classes.button}
-                type="submit"
-                variant="contained"
-                color="secondary"
-              >
-                保存
-              </Button>
-            </div>
-            <Table className="table table-bordered">
-              <TableBody>
-                <TableRow>
-                  <TableCell>エントリ名</TableCell>
-                  <TableCell>
-                    <input type="text" value={name} onChange={onChangeName} />
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-        <Table className="table table-bordered">
-          <TableHead>
-            <TableCell>属性</TableCell>
-            <TableCell>属性値</TableCell>
-          </TableHead>
-          <TableBody>
-            {attributes.map((attribute) => (
-              <TableRow>
-                <TableCell>{attribute.name}</TableCell>
-                <TableCell>
-                  <input
-                    type="text"
-                    name={attribute.name}
-                    value={attribute.value}
-                    onChange={onChangeAttribute}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <strong>(*)</strong> は必須項目
-      </form>
+      {!entry.loading && (
+        <EntryForm
+          entityId={entityId}
+          entryId={entityId}
+          initName={entry.value.name}
+          initAttributes={entry.value.attributes}
+        />
+      )}
     </div>
   );
 }

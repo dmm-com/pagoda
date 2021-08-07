@@ -8,6 +8,16 @@
 <body>
   <div id="app" class="columns"><!-- React --></div>
 
+  <script type="text/javascript">
+      window.django_context = {
+          version: "{{version}}",
+          user: {
+              id: {{user.id}},
+              is_superuser: {{user.is_superuser|yesno:"true,false"}},
+          },
+      };
+  </script>
   <script src="/static/js/new-ui.js"></script>
+
 </body>
 </html>

@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import SettingsIcon from "@material-ui/icons/Settings";
-import AironeBreadcrumbs from "../components/AironeBreadcrumbs";
+import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import { getAdvancedSearchResults } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function SearchResults(props) {
+export default function SearchResults({}) {
   const classes = useStyles();
   const [results, setResults] = useState([]);
 
@@ -85,31 +85,27 @@ export default function SearchResults(props) {
         <Table>
           <TableHead>
             <TableRow>
-              {fields.map((field) => {
-                return (
-                  <TableCell>
-                    <Typography>{field}</Typography>
-                  </TableCell>
-                );
-              })}
+              {fields.map((field) => (
+                <TableCell>
+                  <Typography>{field}</Typography>
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {results.map((result) => {
-              return (
-                <TableRow>
-                  {fields.map((field) => {
-                    if (field in result) {
-                      return (
-                        <TableCell>
-                          <Typography>{result[field]}</Typography>
-                        </TableCell>
-                      );
-                    }
-                  })}
-                </TableRow>
-              );
-            })}
+            {results.map((result) => (
+              <TableRow>
+                {fields.map((field) => {
+                  if (field in result) {
+                    return (
+                      <TableCell>
+                        <Typography>{result[field]}</Typography>
+                      </TableCell>
+                    );
+                  }
+                })}
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>

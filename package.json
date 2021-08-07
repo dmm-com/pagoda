@@ -7,7 +7,10 @@
     "doc": "docs"
   },
   "scripts": {
-    "build": "webpack build --mode development"
+    "build": "webpack build --mode development",
+    "lint": "npx prettier --check frontend/",
+    "fmt": "npx prettier --write frontend/",
+    "test": "npx jest frontend"
   },
   "repository": {
     "type": "git",
@@ -22,11 +25,14 @@
   "homepage": "https://github.com/userlocalhost/airone#readme",
   "devDependencies": {
     "@babel/core": "^7.12.10",
+    "@babel/plugin-transform-runtime": "^7.14.5",
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-react": "^7.12.10",
     "@material-ui/icons": "^4.11.2",
+    "@testing-library/react": "^12.0.0",
     "babel-loader": "^8.2.2",
     "babel-plugin-transform-class-properties": "^6.24.1",
+    "jest": "^27.0.6",
     "prettier": "2.3.2",
     "prop-types": "^15.7.2",
     "react": "^17.0.1",
@@ -35,8 +41,10 @@
     "webpack-cli": "^4.4.0"
   },
   "dependencies": {
+    "@jest/globals": "^27.0.6",
     "@material-ui/core": "^4.11.2",
     "js-cookie": "^2.2.1",
-    "react-router-dom": "^5.2.0"
+    "react-router-dom": "^5.2.0",
+    "react-use": "^17.2.4"
   }
 }

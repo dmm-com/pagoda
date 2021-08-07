@@ -6,6 +6,7 @@ import { getEntities } from "../utils/AironeAPIClient";
 import { EntityStatus } from "../utils/Constants";
 import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
+import { useAsync } from "react-use";
 
 const useStyles = makeStyles((theme) => ({
   LeftMenu: {
@@ -14,30 +15,28 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function LeftMenu(props) {
+export default function LeftMenu({}) {
   const classes = useStyles();
-  const [entities, setEntities] = useState([]);
 
-  useEffect(() => {
-    getEntities()
+  const entities = useAsync(async () => {
+    return getEntities()
       .then((resp) => resp.json())
       .then((data) =>
-        setEntities(
-          data.entities.filter((e) => e.status & EntityStatus.TOP_LEVEL)
-        )
+        data.entities.filter((e) => e.status & EntityStatus.TOP_LEVEL)
       );
-  }, []);
+  });
 
   return (
     <Box className={classes.LeftMenu}>
       <List>
-        {entities.map((entity) => {
-          return (
-            <ListItem component={Link} to={`/new-ui/entities/${entity.id}`}>
-              <ListItemText primary={entity.name} />
-            </ListItem>
-          );
-        })}
+        {!entities.loading &&
+          entities.value.map((entity) => {
+            return (
+              <ListItem component={Link} to={`/new-ui/entities/${entity.id}`}>
+                <ListItemText primary={entity.name} />
+              </ListItem>
+            );
+          })}
       </List>
     </Box>
   );
