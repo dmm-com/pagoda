@@ -1,5 +1,5 @@
-function make_attr_elem(attr) {
-  var new_elem = $('<td />');
+function make_attr_elem(attr, hint_attr) {
+  var new_elem = $(`<td id=${ hint_attr }/>`);
 
   function get_named_column(value) {
     var key = Object.keys(value)[0];
@@ -97,14 +97,14 @@ function reconstruct_tbody(results) {
   for(var result of results) {
     var new_elem_entry = $('<tr/>');
 
-    new_elem_entry.append(`<th><a href='/entry/show/${ result.entry.id }/'>${ result.entry.name } [${ result.entity.name}]</a></th>`);
+    new_elem_entry.append(`<th id=entry_name><a href='/entry/show/${ result.entry.id }/'>${ result.entry.name } [${ result.entity.name}]</a></th>`);
 
     {% for hint_attr in hint_attrs %}
-      new_elem_entry.append(make_attr_elem(result.attrs['{{ hint_attr.name }}']));
+      new_elem_entry.append(make_attr_elem(result.attrs['{{ hint_attr.name }}'], '{{ hint_attr.name }}'));
     {% endfor %}
 
     {% if has_referral %}
-      let elem_ref_td = $('<td/>');
+      let elem_ref_td = $('<td id=referral />');
       let elem_ref_ul = $("<ul class='list-group'/>");
 
       for(let ref of result.referrals) {

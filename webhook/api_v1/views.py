@@ -1,5 +1,7 @@
 import json
 import requests
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
 
 from airone.lib.acl import ACLType
 from airone.lib.http import check_permission
@@ -13,6 +15,8 @@ from django.http.response import JsonResponse
 from entity.models import Entity
 
 from webhook.models import Webhook
+
+urllib3.disable_warnings(InsecureRequestWarning)
 
 
 @airone_profile
