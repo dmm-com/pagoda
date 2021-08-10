@@ -670,6 +670,19 @@ class APITest(AironeViewTest):
         self.assertEqual(len(resp.json()), ENTRY_CONFIG.MAX_LIST_ENTRIES)
         self.assertEqual([x['name'] for x in resp.json()], ['bar', 'baz'])
 
+    def test_get_entry_with_invalid_offset(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        Entry.objects.create(name='entry', schema=entity, created_user=user)
+
+        # Send a request with an invalid offset parameter
+        offset_params = ['-1', 'str']
+        for param in offset_params:
+            resp = self.client.get('/api/v1/entry', {'entity': 'Entity', 'offset': param})
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.json()['result'], 'Parameter "offset" is numerically')
+
     def test_get_deleted_entry(self):
         user = self.guest_login()
 
@@ -958,3 +971,33 @@ class APITest(AironeViewTest):
 
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_DELETE_ENTRY.value)
         self.assertEqual(job_notify.status, Job.STATUS['DONE'])
+
+    def test_update_entry_that_has_deleted_attribute(self):
+        """
+        This is a test for #186 (Failed to update an entry that has deleted attribute via API)
+        """
+        user = self.guest_login()
+
+        # create Entity and Entry which are used in this test case
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        attr_params = {'name': 'attr', 'type': AttrTypeValue['string'],
+                       'created_user': user, 'parent_entity': entity}
+        entity.attrs.add(EntityAttr.objects.create(**attr_params))
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
+
+        # delete and create EntityAttr, then complement Entry Attribute
+        entity.attrs.get(name='attr').delete()
+        entity.attrs.add(EntityAttr.objects.create(**attr_params))
+        entry.complement_attrs(user)
+
+        params = {
+            'entity': entity.name,
+            'id': entry.id,
+            'name': entry.name,
+            'attrs': {
+                'attr': 'hoge'
+            }
+        }
+        resp = self.client.post('/api/v1/entry', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)

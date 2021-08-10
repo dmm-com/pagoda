@@ -14,7 +14,7 @@
 {% block content %}
 {% csrf_token %}
 {% load calculator %}
-<div class="container-fluid">
+<div class="container-fluid" id="list_job">
   <div class="row">
     <div class="col">
       <div class="float-left">
@@ -42,25 +42,25 @@
         </thead>
         <tbody id='entry_container'>
           {% for job in jobs %}
-          <tr>
+          <tr class='job_info'>
             <!-- set target ACLbase object -->
+            <td class='target'>
             {% if job.operation|divmod:100 == JOB.OPERATION.EXPORT %}
               {% if job.target %}
-              <td><a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
-              {% else %}
-              <td></td>
+              <a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a>
               {% endif %}
             {% elif job.operation|divmod:100 == JOB.OPERATION.IMPORT %}
-              <td><a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
+              <a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a>
             {% elif job.operation|divmod:100 == JOB.OPERATION.CREATE_ENTITY %}
-              <td><a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
+              <a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a>
             {% elif job.operation|divmod:100 == JOB.OPERATION.EDIT_ENTITY %}
-              <td><a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
+              <a href='/entry/{{ job.target.id }}/'>{{ job.target.name }}</a>
             {% elif job.operation|divmod:100 == JOB.OPERATION.DELETE_ENTITY %}
-              <td>{{ job.target.name }}</td>
+              {{ job.target.name }}
             {% else %}
-              <td><a href='/entry/show/{{ job.target.id }}/'>{{ job.target.name }}</a></td>
+              <a href='/entry/show/{{ job.target.id }}/'>{{ job.target.name }}</a>
             {% endif %}
+            </td>
 
             <!-- set operation
               Note: what divmod:100 means.
@@ -74,7 +74,7 @@
               identifier which is greater than 100 (A hundred could be enough number to be able to
               identify basic operation types).
             -->
-            <td>
+            <td class='operation'>
             {% if job.operation|divmod:100 == JOB.OPERATION.CREATE %}
               作成
             {% elif job.operation|divmod:100 == JOB.OPERATION.EDIT %}
@@ -102,47 +102,44 @@
 
             <!-- set status -->
             {% if job.status == JOB.STATUS.PROCESSING %}
-            <td class='table-warning'>処理中</td>
+            <td class='status table-warning'>処理中</td>
             {% elif job.status == JOB.STATUS.PREPARING %}
-            <td class='table-warning'>処理前</td>
+            <td class='status table-warning'>処理前</td>
             {% elif job.status == JOB.STATUS.DONE %}
-            <td class='table-success'>完了</td>
+            <td class='status table-success'>完了</td>
             {% elif job.status == JOB.STATUS.ERROR %}
-            <td class='table-danger'>エラー</td>
+            <td class='status table-danger'>エラー</td>
             {% elif job.status == JOB.STATUS.TIMEOUT %}
-            <td class='table-danger'>タイムアウト</td>
+            <td class='status table-danger'>タイムアウト</td>
             {% elif job.status == JOB.STATUS.CANCELED %}
-            <td class='table-success'>キャンセル</td>
+            <td class='status table-success'>キャンセル</td>
             {% else %}
-            <td></td>
+            <td class='status'></td>
             {% endif %}
-            </td>
 
             <!-- set time -->
-            <td>{{ job.passed_time }} s</td>
+            <td class='execution_time'>{{ job.passed_time }} s</td>
 
             <!-- set created_time -->
-            <td>{{ job.created_at }}</td>
+            <td class='created_at'>{{ job.created_at }}</td>
 
             <!-- set text -->
+            <td class='note'>
             {% if job.operation|divmod:100 == JOB.OPERATION.EXPORT %}
               {% if job.status == JOB.STATUS.DONE %}
-              <td><a href='/job/download/{{ job.id }}'>Download</td>
-              {% else %}
-              <td></td>
+              <a href='/job/download/{{ job.id }}'>Download</a>
               {% endif %}
             {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT_SEARCH_RESULT %}
               {% if job.status == JOB.STATUS.DONE %}
-              <td><a href='/job/download/{{ job.id }}'>Download</td>
-              {% else %}
-              <td></td>
+              <a href='/job/download/{{ job.id }}'>Download</a>
               {% endif %}
             {% else %}
-              <td>{{ job.text | linebreaksbr }}</td>
+              {{ job.text | linebreaksbr }}
             {% endif %}
+            </td>
 
             <!-- set re-run button if it's under executing -->
-            <td>
+            <td class='operations'>
               {% if job.status != JOB.STATUS.DONE and job.status != JOB.STATUS.PROCESSING and job.status != JOB.STATUS.CANCELED %}
               <p><button type='button' class='btn btn-info btn-sm rerun-job' value='{{ job.id }}'>Re-run</button></p>
               {% endif %}
