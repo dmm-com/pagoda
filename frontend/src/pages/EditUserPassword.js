@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import { Link, useParams } from "react-router-dom";
@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
+import { getUser } from "../utils/AironeAPIClient";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
@@ -25,6 +26,14 @@ export default function EditUserPassword({}) {
   const [name, setName] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [checkPassword, setCheckPassword] = useState("");
+
+  useEffect(() => {
+    getUser(userId)
+      .then((resp) => resp.json())
+      .then((data) => {
+        setName(data.username);
+      });
+  }, []);
 
   const onSubmit = (event) => {
     event.preventDefault();
@@ -69,13 +78,7 @@ export default function EditUserPassword({}) {
             <TableRow>
               <TableHead>名前</TableHead>
               <TableCell>
-                <input
-                  type="text"
-                  name="name"
-                  value={name}
-                  onChange={onChangeName}
-                  required="required"
-                />
+                <Typography>{name}</Typography>
               </TableCell>
             </TableRow>
             <TableRow>
