@@ -6,13 +6,6 @@ from user.models import User
 
 
 class GroupSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Group
-        fields = ['id', 'name']
-
-
-class GroupDetailSerializer(serializers.ModelSerializer):
     members = serializers.SerializerMethodField(method_name='get_members')
 
     class Meta:

@@ -15,6 +15,8 @@ class GroupAPITest(AironeViewTest):
         body = resp.json()
         self.assertEqual(len(body), 1)
         self.assertEqual(body[0].id, group.id)
+        self.assertEqual(len(body.members), 1)
+        self.assertEqual(body.members[0].id, user.id)
 
     def retrieve(self):
         self.admin_login()

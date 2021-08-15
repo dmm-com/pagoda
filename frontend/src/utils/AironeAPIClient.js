@@ -168,30 +168,48 @@ export function deleteUser(userId) {
   });
 }
 
-// FIXME implement internal API then call it
 export function getGroups() {
-  return new Promise((resolve, _) => {
-    resolve([
-      {
-        id: 1,
-        name: "test",
-        members: [
-          {
-            name: "user1",
-          },
-          {
-            name: "user2",
-          },
-        ],
-      },
-    ]);
+  return fetch("/group/api/v2/groups");
+}
+
+export function getGroup(groupId) {
+  return fetch(`/group/api/v2/groups/${groupId}`);
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function createGroup(name, members) {
+  return fetch(`/group/do_create`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      users: members,
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateGroup(groupId, name, members) {
+  return fetch(`/group/do_edit/${groupId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      users: members,
+    }),
   });
 }
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
 export function deleteGroup(groupId) {
-  return fetch(`/gruop/do_delete/${groupId}`, {
+  return fetch(`/group/do_delete/${groupId}`, {
     method: "POST",
     headers: {
       "X-CSRFToken": getCsrfToken(),
