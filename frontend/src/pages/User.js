@@ -38,7 +38,15 @@ export default function User({}) {
   const [updated, setUpdated] = useState(false);
 
   useEffect(() => {
-    getUsers().then((data) => setUsers(data));
+    getUsers()
+      .then((resp) => resp.json())
+      .then((data) => {
+        if (django_context.user.is_superuser) {
+          setUsers(data);
+        } else {
+          setUsers(data.filter((d) => d.id === django_context.user.id));
+        }
+      });
     setUpdated(true);
   }, [updated]);
 
@@ -98,35 +106,39 @@ export default function User({}) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users.map((user) => (
-              <TableRow>
-                <TableCell>
-                  <Typography>{user.name}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{user.email}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{user.created_at}</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <EditButton to={`/new-ui/users/${user.id}`}>編集</EditButton>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.button}
-                    startIcon={<EditIcon />}
-                    component={Link}
-                    to={`/new-ui/users/${user.id}/password`}
-                  >
-                    パスワード変更
-                  </Button>
-                  <DeleteButton onConfirmed={(e) => handleDelete(e, user.id)}>
-                    削除
-                  </DeleteButton>
-                </TableCell>
-              </TableRow>
-            ))}
+            {users.map((user) => {
+              return (
+                <TableRow>
+                  <TableCell>
+                    <Typography>{user.username}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography>{user.email}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography>{user.date_joined}</Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <EditButton to={`/new-ui/users/${user.id}`}>
+                      編集
+                    </EditButton>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      className={classes.button}
+                      startIcon={<EditIcon />}
+                      component={Link}
+                      to={`/new-ui/users/${user.id}/password`}
+                    >
+                      パスワード変更
+                    </Button>
+                    <DeleteButton onConfirmed={(e) => handleDelete(e, user.id)}>
+                      削除
+                    </DeleteButton>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
