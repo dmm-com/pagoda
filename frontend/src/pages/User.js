@@ -11,12 +11,10 @@ import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import EditIcon from "@material-ui/icons/Edit";
-import DeleteIcon from "@material-ui/icons/Delete";
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import { deleteUser, getUsers } from "../utils/AironeAPIClient";
-import ConfirmableButton from "../components/common/ConfirmableButton";
 import EditButton from "../components/common/EditButton";
 import CreateButton from "../components/common/CreateButton";
 import DeleteButton from "../components/common/DeleteButton";
@@ -36,7 +34,15 @@ export default function User({}) {
   const [updated, setUpdated] = useState(false);
 
   useEffect(() => {
-    getUsers().then((data) => setUsers(data));
+    getUsers()
+      .then((resp) => resp.json())
+      .then((data) => {
+        if (django_context.user.is_superuser) {
+          setUsers(data);
+        } else {
+          setUsers(data.filter((d) => d.id === django_context.user.id));
+        }
+      });
     setUpdated(true);
   }, [updated]);
 
@@ -95,35 +101,39 @@ export default function User({}) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users.map((user) => (
-              <TableRow>
-                <TableCell>
-                  <Typography>{user.name}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{user.email}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{user.created_at}</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <EditButton to={`/new-ui/users/${user.id}`}>編集</EditButton>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.button}
-                    startIcon={<EditIcon />}
-                    component={Link}
-                    to={`/new-ui/users/${user.id}/password`}
-                  >
-                    パスワード変更
-                  </Button>
-                  <DeleteButton onConfirmed={(e) => handleDelete(e, user.id)}>
-                    削除
-                  </DeleteButton>
-                </TableCell>
-              </TableRow>
-            ))}
+            {users.map((user) => {
+              return (
+                <TableRow>
+                  <TableCell>
+                    <Typography>{user.username}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography>{user.email}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography>{user.date_joined}</Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <EditButton to={`/new-ui/users/${user.id}`}>
+                      編集
+                    </EditButton>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      className={classes.button}
+                      startIcon={<EditIcon />}
+                      component={Link}
+                      to={`/new-ui/users/${user.id}/password`}
+                    >
+                      パスワード変更
+                    </Button>
+                    <DeleteButton onConfirmed={(e) => handleDelete(e, user.id)}>
+                      削除
+                    </DeleteButton>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
