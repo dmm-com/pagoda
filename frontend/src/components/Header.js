@@ -98,7 +98,7 @@ export default function Header({}) {
             component={Link}
             to="/new-ui/"
           >
-            AirOne(New UI)
+            AirOne(New UI) {django_context.version}
           </Typography>
 
           <Box className={classes.menu}>
