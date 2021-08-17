@@ -1,6 +1,6 @@
 {% for attr in attributes %}
 {% load bitwise_tags %}
-<tr>
+<tr id='{{ attr.name|cut:" " }}'>
   <td>
     {% if attr.is_mandatory %}<strong>(*)</strong>{% endif %}{{ attr.name }}
   </td>
