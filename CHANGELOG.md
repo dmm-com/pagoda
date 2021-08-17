@@ -4,6 +4,7 @@
 
 ### Changed
 * Update Django to version 3.2.4 LTS (#153)
+* Added job function that cannot be canceled (#199)
 
 ### Fixed
 * Fixed the result being different depending on the hint_attr_value of

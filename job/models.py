@@ -90,6 +90,14 @@ class Job(models.Model):
         JobOperation.NOTIFY_DELETE_ENTRY.value,
     ]
 
+    CAN_CANCEL_OPERATIONS = [
+        JobOperation.CREATE_ENTRY.value,
+        JobOperation.IMPORT_ENTRY.value,
+        JobOperation.EXPORT_ENTRY.value,
+        JobOperation.REGISTER_REFERRALS.value,
+        JobOperation.EXPORT_SEARCH_RESULT.value,
+    ]
+
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
