@@ -63,7 +63,11 @@
           <tr>
             <th>AccessToken</th>
             <td>
-              <p id='access_token'>{{ token }}</p>
+              {% if token %}
+                <p id='access_token'>{{ token }}</p>
+              {% else %}
+                <p id='access_token'>トークンが発行されていません。Refreshボタンを押して発行してください。</p>
+              {% endif %}
               <button type='button' id='refresh_token' class='btn btn-primary btn-sm'>Refresh</button>
             </td>
           </tr>
@@ -75,8 +79,14 @@
                 <input type="text" name="token_lifetime" value="{{ token_lifetime }}" />
                 (0 ~ 10^8 の範囲の整数を指定してください(0 を入力した場合は期限は無期限になります))
               </p>
-              <div id='token_created'>作成日：{{ token_created }}</div>
-              {% if token_lifetime %}
+              {% if token_created %}
+                <div id='token_created'>作成日：{{ token_created }}</div>
+              {% else %}
+                <div id='token_created'>作成日：-</div>
+              {% endif %}
+              {% if token_expire and token_lifetime == 0 %}
+                <div id='token_expire'>有効期限：無期限</div>
+              {% elif token_expire and token_lifetime %}
                 <div id='token_expire'>有効期限：{{ token_expire }}</div>
               {% else %}
                 <div id='token_expire'>有効期限：-</div>

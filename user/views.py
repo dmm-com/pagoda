@@ -81,9 +81,9 @@ def edit(request, user_id):
         'user_email': user.email,
         'user_is_superuser': user.is_superuser,
         'is_show_token': current_user == user,
-        'token': user.token if current_user == user else '',
+        'token': user.token if current_user == user else None,
         'token_lifetime': user.token_lifetime,
-        'token_created': user.token.created if user.token else '',
+        'token_created': user.token.created if user.token else None,
         'token_expire': (user.token.created + timedelta(seconds=user.token_lifetime)
                          if user.token else None)
     }

@@ -177,10 +177,10 @@ class ViewTest(TestCase):
             self.assertEqual(resp.context['user_email'], user.email)
             self.assertEqual(resp.context['user_is_superuser'], user.is_superuser)
             self.assertEqual(resp.context['is_show_token'], username == 'admin')
-            self.assertEqual(resp.context['token'], user.token if username == 'admin' else '')
+            self.assertEqual(resp.context['token'], user.token if username == 'admin' else None)
             self.assertEqual(resp.context['token_lifetime'], user.token_lifetime)
             self.assertEqual(resp.context['token_created'],
-                             user.token.created if username == 'admin' else '')
+                             user.token.created if username == 'admin' else None)
             self.assertEqual(resp.context['token_expire'],
                              user.token.created + timedelta(seconds=user.token_lifetime)
                              if username == 'admin' else None)
