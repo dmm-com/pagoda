@@ -59,7 +59,7 @@
           </tr>
           {% endif %}
 
-          {% if token %}
+          {% if is_show_token %}
           <tr>
             <th>AccessToken</th>
             <td>
@@ -75,7 +75,12 @@
                 <input type="text" name="token_lifetime" value="{{ token_lifetime }}" />
                 (0 ~ 10^8 の範囲の整数を指定してください(0 を入力した場合は期限は無期限になります))
               </p>
-              有効期限：{{ token_expire }}
+              <div id='token_created'>作成日：{{ token_created }}</div>
+              {% if token_lifetime %}
+                <div id='token_expire'>有効期限：{{ token_expire }}</div>
+              {% else %}
+                <div id='token_expire'>有効期限：-</div>
+              {% endif %}
             </td>
           </tr>
         </table>
@@ -110,7 +115,7 @@ $("#refresh_token").on('click', function() {
       'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
     },
   }).done(function(data){
-    $("#access_token").text(data['results']);
+    location.reload();
   });
 });
 

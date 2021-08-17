@@ -14,8 +14,6 @@ from airone.lib.http import check_superuser
 from airone.lib.profile import airone_profile
 from user.forms import UsernameBasedPasswordResetForm
 
-from rest_framework.authtoken.models import Token
-
 from .models import User
 
 
@@ -77,16 +75,17 @@ def edit(request, user_id):
     if not current_user.is_superuser and current_user != user:
         return HttpResponse("You don't have permission to access", status=400)
 
-    (token, _) = Token.objects.get_or_create(user=user)
     context = {
         'user_id': int(user_id),
         'user_name': user.username,
         'user_email': user.email,
-        'user_password': user.password,
         'user_is_superuser': user.is_superuser,
-        'token': token if current_user == user else '',
+        'is_show_token': current_user == user,
+        'token': user.token if current_user == user else '',
         'token_lifetime': user.token_lifetime,
-        'token_expire': token.created + timedelta(seconds=user.token_lifetime),
+        'token_created': user.token.created if user.token else '',
+        'token_expire': (user.token.created + timedelta(seconds=user.token_lifetime)
+                         if user.token else None)
     }
 
     return render(request, 'edit_user.html', context)

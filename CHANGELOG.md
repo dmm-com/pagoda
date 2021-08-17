@@ -4,6 +4,8 @@
 
 ### Changed
 * Update Django to version 3.2.4 LTS (#153)
+* Changed not to create tokens with GET user.access_token API (#166)
+* Changed the behavior of token refresh
 
 ### Fixed
 * Fixed the result being different depending on the hint_attr_value of
