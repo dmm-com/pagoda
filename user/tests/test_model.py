@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User as DjangoUser
+from rest_framework.authtoken.models import Token
 
 from airone.lib.acl import ACLType
 from entity.models import Entity, EntityAttr
@@ -10,8 +11,18 @@ from user.models import User, History
 
 class ModelTest(TestCase):
     def setUp(self):
-        self.user = User(username='ほげ', email='hoge@example.com', password='fuga')
+        self.user = User(username='ほげ', email='hoge@example.com')
+        self.user.set_password('fuga')
         self.user.save()
+
+    def test_get_token(self):
+        # if not have token
+        self.assertIsNone(self.user.token)
+
+        # create token
+        self.client.login(username='ほげ', password='fuga')
+        self.client.put('/api/v1/user/access_token')
+        self.assertEqual(self.user.token, Token.objects.get(user=self.user))
 
     def test_make_user(self):
         self.assertTrue(isinstance(self.user, DjangoUser))

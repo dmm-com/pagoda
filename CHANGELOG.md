@@ -1,5 +1,11 @@
 # Changelog
 
+## In developmet
+
+### Changed
+* Changed not to create tokens with GET user.access_token API (#166)
+* Changed the behavior of token refresh
+
 ## v3.2.0
 
 ### Changed
