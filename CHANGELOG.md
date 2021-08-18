@@ -1,6 +1,6 @@
 # Changelog
 
-## In development
+## v3.2.0
 
 ### Changed
 * Update Django to version 3.2.4 LTS (#153)
