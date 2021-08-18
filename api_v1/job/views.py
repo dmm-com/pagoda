@@ -82,7 +82,7 @@ class JobAPI(APIView):
         if job.status == Job.STATUS['DONE']:
             return Response('Target job has already been done')
 
-        if job.operation not in Job.CAN_CANCEL_OPERATIONS:
+        if job.operation not in Job.CANCELABLE_OPERATIONS:
             return Response('Target job cannot be canceled',
                             status=status.HTTP_400_BAD_REQUEST)
 

@@ -90,7 +90,7 @@ class Job(models.Model):
         JobOperation.NOTIFY_DELETE_ENTRY.value,
     ]
 
-    CAN_CANCEL_OPERATIONS = [
+    CANCELABLE_OPERATIONS = [
         JobOperation.CREATE_ENTRY.value,
         JobOperation.IMPORT_ENTRY.value,
         JobOperation.EXPORT_ENTRY.value,
