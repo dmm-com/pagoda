@@ -1,4 +1,5 @@
 import json
+from datetime import timedelta
 
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -151,19 +152,38 @@ class ViewTest(TestCase):
         resp = self.client.get(reverse('user:edit', args=[0]))
         self.assertEqual(resp.status_code, 303)
 
-    def test_edit_get_page(self):
+    def test_edit_get_with_guest_login(self):
+        self._guest_login()
+
+        user = User.objects.get(username='admin')
+        resp = self.client.get(reverse('user:edit', args=[user.id]))
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'),
+                         "You don't have permission to access")
+
+    def test_edit_get_with_admin_login(self):
         self._admin_login()
+        self.client.put('/api/v1/user/access_token')
 
         for username in ['guest', 'admin']:
-            user = User.objects.get(username='admin')
+            user = User.objects.get(username=username)
             resp = self.client.get(reverse('user:edit', args=[user.id]))
             self.assertEqual(resp.status_code, 200)
 
             # Check context of response
             self.assertTemplateUsed(template_name='edit_user.html')
+            self.assertEqual(resp.context['user_id'], user.id)
             self.assertEqual(resp.context['user_name'], user.username)
-            self.assertEqual(resp.context['token'], user.token)
+            self.assertEqual(resp.context['user_email'], user.email)
+            self.assertEqual(resp.context['user_is_superuser'], user.is_superuser)
+            self.assertEqual(resp.context['is_show_token'], username == 'admin')
+            self.assertEqual(resp.context['token'], user.token if username == 'admin' else None)
             self.assertEqual(resp.context['token_lifetime'], user.token_lifetime)
+            self.assertEqual(resp.context['token_created'],
+                             user.token.created if username == 'admin' else None)
+            self.assertEqual(resp.context['token_expire'],
+                             user.token.created + timedelta(seconds=user.token_lifetime)
+                             if username == 'admin' else None)
 
     def test_edit_post_without_login(self):
         user = User.objects.create(username='test', email='test@example.com')
