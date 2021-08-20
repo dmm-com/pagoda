@@ -1,6 +1,7 @@
-import json
-import yaml
 import errno
+import json
+import logging
+import yaml
 
 from django.http import HttpResponse
 from django.urls import reverse
@@ -14,13 +15,14 @@ from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute, AttributeValue
 from user.models import User
 
+from airone.lib.acl import ACLType
+from airone.lib.log import Logger
+from airone.lib.test import AironeViewTest
+from airone.lib.test import DisableStderr
 from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeText
 from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
 from airone.lib.types import AttrTypeNamedObj, AttrTypeArrNamedObj
 from airone.lib.types import AttrTypeValue
-from airone.lib.test import AironeViewTest
-from airone.lib.test import DisableStderr
-from airone.lib.acl import ACLType
 
 
 from unittest.mock import patch
@@ -3546,6 +3548,56 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(data['entry_id'], 1)
         self.assertEqual(data['entry_name'], 'fuga')
+
+    @patch('entry.tasks.import_entries.delay', Mock(side_effect=tasks.import_entries))
+    def test_import_entry_with_abnormal_entry_which_has_multiple_attrs_of_same_name(self):
+        user = self.admin_login()
+
+        # Create a test entry
+        entry = Entry.objects.create(name='entry', schema=self._entity, created_user=user)
+        entry.complement_attrs(user)
+
+        # Added another Attribute to entry to test to be able to detect this abnormal situation
+        entry.attrs.add(self.make_attr('test', parent_entry=entry, created_user=user))
+
+        # Send a request to import entry
+        with self.assertLogs(logger=Logger, level=logging.ERROR) as cm:
+            fp = self.open_fixture_file('import_data02.yaml')
+            self.client.post(reverse('entry:do_import', args=[self._entity.id]), {'file': fp})
+            fp.close()
+
+        # Check expected log was dispatched
+        self.assertEqual(cm.output[0], (
+            'ERROR:airone:[task.import_entry] '
+            'Abnormal entry was detected(entry:%d)' % entry.id))
+
+        # Check Job processing was ended successfully
+        job = Job.objects.filter(user=user, operation=JobOperation.IMPORT_ENTRY.value).last()
+        self.assertEqual(job.status, Job.STATUS['DONE'])
+
+    @patch('entry.tasks.import_entries.delay', Mock(side_effect=tasks.import_entries))
+    @patch('entry.tasks._do_import_entries')
+    def test_import_entry_with_unexpected_situation(self, mock_do_import_entry):
+        def side_effect(*args, **kwargs):
+            raise RuntimeError('Unexpected situation was happened')
+        mock_do_import_entry.side_effect = side_effect
+
+        user = self.admin_login()
+
+        # Create a test entry
+        entry = Entry.objects.create(name='entry', schema=self._entity, created_user=user)
+        entry.complement_attrs(user)
+
+        # Send a request to import entry
+        fp = self.open_fixture_file('import_data02.yaml')
+        self.client.post(reverse('entry:do_import', args=[self._entity.id]), {'file': fp})
+        fp.close()
+
+        # Check Job processing was failed
+        job = Job.objects.filter(user=user, operation=JobOperation.IMPORT_ENTRY.value).last()
+        self.assertEqual(job.status, Job.STATUS['ERROR'])
+        self.assertEqual(job.text,
+                         '[task.import] [job:%d] Unexpected situation was happened' % job.id)
 
     @patch('entry.tasks.import_entries.delay', Mock(side_effect=tasks.import_entries))
     def test_import_entry_with_multiple_attr(self):

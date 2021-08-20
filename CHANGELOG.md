@@ -1,5 +1,25 @@
 # Changelog
 
+### Changed
+* Changed not to create tokens with GET user.access_token API (#166)
+* Changed the behavior of token refresh
+* Added job function that cannot be canceled (#199)
+
+## v3.2.0
+
+### Changed
+* Update Django to version 3.2.4 LTS (#153)
+
+### Fixed
+* Fixed the result being different depending on the hint_attr_value of
+  search_entries (#158)
+* Fixed a problem in the processing of import entry (#159)
+* Fixed `urls` to avoid some warnings (#174)
+* Fixed LDAP error output due to authentication failed (#179)
+* Fixed a warning log with an SSL connection to the extarnal (#182)
+* Fixed an exception error when specifying an invalid offset in GET entry API (#183)
+* Fixed a bug that raises an exception at API handler of update entry (#186)
+
 ## v3.1.0
 
 ### Added
