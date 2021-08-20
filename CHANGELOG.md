@@ -5,6 +5,9 @@
 * Changed the behavior of token refresh
 * Added job function that cannot be canceled (#199)
 
+### Fixed
+* Fixed the problem that the URL of Webhook API is different (#202)
+
 ## v3.2.0
 
 ### Changed
