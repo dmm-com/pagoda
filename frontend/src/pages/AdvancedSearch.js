@@ -1,5 +1,13 @@
-import React, { useState } from "react";
-import { Select } from "@material-ui/core";
+import React, { useReducer } from "react";
+import {
+  Card,
+  Checkbox,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
@@ -7,17 +15,42 @@ import Grid from "@material-ui/core/Grid";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import { useAsync } from "react-use";
 import { getEntities, getEntityAttrs } from "../utils/AironeAPIClient";
-import Box from "@material-ui/core/Box";
+import { makeStyles } from "@material-ui/core/styles";
 
-function multipleSelectedValues(event) {
-  return Array.from(event.target.options, (o) => o)
-    .filter((o) => o.selected)
-    .map((o) => o.value);
-}
+const useStyles = makeStyles((theme) => ({
+  description: {
+    margin: theme.spacing(1),
+  },
+
+  entitySelector: {
+    margin: theme.spacing(1),
+    maxHeight: 500,
+    overflow: "auto",
+  },
+
+  attrSelector: {
+    margin: theme.spacing(1),
+    maxHeight: 500,
+    overflow: "auto",
+  },
+}));
 
 export default function AdvancedSearch({}) {
-  const [selectedEntityIds, setSelectedEntityIds] = useState([]);
-  const [selectedAttrs, setSelectedAttrs] = useState([]);
+  const classes = useStyles();
+
+  const [selectedEntityIds, toggleSelectedEntityIds] = useReducer(
+    (state, value) => {
+      return state.indexOf(value) === -1
+        ? [...state, value]
+        : state.filter((v) => v !== value);
+    },
+    []
+  );
+  const [selectedAttrs, toggleSelectedAttrs] = useReducer((state, value) => {
+    return state.indexOf(value) === -1
+      ? [...state, value]
+      : state.filter((v) => v !== value);
+  }, []);
 
   const entities = useAsync(async () => {
     return getEntities()
@@ -54,41 +87,59 @@ export default function AdvancedSearch({}) {
         <Typography color="textPrimary">高度な検索</Typography>
       </AironeBreadcrumbs>
 
-      <Typography variant="h5">検索条件:</Typography>
+      <Typography variant="h5" className={classes.description}>
+        検索条件:
+      </Typography>
 
-      <Box m={1}>
-        <Typography>検索するエンティティ</Typography>
-        <Select
-          multiple
-          native
-          variant="outlined"
-          onChange={(e) => setSelectedEntityIds(multipleSelectedValues(e))}
-        >
+      <Card variant="outlined" className={classes.entitySelector}>
+        <List subheader={<ListSubheader>検索するエンティティ</ListSubheader>}>
           {!entities.loading &&
             entities.value.map((entity) => (
-              <option key="entities" value={entity.id}>
-                {entity.name}
-              </option>
+              <ListItem
+                key={entity.id}
+                dense
+                button
+                divider
+                onClick={() => toggleSelectedEntityIds(entity.id)}
+              >
+                <ListItemIcon>
+                  <Checkbox
+                    edge="start"
+                    checked={selectedEntityIds.indexOf(entity.id) !== -1}
+                    tabIndex={-1}
+                    disableRipple
+                  />
+                </ListItemIcon>
+                <ListItemText primary={entity.name} />
+              </ListItem>
             ))}
-        </Select>
-      </Box>
+        </List>
+      </Card>
 
-      <Box m={1}>
-        <Typography>検索する属性</Typography>
-        <Select
-          multiple
-          native
-          variant="outlined"
-          onChange={(e) => setSelectedAttrs(multipleSelectedValues(e))}
-        >
+      <Card variant="outlined" className={classes.attrSelector}>
+        <List subheader={<ListSubheader>検索する属性</ListSubheader>}>
           {!attrs.loading &&
             attrs.value.map((attr) => (
-              <option key="attribute" value={attr}>
-                {attr}
-              </option>
+              <ListItem
+                key={attr}
+                dense
+                button
+                divider
+                onClick={() => toggleSelectedAttrs(attr)}
+              >
+                <ListItemIcon>
+                  <Checkbox
+                    edge="start"
+                    checked={selectedAttrs.indexOf(attr) !== -1}
+                    tabIndex={-1}
+                    disableRipple
+                  />
+                </ListItemIcon>
+                <ListItemText primary={attr} />
+              </ListItem>
             ))}
-        </Select>
-      </Box>
+        </List>
+      </Card>
 
       <Grid container justify="flex-end">
         <Grid item xs={1}>
