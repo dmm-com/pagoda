@@ -61,6 +61,36 @@ class AttributeValue(models.Model):
     parent_attrv = models.ForeignKey('AttributeValue', null=True, related_name='child',
                                      on_delete=models.SET_NULL)
 
+    @classmethod
+    def get_emtpy_value(kls, attr):
+        if (self.parent_attr.schema.type == AttrTypeValue['string'] or
+                self.parent_attr.schema.type == AttrTypeValue['text']):
+            return ''
+
+        elif self.parent_attr.schema.type == AttrTypeValue['boolean']:
+            value = self.boolean
+            return False
+
+        elif self.parent_attr.schema.type == AttrTypeValue['date']:
+            pass
+
+        elif self.parent_attr.schema.type == AttrTypeValue['object']:
+            pass
+
+        elif self.parent_attr.schema.type == AttrTypeValue['named_object']:
+            pass
+
+        elif self.parent_attr.schema.type == AttrTypeValue['group'] and self.value:
+            pass
+
+        elif self.parent_attr.schema.type & AttrTypeValue['array']:
+            pass
+
+        if with_metainfo:
+            pass
+
+        return value
+
     def set_status(self, val):
         self.status |= val
         self.save()
@@ -443,7 +473,7 @@ class Attribute(ACLBase):
         }
         return self.get_values(**params)
 
-    def get_latest_value(self):
+    def get_latest_value(self, is_readonly=False):
         def _create_new_value():
             params = {
                 'value': '',
@@ -464,7 +494,10 @@ class Attribute(ACLBase):
         if attrv:
             # When a type of attribute value is clear, a new Attribute value will be created
             if attrv.data_type != self.schema.type:
-                return _create_new_value()
+                if is_readonly:
+                    return None
+                else:
+                    return _create_new_value()
             else:
                 return attrv
 
@@ -477,12 +510,18 @@ class Attribute(ACLBase):
 
             # When a type of attribute value is clear, a new Attribute value will be created
             if attrv.data_type != self.schema.type:
-                return _create_new_value()
+                if is_readonly:
+                    return None
+                else:
+                    return _create_new_value()
             else:
                 return attrv
 
         else:
-            return _create_new_value()
+            if is_readonly:
+                return None
+            else:
+                return _create_new_value()
 
     def get_last_value(self):
         attrv = self.values.last()
@@ -498,6 +537,7 @@ class Attribute(ACLBase):
 
         return attrv
 
+    ## NOTE: Type-Write
     def clone(self, user, **extra_params):
         if (not user.has_permission(self, ACLType.Readable) or
                 not user.has_permission(self.schema, ACLType.Readable)):
@@ -795,6 +835,7 @@ class Attribute(ACLBase):
 
         return None
 
+    ## NOTE: Type-Write
     def remove_from_attrv(self, user, referral=None, value=''):
         """
         This method removes target entry from specified attribute
@@ -838,6 +879,7 @@ class Attribute(ACLBase):
             if self.is_updated(updated_data):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
 
+    ## NOTE: Type-Write
     def add_to_attrv(self, user, referral=None, value='', boolean=False):
         """
         This method adds target entry to specified attribute with referral_key
@@ -874,6 +916,7 @@ class Attribute(ACLBase):
             if updated_data and self.is_updated(updated_data):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
 
+    ## NOTE: Type-Write
     def delete(self):
         super(Attribute, self).delete()
 
@@ -902,6 +945,7 @@ class Attribute(ACLBase):
             else:
                 _may_remove_referral(attrv.referral)
 
+    ## NOTE: Type-Write
     def restore(self):
         super(Attribute, self).restore()
 
@@ -1072,6 +1116,7 @@ class Entry(ACLBase):
             # might be existed. If there were, this would delete new one.
             self.may_remove_duplicate_attr(newattr)
 
+    ## NOTE: Type-Read
     def get_available_attrs(self, user, permission=ACLType.Readable, get_referral_entries=False,
                             is_active=True):
         # To avoid unnecessary DB access for caching referral entries
@@ -1152,6 +1197,7 @@ class Entry(ACLBase):
 
         return sorted(ret_attrs, key=lambda x: x['index'])
 
+    ## NOTE: Type-Read
     def to_dict(self, user, with_metainfo=False):
         # check permissions for each entry, entity and attrs
         if (not user.has_permission(self.schema, ACLType.Readable) or
@@ -1162,6 +1208,21 @@ class Entry(ACLBase):
                  if (user.has_permission(x.schema, ACLType.Readable) and
                      user.has_permission(x, ACLType.Readable))]
 
+        returning_attrs = []
+        for attr in attrs:
+            attrv = attr.get_latest_value()
+            if attrv is None:
+                returning_attrs.append({
+                    'name': attr.schema.name,
+                    'value': AttributeValue.get_empty_value(attr),
+                })
+
+            else:
+                returning_attrs.append({
+                    'name': attr.schema.name,
+                    'value': attrv.get_value(serialize=True, with_metainfo=with_metainfo)
+                })
+
         return {
             'id': self.id,
             'name': self.name,
@@ -1169,10 +1230,7 @@ class Entry(ACLBase):
                 'id': self.schema.id,
                 'name': self.schema.name,
             },
-            'attrs': [{
-                'name': x.schema.name,
-                'value': x.get_latest_value().get_value(serialize=True, with_metainfo=with_metainfo)
-            } for x in attrs]
+            'attrs': returning_attrs,
         }
 
     def delete(self):
@@ -1231,6 +1289,7 @@ class Entry(ACLBase):
         cloned_entry.del_status(Entry.STATUS_CREATING)
         return cloned_entry
 
+    ## NOTE: Type-Read
     def export(self, user):
         attrinfo = {}
 
@@ -1250,6 +1309,7 @@ class Entry(ACLBase):
 
         return {'name': self.name, 'attrs': attrinfo}
 
+    ## NOTE: Type-Read
     def get_es_document(self, es=None):
         """This processing registers entry information to Elasticsearch"""
         # This innner method truncates value in taking multi-byte in account
