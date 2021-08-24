@@ -44,8 +44,20 @@ class ViewTest(AironeViewTest):
         # checks number of the returned objects are as expected
         resp = self.client.get('/job/')
         self.assertEqual(resp.status_code, 200)
-
+        self.assertTemplateUsed('list_jobs.html')
         self.assertEqual(len(resp.context['jobs']), _TEST_MAX_LIST_VIEW)
+
+        for i, job in enumerate(
+                Job.objects.filter(user=user).order_by('-created_at')[:_TEST_MAX_LIST_VIEW]):
+            self.assertEqual(resp.context['jobs'][i]['id'], job.id)
+            self.assertEqual(resp.context['jobs'][i]['target'], job.target)
+            self.assertEqual(resp.context['jobs'][i]['text'], job.text)
+            self.assertEqual(resp.context['jobs'][i]['status'], job.status)
+            self.assertEqual(resp.context['jobs'][i]['operation'], job.operation)
+            self.assertEqual(resp.context['jobs'][i]['can_cancel'], True)
+            self.assertEqual(resp.context['jobs'][i]['created_at'], job.created_at)
+            self.assertEqual(resp.context['jobs'][i]['operation'], job.operation)
+            self.assertGreaterEqual(resp.context['jobs'][i]['passed_time'], 0)
 
         # checks all job objects will be returned
         resp = self.client.get('/job/?nolimit=1')
