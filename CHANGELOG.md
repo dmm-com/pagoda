@@ -1,6 +1,11 @@
 # Changelog
 
-## In development
+### Changed
+* Changed not to create tokens with GET user.access_token API (#166)
+* Added job function that cannot be canceled (#199)
+* Changed the behavior of token refresh (#208)
+
+## v3.2.0
 
 ### Changed
 * Update Django to version 3.2.4 LTS (#153)
