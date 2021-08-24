@@ -5,8 +5,8 @@
 ### Changed
 * Changed the HTTP method on the entry.export page from GET to POST (#166)
 * Changed not to create tokens with GET user.access_token API (#166)
-* Changed the behavior of token refresh
 * Added job function that cannot be canceled (#199)
+* Changed the behavior of token refresh (#208)
 
 ## v3.2.0
 
