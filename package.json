@@ -9,7 +9,7 @@
   "scripts": {
     "build": "webpack build --mode production",
     "lint": "npx prettier --check frontend/",
-    "fmt": "npx prettier --write frontend/",
+    "fix": "npx prettier --write frontend/",
     "test": "npx jest frontend"
   },
   "repository": {
