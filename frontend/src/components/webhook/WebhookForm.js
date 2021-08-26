@@ -5,6 +5,8 @@ import PropTypes from "prop-types";
 import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -31,12 +33,18 @@ export default function WebhookForm({
 
   const [open, setOpen] = React.useState(false);
 
+  const [webhooks, registerWebhook] = React.useState(['hoge', 'fuga']);
+
   const handleOpenModal = () => {
     setOpen(true);
+
+    registerWebhook(webhooks.concat('piyo'));
   }
 
   const handleCloseModal = () => {
     setOpen(false);
+
+    registerWebhook(webhooks.concat('puyo'));
   }
 
   return (
@@ -50,6 +58,16 @@ export default function WebhookForm({
       >
         Add Webhook
       </Button>
+
+      <List>
+        {
+          webhooks.map(item => (
+            <ListItem>
+              { item }
+            </ListItem>
+          ))
+        }
+      </List>
 
       <Modal
         aria-labelledby="transition-modal-title"
