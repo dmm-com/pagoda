@@ -7,6 +7,7 @@ import Backdrop from '@material-ui/core/Backdrop';
 import Fade from '@material-ui/core/Fade';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import Input from '@material-ui/core/Input';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -37,14 +38,14 @@ export default function WebhookForm({
 
   const handleOpenModal = () => {
     setOpen(true);
-
-    registerWebhook(webhooks.concat('piyo'));
   }
 
   const handleCloseModal = () => {
     setOpen(false);
+  }
 
-    registerWebhook(webhooks.concat('puyo'));
+  const handleRegisterWebhook = () => {
+    registerWebhook(webhooks.concat('test'));
   }
 
   return (
@@ -76,10 +77,22 @@ export default function WebhookForm({
         open={open}
         onClose={handleCloseModal}
       >
-          <div className={classes.paper}>
-            <h2 id="transition-modal-title">Transition modal</h2>
-            <p id="transition-modal-description">react-transition-group animates me.</p>
-          </div>
+        <div className={classes.paper}>
+          <h2 id="transition-modal-title">Webhook の登録</h2>
+          <div>Webhook URL</div>
+          <form className={classes.root} noValidate autoComplete="off">
+            <Input defaultValue="" inputProps={{ 'aria-label': 'description' }} />
+          </form>
+          <Button
+            className={classes.button}
+            onClick={handleRegisterWebhook}
+            type="submit"
+            variant="contained"
+            color="secondary"
+          >
+            Add Webhook
+          </Button>
+        </div>
       </Modal>
     </div>
   );
