@@ -200,21 +200,8 @@ export function deleteGroup(groupId) {
   });
 }
 
-// FIXME implement internal API then call it
-export function getJobs() {
-  return new Promise((resolve, _) => {
-    resolve([
-      {
-        id: 1,
-        entry: "entry1",
-        operation: "作成",
-        status: "完了",
-        duration: "1s",
-        created_at: "1st Jan 0:00pm",
-        note: "",
-      },
-    ]);
-  });
+export function getJobs(noLimit = 0) {
+  return fetch(`/job/api/v2/jobs?nolimit=${noLimit}`);
 }
 
 export function getRecentJobs() {
