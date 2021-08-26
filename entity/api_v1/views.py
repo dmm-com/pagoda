@@ -17,6 +17,8 @@ def get_entities(request):
         'entities': [{
             'id': x.id,
             'name': x.name,
+            'status': x.status,
+            'note': x.note,
         } for x in Entity.objects.filter(is_active=True)
             if user.has_permission(x, ACLType.Readable)]
     })
