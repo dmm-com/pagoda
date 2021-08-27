@@ -10,6 +10,7 @@
     "build": "npm run build:development",
     "build:development": "webpack build --mode development",
     "build:production": "webpack build --mode production",
+    "watch": "webpack build --watch --mode development",
     "lint": "npx prettier --check frontend/",
     "fix": "npx prettier --write frontend/",
     "test": "npx jest frontend"

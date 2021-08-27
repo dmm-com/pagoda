@@ -323,6 +323,11 @@ Type 'yes' to continue, or 'no' to cancel: yes
 $ source .venv/bin/activate
 $ gunicorn airone.wsgi:application --bind=0.0.0.0:8080 --workers=3
 ```
+```
+(In development)
+$ source .venv/bin/activate
+$ python manage.py runserver
+```
 
 ## [Experimental] Build the new UI with React
 
@@ -331,6 +336,11 @@ $ gunicorn airone.wsgi:application --bind=0.0.0.0:8080 --workers=3
 ```
 $ npm install
 $ npm run build
+```
+```
+(In development)
+$ npm install
+$ npm run watch
 ```
 
 You can also auto-format .js files with [prettier](https://prettier.io/):
