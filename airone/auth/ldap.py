@@ -53,6 +53,8 @@ class LDAPBackend(object):
             o.simple_bind_s(who=CONF_LDAP['USER_FILTER'].format(username=username), cred=password)
             o.unbind_s()
             return True
+        except ldap.INVALID_CREDENTIALS:
+            return False
         except ldap.LDAPError as e:
             Logger.error(str(e))
 

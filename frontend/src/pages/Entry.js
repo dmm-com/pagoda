@@ -7,12 +7,12 @@ import Typography from "@material-ui/core/Typography";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import EntryList from "../components/entry/EntryList";
-import { useAsync } from "react-use";
 import { getEntries } from "../utils/AironeAPIClient";
-import CreateButton from "../components/common/CreateButton";
 import EditButton from "../components/common/EditButton";
 import Loading from "../components/common/Loading";
+import CreateButton from "../components/common/CreateButton";
+import EntryList from "../components/entry/EntryList";
+import { useAsync } from "react-use";
 
 const useStyles = makeStyles((theme) => ({
   button: {
