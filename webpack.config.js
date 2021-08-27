@@ -5,8 +5,8 @@ module.exports = {
     index: "./frontend/src/App.js"
   },
   output: {
-    filename: "main.js",
-    path: path.resolve('templates/frontend')
+    filename: "new-ui.js",
+    path: path.resolve('static/js')
   },
   module: {
     rules: [
