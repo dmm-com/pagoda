@@ -15,6 +15,7 @@ import Typography from "@material-ui/core/Typography";
 import { Badge, Divider, Menu, MenuItem } from "@material-ui/core";
 import { getRecentJobs } from "../utils/AironeAPIClient";
 import { useAsync } from "react-use";
+import { DjangoContext } from "../utils/DjangoContext";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -73,6 +74,8 @@ export default function Header({}) {
   const [userAnchorEl, setUserAnchorEl] = useState();
   const [jobAnchorEl, setJobAnchorEl] = useState();
 
+  const djangoContext = DjangoContext.getInstance();
+
   const recentJobs = useAsync(async () => {
     return getRecentJobs()
       .then((data) => data.json())
@@ -89,7 +92,7 @@ export default function Header({}) {
             component={Link}
             to="/new-ui/"
           >
-            AirOne(New UI) {django_context.version}
+            AirOne(New UI) {djangoContext.version}
           </Typography>
 
           <Box className={classes.menu}>
@@ -108,7 +111,11 @@ export default function Header({}) {
               onClose={() => setUserAnchorEl(null)}
               keepMounted
             >
-              <MenuItem>ユーザ設定</MenuItem>
+              <MenuItem>
+                <Link to={`/new-ui/users/${djangoContext.user.id}`}>
+                  ユーザ設定
+                </Link>
+              </MenuItem>
               <MenuItem>
                 <a href="/auth/logout/">ログアウト</a>
               </MenuItem>

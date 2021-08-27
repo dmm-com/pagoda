@@ -12,6 +12,7 @@ import {
 import Typography from "@material-ui/core/Typography";
 import { getUser } from "../utils/AironeAPIClient";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { DjangoContext } from "../utils/DjangoContext";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -29,6 +30,8 @@ export default function EditUser({}) {
   const [token, setToken] = useState("");
   const [tokenLifetime, setTokenLifetime] = useState(0);
   const [tokenExpire, setTokenExpire] = useState("");
+
+  const djangoContext = DjangoContext.getInstance();
 
   useEffect(() => {
     if (userId) {
@@ -88,7 +91,7 @@ export default function EditUser({}) {
             <TableRow>
               <TableHead>名前</TableHead>
               <TableCell>
-                {django_context.user.is_superuser ? (
+                {djangoContext.user.isSuperuser ? (
                   <input
                     type="text"
                     name="name"
@@ -104,7 +107,7 @@ export default function EditUser({}) {
             <TableRow>
               <TableHead>メールアドレス</TableHead>
               <TableCell>
-                {django_context.user.is_superuser ? (
+                {djangoContext.user.isSuperuser ? (
                   <input
                     type="email"
                     name="email"
@@ -117,7 +120,7 @@ export default function EditUser({}) {
                 )}
               </TableCell>
             </TableRow>
-            {django_context.user.is_superuser && (
+            {djangoContext.user.isSuperuser && (
               <TableRow>
                 <TableHead>管理者権限を付与</TableHead>
                 <TableCell>

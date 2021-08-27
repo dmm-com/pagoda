@@ -18,6 +18,7 @@ import { deleteUser, getUsers } from "../utils/AironeAPIClient";
 import EditButton from "../components/common/EditButton";
 import CreateButton from "../components/common/CreateButton";
 import DeleteButton from "../components/common/DeleteButton";
+import { DjangoContext } from "../utils/DjangoContext";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -33,14 +34,16 @@ export default function User({}) {
   const [users, setUsers] = useState([]);
   const [updated, setUpdated] = useState(false);
 
+  const djangoContext = DjangoContext.getInstance();
+
   useEffect(() => {
     getUsers()
       .then((resp) => resp.json())
       .then((data) => {
-        if (django_context.user.is_superuser) {
+        if (djangoContext.user.isSuperuser) {
           setUsers(data);
         } else {
-          setUsers(data.filter((d) => d.id === django_context.user.id));
+          setUsers(data.filter((d) => d.id === djangoContext.user.id));
         }
       });
     setUpdated(true);
