@@ -960,7 +960,7 @@ class ViewTest(AironeViewTest):
         self.assertIsNone(attr.values.last().referral)
 
     @patch('entry.tasks.export_entries.delay', Mock(side_effect=tasks.export_entries))
-    def test_get_export(self):
+    def test_post_export(self):
         user = self.admin_login()
 
         entity = Entity.objects.create(name='ほげ', created_user=user)
@@ -977,7 +977,8 @@ class ViewTest(AironeViewTest):
         for attr in entry.attrs.all():
             [attr.add_value(user, x) for x in ['hoge', 'fuga']]
 
-        resp = self.client.get(reverse('entry:export', args=[entity.id]))
+        resp = self.client.post(reverse('entry:export', args=[entity.id]),
+                                json.dumps({}), 'application/json')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json(), {
             'result': 'Succeed in registering export processing. Please check Job list.'
@@ -1000,7 +1001,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry_data['attrs']['foo'], 'fuga')
         self.assertEqual(entry_data['attrs']['bar'], 'fuga')
 
-        resp = self.client.get(reverse('entry:export', args=[entity.id]), {'format': 'CSV'})
+        resp = self.client.post(reverse('entry:export', args=[entity.id]),
+                                json.dumps({'format': 'CSV'}), 'application/json')
         self.assertEqual(resp.status_code, 200)
 
         # append an unpermitted Attribute
@@ -1015,7 +1017,8 @@ class ViewTest(AironeViewTest):
         # re-login with guest user
         user = self.guest_login()
 
-        resp = self.client.get(reverse('entry:export', args=[entity.id]))
+        resp = self.client.post(reverse('entry:export', args=[entity.id]),
+                                json.dumps({}), 'application/json')
         self.assertEqual(resp.status_code, 200)
         obj = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
 
@@ -1029,7 +1032,8 @@ class ViewTest(AironeViewTest):
         # Check the case of canceling job
         ###
         with patch.object(Job, 'is_canceled', return_value=True):
-            resp = self.client.get(reverse('entry:export', args=[entity.id]))
+            resp = self.client.post(reverse('entry:export', args=[entity.id]),
+                                    json.dumps({}), 'application/json')
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json(), {
@@ -1119,8 +1123,8 @@ class ViewTest(AironeViewTest):
             test_attr.values.add(test_val)
             test_attr.save()
 
-            resp = self.client.get(reverse('entry:export', args=[test_entity.id]),
-                                   {'format': 'CSV'})
+            resp = self.client.post(reverse('entry:export', args=[test_entity.id]),
+                                    json.dumps({'format': 'CSV'}), 'application/json')
             self.assertEqual(resp.status_code, 200)
 
             content = Job.objects.last().get_cache()
