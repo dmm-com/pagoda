@@ -40,6 +40,7 @@ def index(request):
             'text': x.text,
             'status': x.status,
             'operation': x.operation,
+            'can_cancel': x.operation in Job.CANCELABLE_OPERATIONS,
             'created_at': x.created_at,
             'passed_time': (
                 x.updated_at - x.created_at

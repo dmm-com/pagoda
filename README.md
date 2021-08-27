@@ -336,5 +336,11 @@ $ npm run build
 You can also auto-format .js files with [prettier](https://prettier.io/):
 
 ```
-$ npx prettier --write frontend/
+$ npm run fix
+```
+
+To execute test written in [Jest](https://jestjs.io/):
+
+```
+$ npm run test
 ```

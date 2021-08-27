@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { grey } from "@material-ui/core/colors";
 import { fade, makeStyles } from "@material-ui/core/styles";
@@ -70,8 +70,6 @@ const useStyles = makeStyles((theme) => ({
 export default function Header({}) {
   const classes = useStyles();
 
-  useEffect(() => {}, []);
-
   const [userAnchorEl, setUserAnchorEl] = useState();
   const [jobAnchorEl, setJobAnchorEl] = useState();
 
@@ -135,7 +133,7 @@ export default function Header({}) {
               onClose={(e) => setJobAnchorEl(null)}
               keepMounted
             >
-              {!recentJobs.loading &&
+              {!recentJobs.loading && recentJobs.value.length > 0 ? (
                 recentJobs.value.map((recentJob) => (
                   <MenuItem>
                     <Typography
@@ -145,7 +143,12 @@ export default function Header({}) {
                       {recentJob.target.name}
                     </Typography>
                   </MenuItem>
-                ))}
+                ))
+              ) : (
+                <MenuItem>
+                  <Typography>実行タスクなし</Typography>
+                </MenuItem>
+              )}
               <Divider light />
               <MenuItem>
                 <Typography component={Link} to={`/new-ui/jobs`}>

@@ -30,7 +30,7 @@ class User(DjangoUser):
 
     @property
     def token(self):
-        return Token.objects.get_or_create(user=self)[0]
+        return Token.objects.filter(user=self).first()
 
     def _user_has_permission(self, target_obj, permission_level):
         slave_db = get_slave_db()
