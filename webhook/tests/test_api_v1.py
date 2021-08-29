@@ -19,14 +19,14 @@ class APITest(AironeViewTest):
         mock_resp.text = 'test-failure'
         mock_requests.post.return_value = mock_resp
 
-        resp = self.client.post('/webhook/api/v1/%s' % entity.id, json.dumps({
+        resp = self.client.post('/webhook/api/v1/set/%s' % entity.id, json.dumps({
             'webhook_url': 'https://example.com',
             'label': 'test endpoint',
             'request_headers': [{'key': 'content-type', 'value': 'application/json'}],
             'is_enabled': True,
         }), 'application/json')
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()['msg'], 'Succeded in registering Webhook URL')
+        self.assertEqual(resp.json()['msg'], 'Succeded in registering Webhook')
 
         webhook = Webhook.objects.get(id=resp.json()['webhook_id'])
         self.assertEqual(webhook.url, 'https://example.com')
@@ -46,14 +46,14 @@ class APITest(AironeViewTest):
         mock_resp.text = 'test-failure'
         mock_requests.post.return_value = mock_resp
 
-        resp = self.client.post('/webhook/api/v1/%s' % entity.id, json.dumps({
+        resp = self.client.post('/webhook/api/v1/set/%s' % entity.id, json.dumps({
             'webhook_url': 'https://example.com',
             'label': 'test endpoint',
             'request_headers': [{'key': 'content-type', 'value': 'application/json'}],
             'is_enabled': True,
         }), 'application/json')
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()['msg'], 'Succeded in registering Webhook URL')
+        self.assertEqual(resp.json()['msg'], 'Succeded in registering Webhook')
 
         webhook = Webhook.objects.get(id=resp.json()['webhook_id'])
         self.assertEqual(webhook.url, 'https://example.com')
@@ -73,7 +73,7 @@ class APITest(AironeViewTest):
         mock_resp.text = 'test-failure'
         mock_requests.post.return_value = mock_resp
 
-        resp = self.client.post('/webhook/api/v1/%s' % entity.id, json.dumps({
+        resp = self.client.post('/webhook/api/v1/set/%s' % entity.id, json.dumps({
             'id': 999999,  # invlaid webhook id
             'webhook_url': 'https://example.com',
             'label': 'test endpoint',
@@ -98,7 +98,7 @@ class APITest(AironeViewTest):
         mock_resp.text = 'test-failure'
         mock_requests.post.return_value = mock_resp
 
-        resp = self.client.post('/webhook/api/v1/%s' % entity.id, json.dumps({
+        resp = self.client.post('/webhook/api/v1/set/%s' % entity.id, json.dumps({
             'id': webhook.id,
             'webhook_url': 'https://changed-example.com',
             'label': 'changed-label',
@@ -114,3 +114,16 @@ class APITest(AironeViewTest):
         self.assertEqual(webhook.headers, json.dumps({'content-type': 'application/json'}))
         self.assertTrue(webhook.is_enabled)
         self.assertTrue(webhook.is_verified)
+
+    def test_delete_webhook_instance(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name='test-entity', created_user=user)
+        webhook = Webhook.objects.create(**{
+            'url': 'https://example.com'
+        })
+        entity.webhooks.add(webhook)
+
+        resp = self.client.delete('/webhook/api/v1/del/%s' % webhook.id)
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual(Webhook.objects.filter(id=webhook.id).first(), None)
