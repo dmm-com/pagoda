@@ -8,6 +8,7 @@ import Fade from '@material-ui/core/Fade';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Input from '@material-ui/core/Input';
+import TextField from '@material-ui/core/TextField';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -33,8 +34,8 @@ export default function WebhookForm({
   const classes = useStyles();
 
   const [open, setOpen] = React.useState(false);
-
   const [webhooks, registerWebhook] = React.useState(['hoge', 'fuga']);
+  const [headers, setHeaders] = React.useState([])
 
   const handleOpenModal = () => {
     setOpen(true);
@@ -46,6 +47,10 @@ export default function WebhookForm({
 
   const handleRegisterWebhook = () => {
     registerWebhook(webhooks.concat('test'));
+  }
+
+  const handleAddHeaderElem = () => {
+    setHeaders([...headers, {}])
   }
 
   return (
@@ -79,10 +84,45 @@ export default function WebhookForm({
       >
         <div className={classes.paper}>
           <h2 id="transition-modal-title">Webhook の登録</h2>
-          <div>Webhook URL</div>
           <form className={classes.root} noValidate autoComplete="off">
-            <Input defaultValue="" inputProps={{ 'aria-label': 'description' }} />
+            <div>
+              <TextField
+                id="input-webhoook-url"
+                label="Webhook URL"
+                variant="outlined"
+              />
+            </div>
+
+            <div>
+              <TextField
+                id="input-label"
+                label="Label (Optional)"
+                variant="outlined"
+              />
+            </div>
+
+            <div>
+              <h2>Additional Headers (Optional)</h2>
+            </div>
+
+            <div className={classes.headers_container}>
+              {headers.map((data) => (
+                <div>
+                  <TextField className={classes.header_key} label="Header Key" variant='outlined'/>
+                  <TextField className={classes.header_value} label="Header Value" variant="outlined" />
+                  <Button variant="contained" color="secondary">-</Button>
+                </div>
+              ))}
+            </div>
+
+            <div>
+              ここで入力した情報を、リクエストのヘッダ情報に付加します。必要に応じてご入力ください。
+            </div>
+            <div>
+              <Button variant="contained" color="primary" onClick={handleAddHeaderElem}>+</Button>
+            </div>
           </form>
+
           <Button
             className={classes.button}
             onClick={handleRegisterWebhook}
@@ -93,6 +133,7 @@ export default function WebhookForm({
             Add Webhook
           </Button>
         </div>
+
       </Modal>
     </div>
   );
