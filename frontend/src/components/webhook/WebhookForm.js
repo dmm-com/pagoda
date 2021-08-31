@@ -35,7 +35,7 @@ export default function WebhookForm({
 
   const [open, setOpen] = React.useState(false);
   const [webhooks, registerWebhook] = React.useState(['hoge', 'fuga']);
-  const [headers, setHeaders] = React.useState([])
+  const [headers, setHeaders] = React.useState(Array())
 
   const handleOpenModal = () => {
     setOpen(true);
@@ -50,7 +50,13 @@ export default function WebhookForm({
   }
 
   const handleAddHeaderElem = () => {
+    console.log('debug1')
     setHeaders([...headers, {}])
+  }
+
+  const handleDeleteHeaderElem = (index) => {
+    headers.splice(index, 1)
+    setHeaders([...headers])
   }
 
   return (
@@ -110,7 +116,7 @@ export default function WebhookForm({
                 <div>
                   <TextField className={classes.header_key} label="Header Key" variant='outlined'/>
                   <TextField className={classes.header_value} label="Header Value" variant="outlined" />
-                  <Button variant="contained" color="secondary">-</Button>
+                  <Button variant="contained" color="secondary" onClick={handleDeleteHeaderElem}>-</Button>
                 </div>
               ))}
             </div>
