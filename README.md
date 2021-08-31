@@ -59,6 +59,12 @@ Then, you should restart MySQL server to apply for this configuration.
 user@hostname:~$ sudo service mysql restart
 ```
 
+Iincrease the number of Slave databases with the MySQL replication function.  
+You can set database slave, with like this config:
+```
+REPLICATED_DATABASE_SLAVES = ['slave1', 'slave2']
+```
+
 ### Setting-up Email configuration
 
 This step is optional. You can skip it if you don't use email notifications.
