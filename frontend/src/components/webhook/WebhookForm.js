@@ -50,13 +50,22 @@ export default function WebhookForm({
   }
 
   const handleAddHeaderElem = () => {
-    console.log('debug1')
-    setHeaders([...headers, {}])
+    setHeaders([...headers, {'key': '', 'value': ''}]);
   }
 
-  const handleDeleteHeaderElem = (index) => {
-    headers.splice(index, 1)
-    setHeaders([...headers])
+  const handleDeleteHeaderElem = (e, index) => {
+    headers.splice(index, 1);
+    setHeaders([...headers]);
+  }
+
+  const handleChangeHeaderKey = (e, index) => {
+    headers[index]['key'] = e.target.value;
+    setHeaders([...headers]);
+  }
+
+  const handleChangeHeaderValue = (e, index) => {
+    headers[index]['value'] = e.target.value;
+    setHeaders([...headers]);
   }
 
   return (
@@ -112,11 +121,11 @@ export default function WebhookForm({
             </div>
 
             <div className={classes.headers_container}>
-              {headers.map((data) => (
-                <div>
-                  <TextField className={classes.header_key} label="Header Key" variant='outlined'/>
-                  <TextField className={classes.header_value} label="Header Value" variant="outlined" />
-                  <Button variant="contained" color="secondary" onClick={handleDeleteHeaderElem}>-</Button>
+              {headers.map((data, index) => (
+                <div key={index}>
+                  <TextField className={classes.header_key} label="Header Key {index}" variant='outlined' onChange={(e) => handleChangeHeaderKey(e, index)} value={data['key']}/>
+                  <TextField className={classes.header_value} label={`Header Value ${index}`} variant="outlined" onChange={(e) => handleChangeHeaderValue(e, index)} value={data['value']}/>
+                  <Button variant="contained" color="secondary" onClick={(e) => handleDeleteHeaderElem(e, index)} >-</Button>
                 </div>
               ))}
             </div>
