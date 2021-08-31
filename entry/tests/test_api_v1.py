@@ -670,10 +670,10 @@ class ViewTest(AironeViewTest):
                                 json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content,
-                         'There is no EntityAttr which is specified by entity_attr_id')
+                         b'There is no EntityAttr which is specified by entity_attr_id')
 
         # specify Entry that does not exist
         resp = self.client.post('/entry/api/v1/create_entry_attr/999999',
                                 json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content, 'There is no Entry which is specified by entry_id')
+        self.assertEqual(resp.content, b'There is no Entry which is specified by entry_id')
