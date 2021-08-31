@@ -2,10 +2,15 @@
 
 ## In development
 
+### Added
+* Added the django-replicated library (#166)
+* Added job function that cannot be canceled (#199)
+
 ### Changed
+* Changed to remove complement_attrs when requesting show entry page (#166)
+* Changed the logout from GET to POST (#166)
 * Changed the HTTP method on the entry.export page from GET to POST (#166)
 * Changed not to create tokens with GET user.access_token API (#166)
-* Added job function that cannot be canceled (#199)
 * Changed the behavior of token refresh (#208)
 
 ### Fixed
