@@ -34,8 +34,7 @@ class ComplexViewTest(AironeViewTest):
         - update entity to append new EntityAttrs(arr-str, arr-obj)
 
         Then, this checks following
-        - created additional Attributes which are corresponding to the added EntityAttrs
-          automatically for accessing show page.
+        - being able to edit the entry corresponding to the added EntityAttr.
         - enable to edit entry correctly because #152 is fixed
         """
         user = self.admin_login()
@@ -116,22 +115,16 @@ class ComplexViewTest(AironeViewTest):
         resp = self.client.get(reverse('entry:show', args=[entry.id]))
         self.assertEqual(resp.status_code, 200)
 
-        # Checks that the new Attibutes is created in the show processing
+        # Checks that the new Attibutes is not created in the show processing
         self.assertEqual(entity.attrs.count(), 3)
-        self.assertEqual(entry.attrs.count(), entity.attrs.count())
+        self.assertEqual(entry.attrs.count(), 1)
 
-        attr_str = entry.attrs.get(name=attr.name)
-        attr_arr_str = entry.attrs.get(name='arr-str')
-        attr_arr_obj = entry.attrs.get(name='arr-obj')
+        entity_attr_str = entity.attrs.get(name='attr')
+        entity_attr_arr_str = entity.attrs.get(name='arr-str')
+        entity_attr_arr_obj = entity.attrs.get(name='arr-obj')
         refer_entry = Entry.objects.create(name='e0', schema=refer_entity, created_user=user)
 
-        attr_str_value_count = attr_str.values.count()
-        attr_arr_str_value_count = attr_arr_str.values.count()
-        attr_arr_obj_value_count = attr_arr_obj.values.count()
-
-        self.assertEqual(attr_str_value_count, 1)
-        self.assertEqual(attr_arr_str_value_count, 1)
-        self.assertEqual(attr_arr_obj_value_count, 1)
+        attr_str = entry.attrs.get(schema=entity_attr_str, is_active=True)
 
         # edit to add values to the new attributes
         params = {
@@ -139,12 +132,14 @@ class ComplexViewTest(AironeViewTest):
             'attrs': [
                 {
                     'id': str(attr_str.id),
+                    'entity_attr_id': '',
                     'type': str(attr.type),
                     'value': [{'data': 'hoge', 'index': 0}],
                     'referral_key': []
                 },
                 {
-                    'id': str(attr_arr_str.id),
+                    'id': '',
+                    'entity_attr_id': str(entity_attr_arr_str.id),
                     'type': str(AttrTypeArrStr),
                     'value': [
                         {'data': 'foo', 'index': 0},
@@ -153,7 +148,8 @@ class ComplexViewTest(AironeViewTest):
                     'referral_key': []
                 },
                 {
-                    'id': str(attr_arr_obj.id),
+                    'id': '',
+                    'entity_attr_id': str(entity_attr_arr_obj.id),
                     'type': str(AttrTypeArrObj),
                     'value': [{'data': refer_entry.id, 'index': 0}],
                     'referral_key': []},
@@ -163,17 +159,8 @@ class ComplexViewTest(AironeViewTest):
                                 json.dumps(params),
                                 'application/json')
         self.assertEqual(resp.status_code, 200)
-
-        # check updated values structure and count of AttributeValues
-        self.assertEqual(attr_str.values.count(), attr_str_value_count + 1)
-        self.assertEqual(attr_arr_str.values.count(), attr_arr_str_value_count + 1)
-        self.assertEqual(attr_arr_obj.values.count(), attr_arr_obj_value_count + 1)
-
-        value_arr_str = attr_arr_str.values.last()
-        self.assertEqual(value_arr_str.data_array.count(), 2)
-
-        value_arr_obj = attr_arr_obj.values.last()
-        self.assertEqual(value_arr_obj.data_array.count(), 1)
+        self.assertEqual([attr.get_latest_value().get_value() for attr in entry.attrs.all()],
+                         ['hoge', ['foo', 'bar'], ['e0']])
 
     @patch('entity.tasks.create_entity.delay', Mock(side_effect=entity_tasks.create_entity))
     @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=entry_tasks.create_entry_attrs))
@@ -242,7 +229,8 @@ class ComplexViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Entry.objects.count(), 1)
-        self.assertEqual(Entry.objects.get(name='entry1').attrs.count(), 1)
+        entry1 = Entry.objects.get(name='entry1')
+        self.assertEqual(entry1.attrs.first().get_latest_value().get_value(), 'attr-value')
 
         # switch to guest user
         self.guest_login()
@@ -260,7 +248,8 @@ class ComplexViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Entry.objects.count(), 2)
-        self.assertEqual(Entry.objects.get(name='entry2').attrs.count(), 0)
+        entry2 = Entry.objects.get(name='entry2')
+        self.assertEqual(entry2.attrs.first().get_latest_value().get_value(), '')
 
     @patch('entity.tasks.edit_entity.delay', Mock(side_effect=entity_tasks.edit_entity))
     def test_cache_referred_entry_at_deleting_attr(self):

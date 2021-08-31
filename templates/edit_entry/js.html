@@ -5,6 +5,7 @@ var get_register_attrs = function(base) {
 
   {% for attr in attributes %}
   attrs.push({
+    'entity_attr_id': '{{ attr.entity_attr_id}}',
     'id': '{{ attr.id }}',
     'type': '{{ attr.type }}',
     'value': $(base).find(".attr_value[attr_id='{{ attr.id }}'][enabled='True']").map(function(i, e) {
@@ -280,6 +281,12 @@ var select_value_handler = {
   }
 }
 
+var create_entry_attr = function() {
+  HttpPost($(this), {'entity_attr_id': Number($(this).attr('entity_attr_id'))}).done(function(data) {
+    location.href = '/acl/' + data['id'];
+  })
+}
+
 // Helper function to identify row index for array_named_entry params
 var index_map = {};
 function get_index(attr_id) {
@@ -405,6 +412,7 @@ $(document).ready(function() {
       return false;
     }
   });
+  $('#create_entry_attr').on('click', create_entry_attr);
 
   // clear warning label which is set before
   $('.attr_value,.referral_key').on('click', clear_table_danger_handler);

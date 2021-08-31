@@ -1005,7 +1005,11 @@ class ModelTest(AironeTestCase):
             attr = attrinfo[result['name']]['attr']
 
             self.assertEqual(result['id'], attr.id)
+            self.assertEqual(result['entity_attr_id'], attr.schema.id)
             self.assertEqual(result['type'], attr.schema.type)
+            self.assertEqual(result['is_mandatory'], attr.schema.is_mandatory)
+            self.assertEqual(result['index'], attr.schema.index)
+            self.assertEqual(result['permission'], True)
             self.assertEqual(result['last_value'], attrinfo[attr.name]['exp_val'])
 
     def test_set_attrvalue_to_entry_attr_without_availabe_value(self):

@@ -1095,26 +1095,39 @@ class Entry(ACLBase):
             self.may_remove_duplicate_attr(newattr)
 
     # NOTE: Type-Read
-    def get_available_attrs(self, user, permission=ACLType.Readable, get_referral_entries=False,
-                            is_active=True):
+    def get_available_attrs(self, user, permission=ACLType.Readable):
         # To avoid unnecessary DB access for caching referral entries
         ret_attrs = []
-        attrs = [x for x in self.attrs.filter(is_active=is_active, schema__is_active=True)
-                 if user.has_permission(x, permission)]
-        for attr in sorted(attrs, key=lambda x: x.schema.index):
+        for entity_attr in self.schema.attrs.filter(is_active=True).order_by('index'):
             attrinfo = {}
+            attrinfo['id'] = ''
+            attrinfo['entity_attr_id'] = entity_attr.id
+            attrinfo['name'] = entity_attr.name
+            attrinfo['type'] = entity_attr.type
+            attrinfo['is_mandatory'] = entity_attr.is_mandatory
+            attrinfo['index'] = entity_attr.index
+            attrinfo['permission'] = True
+            attrinfo['last_value'] = AttrDefaultValue[entity_attr.type]
 
+            # check that attribute exists
+            attr = self.attrs.filter(schema=entity_attr).first()
+            if not attr:
+                attrinfo['permission'] = user.has_permission(entity_attr, permission)
+                ret_attrs.append(attrinfo)
+                continue
             attrinfo['id'] = attr.id
-            attrinfo['name'] = attr.schema.name
-            attrinfo['type'] = attr.schema.type
-            attrinfo['is_mandatory'] = attr.schema.is_mandatory
-            attrinfo['index'] = attr.schema.index
+
+            # check permission of attributes
+            if not user.has_permission(attr, permission):
+                attrinfo['permission'] = False
+                ret_attrs.append(attrinfo)
+                continue
 
             # set last-value of current attributes
-            attrinfo['last_value'] = ''
             if attr.values.exists():
                 last_value = attr.get_latest_value(is_readonly=True)
                 if last_value is None:
+                    ret_attrs.append(attrinfo)
                     continue
 
                 if not last_value.data_type:
@@ -1176,7 +1189,7 @@ class Entry(ACLBase):
 
             ret_attrs.append(attrinfo)
 
-        return sorted(ret_attrs, key=lambda x: x['index'])
+        return ret_attrs
 
     # NOTE: Type-Read
     def to_dict(self, user, with_metainfo=False):
