@@ -8,14 +8,14 @@ var get_register_attrs = function(base) {
     'entity_attr_id': '{{ attr.entity_attr_id}}',
     'id': '{{ attr.id }}',
     'type': '{{ attr.type }}',
-    'value': $(base).find(".attr_value[attr_id='{{ attr.id }}'][enabled='True']").map(function(i, e) {
+    'value': $(base).find(".attr_value[entity_attr_id='{{ attr.entity_attr_id }}'][enabled='True']").map(function(i, e) {
       if($(e).attr('type') == 'checkbox') {
         return {'data': $(e).prop('checked'), 'index': $(e).attr('index')};
       } else {
         return {'data': $(e).val(), 'index': $(e).attr('index')};
       }
     }).get(),
-    'referral_key': $(base).find(".referral_key[attr_id='{{ attr.id }}'][enabled='True']").map(function(i, e){
+    'referral_key': $(base).find(".referral_key[entity_attr_id='{{ attr.entity_attr_id }}'][enabled='True']").map(function(i, e){
       return {'data': $(e).val(), 'index': $(e).attr('index')};
     }).get(),
   });
@@ -157,12 +157,12 @@ var filter_options = function(input_elem) {
     }
   });
 }
-var replace_options = function(elem_select, referrals, attr_id) {
+var replace_options = function(elem_select, referrals, entity_attr_id) {
   let elem_not_set = $('<option />').val(0).text('- NOT SET -');
   elem_select.empty();
 
   // show 'NOT SET' and selected options regardless of input value
-  if (! elem_select.attr('mandatory') && ! $(`div[attr_id=${attr_id}]`).attr('mandatory')) {
+  if (! elem_select.attr('mandatory') && ! $(`div[entity_attr_id=${entity_attr_id}]`).attr('mandatory')) {
     elem_select.append(elem_not_set);
   }
 
@@ -186,7 +186,7 @@ var replace_options = function(elem_select, referrals, attr_id) {
 }
 
 var sending_request = false;
-var do_update_option = function(elem_select, attr_id, keyword) {
+var do_update_option = function(elem_select, entity_attr_id, keyword) {
   if(! sending_request) {
     sending_request = true;
 
@@ -195,12 +195,12 @@ var do_update_option = function(elem_select, attr_id, keyword) {
 
     $.ajax({
       type: 'GET',
-      url: `/entry/api/v1/get_attr_referrals/${ attr_id }/`,
+      url: `/entry/api/v1/get_attr_referrals/${ entity_attr_id }/`,
       data: {
         keyword: keyword,
       },
     }).done(function(data){
-      replace_options(elem_select, data['results'], attr_id);
+      replace_options(elem_select, data['results'], entity_attr_id);
 
       // reset sending flag
       sending_request = false;
@@ -219,7 +219,7 @@ var do_update_option = function(elem_select, attr_id, keyword) {
 var update_option = function(input_elem) {
   if($(input_elem).attr('use_api')) {
     do_update_option($(input_elem).closest('div').find('select'),
-                     $(input_elem).attr('attr_id'),
+                     $(input_elem).attr('entity_attr_id'),
                      $(input_elem).val());
   } else {
     filter_options(input_elem);
@@ -245,7 +245,7 @@ var narrow_down_handler = {
     let elem_select = $(this).closest('div').find('select');
 
     if(elem_select.attr('unfetched_value')) {
-      do_update_option(elem_select, $(this).attr('attr_id'), '');
+      do_update_option(elem_select, $(this).attr('entity_attr_id'), '');
     }
 
     // clear warning which is shown before
@@ -254,7 +254,7 @@ var narrow_down_handler = {
 }
 
 var update_selected_item = function() {
-  var attr_id = $(this).attr('attr_id');
+  var entity_attr_id = $(this).attr('entity_attr_id');
   var text = $(this).find('option:selected').text();
 
   // clear danger notification if it's set
@@ -264,7 +264,7 @@ var update_selected_item = function() {
     text = text.substring(0, {{ config.entry.MAX_LABEL_STRING }} - 3) + '...';
   }
 
-  $(this).parent().find('li[attr_id="'+ attr_id +'"]').text(text);
+  $(this).parent().find('li[entity_attr_id="'+ entity_attr_id +'"]').text(text);
 }
 
 /* This is an evenr handler to claear warning (e.g. User doesn't input at mandatory attribute) */
@@ -276,7 +276,7 @@ var select_value_handler = {
   'change': update_selected_item,
   'focus': function() {
     if($(this).attr('unfetched_value')) {
-      do_update_option($(this), $(this).attr('attr_id'), '');
+      do_update_option($(this), $(this).attr('entity_attr_id'), '');
     }
   }
 }
@@ -289,14 +289,14 @@ var create_entry_attr = function() {
 
 // Helper function to identify row index for array_named_entry params
 var index_map = {};
-function get_index(attr_id) {
-  if(attr_id in index_map) {
-    index_map[attr_id] += 1;
+function get_index(entity_attr_id) {
+  if(entity_attr_id in index_map) {
+    index_map[entity_attr_id] += 1;
   } else {
-    index_map[attr_id] = 0;
+    index_map[entity_attr_id] = 0;
   }
 
-  return index_map[attr_id];
+  return index_map[entity_attr_id];
 }
 
 $('button[name=add_attr]').on('click', function() {
@@ -314,7 +314,7 @@ $('button[name=add_attr]').on('click', function() {
   new_column.find(".referral_key").attr('enabled', 'True');
 
   // set index attribute for attr_value and referral_key parameter
-  var current_index = get_index($(this).attr('attr_id'));
+  var current_index = get_index($(this).attr('entity_attr_id'));
 
   new_column.find(".attr_value").attr('index', current_index);
   new_column.find(".referral_key").attr('index', current_index);
@@ -330,7 +330,7 @@ $('button[name=add_attr]').on('click', function() {
 // Initiate array values
 {% for attr in attributes %}
   {% if attr.type|bitwise_and:attr_type_value.array %}
-    var container = $('.array_element[attr_id="{{ attr.id }}"]');
+    var container = $('.array_element[entity_attr_id="{{ attr.entity_attr_id }}"]');
     var template = $('#template-{{ attr.id }}');
     var value_setter = undefined;
 
@@ -370,7 +370,7 @@ $('button[name=add_attr]').on('click', function() {
         value_setter = function(new_column) {
           var elem_referral_key = new_column.find('.referral_key')
           var elem_select = new_column.find('select');
-          var current_index = get_index({{ attr.id }});
+          var current_index = get_index({{ attr.entity_attr_id }});
 
           // clear select element and set option to show only selected one
           {% if value.id %}
