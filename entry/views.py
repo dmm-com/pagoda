@@ -30,7 +30,7 @@ from group.models import Group
 from .settings import CONFIG
 
 
-def _validate_input(recv_data, obj):
+def _validate_input(recv_data, entity):
     def _has_data(value):
         return 'data' in value and value['data'] != '' and value['data'] is not None
 
@@ -46,12 +46,7 @@ def _validate_input(recv_data, obj):
             return False
 
     for attr_data in recv_data['attrs']:
-        if attr_data['id']:
-            attr = obj.attrs.filter(id=attr_data['id']).first()
-            if attr and isinstance(obj, Entry):
-                attr = attr.schema
-        else:
-            attr = obj.schema.attrs.filter(id=attr_data['entity_attr_id']).first()
+        attr = entity.attrs.filter(id=attr_data['entity_attr_id']).first()
 
         if not attr:
             return HttpResponse('Specified attribute is invalid', status=400)
@@ -154,7 +149,7 @@ def create(request, entity_id):
         'redirect_url': '/entry/%s' % entity.id,
         'groups': Group.objects.filter(is_active=True),
         'attributes': [{
-            'id': x.id,
+            'entity_attr_id': x.id,
             'type': x.type,
             'name': x.name,
             'is_mandatory': x.is_mandatory,
@@ -173,7 +168,7 @@ def create(request, entity_id):
 @http_post([
     {'name': 'entry_name', 'type': str, 'checker': lambda x: x['entry_name']},
     {'name': 'attrs', 'type': list, 'meta': [
-        {'name': 'id', 'type': str},
+        {'name': 'entity_attr_id', 'type': str},
         {'name': 'value', 'type': list},
     ]}
 ])
@@ -271,7 +266,7 @@ def do_edit(request, entry_id, recv_data):
         return HttpResponse('Duplicate name entry is existed', status=400)
 
     # validate contexts of each attributes
-    err = _validate_input(recv_data, entry)
+    err = _validate_input(recv_data, entry.schema)
     if err:
         return err
 

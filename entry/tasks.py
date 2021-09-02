@@ -218,7 +218,8 @@ def create_entry_attrs(self, job_id):
                 return
 
             # make an initial AttributeValue object if the initial value is specified
-            attr_data = [x for x in recv_data['attrs'] if int(x['id']) == entity_attr.id]
+            attr_data = ([x for x in recv_data['attrs']
+                         if int(x['entity_attr_id']) == entity_attr.id])
 
             if not attr or not attr_data:
                 continue

@@ -62,7 +62,7 @@ class ComplexViewTest(AironeViewTest):
         params = {
             'entry_name': 'entry',
             'attrs': [
-                {'id': str(attr.id), 'type': str(AttrTypeStr),
+                {'entity_attr_id': str(attr.id), 'type': str(AttrTypeStr),
                  'value': [{'data': 'attr-value', 'index': 0}], 'referral_key': []},
             ],
         }
@@ -132,7 +132,7 @@ class ComplexViewTest(AironeViewTest):
             'attrs': [
                 {
                     'id': str(attr_str.id),
-                    'entity_attr_id': '',
+                    'entity_attr_id': str(entity_attr_str.id),
                     'type': str(attr.type),
                     'value': [{'data': 'hoge', 'index': 0}],
                     'referral_key': []
@@ -219,7 +219,7 @@ class ComplexViewTest(AironeViewTest):
         params = {
             'entry_name': 'entry1',
             'attrs': [
-                {'id': str(entityattr.id), 'type': str(entityattr.objtype),
+                {'entity_attr_id': str(entityattr.id), 'type': str(entityattr.objtype),
                  'value': [{'data': 'attr-value', 'index': 0}], 'referral_key': []},
             ],
         }
@@ -238,7 +238,7 @@ class ComplexViewTest(AironeViewTest):
         params = {
             'entry_name': 'entry2',
             'attrs': [
-                {'id': str(entityattr.id), 'type': str(entityattr.objtype),
+                {'entity_attr_id': str(entityattr.id), 'type': str(entityattr.objtype),
                  'value': [{'data': 'attr-value', 'index': 0}], 'referral_key': []},
             ],
         }
