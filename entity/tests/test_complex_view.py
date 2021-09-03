@@ -62,7 +62,7 @@ class ComplexViewTest(AironeViewTest):
         params = {
             'entry_name': 'entry',
             'attrs': [
-                {'entity_attr_id': str(attr.id), 'type': str(AttrTypeStr),
+                {'id': str(attr.id), 'type': str(AttrTypeStr),
                  'value': [{'data': 'attr-value', 'index': 0}], 'referral_key': []},
             ],
         }
@@ -119,27 +119,25 @@ class ComplexViewTest(AironeViewTest):
         self.assertEqual(entity.attrs.count(), 3)
         self.assertEqual(entry.attrs.count(), 1)
 
-        entity_attr_str = entity.attrs.get(name='attr')
+        attr_str = entry.attrs.get(name=attr.name)
         entity_attr_arr_str = entity.attrs.get(name='arr-str')
         entity_attr_arr_obj = entity.attrs.get(name='arr-obj')
         refer_entry = Entry.objects.create(name='e0', schema=refer_entity, created_user=user)
-
-        attr_str = entry.attrs.get(schema=entity_attr_str, is_active=True)
 
         # edit to add values to the new attributes
         params = {
             'entry_name': entry.name,
             'attrs': [
                 {
+                    'entity_attr_id': '',
                     'id': str(attr_str.id),
-                    'entity_attr_id': str(entity_attr_str.id),
                     'type': str(attr.type),
                     'value': [{'data': 'hoge', 'index': 0}],
                     'referral_key': []
                 },
                 {
-                    'id': '',
                     'entity_attr_id': str(entity_attr_arr_str.id),
+                    'id': '',
                     'type': str(AttrTypeArrStr),
                     'value': [
                         {'data': 'foo', 'index': 0},
@@ -148,8 +146,8 @@ class ComplexViewTest(AironeViewTest):
                     'referral_key': []
                 },
                 {
-                    'id': '',
                     'entity_attr_id': str(entity_attr_arr_obj.id),
+                    'id': '',
                     'type': str(AttrTypeArrObj),
                     'value': [{'data': refer_entry.id, 'index': 0}],
                     'referral_key': []},
@@ -219,7 +217,7 @@ class ComplexViewTest(AironeViewTest):
         params = {
             'entry_name': 'entry1',
             'attrs': [
-                {'entity_attr_id': str(entityattr.id), 'type': str(entityattr.objtype),
+                {'id': str(entityattr.id), 'type': str(entityattr.objtype),
                  'value': [{'data': 'attr-value', 'index': 0}], 'referral_key': []},
             ],
         }
@@ -238,7 +236,7 @@ class ComplexViewTest(AironeViewTest):
         params = {
             'entry_name': 'entry2',
             'attrs': [
-                {'entity_attr_id': str(entityattr.id), 'type': str(entityattr.objtype),
+                {'id': str(entityattr.id), 'type': str(entityattr.objtype),
                  'value': [{'data': 'attr-value', 'index': 0}], 'referral_key': []},
             ],
         }

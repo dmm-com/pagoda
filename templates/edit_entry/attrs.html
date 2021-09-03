@@ -10,16 +10,16 @@
   {% else %}
     {% if attr.type|bitwise_and:attr_type_value.array %}
       <div>
-        <button type="button" class="btn btn-primary btn-sm" name='add_attr' entity_attr_id="{{ attr.entity_attr_id }}">add row</button>
-        <div class='array_element' entity_attr_id="{{ attr.entity_attr_id }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}>
+        <button type="button" class="btn btn-primary btn-sm" name='add_attr' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}">add row</button>
+        <div class='array_element' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}>
       </div>
 
       <!-- template of attribute value column -->
-      <div style="display:none" class='attr_value_template' id='template-{{ attr.id }}'>
+      <div style="display:none" class='attr_value_template' id='template-{{ attr.entity_attr_id }}'>
 
       {% if attr.type|bitwise_and:attr_type_value.named %}
         <div class='col-3'>
-          <input type='text' class='form-control referral_key' entity_attr_id="{{ attr.entity_attr_id }}"></input>
+          <input type='text' class='form-control referral_key' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}"></input>
         </div>
         <div class='col-7'>
       {% else %}
@@ -29,10 +29,10 @@
       {% if attr.type|bitwise_and:attr_type.entry %}
 
         <ul class='list-group'>
-          <li class='list-group-item list-group-item-info airone-selected-items' entity_attr_id="{{ attr.entity_attr_id }}" style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
+          <li class='list-group-item list-group-item-info airone-selected-items' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
         </ul>
         <!-- specify maximum size of list -->
-        <select class="attr_value" entity_attr_id="{{ attr.entity_attr_id }}" size=5 style="width: 100%" unfetched_value='true'>
+        <select class="attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" size=5 style="width: 100%" unfetched_value='true'>
           {% if not attr.is_mandatory %}
           <option value='0'>- NOT SET -</option>
           {% endif %}
@@ -43,15 +43,15 @@
           {% endif %}
         </select>
 
-        <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" entity_attr_id="{{ attr.entity_attr_id }}"/>
+        <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}"/>
 
       {% elif attr.type|bitwise_and:attr_type.group %}
 
         <ul class='list-group'>
-          <li class='list-group-item list-group-item-info airone-selected-items' entity_attr_id="{{ attr.entity_attr_id }}" style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
+          <li class='list-group-item list-group-item-info airone-selected-items' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
         </ul>
 
-        <select class="attr_value" entity_attr_id="{{ attr.entity_attr_id }}" index='0' size='5' style="width: 100%">
+        <select class="attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" index='0' size='5' style="width: 100%">
             {% if not attr.is_mandatory %}
             <option value='0'>- NOT SET -</option>
             {% endif %}
@@ -60,10 +60,10 @@
             <option value="{{ group.id }}"{% if group.id == attr.last_value.id %} selected="selected" {% endif %}>{{ group.name }}</option>
             {% endfor %}
         </select>
-        <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" entity_attr_id="{{ attr.entity_attr_id }}"/>
+        <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}"/>
 
       {% else %}
-        <input type='text' class='form-control attr_value' entity_attr_id="{{ attr.entity_attr_id }}" index='0'/>
+        <input type='text' class='form-control attr_value' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" index='0'/>
       {% endif %}
 
           </div>
@@ -78,7 +78,7 @@
 
         {% if attr.type|bitwise_and:attr_type_value.named %}
           <div class='col-3'>
-            <input type='text' class='form-control referral_key' entity_attr_id="{{ attr.entity_attr_id }}" value="{{ attr.last_value.value }}" enabled="True" index="0"></input>
+            <input type='text' class='form-control referral_key' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" value="{{ attr.last_value.value }}" enabled="True" index="0"></input>
           </div>
           <div class='col-9'>
         {% else %}
@@ -87,10 +87,10 @@
 
         <!-- specify maximum size of list -->
         <ul class='list-group'>
-          <li class='list-group-item list-group-item-info airone-selected-items' entity_attr_id="{{ attr.entity_attr_id }}" style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
+          <li class='list-group-item list-group-item-info airone-selected-items' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
         </ul>
 
-        <select class="attr_value" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" index='0' size='5' style="width: 100%" unfetched_value='true' {% if attr.is_mandatory %}mandatory="true"{% endif %}>
+        <select class="attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" index='0' size='5' style="width: 100%" unfetched_value='true' {% if attr.is_mandatory %}mandatory="true"{% endif %}>
           {% if not attr.is_mandatory %}
           <option value='0'>- NOT SET -</option>
           {% endif %}
@@ -101,25 +101,25 @@
           {% endif %}
         </select>
 
-        <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" entity_attr_id="{{ attr.entity_attr_id }}"/>
+        <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}"/>
 
         </div>
       </div>
 
     {% elif attr.type == attr_type.textarea %}
 
-      <textarea class="form-control attr_value" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" cols="80" rows="10" {%if attr.is_mandatory%}mandatory="true"{%endif%}>{{ attr.last_value }}</textarea>
+      <textarea class="form-control attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" cols="80" rows="10" {%if attr.is_mandatory%}mandatory="true"{%endif%}>{{ attr.last_value }}</textarea>
 
     {% elif attr.type == attr_type.date %}
 
-      <input type="date" class="attr_value" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" value="{{ attr.last_value|date:"Y-m-d"}}" {% if attr.is_mandatory %}mandatory="true"{% endif %} />
+      <input type="date" class="attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" value="{{ attr.last_value|date:"Y-m-d"}}" {% if attr.is_mandatory %}mandatory="true"{% endif %} />
 
     {% elif attr.type == attr_type.boolean %}
 
       {% if attr.last_value %}
-        <input type="checkbox" class="attr_value" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" checked=True/>
+        <input type="checkbox" class="attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" checked=True/>
       {% else %}
-        <input type="checkbox" class="attr_value" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" />
+        <input type="checkbox" class="attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" />
       {% endif %}
 
     {% elif attr.type|bitwise_and:attr_type.group %}
@@ -127,9 +127,9 @@
       <div class='col-12'>
 
       <ul class='list-group'>
-        <li class='list-group-item list-group-item-info airone-selected-items' entity_attr_id="{{ attr.entity_attr_id }}" style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
+        <li class='list-group-item list-group-item-info airone-selected-items' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
       </ul>
-      <select class="attr_value" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" index='0' size='5' style="width: 100%" {% if attr.is_mandatory %}mandatory="true"{% endif %}>
+      <select class="attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" index='0' size='5' style="width: 100%" {% if attr.is_mandatory %}mandatory="true"{% endif %}>
           {% if not attr.is_mandatory %}
           <option value='0'>- NOT SET -</option>
           {% endif %}
@@ -138,13 +138,13 @@
           <option value="{{ group.id }}"{% if group.id == attr.last_value.id %} selected="selected" {% endif %}>{{ group.name }}</option>
           {% endfor %}
       </select>
-      <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" entity_attr_id="{{ attr.entity_attr_id }}"/>
+      <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}"/>
 
       </div>
     </div>
     {% else %}
 
-      <input type="text" class="form-control attr_value" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" value="{{ attr.last_value }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}/>
+      <input type="text" class="form-control attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" value="{{ attr.last_value }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}/>
 
     {% endif %}
   {% endif %}

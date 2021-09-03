@@ -91,8 +91,7 @@ class APITest(AironeViewTest):
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
         job = Job.new_create(user, entry, params={
             'attrs': [
-                {'entity_attr_id': str(attr.id),
-                 'value': [{'data': 'hoge', 'index': 0}], 'referral_key': []}
+                {'id': str(attr.id), 'value': [{'data': 'hoge', 'index': 0}], 'referral_key': []}
             ]
         })
 
