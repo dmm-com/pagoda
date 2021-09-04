@@ -147,8 +147,10 @@ def render(request, template, context={}):
     context['OPERATION_HISTORY'] = {
         'ADD_ENTITY': History.ADD_ENTITY,
         'ADD_ATTR': History.ADD_ATTR,
+        'ADD_ENTRY': History.ADD_ENTRY,
         'MOD_ENTITY': History.MOD_ENTITY,
         'MOD_ATTR': History.MOD_ATTR,
+        'MOD_ENTRY': History.MOD_ENTRY,
         'DEL_ENTITY': History.DEL_ENTITY,
         'DEL_ATTR': History.DEL_ATTR,
         'DEL_ENTRY': History.DEL_ENTRY,

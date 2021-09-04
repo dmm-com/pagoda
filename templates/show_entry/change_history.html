@@ -1,3 +1,47 @@
+<h3>エントリの変更履歴</h3>
+<div>
+  <table class="table">
+    <thead>
+    <tr>
+      <th>Operator</th>
+      <th>Operation</th>
+      <th>Details</th>
+      <th>Time</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for column in entry_history %}
+      <tr>
+        <td>{{ column.user.username }}</td>
+        {% if column.operation == OPERATION_HISTORY.ADD_ENTRY %}
+          <td>作成</td>
+        {% elif column.operation == OPERATION_HISTORY.MOD_ENTRY %}
+          <td>変更</td>
+        {% elif column.operation == OPERATION_HISTORY.DEL_ENTRY %}
+          <td>削除</td>
+        {% else %}
+          <td>{{ column.operation }} ({{ OPERATION_HISTORY.ADD_ENTRY }})</td>
+        {% endif %}
+        <td>
+          <table class='table'>
+            <tbody>
+            {% for detail in column.details.all %}
+              <tr>
+                <td>{{ detail.target_obj.name }}</td>
+                <td>{{ detail.text }}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </td>
+        <td>{{ column.time }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h3>属性の変更履歴</h3>
 <div class="row">
   <div class="col">
     <table class="table table-borderless airone-entry-table-history" id='attribute-history'>

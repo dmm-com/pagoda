@@ -25,7 +25,7 @@ from airone.lib.profile import airone_profile
 from entity.models import Entity
 from entry.models import Entry, Attribute, AttributeValue
 from job.models import Job, JobOperation
-from user.models import User
+from user.models import History, User
 from group.models import Group
 from .settings import CONFIG
 
@@ -202,6 +202,9 @@ def do_create(request, entity_id, recv_data):
                                  schema=entity,
                                  status=Entry.STATUS_CREATING)
 
+    # register operation History for creating entry
+    user.seth_entry_add(entry)
+
     # Create a new job to create entry and run it
     job_create_entry = Job.new_create(user, entry, params=recv_data)
     job_create_entry.run()
@@ -290,11 +293,17 @@ def do_edit(request, entry_id, recv_data):
     if entry.name != recv_data['entry_name']:
         job_register_referrals = Job.new_register_referrals(user, entry)
 
+    prev_name = entry.name
     entry.name = recv_data['entry_name']
 
     # set flags that indicates target entry is under processing
     entry.set_status(Entry.STATUS_EDITING)
     entry.save()
+
+    # register operation History for editing entry
+    if prev_name != recv_data['entry_name']:
+        h = user.seth_entry_mod(entry)
+        h.mod_entry(entry, 'old name: "%s"' % prev_name)
 
     # Create new jobs to edit entry and notify it to registered webhook endpoint if it's necessary
     job_edit_entry = Job.new_edit(user, entry, params=recv_data)
@@ -364,8 +373,11 @@ def history(request, entry_id):
     if not entry.is_active:
         return _redirect_restore_entry(entry)
 
+    entry_history = History.objects.filter(target_obj=entry, is_detail=False).order_by('-time')
+
     context = {
         'entry': entry,
+        'entry_history': entry_history,
         'value_history': entry.get_value_history(user),
         'history_count': CONFIG.MAX_HISTORY_COUNT,
     }

@@ -149,6 +149,12 @@ class User(DjangoUser):
     def seth_entity_del(self, target):
         return History.register(self, target, History.DEL_ENTITY)
 
+    def seth_entry_add(self, target):
+        return History.register(self, target, History.ADD_ENTRY)
+
+    def seth_entry_mod(self, target):
+        return History.register(self, target, History.MOD_ENTRY)
+
     def seth_entry_del(self, target):
         return History.register(self, target, History.DEL_ENTRY)
 
@@ -175,8 +181,10 @@ class History(models.Model):
 
     ADD_ENTITY = OP_ADD + TARGET_ENTITY
     ADD_ATTR = OP_ADD + TARGET_ATTR
+    ADD_ENTRY = OP_ADD + TARGET_ENTRY
     MOD_ENTITY = OP_MOD + TARGET_ENTITY
     MOD_ATTR = OP_MOD + TARGET_ATTR
+    MOD_ENTRY = OP_MOD + TARGET_ENTRY
     DEL_ENTITY = OP_DEL + TARGET_ENTITY
     DEL_ATTR = OP_DEL + TARGET_ATTR
     DEL_ENTRY = OP_DEL + TARGET_ENTRY
@@ -220,6 +228,14 @@ class History(models.Model):
     def mod_entity(self, target, text=''):
         detail = History.register(target=target,
                                   operation=History.MOD_ENTITY,
+                                  user=self.user,
+                                  text=text,
+                                  is_detail=True)
+        self.details.add(detail)
+
+    def mod_entry(self, target, text=''):
+        detail = History.register(target=target,
+                                  operation=History.MOD_ENTRY,
                                   user=self.user,
                                   text=text,
                                   is_detail=True)

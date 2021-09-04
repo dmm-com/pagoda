@@ -337,6 +337,11 @@ def restore_entry(self, job_id):
         # update entry information to Elasticsearch
         entry.register_es()
 
+        # register operation History for restoring entry
+        user = User.objects.filter(id=job.user.id).first()
+        entry_history = user.seth_entry_mod(entry)
+        entry_history.mod_entry(entry, 'restore deleted entry')
+
         # update job status and save it
         job.update(Job.STATUS['DONE'])
 
