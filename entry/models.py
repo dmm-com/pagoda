@@ -1277,7 +1277,7 @@ class Entry(ACLBase):
         cloned_entry.del_status(Entry.STATUS_CREATING)
         return cloned_entry
 
-    # NOTE: Type-Read
+    # NOTE: Type-Write
     def export(self, user):
         attrinfo = {}
 
@@ -1289,7 +1289,7 @@ class Entry(ACLBase):
             if not user.has_permission(attr, ACLType.Readable):
                 continue
 
-            latest_value = attr.get_latest_value(is_readonly=True)
+            latest_value = attr.get_latest_value()
             if latest_value:
                 attrinfo[attr.schema.name] = latest_value.get_value()
             else:
