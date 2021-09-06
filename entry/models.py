@@ -1128,10 +1128,6 @@ class Entry(ACLBase):
                     ret_attrs.append(attrinfo)
                     continue
 
-                if not last_value.data_type:
-                    last_value.data_type = attr.schema.type
-                    last_value.save()
-
                 if last_value.data_type == AttrTypeStr or last_value.data_type == AttrTypeText:
                     attrinfo['last_value'] = last_value.value
 
