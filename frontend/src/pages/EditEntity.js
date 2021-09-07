@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getEntity } from "../utils/AironeAPIClient";
+import { getEntities, getEntity } from "../utils/AironeAPIClient";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import Typography from "@material-ui/core/Typography";
 import { useAsync } from "react-use";
@@ -14,7 +14,16 @@ export default function EditEntity({}) {
 
   const entity = useAsync(async () => {
     if (entityId !== undefined) {
-      return getEntity(entityId);
+      return getEntity(entityId).then((resp) => resp.json());
+    }
+    return Promise.resolve({});
+  });
+
+  const referralEntities = useAsync(async () => {
+    if (entityId === undefined) {
+      return getEntities()
+        .then((resp) => resp.json())
+        .then((data) => data.entities);
     }
     return Promise.resolve({});
   });
@@ -43,12 +52,16 @@ export default function EditEntity({}) {
       </Tabs>
 
       <div hidden={tabValue !== 0}>
-      {!entity.loading && (
+      {!entity.loading && !referralEntities.loading && (
         <EntityForm
-          initName={entity.value.name}
-          initNote={entity.value.note}
-          initIsTopLevel={entity.value.isTopLevel}
-          initAttributes={entity.value.attributes}
+          entity={{
+            id: entityId,
+            name: entity.value.name,
+            note: entity.value.note,
+            isTopLevel: entity.value.is_toplevel,
+            attributes: entity.value.attributes,
+          }}
+          referralEntities={referralEntities.value}
         />
       )}
       </div>
