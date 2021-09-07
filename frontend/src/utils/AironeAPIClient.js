@@ -224,3 +224,13 @@ export function updateACL(objectId, objectType, acl, defaultPermission) {
     }),
   });
 }
+
+export function setWebhook(entityId, request_parameter) {
+  return fetch(`/webhook/api/v1/set/${entityId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify(request_parameter),
+  });
+}

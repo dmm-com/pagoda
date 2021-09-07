@@ -53,7 +53,9 @@ export default function EditEntity({}) {
       )}
       </div>
       <div hidden={tabValue !== 1}>
-        <WebhookForm />
+        <WebhookForm
+          entityId={entityId}
+        />
       </div>
 
     </div>

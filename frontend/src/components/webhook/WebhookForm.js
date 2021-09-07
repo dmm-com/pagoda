@@ -2,18 +2,16 @@ import { makeStyles } from "@material-ui/core/styles";
 import React, { useState } from "react";
 
 import Button from "@material-ui/core/Button";
-import Backdrop from '@material-ui/core/Backdrop';
 import Checkbox from '@material-ui/core/Checkbox';
-import Fade from '@material-ui/core/Fade';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
-import Input from '@material-ui/core/Input';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Modal from '@material-ui/core/Modal';
-import PropTypes from "prop-types";
 import TextField from '@material-ui/core/TextField';
+
+import { setWebhook } from "../../utils/AironeAPIClient";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -35,6 +33,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function WebhookForm({
+  entityId,
 }) {
   const classes = useStyles();
 
@@ -54,15 +53,16 @@ export default function WebhookForm({
   }
 
   const handleRegisterWebhook = () => {
-    request_parameter = {
+    const request_parameter = {
       'label': webhook_label,
       'webhook_url': webhook_url,
-      'request_headers': [],
-      'is_enabled': is_available,
+      'request_headers': headers,
+      ' ': is_available,
     }
 
-
     console.log(request_parameter);
+
+    setWebhook(entityId, request_parameter);
 
     registerWebhook(webhooks.concat('test'));
   }
@@ -78,6 +78,11 @@ export default function WebhookForm({
 
   const handleChangeHeaderKey = (e, index) => {
     headers[index]['key'] = e.target.value;
+    setHeaders([...headers]);
+  }
+
+  const handleChangeHeaderValue = (e, index) => {
+    headers[index]['value'] = e.target.value;
     setHeaders([...headers]);
   }
 
