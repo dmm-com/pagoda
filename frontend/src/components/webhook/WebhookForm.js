@@ -1,13 +1,18 @@
 import { makeStyles } from "@material-ui/core/styles";
 import React, { useState } from "react";
+
 import Button from "@material-ui/core/Button";
-import PropTypes from "prop-types";
-import Modal from '@material-ui/core/Modal';
 import Backdrop from '@material-ui/core/Backdrop';
+import Checkbox from '@material-ui/core/Checkbox';
 import Fade from '@material-ui/core/Fade';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import Input from '@material-ui/core/Input';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import Input from '@material-ui/core/Input';
+import Modal from '@material-ui/core/Modal';
+import PropTypes from "prop-types";
 import TextField from '@material-ui/core/TextField';
 
 
@@ -34,8 +39,11 @@ export default function WebhookForm({
   const classes = useStyles();
 
   const [open, setOpen] = React.useState(false);
-  const [webhooks, registerWebhook] = React.useState(['hoge', 'fuga']);
+  const [webhooks, registerWebhook] = React.useState([]);
   const [headers, setHeaders] = React.useState(Array())
+  const [is_available, setAvailability] = React.useState(false);
+  const [webhook_url, setWebhookURL] = React.useState('');
+  const [webhook_label, setWebhookLabel] = React.useState('');
 
   const handleOpenModal = () => {
     setOpen(true);
@@ -46,6 +54,16 @@ export default function WebhookForm({
   }
 
   const handleRegisterWebhook = () => {
+    request_parameter = {
+      'label': webhook_label,
+      'webhook_url': webhook_url,
+      'request_headers': [],
+      'is_enabled': is_available,
+    }
+
+
+    console.log(request_parameter);
+
     registerWebhook(webhooks.concat('test'));
   }
 
@@ -63,9 +81,16 @@ export default function WebhookForm({
     setHeaders([...headers]);
   }
 
-  const handleChangeHeaderValue = (e, index) => {
-    headers[index]['value'] = e.target.value;
-    setHeaders([...headers]);
+  const handleChangeAvailability = (e) => {
+    setAvailability(e.target.checked);
+  }
+
+  const handleChangeWebhookURL = (e) => {
+    setWebhookURL(e.target.value);
+  }
+
+  const handleChangeWebhookLabel = (e) => {
+    setWebhookLabel(e.target.value);
   }
 
   return (
@@ -105,6 +130,7 @@ export default function WebhookForm({
                 id="input-webhoook-url"
                 label="Webhook URL"
                 variant="outlined"
+                onChange={handleChangeWebhookURL}
               />
             </div>
 
@@ -113,7 +139,20 @@ export default function WebhookForm({
                 id="input-label"
                 label="Label (Optional)"
                 variant="outlined"
+                onChange={handleChangeWebhookLabel}
               />
+            </div>
+            <div>
+              <FormControl component="fieldset">
+                <FormGroup aria-label="position" row>
+                <FormControlLabel
+                          value="end"
+                          control={<Checkbox color="primary" onChange={handleChangeAvailability} />}
+                          label="有効化"
+                          labelPlacement="end"
+                        />
+                </FormGroup>
+              </FormControl>
             </div>
 
             <div>
@@ -145,7 +184,7 @@ export default function WebhookForm({
             variant="contained"
             color="secondary"
           >
-            Add Webhook
+            REGISTER
           </Button>
         </div>
 
