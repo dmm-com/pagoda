@@ -34,6 +34,15 @@ export default function EditEntity({}) {
         <Typography component={Link} to={`/new-ui/entities`}>
           エンティティ一覧
         </Typography>
+        {/* TODO consider loading case */}
+        {!entity.loading && (
+          <Typography
+            component={Link}
+            to={`/new-ui/entities/${entityId}/entries`}
+          >
+            {entity.value.name}
+          </Typography>
+        )}
         <Typography color="textPrimary">エンティティ編集</Typography>
       </AironeBreadcrumbs>
 
