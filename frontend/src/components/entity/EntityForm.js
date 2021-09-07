@@ -2,6 +2,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import React, { useState } from "react";
 import Button from "@material-ui/core/Button";
 import {
+  List,
+  ListItemText,
   MenuItem,
   Select,
   Table,
@@ -10,11 +12,73 @@ import {
   TableHead,
   TableRow,
 } from "@material-ui/core";
-import { AttributeTypes } from "../../utils/Constants";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { createEntity } from "../../utils/AironeAPIClient";
+import { createEntity, updateEntity } from "../../utils/AironeAPIClient";
 import { useHistory } from "react-router-dom";
 import PropTypes from "prop-types";
+import Box from "@material-ui/core/Box";
+import Typography from "@material-ui/core/Typography";
+
+const BaseAttributeTypes = {
+  object: 1 << 0,
+  string: 1 << 1,
+  text: 1 << 2,
+  bool: 1 << 3,
+  group: 1 << 4,
+  date: 1 << 5,
+  array: 1 << 10,
+  named: 1 << 11,
+};
+
+export const AttributeTypes = {
+  object: {
+    name: "entry",
+    type: BaseAttributeTypes.object,
+  },
+  string: {
+    name: "string",
+    type: BaseAttributeTypes.string,
+  },
+  named_object: {
+    name: "named_entry",
+    type: BaseAttributeTypes.object | BaseAttributeTypes.named,
+  },
+  array_object: {
+    name: "array_entry",
+    type: BaseAttributeTypes.object | BaseAttributeTypes.array,
+  },
+  array_string: {
+    name: "array_string",
+    type: BaseAttributeTypes.string | BaseAttributeTypes.array,
+  },
+  array_named_object: {
+    name: "array_named_entry",
+    type:
+      BaseAttributeTypes.object |
+      BaseAttributeTypes.named |
+      BaseAttributeTypes.array,
+  },
+  array_group: {
+    name: "array_group",
+    type: BaseAttributeTypes.group | BaseAttributeTypes.array,
+  },
+  text: {
+    name: "textarea",
+    type: BaseAttributeTypes.text,
+  },
+  boolean: {
+    name: "boolean",
+    type: BaseAttributeTypes.bool,
+  },
+  group: {
+    name: "group",
+    type: BaseAttributeTypes.group,
+  },
+  date: {
+    name: "date",
+    type: BaseAttributeTypes.date,
+  },
+};
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -22,22 +86,22 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EntityForm({
-  initName = "",
-  initNote = "",
-  initIsTopLevel = false,
-  initAttributes = [],
-}) {
+export default function EntityForm({ entity = {}, referralEntities = [] }) {
   const classes = useStyles();
   const history = useHistory();
 
-  const [name, setName] = useState(initName);
-  const [note, setNote] = useState(initNote);
-  const [isTopLevel, setIsTopLevel] = useState(initIsTopLevel);
-  const [attributes, setAttributes] = useState(initAttributes);
+  const createMode = entity.id === undefined;
+  const [name, setName] = useState(entity.name ? entity.name : "");
+  const [note, setNote] = useState(entity.note ? entity.note : "");
+  const [isTopLevel, setIsTopLevel] = useState(
+    entity.isTopLevel ? entity.isTopLevel : false
+  );
+  const [attributes, setAttributes] = useState(
+    entity.attributes ? entity.attributes : []
+  );
 
-  const handleChangeAttributeValue = (event, index, key) => {
-    attributes[index][key] = event.target.value;
+  const handleChangeAttributeValue = (index, key, value) => {
+    attributes[index][key] = value;
     setAttributes([...attributes]);
   };
 
@@ -46,7 +110,7 @@ export default function EntityForm({
       ...attributes,
       {
         name: "",
-        type: AttributeTypes.string,
+        type: AttributeTypes.string.type,
         is_mandatory: false,
         is_delete_in_chain: false,
       },
@@ -59,14 +123,28 @@ export default function EntityForm({
   };
 
   const handleSubmit = (event) => {
-    const attrs_with_index = attributes.map((attr, index) => {
-      attr["row_index"] = String(index);
-      attr["type"] = String(attr.type);
-      return attr;
+    // Adjusted attributes for the API
+    const attrs = attributes.map((attr, index) => {
+      return {
+        id: attr.id,
+        name: attr.name,
+        type: String(attr.type),
+        row_index: String(index),
+        is_mandatory: attr.is_mandatory,
+        is_delete_in_chain: attr.is_delete_in_chain,
+        ref_ids: attr.referrals.map((r) => r.id),
+      };
     });
-    createEntity(name, note, attrs_with_index)
-      .then((resp) => resp.json())
-      .then((data) => history.push("/new-ui/entities/" + data.entity_id));
+
+    if (createMode) {
+      createEntity(name, note, isTopLevel, attrs)
+        .then((resp) => resp.json())
+        .then(() => history.replace("/new-ui/entities"));
+    } else {
+      updateEntity(entity.id, name, note, isTopLevel, attrs)
+        .then((resp) => resp.json())
+        .then(() => history.replace("/new-ui/entities"));
+    }
 
     event.preventDefault();
   };
@@ -116,8 +194,8 @@ export default function EntityForm({
                   <TableCell>
                     <input
                       type="checkbox"
-                      value={isTopLevel}
-                      onChange={(e) => setIsTopLevel(e.target.value)}
+                      checked={isTopLevel}
+                      onChange={(e) => setIsTopLevel(e.target.checked)}
                     />
                   </TableCell>
                 </TableRow>
@@ -136,57 +214,98 @@ export default function EntityForm({
 
               <TableBody id="sortdata">
                 {attributes.map((attr, index) => (
-                  <TableRow className="attr" key={index}>
+                  <TableRow className="attr" key={`attr-${index}`}>
                     <TableCell>
                       <input
                         type="text"
                         className="attr_name"
                         value={attr.name}
                         onChange={(e) =>
-                          handleChangeAttributeValue(e, index, "name")
+                          handleChangeAttributeValue(
+                            index,
+                            "name",
+                            e.target.value
+                          )
                         }
                       />
                     </TableCell>
+
                     <TableCell>
-                      <Select
-                        value={attr.type}
-                        onChange={(e) =>
-                          handleChangeAttributeValue(e, index, "type")
-                        }
-                      >
-                        {Object.keys(AttributeTypes).map((typename) => {
-                          return (
-                            <MenuItem value={AttributeTypes[typename]}>
-                              {typename}
-                            </MenuItem>
-                          );
-                        })}
-                      </Select>
+                      <Box display="flex">
+                        <Box minWidth={100} marginX={1}>
+                          <Select
+                            fullWidth={true}
+                            value={attr.type}
+                            disabled={!createMode}
+                            onChange={(e) =>
+                              handleChangeAttributeValue(
+                                index,
+                                "type",
+                                e.target.value
+                              )
+                            }
+                          >
+                            {Object.keys(AttributeTypes).map((typename) => (
+                              <MenuItem value={AttributeTypes[typename].type}>
+                                {AttributeTypes[typename].name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </Box>
+                        <Box minWidth={100} marginX={1}>
+                          {createMode &&
+                            (attr.type & BaseAttributeTypes.object) > 0 && (
+                              <>
+                                <Typography>参照エントリ: </Typography>
+                                {/* TODO multiple */}
+                                <Select fullWidth={true}>
+                                  {referralEntities.map((e) => (
+                                    <MenuItem value={e.id}>{e.name}</MenuItem>
+                                  ))}
+                                </Select>
+                              </>
+                            )}
+                          {!createMode && attr.referrals.length > 0 && (
+                            <>
+                              <Typography>参照エントリ: </Typography>
+                              <List>
+                                {attr.referrals.map((r) => (
+                                  <ListItemText>{r.name}</ListItemText>
+                                ))}
+                              </List>
+                            </>
+                          )}
+                        </Box>
+                      </Box>
                     </TableCell>
 
                     <TableCell>
                       <div>
                         <input
                           type="checkbox"
-                          className="is_mandatory"
+                          checked={attr.is_mandatory}
                           onChange={(e) =>
-                            handleChangeAttributeValue(e, index, "is_mandatory")
+                            handleChangeAttributeValue(
+                              index,
+                              "is_mandatory",
+                              e.target.checked
+                            )
                           }
-                        />{" "}
+                        />
                         必須
                       </div>
                       <div>
                         <input
                           type="checkbox"
-                          className="is_delete_in_chain"
+                          checked={attr.is_delete_in_chain}
                           onChange={(e) =>
                             handleChangeAttributeValue(
-                              e,
                               index,
-                              "is_delete_in_chain"
+                              "is_delete_in_chain",
+                              e.target.checked
                             )
                           }
-                        />{" "}
+                        />
                         関連削除
                       </div>
                     </TableCell>
@@ -227,8 +346,17 @@ export default function EntityForm({
 }
 
 EntityForm.propTypes = {
-  initName: PropTypes.string,
-  initNote: PropTypes.string,
-  initIsTopLevel: PropTypes.bool,
-  initAttributes: PropTypes.array,
+  entity: PropTypes.exact({
+    id: PropTypes.string,
+    name: PropTypes.string,
+    note: PropTypes.string,
+    isTopLevel: PropTypes.bool,
+    attributes: PropTypes.array,
+  }),
+  referralEntities: PropTypes.arrayOf(
+    PropTypes.exact({
+      id: PropTypes.string,
+      name: PropTypes.string,
+    })
+  ),
 };
