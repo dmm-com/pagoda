@@ -53,16 +53,27 @@ export default function WebhookForm({
   }
 
   const handleRegisterWebhook = () => {
+    // This parameter is invalid on purpose
     const request_parameter = {
       'label': webhook_label,
       'webhook_url': webhook_url,
       'request_headers': headers,
-      ' ': is_available,
+      //'is_enabled': is_available, // This is correct
+      '__bad_parameter__': is_available, // This is bad
     }
 
     console.log(request_parameter);
 
-    setWebhook(entityId, request_parameter);
+    setWebhook(entityId, request_parameter)
+      .then((resp) => {
+        if(resp.ok) {
+          handleCloseModal()
+        } else {
+          alert(`[onix-error(E0)] ${resp.statusText}`);
+          console.log(`[onix-error(E0)] ${resp.statusText}`);
+          console.log(resp);
+        }
+      });
 
     registerWebhook(webhooks.concat('test'));
   }
