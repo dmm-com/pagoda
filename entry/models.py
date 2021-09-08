@@ -175,11 +175,6 @@ class AttributeValue(models.Model):
         def _get_group_value(attrv):
             return Group.objects.filter(id=attrv.value, is_active=True).first()
 
-        if not self.data_type:
-            # complement data_type as the current type of Attribute
-            self.data_type = self.parent_attr.schema.type
-            self.save()
-
         if self.data_type == AttrTypeValue['array_string']:
             return [x.value for x in self.data_array.all()]
         elif self.data_type == AttrTypeValue['array_object']:
