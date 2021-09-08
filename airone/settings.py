@@ -174,8 +174,6 @@ AIRONE = {
     'VERSION': 'unknown',
     'FILE_STORE_PATH': '/tmp/airone_app',
     'AUTO_COMPLEMENT_USER': 'auto_complementer',
-    'DB_SLAVES': ['default'],
-    'DB_MASTER': 'default',
     'EXTENSIONS': [],
 }
 
