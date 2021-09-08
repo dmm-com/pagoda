@@ -1005,7 +1005,11 @@ class ModelTest(AironeTestCase):
             attr = attrinfo[result['name']]['attr']
 
             self.assertEqual(result['id'], attr.id)
+            self.assertEqual(result['entity_attr_id'], attr.schema.id)
             self.assertEqual(result['type'], attr.schema.type)
+            self.assertEqual(result['is_mandatory'], attr.schema.is_mandatory)
+            self.assertEqual(result['index'], attr.schema.index)
+            self.assertEqual(result['permission'], True)
             self.assertEqual(result['last_value'], attrinfo[attr.name]['exp_val'])
 
     def test_set_attrvalue_to_entry_attr_without_availabe_value(self):
@@ -2350,6 +2354,17 @@ class ModelTest(AironeTestCase):
         self.assertEqual(attrv, attr.get_latest_value())
         self.assertEqual(attr.values.count(), 1)
 
+    def test_get_latest_value_with_readonly(self):
+        user = User.objects.create(username='hoge')
+        entity = self.create_entity_with_all_type_attributes(user)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+
+        for entity_attr in entity.attrs.all():
+            entry.add_attribute_from_base(entity_attr, user)
+
+        for attr in entry.attrs.all():
+            self.assertIsNone(attr.get_latest_value(is_readonly=True))
+
     def test_add_to_attrv(self):
         user = User.objects.create(username='hoge')
         entity_ref = Entity.objects.create(name='Ref', created_user=user)
@@ -3270,3 +3285,31 @@ class ModelTest(AironeTestCase):
             attr.add_value(user, info['set_val'])
 
             self.assertEqual(attr.get_latest_value().format_for_history(), info['exp_val'])
+
+    def test_get_default_value(self):
+        user = User.objects.create(username='hoge')
+        entity = self.create_entity_with_all_type_attributes(user)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
+
+        default_values = [
+            {'name': 'str', 'value': ''},
+            {'name': 'text', 'value': ''},
+            {'name': 'obj', 'value': None},
+            {'name': 'name', 'value': {'name': '', 'id': None}},
+            {'name': 'bool', 'value': False},
+            {'name': 'group', 'value': None},
+            {'name': 'date', 'value': None},
+            {'name': 'arr_str', 'value': []},
+            {'name': 'arr_obj', 'value': []},
+            {'name': 'arr_name', 'value': dict().values()},
+            {'name': 'arr_group', 'value': []},
+        ]
+        for (i, attr) in enumerate(entry.attrs.all()):
+            self.assertEqual(default_values[i]['name'], attr.name)
+            if attr.name == 'arr_name':
+                self.assertEqual(list(default_values[i]['value']),
+                                 list(AttributeValue.get_default_value(attr)))
+            else:
+                self.assertEqual(default_values[i]['value'],
+                                 AttributeValue.get_default_value(attr))

@@ -5,7 +5,9 @@
       <tr id='{{ attr.name|cut:" " }}'>
         <td class='attr'>{{ attr.name }}</td>
         <td>
-        {% if attr.type == attr_type.string %}
+        {% if not attr.permission %}
+          <span>Permission denied.</span>
+        {% elif attr.type == attr_type.string %}
           <span class='url_conv'>{{ attr.last_value }}</span>
         {% elif attr.type == attr_type.textarea %}
           <span class='url_conv textarea'>{{ attr.last_value }}</span>

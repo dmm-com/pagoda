@@ -3,6 +3,9 @@
   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
     <a class="dropdown-item" href="/user/edit/{{ user.id }}">ユーザ設定</a>
     <div class="dropdown-divider"></div>
-    <a class="dropdown-item" href="{% url 'auth:logout' %}">ログアウト</a>
+    <form name="logout" method="post" action="{% url 'auth:logout' %}">
+      {% csrf_token %}
+      <a class="dropdown-item" href="javascript:logout.submit()">ログアウト</a>
+    </form>
   </div>
 </div>
