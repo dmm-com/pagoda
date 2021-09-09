@@ -1,3 +1,4 @@
+import json
 from django.db import models
 
 
@@ -22,10 +23,15 @@ class Webhook(models.Model):
     headers = models.TextField()
 
     def to_dict(self):
+        try:
+            webhook_headers = json.loads(self.headers)
+        except json.decoder.JSONDecodeError:
+            webhook_headers = []
+
         return {
             'lebel': self.label,
             'url': self.url,
             'is_enabled': self.is_enabled,
             'is_verified': self.is_verified,
-            'headers': self.headers,
+            'headers': webhook_headers,
         }
