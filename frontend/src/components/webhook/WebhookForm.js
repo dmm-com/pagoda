@@ -1,5 +1,6 @@
 import { makeStyles } from "@material-ui/core/styles";
 import React, { useState } from "react";
+import { useAsync } from "react-use";
 
 import Alert from "@material-ui/lab/Alert";
 import Button from "@material-ui/core/Button";
@@ -12,7 +13,7 @@ import ListItem from "@material-ui/core/ListItem";
 import Modal from "@material-ui/core/Modal";
 import TextField from "@material-ui/core/TextField";
 
-import { setWebhook } from "../../utils/AironeAPIClient";
+import { getWebhooks, setWebhook } from "../../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -35,8 +36,13 @@ const useStyles = makeStyles((theme) => ({
 export default function WebhookForm({ entityId }) {
   const classes = useStyles();
 
+  const webhooks = useAsync(async () => {
+    return getWebhooks(entityId).then((resp) => resp.json());
+  });
+
+  console.log(webhooks);
+
   const [open, setOpen] = React.useState(false);
-  const [webhooks, registerWebhook] = React.useState([]);
   const [webhook_headers, setWebhookHeaders] = React.useState(Array());
   const [is_available, setAvailability] = React.useState(false);
   const [webhook_url, setWebhookURL] = React.useState("");
@@ -122,9 +128,15 @@ export default function WebhookForm({ entityId }) {
       </Button>
 
       <List>
-        {webhooks.map((item) => (
-          <ListItem>{item}</ListItem>
-        ))}
+        {!webhooks.loading &&
+          webhooks.value.map((item) => (
+            <>
+              <ListItem>{item.url}</ListItem>
+              <ListItem>{item.label}</ListItem>
+              <ListItem>{item.is_enabled}</ListItem>
+              <ListItem>{item.is_verified}</ListItem>
+            </>
+          ))}
       </List>
 
       <Modal

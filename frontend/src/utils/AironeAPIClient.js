@@ -236,6 +236,10 @@ export function updateACL(objectId, objectType, acl, defaultPermission) {
   });
 }
 
+export function getWebhooks(entityId) {
+  return fetch(`/webhook/api/v2/${entityId}`);
+}
+
 export function setWebhook(entityId, request_parameter) {
   return fetch(`/webhook/api/v1/set/${entityId}`, {
     method: "POST",

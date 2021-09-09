@@ -1,3 +1,5 @@
+import json
+
 from django.test import TestCase
 from webhook.models import Webhook
 
@@ -13,7 +15,7 @@ class ModelTest(TestCase):
                 {'key': 'test-key1', 'value': 'test-value1'},
             ]),
         })
-        
+
         self.assertEqual(webhook_instance.to_dict(), {
             'label': 'test1',
             'url': 'http://example.com/api',

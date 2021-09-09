@@ -29,7 +29,7 @@ class Webhook(models.Model):
             webhook_headers = []
 
         return {
-            'lebel': self.label,
+            'label': self.label,
             'url': self.url,
             'is_enabled': self.is_enabled,
             'is_verified': self.is_verified,

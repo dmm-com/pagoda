@@ -1,24 +1,21 @@
 from api_v1.auth import AironeTokenAuth
 
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from airone.lib.acl import ACLType
-from airone.lib.http import check_permission
-from airone.lib.http import http_get
 from airone.lib.profile import airone_profile
 from entity.models import Entity
+
 
 class WebhookAPI(APIView):
     authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @airone_profile
-    def get(self, request, format=None):
+    def get(self, request, entity_id):
         entity = Entity.objects.filter(id=entity_id, is_active=True).first()
         if entity is None:
             return Response({'msg': 'There is no entity for setting'},

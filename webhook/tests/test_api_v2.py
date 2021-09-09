@@ -22,11 +22,20 @@ class APITest(AironeViewTest):
         }))
 
         resp = self.client.get('/webhook/api/v2/%d' % entity.id)
-        print('[onix-test(90)] %s' % resp.content.decode('utf-8'))
 
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), [{
+            'label': 'test1',
+            'url': 'http://example.com/api',
+            'is_enabled': True,
+            'is_verified': True,
+            'headers': [
+                {'key': 'test-key1', 'value': 'test-value1'},
+            ],
+        }])
 
     def test_get_webhooks_with_invalid_entity_id(self):
+        self.guest_login()
         resp = self.client.get('/webhook/api/v2/9999')
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.json(), {
