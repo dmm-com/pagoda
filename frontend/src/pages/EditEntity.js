@@ -32,7 +32,7 @@ export default function EditEntity({}) {
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
-  }
+  };
 
   return (
     <div>
@@ -61,25 +61,22 @@ export default function EditEntity({}) {
       </Tabs>
 
       <div hidden={tabValue !== 0}>
-      {!entity.loading && !referralEntities.loading && (
-        <EntityForm
-          entity={{
-            id: entityId,
-            name: entity.value.name,
-            note: entity.value.note,
-            isTopLevel: entity.value.is_toplevel,
-            attributes: entity.value.attributes,
-          }}
-          referralEntities={referralEntities.value}
-        />
-      )}
+        {!entity.loading && !referralEntities.loading && (
+          <EntityForm
+            entity={{
+              id: entityId,
+              name: entity.value.name,
+              note: entity.value.note,
+              isTopLevel: entity.value.is_toplevel,
+              attributes: entity.value.attributes,
+            }}
+            referralEntities={referralEntities.value}
+          />
+        )}
       </div>
       <div hidden={tabValue !== 1}>
-        <WebhookForm
-          entityId={entityId}
-        />
+        <WebhookForm entityId={entityId} />
       </div>
-
     </div>
   );
 }
