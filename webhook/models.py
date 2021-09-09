@@ -20,3 +20,12 @@ class Webhook(models.Model):
     # This contains HTTP headers when sending request to the specified URL
     # (e.g. authentication header if it's needed)
     headers = models.TextField()
+
+    def to_dict(self):
+        return {
+            'lebel': self.label,
+            'url': self.url,
+            'is_enabled': self.is_enabled,
+            'is_verified': self.is_verified,
+            'headers': self.headers,
+        }
