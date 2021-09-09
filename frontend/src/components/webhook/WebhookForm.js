@@ -1,6 +1,7 @@
 import { makeStyles } from "@material-ui/core/styles";
 import React, { useState } from "react";
 
+import Alert from '@material-ui/lab/Alert';
 import Button from "@material-ui/core/Button";
 import Checkbox from '@material-ui/core/Checkbox';
 import FormGroup from '@material-ui/core/FormGroup';
@@ -43,6 +44,7 @@ export default function WebhookForm({
   const [is_available, setAvailability] = React.useState(false);
   const [webhook_url, setWebhookURL] = React.useState('');
   const [webhook_label, setWebhookLabel] = React.useState('');
+  const [alert_msg, setAlertMsg] = React.useState('');
 
   const handleOpenModal = () => {
     setOpen(true);
@@ -72,6 +74,8 @@ export default function WebhookForm({
           alert(`[onix-error(E0)] ${resp.statusText}`);
           console.log(`[onix-error(E0)] ${resp.statusText}`);
           console.log(resp);
+
+          setAlertMsg(resp.statusText);
         }
       });
 
@@ -139,6 +143,18 @@ export default function WebhookForm({
         onClose={handleCloseModal}
       >
         <div className={classes.paper}>
+          {alert_msg !== '' && (
+            <div>
+              <Alert severity="warning">{alert_msg}</Alert>
+            </div>
+          )}
+          <div hidden={true}>
+            <Alert severity="success">This parameter will be hidden</Alert>
+          </div>
+          <div hidden={false}>
+            <Alert severity="info">This parameter will be shown</Alert>
+          </div>
+
           <h2 id="transition-modal-title">Webhook の登録</h2>
           <form className={classes.root} noValidate autoComplete="off">
             <div>
