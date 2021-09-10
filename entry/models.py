@@ -1238,7 +1238,7 @@ class Entry(ACLBase):
         # that are added after creating this entry.
         self.complement_attrs(user)
 
-        for attr in self.attrs.filter(is_active=True):
+        for attr in self.attrs.filter(is_active=True, schema__is_active=True):
             if not user.has_permission(attr, ACLType.Readable):
                 continue
 
