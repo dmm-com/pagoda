@@ -14,7 +14,6 @@ import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import DeleteButton from "../common/DeleteButton";
 import PropTypes from "prop-types";
-import EntityList from "../entity/EntityList";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -81,7 +80,7 @@ export default function EntryList({ entityId, entries }) {
             {filteredEntries
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((entry) => (
-                <TableRow>
+                <TableRow key={entry.id}>
                   <TableCell>
                     <Typography
                       component={Link}
@@ -92,7 +91,7 @@ export default function EntryList({ entityId, entries }) {
                   </TableCell>
                   <TableCell align="right">
                     <DeleteButton
-                      onConfirmed={(e) => handleDelete(e, entry.id)}
+                      handleDelete={(e) => handleDelete(e, entry.id)}
                     >
                       削除
                     </DeleteButton>
@@ -116,6 +115,6 @@ export default function EntryList({ entityId, entries }) {
 }
 
 EntryList.propTypes = {
-  entityId: PropTypes.number.isRequired,
+  entityId: PropTypes.string.isRequired,
   entries: PropTypes.array.isRequired,
 };

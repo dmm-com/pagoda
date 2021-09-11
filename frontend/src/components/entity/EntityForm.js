@@ -355,8 +355,10 @@ EntityForm.propTypes = {
   }),
   referralEntities: PropTypes.arrayOf(
     PropTypes.exact({
-      id: PropTypes.string,
+      id: PropTypes.number,
       name: PropTypes.string,
+      status: PropTypes.number,
+      note: PropTypes.string,
     })
   ),
 };
