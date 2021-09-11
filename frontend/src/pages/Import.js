@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Import({}) {
+export function Import({}) {
   const classes = useStyles();
   const [files, setFiles] = useState([]);
   const filesRef = useRef(null);

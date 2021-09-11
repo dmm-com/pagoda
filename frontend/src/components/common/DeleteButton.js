@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
-import ConfirmableButton from "./ConfirmableButton";
+import { ConfirmableButton } from "./ConfirmableButton";
 import DeleteIcon from "@material-ui/icons/Delete";
 
 const useStyles = makeStyles((theme) => ({
@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function DeleteButton({ onConfirmed, children }) {
+export function DeleteButton({ onConfirmed, children }) {
   const classes = useStyles();
 
   return (

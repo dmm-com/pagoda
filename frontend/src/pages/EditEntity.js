@@ -1,12 +1,12 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { getEntities, getEntity } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import Typography from "@material-ui/core/Typography";
 import { useAsync } from "react-use";
-import EntityForm from "../components/entity/EntityForm";
+import { EntityForm } from "../components/entity/EntityForm";
 
-export default function EditEntity({}) {
+export function EditEntity({}) {
   const { entityId } = useParams();
 
   const entity = useAsync(async () => {

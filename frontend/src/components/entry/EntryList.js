@@ -12,9 +12,8 @@ import {
 } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
-import DeleteButton from "../common/DeleteButton";
+import { DeleteButton } from "../common/DeleteButton";
 import PropTypes from "prop-types";
-import EntityList from "../entity/EntityList";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -25,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EntryList({ entityId, entries }) {
+export function EntryList({ entityId, entries }) {
   const classes = useStyles();
   const history = useHistory();
 

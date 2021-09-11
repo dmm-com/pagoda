@@ -13,10 +13,10 @@ import {
   TablePagination,
   TableRow,
 } from "@material-ui/core";
-import EditButton from "../common/EditButton";
+import { EditButton } from "../common/EditButton";
 import HistoryIcon from "@material-ui/icons/History";
 import GroupIcon from "@material-ui/icons/Group";
-import DeleteButton from "../common/DeleteButton";
+import { DeleteButton } from "../common/DeleteButton";
 import React, { useRef, useState } from "react";
 import PropTypes from "prop-types";
 
@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EntityList({ entities }) {
+export function EntityList({ entities }) {
   const classes = useStyles();
   const history = useHistory();
 

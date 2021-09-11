@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function LeftMenu({}) {
+export function LeftMenu({}) {
   const classes = useStyles();
 
   const entities = useAsync(async () => {

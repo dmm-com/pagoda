@@ -67,7 +67,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Header({}) {
+export function Header({}) {
   const classes = useStyles();
 
   const [userAnchorEl, setUserAnchorEl] = useState();

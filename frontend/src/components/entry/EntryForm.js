@@ -18,11 +18,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EntryForm({
-  entityId,
-  initName = "",
-  initAttributes = [],
-}) {
+export function EntryForm({ entityId, initName = "", initAttributes = [] }) {
   const classes = useStyles();
   const history = useHistory();
 

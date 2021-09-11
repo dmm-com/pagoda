@@ -11,7 +11,7 @@ import {
 } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import { getUser } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EditUser({}) {
+export function EditUser({}) {
   const classes = useStyles();
   const { userId } = useParams();
 

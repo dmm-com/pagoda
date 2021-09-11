@@ -13,11 +13,11 @@ import Paper from "@material-ui/core/Paper";
 import EditIcon from "@material-ui/icons/Edit";
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { deleteUser, getUsers } from "../utils/AironeAPIClient";
-import EditButton from "../components/common/EditButton";
-import CreateButton from "../components/common/CreateButton";
-import DeleteButton from "../components/common/DeleteButton";
+import { EditButton } from "../components/common/EditButton";
+import { CreateButton } from "../components/common/CreateButton";
+import { DeleteButton } from "../components/common/DeleteButton";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function User({}) {
+export function User({}) {
   const classes = useStyles();
   const [users, setUsers] = useState([]);
   const [updated, setUpdated] = useState(false);
