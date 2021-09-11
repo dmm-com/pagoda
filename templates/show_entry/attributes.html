@@ -2,7 +2,7 @@
   <div class='col'>
     <table class="table table-bordered airone-entry-table-show table-striped">
       {% for attr in attributes %}
-      <tr>
+      <tr id='{{ attr.name|cut:" " }}'>
         <td class='attr'>{{ attr.name }}</td>
         <td>
         {% if attr.type == attr_type.string %}

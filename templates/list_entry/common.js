@@ -2,8 +2,9 @@ var send_export_request = function(format) {
   MessageBox.clear();
 
   $.ajax({
-    url: `/entry/export/{{ entity.id }}?format=${ format }`,
-    type: 'GET',
+    url: `/entry/export/{{ entity.id }}/`,
+    type: 'POST',
+    data: JSON.stringify({format: format}),
     dataType: 'json',
     contentType: 'application/x-www-form-urlencoded;charset=utf-8',
     scriptCharset: 'utf-8',

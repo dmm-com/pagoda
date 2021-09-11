@@ -47,3 +47,12 @@ class ViewTest(AironeViewTest):
         histories = resp.json()
         self.assertEqual(len(histories), 1)
         self.assertEqual(len(histories[0]['details']), 6)
+
+    def test_get_entity(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name='foo', is_public=True, created_user=user)
+
+        resp = self.client.get('/entity/api/v2/entities/%s' % entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()['name'], 'foo')

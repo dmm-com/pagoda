@@ -172,4 +172,4 @@ static_root
 
 # React
 node_modules
-templates/frontend/main.js*
+static/js/new-ui.js*

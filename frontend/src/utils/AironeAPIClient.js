@@ -1,13 +1,7 @@
 import { getCsrfToken } from "./DjangoUtils";
 
 export function getEntity(entityId) {
-  return new Promise((resolve, _) => {
-    resolve({
-      name: "",
-      note: "",
-      attributes: [],
-    });
-  });
+  return fetch(`/entity/api/v2/entities/${entityId}`);
 }
 
 export function getEntities() {
@@ -77,7 +71,7 @@ export function getACL(objectId) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function createEntity(name, note, attrs) {
+export function createEntity(name, note, isTopLevel, attrs) {
   return fetch(`/entity/do_create`, {
     method: "POST",
     headers: {
@@ -86,7 +80,24 @@ export function createEntity(name, note, attrs) {
     body: JSON.stringify({
       name: name,
       note: note,
-      is_toplevel: false,
+      is_toplevel: isTopLevel,
+      attrs: attrs,
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateEntity(entityId, name, note, isTopLevel, attrs) {
+  return fetch(`/entity/do_edit/${entityId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      note: note,
+      is_toplevel: isTopLevel,
       attrs: attrs,
     }),
   });
@@ -183,21 +194,8 @@ export function deleteGroup(groupId) {
   });
 }
 
-// FIXME implement internal API then call it
-export function getJobs() {
-  return new Promise((resolve, _) => {
-    resolve([
-      {
-        id: 1,
-        entry: "entry1",
-        operation: "作成",
-        status: "完了",
-        duration: "1s",
-        created_at: "1st Jan 0:00pm",
-        note: "",
-      },
-    ]);
-  });
+export function getJobs(noLimit = 0) {
+  return fetch(`/job/api/v2/jobs?nolimit=${noLimit}`);
 }
 
 export function getRecentJobs() {
