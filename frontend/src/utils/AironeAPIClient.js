@@ -169,6 +169,41 @@ export function getUsers() {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
+export function createUser(name, email, password, isSuperuser, tokenLifetime) {
+  return fetch(`/user/do_create`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      passwd: password,
+      is_superuser: isSuperuser,
+      token_lifetime: String(tokenLifetime),
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateUser(userId, name, email, isSuperuser, tokenLifetime) {
+  return fetch(`/user/do_edit/${userId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      is_superuser: isSuperuser,
+      token_lifetime: String(tokenLifetime),
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
 export function deleteUser(userId) {
   return fetch(`/user/do_delete/${userId}`, {
     method: "POST",
@@ -176,6 +211,16 @@ export function deleteUser(userId) {
       "X-CSRFToken": getCsrfToken(),
     },
     body: JSON.stringify({}),
+  });
+}
+
+// FIXME implement V2 API
+export function refreshAccessToken() {
+  return fetch("/api/v1/user/access_token/", {
+    method: "PUT",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
   });
 }
 
