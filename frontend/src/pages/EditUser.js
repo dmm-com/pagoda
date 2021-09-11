@@ -1,7 +1,3 @@
-import React, { useEffect, useState } from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import Button from "@material-ui/core/Button";
-import { Link, useParams } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -9,9 +5,14 @@ import {
   TableHead,
   TableRow,
 } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import { getUser } from "../utils/AironeAPIClient";
+import { makeStyles } from "@material-ui/core/styles";
+import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { getUser } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {

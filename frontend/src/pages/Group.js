@@ -1,5 +1,3 @@
-import { makeStyles } from "@material-ui/core/styles";
-import React, { useEffect, useState } from "react";
 import {
   List,
   ListItem,
@@ -10,14 +8,17 @@ import {
   TableHead,
   TableRow,
 } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
-import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { deleteGroup, getGroups } from "../utils/AironeAPIClient";
 import CreateButton from "../components/common/CreateButton";
 import DeleteButton from "../components/common/DeleteButton";
+import { deleteGroup, getGroups } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {

@@ -1,10 +1,4 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { grey } from "@material-ui/core/colors";
-import { fade, makeStyles } from "@material-ui/core/styles";
-import AccountBox from "@material-ui/icons/AccountBox";
-import FormatListBulletedIcon from "@material-ui/icons/FormatListBulleted";
-import SearchIcon from "@material-ui/icons/Search";
+import { Badge, Divider, Menu, MenuItem } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
@@ -12,9 +6,16 @@ import IconButton from "@material-ui/core/IconButton";
 import InputBase from "@material-ui/core/InputBase";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import { Badge, Divider, Menu, MenuItem } from "@material-ui/core";
-import { getRecentJobs } from "../utils/AironeAPIClient";
+import { grey } from "@material-ui/core/colors";
+import { fade, makeStyles } from "@material-ui/core/styles";
+import AccountBox from "@material-ui/icons/AccountBox";
+import FormatListBulletedIcon from "@material-ui/icons/FormatListBulleted";
+import SearchIcon from "@material-ui/icons/Search";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { getRecentJobs } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   root: {
