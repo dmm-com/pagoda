@@ -45,9 +45,10 @@ const useStyles = makeStyles((theme) => ({
 export default function WebhookForm({ entityId }) {
   const classes = useStyles();
 
+  const [isUpdated, setIsUpdated] = React.useState(false);
   const webhooks = useAsync(async () => {
     return getWebhooks(entityId).then((resp) => resp.json());
-  });
+  }, [isUpdated]);
 
   const [open, setOpen] = React.useState(false);
   const [webhook_headers, setWebhookHeaders] = React.useState(Array());
@@ -55,6 +56,7 @@ export default function WebhookForm({ entityId }) {
   const [webhook_url, setWebhookURL] = React.useState("");
   const [webhook_label, setWebhookLabel] = React.useState("");
   const [alert_msg, setAlertMsg] = React.useState("");
+  const [webhookId, setWebhookId] = React.useState(0)
 
   const handleOpenModal = (event, item) => {
     console.log(item);
@@ -73,6 +75,7 @@ export default function WebhookForm({ entityId }) {
     setWebhookHeaders(headers);
     setAlertMsg("");
     setAvailability(item ? item.is_enabled : false);
+    setWebhookId(item ? item.id : 0);
   };
 
   const handleCloseModal = () => {
@@ -88,9 +91,17 @@ export default function WebhookForm({ entityId }) {
       is_enabled: is_available,
     };
 
+    if(webhookId > 0) {
+      request_parameter.id = webhookId
+    }
+
     setWebhook(entityId, request_parameter).then((resp) => {
       if (resp.ok) {
         handleCloseModal();
+
+        // Update each Webhook items on list view
+        // XXX: This is a controversial method (please fix me).
+        setIsUpdated(! isUpdated);
       } else {
         setAlertMsg(resp.statusText);
       }
@@ -201,6 +212,7 @@ export default function WebhookForm({ entityId }) {
                 id="input-label"
                 label="Label (Optional)"
                 variant="outlined"
+                value={webhook_label}
                 onChange={handleChangeWebhookLabel}
               />
             </div>
@@ -213,6 +225,7 @@ export default function WebhookForm({ entityId }) {
                       <Checkbox
                         color="primary"
                         onChange={handleChangeAvailability}
+                        checked={is_available}
                       />
                     }
                     label="有効化"
@@ -275,7 +288,7 @@ export default function WebhookForm({ entityId }) {
             variant="contained"
             color="secondary"
           >
-            REGISTER
+            {webhookId === 0 ? 'REGISTER' : 'UPDATE'}
           </Button>
         </div>
       </Modal>

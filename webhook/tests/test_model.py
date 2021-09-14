@@ -17,6 +17,7 @@ class ModelTest(TestCase):
         })
 
         self.assertEqual(webhook_instance.to_dict(), {
+            'id': webhook_instance.pk,
             'label': 'test1',
             'url': 'http://example.com/api',
             'is_enabled': True,
