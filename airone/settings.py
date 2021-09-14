@@ -67,7 +67,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django_replicated.middleware.ReplicationMiddleware',
+    'airone.lib.db.AirOneReplicationMiddleware',
 ]
 
 ROOT_URLCONF = 'airone.urls'
