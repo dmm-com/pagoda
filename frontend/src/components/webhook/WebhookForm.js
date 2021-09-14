@@ -49,8 +49,6 @@ export default function WebhookForm({ entityId }) {
     return getWebhooks(entityId).then((resp) => resp.json());
   });
 
-  console.log(webhooks);
-
   const [open, setOpen] = React.useState(false);
   const [webhook_headers, setWebhookHeaders] = React.useState(Array());
   const [is_available, setAvailability] = React.useState(false);
@@ -58,14 +56,23 @@ export default function WebhookForm({ entityId }) {
   const [webhook_label, setWebhookLabel] = React.useState("");
   const [alert_msg, setAlertMsg] = React.useState("");
 
-  const handleOpenModal = (item) => {
+  const handleOpenModal = (event, item) => {
     console.log(item);
     setOpen(true);
-    setWebhookURL(item ? item.webhook_url : "");
-    setWebhookLabel(item ? item.webhook_label : "");
-    setWebhookHeaders(item ? Array() : Array());
+    setWebhookURL(item ? item.url : "");
+    setWebhookLabel(item ? item.label : "");
+    const headers = item
+      ? Object.keys(item.headers).map((key) => {
+          const value = item.headers[key];
+          return {
+            key: key,
+            value: value,
+          };
+        })
+      : Array();
+    setWebhookHeaders(headers);
     setAlertMsg("");
-    setAvailability(item ? item.webhook_headers : false);
+    setAvailability(item ? item.is_enabled : false);
   };
 
   const handleCloseModal = () => {
@@ -81,8 +88,6 @@ export default function WebhookForm({ entityId }) {
       is_enabled: is_available,
     };
 
-    console.log(request_parameter);
-
     setWebhook(entityId, request_parameter).then((resp) => {
       if (resp.ok) {
         handleCloseModal();
@@ -90,8 +95,6 @@ export default function WebhookForm({ entityId }) {
         setAlertMsg(resp.statusText);
       }
     });
-
-    registerWebhook(webhooks.concat("test"));
   };
 
   const handleAddHeaderElem = () => {
@@ -153,7 +156,7 @@ export default function WebhookForm({ entityId }) {
       <List>
         {!webhooks.loading &&
           webhooks.value.map((item) => (
-            <ListItem button onClick={() => handleOpenModal(item)}>
+            <ListItem button onClick={(e) => handleOpenModal(e, item)}>
               <ListItemAvatar>
                 <Avatar>
                   {item.is_verified ? <CheckIcon /> : <CloseIcon />}
@@ -188,6 +191,7 @@ export default function WebhookForm({ entityId }) {
                 id="input-webhoook-url"
                 label="Webhook URL"
                 variant="outlined"
+                value={webhook_url}
                 onChange={handleChangeWebhookURL}
               />
             </div>
