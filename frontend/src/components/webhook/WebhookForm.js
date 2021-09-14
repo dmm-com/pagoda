@@ -2,13 +2,13 @@ import { makeStyles } from "@material-ui/core/styles";
 import React, { useState } from "react";
 import { useAsync } from "react-use";
 
-import CancelIcon from '@material-ui/icons/Cancel';
-import CheckIcon from '@material-ui/icons/Check';
-import DeleteIcon from '@material-ui/icons/Delete';
-import IconButton from '@material-ui/core/IconButton';
+import CloseIcon from "@material-ui/icons/Close";
+import CheckIcon from "@material-ui/icons/Check";
+import DeleteIcon from "@material-ui/icons/Delete";
+import IconButton from "@material-ui/core/IconButton";
 
 import Alert from "@material-ui/lab/Alert";
-import Avatar from '@material-ui/core/Avatar';
+import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormGroup from "@material-ui/core/FormGroup";
@@ -16,9 +16,9 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItemText from '@material-ui/core/ListItemText';
+import ListItemAvatar from "@material-ui/core/ListItemAvatar";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import ListItemText from "@material-ui/core/ListItemText";
 import Modal from "@material-ui/core/Modal";
 import TextField from "@material-ui/core/TextField";
 
@@ -58,13 +58,14 @@ export default function WebhookForm({ entityId }) {
   const [webhook_label, setWebhookLabel] = React.useState("");
   const [alert_msg, setAlertMsg] = React.useState("");
 
-  const handleOpenModal = () => {
+  const handleOpenModal = (item) => {
+    console.log(item);
     setOpen(true);
-    setWebhookURL("");
-    setWebhookLabel("");
-    setWebhookHeaders(Array());
+    setWebhookURL(item ? item.webhook_url : "");
+    setWebhookLabel(item ? item.webhook_label : "");
+    setWebhookHeaders(item ? Array() : Array());
     setAlertMsg("");
-    setAvailability(false);
+    setAvailability(item ? item.webhook_headers : false);
   };
 
   const handleCloseModal = () => {
@@ -149,31 +150,24 @@ export default function WebhookForm({ entityId }) {
       </List>
 
       {/*This is testing display*/}
-			<List>
+      <List>
         {!webhooks.loading &&
           webhooks.value.map((item) => (
-						<ListItem>
-							<ListItemAvatar>
-								<Avatar>
-									{item.is_verified ? (
-										<CheckIcon />
-									) : (
-										<CancelIcon />
-									)}
-								</Avatar>
-							</ListItemAvatar>
-							<ListItemText
-								primary={item.url}
-								secondary={item.label}
-							/>
-							<ListItemSecondaryAction>
-								<IconButton edge="end" aria-label="delete">
-									<DeleteIcon />
-								</IconButton>
-							</ListItemSecondaryAction>
-						</ListItem>
+            <ListItem button onClick={() => handleOpenModal(item)}>
+              <ListItemAvatar>
+                <Avatar>
+                  {item.is_verified ? <CheckIcon /> : <CloseIcon />}
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText primary={item.url} secondary={item.label} />
+              <ListItemSecondaryAction>
+                <IconButton edge="end" aria-label="delete">
+                  <DeleteIcon />
+                </IconButton>
+              </ListItemSecondaryAction>
+            </ListItem>
           ))}
-			</List>
+      </List>
 
       <Modal
         aria-labelledby="transition-modal-title"
