@@ -20,6 +20,7 @@ import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
 import Modal from "@material-ui/core/Modal";
+import PropTypes from "prop-types";
 import TextField from "@material-ui/core/TextField";
 
 import {
@@ -160,18 +161,6 @@ export default function WebhookForm({ entityId }) {
         Add Webhook
       </Button>
 
-      <List>
-        {!webhooks.loading &&
-          webhooks.value.map((item) => (
-            <div key={item.id}>
-              <ListItem>{item.url}</ListItem>
-              <ListItem>{item.label}</ListItem>
-              <ListItem>{item.is_enabled}</ListItem>
-              <ListItem>{item.is_verified}</ListItem>
-            </div>
-          ))}
-      </List>
-
       {/*This is testing display*/}
       <List>
         {!webhooks.loading &&
@@ -310,3 +299,7 @@ export default function WebhookForm({ entityId }) {
     </div>
   );
 }
+
+WebhookForm.propTypes = {
+  entityId: PropTypes.number.isRequired,
+};
