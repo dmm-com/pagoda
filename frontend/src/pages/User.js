@@ -103,7 +103,7 @@ export default function User({}) {
           <TableBody>
             {users.map((user) => {
               return (
-                <TableRow>
+                <TableRow key={user.id}>
                   <TableCell>
                     <Typography>{user.username}</Typography>
                   </TableCell>
@@ -127,7 +127,9 @@ export default function User({}) {
                     >
                       パスワード変更
                     </Button>
-                    <DeleteButton onConfirmed={(e) => handleDelete(e, user.id)}>
+                    <DeleteButton
+                      handleDelete={(e) => handleDelete(e, user.id)}
+                    >
                       削除
                     </DeleteButton>
                   </TableCell>

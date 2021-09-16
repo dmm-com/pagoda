@@ -49,18 +49,6 @@ export default function EditUser({}) {
     event.preventDefault();
   };
 
-  const onChangeName = (event) => {
-    setName(event.target.value);
-  };
-
-  const onChangeEmail = (event) => {
-    setEmail(event.target.value);
-  };
-
-  const onChangeIsSuperuser = (event) => {
-    setIsSuperuser(event.target.value);
-  };
-
   return (
     <div>
       <AironeBreadcrumbs>
@@ -73,6 +61,7 @@ export default function EditUser({}) {
         <Typography color="textPrimary">ユーザ編集</Typography>
       </AironeBreadcrumbs>
 
+      {/* TODO split it as an another component */}
       <form onSubmit={onSubmit}>
         <Typography>ユーザ編集</Typography>
         <Button
@@ -86,14 +75,14 @@ export default function EditUser({}) {
         <Table className="table table-bordered">
           <TableBody>
             <TableRow>
-              <TableHead>名前</TableHead>
+              <TableCell>名前</TableCell>
               <TableCell>
                 {django_context.user.is_superuser ? (
                   <input
                     type="text"
                     name="name"
                     value={name}
-                    onChange={onChangeName}
+                    onChange={(e) => setName(e.target.value)}
                     required="required"
                   />
                 ) : (
@@ -102,14 +91,14 @@ export default function EditUser({}) {
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableHead>メールアドレス</TableHead>
+              <TableCell>メールアドレス</TableCell>
               <TableCell>
                 {django_context.user.is_superuser ? (
                   <input
                     type="email"
                     name="email"
                     value={email}
-                    onChange={onChangeEmail}
+                    onChange={(e) => setEmail(e.target.value)}
                     required="required"
                   />
                 ) : (
@@ -119,20 +108,20 @@ export default function EditUser({}) {
             </TableRow>
             {django_context.user.is_superuser && (
               <TableRow>
-                <TableHead>管理者権限を付与</TableHead>
+                <TableCell>管理者権限を付与</TableCell>
                 <TableCell>
                   <input
                     type="checkbox"
                     name="is_superuser"
                     value={isSuperuser}
-                    onChange={onChangeIsSuperuser}
+                    onChange={(e) => setIsSuperuser(e.target.checked)}
                   />
                 </TableCell>
               </TableRow>
             )}
             {token && (
               <TableRow>
-                <TableHead>AccessToken</TableHead>
+                <TableCell>AccessToken</TableCell>
                 <TableCell>
                   <p id="access_token">{token}</p>
                   <button
@@ -146,13 +135,14 @@ export default function EditUser({}) {
               </TableRow>
             )}
             <TableRow>
-              <TableHead>AccessToken の有効期間 [sec]</TableHead>
+              <TableCell>AccessTokenの有効期間[sec]</TableCell>
               <TableCell>
                 <p>
                   <input
                     type="text"
                     name="token_lifetime"
                     value={tokenLifetime}
+                    onChange={(e) => setTokenLifetime(e.target.value)}
                   />
                   (0 ~ 10^8 の範囲の整数を指定してください(0
                   を入力した場合は期限は無期限になります))
