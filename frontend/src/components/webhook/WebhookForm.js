@@ -23,6 +23,7 @@ import Modal from "@material-ui/core/Modal";
 import TextField from "@material-ui/core/TextField";
 
 import { getWebhooks, setWebhook } from "../../utils/AironeAPIClient";
+import DeleteButton from "../common/DeleteButton";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -108,6 +109,10 @@ export default function WebhookForm({ entityId }) {
     });
   };
 
+  const handleDeleteWebhook = (e, entityId) => {
+
+  };
+
   const handleAddHeaderElem = () => {
     setWebhookHeaders([...webhook_headers, { key: "", value: "" }]);
   };
@@ -154,12 +159,12 @@ export default function WebhookForm({ entityId }) {
       <List>
         {!webhooks.loading &&
           webhooks.value.map((item) => (
-            <>
+            <div key={item.id}>
               <ListItem>{item.url}</ListItem>
               <ListItem>{item.label}</ListItem>
               <ListItem>{item.is_enabled}</ListItem>
               <ListItem>{item.is_verified}</ListItem>
-            </>
+            </div>
           ))}
       </List>
 
@@ -167,7 +172,7 @@ export default function WebhookForm({ entityId }) {
       <List>
         {!webhooks.loading &&
           webhooks.value.map((item) => (
-            <ListItem button onClick={(e) => handleOpenModal(e, item)}>
+            <ListItem key={item.id} button onClick={(e) => handleOpenModal(e, item)}>
               <ListItemAvatar>
                 <Avatar>
                   {item.is_verified ? <CheckIcon /> : <CloseIcon />}
@@ -176,12 +181,15 @@ export default function WebhookForm({ entityId }) {
               <ListItemText primary={item.url} secondary={item.label} />
               <ListItemSecondaryAction>
                 <IconButton edge="end" aria-label="delete">
-                  <DeleteIcon />
+                  <DeleteButton
+                    handleDelete={(e) => handleDeleteWebhokk(e, entity.id)}
+                  >
                 </IconButton>
               </ListItemSecondaryAction>
             </ListItem>
           ))}
       </List>
+
 
       <Modal
         aria-labelledby="transition-modal-title"

@@ -245,8 +245,8 @@ export default function EntityForm({ entity = {}, referralEntities = [] }) {
                               )
                             }
                           >
-                            {Object.keys(AttributeTypes).map((typename) => (
-                              <MenuItem value={AttributeTypes[typename].type}>
+                            {Object.keys(AttributeTypes).map((typename, index) => (
+                              <MenuItem key={index} value={AttributeTypes[typename].type}>
                                 {AttributeTypes[typename].name}
                               </MenuItem>
                             ))}
@@ -260,7 +260,7 @@ export default function EntityForm({ entity = {}, referralEntities = [] }) {
                                 {/* TODO multiple */}
                                 <Select fullWidth={true}>
                                   {referralEntities.map((e) => (
-                                    <MenuItem value={e.id}>{e.name}</MenuItem>
+                                    <MenuItem key={e.id} value={e.id}>{e.name}</MenuItem>
                                   ))}
                                 </Select>
                               </>
@@ -270,7 +270,7 @@ export default function EntityForm({ entity = {}, referralEntities = [] }) {
                               <Typography>参照エントリ: </Typography>
                               <List>
                                 {attr.referrals.map((r) => (
-                                  <ListItemText>{r.name}</ListItemText>
+                                  <ListItemText key={r.id}>{r.name}</ListItemText>
                                 ))}
                               </List>
                             </>
