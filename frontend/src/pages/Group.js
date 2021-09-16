@@ -92,7 +92,7 @@ export default function Group({}) {
           <TableBody>
             {groups.map((group) => {
               return (
-                <TableRow>
+                <TableRow key={group.id}>
                   <TableCell>
                     <Typography
                       component={Link}
@@ -104,13 +104,13 @@ export default function Group({}) {
                   <TableCell align="right">
                     <List>
                       {group.members.map((member) => (
-                        <ListItem>{member.name}</ListItem>
+                        <ListItem key={member.name}>{member.name}</ListItem>
                       ))}
                     </List>
                   </TableCell>
                   <TableCell align="right">
                     <DeleteButton
-                      onConfirmed={(e) => handleDelete(e, group.id)}
+                      handleDelete={(e) => handleDelete(e, group.id)}
                     >
                       削除
                     </DeleteButton>
