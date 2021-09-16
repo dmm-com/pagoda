@@ -8,6 +8,7 @@ import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import { getEntities } from "../utils/AironeAPIClient";
 import CreateButton from "../components/common/CreateButton";
 import Button from "@material-ui/core/Button";
+import Loading from "../components/common/Loading";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -60,7 +61,11 @@ export default function Entity({}) {
         </div>
       </div>
 
-      {!entities.loading && <EntityList entities={entities.value} />}
+      {entities.loading ? (
+        <Loading />
+      ) : (
+        <EntityList entities={entities.value} />
+      )}
     </div>
   );
 }
