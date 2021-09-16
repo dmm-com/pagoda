@@ -1,6 +1,6 @@
 import { makeStyles } from "@material-ui/core/styles";
 import React, { useState } from "react";
-import { useAsync } from "react-use";
+import { useAsync, useToggle } from "react-use";
 
 import CloseIcon from "@material-ui/icons/Close";
 import CheckIcon from "@material-ui/icons/Check";
@@ -22,7 +22,11 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Modal from "@material-ui/core/Modal";
 import TextField from "@material-ui/core/TextField";
 
-import { getWebhooks, setWebhook } from "../../utils/AironeAPIClient";
+import {
+  deleteWebhook,
+  getWebhooks,
+  setWebhook,
+} from "../../utils/AironeAPIClient";
 import DeleteButton from "../common/DeleteButton";
 
 const useStyles = makeStyles((theme) => ({
@@ -46,7 +50,7 @@ const useStyles = makeStyles((theme) => ({
 export default function WebhookForm({ entityId }) {
   const classes = useStyles();
 
-  const [isUpdated, setIsUpdated] = React.useState(false);
+  const [isUpdated, toggleIsUpdated] = useToggle(false);
   const webhooks = useAsync(async () => {
     return getWebhooks(entityId).then((resp) => resp.json());
   }, [isUpdated]);
@@ -57,7 +61,7 @@ export default function WebhookForm({ entityId }) {
   const [webhook_url, setWebhookURL] = React.useState("");
   const [webhook_label, setWebhookLabel] = React.useState("");
   const [alert_msg, setAlertMsg] = React.useState("");
-  const [webhookId, setWebhookId] = React.useState(0)
+  const [webhookId, setWebhookId] = React.useState(0);
 
   const handleOpenModal = (event, item) => {
     console.log(item);
@@ -92,25 +96,25 @@ export default function WebhookForm({ entityId }) {
       is_enabled: is_available,
     };
 
-    if(webhookId > 0) {
-      request_parameter.id = webhookId
+    if (webhookId > 0) {
+      request_parameter.id = webhookId;
     }
 
     setWebhook(entityId, request_parameter).then((resp) => {
       if (resp.ok) {
         handleCloseModal();
 
-        // Update each Webhook items on list view
-        // XXX: This is a controversial method (please fix me).
-        setIsUpdated(! isUpdated);
+        toggleIsUpdated();
       } else {
         setAlertMsg(resp.statusText);
       }
     });
   };
 
-  const handleDeleteWebhook = (e, entityId) => {
-
+  const handleDeleteWebhook = (e, webhookId) => {
+    deleteWebhook(webhookId).then(() => {
+      toggleIsUpdated();
+    });
   };
 
   const handleAddHeaderElem = () => {
@@ -172,7 +176,11 @@ export default function WebhookForm({ entityId }) {
       <List>
         {!webhooks.loading &&
           webhooks.value.map((item) => (
-            <ListItem key={item.id} button onClick={(e) => handleOpenModal(e, item)}>
+            <ListItem
+              key={item.id}
+              button
+              onClick={(e) => handleOpenModal(e, item)}
+            >
               <ListItemAvatar>
                 <Avatar>
                   {item.is_verified ? <CheckIcon /> : <CloseIcon />}
@@ -180,16 +188,15 @@ export default function WebhookForm({ entityId }) {
               </ListItemAvatar>
               <ListItemText primary={item.url} secondary={item.label} />
               <ListItemSecondaryAction>
-                <IconButton edge="end" aria-label="delete">
-                  <DeleteButton
-                    handleDelete={(e) => handleDeleteWebhokk(e, entity.id)}
-                  >
-                </IconButton>
+                {/* TODO replace it with non-button element */}
+                <DeleteButton
+                  startIcon={<DeleteIcon />}
+                  handleDelete={(e) => handleDeleteWebhook(e, item.id)}
+                />
               </ListItemSecondaryAction>
             </ListItem>
           ))}
       </List>
-
 
       <Modal
         aria-labelledby="transition-modal-title"
@@ -296,7 +303,7 @@ export default function WebhookForm({ entityId }) {
             variant="contained"
             color="secondary"
           >
-            {webhookId === 0 ? 'REGISTER' : 'UPDATE'}
+            {webhookId === 0 ? "REGISTER" : "UPDATE"}
           </Button>
         </div>
       </Modal>

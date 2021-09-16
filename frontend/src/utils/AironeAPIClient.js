@@ -249,3 +249,12 @@ export function setWebhook(entityId, request_parameter) {
     body: JSON.stringify(request_parameter),
   });
 }
+
+export function deleteWebhook(webhookId) {
+  return fetch(`/webhook/api/v1/del/${webhookId}`, {
+    method: "DELETE",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+  });
+}
