@@ -1103,7 +1103,7 @@ class Entry(ACLBase):
             attrinfo['last_value'] = AttrDefaultValue[entity_attr.type]
 
             # check that attribute exists
-            attr = self.attrs.filter(schema=entity_attr).first()
+            attr = self.attrs.filter(is_active=True, schema=entity_attr).first()
             if not attr:
                 attrinfo['permission'] = user.has_permission(entity_attr, permission)
                 ret_attrs.append(attrinfo)

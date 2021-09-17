@@ -1012,6 +1012,25 @@ class ModelTest(AironeTestCase):
             self.assertEqual(result['permission'], True)
             self.assertEqual(result['last_value'], attrinfo[attr.name]['exp_val'])
 
+    def test_get_available_attrs_with_multi_attribute(self):
+        self._entity.attrs.add(self._attr.schema)
+        self._entry.attrs.add(self._attr)
+
+        # Add and register duplicate Attribute after registers
+        dup_attr = Attribute.objects.create(name=self._attr.schema.name,
+                                            schema=self._attr.schema,
+                                            created_user=self._user,
+                                            parent_entry=self._entry)
+        self._entry.attrs.add(dup_attr)
+
+        self._attr.delete()
+
+        attr = self._entry.attrs.filter(schema=self._attr.schema, is_active=True).first()
+        attr.add_value(self._user, 'hoge')
+
+        results = self._entry.get_available_attrs(self._user)
+        self.assertEqual(results[0]['last_value'], 'hoge')
+
     def test_set_attrvalue_to_entry_attr_without_availabe_value(self):
         user = User.objects.create(username='hoge')
 
