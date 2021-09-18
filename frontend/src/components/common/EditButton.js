@@ -30,5 +30,5 @@ export default function EditButton({ to, children }) {
 
 EditButton.propTypes = {
   to: PropTypes.string.isRequired,
-  children: PropTypes.element.isRequired,
+  children: PropTypes.any.isRequired,
 };
