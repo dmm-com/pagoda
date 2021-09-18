@@ -44,11 +44,11 @@ export default function EntryList({ entityId, entries }) {
     deleteEntry(entryId).then((_) => history.go(0));
   };
 
-  const handleChangePage = (event, newPage) => {
+  const handlePageChange = (event, newPage) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
+  const handleRowsPerPageChange = (event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
@@ -107,8 +107,8 @@ export default function EntryList({ entityId, entries }) {
         count={filteredEntries.length}
         rowsPerPage={rowsPerPage}
         page={page}
-        onChangePage={handleChangePage}
-        onChangeRowsPerPage={handleChangeRowsPerPage}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
       />
     </Paper>
   );

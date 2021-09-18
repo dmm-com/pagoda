@@ -106,7 +106,7 @@ export default function EditUser({}) {
                 )}
               </TableCell>
             </TableRow>
-            {django_context.user.is_superuser && (
+            {django_context.user.is_superuser ? (
               <TableRow>
                 <TableCell>管理者権限を付与</TableCell>
                 <TableCell>
@@ -118,8 +118,8 @@ export default function EditUser({}) {
                   />
                 </TableCell>
               </TableRow>
-            )}
-            {token && (
+            ) : null}
+            {token ? (
               <TableRow>
                 <TableCell>AccessToken</TableCell>
                 <TableCell>
@@ -133,7 +133,7 @@ export default function EditUser({}) {
                   </button>
                 </TableCell>
               </TableRow>
-            )}
+            ) : null}
             <TableRow>
               <TableCell>AccessTokenの有効期間[sec]</TableCell>
               <TableCell>
