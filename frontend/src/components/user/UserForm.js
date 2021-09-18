@@ -6,7 +6,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableRow,
   Typography,
 } from "@material-ui/core";
@@ -69,7 +68,9 @@ export function UserForm({ user }) {
       <Table className="table table-bordered">
         <TableBody>
           <TableRow>
-            <TableHead>名前</TableHead>
+            <TableCell>
+              <Typography>名前</Typography>
+            </TableCell>
             <TableCell>
               {django_context.user.is_superuser ? (
                 <input
@@ -85,7 +86,9 @@ export function UserForm({ user }) {
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableHead>メールアドレス</TableHead>
+            <TableCell>
+              <Typography>メールアドレス</Typography>
+            </TableCell>
             <TableCell>
               {django_context.user.is_superuser ? (
                 <input
@@ -100,9 +103,11 @@ export function UserForm({ user }) {
               )}
             </TableCell>
           </TableRow>
-          {django_context.user.is_superuser && (
+          {django_context.user.is_superuser ? (
             <TableRow>
-              <TableHead>管理者権限を付与</TableHead>
+              <TableCell>
+                <Typography>管理者権限を付与</Typography>
+              </TableCell>
               <TableCell>
                 <input
                   type="checkbox"
@@ -112,10 +117,12 @@ export function UserForm({ user }) {
                 />
               </TableCell>
             </TableRow>
-          )}
+          ) : null}
           {isCreateMode ? (
             <TableRow>
-              <TableHead>パスワード</TableHead>
+              <TableCell>
+                <Typography>パスワード</Typography>
+              </TableCell>
               <TableCell>
                 <input
                   type="password"
@@ -128,9 +135,11 @@ export function UserForm({ user }) {
             </TableRow>
           ) : (
             <>
-              {user?.token !== undefined && user?.token !== "" && (
+              {user?.token !== undefined && user?.token !== "" ? (
                 <TableRow>
-                  <TableHead>AccessToken</TableHead>
+                  <TableCell>
+                    <Typography>AccessToken</Typography>
+                  </TableCell>
                   <TableCell>
                     <p id="access_token">{user.token}</p>
                     <button
@@ -143,9 +152,11 @@ export function UserForm({ user }) {
                     </button>
                   </TableCell>
                 </TableRow>
-              )}
+              ) : null}
               <TableRow>
-                <TableHead>AccessToken の有効期間 [sec]</TableHead>
+                <TableCell>
+                  <Typography>AccessToken の有効期間 [sec]</Typography>
+                </TableCell>
                 <TableCell>
                   <Box className={classes.tokenLifetime}>
                     <input
@@ -176,7 +187,7 @@ export function UserForm({ user }) {
 }
 
 UserForm.propTypes = {
-  user: PropTypes.objectOf({
+  user: PropTypes.shape({
     id: PropTypes.number.isRequired,
     username: PropTypes.string.isRequired,
     email: PropTypes.string.isRequired,

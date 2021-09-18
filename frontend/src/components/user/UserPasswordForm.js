@@ -1,13 +1,7 @@
 import PropTypes from "prop-types";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-} from "@material-ui/core";
+import { Table, TableBody, TableCell, TableRow } from "@material-ui/core";
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import {
@@ -62,13 +56,17 @@ export function UserPasswordForm({ user, asSuperuser }) {
       <Table className="table table-bordered">
         <TableBody>
           <TableRow>
-            <TableHead>名前</TableHead>
+            <TableCell>
+              <Typography>名前</Typography>
+            </TableCell>
             <TableCell>
               <Typography>{user.username}</Typography>
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableHead>パスワード</TableHead>
+            <TableCell>
+              <Typography>パスワード</Typography>
+            </TableCell>
             <TableCell>
               {!asSuperuser && (
                 <div className={classes.passwordField}>
@@ -111,7 +109,7 @@ export function UserPasswordForm({ user, asSuperuser }) {
 }
 
 UserPasswordForm.propTypes = {
-  user: PropTypes.objectOf({
+  user: PropTypes.shape({
     id: PropTypes.number.isRequired,
     username: PropTypes.string.isRequired,
   }),

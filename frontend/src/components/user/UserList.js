@@ -51,37 +51,35 @@ export function UserList({ users }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {users.map((user) => {
-            return (
-              <TableRow>
-                <TableCell>
-                  <Typography>{user.username}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{user.email}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{user.date_joined}</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <EditButton to={`/new-ui/users/${user.id}`}>編集</EditButton>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.button}
-                    startIcon={<EditIcon />}
-                    component={Link}
-                    to={`/new-ui/users/${user.id}/password`}
-                  >
-                    パスワード変更
-                  </Button>
-                  <DeleteButton onConfirmed={(e) => handleDelete(e, user.id)}>
-                    削除
-                  </DeleteButton>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {users.map((user) => (
+            <TableRow key={user.id}>
+              <TableCell>
+                <Typography>{user.username}</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography>{user.email}</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography>{user.date_joined}</Typography>
+              </TableCell>
+              <TableCell align="right">
+                <EditButton to={`/new-ui/users/${user.id}`}>編集</EditButton>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  className={classes.button}
+                  startIcon={<EditIcon />}
+                  component={Link}
+                  to={`/new-ui/users/${user.id}/password`}
+                >
+                  パスワード変更
+                </Button>
+                <DeleteButton handleDelete={(e) => handleDelete(e, user.id)}>
+                  削除
+                </DeleteButton>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </TableContainer>
