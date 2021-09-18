@@ -224,6 +224,46 @@ export function refreshAccessToken() {
   });
 }
 
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateUserPassword(
+  userId,
+  oldPassword,
+  newPassword,
+  checkPassword
+) {
+  return fetch(`/user/do_edit_passwd/${userId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      old_passwd: oldPassword,
+      new_passwd: newPassword,
+      chk_passwd: checkPassword,
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateUserPasswordAsSuperuser(
+  userId,
+  newPassword,
+  checkPassword
+) {
+  return fetch(`/user/do_su_edit_passwd/${userId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      new_passwd: newPassword,
+      chk_passwd: checkPassword,
+    }),
+  });
+}
+
 // FIXME implement internal API then call it
 export function getGroups() {
   return new Promise((resolve, _) => {
