@@ -3,6 +3,14 @@
 ## In development
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## v3.3.0
+
+### Added
 * Added the django-replicated library (#166)
 * Added job function that cannot be canceled (#199)
 
