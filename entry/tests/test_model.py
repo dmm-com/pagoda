@@ -1985,6 +1985,27 @@ class ModelTest(AironeTestCase):
                            ignore=[404])
         self.assertFalse(res['found'])
 
+    def test_register_entry_to_elasticsearch_with_multi_attribute(self):
+        self._entity.attrs.add(self._attr.schema)
+        self._entry.attrs.add(self._attr)
+
+        # Add and register duplicate Attribute after registers
+        dup_attr = Attribute.objects.create(name=self._attr.schema.name,
+                                            schema=self._attr.schema,
+                                            created_user=self._user,
+                                            parent_entry=self._entry)
+        self._entry.attrs.add(dup_attr)
+
+        self._attr.delete()
+
+        attr = self._entry.attrs.filter(schema=self._attr.schema, is_active=True).first()
+        attr.add_value(self._user, 'hoge')
+
+        self._entry.register_es()
+
+        res = self._es.get(index=settings.ES_CONFIG['INDEX'], doc_type='entry', id=self._entry.id)
+        self.assertEqual(res['_source']['attr'][0]['value'], 'hoge')
+
     def test_unregister_entry_to_elasticsearch(self):
         user = User.objects.create(username='hoge')
 
