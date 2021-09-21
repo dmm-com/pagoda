@@ -10,8 +10,7 @@ class APITest(AironeViewTest):
         user = self.guest_login()
 
         # Prepared data strcutreus, witch are used in this test.
-        entity = Entity.objects.create(name='test-entity', created_user=user)
-        entity.webhooks.add(Webhook.objects.create(**{
+        webhook = Webhook.objects.create(**{
             'label': 'test1',
             'url': 'http://example.com/api',
             'is_enabled': True,
@@ -19,12 +18,15 @@ class APITest(AironeViewTest):
             'headers': json.dumps([
                 {'key': 'test-key1', 'value': 'test-value1'},
             ]),
-        }))
+        })
+        entity = Entity.objects.create(name='test-entity', created_user=user)
+        entity.webhooks.add(webhook)
 
         resp = self.client.get('/webhook/api/v2/%d' % entity.id)
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json(), [{
+            'id': webhook.id,
             'label': 'test1',
             'url': 'http://example.com/api',
             'is_enabled': True,
