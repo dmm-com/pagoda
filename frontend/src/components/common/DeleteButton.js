@@ -10,7 +10,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function DeleteButton({ handleDelete, children }) {
+export default function DeleteButton({
+  handleDelete,
+  children,
+  startIcon = <DeleteIcon />,
+}) {
   const classes = useStyles();
 
   return (
@@ -18,7 +22,7 @@ export default function DeleteButton({ handleDelete, children }) {
       variant="contained"
       color="secondary"
       className={classes.button}
-      startIcon={<DeleteIcon />}
+      startIcon={startIcon}
       dialogTitle="本当に削除しますか？"
       onClickYes={handleDelete}
     >
@@ -29,5 +33,6 @@ export default function DeleteButton({ handleDelete, children }) {
 
 DeleteButton.propTypes = {
   handleDelete: PropTypes.func.isRequired,
+  startIcon: PropTypes.element,
   children: PropTypes.any.isRequired,
 };
