@@ -3,6 +3,7 @@ import re
 from datetime import timedelta
 
 from django.contrib.auth import views as auth_views
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.urls import reverse_lazy
@@ -71,7 +72,10 @@ def do_create(request, recv_data):
 @http_get
 def edit(request, user_id):
     current_user = User.objects.get(id=request.user.id)
-    user = User.objects.get(id=user_id)
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except ObjectDoesNotExist:
+        return HttpResponse("Target user is not found", status=404)
     if not current_user.is_superuser and current_user != user:
         return HttpResponse("You don't have permission to access", status=400)
 
@@ -98,7 +102,10 @@ def edit(request, user_id):
 ])
 def do_edit(request, user_id, recv_data):
     access_user = User.objects.get(id=request.user.id)
-    target_user = User.objects.get(id=user_id)
+    try:
+        target_user = User.objects.get(id=user_id, is_active=True)
+    except ObjectDoesNotExist:
+        return HttpResponse("Target user is not found", status=404)
 
     # The case token_lifetime prameter is specified to update
     if 'token_lifetime' in recv_data:
@@ -149,7 +156,10 @@ def edit_passwd(request, user_id):
     else:
         return HttpResponse('You don\'t have permission to access this object', status=400)
 
-    user = User.objects.get(id=user_id)
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except ObjectDoesNotExist:
+        return HttpResponse("Target user is not found", status=404)
 
     context = {
         'user_id': int(user_id),
@@ -167,7 +177,11 @@ def edit_passwd(request, user_id):
     {'name': 'chk_passwd', 'type': str, 'checker': lambda x: x['chk_passwd']},
 ])
 def do_edit_passwd(request, user_id, recv_data):
-    user = User.objects.get(id=user_id)
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except ObjectDoesNotExist:
+        return HttpResponse("Target user is not found", status=404)
+
     # Identification
     if (int(request.user.id) != int(user_id)):
         return HttpResponse('You don\'t have permission to access this object', status=400)
@@ -198,7 +212,10 @@ def do_edit_passwd(request, user_id, recv_data):
 ])
 @check_superuser
 def do_su_edit_passwd(request, user_id, recv_data):
-    user = User.objects.get(id=user_id)
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except ObjectDoesNotExist:
+        return HttpResponse("Target user is not found", status=404)
 
     # Whether the new password matches the check password
     if recv_data['new_passwd'] != recv_data['chk_passwd']:
@@ -215,7 +232,11 @@ def do_su_edit_passwd(request, user_id, recv_data):
 @http_post([])
 @check_superuser
 def do_delete(request, user_id, recv_data):
-    user = User.objects.get(id=user_id)
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except ObjectDoesNotExist:
+        return HttpResponse("Target user is not found", status=404)
+
     ret = {}
 
     # save deleting target name before do it

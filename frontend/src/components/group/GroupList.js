@@ -39,7 +39,7 @@ export default function GroupList({ groups }) {
         </TableHead>
         <TableBody>
           {groups.map((group) => (
-            <TableRow>
+            <TableRow key={group.id}>
               <TableCell>
                 <Typography component={Link} to={`/new-ui/groups/${group.id}`}>
                   {group.name}
@@ -48,12 +48,12 @@ export default function GroupList({ groups }) {
               <TableCell align="right">
                 <List>
                   {group.members.map((member) => (
-                    <ListItem>{member.username}</ListItem>
+                    <ListItem key={member.id}>{member.username}</ListItem>
                   ))}
                 </List>
               </TableCell>
               <TableCell align="right">
-                <DeleteButton onConfirmed={(e) => handleDelete(e, group.id)}>
+                <DeleteButton handleDelete={(e) => handleDelete(e, group.id)}>
                   削除
                 </DeleteButton>
               </TableCell>

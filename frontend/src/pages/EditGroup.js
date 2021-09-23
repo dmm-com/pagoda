@@ -16,7 +16,6 @@ export default function EditGroup({}) {
     if (groupId !== undefined) {
       return getGroup(groupId).then((resp) => resp.json());
     }
-    return Promise.resolve({});
   });
 
   return (

@@ -7,28 +7,26 @@ import PropTypes from "prop-types";
 import { createGroup, updateGroup } from "../../utils/AironeAPIClient";
 import { useHistory } from "react-router-dom";
 
-function multipleSelectedValues(event) {
-  return Array.from(event.target.options, (o) => o)
-    .filter((o) => o.selected)
-    .map((o) => Number(o.value));
-}
-
 const useStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
 }));
 
-export default function GroupForm({ users, group = {} }) {
+export default function GroupForm({ users, group }) {
   const classes = useStyles();
   const history = useHistory();
 
-  const [name, setName] = useState(group.name ? group.name : "");
-  const [members, setMembers] = useState(
-    group.members ? group.members.map((m) => m.id) : []
-  );
+  const [name, setName] = useState(group?.name ?? "");
+  const [members, setMembers] = useState(group?.members.map((m) => m.id) ?? []);
 
-  const onSubmit = (event) => {
+  const handleChangeSelectedOptions = (event) => {
+    const options = Array.from(event.target.options, (o) => o);
+    const values = options.filter((o) => o.selected).map((o) => o.value);
+    setMembers(values);
+  };
+
+  const handleSubmit = (event) => {
     if (group.id !== undefined) {
       updateGroup(group.id, name, members).then(() =>
         history.replace("/new-ui/groups")
@@ -41,7 +39,7 @@ export default function GroupForm({ users, group = {} }) {
   };
 
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleSubmit}>
       <div>
         <Typography>グループ名</Typography>
         <input
@@ -58,10 +56,11 @@ export default function GroupForm({ users, group = {} }) {
           multiple
           native
           variant="outlined"
-          onChange={(e) => setMembers(multipleSelectedValues(e))}
+          value={members}
+          onChange={handleChangeSelectedOptions}
         >
           {users.map((user) => (
-            <option selected={members.includes(user.id)} value={user.id}>
+            <option key={user.id} value={user.id}>
               {user.username}
             </option>
           ))}
@@ -81,19 +80,19 @@ export default function GroupForm({ users, group = {} }) {
 
 GroupForm.propTypes = {
   users: PropTypes.arrayOf(
-    PropTypes.exact({
-      id: PropTypes.number,
-      username: PropTypes.string,
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      username: PropTypes.string.isRequired,
     })
-  ),
-  group: PropTypes.exact({
-    id: PropTypes.number,
-    name: PropTypes.string,
+  ).isRequired,
+  group: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
     members: PropTypes.arrayOf(
-      PropTypes.exact({
+      PropTypes.shape({
         id: PropTypes.number,
         username: PropTypes.string,
       })
-    ),
+    ).isRequired,
   }),
 };
