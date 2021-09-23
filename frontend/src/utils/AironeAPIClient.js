@@ -7,13 +7,7 @@ function getCsrfToken() {
 }
 
 export function getEntity(entityId) {
-  return new Promise((resolve, _) => {
-    resolve({
-      name: "",
-      note: "",
-      attributes: [],
-    });
-  });
+  return fetch(`/entity/api/v2/entities/${entityId}`);
 }
 
 export function getEntities() {
@@ -100,7 +94,7 @@ export function getACL(objectId) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function createEntity(name, note, attrs) {
+export function createEntity(name, note, isTopLevel, attrs) {
   return fetch(`/entity/do_create`, {
     method: "POST",
     headers: {
@@ -109,7 +103,24 @@ export function createEntity(name, note, attrs) {
     body: JSON.stringify({
       name: name,
       note: note,
-      is_toplevel: false,
+      is_toplevel: isTopLevel,
+      attrs: attrs,
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateEntity(entityId, name, note, isTopLevel, attrs) {
+  return fetch(`/entity/do_edit/${entityId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      note: note,
+      is_toplevel: isTopLevel,
       attrs: attrs,
     }),
   });
@@ -164,6 +175,41 @@ export function getUsers() {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
+export function createUser(name, email, password, isSuperuser, tokenLifetime) {
+  return fetch(`/user/do_create`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      passwd: password,
+      is_superuser: isSuperuser,
+      token_lifetime: String(tokenLifetime),
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateUser(userId, name, email, isSuperuser, tokenLifetime) {
+  return fetch(`/user/do_edit/${userId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      is_superuser: isSuperuser,
+      token_lifetime: String(tokenLifetime),
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
 export function deleteUser(userId) {
   return fetch(`/user/do_delete/${userId}`, {
     method: "POST",
@@ -171,6 +217,56 @@ export function deleteUser(userId) {
       "X-CSRFToken": getCsrfToken(),
     },
     body: JSON.stringify({}),
+  });
+}
+
+// FIXME implement V2 API
+export function refreshAccessToken() {
+  return fetch("/api/v1/user/access_token/", {
+    method: "PUT",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateUserPassword(
+  userId,
+  oldPassword,
+  newPassword,
+  checkPassword
+) {
+  return fetch(`/user/do_edit_passwd/${userId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      old_passwd: oldPassword,
+      new_passwd: newPassword,
+      chk_passwd: checkPassword,
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateUserPasswordAsSuperuser(
+  userId,
+  newPassword,
+  checkPassword
+) {
+  return fetch(`/user/do_su_edit_passwd/${userId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      new_passwd: newPassword,
+      chk_passwd: checkPassword,
+    }),
   });
 }
 
@@ -228,5 +324,28 @@ export function updateACL(objectId, objectType, acl, defaultPermission) {
       acl: acl,
       default_permission: defaultPermission,
     }),
+  });
+}
+
+export function getWebhooks(entityId) {
+  return fetch(`/webhook/api/v2/${entityId}`);
+}
+
+export function setWebhook(entityId, request_parameter) {
+  return fetch(`/webhook/api/v1/set/${entityId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify(request_parameter),
+  });
+}
+
+export function deleteWebhook(webhookId) {
+  return fetch(`/webhook/api/v1/del/${webhookId}`, {
+    method: "DELETE",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
   });
 }
