@@ -10,7 +10,7 @@ import { UserPasswordForm } from "./UserPasswordForm";
 test("should render a component with essential props", function () {
   const user = {
     id: 1,
-    name: "test",
+    username: "test",
   };
 
   expect(() =>

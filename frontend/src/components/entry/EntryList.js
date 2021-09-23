@@ -116,5 +116,10 @@ export default function EntryList({ entityId, entries }) {
 
 EntryList.propTypes = {
   entityId: PropTypes.string.isRequired,
-  entries: PropTypes.array.isRequired,
+  entries: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+    })
+  ).isRequired,
 };

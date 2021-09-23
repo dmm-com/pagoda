@@ -22,6 +22,6 @@ afterEach(() => {
 
 test("should render a component with essential props", function () {
   expect(() => {
-    ReactDOM.render(<WebhookForm entityId={0} />, container);
+    ReactDOM.render(<WebhookForm entityId={"0"} />, container);
   }).not.toThrow();
 });
