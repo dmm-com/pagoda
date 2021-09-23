@@ -401,8 +401,8 @@ def refer(request, entry_id):
 
 
 @airone_profile
-@http_get
-def export(request, entity_id):
+@http_post([])
+def export(request, entity_id, recv_data):
     user = User.objects.get(id=request.user.id)
 
     job_params = {
@@ -413,7 +413,7 @@ def export(request, entity_id):
     if not Entity.objects.filter(id=entity_id).exists():
         return HttpResponse('Failed to get entity of specified id', status=400)
 
-    if 'format' in request.GET and request.GET.get('format') == 'CSV':
+    if 'format' in recv_data and recv_data['format'] == 'CSV':
         job_params['export_format'] = 'csv'
 
     # check whether same job is sent
@@ -461,6 +461,8 @@ def do_import_data(request, entity_id, context):
         data = yaml.load(context, Loader=yaml.FullLoader)
     except yaml.parser.ParserError:
         return HttpResponse("Couldn't parse uploaded file", status=400)
+    except ValueError as e:
+        return HttpResponse("Invalid value is found: %s" % e, status=400)
 
     if not Entry.is_importable_data(data):
         return HttpResponse("Uploaded file has invalid data structure to import", status=400)

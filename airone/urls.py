@@ -20,7 +20,7 @@ urlpatterns = [
     url(r'^api/v1/', include(api_v1_urlpatterns)),
     url(r'^job/', include(('job.urls', 'job'))),
     url(r'^auth/', include(('django.contrib.auth.urls', 'auth'))),
-    url(r'^webhook/', include(('webhook.urls', 'entity'))),
+    url(r'^webhook/', include(('webhook.urls', 'webhook'))),
 ]
 
 for extension in settings.AIRONE['EXTENSIONS']:

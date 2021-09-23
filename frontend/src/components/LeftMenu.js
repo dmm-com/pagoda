@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { List, ListItem, ListItemText } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
 import { getEntities } from "../utils/AironeAPIClient";
 import { EntityStatus } from "../utils/Constants";
-import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -32,7 +31,11 @@ export default function LeftMenu({}) {
         {!entities.loading &&
           entities.value.map((entity) => {
             return (
-              <ListItem component={Link} to={`/new-ui/entities/${entity.id}`}>
+              <ListItem
+                key={entity.id}
+                component={Link}
+                to={`/new-ui/entities/${entity.id}`}
+              >
                 <ListItemText primary={entity.name} />
               </ListItem>
             );
