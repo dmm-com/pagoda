@@ -1,0 +1,5 @@
+# out of range on date-type
+Entity:
+  - name: Entry
+    attrs:
+      date: 9999-99-99
