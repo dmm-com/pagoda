@@ -19,7 +19,7 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(
       <BrowserRouter>
-        <EntryReferral entityId={1} referredEntries={referredEntries} />
+        <EntryReferral entityId={"1"} referredEntries={referredEntries} />
       </BrowserRouter>
     )
   ).not.toThrow();

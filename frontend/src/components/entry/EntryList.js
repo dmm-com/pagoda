@@ -87,7 +87,7 @@ export default function EntryList({ entityId, entries, restoreMode = false }) {
             {filteredEntries
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((entry) => (
-                <TableRow>
+                <TableRow key={entry.id}>
                   <TableCell>
                     <Typography
                       component={Link}
@@ -111,7 +111,7 @@ export default function EntryList({ entityId, entries, restoreMode = false }) {
                       </ConfirmableButton>
                     ) : (
                       <DeleteButton
-                        onConfirmed={(e) => handleDelete(e, entry.id)}
+                        handleDelete={(e) => handleDelete(e, entry.id)}
                       >
                         削除
                       </DeleteButton>
@@ -128,15 +128,15 @@ export default function EntryList({ entityId, entries, restoreMode = false }) {
         count={filteredEntries.length}
         rowsPerPage={rowsPerPage}
         page={page}
-        onChangePage={handleChangePage}
-        onChangeRowsPerPage={handleChangeRowsPerPage}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
       />
     </Paper>
   );
 }
 
 EntryList.propTypes = {
-  entityId: PropTypes.number.isRequired,
+  entityId: PropTypes.string.isRequired,
   entries: PropTypes.array.isRequired,
   restoreMode: PropTypes.bool,
 };

@@ -14,6 +14,7 @@ export default function EntryReferral({ entityId, referredEntries }) {
         <div className="list-group" id="referral_entries">
           {referredEntries.map((entry) => (
             <Typography
+              key={entry.id}
               component={Link}
               to={`/new-ui/entities/${entityId}/entries/${entry.id}/show`}
             >
@@ -27,6 +28,12 @@ export default function EntryReferral({ entityId, referredEntries }) {
 }
 
 EntryReferral.propTypes = {
-  entityId: PropTypes.number.isRequired,
-  referredEntries: PropTypes.array.isRequired,
+  entityId: PropTypes.string.isRequired,
+  referredEntries: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+      entity: PropTypes.string.isRequired,
+    })
+  ).isRequired,
 };

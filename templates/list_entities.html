@@ -53,7 +53,7 @@
 
   <div class="row">
     <div class="col">
-      <table class="table table-borderless">
+      <table class="table table-borderless entity-table">
         <thead>
           <tr>
             <td>
@@ -68,7 +68,7 @@
         <tbody>
           {% for entity in entities %}
           <tr>
-            <td>
+            <td class='entity-{{ entity.id }}'>
               {% if entity.status|bitwise_and:STATUS_ENTITY.CREATING %}
                 {{ entity.name }} [作成中]
               {% elif entity.status|bitwise_and:STATUS_ENTITY.EDITING %}

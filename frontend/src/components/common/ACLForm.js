@@ -1,6 +1,7 @@
 import { makeStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import {
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -10,7 +11,7 @@ import {
 } from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 
 const useStyles = makeStyles((theme) => ({
@@ -22,13 +23,20 @@ const useStyles = makeStyles((theme) => ({
 export default function ACLForm({ acl }) {
   const classes = useStyles();
 
-  const onSubmit = (event) => {
+  const [isPublic, setIsPublic] = useState(acl.object.is_public);
+  const [permissions, setPermissions] = useState(
+    acl.members.reduce((obj, m) => {
+      return { ...obj, [m.name]: m.current_permission };
+    }, {})
+  );
+
+  const handleSubmit = (event) => {
     // TODO submit to API
     event.preventDefault();
   };
 
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleSubmit}>
       <div className="container">
         <div className="row">
           <div className="col">
@@ -37,7 +45,8 @@ export default function ACLForm({ acl }) {
               <input
                 type="checkbox"
                 name="is_public"
-                checked={acl.object.is_public}
+                value={isPublic}
+                onChange={(e) => setIsPublic(e.target.checked)}
               />
             </span>
             <span className="float-right">
@@ -68,26 +77,26 @@ export default function ACLForm({ acl }) {
           </TableHead>
           <TableBody>
             {acl.members.map((member) => (
-              <TableRow>
+              <TableRow key={member.name}>
                 <TableCell>
                   <Typography>{member.name}</Typography>
                 </TableCell>
                 <TableCell align="left">
-                  <select name="acl">
-                    {acl.acltypes.map((acltype) => {
-                      if (acltype.id === member.current_permission) {
-                        return (
-                          <option value={acltype.id} selected="selected">
-                            {acltype.name}
-                          </option>
-                        );
-                      } else {
-                        return (
-                          <option value={acltype.id}>{acltype.name}</option>
-                        );
-                      }
-                    })}
-                  </select>
+                  <Select
+                    value={permissions[member.name]}
+                    onChange={(e) =>
+                      setPermissions({
+                        ...permissions,
+                        [member.name]: e.target.value,
+                      })
+                    }
+                  >
+                    {acl.acltypes.map((acltype) => (
+                      <option key={acltype.id} value={acltype.id}>
+                        {acltype.name}
+                      </option>
+                    ))}
+                  </Select>
                 </TableCell>
               </TableRow>
             ))}

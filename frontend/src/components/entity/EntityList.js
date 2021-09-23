@@ -87,7 +87,7 @@ export default function EntityList({ entities }) {
             {filteredEntities
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((entity) => (
-                <TableRow>
+                <TableRow key={entity.id}>
                   <TableCell>
                     <Typography
                       component={Link}
@@ -124,7 +124,7 @@ export default function EntityList({ entities }) {
                       ACL
                     </Button>
                     <DeleteButton
-                      onConfirmed={(e) => handleDelete(e, entity.id)}
+                      handleDelete={(e) => handleDelete(e, entity.id)}
                     >
                       削除
                     </DeleteButton>
@@ -140,8 +140,8 @@ export default function EntityList({ entities }) {
         count={filteredEntities.length}
         rowsPerPage={rowsPerPage}
         page={page}
-        onChangePage={handleChangePage}
-        onChangeRowsPerPage={handleChangeRowsPerPage}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
       />
     </Paper>
   );

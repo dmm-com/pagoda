@@ -209,7 +209,16 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content, b'"Failed to find Job(id=99999)"')
 
+        # target jobs that cannot be canceled
+        resp = self.client.delete('/api/v1/job/', json.dumps({'job_id': job.id}),
+                                  'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"Target job cannot be canceled"')
+
         # send request with proper parameter
+        job = Job.new_create(user, entry)
+        self.assertEqual(job.status, Job.STATUS['PREPARING'])
+
         resp = self.client.delete('/api/v1/job/', json.dumps({'job_id': job.id}),
                                   'application/json')
         self.assertEqual(resp.status_code, 200)
