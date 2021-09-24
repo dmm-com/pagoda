@@ -7,6 +7,7 @@
 * Changed not to create tokens with GET user.access_token API (#166)
 * Added job function that cannot be canceled (#199)
 * Changed the behavior of token refresh (#208)
+* Upgrade Django version from v3.2.4 to v3.2.5 (#254)
 
 ### Fixed
 * Fixed the problem that the URL of Webhook API is different (#202)
