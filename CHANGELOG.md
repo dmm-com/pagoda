@@ -12,6 +12,7 @@
 ### Fixed
 * Fixed the problem that the URL of Webhook API is different (#202)
 * Fixed some attributes are not updated in advanced search results (#230)
+* Fixed update history of TOP page (#258)
 
 ## v3.2.0
 
