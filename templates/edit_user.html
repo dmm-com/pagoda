@@ -31,17 +31,17 @@
         <!-- Top navigation buttons-->
         <p><input type="submit" class="btn btn-primary align-right" value='保存'/></p>
 
-        <table class="table table-bordered">
+        <table class="table table-bordered" id='user_params'>
           {% if user.is_superuser %}
-          <tr>
+          <tr id='name'>
             <th>名前</th>
-            <td><input type="text" name="name" value="{{ user_name }}" required="required" /><br/></td>
+            <td><input class='form-control' type="text" name="name" value="{{ user_name }}" required="required" /><br/></td>
           </tr>
-          <tr>
+          <tr id='mail'>
             <th>メールアドレス</th>
-            <td><input type="email" name="email" value="{{ user_email }}" required="required" /><br/></td>
+            <td><input class='form-control' type="email" name="email" value="{{ user_email }}" required="required" /><br/></td>
           </tr>
-          <tr>
+          <tr id='superuser'>
             <th>管理者権限を付与</th>
             {% if user_is_superuser %}
             <td><input type="checkbox" name="is_superuser" value="{{ user_is_superuser }}" checked="checked" /><br/></td>
@@ -52,20 +52,20 @@
 
           {% else %}
           <!-- The case who doens't have the priviledged level permission-->
-          <tr>
+          <tr id='name'>
             <th>名前</th>
             <td>{{ user_name }}</td>
             <input type='hidden' name='name' value='{{ user_name }}' />
           </tr>
-          <tr>
+          <tr id='mail'>
             <th>メールアドレス</th>
             <td>{{ user_email }}</td>
             <input type='hidden' name='email' value='{{ user_email }}' />
           </tr>
           {% endif %}
 
-          {% if is_show_token %}
-          <tr>
+          {% if user.id == user_id %}
+          <tr id='token'>
             <th>AccessToken</th>
             <td>
               {% if token %}
@@ -77,7 +77,7 @@
             </td>
           </tr>
           {% endif %}
-          <tr>
+          <tr id='lifetime'>
             <th>AccessToken の有効期間 [sec]</th>
             <td>
               <p>
@@ -98,9 +98,57 @@
               {% endif %}
             </td>
           </tr>
+
+          <!--
+            This is an optional setting to be able to switch the way to authenticate user with LDAP
+            from local one. This column is shown when login user authentication type is local one.
+          -->
+          <tr id='auth'>
+            <th>
+              <p>認証方法</p>
+            </th>
+            <td>
+            {% if is_authenticated_by_local %}
+              <p>ローカル認証</p>
+              {% if user.id == user_id %}
+                <button type='button' data-toggle="modal" data-target='#switch_ldap_authentication' class='btn btn-primary btn-sm' id='#show_switching_ldap_modal'>
+                  AirOne の認証方法を LDAP に変更する
+                </button>
+              {% endif %}
+            {% else %}
+              <p>LDAP 認証</p>
+            {% endif %}
+            </td>
+          </tr>
         </table>
         {% csrf_token %}
       </form>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="switch_ldap_authentication" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-lg modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">LDAP への認証方法の変更</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body ">
+        <p>AirOne の認証を LDAP のパスワードで行うことができます</p>
+        <p class='text-danger font-weight-bold' id='modal_input_warning'></p>
+        <p>
+          <input type="password" class="form-control" id="ldap_user_password" placeholder="Enter password of {{ user_name }} for LDAP">
+        </p>
+        <p class='text-dark'>（注：ユーザ "{{ user_name }}" が LDAP に登録されていない場合は変更できません）</p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">キャンセル</button>
+        <button type="button" class="btn btn-success" id='post_changing_request'>変更</button>
+      </div>
     </div>
   </div>
 </div>
@@ -134,5 +182,56 @@ $("#refresh_token").on('click', function() {
   });
 });
 
+/*
+ * Sned request that try to change the way of authentication from local to LDAP of JCS
+ */
+ function event_change_auth_to_ldap(e) {
+  // clear warning message which is shown previously
+  $('#modal_input_warning').text('');
+
+  $.ajax({
+    type: 'POST',
+    url: "/user/change_ldap_auth",
+    data: JSON.stringify({'ldap_password': $('#ldap_user_password').val()}),
+    headers: {
+      'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val(),
+    },
+  }).done(function(data){
+    MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, `認証方法を変更しました。以後 LDAP のアカウントで AirOne にログインできます。`);
+
+    location.href = '/user/edit/{{ user_id }}';
+  }).fail(function(data){
+    $('#modal_input_warning').text(data.responseText);
+  });
+}
+
+// event handlers when input is submitted
+$("#post_changing_request").on('click', event_change_auth_to_ldap);
+$("#ldap_user_password").keypress(function(e) {
+  if(e.which == 13) {
+    event_change_auth_to_ldap(e);
+  }
+});
+
+// event handler when modal window is shown
+$('#switch_ldap_authentication').on('show.bs.modal', function(e) {
+  // clear previous input and warning message in advance
+  $('#modal_input_warning').text('');
+  $('#ldap_user_password').val('');
+});
+
 </script>
+{% endblock %}
+
+{% block head %}
+<style type="text/css"><!--
+#user_params table {
+  table-layout: fixed;
+}
+
+#user_params tr th {
+  width: 300px;
+}
+
+--></style>
 {% endblock %}
