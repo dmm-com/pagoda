@@ -2,6 +2,9 @@
 
 ## In development
 
+### Added
+* Added param of editting user for ldap (#256)
+
 ### Changed
 * Changed the HTTP method on the entry.export page from GET to POST (#166)
 * Changed not to create tokens with GET user.access_token API (#166)

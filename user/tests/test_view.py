@@ -3,6 +3,8 @@ from datetime import timedelta
 
 from django.test import TestCase, Client
 from django.urls import reverse
+from unittest.mock import patch
+from unittest.mock import Mock
 from user.forms import UsernameBasedPasswordResetForm
 from user.models import User
 from user.views import PasswordReset
@@ -176,14 +178,15 @@ class ViewTest(TestCase):
             self.assertEqual(resp.context['user_name'], user.username)
             self.assertEqual(resp.context['user_email'], user.email)
             self.assertEqual(resp.context['user_is_superuser'], user.is_superuser)
-            self.assertEqual(resp.context['is_show_token'], username == 'admin')
             self.assertEqual(resp.context['token'], user.token if username == 'admin' else None)
             self.assertEqual(resp.context['token_lifetime'], user.token_lifetime)
             self.assertEqual(resp.context['token_created'],
-                             user.token.created if username == 'admin' else None)
+                             (user.token.created.strftime('%Y/%m/%d %H:%M:%S')
+                              if username == 'admin' else None))
             self.assertEqual(resp.context['token_expire'],
-                             user.token.created + timedelta(seconds=user.token_lifetime)
-                             if username == 'admin' else None)
+                             ((user.token.created + timedelta(seconds=user.token_lifetime)
+                               ).strftime('%Y/%m/%d %H:%M:%S') if username == 'admin' else None))
+            self.assertEqual(resp.context['is_authenticated_by_local'], True)
 
     def test_edit_for_inactive_user(self):
         self._admin_login()
@@ -622,6 +625,42 @@ class ViewTest(TestCase):
         resp = self.client.post(reverse('user:do_delete', args=[user.id]),
                                 json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 404)
+
+    @patch('user.views.LDAPBackend.is_authenticated', Mock(return_value=True))
+    def test_post_chnage_auth_with_correct_password(self):
+        self._guest_login()
+
+        resp = self.client.post(reverse('user:change_ldap_auth'),
+                                json.dumps({'ldap_password': 'CORRECT_PASSWORD'}),
+                                'application/json')
+        self.guest.refresh_from_db()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(self.guest.authenticate_type, User.AUTH_TYPE_LDAP)
+
+    @patch('user.views.LDAPBackend.is_authenticated', Mock(return_value=False))
+    def test_post_chnage_auth_with_incorrect_password(self):
+        self._guest_login()
+
+        resp = self.client.post(reverse('user:change_ldap_auth'),
+                                json.dumps({'ldap_password': 'INCORRECT_PASSWORD'}),
+                                'application/json')
+        self.assertEqual(resp.status_code, 400)
+
+    def test_post_chnage_auth_with_invalid_parameters(self):
+        self._guest_login()
+
+        invalid_parameters = [
+            {'invalid_parameter': 'value'},
+            [{'invalid_parameter': 'value'}],
+            {'ldap_password': {'invalid_value_type': 'value'}},
+            {'ldap_password': [1, 2, 3, 4]},
+            {'ldap_password': 1234},
+        ]
+        for _param in invalid_parameters:
+            resp = self.client.post(reverse('user:change_ldap_auth'),
+                                    json.dumps(_param),
+                                    'application/json')
+            self.assertEqual(resp.status_code, 400)
 
     def test_password_reset_with_invalid_username(self):
         user = self._create_user('testuser', authenticate_type=User.AUTH_TYPE_LDAP)
