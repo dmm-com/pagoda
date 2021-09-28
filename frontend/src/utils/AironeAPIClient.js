@@ -1,5 +1,6 @@
-import { getCsrfToken } from "./DjangoUtils";
 import fileDownload from "js-file-download";
+
+import { getCsrfToken } from "./DjangoUtils";
 
 export function getEntity(entityId) {
   return fetch(`/entity/api/v2/entities/${entityId}`);

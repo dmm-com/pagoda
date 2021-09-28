@@ -1,28 +1,29 @@
+import Grid from "@material-ui/core/Grid";
 import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import Grid from "@material-ui/core/Grid";
-import { LeftMenu } from "./components/LeftMenu";
+
 import { Header } from "./components/Header";
-import { Entity } from "./pages/Entity";
-import { Entry } from "./pages/Entry";
-import { Dashboard } from "./pages/Dashboard";
-import { User } from "./pages/User";
-import { Group } from "./pages/Group";
-import { Job } from "./pages/Job";
-import { SearchResults } from "./pages/SearchResults";
+import { LeftMenu } from "./components/LeftMenu";
+import { ACL } from "./pages/ACL";
 import { AdvancedSearch } from "./pages/AdvancedSearch";
+import { Dashboard } from "./pages/Dashboard";
 import { EditEntity } from "./pages/EditEntity";
 import { EditEntry } from "./pages/EditEntry";
-import { OperationHistory } from "./pages/OperationHistory";
-import { ACL } from "./pages/ACL";
+import { EditGroup } from "./pages/EditGroup";
 import { EditUser } from "./pages/EditUser";
 import { EditUserPassword } from "./pages/EditUserPassword";
-import { EditGroup } from "./pages/EditGroup";
+import { Entity } from "./pages/Entity";
+import { Entry } from "./pages/Entry";
+import { Group } from "./pages/Group";
+import { ImportEntity } from "./pages/ImportEntity";
+import { ImportEntry } from "./pages/ImportEntry";
 import { ImportGroup } from "./pages/ImportGroup";
 import { ImportUser } from "./pages/ImportUser";
-import { ImportEntry } from "./pages/ImportEntry";
-import { ImportEntity } from "./pages/ImportEntity";
+import { Job } from "./pages/Job";
+import { OperationHistory } from "./pages/OperationHistory";
+import { SearchResults } from "./pages/SearchResults";
+import { User } from "./pages/User";
 
 const basePath = "/new-ui/";
 
