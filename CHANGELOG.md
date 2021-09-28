@@ -2,6 +2,9 @@
 
 ## In development
 
+### Added
+* Added param of editting user for ldap (#256)
+
 ### Changed
 * Changed the HTTP method on the entry.export page from GET to POST (#166)
 * Changed not to create tokens with GET user.access_token API (#166)
@@ -13,6 +16,7 @@
 * Fixed the problem that the URL of Webhook API is different (#202)
 * Fixed some attributes are not updated in advanced search results (#230)
 * Fixed that the entry being created cannot be deleted (#242)
+* Fixed update history of TOP page (#258)
 
 ## v3.2.0
 
