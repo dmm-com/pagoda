@@ -44,11 +44,11 @@ export function EntryList({ entityId, entries }) {
     deleteEntry(entryId).then((_) => history.go(0));
   };
 
-  const handleChangePage = (event, newPage) => {
+  const handlePageChange = (event, newPage) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
+  const handleRowsPerPageChange = (event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
@@ -107,8 +107,8 @@ export function EntryList({ entityId, entries }) {
         count={filteredEntries.length}
         rowsPerPage={rowsPerPage}
         page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
       />
     </Paper>
   );
@@ -116,5 +116,10 @@ export function EntryList({ entityId, entries }) {
 
 EntryList.propTypes = {
   entityId: PropTypes.string.isRequired,
-  entries: PropTypes.array.isRequired,
+  entries: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+    })
+  ).isRequired,
 };

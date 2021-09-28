@@ -86,9 +86,9 @@ export function UserList({ users }) {
   );
 }
 
-EntryList.propTypes = {
-  entries: PropTypes.arrayOf(
-    PropTypes.objectOf({
+UserList.propTypes = {
+  users: PropTypes.arrayOf(
+    PropTypes.shape({
       id: PropTypes.number.isRequired,
       username: PropTypes.string.isRequired,
       email: PropTypes.string.isRequired,

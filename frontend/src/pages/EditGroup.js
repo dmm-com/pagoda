@@ -20,7 +20,9 @@ export function EditGroup({}) {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    getUsers().then((data) => setUsers(data));
+    getUsers()
+      .then((resp) => resp.json())
+      .then((data) => setUsers(data));
   }, []);
 
   const onSubmit = (event) => {
@@ -58,7 +60,9 @@ export function EditGroup({}) {
           <Typography>ユーザ管理</Typography>
           <Select multiple native variant="outlined">
             {users.map((user) => (
-              <option value={user.id}>{user.name}</option>
+              <option key={user.id} value={user.id}>
+                {user.name}
+              </option>
             ))}
           </Select>
         </div>

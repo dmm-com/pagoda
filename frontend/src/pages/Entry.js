@@ -7,12 +7,12 @@ import Typography from "@material-ui/core/Typography";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { getEntries } from "../utils/AironeAPIClient";
 import { EditButton } from "../components/common/EditButton";
 import { CreateButton } from "../components/common/CreateButton";
 import { EntryList } from "../components/entry/EntryList";
 import { Loading } from "../components/common/Loading";
 import { useAsync } from "react-use";
+import { exportEntries, getEntries } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -72,20 +72,25 @@ export function Entry({}) {
               variant="outlined"
               color="secondary"
               className={classes.button}
+              onClick={() => exportEntries(entityId, "YAML")}
             >
-              エクスポート
+              YAML でエクスポート
+            </Button>
+            <Button
+              variant="contained"
+              className={classes.button}
+              onClick={() => exportEntries(entityId, "YAML")}
+            >
+              CSV でエクスポート
             </Button>
             <Button
               className={classes.button}
               variant="outlined"
               color="secondary"
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/entities/${entityId}/entries/import`}
             >
               インポート
-            </Button>
-            <Button variant="contained" className={classes.button}>
-              CSV で出力
             </Button>
           </div>
         </div>

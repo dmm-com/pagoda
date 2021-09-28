@@ -301,5 +301,5 @@ export function WebhookForm({ entityId }) {
 }
 
 WebhookForm.propTypes = {
-  entityId: PropTypes.number.isRequired,
+  entityId: PropTypes.string.isRequired,
 };

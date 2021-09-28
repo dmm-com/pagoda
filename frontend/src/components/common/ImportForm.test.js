@@ -5,15 +5,12 @@
 import React from "react";
 import { render } from "@testing-library/react";
 
-import { UserPasswordForm } from "./UserPasswordForm";
+import ImportForm from "./ImportForm";
 
 test("should render a component with essential props", function () {
-  const user = {
-    id: 1,
-    username: "test",
-  };
-
   expect(() =>
-    render(<UserPasswordForm user={user} asSuperuser={true} />)
+    render(
+      <ImportForm importFunc={() => {}} redirectPath={"/path/to/redirect"} />
+    )
   ).not.toThrow();
 });
