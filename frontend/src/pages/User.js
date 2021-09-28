@@ -3,9 +3,15 @@ import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { downloadExportedUsers, getUsers } from "../utils/AironeAPIClient";
-import CreateButton from "../components/common/CreateButton";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import {
+  downloadExportedUsers,
+  deleteUser,
+  getUsers,
+} from "../utils/AironeAPIClient";
+import { EditButton } from "../components/common/EditButton";
+import { CreateButton } from "../components/common/CreateButton";
+import { DeleteButton } from "../components/common/DeleteButton";
 import { UserList } from "../components/user/UserList";
 import { useAsync } from "react-use";
 
@@ -15,7 +21,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function User({}) {
+export function User({}) {
   const classes = useStyles();
 
   const users = useAsync(async () => {

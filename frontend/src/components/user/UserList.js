@@ -9,13 +9,13 @@ import {
 } from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import EditButton from "../common/EditButton";
+import { EditButton } from "../common/EditButton";
 import Button from "@material-ui/core/Button";
 import EditIcon from "@material-ui/icons/Edit";
 import { Link, useHistory } from "react-router-dom";
-import DeleteButton from "../common/DeleteButton";
+import { DeleteButton } from "../common/DeleteButton";
 import PropTypes from "prop-types";
-import EntryList from "../entry/EntryList";
+import { EntryList } from "../entry/EntryList";
 import { deleteUser } from "../../utils/AironeAPIClient";
 import { makeStyles } from "@material-ui/core/styles";
 

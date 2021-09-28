@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function JobList({ jobs }) {
+export function JobList({ jobs }) {
   const classes = useStyles();
 
   return (

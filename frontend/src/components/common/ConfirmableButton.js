@@ -3,7 +3,7 @@ import { Dialog, DialogActions, DialogTitle } from "@material-ui/core";
 import React from "react";
 import PropTypes from "prop-types";
 
-export default function ConfirmableButton({
+export function ConfirmableButton({
   variant,
   color,
   className,

@@ -86,7 +86,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EntityForm({ entity = {}, referralEntities = [] }) {
+export function EntityForm({ entity = {}, referralEntities = [] }) {
   const classes = useStyles();
   const history = useHistory();
 

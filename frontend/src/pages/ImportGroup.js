@@ -1,11 +1,11 @@
 import React from "react";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
 import { importGroups } from "../utils/AironeAPIClient";
-import ImportForm from "../components/common/ImportForm";
+import { ImportForm } from "../components/common/ImportForm";
 
-export default function ImportGroup({}) {
+export function ImportGroup({}) {
   return (
     <div>
       <AironeBreadcrumbs>

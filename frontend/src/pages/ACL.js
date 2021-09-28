@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getACL } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import Typography from "@material-ui/core/Typography";
 import { Link, useParams } from "react-router-dom";
 import Button from "@material-ui/core/Button";
@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ACL({}) {
+export function ACL({}) {
   const classes = useStyles();
   const { objectId } = useParams();
 

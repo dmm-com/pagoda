@@ -2,11 +2,18 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import Typography from "@material-ui/core/Typography";
 import { getUser } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { useAsync } from "react-use";
 import { UserForm } from "../components/user/UserForm";
 
-export default function EditUser({}) {
+const useStyles = makeStyles((theme) => ({
+  button: {
+    margin: theme.spacing(1),
+  },
+}));
+
+export function EditUser({}) {
+  const classes = useStyles();
   const { userId } = useParams();
 
   const user = useAsync(async () => {

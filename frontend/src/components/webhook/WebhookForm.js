@@ -28,7 +28,7 @@ import {
   getWebhooks,
   setWebhook,
 } from "../../utils/AironeAPIClient";
-import DeleteButton from "../common/DeleteButton";
+import { DeleteButton } from "../common/DeleteButton";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function WebhookForm({ entityId }) {
+export function WebhookForm({ entityId }) {
   const classes = useStyles();
 
   const [isUpdated, toggleIsUpdated] = useToggle(false);

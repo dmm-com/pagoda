@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ImportForm({ importFunc, redirectPath }) {
+export function ImportForm({ importFunc, redirectPath }) {
   const classes = useStyles();
   const history = useHistory();
   const [file, setFile] = useState([]);

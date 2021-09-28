@@ -6,13 +6,13 @@ import { Divider } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import EntryList from "../components/entry/EntryList";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { EditButton } from "../components/common/EditButton";
+import { CreateButton } from "../components/common/CreateButton";
+import { EntryList } from "../components/entry/EntryList";
+import { Loading } from "../components/common/Loading";
 import { useAsync } from "react-use";
 import { exportEntries, getEntries } from "../utils/AironeAPIClient";
-import CreateButton from "../components/common/CreateButton";
-import EditButton from "../components/common/EditButton";
-import Loading from "../components/common/Loading";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Entry({}) {
+export function Entry({}) {
   const classes = useStyles();
   let { entityId } = useParams();
 

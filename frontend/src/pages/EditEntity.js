@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getEntities, getEntity } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import Typography from "@material-ui/core/Typography";
 import { useAsync } from "react-use";
-import EntityForm from "../components/entity/EntityForm";
-import WebhookForm from "../components/webhook/WebhookForm";
+import { EntityForm } from "../components/entity/EntityForm";
+import { WebhookForm } from "../components/webhook/WebhookForm";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 
-export default function EditEntity({}) {
+export function EditEntity({}) {
   const { entityId } = useParams();
 
   const entity = useAsync(async () => {

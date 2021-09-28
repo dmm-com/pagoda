@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreateButton({ to, children }) {
+export function CreateButton({ to, children }) {
   const classes = useStyles();
 
   return (

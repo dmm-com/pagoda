@@ -3,7 +3,6 @@ import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { grey } from "@material-ui/core/colors";
 import PropTypes from "prop-types";
-import CreateButton from "./CreateButton";
 
 const useStyles = makeStyles((theme) => ({
   breadcrumbs: {
@@ -13,7 +12,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function AironeBreadcrumbs({ children }) {
+export function AironeBreadcrumbs({ children }) {
   const classes = useStyles();
 
   return (

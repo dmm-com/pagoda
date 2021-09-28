@@ -14,14 +14,14 @@ import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { CreateButton } from "../components/common/CreateButton";
+import { DeleteButton } from "../components/common/DeleteButton";
 import {
   deleteGroup,
   downloadExportedGroups,
   getGroups,
 } from "../utils/AironeAPIClient";
-import CreateButton from "../components/common/CreateButton";
-import DeleteButton from "../components/common/DeleteButton";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Group({}) {
+export function Group({}) {
   const classes = useStyles();
   const [groups, setGroups] = useState([]);
   const [updated, setUpdated] = useState(false);

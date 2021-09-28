@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { Select } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import { getUsers } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -13,7 +13,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EditGroup({}) {
+export function EditGroup({}) {
   const classes = useStyles();
 
   const [name, setName] = useState("");
