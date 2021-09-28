@@ -4,7 +4,7 @@ import Button from "@material-ui/core/Button";
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { getUsers } from "../utils/AironeAPIClient";
+import { downloadExportedUsers, getUsers } from "../utils/AironeAPIClient";
 import CreateButton from "../components/common/CreateButton";
 import { UserList } from "../components/user/UserList";
 import { useAsync } from "react-use";
@@ -45,6 +45,7 @@ export default function User({}) {
               className={classes.button}
               variant="outlined"
               color="secondary"
+              onClick={() => downloadExportedUsers("user.yaml")}
             >
               エクスポート
             </Button>
@@ -53,7 +54,7 @@ export default function User({}) {
               variant="outlined"
               color="secondary"
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/users/import`}
             >
               インポート
             </Button>

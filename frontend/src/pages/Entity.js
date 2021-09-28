@@ -5,7 +5,11 @@ import EntityList from "../components/entity/EntityList";
 import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { getEntities } from "../utils/AironeAPIClient";
+import {
+  downloadExportedEntities,
+  exportEntities,
+  getEntities,
+} from "../utils/AironeAPIClient";
 import CreateButton from "../components/common/CreateButton";
 import Button from "@material-ui/core/Button";
 import Loading from "../components/common/Loading";
@@ -44,6 +48,7 @@ export default function Entity({}) {
               className={classes.button}
               variant="outlined"
               color="secondary"
+              onClick={() => downloadExportedEntities("entity.yaml")}
             >
               エクスポート
             </Button>
@@ -52,7 +57,7 @@ export default function Entity({}) {
               color="secondary"
               className={classes.button}
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/entities/import`}
             >
               インポート
             </Button>
