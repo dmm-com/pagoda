@@ -23,5 +23,5 @@ export function AironeBreadcrumbs({ children }) {
 }
 
 AironeBreadcrumbs.propTypes = {
-  children: PropTypes.element.isRequired,
+  children: PropTypes.any.isRequired,
 };

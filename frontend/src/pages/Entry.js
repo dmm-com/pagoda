@@ -11,6 +11,7 @@ import { getEntries } from "../utils/AironeAPIClient";
 import { EditButton } from "../components/common/EditButton";
 import { CreateButton } from "../components/common/CreateButton";
 import { EntryList } from "../components/entry/EntryList";
+import { Loading } from "../components/common/Loading";
 import { useAsync } from "react-use";
 
 const useStyles = makeStyles((theme) => ({
@@ -102,7 +103,9 @@ export function Entry({}) {
       <div hidden={tabValue !== 0}>ダッシュボード</div>
 
       <div hidden={tabValue !== 1}>
-        {!entries.loading && (
+        {entries.loading ? (
+          <Loading />
+        ) : (
           <EntryList entityId={entityId} entries={entries.value} />
         )}
       </div>

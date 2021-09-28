@@ -83,8 +83,10 @@ export function EntryForm({ entityId, initName = "", initAttributes = [] }) {
       </div>
       <Table className="table table-bordered">
         <TableHead>
-          <TableCell>属性</TableCell>
-          <TableCell>属性値</TableCell>
+          <TableRow>
+            <TableCell>属性</TableCell>
+            <TableCell>属性値</TableCell>
+          </TableRow>
         </TableHead>
         <TableBody>
           {attributes.map((attribute, index) => (
@@ -108,7 +110,7 @@ export function EntryForm({ entityId, initName = "", initAttributes = [] }) {
 }
 
 EntryForm.propTypes = {
-  entityId: PropTypes.number.isRequired,
+  entityId: PropTypes.string.isRequired,
   initName: PropTypes.string,
   initAttributes: PropTypes.array,
 };

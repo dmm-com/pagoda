@@ -31,7 +31,11 @@ export function LeftMenu({}) {
         {!entities.loading &&
           entities.value.map((entity) => {
             return (
-              <ListItem component={Link} to={`/new-ui/entities/${entity.id}`}>
+              <ListItem
+                key={entity.id}
+                component={Link}
+                to={`/new-ui/entities/${entity.id}`}
+              >
                 <ListItemText primary={entity.name} />
               </ListItem>
             );

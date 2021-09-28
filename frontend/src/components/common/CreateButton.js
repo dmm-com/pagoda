@@ -30,5 +30,5 @@ export function CreateButton({ to, children }) {
 
 CreateButton.propTypes = {
   to: PropTypes.string.isRequired,
-  children: PropTypes.element.isRequired,
+  children: PropTypes.any.isRequired,
 };

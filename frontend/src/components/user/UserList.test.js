@@ -5,8 +5,8 @@
 import React from "react";
 import { render } from "@testing-library/react";
 
-import { EntryList } from "./EntryList";
+import { UserList } from "./UserList";
 
 test("should render a component with essential props", function () {
-  expect(() => render(<EntryList entityId={"0"} entries={[]} />)).not.toThrow();
+  expect(() => render(<UserList users={[]} />)).not.toThrow();
 });

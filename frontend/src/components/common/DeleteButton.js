@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
@@ -11,7 +10,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function DeleteButton({ onConfirmed, children }) {
+export function DeleteButton({
+  handleDelete,
+  children,
+  startIcon = <DeleteIcon />,
+}) {
   const classes = useStyles();
 
   return (
@@ -19,10 +22,9 @@ export function DeleteButton({ onConfirmed, children }) {
       variant="contained"
       color="secondary"
       className={classes.button}
-      startIcon={<DeleteIcon />}
-      component={Link}
+      startIcon={startIcon}
       dialogTitle="本当に削除しますか？"
-      onClickYes={onConfirmed}
+      onClickYes={handleDelete}
     >
       {children}
     </ConfirmableButton>
@@ -31,5 +33,6 @@ export function DeleteButton({ onConfirmed, children }) {
 
 DeleteButton.propTypes = {
   handleDelete: PropTypes.func.isRequired,
-  children: PropTypes.element.isRequired,
+  startIcon: PropTypes.element,
+  children: PropTypes.any.isRequired,
 };

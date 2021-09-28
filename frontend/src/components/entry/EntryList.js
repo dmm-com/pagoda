@@ -80,7 +80,7 @@ export function EntryList({ entityId, entries }) {
             {filteredEntries
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((entry) => (
-                <TableRow>
+                <TableRow key={entry.id}>
                   <TableCell>
                     <Typography
                       component={Link}
@@ -91,7 +91,7 @@ export function EntryList({ entityId, entries }) {
                   </TableCell>
                   <TableCell align="right">
                     <DeleteButton
-                      onConfirmed={(e) => handleDelete(e, entry.id)}
+                      handleDelete={(e) => handleDelete(e, entry.id)}
                     >
                       削除
                     </DeleteButton>
@@ -107,14 +107,14 @@ export function EntryList({ entityId, entries }) {
         count={filteredEntries.length}
         rowsPerPage={rowsPerPage}
         page={page}
-        onChangePage={handleChangePage}
-        onChangeRowsPerPage={handleChangeRowsPerPage}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
       />
     </Paper>
   );
 }
 
 EntryList.propTypes = {
-  entityId: PropTypes.number.isRequired,
+  entityId: PropTypes.string.isRequired,
   entries: PropTypes.array.isRequired,
 };
