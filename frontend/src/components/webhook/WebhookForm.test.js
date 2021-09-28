@@ -6,7 +6,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { act } from "react-dom/test-utils";
 
-import WebhookForm from "./WebhookForm.js";
+import { WebhookForm } from "./WebhookForm.js";
 
 let container;
 
