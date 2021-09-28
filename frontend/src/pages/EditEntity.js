@@ -25,7 +25,7 @@ export default function EditEntity({}) {
         .then((resp) => resp.json())
         .then((data) => data.entities);
     }
-    return Promise.resolve({});
+    return Promise.resolve([]);
   });
 
   const [tabValue, setTabValue] = useState(0);

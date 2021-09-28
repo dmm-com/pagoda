@@ -214,7 +214,7 @@ export default function EntityForm({ entity = {}, referralEntities = [] }) {
 
               <TableBody id="sortdata">
                 {attributes.map((attr, index) => (
-                  <TableRow className="attr" key={`attr-${index}`}>
+                  <TableRow key={attr.id} className="attr">
                     <TableCell>
                       <input
                         type="text"

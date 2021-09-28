@@ -60,8 +60,10 @@ export default function ACL({}) {
                 公開：
                 <input
                   type="checkbox"
-                  name="is_public"
-                  checked={object.is_public}
+                  value={object.is_public}
+                  onChange={(e) =>
+                    setObject({ ...object, is_public: e.target.checked })
+                  }
                 />
               </span>
               <span className="float-right">
@@ -91,26 +93,27 @@ export default function ACL({}) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {members.map((member) => (
-                <TableRow>
+              {members.map((member, index) => (
+                <TableRow key={member.name}>
                   <TableCell>
                     <Typography>{member.name}</Typography>
                   </TableCell>
                   <TableCell align="left">
-                    <select name="acl">
-                      {acltypes.map((acltype) => {
-                        if (acltype.id === member.current_permission) {
-                          return (
-                            <option value={acltype.id} selected="selected">
-                              {acltype.name}
-                            </option>
-                          );
-                        } else {
-                          return (
-                            <option value={acltype.id}>{acltype.name}</option>
-                          );
+                    <select
+                      name="acl"
+                      value={member.current_permission}
+                      onChange={(e) => {
+                        if (members[index] !== undefined) {
+                          members[index].current_permission = e.target.value;
+                          setMembers([...members]);
                         }
-                      })}
+                      }}
+                    >
+                      {acltypes.map((acltype) => (
+                        <option key={acltype.id} value={acltype.id}>
+                          {acltype.name}
+                        </option>
+                      ))}
                     </select>
                   </TableCell>
                 </TableRow>
