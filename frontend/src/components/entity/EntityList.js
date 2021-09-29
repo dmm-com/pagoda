@@ -1,9 +1,3 @@
-import { makeStyles } from "@material-ui/core/styles";
-import { deleteEntity } from "../../utils/AironeAPIClient";
-import Typography from "@material-ui/core/Typography";
-import { Link, useHistory } from "react-router-dom";
-import Button from "@material-ui/core/Button";
-import Paper from "@material-ui/core/Paper";
 import {
   Table,
   TableBody,
@@ -13,12 +7,19 @@ import {
   TablePagination,
   TableRow,
 } from "@material-ui/core";
-import { EditButton } from "../common/EditButton";
-import HistoryIcon from "@material-ui/icons/History";
+import Button from "@material-ui/core/Button";
+import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
 import GroupIcon from "@material-ui/icons/Group";
-import { DeleteButton } from "../common/DeleteButton";
-import React, { useRef, useState } from "react";
+import HistoryIcon from "@material-ui/icons/History";
 import PropTypes from "prop-types";
+import React, { useRef, useState } from "react";
+import { Link, useHistory } from "react-router-dom";
+
+import { deleteEntity } from "../../utils/AironeAPIClient";
+import { DeleteButton } from "../common/DeleteButton";
+import { EditButton } from "../common/EditButton";
 
 const useStyles = makeStyles((theme) => ({
   button: {
