@@ -50,8 +50,11 @@ export function getEntry(entityId, entryId) {
   });
 }
 
-export function getEntries(entityId) {
-  return fetch(`/entry/api/v1/get_entries/${entityId}`);
+export function getEntries(entityId, isActive = true) {
+  const isActiveParam = isActive ? "True" : "False";
+  return fetch(
+    `/entry/api/v1/get_entries/${entityId}?is_active=${isActiveParam}`
+  );
 }
 
 export function importEntries(entityId, formData) {
@@ -177,6 +180,53 @@ export function deleteEntry(entryId) {
 }
 
 // NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function restoreEntry(entryId) {
+  return fetch(`/entry/do_restore/${entryId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({}),
+  });
+}
+
+export function copyEntry(entryId, entries) {
+  return fetch(`/entry/do_copy/${entryId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      entries: entries,
+    }),
+  });
+}
+
+export function getEntryHistory(entryId) {
+  return new Promise((resolve, _) => {
+    resolve([
+      {
+        attr_name: "test",
+        prev: {
+          created_user: "admin",
+          created_time: new Date().toDateString(),
+          value: "before",
+        },
+        curr: {
+          created_user: "admin",
+          created_time: new Date().toDateString(),
+          value: "after",
+        },
+      },
+    ]);
+  });
+}
+
+export function getReferredEntries(entryId) {
+  return fetch(`/entry/api/v1/get_referrals/${entryId}`);
+}
+
 export function exportEntries(entityId, format) {
   return fetch(`/entry/export/${entityId}?format=${format}`);
 }

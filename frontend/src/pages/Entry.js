@@ -31,7 +31,13 @@ export function Entry({}) {
   const [tabValue, setTabValue] = useState(1);
 
   const entries = useAsync(async () => {
-    return getEntries(entityId)
+    return getEntries(entityId, true)
+      .then((resp) => resp.json())
+      .then((data) => data.results);
+  });
+
+  const deletedEntries = useAsync(async () => {
+    return getEntries(entityId, false)
       .then((resp) => resp.json())
       .then((data) => data.results);
   });
@@ -118,7 +124,15 @@ export function Entry({}) {
 
       <div hidden={tabValue !== 2}>ダッシュボードの設定</div>
 
-      <div hidden={tabValue !== 3}>削除エントリの復旧</div>
+      <div hidden={tabValue !== 3}>
+        {!deletedEntries.loading && (
+          <EntryList
+            entityId={entityId}
+            entries={deletedEntries.value}
+            restoreMode={true}
+          />
+        )}
+      </div>
     </div>
   );
 }

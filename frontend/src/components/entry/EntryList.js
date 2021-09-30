@@ -10,10 +10,13 @@ import {
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
+import RestoreIcon from "@material-ui/icons/Restore";
 import PropTypes from "prop-types";
 import React, { useRef, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
+import { deleteEntry, restoreEntry } from "../../utils/AironeAPIClient";
+import { ConfirmableButton } from "../common/ConfirmableButton";
 import { DeleteButton } from "../common/DeleteButton";
 
 const useStyles = makeStyles((theme) => ({
@@ -25,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function EntryList({ entityId, entries }) {
+export function EntryList({ entityId, entries, restoreMode = false }) {
   const classes = useStyles();
   const history = useHistory();
 
@@ -43,6 +46,10 @@ export function EntryList({ entityId, entries }) {
 
   const handleDelete = (event, entryId) => {
     deleteEntry(entryId).then((_) => history.go(0));
+  };
+
+  const handleRestore = (event, entryId) => {
+    restoreEntry(entryId).then((_) => history.go(0));
   };
 
   const handlePageChange = (event, newPage) => {
@@ -85,17 +92,31 @@ export function EntryList({ entityId, entries }) {
                   <TableCell>
                     <Typography
                       component={Link}
-                      to={`/new-ui/entities/${entityId}/entries/${entry.id}`}
+                      to={`/new-ui/entities/${entityId}/entries/${entry.id}/show`}
                     >
                       {entry.name}
                     </Typography>
                   </TableCell>
                   <TableCell align="right">
-                    <DeleteButton
-                      handleDelete={(e) => handleDelete(e, entry.id)}
-                    >
-                      削除
-                    </DeleteButton>
+                    {restoreMode ? (
+                      <ConfirmableButton
+                        variant="contained"
+                        color="primary"
+                        className={classes.button}
+                        startIcon={<RestoreIcon />}
+                        component={Link}
+                        dialogTitle="本当に復旧しますか？"
+                        onClickYes={(e) => handleRestore(e, entry.id)}
+                      >
+                        Restore
+                      </ConfirmableButton>
+                    ) : (
+                      <DeleteButton
+                        handleDelete={(e) => handleDelete(e, entry.id)}
+                      >
+                        削除
+                      </DeleteButton>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -123,4 +144,5 @@ EntryList.propTypes = {
       name: PropTypes.string.isRequired,
     })
   ).isRequired,
+  restoreMode: PropTypes.bool,
 };
