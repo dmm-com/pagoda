@@ -17,6 +17,7 @@ import {
   refreshAccessToken,
   updateUser,
 } from "../../utils/AironeAPIClient";
+import { DjangoContext } from "../../utils/DjangoContext";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -37,6 +38,8 @@ export function UserForm({ user }) {
   const [password, setPassword] = useState(isCreateMode ? "" : undefined);
   const [isSuperuser, setIsSuperuser] = useState(user?.is_superuser ?? false);
   const [tokenLifetime, setTokenLifetime] = useState(user?.token_lifetime);
+
+  const djangoContext = DjangoContext.getInstance();
 
   const handleSubmit = (event) => {
     if (isCreateMode) {
@@ -73,7 +76,7 @@ export function UserForm({ user }) {
               <Typography>名前</Typography>
             </TableCell>
             <TableCell>
-              {django_context.user.is_superuser ? (
+              {djangoContext.user.is_superuser ? (
                 <input
                   type="text"
                   name="name"
@@ -91,7 +94,7 @@ export function UserForm({ user }) {
               <Typography>メールアドレス</Typography>
             </TableCell>
             <TableCell>
-              {django_context.user.is_superuser ? (
+              {djangoContext.user.is_superuser ? (
                 <input
                   type="email"
                   name="email"
@@ -104,7 +107,7 @@ export function UserForm({ user }) {
               )}
             </TableCell>
           </TableRow>
-          {django_context.user.is_superuser ? (
+          {djangoContext.user.is_superuser ? (
             <TableRow>
               <TableCell>
                 <Typography>管理者権限を付与</Typography>

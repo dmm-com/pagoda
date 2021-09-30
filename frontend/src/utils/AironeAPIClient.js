@@ -1,6 +1,11 @@
+import Cookies from "js-cookie";
 import fileDownload from "js-file-download";
 
-import { getCsrfToken } from "./DjangoUtils";
+// Get CSRF Token from Cookie set by Django
+// see https://docs.djangoproject.com/en/3.2/ref/csrf/
+function getCsrfToken() {
+  return Cookies.get("csrftoken");
+}
 
 export function getEntity(entityId) {
   return fetch(`/entity/api/v2/entities/${entityId}`);
