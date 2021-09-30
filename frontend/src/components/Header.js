@@ -1,10 +1,4 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { grey } from "@material-ui/core/colors";
-import { fade, makeStyles } from "@material-ui/core/styles";
-import AccountBox from "@material-ui/icons/AccountBox";
-import FormatListBulletedIcon from "@material-ui/icons/FormatListBulleted";
-import SearchIcon from "@material-ui/icons/Search";
+import { Badge, Divider, Menu, MenuItem } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
@@ -12,9 +6,16 @@ import IconButton from "@material-ui/core/IconButton";
 import InputBase from "@material-ui/core/InputBase";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import { Badge, Divider, Menu, MenuItem } from "@material-ui/core";
-import { getRecentJobs } from "../utils/AironeAPIClient";
+import { grey } from "@material-ui/core/colors";
+import { alpha, makeStyles } from "@material-ui/core/styles";
+import AccountBox from "@material-ui/icons/AccountBox";
+import FormatListBulletedIcon from "@material-ui/icons/FormatListBulleted";
+import SearchIcon from "@material-ui/icons/Search";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { getRecentJobs } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -31,9 +32,9 @@ const useStyles = makeStyles((theme) => ({
   search: {
     position: "relative",
     borderRadius: theme.shape.borderRadius,
-    backgroundColor: fade(theme.palette.common.white, 0.15),
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
     "&:hover": {
-      backgroundColor: fade(theme.palette.common.white, 0.25),
+      backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
     marginRight: theme.spacing(2),
     marginLeft: 0,
@@ -67,7 +68,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Header({}) {
+export function Header({}) {
   const classes = useStyles();
 
   const [userAnchorEl, setUserAnchorEl] = useState();

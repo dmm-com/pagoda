@@ -11,8 +11,8 @@
     "build:development": "webpack build --mode development",
     "build:production": "webpack build --mode production",
     "watch": "webpack build --watch --mode development",
-    "lint": "npx prettier --check frontend/",
-    "fix": "npx prettier --write frontend/",
+    "lint": "npx prettier --check frontend ; npx eslint frontend",
+    "fix": "npx prettier --write frontend ; npx eslint --fix frontend",
     "test": "npx jest frontend"
   },
   "repository": {
@@ -35,6 +35,8 @@
     "@testing-library/react": "^12.0.0",
     "babel-loader": "^8.2.2",
     "babel-plugin-transform-class-properties": "^6.24.1",
+    "eslint": "^7.32.0",
+    "eslint-plugin-import": "^2.24.2",
     "jest": "^27.0.6",
     "prettier": "2.3.2",
     "prop-types": "^15.7.2",
@@ -45,8 +47,10 @@
   },
   "dependencies": {
     "@jest/globals": "^27.0.6",
-    "@material-ui/core": "^4.11.2",
+    "@material-ui/core": "^4.12.3",
+    "@material-ui/lab": "^4.0.0-alpha.60",
     "js-cookie": "^2.2.1",
+    "js-file-download": "^0.4.12",
     "react-router-dom": "^5.2.0",
     "react-use": "^17.2.4"
   }

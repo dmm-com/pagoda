@@ -81,6 +81,7 @@ def set_webhook(request, entity_id, recv_data):
     })
 
 
+# FIXME specify HTTP method
 @airone_profile
 def del_webhook(request, webhook_id):
     webhook = Webhook.objects.filter(id=webhook_id).first()

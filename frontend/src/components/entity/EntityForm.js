@@ -1,6 +1,3 @@
-import { makeStyles } from "@material-ui/core/styles";
-import React, { useState } from "react";
-import Button from "@material-ui/core/Button";
 import {
   List,
   ListItemText,
@@ -12,12 +9,16 @@ import {
   TableHead,
   TableRow,
 } from "@material-ui/core";
-import DeleteIcon from "@material-ui/icons/Delete";
-import { createEntity, updateEntity } from "../../utils/AironeAPIClient";
-import { useHistory } from "react-router-dom";
-import PropTypes from "prop-types";
 import Box from "@material-ui/core/Box";
+import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
+import DeleteIcon from "@material-ui/icons/Delete";
+import PropTypes from "prop-types";
+import React, { useState } from "react";
+import { useHistory } from "react-router-dom";
+
+import { createEntity, updateEntity } from "../../utils/AironeAPIClient";
 
 const BaseAttributeTypes = {
   object: 1 << 0,
@@ -86,7 +87,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EntityForm({ entity = {}, referralEntities = [] }) {
+export function EntityForm({ entity = {}, referralEntities = [] }) {
   const classes = useStyles();
   const history = useHistory();
 
@@ -214,7 +215,7 @@ export default function EntityForm({ entity = {}, referralEntities = [] }) {
 
               <TableBody id="sortdata">
                 {attributes.map((attr, index) => (
-                  <TableRow className="attr" key={`attr-${index}`}>
+                  <TableRow key={attr.id} className="attr">
                     <TableCell>
                       <input
                         type="text"
@@ -245,11 +246,16 @@ export default function EntityForm({ entity = {}, referralEntities = [] }) {
                               )
                             }
                           >
-                            {Object.keys(AttributeTypes).map((typename) => (
-                              <MenuItem value={AttributeTypes[typename].type}>
-                                {AttributeTypes[typename].name}
-                              </MenuItem>
-                            ))}
+                            {Object.keys(AttributeTypes).map(
+                              (typename, index) => (
+                                <MenuItem
+                                  key={index}
+                                  value={AttributeTypes[typename].type}
+                                >
+                                  {AttributeTypes[typename].name}
+                                </MenuItem>
+                              )
+                            )}
                           </Select>
                         </Box>
                         <Box minWidth={100} marginX={1}>
@@ -260,7 +266,9 @@ export default function EntityForm({ entity = {}, referralEntities = [] }) {
                                 {/* TODO multiple */}
                                 <Select fullWidth={true}>
                                   {referralEntities.map((e) => (
-                                    <MenuItem value={e.id}>{e.name}</MenuItem>
+                                    <MenuItem key={e.id} value={e.id}>
+                                      {e.name}
+                                    </MenuItem>
                                   ))}
                                 </Select>
                               </>
@@ -270,7 +278,9 @@ export default function EntityForm({ entity = {}, referralEntities = [] }) {
                               <Typography>参照エントリ: </Typography>
                               <List>
                                 {attr.referrals.map((r) => (
-                                  <ListItemText>{r.name}</ListItemText>
+                                  <ListItemText key={r.id}>
+                                    {r.name}
+                                  </ListItemText>
                                 ))}
                               </List>
                             </>
@@ -355,8 +365,10 @@ EntityForm.propTypes = {
   }),
   referralEntities: PropTypes.arrayOf(
     PropTypes.exact({
-      id: PropTypes.string,
+      id: PropTypes.number,
       name: PropTypes.string,
+      status: PropTypes.number,
+      note: PropTypes.string,
     })
   ),
 };

@@ -1,9 +1,9 @@
 import Button from "@material-ui/core/Button";
-import AddIcon from "@material-ui/icons/Add";
-import { Link } from "react-router-dom";
-import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import AddIcon from "@material-ui/icons/Add";
 import PropTypes from "prop-types";
+import React from "react";
+import { Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CreateButton({ to, children }) {
+export function CreateButton({ to, children }) {
   const classes = useStyles();
 
   return (
@@ -30,5 +30,5 @@ export default function CreateButton({ to, children }) {
 
 CreateButton.propTypes = {
   to: PropTypes.string.isRequired,
-  children: PropTypes.element.isRequired,
+  children: PropTypes.any.isRequired,
 };

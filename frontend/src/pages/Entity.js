@@ -1,13 +1,19 @@
+import Button from "@material-ui/core/Button";
+import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
-import EntityList from "../components/entity/EntityList";
-import { makeStyles } from "@material-ui/core/styles";
-import Typography from "@material-ui/core/Typography";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { getEntities } from "../utils/AironeAPIClient";
-import CreateButton from "../components/common/CreateButton";
-import Button from "@material-ui/core/Button";
+
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { CreateButton } from "../components/common/CreateButton";
+import { Loading } from "../components/common/Loading";
+import { EntityList } from "../components/entity/EntityList";
+import {
+  downloadExportedEntities,
+  exportEntities,
+  getEntities,
+} from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -15,7 +21,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Entity({}) {
+export function Entity({}) {
   const classes = useStyles();
 
   const entities = useAsync(async () => {
@@ -43,6 +49,7 @@ export default function Entity({}) {
               className={classes.button}
               variant="outlined"
               color="secondary"
+              onClick={() => downloadExportedEntities("entity.yaml")}
             >
               エクスポート
             </Button>
@@ -51,7 +58,7 @@ export default function Entity({}) {
               color="secondary"
               className={classes.button}
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/entities/import`}
             >
               インポート
             </Button>
@@ -60,7 +67,11 @@ export default function Entity({}) {
         </div>
       </div>
 
-      {!entities.loading && <EntityList entities={entities.value} />}
+      {entities.loading ? (
+        <Loading />
+      ) : (
+        <EntityList entities={entities.value} />
+      )}
     </div>
   );
 }

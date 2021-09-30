@@ -1,3 +1,5 @@
+import fileDownload from "js-file-download";
+
 import { getCsrfToken } from "./DjangoUtils";
 
 export function getEntity(entityId) {
@@ -10,6 +12,23 @@ export function getEntities() {
 
 export function getEntityHistory(entityId) {
   return fetch(`/entity/api/v2/history/${entityId}`);
+}
+
+// NOTE it calls non-API endpoint
+export function downloadExportedEntities(filename) {
+  return fetch("/entity/export/")
+    .then((resp) => resp.blob())
+    .then((blob) => fileDownload(blob, filename));
+}
+
+export function importEntities(formData) {
+  return fetch(`/dashboard/do_import/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: formData,
+  });
 }
 
 export function getEntry(entityId, entryId) {
@@ -28,6 +47,16 @@ export function getEntry(entityId, entryId) {
 
 export function getEntries(entityId) {
   return fetch(`/entry/api/v1/get_entries/${entityId}`);
+}
+
+export function importEntries(entityId, formData) {
+  return fetch(`/entry/do_import/${entityId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: formData,
+  });
 }
 
 export function getAdvancedSearchResults() {
@@ -142,12 +171,53 @@ export function deleteEntry(entryId) {
   });
 }
 
+// NOTE it calls non-API endpoint
+export function exportEntries(entityId, format) {
+  return fetch(`/entry/export/${entityId}?format=${format}`);
+}
+
+// FIXME implement internal API then call it
 export function getUser(userId) {
   return fetch(`/user/api/v2/users/${userId}`);
 }
 
 export function getUsers() {
   return fetch("/user/api/v2/users");
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function createUser(name, email, password, isSuperuser, tokenLifetime) {
+  return fetch(`/user/do_create`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      passwd: password,
+      is_superuser: isSuperuser,
+      token_lifetime: String(tokenLifetime),
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateUser(userId, name, email, isSuperuser, tokenLifetime) {
+  return fetch(`/user/do_edit/${userId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      is_superuser: isSuperuser,
+      token_lifetime: String(tokenLifetime),
+    }),
+  });
 }
 
 // NOTE it calls non-API endpoint
@@ -159,6 +229,63 @@ export function deleteUser(userId) {
       "X-CSRFToken": getCsrfToken(),
     },
     body: JSON.stringify({}),
+  });
+}
+
+// NOTE it calls non-API endpoint
+export function downloadExportedUsers(filename) {
+  return fetch("/user/export/")
+    .then((resp) => resp.blob())
+    .then((blob) => fileDownload(blob, filename));
+}
+
+// FIXME implement V2 API
+export function refreshAccessToken() {
+  return fetch("/api/v1/user/access_token/", {
+    method: "PUT",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateUserPassword(
+  userId,
+  oldPassword,
+  newPassword,
+  checkPassword
+) {
+  return fetch(`/user/do_edit_passwd/${userId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      old_passwd: oldPassword,
+      new_passwd: newPassword,
+      chk_passwd: checkPassword,
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateUserPasswordAsSuperuser(
+  userId,
+  newPassword,
+  checkPassword
+) {
+  return fetch(`/user/do_su_edit_passwd/${userId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      new_passwd: newPassword,
+      chk_passwd: checkPassword,
+    }),
   });
 }
 
@@ -194,6 +321,23 @@ export function deleteGroup(groupId) {
   });
 }
 
+// NOTE it calls non-API endpoint
+export function downloadExportedGroups(filename) {
+  return fetch("/group/export/")
+    .then((resp) => resp.blob())
+    .then((blob) => fileDownload(blob, filename));
+}
+
+export function importGroups(formData) {
+  return fetch(`/group/do_import/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: formData,
+  });
+}
+
 export function getJobs(noLimit = 0) {
   return fetch(`/job/api/v2/jobs?nolimit=${noLimit}`);
 }
@@ -216,5 +360,28 @@ export function updateACL(objectId, objectType, acl, defaultPermission) {
       acl: acl,
       default_permission: defaultPermission,
     }),
+  });
+}
+
+export function getWebhooks(entityId) {
+  return fetch(`/webhook/api/v2/${entityId}`);
+}
+
+export function setWebhook(entityId, request_parameter) {
+  return fetch(`/webhook/api/v1/set/${entityId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify(request_parameter),
+  });
+}
+
+export function deleteWebhook(webhookId) {
+  return fetch(`/webhook/api/v1/del/${webhookId}`, {
+    method: "DELETE",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
   });
 }

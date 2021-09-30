@@ -1,5 +1,3 @@
-import { makeStyles } from "@material-ui/core/styles";
-import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,12 +6,15 @@ import {
   TableHead,
   TableRow,
 } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
-import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
 import SettingsIcon from "@material-ui/icons/Settings";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { getAdvancedSearchResults } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
@@ -25,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function SearchResults({}) {
+export function SearchResults({}) {
   const classes = useStyles();
   const [results, setResults] = useState([]);
 

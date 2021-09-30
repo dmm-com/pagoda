@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import Button from "@material-ui/core/Button";
-import { Link } from "react-router-dom";
 import { Select } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { getUsers } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -13,14 +14,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EditGroup({}) {
+export function EditGroup({}) {
   const classes = useStyles();
 
   const [name, setName] = useState("");
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    getUsers().then((data) => setUsers(data));
+    getUsers()
+      .then((resp) => resp.json())
+      .then((data) => setUsers(data));
   }, []);
 
   const onSubmit = (event) => {
@@ -58,7 +61,9 @@ export default function EditGroup({}) {
           <Typography>ユーザ管理</Typography>
           <Select multiple native variant="outlined">
             {users.map((user) => (
-              <option value={user.id}>{user.name}</option>
+              <option key={user.id} value={user.id}>
+                {user.name}
+              </option>
             ))}
           </Select>
         </div>

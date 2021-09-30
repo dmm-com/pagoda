@@ -1,25 +1,29 @@
+import Grid from "@material-ui/core/Grid";
 import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import Grid from "@material-ui/core/Grid";
-import LeftMenu from "./components/LeftMenu";
-import Header from "./components/Header";
-import Entity from "./pages/Entity";
-import Entry from "./pages/Entry";
-import Dashboard from "./pages/Dashboard";
-import User from "./pages/User";
-import Group from "./pages/Group";
-import Job from "./pages/Job";
-import SearchResults from "./pages/SearchResults";
-import AdvancedSearch from "./pages/AdvancedSearch";
-import EditEntity from "./pages/EditEntity";
-import EditEntry from "./pages/EditEntry";
-import EntityHistory from "./pages/EntityHistory";
-import ACL from "./pages/ACL";
-import Import from "./pages/Import";
-import EditUser from "./pages/EditUser";
-import EditUserPassword from "./pages/EditUserPassword";
-import EditGroup from "./pages/EditGroup";
+
+import { Header } from "./components/Header";
+import { LeftMenu } from "./components/LeftMenu";
+import { ACL } from "./pages/ACL";
+import { AdvancedSearch } from "./pages/AdvancedSearch";
+import { Dashboard } from "./pages/Dashboard";
+import { EditEntity } from "./pages/EditEntity";
+import { EditEntry } from "./pages/EditEntry";
+import { EditGroup } from "./pages/EditGroup";
+import { EditUser } from "./pages/EditUser";
+import { EditUserPassword } from "./pages/EditUserPassword";
+import { Entity } from "./pages/Entity";
+import { EntityHistory } from "./pages/EntityHistory";
+import { Entry } from "./pages/Entry";
+import { Group } from "./pages/Group";
+import { ImportEntity } from "./pages/ImportEntity";
+import { ImportEntry } from "./pages/ImportEntry";
+import { ImportGroup } from "./pages/ImportGroup";
+import { ImportUser } from "./pages/ImportUser";
+import { Job } from "./pages/Job";
+import { SearchResults } from "./pages/SearchResults";
+import { User } from "./pages/User";
 
 const basePath = "/new-ui/";
 
@@ -46,6 +50,10 @@ function App() {
               component={EditEntry}
             />
             <Route
+              path={basePath + "entities/:entityId/entries/import"}
+              component={ImportEntry}
+            />
+            <Route
               path={basePath + "entities/:entityId/entries/:entryId"}
               component={EditEntry}
             />
@@ -59,18 +67,23 @@ function App() {
             />
             <Route path={basePath + "entities/new"} component={EditEntity} />
             <Route
+              path={basePath + "entities/import"}
+              component={ImportEntity}
+            />
+            <Route
               path={basePath + "entities/:entityId"}
               component={EditEntity}
             />
             <Route path={basePath + "entities"} component={Entity} />
             <Route path={basePath + "groups/new"} component={EditGroup} />
+            <Route path={basePath + "groups/import"} component={ImportGroup} />
             <Route path={basePath + "groups/:groupId"} component={EditGroup} />
             <Route path={basePath + "groups"} component={Group} />
-            <Route path={basePath + "import"} component={Import} />
             <Route path={basePath + "jobs"} component={Job} />
             <Route path={basePath + "acl/:objectId"} component={ACL} />
             <Route path={basePath + "search"} component={SearchResults} />
             <Route path={basePath + "users/new"} component={EditUser} />
+            <Route path={basePath + "users/import"} component={ImportUser} />
             <Route
               path={basePath + "users/:userId/password"}
               component={EditUserPassword}

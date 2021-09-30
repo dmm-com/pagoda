@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Table,
   TableBody,
@@ -7,10 +6,12 @@ import {
   TableRow,
   Typography,
 } from "@material-ui/core";
-import { getEntityHistory } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { getEntityHistory } from "../utils/AironeAPIClient";
 
 const Operations = {
   ADD: 1 << 0,
@@ -34,7 +35,7 @@ const TargetOperation = {
   DEL_ENTRY: Operations.DEL + Targets.ENTRY,
 };
 
-export default function EntityHistory({}) {
+export function EntityHistory({}) {
   const { entityId } = useParams();
 
   const history = useAsync(async () => {

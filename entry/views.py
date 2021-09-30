@@ -461,6 +461,8 @@ def do_import_data(request, entity_id, context):
         data = yaml.load(context, Loader=yaml.FullLoader)
     except yaml.parser.ParserError:
         return HttpResponse("Couldn't parse uploaded file", status=400)
+    except ValueError as e:
+        return HttpResponse("Invalid value is found: %s" % e, status=400)
 
     if not Entry.is_importable_data(data):
         return HttpResponse("Uploaded file has invalid data structure to import", status=400)
