@@ -1,12 +1,13 @@
+import Button from "@material-ui/core/Button";
+import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import React from "react";
-import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
-import Button from "@material-ui/core/Button";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { getJobs } from "../utils/AironeAPIClient";
 import { useAsync } from "react-use";
-import JobList from "../components/job/JobList";
+
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { JobList } from "../components/job/JobList";
+import { getJobs } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -17,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Job({}) {
+export function Job({}) {
   const classes = useStyles();
 
   const jobs = useAsync(async () => getJobs().then((resp) => resp.json()), []);

@@ -1,34 +1,32 @@
-import { makeStyles } from "@material-ui/core/styles";
-import React, { useState } from "react";
-import { useAsync, useToggle } from "react-use";
-
-import CloseIcon from "@material-ui/icons/Close";
-import CheckIcon from "@material-ui/icons/Check";
-import DeleteIcon from "@material-ui/icons/Delete";
-import IconButton from "@material-ui/core/IconButton";
-
-import Alert from "@material-ui/lab/Alert";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import Checkbox from "@material-ui/core/Checkbox";
-import FormGroup from "@material-ui/core/FormGroup";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormGroup from "@material-ui/core/FormGroup";
+import IconButton from "@material-ui/core/IconButton";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
 import Modal from "@material-ui/core/Modal";
-import PropTypes from "prop-types";
 import TextField from "@material-ui/core/TextField";
+import { makeStyles } from "@material-ui/core/styles";
+import CheckIcon from "@material-ui/icons/Check";
+import CloseIcon from "@material-ui/icons/Close";
+import DeleteIcon from "@material-ui/icons/Delete";
+import Alert from "@material-ui/lab/Alert";
+import PropTypes from "prop-types";
+import React, { useState } from "react";
+import { useAsync, useToggle } from "react-use";
 
 import {
   deleteWebhook,
   getWebhooks,
   setWebhook,
 } from "../../utils/AironeAPIClient";
-import DeleteButton from "../common/DeleteButton";
+import { DeleteButton } from "../common/DeleteButton";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -48,7 +46,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function WebhookForm({ entityId }) {
+export function WebhookForm({ entityId }) {
   const classes = useStyles();
 
   const [isUpdated, toggleIsUpdated] = useToggle(false);
@@ -301,5 +299,5 @@ export default function WebhookForm({ entityId }) {
 }
 
 WebhookForm.propTypes = {
-  entityId: PropTypes.number.isRequired,
+  entityId: PropTypes.string.isRequired,
 };

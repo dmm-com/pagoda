@@ -1,9 +1,9 @@
-import React, { useRef, useState } from "react";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import Typography from "@material-ui/core/Typography";
-import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
+import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
+import PropTypes from "prop-types";
+import React, { useRef, useState } from "react";
+import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -11,35 +11,31 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Import({}) {
+export function ImportForm({ importFunc, redirectPath }) {
   const classes = useStyles();
-  const [files, setFiles] = useState([]);
-  const filesRef = useRef(null);
+  const history = useHistory();
+  const [file, setFile] = useState([]);
 
   const onChange = (event) => {
-    setFiles(event.target.files);
+    setFile(event.target.files[0]);
   };
 
   const onSubmit = (event) => {
-    // TODO handle files
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
 
-    console.log(files);
+      importFunc(formData).then(() => history.push(redirectPath));
+    }
+
     event.preventDefault();
   };
 
   return (
-    <div className="container-fluid">
-      <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
-          Top
-        </Typography>
-        <Typography>インポート</Typography>
-      </AironeBreadcrumbs>
-
+    <div>
       <form onSubmit={onSubmit}>
         <div>
-          <input type="file" onChange={onChange} ref={filesRef} />
-
+          <input type="file" onChange={onChange} />
           <Button
             className={classes.button}
             type="submit"
@@ -54,3 +50,8 @@ export default function Import({}) {
     </div>
   );
 }
+
+ImportForm.propTypes = {
+  importFunc: PropTypes.func.isRequired,
+  redirectPath: PropTypes.string.isRequired,
+};

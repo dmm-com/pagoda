@@ -1,18 +1,19 @@
-import React, { useState } from "react";
-import Button from "@material-ui/core/Button";
-import { useParams, Link } from "react-router-dom";
-import { makeStyles } from "@material-ui/core/styles";
 import { Divider } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
+import Button from "@material-ui/core/Button";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { getEntries } from "../utils/AironeAPIClient";
-import EditButton from "../components/common/EditButton";
-import Loading from "../components/common/Loading";
-import CreateButton from "../components/common/CreateButton";
-import EntryList from "../components/entry/EntryList";
+import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
+import React, { useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { CreateButton } from "../components/common/CreateButton";
+import { EditButton } from "../components/common/EditButton";
+import { Loading } from "../components/common/Loading";
+import { EntryList } from "../components/entry/EntryList";
+import { exportEntries, getEntries } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -23,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Entry({}) {
+export function Entry({}) {
   const classes = useStyles();
   let { entityId } = useParams();
 
@@ -78,20 +79,25 @@ export default function Entry({}) {
               variant="outlined"
               color="secondary"
               className={classes.button}
+              onClick={() => exportEntries(entityId, "YAML")}
             >
-              エクスポート
+              YAML でエクスポート
+            </Button>
+            <Button
+              variant="contained"
+              className={classes.button}
+              onClick={() => exportEntries(entityId, "YAML")}
+            >
+              CSV でエクスポート
             </Button>
             <Button
               className={classes.button}
               variant="outlined"
               color="secondary"
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/entities/${entityId}/entries/import`}
             >
               インポート
-            </Button>
-            <Button variant="contained" className={classes.button}>
-              CSV で出力
             </Button>
           </div>
         </div>

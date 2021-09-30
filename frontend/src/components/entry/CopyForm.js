@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { copyEntry } from "../../utils/AironeAPIClient";
 import Button from "@material-ui/core/Button";
-import { useHistory } from "react-router-dom";
 import PropTypes from "prop-types";
+import React, { useState } from "react";
+import { useHistory } from "react-router-dom";
+
+import { copyEntry } from "../../utils/AironeAPIClient";
 
 export default function CopyForm({ entityId, entryId }) {
   const history = useHistory();

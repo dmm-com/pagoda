@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Table,
   TableBody,
@@ -7,17 +6,19 @@ import {
   TableHead,
   TableRow,
 } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import EditButton from "../common/EditButton";
-import Button from "@material-ui/core/Button";
-import EditIcon from "@material-ui/icons/Edit";
-import { Link, useHistory } from "react-router-dom";
-import DeleteButton from "../common/DeleteButton";
-import PropTypes from "prop-types";
-import EntryList from "../entry/EntryList";
-import { deleteUser } from "../../utils/AironeAPIClient";
 import { makeStyles } from "@material-ui/core/styles";
+import EditIcon from "@material-ui/icons/Edit";
+import PropTypes from "prop-types";
+import React from "react";
+import { Link, useHistory } from "react-router-dom";
+
+import { deleteUser } from "../../utils/AironeAPIClient";
+import { DeleteButton } from "../common/DeleteButton";
+import { EditButton } from "../common/EditButton";
+import { EntryList } from "../entry/EntryList";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -88,7 +89,7 @@ export function UserList({ users }) {
 
 UserList.propTypes = {
   users: PropTypes.arrayOf(
-    PropTypes.objectOf({
+    PropTypes.shape({
       id: PropTypes.number.isRequired,
       username: PropTypes.string.isRequired,
       email: PropTypes.string.isRequired,

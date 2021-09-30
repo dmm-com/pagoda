@@ -1,12 +1,13 @@
-import React from "react";
-import { getACL } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import Typography from "@material-ui/core/Typography";
+import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
-import ACLForm from "../components/common/ACLForm";
 
-export default function ACL({}) {
+import ACLForm from "../components/common/ACLForm";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { getACL } from "../utils/AironeAPIClient";
+
+export function ACL({}) {
   const { entityId } = useParams();
 
   const acl = useAsync(async () => {

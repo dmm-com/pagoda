@@ -1,6 +1,6 @@
-import React from "react";
 import { Table, TableBody, TableCell, TableRow } from "@material-ui/core";
 import PropTypes from "prop-types";
+import React from "react";
 
 export default function EntryAttributes({ attributes }) {
   return (

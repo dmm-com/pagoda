@@ -1,24 +1,25 @@
-import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import Typography from "@material-ui/core/Typography";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import Typography from "@material-ui/core/Typography";
+import React, { useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import ACLForm from "../components/common/ACLForm";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import CopyForm from "../components/entry/CopyForm";
+import EntryAttributes from "../components/entry/EntryAttributes";
+import { EntryForm } from "../components/entry/EntryForm";
+import EntryHistory from "../components/entry/EntryHistory";
+import EntryReferral from "../components/entry/EntryReferral";
 import {
   getACL,
   getEntry,
   getEntryHistory,
   getReferredEntries,
 } from "../utils/AironeAPIClient";
-import EntryForm from "../components/entry/EntryForm";
-import EntryAttributes from "../components/entry/EntryAttributes";
-import EntryHistory from "../components/entry/EntryHistory";
-import CopyForm from "../components/entry/CopyForm";
-import EntryReferral from "../components/entry/EntryReferral";
-import ACLForm from "../components/common/ACLForm";
 
-export default function ShowEntry({}) {
+export function ShowEntry({}) {
   const { entityId, entryId } = useParams();
 
   const [tabValue, setTabValue] = useState(0);
