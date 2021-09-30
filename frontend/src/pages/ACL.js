@@ -1,9 +1,3 @@
-import React, { useEffect, useState } from "react";
-import { getACL } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import Typography from "@material-ui/core/Typography";
-import { Link, useParams } from "react-router-dom";
-import Button from "@material-ui/core/Button";
 import {
   Table,
   TableBody,
@@ -12,8 +6,15 @@ import {
   TableHead,
   TableRow,
 } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
+import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { getACL } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -21,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ACL({}) {
+export function ACL({}) {
   const classes = useStyles();
   const { objectId } = useParams();
 
@@ -60,8 +61,10 @@ export default function ACL({}) {
                 公開：
                 <input
                   type="checkbox"
-                  name="is_public"
-                  checked={object.is_public}
+                  value={object.is_public}
+                  onChange={(e) =>
+                    setObject({ ...object, is_public: e.target.checked })
+                  }
                 />
               </span>
               <span className="float-right">
@@ -91,26 +94,27 @@ export default function ACL({}) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {members.map((member) => (
-                <TableRow>
+              {members.map((member, index) => (
+                <TableRow key={member.name}>
                   <TableCell>
                     <Typography>{member.name}</Typography>
                   </TableCell>
                   <TableCell align="left">
-                    <select name="acl">
-                      {acltypes.map((acltype) => {
-                        if (acltype.id === member.current_permission) {
-                          return (
-                            <option value={acltype.id} selected="selected">
-                              {acltype.name}
-                            </option>
-                          );
-                        } else {
-                          return (
-                            <option value={acltype.id}>{acltype.name}</option>
-                          );
+                    <select
+                      name="acl"
+                      value={member.current_permission}
+                      onChange={(e) => {
+                        if (members[index] !== undefined) {
+                          members[index].current_permission = e.target.value;
+                          setMembers([...members]);
                         }
-                      })}
+                      }}
+                    >
+                      {acltypes.map((acltype) => (
+                        <option key={acltype.id} value={acltype.id}>
+                          {acltype.name}
+                        </option>
+                      ))}
                     </select>
                   </TableCell>
                 </TableRow>

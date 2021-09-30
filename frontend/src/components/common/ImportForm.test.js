@@ -5,8 +5,12 @@
 import { render } from "@testing-library/react";
 import React from "react";
 
-import { UserList } from "./UserList";
+import { ImportForm } from "./ImportForm";
 
 test("should render a component with essential props", function () {
-  expect(() => render(<UserList users={[]} />)).not.toThrow();
+  expect(() =>
+    render(
+      <ImportForm importFunc={() => {}} redirectPath={"/path/to/redirect"} />
+    )
+  ).not.toThrow();
 });

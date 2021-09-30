@@ -6,7 +6,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { act } from "react-dom/test-utils";
 
-import WebhookForm from "./WebhookForm.js";
+import { WebhookForm } from "./WebhookForm.js";
 
 let container;
 
@@ -22,6 +22,6 @@ afterEach(() => {
 
 test("should render a component with essential props", function () {
   expect(() => {
-    ReactDOM.render(<WebhookForm entityId={0} />, container);
+    ReactDOM.render(<WebhookForm entityId={"0"} />, container);
   }).not.toThrow();
 });
