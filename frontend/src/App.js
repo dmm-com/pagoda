@@ -14,6 +14,7 @@ import { EditGroup } from "./pages/EditGroup";
 import { EditUser } from "./pages/EditUser";
 import { EditUserPassword } from "./pages/EditUserPassword";
 import { Entity } from "./pages/Entity";
+import { EntityHistory } from "./pages/EntityHistory";
 import { Entry } from "./pages/Entry";
 import { Group } from "./pages/Group";
 import { ImportEntity } from "./pages/ImportEntity";
@@ -21,7 +22,6 @@ import { ImportEntry } from "./pages/ImportEntry";
 import { ImportGroup } from "./pages/ImportGroup";
 import { ImportUser } from "./pages/ImportUser";
 import { Job } from "./pages/Job";
-import { OperationHistory } from "./pages/OperationHistory";
 import { SearchResults } from "./pages/SearchResults";
 import { User } from "./pages/User";
 
@@ -63,7 +63,7 @@ function App() {
             />
             <Route
               path={basePath + "entities/:entityId/history"}
-              component={OperationHistory}
+              component={EntityHistory}
             />
             <Route path={basePath + "entities/new"} component={EditEntity} />
             <Route
