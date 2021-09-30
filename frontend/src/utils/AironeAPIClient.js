@@ -1,6 +1,11 @@
+import Cookies from "js-cookie";
 import fileDownload from "js-file-download";
 
-import { getCsrfToken } from "./DjangoUtils";
+// Get CSRF Token from Cookie set by Django
+// see https://docs.djangoproject.com/en/3.2/ref/csrf/
+function getCsrfToken() {
+  return Cookies.get("csrftoken");
+}
 
 export function getEntity(entityId) {
   return fetch(`/entity/api/v2/entities/${entityId}`);
@@ -11,24 +16,7 @@ export function getEntities() {
 }
 
 export function getEntityHistory(entityId) {
-  return new Promise((resolve, _) => {
-    resolve([
-      {
-        user: {
-          username: "test",
-        },
-        operation: (1 << 0) + (1 << 3), // ADD_ENTITY
-        details: [
-          {
-            operation: (1 << 1) + (1 << 4), // MOD_ATTR
-            target_obj: "test_attr",
-            text: "mod test_attr",
-          },
-        ],
-        time: "2021-01-01 00:00:00",
-      },
-    ]);
-  });
+  return fetch(`/entity/api/v2/history/${entityId}`);
 }
 
 // NOTE it calls non-API endpoint
