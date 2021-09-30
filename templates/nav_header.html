@@ -9,7 +9,7 @@
       {% if user.is_authenticated %}
       <li class='navbar'>{% include 'nav_user.html' %}</li>
       {% else %}
-      <li class="navbar"><a href="{% url 'auth:login' %}" class="nav-link">ログイン</a></li>
+      <li class="navbar"><a href="{% url 'login' %}" class="nav-link">ログイン</a></li>
       {% endif %}
       <li class='navbar'>{% include 'nav_jobs.html' %}
       </li>

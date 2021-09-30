@@ -2,15 +2,20 @@
 
 ## In development
 
+### Added
+* Added param of editting user for ldap (#256)
+
 ### Changed
 * Changed the HTTP method on the entry.export page from GET to POST (#166)
 * Changed not to create tokens with GET user.access_token API (#166)
 * Added job function that cannot be canceled (#199)
 * Changed the behavior of token refresh (#208)
+* Upgrade Django version from v3.2.4 to v3.2.5 (#254)
 
 ### Fixed
 * Fixed the problem that the URL of Webhook API is different (#202)
 * Fixed some attributes are not updated in advanced search results (#230)
+* Fixed update history of TOP page (#258)
 
 ## v3.2.0
 
