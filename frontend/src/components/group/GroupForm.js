@@ -1,11 +1,12 @@
-import Typography from "@material-ui/core/Typography";
 import { Select } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
-import React, { useState } from "react";
+import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
-import { createGroup, updateGroup } from "../../utils/AironeAPIClient";
+import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
+
+import { createGroup, updateGroup } from "../../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -13,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function GroupForm({ users, group }) {
+export function GroupForm({ users, group }) {
   const classes = useStyles();
   const history = useHistory();
 

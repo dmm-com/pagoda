@@ -1,13 +1,14 @@
+import Button from "@material-ui/core/Button";
+import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import React from "react";
-import Typography from "@material-ui/core/Typography";
 import { Link } from "react-router-dom";
-import Button from "@material-ui/core/Button";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { getGroups } from "../utils/AironeAPIClient";
-import CreateButton from "../components/common/CreateButton";
 import { useAsync } from "react-use";
-import GroupList from "../components/group/GroupList";
+
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { CreateButton } from "../components/common/CreateButton";
+import { GroupList } from "../components/group/GroupList";
+import { getGroups } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -18,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Group({}) {
+export function Group({}) {
   const classes = useStyles();
 
   const groups = useAsync(async () => {
@@ -42,6 +43,7 @@ export default function Group({}) {
               className={classes.button}
               variant="outlined"
               color="secondary"
+              onClick={() => downloadExportedGroups("user_group.yaml")}
             >
               エクスポート
             </Button>
@@ -50,7 +52,7 @@ export default function Group({}) {
               color="secondary"
               className={classes.button}
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/groups/import`}
             >
               インポート
             </Button>

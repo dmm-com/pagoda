@@ -1,8 +1,9 @@
-import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import PropTypes from "prop-types";
-import ConfirmableButton from "./ConfirmableButton";
 import DeleteIcon from "@material-ui/icons/Delete";
+import PropTypes from "prop-types";
+import React from "react";
+
+import { ConfirmableButton } from "./ConfirmableButton";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -10,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function DeleteButton({
+export function DeleteButton({
   handleDelete,
   children,
   startIcon = <DeleteIcon />,

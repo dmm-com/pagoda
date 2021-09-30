@@ -8,12 +8,12 @@ import {
   TableHead,
   TableRow,
 } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import Button from "@material-ui/core/Button";
-import { Link } from "react-router-dom";
-import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import React from "react";
+import { Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function JobList({ jobs }) {
+export function JobList({ jobs }) {
   const classes = useStyles();
 
   return (

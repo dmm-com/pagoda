@@ -1,9 +1,8 @@
 import { Breadcrumbs } from "@material-ui/core";
-import React from "react";
-import { makeStyles } from "@material-ui/core/styles";
 import { grey } from "@material-ui/core/colors";
+import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
-import CreateButton from "./CreateButton";
+import React from "react";
 
 const useStyles = makeStyles((theme) => ({
   breadcrumbs: {
@@ -13,7 +12,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function AironeBreadcrumbs({ children }) {
+export function AironeBreadcrumbs({ children }) {
   const classes = useStyles();
 
   return (

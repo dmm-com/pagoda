@@ -1,6 +1,3 @@
-import React, { useRef, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
-import { makeStyles } from "@material-ui/core/styles";
 import {
   Table,
   TableBody,
@@ -10,10 +7,14 @@ import {
   TablePagination,
   TableRow,
 } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
-import DeleteButton from "../common/DeleteButton";
+import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
+import React, { useRef, useState } from "react";
+import { Link, useHistory } from "react-router-dom";
+
+import { DeleteButton } from "../common/DeleteButton";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -24,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EntryList({ entityId, entries }) {
+export function EntryList({ entityId, entries }) {
   const classes = useStyles();
   const history = useHistory();
 
@@ -44,11 +45,11 @@ export default function EntryList({ entityId, entries }) {
     deleteEntry(entryId).then((_) => history.go(0));
   };
 
-  const handleChangePage = (event, newPage) => {
+  const handlePageChange = (event, newPage) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
+  const handleRowsPerPageChange = (event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
@@ -107,8 +108,8 @@ export default function EntryList({ entityId, entries }) {
         count={filteredEntries.length}
         rowsPerPage={rowsPerPage}
         page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
       />
     </Paper>
   );
@@ -116,5 +117,10 @@ export default function EntryList({ entityId, entries }) {
 
 EntryList.propTypes = {
   entityId: PropTypes.string.isRequired,
-  entries: PropTypes.array.isRequired,
+  entries: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+    })
+  ).isRequired,
 };

@@ -1,9 +1,9 @@
 import Button from "@material-ui/core/Button";
-import EditIcon from "@material-ui/icons/Edit";
-import { Link } from "react-router-dom";
-import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import EditIcon from "@material-ui/icons/Edit";
 import PropTypes from "prop-types";
+import React from "react";
+import { Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EditButton({ to, children }) {
+export function EditButton({ to, children }) {
   const classes = useStyles();
 
   return (

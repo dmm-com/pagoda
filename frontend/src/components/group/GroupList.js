@@ -10,13 +10,15 @@ import {
 } from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import { Link, useHistory } from "react-router-dom";
-import DeleteButton from "../common/DeleteButton";
-import React from "react";
-import { deleteGroup } from "../../utils/AironeAPIClient";
 import PropTypes from "prop-types";
+import React from "react";
+import { Link, useHistory } from "react-router-dom";
 
-export default function GroupList({ groups }) {
+import { deleteGroup } from "../../utils/AironeAPIClient";
+import { DeleteButton } from "../common/DeleteButton";
+
+
+export function GroupList({ groups }) {
   const history = useHistory();
 
   const handleDelete = (event, groupId) => {

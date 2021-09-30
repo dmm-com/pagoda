@@ -1,6 +1,3 @@
-import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
-import { makeStyles } from "@material-ui/core/styles";
 import {
   Table,
   TableBody,
@@ -9,8 +6,12 @@ import {
   TableRow,
 } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
-import { createEntry } from "../../utils/AironeAPIClient";
+import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
+import React, { useState } from "react";
+import { useHistory } from "react-router-dom";
+
+import { createEntry } from "../../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -18,11 +19,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EntryForm({
-  entityId,
-  initName = "",
-  initAttributes = [],
-}) {
+export function EntryForm({ entityId, initName = "", initAttributes = [] }) {
   const classes = useStyles();
   const history = useHistory();
 

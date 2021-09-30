@@ -1,13 +1,20 @@
-import Typography from "@material-ui/core/Typography";
-import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
-import React from "react";
+import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { getUsers } from "../utils/AironeAPIClient";
-import CreateButton from "../components/common/CreateButton";
-import { UserList } from "../components/user/UserList";
+import React from "react";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { CreateButton } from "../components/common/CreateButton";
+import { DeleteButton } from "../components/common/DeleteButton";
+import { EditButton } from "../components/common/EditButton";
+import { UserList } from "../components/user/UserList";
+import {
+  downloadExportedUsers,
+  deleteUser,
+  getUsers,
+} from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -15,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function User({}) {
+export function User({}) {
   const classes = useStyles();
 
   const users = useAsync(async () => {
@@ -45,6 +52,7 @@ export default function User({}) {
               className={classes.button}
               variant="outlined"
               color="secondary"
+              onClick={() => downloadExportedUsers("user.yaml")}
             >
               エクスポート
             </Button>
@@ -53,7 +61,7 @@ export default function User({}) {
               variant="outlined"
               color="secondary"
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/users/import`}
             >
               インポート
             </Button>

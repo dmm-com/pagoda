@@ -1,12 +1,13 @@
+import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-import Typography from "@material-ui/core/Typography";
-import { getGroup, getUsers } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
 import { useAsync } from "react-use";
-import GroupForm from "../components/group/GroupForm";
 
-export default function EditGroup({}) {
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { GroupForm } from "../components/group/GroupForm";
+import { getGroup, getUsers } from "../utils/AironeAPIClient";
+
+export function EditGroup({}) {
   let { groupId } = useParams();
 
   const users = useAsync(async () => {

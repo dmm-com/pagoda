@@ -1,3 +1,5 @@
+import fileDownload from "js-file-download";
+
 import { getCsrfToken } from "./DjangoUtils";
 
 export function getEntity(entityId) {
@@ -29,6 +31,23 @@ export function getEntityHistory(entityId) {
   });
 }
 
+// NOTE it calls non-API endpoint
+export function downloadExportedEntities(filename) {
+  return fetch("/entity/export/")
+    .then((resp) => resp.blob())
+    .then((blob) => fileDownload(blob, filename));
+}
+
+export function importEntities(formData) {
+  return fetch(`/dashboard/do_import/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: formData,
+  });
+}
+
 export function getEntry(entityId, entryId) {
   return new Promise((resolve, _) => {
     resolve({
@@ -45,6 +64,16 @@ export function getEntry(entityId, entryId) {
 
 export function getEntries(entityId) {
   return fetch(`/entry/api/v1/get_entries/${entityId}`);
+}
+
+export function importEntries(entityId, formData) {
+  return fetch(`/entry/do_import/${entityId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: formData,
+  });
 }
 
 export function getAdvancedSearchResults() {
@@ -159,6 +188,12 @@ export function deleteEntry(entryId) {
   });
 }
 
+// NOTE it calls non-API endpoint
+export function exportEntries(entityId, format) {
+  return fetch(`/entry/export/${entityId}?format=${format}`);
+}
+
+// FIXME implement internal API then call it
 export function getUser(userId) {
   return fetch(`/user/api/v2/users/${userId}`);
 }
@@ -212,6 +247,13 @@ export function deleteUser(userId) {
     },
     body: JSON.stringify({}),
   });
+}
+
+// NOTE it calls non-API endpoint
+export function downloadExportedUsers(filename) {
+  return fetch("/user/export/")
+    .then((resp) => resp.blob())
+    .then((blob) => fileDownload(blob, filename));
 }
 
 // FIXME implement V2 API
@@ -312,6 +354,23 @@ export function deleteGroup(groupId) {
       "X-CSRFToken": getCsrfToken(),
     },
     body: JSON.stringify({}),
+  });
+}
+
+// NOTE it calls non-API endpoint
+export function downloadExportedGroups(filename) {
+  return fetch("/group/export/")
+    .then((resp) => resp.blob())
+    .then((blob) => fileDownload(blob, filename));
+}
+
+export function importGroups(formData) {
+  return fetch(`/group/do_import/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: formData,
   });
 }
 
