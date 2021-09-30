@@ -22,3 +22,4 @@ mypy
 types-six
 types-requests
 requests-html==0.10.0
+drf_spectacular==0.17.3
