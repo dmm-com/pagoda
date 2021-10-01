@@ -11,6 +11,7 @@
 * Added job function that cannot be canceled (#199)
 * Changed the behavior of token refresh (#208)
 * Upgrade Django version from v3.2.4 to v3.2.5 (#254)
+* Changed cookie of session to secure attribute, and to return HSTS header (#257)
 
 ### Fixed
 * Fixed the problem that the URL of Webhook API is different (#202)
