@@ -1,3 +1,5 @@
+import custom_view
+
 from import_export import fields, widgets
 from django.contrib import admin
 from .models import EntityAttr
@@ -34,6 +36,12 @@ class EntityResource(AironeModelResource):
             entity = Entity.objects.filter(name=data['name']).get()
             if 'id' not in data or not data['id'] or entity.id != data['id']:
                 raise RuntimeError('There is a duplicate entity object (%s)' % data['name'])
+
+        # Set event handler for custom-view. When it returns not None, then it abort to import.
+        if custom_view.is_custom('import_entity'):
+            error = custom_view.call_custom('import_entity', None, instance, data)
+            if error:
+                raise RuntimeError(error)
 
         super(EntityResource, self).import_obj(instance, data, dry_run)
 
@@ -82,6 +90,12 @@ class EntityAttrResource(AironeModelResource):
         # The processing fails when 'type' parameter is not existed for creating a new instance
         if not instance.pk and not data['type']:
             raise RuntimeError("The parameter 'type' is mandatory when a new EntityAtter create")
+
+        # Set event handler for custom-view. When it returns not None, then it abort to import.
+        if custom_view.is_custom('import_entity_attr'):
+            error = custom_view.call_custom('import_entity_attr', None, instance, data)
+            if error:
+                raise RuntimeError(error)
 
         # Do not allow to change type when instance is already created
         if instance.pk:

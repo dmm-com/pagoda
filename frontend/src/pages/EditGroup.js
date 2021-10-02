@@ -1,35 +1,23 @@
-import React, { useEffect, useState } from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import Button from "@material-ui/core/Button";
-import { Link } from "react-router-dom";
-import { Select } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
-import { getUsers } from "../utils/AironeAPIClient";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
+import React from "react";
+import { Link, useParams } from "react-router-dom";
+import { useAsync } from "react-use";
 
-const useStyles = makeStyles((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-}));
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { GroupForm } from "../components/group/GroupForm";
+import { getGroup, getUsers } from "../utils/AironeAPIClient";
 
-export default function EditGroup({}) {
-  const classes = useStyles();
+export function EditGroup({}) {
+  let { groupId } = useParams();
 
-  const [name, setName] = useState("");
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    getUsers().then((data) => setUsers(data));
-  }, []);
-
-  const onSubmit = (event) => {
-    event.preventDefault();
-  };
-
-  const onChangeName = (event) => {
-    setName(event.target.value);
-  };
+  const users = useAsync(async () => {
+    return getUsers().then((resp) => resp.json());
+  });
+  const group = useAsync(async () => {
+    if (groupId !== undefined) {
+      return getGroup(groupId).then((resp) => resp.json());
+    }
+  });
 
   return (
     <div>
@@ -43,34 +31,9 @@ export default function EditGroup({}) {
         <Typography color="textPrimary">グループ編集</Typography>
       </AironeBreadcrumbs>
 
-      <form onSubmit={onSubmit}>
-        <div>
-          <Typography>グループ名</Typography>
-          <input
-            type="text"
-            name="name"
-            value={name}
-            onChange={onChangeName}
-            required="required"
-          />
-        </div>
-        <div>
-          <Typography>ユーザ管理</Typography>
-          <Select multiple native variant="outlined">
-            {users.map((user) => (
-              <option value={user.id}>{user.name}</option>
-            ))}
-          </Select>
-        </div>
-        <Button
-          className={classes.button}
-          type="submit"
-          variant="contained"
-          color="secondary"
-        >
-          保存
-        </Button>
-      </form>
+      {!users.loading && !group.loading && (
+        <GroupForm users={users.value} group={group.value} />
+      )}
     </div>
   );
 }

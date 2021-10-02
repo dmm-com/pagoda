@@ -1,23 +1,14 @@
-import { makeStyles } from "@material-ui/core/styles";
-import React, { useEffect, useState } from "react";
-import {
-  List,
-  ListItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
-import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
-import Paper from "@material-ui/core/Paper";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { deleteGroup, getGroups } from "../utils/AironeAPIClient";
-import CreateButton from "../components/common/CreateButton";
-import DeleteButton from "../components/common/DeleteButton";
+import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
+import React from "react";
+import { Link } from "react-router-dom";
+import { useAsync } from "react-use";
+
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { CreateButton } from "../components/common/CreateButton";
+import { GroupList } from "../components/group/GroupList";
+import { getGroups } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -28,19 +19,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Group({}) {
+export function Group({}) {
   const classes = useStyles();
-  const [groups, setGroups] = useState([]);
-  const [updated, setUpdated] = useState(false);
 
-  useEffect(() => {
-    getGroups().then((data) => setGroups(data));
-    setUpdated(true);
-  }, []);
-
-  const handleDelete = (event, groupId) => {
-    deleteGroup(groupId).then((_) => setUpdated(true));
-  };
+  const groups = useAsync(async () => {
+    return getGroups().then((resp) => resp.json());
+  });
 
   return (
     <div className="container-fluid">
@@ -59,6 +43,7 @@ export default function Group({}) {
               className={classes.button}
               variant="outlined"
               color="secondary"
+              onClick={() => downloadExportedGroups("user_group.yaml")}
             >
               エクスポート
             </Button>
@@ -67,7 +52,7 @@ export default function Group({}) {
               color="secondary"
               className={classes.button}
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/groups/import`}
             >
               インポート
             </Button>
@@ -76,51 +61,7 @@ export default function Group({}) {
         </div>
       </div>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <Typography>名前</Typography>
-              </TableCell>
-              <TableCell align="right">
-                <Typography align="left">メンバー</Typography>
-              </TableCell>
-              <TableCell align="right" />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {groups.map((group) => {
-              return (
-                <TableRow>
-                  <TableCell>
-                    <Typography
-                      component={Link}
-                      to={`/new-ui/groups/${group.id}`}
-                    >
-                      {group.name}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <List>
-                      {group.members.map((member) => (
-                        <ListItem>{member.name}</ListItem>
-                      ))}
-                    </List>
-                  </TableCell>
-                  <TableCell align="right">
-                    <DeleteButton
-                      onConfirmed={(e) => handleDelete(e, group.id)}
-                    >
-                      削除
-                    </DeleteButton>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {!groups.loading && <GroupList groups={groups.value} />}
     </div>
   );
 }

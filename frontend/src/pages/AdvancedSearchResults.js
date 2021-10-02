@@ -1,14 +1,15 @@
-import { makeStyles } from "@material-ui/core/styles";
-import React from "react";
-import Typography from "@material-ui/core/Typography";
-import { Link, useLocation } from "react-router-dom";
-import Button from "@material-ui/core/Button";
-import SettingsIcon from "@material-ui/icons/Settings";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { searchEntries } from "../utils/AironeAPIClient";
-import { useAsync } from "react-use";
-import SearchResults from "../components/entry/SearchResults";
 import Box from "@material-ui/core/Box";
+import Button from "@material-ui/core/Button";
+import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
+import SettingsIcon from "@material-ui/icons/Settings";
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useAsync } from "react-use";
+
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import SearchResults from "../components/entry/SearchResults";
+import { searchEntries } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -16,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function AdvancedSearchResults({}) {
+export function AdvancedSearchResults({}) {
   const classes = useStyles();
   const location = useLocation();
 

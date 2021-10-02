@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
-  <title>Django DRF - React : Quickstart - Valentino G. - www.valentinog.com</title>
+  <link rel="shortcut icon" href="/static/favicon.ico" />
+  <title>AirOne(NewUI)</title>
 </head>
-<body>
+<body style="margin: 0px">
   <div id="app" class="columns"><!-- React --></div>
 
   <script type="text/javascript">
@@ -13,13 +14,11 @@
           version: "{{version}}",
           user: {
               id: {{user.id}},
-              is_superuser: {{user.is_superuser|yesno:"true,false"}},
+              isSuperuser: {{user.is_superuser|yesno:"true,false"}},
           },
       };
   </script>
+  <script src="/static/js/new-ui.js"></script>
 
-  <script type="text/javascript">
-    {% include 'frontend/main.js' %}
-  </script>
 </body>
 </html>

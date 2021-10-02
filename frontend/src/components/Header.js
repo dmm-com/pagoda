@@ -1,10 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
-import { grey } from "@material-ui/core/colors";
-import { fade, makeStyles } from "@material-ui/core/styles";
-import AccountBox from "@material-ui/icons/AccountBox";
-import FormatListBulletedIcon from "@material-ui/icons/FormatListBulleted";
-import SearchIcon from "@material-ui/icons/Search";
+import { Badge, Divider, Menu, MenuItem } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
@@ -12,9 +6,17 @@ import IconButton from "@material-ui/core/IconButton";
 import InputBase from "@material-ui/core/InputBase";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import { Badge, Divider, Menu, MenuItem } from "@material-ui/core";
-import { getRecentJobs } from "../utils/AironeAPIClient";
+import { grey } from "@material-ui/core/colors";
+import { alpha, makeStyles } from "@material-ui/core/styles";
+import AccountBox from "@material-ui/icons/AccountBox";
+import FormatListBulletedIcon from "@material-ui/icons/FormatListBulleted";
+import SearchIcon from "@material-ui/icons/Search";
+import React, { useEffect, useState } from "react";
+import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { getRecentJobs } from "../utils/AironeAPIClient";
+import { DjangoContext } from "../utils/DjangoContext";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -31,9 +33,9 @@ const useStyles = makeStyles((theme) => ({
   search: {
     position: "relative",
     borderRadius: theme.shape.borderRadius,
-    backgroundColor: fade(theme.palette.common.white, 0.15),
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
     "&:hover": {
-      backgroundColor: fade(theme.palette.common.white, 0.25),
+      backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
     marginRight: theme.spacing(2),
     marginLeft: 0,
@@ -67,12 +69,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Header({}) {
+export function Header({}) {
   const classes = useStyles();
   const history = useHistory();
 
   const [userAnchorEl, setUserAnchorEl] = useState();
   const [jobAnchorEl, setJobAnchorEl] = useState();
+
+  const djangoContext = DjangoContext.getInstance();
 
   const recentJobs = useAsync(async () => {
     return getRecentJobs()
@@ -98,7 +102,7 @@ export default function Header({}) {
             component={Link}
             to="/new-ui/"
           >
-            AirOne(New UI) {django_context.version}
+            AirOne(New UI) {djangoContext.version}
           </Typography>
 
           <Box className={classes.menu}>
@@ -117,7 +121,11 @@ export default function Header({}) {
               onClose={() => setUserAnchorEl(null)}
               keepMounted
             >
-              <MenuItem>ユーザ設定</MenuItem>
+              <MenuItem>
+                <Link to={`/new-ui/users/${djangoContext.user.id}`}>
+                  ユーザ設定
+                </Link>
+              </MenuItem>
               <MenuItem>
                 <a href="/auth/logout/">ログアウト</a>
               </MenuItem>
@@ -142,7 +150,7 @@ export default function Header({}) {
               onClose={(e) => setJobAnchorEl(null)}
               keepMounted
             >
-              {!recentJobs.loading &&
+              {!recentJobs.loading && recentJobs.value.length > 0 ? (
                 recentJobs.value.map((recentJob) => (
                   <MenuItem>
                     <Typography
@@ -152,7 +160,12 @@ export default function Header({}) {
                       {recentJob.target.name}
                     </Typography>
                   </MenuItem>
-                ))}
+                ))
+              ) : (
+                <MenuItem>
+                  <Typography>実行タスクなし</Typography>
+                </MenuItem>
+              )}
               <Divider light />
               <MenuItem>
                 <Typography component={Link} to={`/new-ui/jobs`}>

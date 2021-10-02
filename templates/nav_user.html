@@ -1,8 +1,8 @@
-<div class='dropdown nav_menu_item'>
+<div class='dropdown nav_menu_item' id="nav_menu_user">
   <img src='/static/images/user_icon.png' class="dropdown-toggle" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" />
   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
     <a class="dropdown-item" href="/user/edit/{{ user.id }}">ユーザ設定</a>
     <div class="dropdown-divider"></div>
-    <a class="dropdown-item" href="{% url 'auth:logout' %}">ログアウト</a>
+    <a class="dropdown-item" href="{% url 'logout' %}">ログアウト</a>
   </div>
 </div>

@@ -1,13 +1,14 @@
-import { getCsrfToken } from "./DjangoUtils";
+import Cookies from "js-cookie";
+import fileDownload from "js-file-download";
+
+// Get CSRF Token from Cookie set by Django
+// see https://docs.djangoproject.com/en/3.2/ref/csrf/
+function getCsrfToken() {
+  return Cookies.get("csrftoken");
+}
 
 export function getEntity(entityId) {
-  return new Promise((resolve, _) => {
-    resolve({
-      name: "",
-      note: "",
-      attributes: [],
-    });
-  });
+  return fetch(`/entity/api/v2/entities/${entityId}`);
 }
 
 export function getEntities() {
@@ -15,23 +16,23 @@ export function getEntities() {
 }
 
 export function getEntityHistory(entityId) {
-  return new Promise((resolve, _) => {
-    resolve([
-      {
-        user: {
-          username: "test",
-        },
-        operation: (1 << 0) + (1 << 3), // ADD_ENTITY
-        details: [
-          {
-            operation: (1 << 1) + (1 << 4), // MOD_ATTR
-            target_obj: "test_attr",
-            text: "mod test_attr",
-          },
-        ],
-        time: "2021-01-01 00:00:00",
-      },
-    ]);
+  return fetch(`/entity/api/v2/history/${entityId}`);
+}
+
+// NOTE it calls non-API endpoint
+export function downloadExportedEntities(filename) {
+  return fetch("/entity/export/")
+    .then((resp) => resp.blob())
+    .then((blob) => fileDownload(blob, filename));
+}
+
+export function importEntities(formData) {
+  return fetch(`/dashboard/do_import/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: formData,
   });
 }
 
@@ -53,8 +54,21 @@ export function getEntry(entityId, entryId) {
   });
 }
 
-export function getEntries(entityId) {
-  return fetch(`/entry/api/v1/get_entries/${entityId}`);
+export function getEntries(entityId, isActive = true) {
+  const isActiveParam = isActive ? "True" : "False";
+  return fetch(
+    `/entry/api/v1/get_entries/${entityId}?is_active=${isActiveParam}`
+  );
+}
+
+export function importEntries(entityId, formData) {
+  return fetch(`/entry/do_import/${entityId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: formData,
+  });
 }
 
 // FIXME it should be better to implement a new internal API than this
@@ -120,7 +134,7 @@ export function getACL(objectId) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function createEntity(name, note, attrs) {
+export function createEntity(name, note, isTopLevel, attrs) {
   return fetch(`/entity/do_create`, {
     method: "POST",
     headers: {
@@ -129,7 +143,24 @@ export function createEntity(name, note, attrs) {
     body: JSON.stringify({
       name: name,
       note: note,
-      is_toplevel: false,
+      is_toplevel: isTopLevel,
+      attrs: attrs,
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateEntity(entityId, name, note, isTopLevel, attrs) {
+  return fetch(`/entity/do_edit/${entityId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      note: note,
+      is_toplevel: isTopLevel,
       attrs: attrs,
     }),
   });
@@ -174,12 +205,100 @@ export function deleteEntry(entryId) {
   });
 }
 
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function restoreEntry(entryId) {
+  return fetch(`/entry/do_restore/${entryId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({}),
+  });
+}
+
+export function copyEntry(entryId, entries) {
+  return fetch(`/entry/do_copy/${entryId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      entries: entries,
+    }),
+  });
+}
+
+export function getEntryHistory(entryId) {
+  return new Promise((resolve, _) => {
+    resolve([
+      {
+        attr_name: "test",
+        prev: {
+          created_user: "admin",
+          created_time: new Date().toDateString(),
+          value: "before",
+        },
+        curr: {
+          created_user: "admin",
+          created_time: new Date().toDateString(),
+          value: "after",
+        },
+      },
+    ]);
+  });
+}
+
+export function getReferredEntries(entryId) {
+  return fetch(`/entry/api/v1/get_referrals/${entryId}`);
+}
+
+export function exportEntries(entityId, format) {
+  return fetch(`/entry/export/${entityId}?format=${format}`);
+}
+
+// FIXME implement internal API then call it
 export function getUser(userId) {
   return fetch(`/user/api/v2/users/${userId}`);
 }
 
 export function getUsers() {
   return fetch("/user/api/v2/users");
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function createUser(name, email, password, isSuperuser, tokenLifetime) {
+  return fetch(`/user/do_create`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      passwd: password,
+      is_superuser: isSuperuser,
+      token_lifetime: String(tokenLifetime),
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateUser(userId, name, email, isSuperuser, tokenLifetime) {
+  return fetch(`/user/do_edit/${userId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      is_superuser: isSuperuser,
+      token_lifetime: String(tokenLifetime),
+    }),
+  });
 }
 
 // NOTE it calls non-API endpoint
@@ -194,30 +313,106 @@ export function deleteUser(userId) {
   });
 }
 
+// NOTE it calls non-API endpoint
+export function downloadExportedUsers(filename) {
+  return fetch("/user/export/")
+    .then((resp) => resp.blob())
+    .then((blob) => fileDownload(blob, filename));
+}
+
+// FIXME implement V2 API
+export function refreshAccessToken() {
+  return fetch("/api/v1/user/access_token/", {
+    method: "PUT",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateUserPassword(
+  userId,
+  oldPassword,
+  newPassword,
+  checkPassword
+) {
+  return fetch(`/user/do_edit_passwd/${userId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      old_passwd: oldPassword,
+      new_passwd: newPassword,
+      chk_passwd: checkPassword,
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateUserPasswordAsSuperuser(
+  userId,
+  newPassword,
+  checkPassword
+) {
+  return fetch(`/user/do_su_edit_passwd/${userId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      new_passwd: newPassword,
+      chk_passwd: checkPassword,
+    }),
+  });
+}
+
 // FIXME implement internal API then call it
 export function getGroups() {
-  return new Promise((resolve, _) => {
-    resolve([
-      {
-        id: 1,
-        name: "test",
-        members: [
-          {
-            name: "user1",
-          },
-          {
-            name: "user2",
-          },
-        ],
-      },
-    ]);
+  return fetch("/group/api/v2/groups");
+}
+
+export function getGroup(groupId) {
+  return fetch(`/group/api/v2/groups/${groupId}`);
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function createGroup(name, members) {
+  return fetch(`/group/do_create`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      users: members,
+    }),
+  });
+}
+
+// NOTE it calls non-API endpoint
+// FIXME implement internal API then call it
+export function updateGroup(groupId, name, members) {
+  return fetch(`/group/do_edit/${groupId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      name: name,
+      users: members,
+    }),
   });
 }
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
 export function deleteGroup(groupId) {
-  return fetch(`/gruop/do_delete/${groupId}`, {
+  return fetch(`/group/do_delete/${groupId}`, {
     method: "POST",
     headers: {
       "X-CSRFToken": getCsrfToken(),
@@ -226,21 +421,25 @@ export function deleteGroup(groupId) {
   });
 }
 
-// FIXME implement internal API then call it
-export function getJobs() {
-  return new Promise((resolve, _) => {
-    resolve([
-      {
-        id: 1,
-        entry: "entry1",
-        operation: "作成",
-        status: "完了",
-        duration: "1s",
-        created_at: "1st Jan 0:00pm",
-        note: "",
-      },
-    ]);
+// NOTE it calls non-API endpoint
+export function downloadExportedGroups(filename) {
+  return fetch("/group/export/")
+    .then((resp) => resp.blob())
+    .then((blob) => fileDownload(blob, filename));
+}
+
+export function importGroups(formData) {
+  return fetch(`/group/do_import/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: formData,
   });
+}
+
+export function getJobs(noLimit = 0) {
+  return fetch(`/job/api/v2/jobs?nolimit=${noLimit}`);
 }
 
 export function getRecentJobs() {
@@ -261,5 +460,28 @@ export function updateACL(objectId, objectType, acl, defaultPermission) {
       acl: acl,
       default_permission: defaultPermission,
     }),
+  });
+}
+
+export function getWebhooks(entityId) {
+  return fetch(`/webhook/api/v2/${entityId}`);
+}
+
+export function setWebhook(entityId, request_parameter) {
+  return fetch(`/webhook/api/v1/set/${entityId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify(request_parameter),
+  });
+}
+
+export function deleteWebhook(webhookId) {
+  return fetch(`/webhook/api/v1/del/${webhookId}`, {
+    method: "DELETE",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
   });
 }

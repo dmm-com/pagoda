@@ -1,4 +1,3 @@
-import React, { useReducer } from "react";
 import {
   Table,
   TableBody,
@@ -8,9 +7,10 @@ import {
   TablePagination,
   TableRow,
 } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 import PropTypes from "prop-types";
+import React, { useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
 export default function SearchResults({

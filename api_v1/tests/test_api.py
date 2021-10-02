@@ -19,6 +19,7 @@ from entry.settings import CONFIG as ENTRY_CONFIG
 
 from unittest import mock
 from datetime import date, datetime, timedelta
+from rest_framework.authtoken.models import Token
 
 
 class APITest(AironeViewTest):
@@ -254,6 +255,7 @@ class APITest(AironeViewTest):
 
     def test_post_entry_with_token(self):
         admin = User.objects.create(username='admin', is_superuser='True')
+        Token.objects.create(user=admin)
 
         entity = Entity.objects.create(name='Entity', created_user=admin)
         params = {
@@ -670,6 +672,19 @@ class APITest(AironeViewTest):
         self.assertEqual(len(resp.json()), ENTRY_CONFIG.MAX_LIST_ENTRIES)
         self.assertEqual([x['name'] for x in resp.json()], ['bar', 'baz'])
 
+    def test_get_entry_with_invalid_offset(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        Entry.objects.create(name='entry', schema=entity, created_user=user)
+
+        # Send a request with an invalid offset parameter
+        offset_params = ['-1', 'str']
+        for param in offset_params:
+            resp = self.client.get('/api/v1/entry', {'entity': 'Entity', 'offset': param})
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.json()['result'], 'Parameter "offset" is numerically')
+
     def test_get_deleted_entry(self):
         user = self.guest_login()
 
@@ -767,6 +782,7 @@ class APITest(AironeViewTest):
     @mock.patch('api_v1.auth.datetime')
     def test_expiring_token_lifetime(self, dt_mock):
         user = User.objects.create(username='testuser')
+        Token.objects.create(user=user)
 
         entity = Entity.objects.create(name='E1', created_user=user)
         Entry.objects.create(name='e1', schema=entity, created_user=user,)
@@ -826,6 +842,7 @@ class APITest(AironeViewTest):
     @mock.patch('entry.tasks.notify_create_entry.delay')
     def test_create_entry_that_has_user_authorized_attribute(self, mock_notify_create_entry):
         users = {x: User.objects.create(username=x, is_superuser=False) for x in ['_u1', '_u2']}
+        [Token.objects.create(user=x) for x in users.values()]
 
         # declare notification mock
         self._test_data['notify_create_entry_is_called'] = False
@@ -958,3 +975,33 @@ class APITest(AironeViewTest):
 
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_DELETE_ENTRY.value)
         self.assertEqual(job_notify.status, Job.STATUS['DONE'])
+
+    def test_update_entry_that_has_deleted_attribute(self):
+        """
+        This is a test for #186 (Failed to update an entry that has deleted attribute via API)
+        """
+        user = self.guest_login()
+
+        # create Entity and Entry which are used in this test case
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        attr_params = {'name': 'attr', 'type': AttrTypeValue['string'],
+                       'created_user': user, 'parent_entity': entity}
+        entity.attrs.add(EntityAttr.objects.create(**attr_params))
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
+
+        # delete and create EntityAttr, then complement Entry Attribute
+        entity.attrs.get(name='attr').delete()
+        entity.attrs.add(EntityAttr.objects.create(**attr_params))
+        entry.complement_attrs(user)
+
+        params = {
+            'entity': entity.name,
+            'id': entry.id,
+            'name': entry.name,
+            'attrs': {
+                'attr': 'hoge'
+            }
+        }
+        resp = self.client.post('/api/v1/entry', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)

@@ -3,6 +3,7 @@ import re
 from datetime import timedelta
 
 from django.contrib.auth import views as auth_views
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.urls import reverse_lazy
@@ -12,9 +13,8 @@ from airone.lib.http import http_get, http_post
 from airone.lib.http import render
 from airone.lib.http import check_superuser
 from airone.lib.profile import airone_profile
+from airone.auth.ldap import LDAPBackend
 from user.forms import UsernameBasedPasswordResetForm
-
-from rest_framework.authtoken.models import Token
 
 from .models import User
 
@@ -73,20 +73,24 @@ def do_create(request, recv_data):
 @http_get
 def edit(request, user_id):
     current_user = User.objects.get(id=request.user.id)
-    user = User.objects.get(id=user_id)
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except ObjectDoesNotExist:
+        return HttpResponse("Target user is not found", status=404)
     if not current_user.is_superuser and current_user != user:
         return HttpResponse("You don't have permission to access", status=400)
 
-    (token, _) = Token.objects.get_or_create(user=user)
     context = {
         'user_id': int(user_id),
         'user_name': user.username,
         'user_email': user.email,
-        'user_password': user.password,
         'user_is_superuser': user.is_superuser,
-        'token': token if current_user == user else '',
+        'token': user.token if current_user == user else None,
         'token_lifetime': user.token_lifetime,
-        'token_expire': token.created + timedelta(seconds=user.token_lifetime),
+        'token_created': user.token.created.strftime('%Y/%m/%d %H:%M:%S') if user.token else None,
+        'token_expire': ((user.token.created + timedelta(seconds=user.token_lifetime)).strftime(
+                          '%Y/%m/%d %H:%M:%S') if user.token else None),
+        'is_authenticated_by_local': user.authenticate_type == User.AUTH_TYPE_LOCAL,
     }
 
     return render(request, 'edit_user.html', context)
@@ -99,7 +103,10 @@ def edit(request, user_id):
 ])
 def do_edit(request, user_id, recv_data):
     access_user = User.objects.get(id=request.user.id)
-    target_user = User.objects.get(id=user_id)
+    try:
+        target_user = User.objects.get(id=user_id, is_active=True)
+    except ObjectDoesNotExist:
+        return HttpResponse("Target user is not found", status=404)
 
     # The case token_lifetime prameter is specified to update
     if 'token_lifetime' in recv_data:
@@ -150,7 +157,10 @@ def edit_passwd(request, user_id):
     else:
         return HttpResponse('You don\'t have permission to access this object', status=400)
 
-    user = User.objects.get(id=user_id)
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except ObjectDoesNotExist:
+        return HttpResponse("Target user is not found", status=404)
 
     context = {
         'user_id': int(user_id),
@@ -168,7 +178,11 @@ def edit_passwd(request, user_id):
     {'name': 'chk_passwd', 'type': str, 'checker': lambda x: x['chk_passwd']},
 ])
 def do_edit_passwd(request, user_id, recv_data):
-    user = User.objects.get(id=user_id)
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except ObjectDoesNotExist:
+        return HttpResponse("Target user is not found", status=404)
+
     # Identification
     if (int(request.user.id) != int(user_id)):
         return HttpResponse('You don\'t have permission to access this object', status=400)
@@ -199,7 +213,10 @@ def do_edit_passwd(request, user_id, recv_data):
 ])
 @check_superuser
 def do_su_edit_passwd(request, user_id, recv_data):
-    user = User.objects.get(id=user_id)
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except ObjectDoesNotExist:
+        return HttpResponse("Target user is not found", status=404)
 
     # Whether the new password matches the check password
     if recv_data['new_passwd'] != recv_data['chk_passwd']:
@@ -216,7 +233,11 @@ def do_su_edit_passwd(request, user_id, recv_data):
 @http_post([])
 @check_superuser
 def do_delete(request, user_id, recv_data):
-    user = User.objects.get(id=user_id)
+    try:
+        user = User.objects.get(id=user_id, is_active=True)
+    except ObjectDoesNotExist:
+        return HttpResponse("Target user is not found", status=404)
+
     ret = {}
 
     # save deleting target name before do it
@@ -226,6 +247,24 @@ def do_delete(request, user_id, recv_data):
     user.delete()
 
     return JsonResponse(ret)
+
+
+@airone_profile
+@http_post([
+    {'name': 'ldap_password', 'type': str}
+])
+def change_ldap_auth(request, recv_data):
+    user = User.objects.get(id=request.user.id)
+
+    if LDAPBackend.is_authenticated(user.username, recv_data['ldap_password']):
+        # When LDAP authentication is passed with current username and specified password,
+        # this chnages authentication type from local to LDAP.
+        user.authenticate_type = User.AUTH_TYPE_LDAP
+        user.save(update_fields=['authenticate_type'])
+
+        return HttpResponse('Succeeded')
+    else:
+        return HttpResponse('LDAP authentication was Failed of user %s' % user.username, status=400)
 
 
 class PasswordReset(auth_views.PasswordResetView):

@@ -1,54 +1,39 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
-import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
-import Paper from "@material-ui/core/Paper";
-import EditIcon from "@material-ui/icons/Edit";
-import React, { useEffect, useState } from "react";
+import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { deleteUser, getUsers } from "../utils/AironeAPIClient";
-import EditButton from "../components/common/EditButton";
-import CreateButton from "../components/common/CreateButton";
-import DeleteButton from "../components/common/DeleteButton";
+import React from "react";
+import { Link } from "react-router-dom";
+import { useAsync } from "react-use";
+
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { CreateButton } from "../components/common/CreateButton";
+import { DeleteButton } from "../components/common/DeleteButton";
+import { EditButton } from "../components/common/EditButton";
+import { UserList } from "../components/user/UserList";
+import {
+  downloadExportedUsers,
+  deleteUser,
+  getUsers,
+} from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
-  entityName: {
-    margin: theme.spacing(1),
-  },
 }));
 
-export default function User({}) {
+export function User({}) {
   const classes = useStyles();
-  const [users, setUsers] = useState([]);
-  const [updated, setUpdated] = useState(false);
 
-  useEffect(() => {
-    getUsers()
+  const users = useAsync(async () => {
+    return getUsers()
       .then((resp) => resp.json())
-      .then((data) => {
-        if (django_context.user.is_superuser) {
-          setUsers(data);
-        } else {
-          setUsers(data.filter((d) => d.id === django_context.user.id));
-        }
-      });
-    setUpdated(true);
-  }, [updated]);
-
-  const handleDelete = (event, userId) => {
-    deleteUser(userId).then((_) => setUpdated(true));
-  };
+      .then((data) =>
+        django_context.user.is_superuser
+          ? data
+          : data.filter((d) => d.id === django_context.user.id)
+      );
+  });
 
   return (
     <div className="container-fluid">
@@ -67,6 +52,7 @@ export default function User({}) {
               className={classes.button}
               variant="outlined"
               color="secondary"
+              onClick={() => downloadExportedUsers("user.yaml")}
             >
               エクスポート
             </Button>
@@ -75,7 +61,7 @@ export default function User({}) {
               variant="outlined"
               color="secondary"
               component={Link}
-              to={`/new-ui/import`}
+              to={`/new-ui/users/import`}
             >
               インポート
             </Button>
@@ -84,59 +70,7 @@ export default function User({}) {
         </div>
       </div>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <Typography>名前</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography>メールアドレス</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography>作成日時</Typography>
-              </TableCell>
-              <TableCell align="right" />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.map((user) => {
-              return (
-                <TableRow>
-                  <TableCell>
-                    <Typography>{user.username}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography>{user.email}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography>{user.date_joined}</Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <EditButton to={`/new-ui/users/${user.id}`}>
-                      編集
-                    </EditButton>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      className={classes.button}
-                      startIcon={<EditIcon />}
-                      component={Link}
-                      to={`/new-ui/users/${user.id}/password`}
-                    >
-                      パスワード変更
-                    </Button>
-                    <DeleteButton onConfirmed={(e) => handleDelete(e, user.id)}>
-                      削除
-                    </DeleteButton>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {!users.loading && <UserList users={users.value} />}
     </div>
   );
 }

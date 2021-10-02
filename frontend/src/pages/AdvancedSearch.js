@@ -1,4 +1,3 @@
-import React, { useReducer } from "react";
 import {
   Card,
   Checkbox,
@@ -8,36 +7,18 @@ import {
   ListItemText,
   ListSubheader,
 } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
-import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
-import AironeBreadcrumbs from "../components/common/AironeBreadcrumbs";
-import { useAsync } from "react-use";
-import { getEntities, getEntityAttrs } from "../utils/AironeAPIClient";
+import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
+import React, { useReducer } from "react";
+import { Link } from "react-router-dom";
+import { useAsync } from "react-use";
 
-const useStyles = makeStyles((theme) => ({
-  description: {
-    margin: theme.spacing(1),
-  },
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { getEntities, getEntityAttrs } from "../utils/AironeAPIClient";
 
-  entitySelector: {
-    margin: theme.spacing(1),
-    maxHeight: 500,
-    overflow: "auto",
-  },
-
-  attrSelector: {
-    margin: theme.spacing(1),
-    maxHeight: 500,
-    overflow: "auto",
-  },
-}));
-
-export default function AdvancedSearch({}) {
-  const classes = useStyles();
-
+export function AdvancedSearch({}) {
   const [selectedEntityIds, toggleSelectedEntityIds] = useReducer(
     (state, value) => {
       return state.indexOf(value) === -1
