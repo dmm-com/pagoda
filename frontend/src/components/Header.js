@@ -152,7 +152,7 @@ export function Header({}) {
             >
               {!recentJobs.loading && recentJobs.value.length > 0 ? (
                 recentJobs.value.map((recentJob) => (
-                  <MenuItem>
+                  <MenuItem key={recentJob.id}>
                     <Typography
                       component={Link}
                       to={`/new-ui/jobs/${recentJob.id}`}

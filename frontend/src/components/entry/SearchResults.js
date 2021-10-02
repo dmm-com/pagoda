@@ -13,7 +13,7 @@ import PropTypes from "prop-types";
 import React, { useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
-export default function SearchResults({
+export function SearchResults({
   results,
   defaultEntryFilter = "",
   defaultAttrsFilter = {},
@@ -58,11 +58,11 @@ export default function SearchResults({
     }
   };
 
-  const handleChangePage = (event, newPage) => {
+  const handlePageChange = (event, newPage) => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
+  const handleRowsPerPageChange = (event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
@@ -84,7 +84,7 @@ export default function SearchResults({
                 />
               </TableCell>
               {attrNames.map((attrName) => (
-                <TableCell>
+                <TableCell key={attrName}>
                   <Typography>{attrName}</Typography>
                   <input
                     text="text"
@@ -102,15 +102,18 @@ export default function SearchResults({
           <TableBody>
             {results
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((result) => (
-                <TableRow>
+              .map((result, index) => (
+                <TableRow key={index}>
                   <TableCell>
                     <Typography>{result.entry.name}</Typography>
                   </TableCell>
                   {attrNames.map((attrName) => (
-                    <TableCell>
+                    <TableCell key={attrName}>
+                      {/* TODO switch how to render values based on the type */}
                       {result.attrs[attrName] && (
-                        <Typography>{result.attrs[attrName].value}</Typography>
+                        <Typography>
+                          {result.attrs[attrName].value.toString()}
+                        </Typography>
                       )}
                     </TableCell>
                   ))}
@@ -125,15 +128,22 @@ export default function SearchResults({
         count={results.length}
         rowsPerPage={rowsPerPage}
         page={page}
-        onChangePage={handleChangePage}
-        onChangeRowsPerPage={handleChangeRowsPerPage}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
       />
     </Paper>
   );
 }
 
 SearchResults.propTypes = {
-  results: PropTypes.array.isRequired,
+  results: PropTypes.arrayOf(
+    PropTypes.shape({
+      attrs: PropTypes.object.isRequired,
+      entry: PropTypes.shape({
+        name: PropTypes.string.isRequired,
+      }).isRequired,
+    })
+  ).isRequired,
   defaultEntryFilter: PropTypes.string,
   defaultAttrsFilter: PropTypes.object,
 };
