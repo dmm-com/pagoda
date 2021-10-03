@@ -104,7 +104,6 @@ export function EntryList({ entityId, entries, restoreMode = false }) {
                         color="primary"
                         className={classes.button}
                         startIcon={<RestoreIcon />}
-                        component={Link}
                         dialogTitle="本当に復旧しますか？"
                         onClickYes={(e) => handleRestore(e, entry.id)}
                       >
