@@ -261,12 +261,15 @@ def _get_hint_keyword_val(keyword: str) -> str:
     Returns:
         str: If a character corresponding to the empty string specified by CONFIG is entered,
             the empty character is returned.
+            Else if keyword contains '\\', a white space is returned specially.
             Otherwise, the input value is returned.
 
     """
     if (CONFIG.EMPTY_SEARCH_CHARACTER == keyword or
             CONFIG.EMPTY_SEARCH_CHARACTER_CODE == keyword):
         return ''
+    if '\\' in keyword:
+        return ' '
     return keyword
 
 

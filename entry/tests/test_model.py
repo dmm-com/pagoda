@@ -2860,17 +2860,14 @@ class ModelTest(AironeTestCase):
         for attr_name, info in attr_info.items():
             ret = Entry.search_entries(
                 user, [entity.id], [{'name': attr_name, 'keyword': double_empty_search_character}])
-            if attr_name not in ['bool', 'date']:
-                self.assertEqual(ret['ret_count'], 1)
-            else:
-                self.assertEqual(ret['ret_count'], 0)
+            self.assertEqual(ret['ret_count'], 0)
 
         # check functionallity of the 'entry_name' parameter
         ret = Entry.search_entries(user, [], entry_name=CONFIG.EMPTY_SEARCH_CHARACTER)
         self.assertEqual(ret['ret_count'], 1)
 
         ret = Entry.search_entries(user, [], entry_name=double_empty_search_character)
-        self.assertEqual(ret['ret_count'], 1)
+        self.assertEqual(ret['ret_count'], 0)
 
         # check combination of 'entry_name' and 'hint_attrs' parameter
         ret = Entry.search_entries(user, [entity.id],
