@@ -18,6 +18,9 @@
 * Fixed some attributes are not updated in advanced search results (#230)
 * Fixed update history of TOP page (#258)
 
+### Refactored
+* Refactored the entry list page
+
 ## v3.2.0
 
 ### Changed
