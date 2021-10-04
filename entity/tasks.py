@@ -142,6 +142,7 @@ def edit_entity(self, job_id):
 
         # clear flag to specify this entity has been completed to edit
         entity.del_status(Entity.STATUS_EDITING)
+        entity.save()
 
         # update job status and save it
         job.update(Job.STATUS['DONE'])

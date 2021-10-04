@@ -68,6 +68,7 @@ class EntryAPI(APIView):
 
             entry = Entry.objects.get(id=sel.validated_data['id'])
             entry.name = sel.validated_data['name']
+            entry.save()
             entry.set_status(Entry.STATUS_EDITING)
 
             # create job to notify entry event to the registered WebHook

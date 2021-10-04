@@ -230,7 +230,7 @@ def do_create(request, recv_data):
 
     # set status parameters
     if recv_data['is_toplevel']:
-        entity.set_status(Entity.STATUS_TOP_LEVEL)
+        entity.status = Entity.STATUS_TOP_LEVEL
 
     entity.save()
 
