@@ -12,43 +12,47 @@ import Typography from "@material-ui/core/Typography";
 import PropTypes from "prop-types";
 import React, { useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";
-import { DjangoContext } from "../utils/DjangoContext";
+import { DjangoContext } from "../../utils/DjangoContext";
 
-function convertAttributeValue(attrName, attrInfo) {
+export function convertAttributeValue(attrName, attrInfo) {
   /* Convert attrValue according to type of attrValue */
   console.log(`===== ${attrName} (${attrInfo.type}) =====`);
   console.log(attrInfo.value);
+
+  const djangoContext = DjangoContext.getInstance();
   let convertedValue = '';
 
   switch(attrInfo.type) {
-    case DjangoContext.attrTypeValue.object:
+    case djangoContext.attrTypeValue.object:
+      return <a href={`/entry/show/${attrInfo.value.id}`}>{attrInfo.value.name}</a>
+    case djangoContext.attrTypeValue.string:
+      return <p>{attrInfo.value}</p>
+    case djangoContext.attrTypeValue.named_object:
+      Object.keys(attrInfo.value).forEach((k) => {
+        console.log(k);
+      })
+      return <a href={`/entry/show/${attrInfo.value}`}>{attrInfo.value.name}</a>
+    case djangoContext.attrTypeValue.array_object:
       // XXX
-    case DjangoContext.attrTypeValue.string:
+    case djangoContext.attrTypeValue.array_string:
       // XXX
-    case DjangoContext.attrTypeValue.named_object:
+    case djangoContext.attrTypeValue.array_named_object:
       // XXX
-    case DjangoContext.attrTypeValue.array_object:
+    case djangoContext.attrTypeValue.array_group:
       // XXX
-    case DjangoContext.attrTypeValue.array_string:
+    case djangoContext.attrTypeValue.text:
       // XXX
-    case DjangoContext.attrTypeValue.array_named_object:
+    case djangoContext.attrTypeValue.boolean:
       // XXX
-    case DjangoContext.attrTypeValue.array_group:
+    case djangoContext.attrTypeValue.group:
       // XXX
-    case DjangoContext.attrTypeValue.text:
-      // XXX
-    case DjangoContext.attrTypeValue.boolean:
-      // XXX
-    case DjangoContext.attrTypeValue.group:
-      // XXX
-    case DjangoContext.attrTypeValue.date:
+    case djangoContext.attrTypeValue.date:
       // XXX
   }
 
   // XXX: DEBUG
-  return convertedValue;
+  return 'hoge';
 }
-
 
 export function SearchResults({
   results,
