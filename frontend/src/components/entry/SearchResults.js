@@ -9,10 +9,30 @@ import {
 } from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
 import PropTypes from "prop-types";
 import React, { useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { DjangoContext } from "../../utils/DjangoContext";
+
+
+function ElemString({attrValue}) {
+  console.log(`[onix-test(30)] ${attrValue}`);
+  console.log(attrValue);
+  return (<div>{attrValue}</div>);
+  //return (<p>{attrValue}</p>);
+}
+
+function ElemObject(attrValue) {
+  return <a href={`/entry/show/${attrValue.id}`}>{attrValue.name}</a>
+}
+
+function ElemNamedObject(attrValue) {
+  const key = Object.keys(attrValue)[0];
+  return <p><p>{key}</p>: <a href={`/entry/show/${attrValue[key].id}`}>{attrValue[key].name}</a></p>;
+}
+
 
 export function convertAttributeValue(attrName, attrInfo) {
   /* Convert attrValue according to type of attrValue */
@@ -24,30 +44,50 @@ export function convertAttributeValue(attrName, attrInfo) {
 
   switch(attrInfo.type) {
     case djangoContext.attrTypeValue.object:
-      return <a href={`/entry/show/${attrInfo.value.id}`}>{attrInfo.value.name}</a>
+      //return <ElemObject attrValue={attrInfo.value} />;
+      break;
+
     case djangoContext.attrTypeValue.string:
-      return <p>{attrInfo.value}</p>
+      console.log(`[onix-test(40)] attrType: ${attrInfo.type}`);
+      return <ElemString attrValue={attrInfo.value} />;
+
     case djangoContext.attrTypeValue.named_object:
-      Object.keys(attrInfo.value).forEach((k) => {
-        console.log(k);
-      })
-      return <a href={`/entry/show/${attrInfo.value}`}>{attrInfo.value.name}</a>
+      //return <ElemNamedObject attrValue={attrInfo.value} />;
+
+      break;
     case djangoContext.attrTypeValue.array_object:
+      /*
+      return (<List>
+        {attrInfo.value.map((info) => {
+          <ListItem>
+            <ElemObject attrValue={info} />
+          </ListItem>
+        })}
+      </List>)
+      */
       // XXX
+      break;
     case djangoContext.attrTypeValue.array_string:
       // XXX
+      break;
     case djangoContext.attrTypeValue.array_named_object:
       // XXX
+      break;
     case djangoContext.attrTypeValue.array_group:
       // XXX
+      break;
     case djangoContext.attrTypeValue.text:
       // XXX
+      break;
     case djangoContext.attrTypeValue.boolean:
       // XXX
+      break;
     case djangoContext.attrTypeValue.group:
       // XXX
+      break;
     case djangoContext.attrTypeValue.date:
       // XXX
+      break;
   }
 
   // XXX: DEBUG

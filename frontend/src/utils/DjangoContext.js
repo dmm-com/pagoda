@@ -14,8 +14,8 @@ export class DjangoContext {
     this._instance = null;
 
     this.attrTypeValue = {
-      'object': 1,
       'string': 2,
+      'object': 1,
       'named_object': 2049,
       'array_object': 1025,
       'array_string': 1026,
