@@ -12,6 +12,43 @@ import Typography from "@material-ui/core/Typography";
 import PropTypes from "prop-types";
 import React, { useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";
+import { DjangoContext } from "../utils/DjangoContext";
+
+function convertAttributeValue(attrName, attrInfo) {
+  /* Convert attrValue according to type of attrValue */
+  console.log(`===== ${attrName} (${attrInfo.type}) =====`);
+  console.log(attrInfo.value);
+  let convertedValue = '';
+
+  switch(attrInfo.type) {
+    case DjangoContext.attrTypeValue.object:
+      // XXX
+    case DjangoContext.attrTypeValue.string:
+      // XXX
+    case DjangoContext.attrTypeValue.named_object:
+      // XXX
+    case DjangoContext.attrTypeValue.array_object:
+      // XXX
+    case DjangoContext.attrTypeValue.array_string:
+      // XXX
+    case DjangoContext.attrTypeValue.array_named_object:
+      // XXX
+    case DjangoContext.attrTypeValue.array_group:
+      // XXX
+    case DjangoContext.attrTypeValue.text:
+      // XXX
+    case DjangoContext.attrTypeValue.boolean:
+      // XXX
+    case DjangoContext.attrTypeValue.group:
+      // XXX
+    case DjangoContext.attrTypeValue.date:
+      // XXX
+  }
+
+  // XXX: DEBUG
+  return convertedValue;
+}
+
 
 export function SearchResults({
   results,
@@ -112,7 +149,8 @@ export function SearchResults({
                       {/* TODO switch how to render values based on the type */}
                       {result.attrs[attrName] && (
                         <Typography>
-                          {result.attrs[attrName].value.toString()}
+                          { convertAttributeValue(attrName, result.attrs[attrName]) }
+                          {/* result.attrs[attrName].value.toString() */}
                         </Typography>
                       )}
                     </TableCell>
