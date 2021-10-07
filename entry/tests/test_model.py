@@ -3351,24 +3351,23 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
         entry.complement_attrs(user)
 
-        default_values = [
-            {'name': 'str', 'value': ''},
-            {'name': 'text', 'value': ''},
-            {'name': 'obj', 'value': None},
-            {'name': 'name', 'value': {'name': '', 'id': None}},
-            {'name': 'bool', 'value': False},
-            {'name': 'group', 'value': None},
-            {'name': 'date', 'value': None},
-            {'name': 'arr_str', 'value': []},
-            {'name': 'arr_obj', 'value': []},
-            {'name': 'arr_name', 'value': dict().values()},
-            {'name': 'arr_group', 'value': []},
-        ]
-        for (i, attr) in enumerate(entry.attrs.all()):
-            self.assertEqual(default_values[i]['name'], attr.name)
+        default_values = {
+            'str': '',
+            'text': '',
+            'obj': None,
+            'name': {'name': '', 'id': None},
+            'bool': False,
+            'group': None,
+            'date': None,
+            'arr_str': [],
+            'arr_obj': [],
+            'arr_name': dict().values(),
+            'arr_group': [],
+        }
+        for attr in entry.attrs.all():
             if attr.name == 'arr_name':
-                self.assertEqual(list(default_values[i]['value']),
+                self.assertEqual(list(default_values[attr.name]),
                                  list(AttributeValue.get_default_value(attr)))
             else:
-                self.assertEqual(default_values[i]['value'],
+                self.assertEqual(default_values[attr.name],
                                  AttributeValue.get_default_value(attr))
