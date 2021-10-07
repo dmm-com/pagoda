@@ -11,8 +11,8 @@ import { alpha, makeStyles } from "@material-ui/core/styles";
 import AccountBox from "@material-ui/icons/AccountBox";
 import FormatListBulletedIcon from "@material-ui/icons/FormatListBulleted";
 import SearchIcon from "@material-ui/icons/Search";
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { getRecentJobs } from "../utils/AironeAPIClient";
@@ -71,6 +71,7 @@ const useStyles = makeStyles((theme) => ({
 
 export function Header({}) {
   const classes = useStyles();
+  const history = useHistory();
 
   const [userAnchorEl, setUserAnchorEl] = useState();
   const [jobAnchorEl, setJobAnchorEl] = useState();
@@ -82,6 +83,14 @@ export function Header({}) {
       .then((data) => data.json())
       .then((data) => data["result"]);
   });
+
+  const [entryQuery, setEntryQuery] = useState("");
+
+  const handleSearchQuery = (event) => {
+    if (event.key === "Enter") {
+      history.push(`/new-ui/search?entry_name=${entryQuery}`);
+    }
+  };
 
   return (
     <div className={classes.root}>
@@ -143,7 +152,7 @@ export function Header({}) {
             >
               {!recentJobs.loading && recentJobs.value.length > 0 ? (
                 recentJobs.value.map((recentJob) => (
-                  <MenuItem>
+                  <MenuItem key={recentJob.id}>
                     <Typography
                       component={Link}
                       to={`/new-ui/jobs/${recentJob.id}`}
@@ -177,8 +186,14 @@ export function Header({}) {
                 input: classes.inputInput,
               }}
               inputProps={{ "aria-label": "search" }}
+              onChange={(e) => setEntryQuery(e.target.value)}
+              onKeyPress={handleSearchQuery}
             />
-            <Button variant="contained" component={Link} to={`/new-ui/search`}>
+            <Button
+              variant="contained"
+              component={Link}
+              to={`/new-ui/search?entry_name=${entryQuery}`}
+            >
               検索
             </Button>
           </div>

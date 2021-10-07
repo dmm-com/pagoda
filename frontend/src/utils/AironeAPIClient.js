@@ -36,6 +36,10 @@ export function importEntities(formData) {
   });
 }
 
+export function getEntityAttrs(entityIds) {
+  return fetch(`/api/v1/entity/attrs/${entityIds.join(",")}`);
+}
+
 export function getEntry(entityId, entryId) {
   return new Promise((resolve, _) => {
     resolve({
@@ -64,6 +68,28 @@ export function importEntries(entityId, formData) {
       "X-CSRFToken": getCsrfToken(),
     },
     body: formData,
+  });
+}
+
+// FIXME it should be better to implement a new internal API than this
+export function searchEntries(
+  entityIds = [],
+  entryName = "",
+  attrInfo = [],
+  entryLimit = 99999
+) {
+  return fetch(`/api/v1/entry/search`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify({
+      entities: entityIds,
+      entry_name: entryName,
+      attrinfo: attrInfo,
+      entry_limit: entryLimit,
+    }),
   });
 }
 

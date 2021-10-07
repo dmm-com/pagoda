@@ -7,6 +7,7 @@ import { Header } from "./components/Header";
 import { LeftMenu } from "./components/LeftMenu";
 import { ACL } from "./pages/ACL";
 import { AdvancedSearch } from "./pages/AdvancedSearch";
+import { AdvancedSearchResults } from "./pages/AdvancedSearchResults";
 import { Dashboard } from "./pages/Dashboard";
 import { EditEntity } from "./pages/EditEntity";
 import { EditEntry } from "./pages/EditEntry";
@@ -22,7 +23,6 @@ import { ImportEntry } from "./pages/ImportEntry";
 import { ImportGroup } from "./pages/ImportGroup";
 import { ImportUser } from "./pages/ImportUser";
 import { Job } from "./pages/Job";
-import { SearchResults } from "./pages/SearchResults";
 import { ShowEntry } from "./pages/ShowEntry";
 import { User } from "./pages/User";
 
@@ -86,7 +86,10 @@ function App() {
             <Route path={basePath + "groups"} component={Group} />
             <Route path={basePath + "jobs"} component={Job} />
             <Route path={basePath + "acl/:entityId"} component={ACL} />
-            <Route path={basePath + "search"} component={SearchResults} />
+            <Route
+              path={basePath + "search"}
+              component={AdvancedSearchResults}
+            />
             <Route path={basePath + "users/new"} component={EditUser} />
             <Route path={basePath + "users/import"} component={ImportUser} />
             <Route

@@ -17,7 +17,6 @@ import { Link, useHistory } from "react-router-dom";
 import { deleteGroup } from "../../utils/AironeAPIClient";
 import { DeleteButton } from "../common/DeleteButton";
 
-
 export function GroupList({ groups }) {
   const history = useHistory();
 
