@@ -18,17 +18,16 @@ import { DjangoContext } from "../../utils/DjangoContext";
 
 
 function ElemString({attrValue}) {
-  console.log(`[onix-test(30)] ${attrValue}`);
-  console.log(attrValue);
   return (<div>{attrValue}</div>);
-  //return (<p>{attrValue}</p>);
 }
 
-function ElemObject(attrValue) {
+function ElemObject({attrValue}) {
+  console.log(attrValue);
+  console.log(`[onix-test(50)] attrValue: ${attrValue}`);
   return <a href={`/entry/show/${attrValue.id}`}>{attrValue.name}</a>
 }
 
-function ElemNamedObject(attrValue) {
+function ElemNamedObject({attrValue}) {
   const key = Object.keys(attrValue)[0];
   return <p><p>{key}</p>: <a href={`/entry/show/${attrValue[key].id}`}>{attrValue[key].name}</a></p>;
 }
@@ -52,11 +51,10 @@ export function convertAttributeValue(attrName, attrInfo) {
       return <ElemString attrValue={attrInfo.value} />;
 
     case djangoContext.attrTypeValue.named_object:
-      //return <ElemNamedObject attrValue={attrInfo.value} />;
+      return <ElemNamedObject attrValue={attrInfo.value} />;
 
-      break;
     case djangoContext.attrTypeValue.array_object:
-      /*
+      console.log('----------------');
       return (<List>
         {attrInfo.value.map((info) => {
           <ListItem>
@@ -64,9 +62,7 @@ export function convertAttributeValue(attrName, attrInfo) {
           </ListItem>
         })}
       </List>)
-      */
-      // XXX
-      break;
+
     case djangoContext.attrTypeValue.array_string:
       // XXX
       break;
