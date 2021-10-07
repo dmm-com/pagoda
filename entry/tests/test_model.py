@@ -828,36 +828,55 @@ class ModelTest(AironeTestCase):
             self.assertEqual(v1.value, v2.value)
 
     def test_clone_entry(self):
-        self._entity.attrs.add(EntityAttr.objects.create(**{
-            'name': 'attr',
+        test_entity = Entity.objects.create(name='E0', created_user=self._user)
+        test_entity.attrs.add(EntityAttr.objects.create(**{
+            'name': 'string',
             'type': AttrTypeValue['string'],
             'created_user': self._user,
-            'parent_entity': self._entity,
+            'parent_entity': test_entity,
         }))
 
-        entry = Entry.objects.create(name='entry', schema=self._entity, created_user=self._user)
+        test_entity.attrs.add(EntityAttr.objects.create(**{
+            'name': 'arrobj',
+            'type': AttrTypeValue['array_object'],
+            'created_user': self._user,
+            'parent_entity': test_entity,
+        }))
+
+        entry = Entry.objects.create(name='entry', schema=test_entity, created_user=self._user)
         entry.complement_attrs(self._user)
 
-        entry_attr = entry.attrs.last()
-        for i in range(10):
-            entry_attr.add_value(self._user, str(i))
+        # register initial AttributeValue for each Attributes
+        attr_string = entry.attrs.get(schema__name='string', is_active=True)
+        for i in range(3):
+            attr_string.add_value(self._user, str(i))
 
-        clone = entry.clone(self._user)
+        attr_arrobj = entry.attrs.get(schema__name='arrobj', is_active=True)
+        attr_arrobj.add_value(self._user, [entry])
 
-        self.assertIsNotNone(clone)
-        self.assertNotEqual(clone.id, entry.id)
-        self.assertEqual(clone.name, entry.name)
-        self.assertEqual(clone.attrs.count(), entry.attrs.count())
-        self.assertNotEqual(clone.attrs.last(), entry_attr)
+        cloned_entry = entry.clone(self._user)
+
+        self.assertIsNotNone(cloned_entry)
+        self.assertNotEqual(cloned_entry.id, entry.id)
+        self.assertEqual(cloned_entry.name, entry.name)
+        self.assertEqual(cloned_entry.attrs.count(), entry.attrs.count())
+        self.assertNotEqual(cloned_entry.attrs.last(), attr_string)
 
         # checks parent_entry in the cloned Attribute object is updated
-        clone_attr = clone.attrs.last()
-        self.assertEqual(entry_attr.parent_entry, entry)
-        self.assertEqual(clone_attr.parent_entry, clone)
+        for (original_attr, cloned_attr) in [
+             (attr_string, cloned_entry.attrs.get(schema__name='string', is_active=True)),
+             (attr_arrobj, cloned_entry.attrs.get(schema__name='arrobj', is_active=True))]:
 
-        # checks parent_entry in the cloned AttributeValue object is updated
-        self.assertEqual(entry_attr.values.last().parent_attr, entry_attr)
-        self.assertEqual(clone_attr.values.last().parent_attr, clone_attr)
+            self.assertEqual(original_attr.parent_entry, entry)
+            self.assertEqual(cloned_attr.parent_entry, cloned_entry)
+
+            # checks parent_entry in the cloned AttributeValue object is updated
+            self.assertEqual(original_attr.values.last().parent_attr, original_attr)
+            self.assertEqual(cloned_attr.values.last().parent_attr, cloned_attr)
+
+            # checks AttributeValue.parent_attr for each child AttributeValue(s)
+            for co_attrv in cloned_attr.values.last().data_array.all():
+                self.assertEqual(co_attrv.parent_attr, cloned_attr)
 
     def test_clone_entry_with_non_permitted_attributes(self):
         # set EntityAttr attr3 is not public
