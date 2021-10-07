@@ -7,99 +7,109 @@ import {
   TablePagination,
   TableRow,
 } from "@material-ui/core";
-import Paper from "@material-ui/core/Paper";
-import Typography from "@material-ui/core/Typography";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
+import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 import PropTypes from "prop-types";
 import React, { useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";
+
 import { DjangoContext } from "../../utils/DjangoContext";
 
-
-function ElemString({attrValue}) {
-  return (<div>{attrValue}</div>);
+function ElemString({ attrValue }) {
+  return <div>{attrValue}</div>;
 }
 
-function ElemObject({attrValue}) {
-  console.log(attrValue);
-  console.log(`[onix-test/ElemObject(50)] attrValue: ${attrValue}`);
-  return <a href={`/entry/show/${attrValue.id}`}>{attrValue.name}</a>
+function ElemObject({ attrValue }) {
+  return <a href={`/entry/show/${attrValue.id}`}>{attrValue.name}</a>;
 }
 
-function ElemNamedObject({attrValue}) {
+function ElemNamedObject({ attrValue }) {
   const key = Object.keys(attrValue)[0];
-  return <div><div>{key}</div>: <a href={`/entry/show/${attrValue[key].id}`}>{attrValue[key].name}</a></div>;
+  return (
+    <div>
+      <div>{key}</div>:{" "}
+      <a href={`/entry/show/${attrValue[key].id}`}>{attrValue[key].name}</a>
+    </div>
+  );
 }
 
+function ElemGroup({ attrValue }) {
+  return <a href={`/group`}>{attrValue.name}</a>;
+}
 
-export function convertAttributeValue(attrName, attrInfo) {
-  /* Convert attrValue according to type of attrValue */
-  console.log(`===== ${attrName} (${attrInfo.type}) =====`);
-  console.log(attrInfo.value);
-
+function convertAttributeValue(attrName, attrInfo) {
   const djangoContext = DjangoContext.getInstance();
-  let convertedValue = '';
 
-  switch(attrInfo.type) {
+  switch (attrInfo.type) {
     case djangoContext.attrTypeValue.object:
-      //return <ElemObject attrValue={attrInfo.value} />;
-      break;
+      return <ElemObject attrValue={attrInfo.value} />;
 
     case djangoContext.attrTypeValue.string:
-      console.log(`[onix-test(40)] attrType: ${attrInfo.type}`);
+    case djangoContext.attrTypeValue.text:
+    case djangoContext.attrTypeValue.boolean:
+    case djangoContext.attrTypeValue.date:
       return <ElemString attrValue={attrInfo.value} />;
 
     case djangoContext.attrTypeValue.named_object:
       return <ElemNamedObject attrValue={attrInfo.value} />;
 
     case djangoContext.attrTypeValue.array_object:
-      return (<List>
-        {attrInfo.value.map((info, n) => {
-          return <ListItem key={n}>
-            <ElemObject attrValue={info} />
-          </ListItem>
-        })}
-      </List>)
+      return (
+        <List>
+          {attrInfo.value.map((info, n) => {
+            return (
+              <ListItem key={n}>
+                <ElemObject attrValue={info} />
+              </ListItem>
+            );
+          })}
+        </List>
+      );
 
     case djangoContext.attrTypeValue.array_string:
-      return (<List>
-        {attrInfo.value.map((info, n) => {
-          return <ListItem key={n}>
-            <ElemString attrValue={info} />
-          </ListItem>
-        })}
-      </List>)
+      return (
+        <List>
+          {attrInfo.value.map((info, n) => {
+            return (
+              <ListItem key={n}>
+                <ElemString attrValue={info} />
+              </ListItem>
+            );
+          })}
+        </List>
+      );
 
     case djangoContext.attrTypeValue.array_named_object:
-      return (<List>
-        {attrInfo.value.map((info, n) => {
-          return <ListItem key={n}>
-            <ElemNamedObject attrValue={info} />
-          </ListItem>
-        })}
-      </List>)
+      return (
+        <List>
+          {attrInfo.value.map((info, n) => {
+            return (
+              <ListItem key={n}>
+                <ElemNamedObject attrValue={info} />
+              </ListItem>
+            );
+          })}
+        </List>
+      );
 
     case djangoContext.attrTypeValue.array_group:
-      // XXX
-      break;
+      return (
+        <List>
+          {attrInfo.value.map((info, n) => {
+            return (
+              <ListItem key={n}>
+                <ElemGroup attrValue={info} />
+              </ListItem>
+            );
+          })}
+        </List>
+      );
 
-    case djangoContext.attrTypeValue.text:
-      // XXX
-      break;
-    case djangoContext.attrTypeValue.boolean:
-      // XXX
-      break;
     case djangoContext.attrTypeValue.group:
-      // XXX
-      break;
-    case djangoContext.attrTypeValue.date:
-      // XXX
-      break;
+      return <ElemGroup attrValue={attrInfo.value} />;
   }
-
-  // XXX: DEBUG
-  return 'hoge';
 }
 
 export function SearchResults({
@@ -198,11 +208,12 @@ export function SearchResults({
                   </TableCell>
                   {attrNames.map((attrName) => (
                     <TableCell key={attrName}>
-                      {/* TODO switch how to render values based on the type */}
                       {result.attrs[attrName] && (
                         <>
-                          { convertAttributeValue(attrName, result.attrs[attrName]) }
-                          {/* result.attrs[attrName].value.toString() */}
+                          {convertAttributeValue(
+                            attrName,
+                            result.attrs[attrName]
+                          )}
                         </>
                       )}
                     </TableCell>

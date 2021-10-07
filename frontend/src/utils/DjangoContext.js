@@ -14,18 +14,18 @@ export class DjangoContext {
     this._instance = null;
 
     this.attrTypeValue = {
-      'string': 2,
-      'object': 1,
-      'named_object': 2049,
-      'array_object': 1025,
-      'array_string': 1026,
-      'array_named_object': 3073,
-      'array_group': 1040,
-      'text': 4,
-      'boolean': 8,
-      'group': 16,
-      'date': 32,
-    }
+      string: 2,
+      object: 1,
+      named_object: 2049,
+      array_object: 1025,
+      array_string: 1026,
+      array_named_object: 3073,
+      array_group: 1040,
+      text: 4,
+      boolean: 8,
+      group: 16,
+      date: 32,
+    };
   }
 
   static getInstance() {
