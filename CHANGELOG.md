@@ -8,6 +8,11 @@
 
 ### Fixed
 
+## v3.3.1
+
+### Fixed
+* Fixed bug AttributeValue.parent_attr is different with child's one (#272)
+
 ## v3.3.0
 
 ### Added
