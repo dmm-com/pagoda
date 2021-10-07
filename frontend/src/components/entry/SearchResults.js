@@ -23,13 +23,13 @@ function ElemString({attrValue}) {
 
 function ElemObject({attrValue}) {
   console.log(attrValue);
-  console.log(`[onix-test(50)] attrValue: ${attrValue}`);
+  console.log(`[onix-test/ElemObject(50)] attrValue: ${attrValue}`);
   return <a href={`/entry/show/${attrValue.id}`}>{attrValue.name}</a>
 }
 
 function ElemNamedObject({attrValue}) {
   const key = Object.keys(attrValue)[0];
-  return <p><p>{key}</p>: <a href={`/entry/show/${attrValue[key].id}`}>{attrValue[key].name}</a></p>;
+  return <div><div>{key}</div>: <a href={`/entry/show/${attrValue[key].id}`}>{attrValue[key].name}</a></div>;
 }
 
 
@@ -54,24 +54,36 @@ export function convertAttributeValue(attrName, attrInfo) {
       return <ElemNamedObject attrValue={attrInfo.value} />;
 
     case djangoContext.attrTypeValue.array_object:
-      console.log('----------------');
       return (<List>
-        {attrInfo.value.map((info) => {
-          <ListItem>
+        {attrInfo.value.map((info, n) => {
+          return <ListItem key={n}>
             <ElemObject attrValue={info} />
           </ListItem>
         })}
       </List>)
 
     case djangoContext.attrTypeValue.array_string:
-      // XXX
-      break;
+      return (<List>
+        {attrInfo.value.map((info, n) => {
+          return <ListItem key={n}>
+            <ElemString attrValue={info} />
+          </ListItem>
+        })}
+      </List>)
+
     case djangoContext.attrTypeValue.array_named_object:
-      // XXX
-      break;
+      return (<List>
+        {attrInfo.value.map((info, n) => {
+          return <ListItem key={n}>
+            <ElemNamedObject attrValue={info} />
+          </ListItem>
+        })}
+      </List>)
+
     case djangoContext.attrTypeValue.array_group:
       // XXX
       break;
+
     case djangoContext.attrTypeValue.text:
       // XXX
       break;
@@ -188,10 +200,10 @@ export function SearchResults({
                     <TableCell key={attrName}>
                       {/* TODO switch how to render values based on the type */}
                       {result.attrs[attrName] && (
-                        <Typography>
+                        <>
                           { convertAttributeValue(attrName, result.attrs[attrName]) }
                           {/* result.attrs[attrName].value.toString() */}
-                        </Typography>
+                        </>
                       )}
                     </TableCell>
                   ))}
