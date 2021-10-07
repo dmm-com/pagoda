@@ -76,7 +76,13 @@ export function EditEntity({}) {
         )}
       </div>
       <div hidden={tabValue !== 1}>
-        <WebhookForm entityId={entityId} />
+        {entityId !== undefined ? (
+          <WebhookForm entityId={entityId} />
+        ) : (
+          <Typography>
+            未作成のエンティティはWebhookを設定できません。まずエンティティを作成してください。
+          </Typography>
+        )}
       </div>
     </div>
   );

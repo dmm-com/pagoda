@@ -66,8 +66,8 @@ export function EntityHistory({}) {
 
         <TableBody>
           {!history.loading &&
-            history.value.map((column) => (
-              <TableRow>
+            history.value.map((column, index) => (
+              <TableRow key={index}>
                 <TableCell>{column.user.username}</TableCell>
                 <TableCell>
                   {(() => {
@@ -90,8 +90,8 @@ export function EntityHistory({}) {
                 <TableCell>
                   <Table>
                     <TableBody>
-                      {column.details.map((detail) => (
-                        <TableRow>
+                      {column.details.map((detail, index) => (
+                        <TableRow key={index}>
                           <TableCell>
                             {(() => {
                               switch (detail.operation) {
