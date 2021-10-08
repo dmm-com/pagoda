@@ -533,7 +533,7 @@ class Attribute(ACLBase):
             # When the Attribute is array, this method also clone co-AttributeValues
             if self.schema.type & AttrTypeValue['array']:
                 for co_attrv in attrv.data_array.all():
-                    new_attrv.data_array.add(co_attrv.clone(user))
+                    new_attrv.data_array.add(co_attrv.clone(user, parent_attr=cloned_attr))
 
             cloned_attr.values.add(new_attrv)
 
