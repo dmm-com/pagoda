@@ -14,7 +14,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import GroupIcon from "@material-ui/icons/Group";
 import HistoryIcon from "@material-ui/icons/History";
 import PropTypes from "prop-types";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
 import { deleteEntity } from "../../utils/AironeAPIClient";
@@ -34,16 +34,9 @@ export function EntityList({ entities }) {
   const classes = useStyles();
   const history = useHistory();
 
-  const keywordRef = useRef({ value: "" });
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(100);
-
-  const handleKeyPressKeyword = (event) => {
-    if (event.key === "Enter") {
-      setKeyword(keywordRef.current.value);
-    }
-  };
 
   const handlePageChange = (event, newPage) => {
     setPage(newPage);
@@ -71,11 +64,12 @@ export function EntityList({ entities }) {
               <TableCell>
                 <span className={classes.entityName}>エンティティ名</span>
                 <input
+                  data-testid="entityName"
                   className={classes.entityName}
                   text="text"
                   placeholder="絞り込む"
-                  ref={keywordRef}
-                  onKeyPress={handleKeyPressKeyword}
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
                 />
               </TableCell>
               <TableCell>
@@ -88,7 +82,7 @@ export function EntityList({ entities }) {
             {filteredEntities
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((entity) => (
-                <TableRow key={entity.id}>
+                <TableRow key={entity.id} data-testid="entityTableRow">
                   <TableCell>
                     <Typography
                       component={Link}
@@ -149,5 +143,11 @@ export function EntityList({ entities }) {
 }
 
 EntityList.propTypes = {
-  entities: PropTypes.array.isRequired,
+  entities: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      note: PropTypes.string.isRequired,
+    })
+  ).isRequired,
 };
