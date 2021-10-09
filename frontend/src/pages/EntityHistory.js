@@ -10,6 +10,7 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { entitiesPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { getEntityHistory } from "../utils/AironeAPIClient";
 
@@ -45,10 +46,10 @@ export function EntityHistory({}) {
   return (
     <div className="container">
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
-        <Typography component={Link} to={`/new-ui/entities`}>
+        <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
         <Typography color="textPrimary">変更履歴</Typography>

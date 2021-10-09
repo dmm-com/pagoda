@@ -3,6 +3,8 @@ import PropTypes from "prop-types";
 import React from "react";
 import { Link } from "react-router-dom";
 
+import { showEntryPath } from "../../Routes";
+
 export default function EntryReferral({ entityId, referredEntries }) {
   return (
     <div className="row" id="referred_objects">
@@ -16,7 +18,7 @@ export default function EntryReferral({ entityId, referredEntries }) {
             <Typography
               key={entry.id}
               component={Link}
-              to={`/new-ui/entities/${entityId}/entries/${entry.id}/show`}
+              to={showEntryPath(entityId, entry.id)}
             >
               {entry.name} ({entry.entity})
             </Typography>

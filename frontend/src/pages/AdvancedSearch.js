@@ -15,6 +15,7 @@ import React, { useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { searchPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
 import { getEntities, getEntityAttrs } from "../utils/AironeAPIClient";
@@ -110,7 +111,7 @@ export function AdvancedSearch({}) {
   return (
     <div className="container-fluid">
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
         <Typography color="textPrimary">高度な検索</Typography>
@@ -219,7 +220,7 @@ export function AdvancedSearch({}) {
           <Button
             variant="contained"
             component={Link}
-            to={`/new-ui/search?${searchParams}`}
+            to={`${searchPath()}?${searchParams}`}
           >
             検索
           </Button>

@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { EntityForm } from "../components/entity/EntityForm";
 import { WebhookForm } from "../components/webhook/WebhookForm";
@@ -38,18 +39,15 @@ export function EditEntity({}) {
   return (
     <div>
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
-        <Typography component={Link} to={`/new-ui/entities`}>
+        <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
         {/* TODO consider loading case */}
         {!entity.loading && (
-          <Typography
-            component={Link}
-            to={`/new-ui/entities/${entityId}/entries`}
-          >
+          <Typography component={Link} to={entityEntriesPath(entityId)}>
             {entity.value.name}
           </Typography>
         )}

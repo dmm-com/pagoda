@@ -5,10 +5,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { importGroupsPath, newGroupPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { CreateButton } from "../components/common/CreateButton";
 import { GroupList } from "../components/group/GroupList";
-import { getGroups } from "../utils/AironeAPIClient";
+import { downloadExportedGroups, getGroups } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -29,7 +30,7 @@ export function Group({}) {
   return (
     <div className="container-fluid">
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
         <Typography color="textPrimary">グループ管理</Typography>
@@ -38,7 +39,7 @@ export function Group({}) {
       <div className="row">
         <div className="col">
           <div className="float-left">
-            <CreateButton to={`/new-ui/groups/new`}>新規作成</CreateButton>
+            <CreateButton to={newGroupPath()}>新規作成</CreateButton>
             <Button
               className={classes.button}
               variant="outlined"
@@ -52,7 +53,7 @@ export function Group({}) {
               color="secondary"
               className={classes.button}
               component={Link}
-              to={`/new-ui/groups/import`}
+              to={importGroupsPath()}
             >
               インポート
             </Button>

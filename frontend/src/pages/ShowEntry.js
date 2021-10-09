@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
 import ACLForm from "../components/common/ACLForm";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import CopyForm from "../components/entry/CopyForm";
@@ -49,16 +50,13 @@ export function ShowEntry({}) {
   return (
     <div>
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
-        <Typography component={Link} to={`/new-ui/entities`}>
+        <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
-        <Typography
-          component={Link}
-          to={`/new-ui/entities/${entityId}/entries`}
-        >
+        <Typography component={Link} to={entityEntriesPath(entityId)}>
           {entityId}
         </Typography>
         <Typography color="textPrimary">{entryId}</Typography>

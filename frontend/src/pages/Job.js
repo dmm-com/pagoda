@@ -5,6 +5,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { JobList } from "../components/job/JobList";
 import { getJobs } from "../utils/AironeAPIClient";
@@ -26,7 +27,7 @@ export function Job({}) {
   return (
     <div className="container-fluid">
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
         <Typography color="textPrimary">ジョブ一覧</Typography>

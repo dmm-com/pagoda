@@ -15,10 +15,10 @@ import PropTypes from "prop-types";
 import React from "react";
 import { Link, useHistory } from "react-router-dom";
 
+import { passwordPath, userPath } from "../../Routes";
 import { deleteUser } from "../../utils/AironeAPIClient";
 import { DeleteButton } from "../common/DeleteButton";
 import { EditButton } from "../common/EditButton";
-import { EntryList } from "../entry/EntryList";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -64,14 +64,14 @@ export function UserList({ users }) {
                 <Typography>{user.date_joined}</Typography>
               </TableCell>
               <TableCell align="right">
-                <EditButton to={`/new-ui/users/${user.id}`}>編集</EditButton>
+                <EditButton to={userPath(user.id)}>編集</EditButton>
                 <Button
                   variant="contained"
                   color="primary"
                   className={classes.button}
                   startIcon={<EditIcon />}
                   component={Link}
-                  to={`/new-ui/users/${user.id}/password`}
+                  to={passwordPath(user.id)}
                 >
                   パスワード変更
                 </Button>

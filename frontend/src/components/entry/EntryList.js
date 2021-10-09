@@ -15,6 +15,7 @@ import PropTypes from "prop-types";
 import React, { useRef, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
+import { showEntryPath } from "../../Routes";
 import { deleteEntry, restoreEntry } from "../../utils/AironeAPIClient";
 import { ConfirmableButton } from "../common/ConfirmableButton";
 import { DeleteButton } from "../common/DeleteButton";
@@ -92,7 +93,7 @@ export function EntryList({ entityId, entries, restoreMode = false }) {
                   <TableCell>
                     <Typography
                       component={Link}
-                      to={`/new-ui/entities/${entityId}/entries/${entry.id}/show`}
+                      to={showEntryPath(entityId, entry.id)}
                     >
                       {entry.name}
                     </Typography>

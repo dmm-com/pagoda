@@ -14,6 +14,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import { Link, useHistory } from "react-router-dom";
 
+import { groupPath } from "../../Routes";
 import { deleteGroup } from "../../utils/AironeAPIClient";
 import { DeleteButton } from "../common/DeleteButton";
 
@@ -42,7 +43,7 @@ export function GroupList({ groups }) {
           {groups.map((group) => (
             <TableRow key={group.id}>
               <TableCell>
-                <Typography component={Link} to={`/new-ui/groups/${group.id}`}>
+                <Typography component={Link} to={groupPath(group.id)}>
                   {group.name}
                 </Typography>
               </TableCell>

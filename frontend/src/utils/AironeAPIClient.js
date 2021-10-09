@@ -40,7 +40,7 @@ export function getEntityAttrs(entityIds) {
   return fetch(`/api/v1/entity/attrs/${entityIds.join(",")}`);
 }
 
-export function getEntry(entityId, entryId) {
+export function getEntry(entryId) {
   return new Promise((resolve, _) => {
     resolve({
       name: "test",

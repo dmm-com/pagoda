@@ -5,16 +5,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { importUsersPath, newUserPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { CreateButton } from "../components/common/CreateButton";
-import { DeleteButton } from "../components/common/DeleteButton";
-import { EditButton } from "../components/common/EditButton";
 import { UserList } from "../components/user/UserList";
-import {
-  downloadExportedUsers,
-  deleteUser,
-  getUsers,
-} from "../utils/AironeAPIClient";
+import { downloadExportedUsers, getUsers } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -38,7 +33,7 @@ export function User({}) {
   return (
     <div className="container-fluid">
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
         <Typography color="textPrimary">ユーザ管理</Typography>
@@ -47,7 +42,7 @@ export function User({}) {
       <div className="row">
         <div className="col">
           <div className="float-left">
-            <CreateButton to={`/new-ui/users/new`}>新規作成</CreateButton>
+            <CreateButton to={newUserPath()}>新規作成</CreateButton>
             <Button
               className={classes.button}
               variant="outlined"
@@ -61,7 +56,7 @@ export function User({}) {
               variant="outlined"
               color="secondary"
               component={Link}
-              to={`/new-ui/users/import`}
+              to={importUsersPath()}
             >
               インポート
             </Button>

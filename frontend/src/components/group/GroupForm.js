@@ -6,6 +6,7 @@ import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 
+import { groupsPath } from "../../Routes";
 import { createGroup, updateGroup } from "../../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
@@ -30,10 +31,10 @@ export function GroupForm({ users, group }) {
   const handleSubmit = (event) => {
     if (group.id !== undefined) {
       updateGroup(group.id, name, members).then(() =>
-        history.replace("/new-ui/groups")
+        history.replace(groupsPath())
       );
     } else {
-      createGroup(name, members).then(() => history.replace("/new-ui/groups"));
+      createGroup(name, members).then(() => history.replace(groupsPath()));
     }
 
     event.preventDefault();

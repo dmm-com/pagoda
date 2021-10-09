@@ -4,6 +4,12 @@ import { makeStyles } from "@material-ui/core/styles";
 import React from "react";
 import { Link } from "react-router-dom";
 
+import {
+  advancedSearchPath,
+  entitiesPath,
+  groupsPath,
+  usersPath,
+} from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
@@ -31,7 +37,7 @@ export function Dashboard({}) {
           variant="contained"
           color="primary"
           component={Link}
-          to={`/new-ui/entities`}
+          to={entitiesPath()}
         >
           エンティティ・エントリ一覧 &#x000bb;
         </Button>
@@ -41,7 +47,7 @@ export function Dashboard({}) {
           variant="contained"
           color="primary"
           component={Link}
-          to={`/new-ui/advanced_search`}
+          to={advancedSearchPath()}
         >
           高度な検索 &#x000bb;
         </Button>
@@ -51,7 +57,7 @@ export function Dashboard({}) {
           variant="contained"
           color="primary"
           component={Link}
-          to={`/new-ui/users`}
+          to={usersPath()}
         >
           ユーザ管理 &#x000bb;
         </Button>
@@ -61,7 +67,7 @@ export function Dashboard({}) {
           variant="contained"
           color="primary"
           component={Link}
-          to={`/new-ui/groups`}
+          to={groupsPath()}
         >
           グループ管理 &#x000bb;
         </Button>

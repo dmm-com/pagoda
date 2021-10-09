@@ -7,6 +7,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { advancedSearchPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
 import { SearchResults } from "../components/entry/SearchResults";
@@ -38,11 +39,11 @@ export function AdvancedSearchResults({}) {
   return (
     <div className="container-fluid">
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
         {attrInfo.length > 0 && (
-          <Typography component={Link} to="/new-ui/advanced_search">
+          <Typography component={Link} to={advancedSearchPath()}>
             高度な検索
           </Typography>
         )}
