@@ -2,26 +2,23 @@
  * @jest-environment jsdom
  */
 
+import { render, waitFor } from "@testing-library/react";
 import React from "react";
-import ReactDOM from "react-dom";
-import { act } from "react-dom/test-utils";
 
 import { WebhookForm } from "./WebhookForm.js";
 
-let container;
+test("should render a component with essential props", async () => {
+  jest
+    .spyOn(require("../../utils/AironeAPIClient"), "getWebhooks")
+    .mockResolvedValueOnce({
+      json() {
+        return Promise.resolve([]);
+      },
+    });
 
-beforeEach(() => {
-  container = document.createElement("div");
-  document.body.appendChild(container);
-});
+  await waitFor(() => {
+    expect(() => render(<WebhookForm entityId={"0"} />)).not.toThrow();
+  });
 
-afterEach(() => {
-  document.body.removeChild(container);
-  container = null;
-});
-
-test("should render a component with essential props", function () {
-  expect(() => {
-    ReactDOM.render(<WebhookForm entityId={"0"} />, container);
-  }).not.toThrow();
+  jest.clearAllMocks();
 });
