@@ -75,6 +75,7 @@ def edit_entity(self, job_id):
 
         entity.name = recv_data['name']
         entity.note = recv_data['note']
+        entity.save(update_fields=['name', 'note'])
 
         # update processing for each attrs
         for attr in recv_data['attrs']:
@@ -142,7 +143,6 @@ def edit_entity(self, job_id):
 
         # clear flag to specify this entity has been completed to edit
         entity.del_status(Entity.STATUS_EDITING)
-        entity.save()
 
         # update job status and save it
         job.update(Job.STATUS['DONE'])

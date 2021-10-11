@@ -166,7 +166,6 @@ def do_edit(request, entity_id, recv_data):
 
     # update entity metatada informations to new ones
     entity.set_status(Entity.STATUS_EDITING)
-    entity.save()
 
     # Create a new job to edit entity and run it
     job = Job.new_edit_entity(user, entity, params=recv_data)
