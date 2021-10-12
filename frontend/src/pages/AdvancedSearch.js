@@ -107,7 +107,9 @@ export function AdvancedSearch({}) {
         entities.value
           .filter(
             (entity) =>
-              entity.name.indexOf(entityNameFilter) !== -1 &&
+              entity.name
+                .toLowerCase()
+                .indexOf(entityNameFilter.toLowerCase()) !== -1 &&
               selectedEntityIds.indexOf(entity.id) === -1
           )
           .map((entity) => toggleSelectedEntityIds(entity.id))
@@ -120,7 +122,7 @@ export function AdvancedSearch({}) {
         attrs.value
           .filter(
             (attr) =>
-              attr.indexOf(attrNameFilter) !== -1 &&
+              attr.toLowerCase().indexOf(attrNameFilter.toLowerCase()) !== -1 &&
               selectedAttrs.indexOf(attr) === -1
           )
           .map((attr) => toggleSelectedAttrs(attr))
@@ -153,7 +155,10 @@ export function AdvancedSearch({}) {
             <>
               {entities.value
                 .filter(
-                  (entity) => entity.name.indexOf(entityNameFilter) !== -1
+                  (entity) =>
+                    entity.name
+                      .toLowerCase()
+                      .indexOf(entityNameFilter.toLowerCase()) !== -1
                 )
                 .map((entity) => (
                   <ListItem
@@ -200,7 +205,11 @@ export function AdvancedSearch({}) {
           {!attrs.loading ? (
             <>
               {attrs.value
-                .filter((attr) => attr.indexOf(attrNameFilter) !== -1)
+                .filter(
+                  (attr) =>
+                    attr.toLowerCase().indexOf(attrNameFilter.toLowerCase()) !==
+                    -1
+                )
                 .map((attr) => (
                   <ListItem
                     key={attr}
