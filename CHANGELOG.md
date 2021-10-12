@@ -18,6 +18,7 @@
 ### Added
 * Added the django-replicated library (#166)
 * Added job function that cannot be canceled (#199)
+* Added param of editting user for ldap (#256)
 
 ### Changed
 * Changed to remove complement_attrs when requesting show entry page (#166)
@@ -25,10 +26,17 @@
 * Changed the HTTP method on the entry.export page from GET to POST (#166)
 * Changed not to create tokens with GET user.access_token API (#166)
 * Changed the behavior of token refresh (#208)
+* Upgrade Django version from v3.2.4 to v3.2.5 (#254)
+* Changed cookie of session to secure attribute, and to return HSTS header (#257)
 
 ### Fixed
 * Fixed the problem that the URL of Webhook API is different (#202)
 * Fixed some attributes are not updated in advanced search results (#230)
+* Fixed that the entry being created cannot be deleted (#242)
+* Fixed update history of TOP page (#258)
+
+### Refactored
+* Refactored the entry list page
 
 ## v3.2.0
 

@@ -93,6 +93,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'airone.wsgi.application'
 
+# https://docs.djangoproject.com/en/3.2/ref/settings/#session-cookie-secure
+SESSION_COOKIE_SECURE = True
+
+# https://docs.djangoproject.com/en/3.2/ref/middleware/#http-strict-transport-security
+SECURE_HSTS_PRELOAD = True
+SECURE_HSTS_SECONDS = 1209600
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases

@@ -300,10 +300,10 @@ def do_edit(request, entry_id, recv_data):
         job_register_referrals = Job.new_register_referrals(user, entry)
 
     entry.name = recv_data['entry_name']
+    entry.save(update_fields=['name'])
 
     # set flags that indicates target entry is under processing
     entry.set_status(Entry.STATUS_EDITING)
-    entry.save()
 
     # Create new jobs to edit entry and notify it to registered webhook endpoint if it's necessary
     job_edit_entry = Job.new_edit(user, entry, params=recv_data)

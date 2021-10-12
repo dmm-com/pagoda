@@ -13,6 +13,7 @@ from airone.lib.http import http_get, http_post
 from airone.lib.http import render
 from airone.lib.http import check_superuser
 from airone.lib.profile import airone_profile
+from airone.auth.ldap import LDAPBackend
 from user.forms import UsernameBasedPasswordResetForm
 
 from .models import User
@@ -84,12 +85,12 @@ def edit(request, user_id):
         'user_name': user.username,
         'user_email': user.email,
         'user_is_superuser': user.is_superuser,
-        'is_show_token': current_user == user,
         'token': user.token if current_user == user else None,
         'token_lifetime': user.token_lifetime,
-        'token_created': user.token.created if user.token else None,
-        'token_expire': (user.token.created + timedelta(seconds=user.token_lifetime)
-                         if user.token else None)
+        'token_created': user.token.created.strftime('%Y/%m/%d %H:%M:%S') if user.token else None,
+        'token_expire': ((user.token.created + timedelta(seconds=user.token_lifetime)).strftime(
+                          '%Y/%m/%d %H:%M:%S') if user.token else None),
+        'is_authenticated_by_local': user.authenticate_type == User.AUTH_TYPE_LOCAL,
     }
 
     return render(request, 'edit_user.html', context)
@@ -246,6 +247,24 @@ def do_delete(request, user_id, recv_data):
     user.delete()
 
     return JsonResponse(ret)
+
+
+@airone_profile
+@http_post([
+    {'name': 'ldap_password', 'type': str}
+])
+def change_ldap_auth(request, recv_data):
+    user = User.objects.get(id=request.user.id)
+
+    if LDAPBackend.is_authenticated(user.username, recv_data['ldap_password']):
+        # When LDAP authentication is passed with current username and specified password,
+        # this chnages authentication type from local to LDAP.
+        user.authenticate_type = User.AUTH_TYPE_LDAP
+        user.save(update_fields=['authenticate_type'])
+
+        return HttpResponse('Succeeded')
+    else:
+        return HttpResponse('LDAP authentication was Failed of user %s' % user.username, status=400)
 
 
 class PasswordReset(auth_views.PasswordResetView):

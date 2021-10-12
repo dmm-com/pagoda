@@ -70,11 +70,11 @@ class AttributeValue(models.Model):
 
     def set_status(self, val):
         self.status |= val
-        self.save()
+        self.save(update_fields=['status'])
 
     def del_status(self, val):
         self.status &= ~val
-        self.save()
+        self.save(update_fields=['status'])
 
     def get_status(self, val):
         return self.status & val
