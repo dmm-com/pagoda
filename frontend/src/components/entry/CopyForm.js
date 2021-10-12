@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 
+import { entityEntriesPath } from "../../Routes";
 import { copyEntry } from "../../utils/AironeAPIClient";
 
 export default function CopyForm({ entityId, entryId }) {
@@ -12,7 +13,7 @@ export default function CopyForm({ entityId, entryId }) {
 
   const handleSubmit = (event) => {
     copyEntry(entryId, entries).then((_) =>
-      history.push(`/new-ui/entities/${entityId}/entries`)
+      history.push(entityEntriesPath(entityId))
     );
     event.preventDefault();
   };

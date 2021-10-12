@@ -12,6 +12,7 @@ import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 
+import { usersPath } from "../../Routes";
 import {
   createUser,
   refreshAccessToken,
@@ -44,11 +45,11 @@ export function UserForm({ user }) {
   const handleSubmit = (event) => {
     if (isCreateMode) {
       createUser(username, email, password, isSuperuser, tokenLifetime).then(
-        () => history.replace("/new-ui/users")
+        () => history.replace(usersPath())
       );
     } else {
       updateUser(user.id, username, email, isSuperuser, tokenLifetime).then(
-        () => history.replace("/new-ui/users")
+        () => history.replace(usersPath())
       );
     }
     event.preventDefault();

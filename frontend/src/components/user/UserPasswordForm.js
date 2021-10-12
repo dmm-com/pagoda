@@ -6,6 +6,7 @@ import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 
+import { usersPath } from "../../Routes";
 import {
   updateUserPassword,
   updateUserPasswordAsSuperuser,
@@ -32,11 +33,11 @@ export function UserPasswordForm({ user, asSuperuser }) {
   const handleSubmit = (event) => {
     if (asSuperuser) {
       updateUserPasswordAsSuperuser(user.id, newPassword, checkPassword).then(
-        () => history.replace("/new-ui/users")
+        () => history.replace(usersPath())
       );
     } else {
       updateUserPassword(user.id, oldPassword, newPassword, checkPassword).then(
-        () => history.replace("/new-ui/users")
+        () => history.replace(usersPath())
       );
     }
 

@@ -5,6 +5,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { entityPath } from "../Routes";
 import { getEntities } from "../utils/AironeAPIClient";
 import { EntityStatus } from "../utils/Constants";
 
@@ -35,7 +36,7 @@ export function LeftMenu({}) {
               <ListItem
                 key={entity.id}
                 component={Link}
-                to={`/new-ui/entities/${entity.id}`}
+                to={entityPath(entity.id)}
               >
                 <ListItemText primary={entity.name} />
               </ListItem>

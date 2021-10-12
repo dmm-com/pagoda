@@ -11,6 +11,7 @@ import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 
+import { entityEntriesPath } from "../../Routes";
 import { createEntry } from "../../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
@@ -47,7 +48,7 @@ export function EntryForm({ entityId, initName = "", initAttributes = [] }) {
     });
     createEntry(entityId, name, attrs)
       .then((resp) => resp.json())
-      .then((_) => history.push(`/new-ui/entities/${entityId}/entries`));
+      .then((_) => history.push(entityEntriesPath(entityId)));
 
     event.preventDefault();
   };

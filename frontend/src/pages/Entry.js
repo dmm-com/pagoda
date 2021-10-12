@@ -8,6 +8,14 @@ import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import {
+  aclPath,
+  entitiesPath,
+  entityPath,
+  importEntriesPath,
+  newEntryPath,
+  topPath,
+} from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { CreateButton } from "../components/common/CreateButton";
 import { EditButton } from "../components/common/EditButton";
@@ -49,10 +57,10 @@ export function Entry({}) {
   return (
     <div>
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
-        <Typography component={Link} to={`/new-ui/entities`}>
+        <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
         <Typography color="textPrimary">エントリ一覧</Typography>
@@ -61,17 +69,15 @@ export function Entry({}) {
       <div className="row">
         <div className="col">
           <div className="float-left">
-            <CreateButton to={`/new-ui/entities/${entityId}/entries/new`}>
+            <CreateButton to={newEntryPath(entityId)}>
               エントリ作成
             </CreateButton>
-            <EditButton to={`/new-ui/entities/${entityId}`}>
-              エンティティ編集
-            </EditButton>
+            <EditButton to={entityPath(entityId)}>エンティティ編集</EditButton>
             <Button
               variant="contained"
               className={classes.button}
               component={Link}
-              to={`/new-ui/acl/${entityId}`}
+              to={aclPath(entityId)}
             >
               エンティティの ACL
             </Button>
@@ -95,7 +101,7 @@ export function Entry({}) {
               variant="outlined"
               color="secondary"
               component={Link}
-              to={`/new-ui/entities/${entityId}/entries/import`}
+              to={importEntriesPath(entityId)}
             >
               インポート
             </Button>

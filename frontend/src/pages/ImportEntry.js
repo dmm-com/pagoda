@@ -2,6 +2,7 @@ import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { Link, useParams } from "react-router-dom";
 
+import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { ImportForm } from "../components/common/ImportForm";
 import { importEntries } from "../utils/AironeAPIClient";
@@ -12,16 +13,13 @@ export function ImportEntry({}) {
   return (
     <div>
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
-        <Typography component={Link} to="/new-ui/entities">
+        <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
-        <Typography
-          component={Link}
-          to={`/new-ui/entities/${entityId}/entries`}
-        >
+        <Typography component={Link} to={entityEntriesPath(entityId)}>
           {entityId}
         </Typography>
         <Typography>インポート</Typography>
@@ -29,7 +27,7 @@ export function ImportEntry({}) {
 
       <ImportForm
         importFunc={importEntries.bind(null, entityId)}
-        redirectPath={`/new-ui/entities/${entityId}/entries`}
+        redirectPath={entityEntriesPath(entityId)}
       />
     </div>
   );

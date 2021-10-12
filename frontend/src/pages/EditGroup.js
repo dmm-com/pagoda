@@ -3,6 +3,7 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { groupsPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { GroupForm } from "../components/group/GroupForm";
 import { getGroup, getUsers } from "../utils/AironeAPIClient";
@@ -22,10 +23,10 @@ export function EditGroup({}) {
   return (
     <div>
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
-        <Typography component={Link} to="/new-ui/groups">
+        <Typography component={Link} to={groupsPath()}>
           グループ管理
         </Typography>
         <Typography color="textPrimary">グループ編集</Typography>

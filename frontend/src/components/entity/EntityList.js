@@ -17,6 +17,12 @@ import PropTypes from "prop-types";
 import React, { useRef, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
+import {
+  aclPath,
+  entityEntriesPath,
+  entityHistoryPath,
+  entityPath,
+} from "../../Routes";
 import { deleteEntity } from "../../utils/AironeAPIClient";
 import { DeleteButton } from "../common/DeleteButton";
 import { EditButton } from "../common/EditButton";
@@ -92,7 +98,7 @@ export function EntityList({ entities }) {
                   <TableCell>
                     <Typography
                       component={Link}
-                      to={`/new-ui/entities/${entity.id}/entries`}
+                      to={entityEntriesPath(entity.id)}
                     >
                       {entity.name}
                     </Typography>
@@ -101,7 +107,7 @@ export function EntityList({ entities }) {
                     <Typography>{entity.note}</Typography>
                   </TableCell>
                   <TableCell align="right">
-                    <EditButton to={`/new-ui/entities/${entity.id}`}>
+                    <EditButton to={entityPath(entity.id)}>
                       エンティティ編集
                     </EditButton>
                     <Button
@@ -110,7 +116,7 @@ export function EntityList({ entities }) {
                       className={classes.button}
                       startIcon={<HistoryIcon />}
                       component={Link}
-                      to={`/new-ui/entities/${entity.id}/history`}
+                      to={entityHistoryPath(entity.id)}
                     >
                       変更履歴
                     </Button>
@@ -120,7 +126,7 @@ export function EntityList({ entities }) {
                       className={classes.button}
                       startIcon={<GroupIcon />}
                       component={Link}
-                      to={`/new-ui/acl/${entity.id}`}
+                      to={aclPath(entity.id)}
                     >
                       ACL
                     </Button>

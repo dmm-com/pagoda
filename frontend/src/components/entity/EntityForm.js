@@ -18,6 +18,7 @@ import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 
+import { entitiesPath } from "../../Routes";
 import { createEntity, updateEntity } from "../../utils/AironeAPIClient";
 
 const BaseAttributeTypes = {
@@ -140,11 +141,11 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
     if (createMode) {
       createEntity(name, note, isTopLevel, attrs)
         .then((resp) => resp.json())
-        .then(() => history.replace("/new-ui/entities"));
+        .then(() => history.replace(entitiesPath()));
     } else {
       updateEntity(entity.id, name, note, isTopLevel, attrs)
         .then((resp) => resp.json())
-        .then(() => history.replace("/new-ui/entities"));
+        .then(() => history.replace(entitiesPath()));
     }
 
     event.preventDefault();

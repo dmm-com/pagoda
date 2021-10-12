@@ -5,13 +5,13 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { importEntitiesPath, newEntityPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { CreateButton } from "../components/common/CreateButton";
 import { Loading } from "../components/common/Loading";
 import { EntityList } from "../components/entity/EntityList";
 import {
   downloadExportedEntities,
-  exportEntities,
   getEntities,
 } from "../utils/AironeAPIClient";
 
@@ -33,7 +33,7 @@ export function Entity({}) {
   return (
     <div className="container-fluid">
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
         <Typography color="textPrimary">エンティティ一覧</Typography>
@@ -42,9 +42,7 @@ export function Entity({}) {
       <div className="row">
         <div className="col">
           <div className="float-left">
-            <CreateButton to={`/new-ui/entities/new`}>
-              エンティティ作成
-            </CreateButton>
+            <CreateButton to={newEntityPath()}>エンティティ作成</CreateButton>
             <Button
               className={classes.button}
               variant="outlined"
@@ -58,7 +56,7 @@ export function Entity({}) {
               color="secondary"
               className={classes.button}
               component={Link}
-              to={`/new-ui/entities/import`}
+              to={importEntitiesPath()}
             >
               インポート
             </Button>

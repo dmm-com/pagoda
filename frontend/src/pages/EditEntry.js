@@ -3,6 +3,7 @@ import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { EntryForm } from "../components/entry/EntryForm";
 import { getEntry } from "../utils/AironeAPIClient";
@@ -20,16 +21,13 @@ export function EditEntry({}) {
   return (
     <div>
       <AironeBreadcrumbs>
-        <Typography component={Link} to="/new-ui/">
+        <Typography component={Link} to={topPath()}>
           Top
         </Typography>
-        <Typography component={Link} to="/new-ui/entities">
+        <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
-        <Typography
-          component={Link}
-          to={`/new-ui/entities/${entityId}/entries`}
-        >
+        <Typography component={Link} to={entityEntriesPath(entityId)}>
           {entityId}
         </Typography>
         <Typography color="textPrimary">編集</Typography>

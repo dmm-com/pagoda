@@ -15,6 +15,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { jobsPath, searchPath, topPath, userPath } from "../Routes";
 import { getRecentJobs } from "../utils/AironeAPIClient";
 import { DjangoContext } from "../utils/DjangoContext";
 
@@ -88,7 +89,7 @@ export function Header({}) {
 
   const handleSearchQuery = (event) => {
     if (event.key === "Enter") {
-      history.push(`/new-ui/search?entry_name=${entryQuery}`);
+      history.push(`${searchPath()}?entry_name=${entryQuery}`);
     }
   };
 
@@ -100,7 +101,7 @@ export function Header({}) {
             variant="h6"
             className={classes.title}
             component={Link}
-            to="/new-ui/"
+            to={topPath()}
           >
             AirOne(New UI) {djangoContext.version}
           </Typography>
@@ -122,9 +123,7 @@ export function Header({}) {
               keepMounted
             >
               <MenuItem>
-                <Link to={`/new-ui/users/${djangoContext.user.id}`}>
-                  ユーザ設定
-                </Link>
+                <Link to={userPath(djangoContext.user.id)}>ユーザ設定</Link>
               </MenuItem>
               <MenuItem>
                 <a href="/auth/logout/">ログアウト</a>
@@ -153,10 +152,7 @@ export function Header({}) {
               {!recentJobs.loading && recentJobs.value.length > 0 ? (
                 recentJobs.value.map((recentJob) => (
                   <MenuItem key={recentJob.id}>
-                    <Typography
-                      component={Link}
-                      to={`/new-ui/jobs/${recentJob.id}`}
-                    >
+                    <Typography component={Link} to={jobsPath()}>
                       {recentJob.target.name}
                     </Typography>
                   </MenuItem>
@@ -168,7 +164,7 @@ export function Header({}) {
               )}
               <Divider light />
               <MenuItem>
-                <Typography component={Link} to={`/new-ui/jobs`}>
+                <Typography component={Link} to={jobsPath()}>
                   ジョブ一覧
                 </Typography>
               </MenuItem>
@@ -192,7 +188,7 @@ export function Header({}) {
             <Button
               variant="contained"
               component={Link}
-              to={`/new-ui/search?entry_name=${entryQuery}`}
+              to={`${searchPath()}?entry_name=${entryQuery}`}
             >
               検索
             </Button>
