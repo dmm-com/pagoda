@@ -1,6 +1,8 @@
 import {
   Card,
+  CardHeader,
   Checkbox,
+  FormControlLabel,
   List,
   ListItem,
   ListItemIcon,
@@ -33,10 +35,6 @@ const useStyles = makeStyles((theme) => ({
     overflow: "auto",
   },
 
-  entitySelectorSubHeader: {
-    backgroundColor: alpha(theme.palette.common.white, 1.0),
-  },
-
   entityFilter: {
     margin: theme.spacing(1),
     minWidth: 500,
@@ -49,10 +47,6 @@ const useStyles = makeStyles((theme) => ({
   attrList: {
     maxHeight: 300,
     overflow: "auto",
-  },
-
-  attrSelectorSubHeader: {
-    backgroundColor: alpha(theme.palette.common.white, 1.0),
   },
 
   attrFilter: {
@@ -107,6 +101,34 @@ export function AdvancedSearch({}) {
     ),
   });
 
+  const handleToggleEntityAll = (e) => {
+    e.target.checked
+      ? !entities.loading &&
+        entities.value
+          .filter(
+            (entity) =>
+              entity.name
+                .toLowerCase()
+                .indexOf(entityNameFilter.toLowerCase()) !== -1 &&
+              selectedEntityIds.indexOf(entity.id) === -1
+          )
+          .map((entity) => toggleSelectedEntityIds(entity.id))
+      : selectedEntityIds.map((entityId) => toggleSelectedEntityIds(entityId));
+  };
+
+  const handleToggleAttrAll = (e) => {
+    e.target.checked
+      ? !attrs.loading &&
+        attrs.value
+          .filter(
+            (attr) =>
+              attr.toLowerCase().indexOf(attrNameFilter.toLowerCase()) !== -1 &&
+              selectedAttrs.indexOf(attr) === -1
+          )
+          .map((attr) => toggleSelectedAttrs(attr))
+      : selectedAttrs.map((attr) => toggleSelectedAttrs(attr));
+  };
+
   return (
     <div className="container-fluid">
       <AironeBreadcrumbs>
@@ -121,19 +143,22 @@ export function AdvancedSearch({}) {
       </Typography>
 
       <Card variant="outlined" className={classes.entitySelector}>
-        <List
-          className={classes.entityList}
-          subheader={
-            <ListSubheader className={classes.entitySelectorSubHeader}>
-              検索するエンティティを選択
-            </ListSubheader>
-          }
-        >
+        <Grid container spacing={2}>
+          <CardHeader subheader="検索するエンティティを選択" />
+          <FormControlLabel
+            control={<Checkbox onChange={handleToggleEntityAll} />}
+            label="全選択"
+          />
+        </Grid>
+        <List className={classes.entityList}>
           {!entities.loading ? (
             <>
               {entities.value
                 .filter(
-                  (entity) => entity.name.indexOf(entityNameFilter) !== -1
+                  (entity) =>
+                    entity.name
+                      .toLowerCase()
+                      .indexOf(entityNameFilter.toLowerCase()) !== -1
                 )
                 .map((entity) => (
                   <ListItem
@@ -169,18 +194,22 @@ export function AdvancedSearch({}) {
       </Card>
 
       <Card variant="outlined" className={classes.attrSelector}>
-        <List
-          className={classes.attrList}
-          subheader={
-            <ListSubheader className={classes.attrSelectorSubHeader}>
-              検索する属性を選択
-            </ListSubheader>
-          }
-        >
+        <Grid container spacing={2}>
+          <CardHeader subheader="検索する属性を選択" />
+          <FormControlLabel
+            control={<Checkbox onChange={handleToggleAttrAll} />}
+            label="全選択"
+          />
+        </Grid>
+        <List className={classes.attrList}>
           {!attrs.loading ? (
             <>
               {attrs.value
-                .filter((attr) => attr.indexOf(attrNameFilter) !== -1)
+                .filter(
+                  (attr) =>
+                    attr.toLowerCase().indexOf(attrNameFilter.toLowerCase()) !==
+                    -1
+                )
                 .map((attr) => (
                   <ListItem
                     key={attr}
