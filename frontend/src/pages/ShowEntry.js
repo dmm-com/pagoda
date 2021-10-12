@@ -27,10 +27,7 @@ export function ShowEntry({}) {
 
   // TODO get an entry only if show/edit pages
   const entry = useAsync(async () => {
-    if (entryId !== undefined) {
-      return getEntry(entityId, entryId);
-    }
-    return Promise.resolve({});
+    return getEntry(entryId);
   });
 
   const entryHistory = useAsync(async () => {

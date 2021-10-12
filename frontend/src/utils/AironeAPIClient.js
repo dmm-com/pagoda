@@ -41,6 +41,7 @@ export function getEntityAttrs(entityIds) {
 }
 
 export function getEntry(entryId) {
+  //return fetch(`/api/v1/entry?entry_id=${entryId}`);
   return new Promise((resolve, _) => {
     resolve({
       name: "test",
