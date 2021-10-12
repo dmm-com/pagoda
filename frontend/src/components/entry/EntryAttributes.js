@@ -9,7 +9,7 @@ export default function EntryAttributes({ attributes }) {
         {attributes.map((attr) => (
           <TableRow key={attr.name}>
             <TableCell>{attr.name}</TableCell>
-            <TableCell>{attr.value}</TableCell>
+            <TableCell>hoge</TableCell>
           </TableRow>
         ))}
       </TableBody>

@@ -27,7 +27,8 @@ export function ShowEntry({}) {
 
   // TODO get an entry only if show/edit pages
   const entry = useAsync(async () => {
-    return getEntry(entryId);
+    return getEntry(entryId)
+      .then((resp) => resp.json());
   });
 
   const entryHistory = useAsync(async () => {
@@ -70,7 +71,7 @@ export function ShowEntry({}) {
 
       <div hidden={tabValue !== 0}>
         {!entry.loading && (
-          <EntryAttributes attributes={entry.value.attributes} />
+          <EntryAttributes attributes={entry.value.attrs} />
         )}
       </div>
 
@@ -80,7 +81,7 @@ export function ShowEntry({}) {
             entityId={entityId}
             entryId={entityId}
             initName={entry.value.name}
-            initAttributes={entry.value.attributes}
+            initAttributes={entry.value.attrs}
           />
         )}
       </div>

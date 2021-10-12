@@ -41,18 +41,7 @@ export function getEntityAttrs(entityIds) {
 }
 
 export function getEntry(entryId) {
-  //return fetch(`/api/v1/entry?entry_id=${entryId}`);
-  return new Promise((resolve, _) => {
-    resolve({
-      name: "test",
-      attributes: [
-        {
-          name: "a1",
-          value: "aaa",
-        },
-      ],
-    });
-  });
+  return fetch(`/entry/api/v2/${entryId}`);
 }
 
 export function getEntries(entityId, isActive = true) {
