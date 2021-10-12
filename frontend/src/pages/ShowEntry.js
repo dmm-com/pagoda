@@ -27,8 +27,12 @@ export function ShowEntry({}) {
 
   // TODO get an entry only if show/edit pages
   const entry = useAsync(async () => {
-    return getEntry(entryId)
-      .then((resp) => resp.json());
+    return getEntry(entryId).then((resp) => {
+      if (!resp.ok) {
+        throw new Error("entry not found");
+      }
+      return resp.json();
+    });
   });
 
   const entryHistory = useAsync(async () => {
@@ -44,6 +48,10 @@ export function ShowEntry({}) {
   const acl = useAsync(async () => {
     return getACL(entryId);
   });
+
+  if (entry.error !== undefined) {
+    return <p>FIX TO SHOW: {entry.error.toString()}</p>;
+  }
 
   return (
     <div>
@@ -70,9 +78,7 @@ export function ShowEntry({}) {
       </Tabs>
 
       <div hidden={tabValue !== 0}>
-        {!entry.loading && (
-          <EntryAttributes attributes={entry.value.attrs} />
-        )}
+        {!entry.loading && <EntryAttributes attributes={entry.value.attrs} />}
       </div>
 
       <div hidden={tabValue !== 1}>
