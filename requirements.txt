@@ -17,3 +17,4 @@ python-ldap==3.3.1
 gunicorn==20.0.4
 whitenoise==5.2.0
 requests==2.20.0
+django-replicated==2.7

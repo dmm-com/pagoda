@@ -1,21 +1,46 @@
-import unittest
+import time
+from django.utils.http import parse_http_date
 
-from airone.lib.db import get_slave_db
-from django.conf import settings
+from airone.lib.test import AironeViewTest
+from airone import settings
+
+COOKIE_NAME = settings.REPLICATED_FORCE_MASTER_COOKIE_NAME
 
 
-class AirOneDBTest(unittest.TestCase):
-
+class ViewTest(AironeViewTest):
     def setUp(self):
-        # this saves original configurations to be able to retrieve them
-        self.orig_conf_db_slaves = settings.AIRONE['DB_SLAVES']
+        super(ViewTest, self).setUp()
 
-        # this enables do profiling
-        settings.AIRONE['DB_SLAVES'] = ['slave1', 'slave2']
+        self.admin = self.admin_login()
 
-    def tearDown(self):
-        # this retrieves original configurations
-        settings.AIRONE['ENABLE_PROFILE'] = self.orig_conf_db_slaves
+    def test_replicated_middleware(self):
+        # Post: use master, set cookie
+        with self.assertLogs('django_replicated.router', level='DEBUG') as log:
+            self.assertNotIn(COOKIE_NAME, self.client.cookies)
+            response = self.client.post('/dashboard/')
+            self.assertEqual(response.cookies[COOKIE_NAME].value, 'true')
+            self.assertIn('DEBUG:django_replicated.router:db_for_write: default', log.output)
 
-    def test_get_slave_db(self):
-        self.assertIn(get_slave_db(), settings.AIRONE['DB_SLAVES'])
+        # First GET after POST: use master, set cookie
+        with self.assertLogs('django_replicated.router', level='DEBUG') as log:
+            self.assertEqual(self.client.cookies[COOKIE_NAME].value, 'true')
+            response = self.client.get('/dashboard/')
+            self.assertEqual(response.cookies[COOKIE_NAME].value, 'true')
+            self.assertIn('DEBUG:django_replicated.router:db_for_write: default', log.output)
+
+        # Second GET after POST: use master, set cookie
+        with self.assertLogs('django_replicated.router', level='DEBUG') as log:
+            self.assertEqual(response.cookies[COOKIE_NAME].value, 'true')
+            response = self.client.get('/dashboard/')
+            self.assertEqual(response.cookies[COOKIE_NAME].value, 'true')
+            self.assertIn('DEBUG:django_replicated.router:db_for_write: default', log.output)
+
+        # GET after expired cookies: use slave
+        with self.assertLogs('django_replicated.router', level='DEBUG') as log:
+            self.assertTrue(parse_http_date(self.client.cookies[COOKIE_NAME]['expires']) <
+                            (time.time() + settings.REPLICATED_FORCE_MASTER_COOKIE_MAX_AGE))
+            # Delete expired cookies
+            del self.client.cookies[COOKIE_NAME]
+            response = self.client.get('/dashboard/')
+            self.assertNotIn(COOKIE_NAME, self.client.cookies)
+            self.assertIn('DEBUG:django_replicated.router:db_for_read: default', log.output)

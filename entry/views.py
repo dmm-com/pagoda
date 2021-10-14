@@ -46,12 +46,21 @@ def _validate_input(recv_data, obj):
             return False
 
     for attr_data in recv_data['attrs']:
-        attr = obj.attrs.filter(id=attr_data['id']).first()
+        if isinstance(obj, Entry):
+            attr = None
+            if attr_data['id']:
+                attr = obj.attrs.filter(id=attr_data['id']).first()
+
+            if attr:
+                attr = attr.schema
+            else:
+                attr = obj.schema.attrs.filter(id=attr_data['entity_attr_id']).first()
+
+        if isinstance(obj, Entity):
+            attr = obj.attrs.filter(id=attr_data['id']).first()
+
         if not attr:
             return HttpResponse('Specified attribute is invalid', status=400)
-
-        if isinstance(obj, Entry):
-            attr = attr.schema
 
         if attr.is_mandatory:
             # This checks whether valid data is passed
@@ -151,12 +160,13 @@ def create(request, entity_id):
         'redirect_url': '/entry/%s' % entity.id,
         'groups': Group.objects.filter(is_active=True),
         'attributes': [{
+            'entity_attr_id': x.id,
             'id': x.id,
             'type': x.type,
             'name': x.name,
             'is_mandatory': x.is_mandatory,
-        } for x in entity.attrs.filter(is_active=True).order_by('index')
-            if user.has_permission(x, ACLType.Writable)]
+            'permission': True if user.has_permission(x, ACLType.Writable) else False
+        } for x in entity.attrs.filter(is_active=True).order_by('index')]
     }
 
     if custom_view.is_custom("create_entry", entity.name):
@@ -230,12 +240,10 @@ def edit(request, entry_id):
     if not entry.is_active:
         return _redirect_restore_entry(entry)
 
-    entry.complement_attrs(user)
-
     context = {
         'entry': entry,
         'groups': Group.objects.filter(is_active=True),
-        'attributes': entry.get_available_attrs(user, ACLType.Writable, get_referral_entries=True),
+        'attributes': entry.get_available_attrs(user, ACLType.Writable),
         'form_url': '/entry/do_edit/%s' % entry.id,
         'redirect_url': '/entry/show/%s' % entry.id,
     }
@@ -254,6 +262,7 @@ def edit(request, entry_id):
         x['entry_name']
     )},
     {'name': 'attrs', 'type': list, 'meta': [
+        {'name': 'entity_attr_id', 'type': str},
         {'name': 'id', 'type': str},
         {'name': 'value', 'type': list},
     ]},
@@ -328,9 +337,6 @@ def show(request, entry_id):
 
     if not entry.is_active:
         return _redirect_restore_entry(entry)
-
-    # create new attributes which are appended after creation of Entity
-    entry.complement_attrs(user)
 
     context = {
         'entry': entry,

@@ -6,6 +6,7 @@ from django.views.generic import RedirectView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 from api_v1.urls import urlpatterns as api_v1_urlpatterns
+from airone.auth import view as auth_view
 
 urlpatterns = [
     url(r'^$', RedirectView.as_view(url='dashboard/')),
@@ -22,7 +23,7 @@ urlpatterns = [
     url(r'^auth/login/', auth_views.LoginView.as_view(
         redirect_authenticated_user=True,
     ), name='login'),
-    url(r'^auth/logout/', auth_views.LogoutView.as_view(), name='logout'),
+    url(r'^auth/logout/', auth_view.logout, name='logout'),
     url(r'^webhook/', include(('webhook.urls', 'webhook'))),
 ]
 
