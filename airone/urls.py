@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.conf.urls import url, include
-from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -15,8 +14,6 @@ urlpatterns = [
     url(r'^entity/', include(('entity.urls', 'entity'))),
     url(r'^dashboard/', include(('dashboard.urls', 'dashboard'))),
     url(r'^entry/', include(('entry.urls', 'entry'))),
-    url(r'^admin/', admin.site.urls),
-    url(r'^api-auth/', include(('rest_framework.urls', 'rest_framework'))),
     url(r'^api/v1/', include(api_v1_urlpatterns)),
     url(r'^job/', include(('job.urls', 'job'))),
     url(r'^auth/login/', auth_views.LoginView.as_view(

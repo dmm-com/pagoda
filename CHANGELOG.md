@@ -18,6 +18,7 @@
 * Fixed some attributes are not updated in advanced search results (#230)
 * Fixed that the entry being created cannot be deleted (#242)
 * Fixed update history of TOP page (#258)
+* Fixed unused URL settings (#278)
 
 ### Refactored
 * Refactored the entry list page
