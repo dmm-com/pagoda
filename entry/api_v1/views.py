@@ -264,3 +264,26 @@ def get_entry_info(request, entry_id):
                          for x in entry.attrs.all() if user.has_permission(x, ACLType.Readable)],
                         key=lambda x: x['index'])
     })
+
+
+@http_post([
+    {'name': 'entity_attr_id', 'type': int}
+])
+def create_entry_attr(request, entry_id, recv_data):
+    user = User.objects.get(id=request.user.id)
+    entry = Entry.objects.filter(id=entry_id).first()
+    entity_attr = EntityAttr.objects.filter(id=recv_data['entity_attr_id'], is_active=True).first()
+
+    if not entry:
+        return HttpResponse("There is no Entry which is specified by entry_id",
+                            status=400)
+
+    if not entity_attr:
+        return HttpResponse("There is no EntityAttr which is specified by entity_attr_id",
+                            status=400)
+
+    attr = entry.attrs.filter(schema=entity_attr, is_active=True).first()
+    if not attr:
+        attr = entry.add_attribute_from_base(entity_attr, user)
+
+    return JsonResponse({'id': attr.id})

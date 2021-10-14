@@ -166,7 +166,6 @@ def do_edit(request, entity_id, recv_data):
 
     # update entity metatada informations to new ones
     entity.set_status(Entity.STATUS_EDITING)
-    entity.save()
 
     # Create a new job to edit entity and run it
     job = Job.new_edit_entity(user, entity, params=recv_data)
@@ -230,7 +229,7 @@ def do_create(request, recv_data):
 
     # set status parameters
     if recv_data['is_toplevel']:
-        entity.set_status(Entity.STATUS_TOP_LEVEL)
+        entity.status = Entity.STATUS_TOP_LEVEL
 
     entity.save()
 

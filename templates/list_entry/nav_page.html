@@ -1,11 +1,7 @@
 <div class="row">
     <div class="col">
         <div class="float-left">
-            <h5 id='entry_count'> {{ page_obj | length }} / {{ page_obj.paginator.count }} エントリ</h5>
-            <form method='get'>
-                <input name="keyword" type='text' value="{{ keyword | default:"" }}" placeholder='絞り込む'/>
-                <input name="page" type="hidden" value="1" />
-            </form>
+            <h5 id='entry_count'> {{ page_obj.start_index | default:"0" }} - {{ page_obj.end_index | default:"0" }} / {{ page_obj.paginator.count }} エントリ</h5>
         </div>
     </div>
 
