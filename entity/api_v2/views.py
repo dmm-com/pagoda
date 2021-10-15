@@ -5,8 +5,6 @@ from airone.lib.http import http_get
 
 from django.http.response import JsonResponse, HttpResponse
 
-from rest_framework.authtoken.models import Token
-
 from entity.models import Entity
 from user.models import User
 
@@ -46,7 +44,6 @@ def get_entity(request, entity_id):
     # entity to be editted is given by url
     entity = Entity.objects.get(id=entity_id)
 
-    (token, _) = Token.objects.get_or_create(user=user)
     return JsonResponse({
         'name': entity.name,
         'note': entity.note,
