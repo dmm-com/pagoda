@@ -4,7 +4,6 @@ import Checkbox from "@material-ui/core/Checkbox";
 import FormControl from "@material-ui/core/FormControl";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormGroup from "@material-ui/core/FormGroup";
-import IconButton from "@material-ui/core/IconButton";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
@@ -18,7 +17,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Alert from "@material-ui/lab/Alert";
 import PropTypes from "prop-types";
-import React, { useState } from "react";
+import React from "react";
 import { useAsync, useToggle } from "react-use";
 
 import {

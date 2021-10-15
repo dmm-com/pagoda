@@ -13,7 +13,8 @@
     "watch": "webpack build --watch --mode development",
     "lint": "npx prettier --check frontend ; npx eslint frontend",
     "fix": "npx prettier --write frontend ; npx eslint --fix frontend",
-    "test": "npx jest frontend"
+    "test": "npx jest frontend",
+    "test:update": "npx jest -u frontend"
   },
   "repository": {
     "type": "git",
