@@ -35,6 +35,13 @@ class GetEntrySerializer(serializers.ModelSerializer):
                         'name': x.referral.name if x.referral else '',
                     } for x in attrv.data_array.all()]
 
+                elif attr.schema.type & AttrTypeValue['group']:
+                    groups = [Group.objects.get(id=x.value) for x in attrv.data_array.all()]
+                    return [{
+                        'id': group.id,
+                        'name': group.name,
+                    } for group in groups]
+
             elif (attr.schema.type & AttrTypeValue['string'] or
                   attr.schema.type & AttrTypeValue['text']):
                 return attrv.value

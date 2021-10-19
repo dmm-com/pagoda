@@ -1,4 +1,11 @@
-import { Table, TableBody, TableCell, TableRow } from "@material-ui/core";
+import {
+  ListItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@material-ui/core";
+import List from "@material-ui/core/List";
 import PropTypes from "prop-types";
 import React from "react";
 
@@ -28,6 +35,9 @@ function ElemGroup({ attrValue }) {
 
 function convertAttributeValue(attrName, attrInfo) {
   const djangoContext = DjangoContext.getInstance();
+
+  if (attrInfo.value === null) {
+  }
 
   switch (attrInfo.type) {
     case djangoContext.attrTypeValue.object:
@@ -103,11 +113,11 @@ export default function EntryAttributes({ attributes }) {
   return (
     <Table>
       <TableBody>
-        {attributes.map((attr) => (
-          <TableRow key={attr.name}>
-            <TableCell>{attr.name}</TableCell>
+        {Object.keys(attributes).map((attrname) => (
+          <TableRow key={attrname}>
+            <TableCell>{attrname}</TableCell>
             <TableCell>
-              {convertAttributeValue(attr.name, attr.value)}
+              {convertAttributeValue(attrname, attributes[attrname])}
             </TableCell>
           </TableRow>
         ))}
@@ -117,10 +127,5 @@ export default function EntryAttributes({ attributes }) {
 }
 
 EntryAttributes.propTypes = {
-  attributes: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      value: PropTypes.string.isRequired,
-    })
-  ).isRequired,
+  attributes: PropTypes.object.isRequired,
 };

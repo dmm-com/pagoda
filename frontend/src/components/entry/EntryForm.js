@@ -20,12 +20,21 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function EntryForm({ entityId, initName = "", initAttributes = [] }) {
+// FIXME handle attribute types
+export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
   const classes = useStyles();
   const history = useHistory();
 
   const [name, setName] = useState(initName);
-  const [attributes, setAttributes] = useState(initAttributes);
+  const [attributes, setAttributes] = useState(
+    Object.keys(initAttributes).map((attrname) => {
+      return {
+        name: attrname,
+        value: initAttributes[attrname].value,
+        type: initAttributes[attrname].type,
+      };
+    })
+  );
 
   const handleChangeAttribute = (event) => {
     attributes[event.target.name] = event.target.value;
@@ -114,5 +123,5 @@ export function EntryForm({ entityId, initName = "", initAttributes = [] }) {
 EntryForm.propTypes = {
   entityId: PropTypes.string.isRequired,
   initName: PropTypes.string,
-  initAttributes: PropTypes.array,
+  initAttributes: PropTypes.object,
 };
