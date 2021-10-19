@@ -16,8 +16,6 @@ class EntryAPI(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, entry_id, *args, **kwargs):
-        print('[onix-test/EntryAPI.get(00)] entry_id: %s' % str(entry_id))
-
         user = User.objects.filter(id=request.user.id).first()
 
         # make a query based on GET parameters
