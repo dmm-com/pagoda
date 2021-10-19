@@ -5,6 +5,7 @@ import errno
 import importlib
 
 from airone.lib.log import Logger
+from django_replicated import settings
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -67,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'airone.lib.db.AirOneReplicationMiddleware',
 ]
 
 ROOT_URLCONF = 'airone.urls'
@@ -92,6 +94,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'airone.wsgi.application'
 
+# https://docs.djangoproject.com/en/3.2/ref/settings/#session-cookie-secure
+SESSION_COOKIE_SECURE = True
+
+# https://docs.djangoproject.com/en/3.2/ref/middleware/#http-strict-transport-security
+SECURE_HSTS_PRELOAD = True
+SECURE_HSTS_SECONDS = 1209600
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -108,7 +116,19 @@ DATABASES = {
         }
     }
 }
-DATABASE_ROUTERS = []
+DATABASE_ROUTERS = ['django_replicated.router.ReplicationRouter']
+REPLICATED_DATABASE_SLAVES = ['default']
+REPLICATED_CACHE_BACKEND = settings.REPLICATED_CACHE_BACKEND
+REPLICATED_DATABASE_DOWNTIME = settings.REPLICATED_DATABASE_DOWNTIME
+REPLICATED_VIEWS_OVERRIDES = settings.REPLICATED_VIEWS_OVERRIDES
+REPLICATED_READ_ONLY_DOWNTIME = settings.REPLICATED_READ_ONLY_DOWNTIME
+REPLICATED_READ_ONLY_TRIES = settings.REPLICATED_READ_ONLY_TRIES
+REPLICATED_FORCE_MASTER_COOKIE_NAME = settings.REPLICATED_FORCE_MASTER_COOKIE_NAME
+REPLICATED_FORCE_MASTER_COOKIE_MAX_AGE = settings.REPLICATED_FORCE_MASTER_COOKIE_MAX_AGE
+REPLICATED_FORCE_STATE_HEADER = settings.REPLICATED_FORCE_STATE_HEADER
+REPLICATED_CHECK_STATE_ON_WRITE = settings.REPLICATED_CHECK_STATE_ON_WRITE
+REPLICATED_FORCE_MASTER_COOKIE_STATUS_CODES = settings.REPLICATED_FORCE_MASTER_COOKIE_STATUS_CODES
+REPLICATED_MANAGE_ATOMIC_REQUESTS = settings.REPLICATED_MANAGE_ATOMIC_REQUESTS
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -161,8 +181,6 @@ AIRONE = {
     'VERSION': 'unknown',
     'FILE_STORE_PATH': '/tmp/airone_app',
     'AUTO_COMPLEMENT_USER': 'auto_complementer',
-    'DB_SLAVES': ['default'],
-    'DB_MASTER': 'default',
     'EXTENSIONS': [],
 }
 

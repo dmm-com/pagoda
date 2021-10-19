@@ -25,9 +25,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(body['email'], login_user.email)
         self.assertEqual(body['is_superuser'], login_user.is_superuser)
         self.assertEqual(body['date_joined'], login_user.date_joined.isoformat())
-        self.assertNotEqual(body['token'], '')
+        self.assertEqual(body['token'], 'None')
         self.assertEqual(body['token_lifetime'], login_user.token_lifetime)
-        self.assertIsNotNone(body['token_expire'])
+        self.assertEqual(body['token_expire'], '')
 
         other = self._create_user('test1', 'test1@example.com')
         resp = self.client.get('/user/api/v2/users/%s' % other.id)

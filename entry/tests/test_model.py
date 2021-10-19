@@ -828,36 +828,55 @@ class ModelTest(AironeTestCase):
             self.assertEqual(v1.value, v2.value)
 
     def test_clone_entry(self):
-        self._entity.attrs.add(EntityAttr.objects.create(**{
-            'name': 'attr',
+        test_entity = Entity.objects.create(name='E0', created_user=self._user)
+        test_entity.attrs.add(EntityAttr.objects.create(**{
+            'name': 'string',
             'type': AttrTypeValue['string'],
             'created_user': self._user,
-            'parent_entity': self._entity,
+            'parent_entity': test_entity,
         }))
 
-        entry = Entry.objects.create(name='entry', schema=self._entity, created_user=self._user)
+        test_entity.attrs.add(EntityAttr.objects.create(**{
+            'name': 'arrobj',
+            'type': AttrTypeValue['array_object'],
+            'created_user': self._user,
+            'parent_entity': test_entity,
+        }))
+
+        entry = Entry.objects.create(name='entry', schema=test_entity, created_user=self._user)
         entry.complement_attrs(self._user)
 
-        entry_attr = entry.attrs.last()
-        for i in range(10):
-            entry_attr.add_value(self._user, str(i))
+        # register initial AttributeValue for each Attributes
+        attr_string = entry.attrs.get(schema__name='string', is_active=True)
+        for i in range(3):
+            attr_string.add_value(self._user, str(i))
 
-        clone = entry.clone(self._user)
+        attr_arrobj = entry.attrs.get(schema__name='arrobj', is_active=True)
+        attr_arrobj.add_value(self._user, [entry])
 
-        self.assertIsNotNone(clone)
-        self.assertNotEqual(clone.id, entry.id)
-        self.assertEqual(clone.name, entry.name)
-        self.assertEqual(clone.attrs.count(), entry.attrs.count())
-        self.assertNotEqual(clone.attrs.last(), entry_attr)
+        cloned_entry = entry.clone(self._user)
+
+        self.assertIsNotNone(cloned_entry)
+        self.assertNotEqual(cloned_entry.id, entry.id)
+        self.assertEqual(cloned_entry.name, entry.name)
+        self.assertEqual(cloned_entry.attrs.count(), entry.attrs.count())
+        self.assertNotEqual(cloned_entry.attrs.last(), attr_string)
 
         # checks parent_entry in the cloned Attribute object is updated
-        clone_attr = clone.attrs.last()
-        self.assertEqual(entry_attr.parent_entry, entry)
-        self.assertEqual(clone_attr.parent_entry, clone)
+        for (original_attr, cloned_attr) in [
+             (attr_string, cloned_entry.attrs.get(schema__name='string', is_active=True)),
+             (attr_arrobj, cloned_entry.attrs.get(schema__name='arrobj', is_active=True))]:
 
-        # checks parent_entry in the cloned AttributeValue object is updated
-        self.assertEqual(entry_attr.values.last().parent_attr, entry_attr)
-        self.assertEqual(clone_attr.values.last().parent_attr, clone_attr)
+            self.assertEqual(original_attr.parent_entry, entry)
+            self.assertEqual(cloned_attr.parent_entry, cloned_entry)
+
+            # checks parent_entry in the cloned AttributeValue object is updated
+            self.assertEqual(original_attr.values.last().parent_attr, original_attr)
+            self.assertEqual(cloned_attr.values.last().parent_attr, cloned_attr)
+
+            # checks AttributeValue.parent_attr for each child AttributeValue(s)
+            for co_attrv in cloned_attr.values.last().data_array.all():
+                self.assertEqual(co_attrv.parent_attr, cloned_attr)
 
     def test_clone_entry_with_non_permitted_attributes(self):
         # set EntityAttr attr3 is not public
@@ -1005,8 +1024,31 @@ class ModelTest(AironeTestCase):
             attr = attrinfo[result['name']]['attr']
 
             self.assertEqual(result['id'], attr.id)
+            self.assertEqual(result['entity_attr_id'], attr.schema.id)
             self.assertEqual(result['type'], attr.schema.type)
+            self.assertEqual(result['is_mandatory'], attr.schema.is_mandatory)
+            self.assertEqual(result['index'], attr.schema.index)
+            self.assertEqual(result['permission'], True)
             self.assertEqual(result['last_value'], attrinfo[attr.name]['exp_val'])
+
+    def test_get_available_attrs_with_multi_attribute(self):
+        self._entity.attrs.add(self._attr.schema)
+        self._entry.attrs.add(self._attr)
+
+        # Add and register duplicate Attribute after registers
+        dup_attr = Attribute.objects.create(name=self._attr.schema.name,
+                                            schema=self._attr.schema,
+                                            created_user=self._user,
+                                            parent_entry=self._entry)
+        self._entry.attrs.add(dup_attr)
+
+        self._attr.delete()
+
+        attr = self._entry.attrs.filter(schema=self._attr.schema, is_active=True).first()
+        attr.add_value(self._user, 'hoge')
+
+        results = self._entry.get_available_attrs(self._user)
+        self.assertEqual(results[0]['last_value'], 'hoge')
 
     def test_set_attrvalue_to_entry_attr_without_availabe_value(self):
         user = User.objects.create(username='hoge')
@@ -2371,6 +2413,17 @@ class ModelTest(AironeTestCase):
         self.assertEqual(attrv, attr.get_latest_value())
         self.assertEqual(attr.values.count(), 1)
 
+    def test_get_latest_value_with_readonly(self):
+        user = User.objects.create(username='hoge')
+        entity = self.create_entity_with_all_type_attributes(user)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+
+        for entity_attr in entity.attrs.all():
+            entry.add_attribute_from_base(entity_attr, user)
+
+        for attr in entry.attrs.all():
+            self.assertIsNone(attr.get_latest_value(is_readonly=True))
+
     def test_add_to_attrv(self):
         user = User.objects.create(username='hoge')
         entity_ref = Entity.objects.create(name='Ref', created_user=user)
@@ -2860,17 +2913,14 @@ class ModelTest(AironeTestCase):
         for attr_name, info in attr_info.items():
             ret = Entry.search_entries(
                 user, [entity.id], [{'name': attr_name, 'keyword': double_empty_search_character}])
-            if attr_name not in ['bool', 'date']:
-                self.assertEqual(ret['ret_count'], 1)
-            else:
-                self.assertEqual(ret['ret_count'], 0)
+            self.assertEqual(ret['ret_count'], 0)
 
         # check functionallity of the 'entry_name' parameter
         ret = Entry.search_entries(user, [], entry_name=CONFIG.EMPTY_SEARCH_CHARACTER)
         self.assertEqual(ret['ret_count'], 1)
 
         ret = Entry.search_entries(user, [], entry_name=double_empty_search_character)
-        self.assertEqual(ret['ret_count'], 1)
+        self.assertEqual(ret['ret_count'], 0)
 
         # check combination of 'entry_name' and 'hint_attrs' parameter
         ret = Entry.search_entries(user, [entity.id],
@@ -3291,3 +3341,30 @@ class ModelTest(AironeTestCase):
             attr.add_value(user, info['set_val'])
 
             self.assertEqual(attr.get_latest_value().format_for_history(), info['exp_val'])
+
+    def test_get_default_value(self):
+        user = User.objects.create(username='hoge')
+        entity = self.create_entity_with_all_type_attributes(user)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
+
+        default_values = {
+            'str': '',
+            'text': '',
+            'obj': None,
+            'name': {'name': '', 'id': None},
+            'bool': False,
+            'group': None,
+            'date': None,
+            'arr_str': [],
+            'arr_obj': [],
+            'arr_name': dict().values(),
+            'arr_group': [],
+        }
+        for attr in entry.attrs.all():
+            if attr.name == 'arr_name':
+                self.assertEqual(list(default_values[attr.name]),
+                                 list(AttributeValue.get_default_value(attr)))
+            else:
+                self.assertEqual(default_values[attr.name],
+                                 AttributeValue.get_default_value(attr))
