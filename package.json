@@ -1,0 +1,58 @@
+{
+  "name": "airone",
+  "version": "1.0.0",
+  "description": "[![CircleCI](https://circleci.com/gh/dmm-com/airone.svg?style=svg&circle-token=2e12c068b0ed1bab9d0c2d72529d5ee1da9b53b4)](https://circleci.com/gh/dmm-com/airone)",
+  "main": "App.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "build": "npm run build:development",
+    "build:development": "webpack build --mode development",
+    "build:production": "webpack build --mode production",
+    "watch": "webpack build --watch --mode development",
+    "lint": "npx prettier --check frontend ; npx eslint frontend",
+    "fix": "npx prettier --write frontend ; npx eslint --fix frontend",
+    "test": "npx jest frontend",
+    "test:update": "npx jest -u frontend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/userlocalhost/airone.git"
+  },
+  "keywords": [],
+  "author": "Hiroyasu OHYAMA",
+  "license": "GPLv2",
+  "bugs": {
+    "url": "https://github.com/userlocalhost/airone/issues"
+  },
+  "homepage": "https://github.com/userlocalhost/airone#readme",
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/plugin-transform-runtime": "^7.14.5",
+    "@babel/preset-env": "^7.12.11",
+    "@babel/preset-react": "^7.12.10",
+    "@material-ui/icons": "^4.11.2",
+    "@testing-library/react": "^12.0.0",
+    "babel-loader": "^8.2.2",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "eslint": "^7.32.0",
+    "eslint-plugin-import": "^2.24.2",
+    "jest": "^27.0.6",
+    "prettier": "2.3.2",
+    "prop-types": "^15.7.2",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "webpack": "^5.17.0",
+    "webpack-cli": "^4.4.0"
+  },
+  "dependencies": {
+    "@jest/globals": "^27.0.6",
+    "@material-ui/core": "^4.12.3",
+    "@material-ui/lab": "^4.0.0-alpha.60",
+    "js-cookie": "^2.2.1",
+    "js-file-download": "^0.4.12",
+    "react-router-dom": "^5.2.0",
+    "react-use": "^17.2.4"
+  }
+}

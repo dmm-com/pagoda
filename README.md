@@ -329,3 +329,34 @@ Type 'yes' to continue, or 'no' to cancel: yes
 $ source .venv/bin/activate
 $ gunicorn airone.wsgi:application --bind=0.0.0.0:8080 --workers=3
 ```
+```
+(In development)
+$ source .venv/bin/activate
+$ python manage.py runserver
+```
+
+## [Experimental] Build the new UI with React
+
+`/new-ui/` serves React-based new UI. Before you try it, you need to build `main.js`:
+
+```
+$ npm install
+$ npm run build
+```
+```
+(In development)
+$ npm install
+$ npm run watch
+```
+
+You can also auto-format .js files with [prettier](https://prettier.io/):
+
+```
+$ npm run fix
+```
+
+To execute test written in [Jest](https://jestjs.io/):
+
+```
+$ npm run test
+```

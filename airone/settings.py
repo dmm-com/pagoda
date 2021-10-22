@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'custom_view.background',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -289,3 +290,7 @@ if not os.path.exists(os.path.dirname(LOGGING['handlers']['file']['filename'])):
     os.makedirs(os.path.dirname(LOGGING['handlers']['file']['filename']))
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}

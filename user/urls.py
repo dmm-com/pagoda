@@ -1,10 +1,11 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 
 from group import views as group_views
 from user import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^api/v2/', include(('user.api_v2.urls', 'user.api_v2'))),
     url(r'^edit/(\d+)$', views.edit, name='edit'),
     url(r'^do_edit/(\d+)$', views.do_edit, name='do_edit'),
     url(r'^edit_passwd/(\d+)$', views.edit_passwd, name='edit_passwd'),
