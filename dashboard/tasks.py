@@ -137,6 +137,12 @@ def _yaml_export(job, values, recv_data, has_referral):
 
                 data['attrs'][attrinfo['name']] = _get_attr_value(_adata['type'], _adata['value'])
 
+        if has_referral is not False:
+            data["referrals"] = [{
+                "entity": x["schema"],
+                "entry": x["name"],
+            } for x in entry_info['referrals']]
+
         if entry_info['entity']['name'] in resp_data:
             resp_data[entry_info['entity']['name']].append(data)
         else:
