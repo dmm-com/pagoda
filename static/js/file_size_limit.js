@@ -1,6 +1,9 @@
 // Check the limit of file size when import
 var upfile = $('#upfile')[0];
 
+// This variable is used for E2E test to be able to handle
+// event registration processing is over.
+var __E2Etest_event_is_registered = false;
 if(upfile){
   upfile.addEventListener("change", function(evt){
     var str = "";
@@ -17,4 +20,6 @@ if(upfile){
       $('#send').prop('disabled', false); // enable submit
     }
   },false);
+
+  __E2Etest_event_is_registered = true;
 }
