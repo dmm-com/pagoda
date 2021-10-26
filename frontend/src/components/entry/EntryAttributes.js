@@ -1,9 +1,4 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@material-ui/core";
+import { Table, TableBody, TableCell, TableRow } from "@material-ui/core";
 import PropTypes from "prop-types";
 import React from "react";
 
@@ -20,7 +15,10 @@ export default function EntryAttributes({ attributes }) {
           <TableRow key={attrname}>
             <TableCell>{attrname}</TableCell>
             <TableCell>
-              <AttributeValue attrName={attrname} attrInfo={attributes[attrname]} />
+              <AttributeValue
+                attrName={attrname}
+                attrInfo={attributes[attrname]}
+              />
             </TableCell>
           </TableRow>
         ))}

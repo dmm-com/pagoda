@@ -113,8 +113,9 @@ export function SearchResults({
                     <TableCell key={attrName}>
                       {result.attrs[attrName] && (
                         <AttributeValue
-                         attrName={attrName}
-                         attrInfo={result.attrs[attrName]} />
+                          attrName={attrName}
+                          attrInfo={result.attrs[attrName]}
+                        />
                       )}
                     </TableCell>
                   ))}

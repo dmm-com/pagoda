@@ -1,9 +1,10 @@
-import PropTypes from "prop-types";
-import React from "react";
-import { DjangoContext } from "../../utils/DjangoContext";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
+import PropTypes from "prop-types";
+import React from "react";
+
 import { groupsPath, showEntryPath } from "../../Routes";
+import { DjangoContext } from "../../utils/DjangoContext";
 
 
 function ElemString({ attrValue }) {
@@ -28,7 +29,7 @@ function ElemGroup({ attrValue }) {
   return <a href={groupsPath()}>{attrValue.name}</a>;
 }
 
-export function AttributeValue({attrName, attrInfo}) {
+export function AttributeValue({ attrName, attrInfo }) {
   const djangoContext = DjangoContext.getInstance();
 
   switch (attrInfo.type) {
@@ -104,4 +105,4 @@ export function AttributeValue({attrName, attrInfo}) {
 AttributeValue.propTypes = {
   attrName: PropTypes.string.isRequired,
   attrInfo: PropTypes.object.isRequired,
-}
+};
