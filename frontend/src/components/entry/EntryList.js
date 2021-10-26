@@ -91,10 +91,7 @@ export function EntryList({ entityId, entries, restoreMode = false }) {
               .map((entry) => (
                 <TableRow key={entry.id}>
                   <TableCell>
-                    <Typography
-                      component={Link}
-                      to={showEntryPath(entityId, entry.id)}
-                    >
+                    <Typography component={Link} to={showEntryPath(entry.id)}>
                       {entry.name}
                     </Typography>
                   </TableCell>

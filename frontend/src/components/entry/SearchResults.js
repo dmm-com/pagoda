@@ -15,6 +15,7 @@ import PropTypes from "prop-types";
 import React, { useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
+import { groupsPath, showEntryPath } from "../../Routes";
 import { DjangoContext } from "../../utils/DjangoContext";
 
 function ElemString({ attrValue }) {
@@ -22,7 +23,7 @@ function ElemString({ attrValue }) {
 }
 
 function ElemObject({ attrValue }) {
-  return <a href={`/entry/show/${attrValue.id}`}>{attrValue.name}</a>;
+  return <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>;
 }
 
 function ElemNamedObject({ attrValue }) {
@@ -30,13 +31,13 @@ function ElemNamedObject({ attrValue }) {
   return (
     <div>
       <div>{key}</div>:{" "}
-      <a href={`/entry/show/${attrValue[key].id}`}>{attrValue[key].name}</a>
+      <a href={showEntryPath(attrValue[key].id)}>{attrValue[key].name}</a>
     </div>
   );
 }
 
 function ElemGroup({ attrValue }) {
-  return <a href={`/group`}>{attrValue.name}</a>;
+  return <a href={groupsPath()}>{attrValue.name}</a>;
 }
 
 function convertAttributeValue(attrName, attrInfo) {

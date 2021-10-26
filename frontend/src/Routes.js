@@ -9,12 +9,9 @@ export const searchPath = () => basePath + "search";
 // entris
 export const newEntryPath = (entityId) =>
   basePath + `entities/${entityId}/entries/new`;
-export const showEntryPath = (entityId, entryId) =>
-  basePath + `entities/${entityId}/entries/${entryId}/show`;
+export const showEntryPath = (entryId) => basePath + `entries/${entryId}/show`;
 export const importEntriesPath = (entityId) =>
   basePath + `entities/${entityId}/entries/import`;
-export const entryPath = (entityId, entryId) =>
-  basePath + `entities/${entityId}/entries/${entryId}`;
 export const entityEntriesPath = (entityId) =>
   basePath + `entities/${entityId}/entries`;
 

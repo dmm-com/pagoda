@@ -66,17 +66,10 @@ function App() {
           <Switch>
             <Route path={advancedSearchPath()} component={AdvancedSearch} />
             <Route path={newEntryPath(":entityId")} component={EditEntry} />
-            <Route
-              path={showEntryPath(":entityId", ":entryId")}
-              component={ShowEntry}
-            />
+            <Route path={showEntryPath(":entryId")} component={ShowEntry} />
             <Route
               path={importEntitiesPath(":entityId")}
               component={ImportEntry}
-            />
-            <Route
-              path={entryPath(":entityId", ":entryId")}
-              component={EditEntry}
             />
             <Route
               path={entityEntriesPath(":entityId", ":entityId")}
