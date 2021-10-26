@@ -99,7 +99,7 @@ function make_element_value_text(a_type, attrv) {
   }
 
   if (a_type == attr_type.entry) {
-    return `<a href='/entry/show/${ attrv.value.id }'>${ attrv.value.name }</a>`;
+    return `<a href='/entry/show/${ attrv.value.id }/'>${ attrv.value.name }</a>`;
 
   } else if (a_type == attr_type.string || a_type == attr_type.textarea) {
     return `<span class='url_conv'>${ attrv.value }</span>`;
@@ -114,7 +114,7 @@ function make_element_value_text(a_type, attrv) {
   } else if (a_type == attr_type.named_entry) {
     let ref_value = '';
     if(attrv.value.referral != null) {
-      ref_value = `<a href='/entry/show/${ attrv.value.referral.id }'>${ attrv.value.referral.name }</a>`;
+      ref_value = `<a href='/entry/show/${ attrv.value.referral.id }/'>${ attrv.value.referral.name }</a>`;
     }
 
     return `<div class ='row'>` +
@@ -132,7 +132,7 @@ function make_element_value_text(a_type, attrv) {
     let result = "<ul class='list-group'>";
     for (let co_info of attrv.value) {
       result += `<li class='list-group-item'>` +
-                  `<a href='/entry/show/${ co_info.id }'>${ co_info.name }</a>` +
+                  `<a href='/entry/show/${ co_info.id }/'>${ co_info.name }</a>` +
                 `</li>`;
     }
     result += '</ul>';
@@ -151,7 +151,7 @@ function make_element_value_text(a_type, attrv) {
     for (let co_info of attrv.value) {
       let ref_value = '';
       if(co_info.referral != null) {
-        ref_value = `<a href='/entry/show/${ co_info.referral.id }'>${ co_info.referral.name }</a>`;
+        ref_value = `<a href='/entry/show/${ co_info.referral.id }/'>${ co_info.referral.name }</a>`;
       }
       result += `<li class='list-group-item'>` +
                   `<div class='row'>` +

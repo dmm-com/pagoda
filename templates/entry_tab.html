@@ -10,7 +10,7 @@
     {% if tab == 'show' %}
       <a class="nav-link active">表示</a>
     {% else %}
-      <a class="nav-link" href='/entry/show/{{ entry.id }}'>表示</a>
+      <a class="nav-link" href='/entry/show/{{ entry.id }}/'>表示</a>
     {% endif %}
 
   </li>
@@ -19,7 +19,7 @@
     {% if tab == 'edit' %}
       <a class="nav-link active">編集</a>
     {% else %}
-      <a class="nav-link" href='/entry/edit/{{ entry.id }}'>編集</a>
+      <a class="nav-link" href='/entry/edit/{{ entry.id }}/'>編集</a>
     {% endif %}
 
   </li>
@@ -28,7 +28,7 @@
     {% if tab == 'refer' %}
       <a class="nav-link active">参照エントリ一覧</a>
     {% else %}
-      <a class="nav-link" href='/entry/refer/{{ entry.id }}'>参照エントリ一覧</a>
+      <a class="nav-link" href='/entry/refer/{{ entry.id }}/'>参照エントリ一覧</a>
     {% endif %}
 
   </li>
@@ -37,7 +37,7 @@
     {% if tab == 'history' %}
       <a class="nav-link active">変更履歴</a>
     {% else %}
-      <a class="nav-link" href='/entry/history/{{ entry.id }}'>変更履歴</a>
+      <a class="nav-link" href='/entry/history/{{ entry.id }}/'>変更履歴</a>
     {% endif %}
 
   </li>
@@ -46,7 +46,7 @@
     {% if tab == 'copy' %}
       <a class="nav-link active">コピー</a>
     {% else %}
-      <a class="nav-link" href='/entry/copy/{{ entry.id }}'>コピー</a>
+      <a class="nav-link" href='/entry/copy/{{ entry.id }}/'>コピー</a>
     {% endif %}
 
   </li>
@@ -55,7 +55,7 @@
     {% if tab == 'acl' %}
       <a class="nav-link active">ACL設定</a>
     {% else %}
-      <a class="nav-link" href='/entry/acl/{{ entry.id }}'>ACL設定</a>
+      <a class="nav-link" href='/entry/acl/{{ entry.id }}/'>ACL設定</a>
     {% endif %}
 
   </li>

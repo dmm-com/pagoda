@@ -8,9 +8,9 @@ var complete_processing = function(data) {
     if(entry['status'] & {{ STATUS_ENTRY.CREATING }}) {
       new_elem.append($(`<td>${entry['name']} [作成中]</td>`));
     } else if(entry['status'] & {{ STATUS_ENTRY.EDITING }}) {
-      new_elem.append($(`<td><a href="/entry/show/${entry['id']}">${entry['name']} [編集中]</a></td>`));
+      new_elem.append($(`<td><a href="/entry/show/${entry['id']}/">${entry['name']} [編集中]</a></td>`));
     } else {
-      new_elem.append($(`<td><a href="/entry/show/${entry['id']}">${entry['name']}</a></td>`));
+      new_elem.append($(`<td><a href="/entry/show/${entry['id']}/">${entry['name']}</a></td>`));
     }
     new_elem.append($(`<td><button type="button" class="btn btn-danger btn-sm del-item" url="/entry/do_delete/${ entry['id'] }/">del</button></td>`));
     new_elem.find('.del-item').on('click', confirm_delete_table_item);
