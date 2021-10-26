@@ -72,12 +72,15 @@ class GetEntrySerializer(serializers.ModelSerializer):
             elif attr.schema.type & AttrTypeValue['date']:
                 return attrv.date
 
-            elif attr.schema.type & AttrTypeValue['group']:
+            elif attr.schema.type & AttrTypeValue['group'] and attrv.value:
                 group = Group.objects.get(id=attrv.value)
                 return {
                     'id': group.id,
                     'name': group.name,
                 }
+
+            else:
+                return ''
 
         return {
                 x.schema.name: {
