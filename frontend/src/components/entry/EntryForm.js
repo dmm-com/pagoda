@@ -121,7 +121,7 @@ export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
 }
 
 EntryForm.propTypes = {
-  entityId: PropTypes.string.isRequired,
+  entityId: PropTypes.number.isRequired,
   initName: PropTypes.string,
   initAttributes: PropTypes.object,
 };

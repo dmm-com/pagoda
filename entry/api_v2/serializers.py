@@ -5,11 +5,18 @@ from rest_framework import serializers
 
 
 class GetEntrySerializer(serializers.ModelSerializer):
+    schema = serializers.SerializerMethodField()
     attrs = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
-        fields = ('id', 'name', 'attrs')
+        fields = ('id', 'name', 'schema', 'attrs')
+
+    def get_schema(self, entry):
+        return {
+                'id': entry.schema.id,
+                'name': entry.schema.name,
+        }
 
     def get_attrs(self, obj):
         def get_attr_value(attr):

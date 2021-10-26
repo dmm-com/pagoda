@@ -30,7 +30,7 @@ export default function EntryReferral({ entityId, referredEntries }) {
 }
 
 EntryReferral.propTypes = {
-  entityId: PropTypes.string.isRequired,
+  entityId: PropTypes.number.isRequired,
   referredEntries: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,

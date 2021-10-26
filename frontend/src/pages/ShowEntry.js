@@ -21,7 +21,7 @@ import {
 } from "../utils/AironeAPIClient";
 
 export function ShowEntry({}) {
-  const { entityId, entryId } = useParams();
+  const { entryId } = useParams();
 
   const [tabValue, setTabValue] = useState(0);
 
@@ -62,9 +62,14 @@ export function ShowEntry({}) {
         <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
-        <Typography component={Link} to={entityEntriesPath(entityId)}>
-          {entityId}
-        </Typography>
+        {!entry.loading && (
+          <Typography
+            component={Link}
+            to={entityEntriesPath(entry.value.schema.id)}
+          >
+            {entry.value.schema.name}
+          </Typography>
+        )}
         <Typography color="textPrimary">{entryId}</Typography>
       </AironeBreadcrumbs>
 
@@ -84,8 +89,8 @@ export function ShowEntry({}) {
       <div hidden={tabValue !== 1}>
         {!entry.loading && (
           <EntryForm
-            entityId={entityId}
-            entryId={entityId}
+            entityId={entry.value.schema.id}
+            entryId={entry.id}
             initName={entry.value.name}
             initAttributes={entry.value.attrs}
           />
@@ -93,9 +98,9 @@ export function ShowEntry({}) {
       </div>
 
       <div hidden={tabValue !== 2}>
-        {!referredEntries.loading && (
+        {!entry.loading && !referredEntries.loading && (
           <EntryReferral
-            entityId={entityId}
+            entityId={entry.value.schema.id}
             referredEntries={referredEntries.value}
           />
         )}
@@ -108,7 +113,9 @@ export function ShowEntry({}) {
       </div>
 
       <div hidden={tabValue !== 4}>
-        <CopyForm entityId={entityId} entryId={entryId} />
+        {!entry.loading && (
+          <CopyForm entityId={entry.value.schema.id} entryId={entryId} />
+        )}
       </div>
 
       <div hidden={tabValue !== 5}>
