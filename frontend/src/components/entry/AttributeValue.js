@@ -6,7 +6,6 @@ import React from "react";
 import { groupsPath, showEntryPath } from "../../Routes";
 import { DjangoContext } from "../../utils/DjangoContext";
 
-
 function ElemString({ attrValue }) {
   return <div>{attrValue}</div>;
 }
