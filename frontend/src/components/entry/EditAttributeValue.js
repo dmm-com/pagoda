@@ -24,7 +24,7 @@ function ElemBool({ attrValue, handleChange }) {
   return <Checkbox checked={attrValue} />;
 }
 
-function ElemObject({ attrValue }) {
+function ElemObject({ attrValue, handleChange }) {
   //  return <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
@@ -43,7 +43,7 @@ function ElemObject({ attrValue }) {
   );
 }
 
-function ElemNamedObject({ attrValue }) {
+function ElemNamedObject({ attrValue, handleChange }) {
   return (
     <>
       <input type="text" value={attrValue.key} />
@@ -52,7 +52,7 @@ function ElemNamedObject({ attrValue }) {
   );
 }
 
-function ElemGroup({ attrValue }) {
+function ElemGroup({ attrValue, handleChange }) {
   //  return <a href={groupsPath()}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
@@ -80,10 +80,20 @@ export function EditAttributeValue({
 
   switch (attrInfo.type) {
     case djangoContext.attrTypeValue.object:
-      return <ElemObject attrValue={attrInfo.value} />;
+      return (
+        <ElemObject
+          attrValue={attrInfo.value}
+          handleChange={handleChangeAttribute}
+        />
+      );
 
     case djangoContext.attrTypeValue.boolean:
-      return <ElemBool attrValue={attrInfo.value} />;
+      return (
+        <ElemBool
+          attrValue={attrInfo.value}
+          handleChange={handleChangeAttribute}
+        />
+      );
 
     case djangoContext.attrTypeValue.string:
     case djangoContext.attrTypeValue.text:
@@ -96,7 +106,12 @@ export function EditAttributeValue({
       );
 
     case djangoContext.attrTypeValue.named_object:
-      return <ElemNamedObject attrValue={attrInfo.value} />;
+      return (
+        <ElemNamedObject
+          attrValue={attrInfo.value}
+          handleChange={handleChangeAttribute}
+        />
+      );
 
     case djangoContext.attrTypeValue.array_object:
       return (
@@ -104,7 +119,10 @@ export function EditAttributeValue({
           {attrInfo.value.map((info, n) => {
             return (
               <ListItem key={n}>
-                <ElemObject attrValue={info} />
+                <ElemObject
+                  attrValue={info}
+                  handleChange={handleChangeAttribute}
+                />
               </ListItem>
             );
           })}
@@ -117,7 +135,10 @@ export function EditAttributeValue({
           {attrInfo.value.map((info, n) => {
             return (
               <ListItem key={n}>
-                <ElemString attrValue={info} />
+                <ElemString
+                  attrValue={info}
+                  handleChange={handleChangeAttribute}
+                />
               </ListItem>
             );
           })}
@@ -130,7 +151,10 @@ export function EditAttributeValue({
           {attrInfo.value.map((info, n) => {
             return (
               <ListItem key={n}>
-                <ElemNamedObject attrValue={info} />
+                <ElemNamedObject
+                  attrValue={info}
+                  handleChange={handleChangeAttribute}
+                />
               </ListItem>
             );
           })}
@@ -143,7 +167,10 @@ export function EditAttributeValue({
           {attrInfo.value.map((info, n) => {
             return (
               <ListItem key={n}>
-                <ElemGroup attrValue={info} />
+                <ElemGroup
+                  attrValue={info}
+                  handleChange={handleChangeAttribute}
+                />
               </ListItem>
             );
           })}
@@ -151,7 +178,12 @@ export function EditAttributeValue({
       );
 
     case djangoContext.attrTypeValue.group:
-      return <ElemGroup attrValue={attrInfo.value} />;
+      return (
+        <ElemGroup
+          attrValue={attrInfo.value}
+          handleChange={handleChangeAttribute}
+        />
+      );
   }
 }
 
