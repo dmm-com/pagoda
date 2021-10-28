@@ -13,6 +13,7 @@ import { useHistory } from "react-router-dom";
 
 import { entityEntriesPath } from "../../Routes";
 import { createEntry } from "../../utils/AironeAPIClient";
+import { EditAttributeValue } from "./EditAttributeValue";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -104,11 +105,10 @@ export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
             <TableRow key={index}>
               <TableCell>{attribute.name}</TableCell>
               <TableCell>
-                <input
-                  type="text"
-                  name={attribute.name}
-                  value={attribute.value}
-                  onChange={handleChangeAttribute}
+                <EditAttributeValue
+                  attrName={attribute.name}
+                  attrInfo={attribute}
+                  handleChangeAttribute={handleChangeAttribute}
                 />
               </TableCell>
             </TableRow>
