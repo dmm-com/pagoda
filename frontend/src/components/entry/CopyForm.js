@@ -47,6 +47,6 @@ export default function CopyForm({ entityId, entryId }) {
 }
 
 CopyForm.propTypes = {
-  entityId: PropTypes.string.isRequired,
+  entityId: PropTypes.number.isRequired,
   entryId: PropTypes.string.isRequired,
 };

@@ -13,7 +13,7 @@ export function EditEntry({}) {
 
   const entry = useAsync(async () => {
     if (entryId !== undefined) {
-      return getEntry(entityId, entryId);
+      return getEntry(entryId);
     }
     return Promise.resolve({});
   });
