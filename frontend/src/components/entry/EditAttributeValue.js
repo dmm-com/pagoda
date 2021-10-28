@@ -44,11 +44,10 @@ function ElemObject({ attrValue }) {
 }
 
 function ElemNamedObject({ attrValue }) {
-  const key = Object.keys(attrValue)[0];
   return (
     <>
-      <input type="text" name={key} value={key} />
-      <ElemObject attrValue={attrValue[key]}></ElemObject>
+      <input type="text" value={attrValue.key} />
+      <ElemObject attrValue={attrValue}></ElemObject>
     </>
   );
 }

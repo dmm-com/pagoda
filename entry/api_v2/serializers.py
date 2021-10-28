@@ -31,9 +31,9 @@ class GetEntrySerializer(serializers.ModelSerializer):
 
                 elif attr.schema.type & AttrTypeValue['named']:
                     return [{
-                        'name': x.value,
-                        'ref_id': x.referral.id if x.referral else None,
-                        'ref_name': x.referral.name if x.referral else '',
+                        'key': x.value,
+                        'id': x.referral.id if x.referral else None,
+                        'name': x.referral.name if x.referral else '',
                     } for x in attrv.data_array.all()]
 
                 elif attr.schema.type & AttrTypeValue['object']:
@@ -55,9 +55,9 @@ class GetEntrySerializer(serializers.ModelSerializer):
 
             elif attr.schema.type & AttrTypeValue['named']:
                 return {
-                    'name': attrv.value,
-                    'ref_id': attrv.referral.id if attrv.referral else None,
-                    'ref_name': attrv.referral.name if attrv.referral else '',
+                    'key': attrv.value,
+                    'id': attrv.referral.id if attrv.referral else None,
+                    'name': attrv.referral.name if attrv.referral else '',
                 }
 
             elif attr.schema.type & AttrTypeValue['object']:

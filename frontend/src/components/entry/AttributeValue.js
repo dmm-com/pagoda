@@ -1,3 +1,4 @@
+import Checkbox from "@material-ui/core/Checkbox";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import PropTypes from "prop-types";
@@ -10,16 +11,19 @@ function ElemString({ attrValue }) {
   return <div>{attrValue}</div>;
 }
 
+function ElemBool({ attrValue, handleChange }) {
+  return <Checkbox checked={attrValue} disabled />;
+}
+
 function ElemObject({ attrValue }) {
   return <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>;
 }
 
 function ElemNamedObject({ attrValue }) {
-  const key = Object.keys(attrValue)[0];
   return (
     <div>
-      <div>{key}</div>:{" "}
-      <a href={showEntryPath(attrValue[key].id)}>{attrValue[key].name}</a>
+      <div>{attrValue.key}</div>:{" "}
+      <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>
     </div>
   );
 }
@@ -37,9 +41,11 @@ export function AttributeValue({ attrName, attrInfo }) {
 
     case djangoContext.attrTypeValue.string:
     case djangoContext.attrTypeValue.text:
-    case djangoContext.attrTypeValue.boolean:
     case djangoContext.attrTypeValue.date:
       return <ElemString attrValue={attrInfo.value} />;
+
+    case djangoContext.attrTypeValue.boolean:
+      return <ElemBool attrValue={attrInfo.value} />;
 
     case djangoContext.attrTypeValue.named_object:
       return <ElemNamedObject attrValue={attrInfo.value} />;
