@@ -4,10 +4,10 @@
 
 import { shallow, mount } from "enzyme";
 import React from "react";
+
 import { DjangoContext } from "../../utils/DjangoContext";
 
 import { AttributeValue, ElemString, ElemObject } from "./AttributeValue.js";
-
 
 const attrTypeValue = {
   string: 2,
@@ -24,40 +24,46 @@ const attrTypeValue = {
 };
 
 beforeAll(() => {
-  Object.defineProperty(window, 'django_context', {
+  Object.defineProperty(window, "django_context", {
     value: {
-      version: 'v0.0.1-test',
+      version: "v0.0.1-test",
       user: {
         id: 123,
-        isSuperuser: true
-      }
+        isSuperuser: true,
+      },
     },
     writable: false,
   });
 });
 
 it("show string type AttributeValue", () => {
-  const attrValue = 'hoge';
-  const wrapper = shallow(<AttributeValue
-    attrName={'attr'}
-    attrInfo={{
-      value: attrValue,
-      type: attrTypeValue.string,
-    }} />);
+  const attrValue = "hoge";
+  const wrapper = shallow(
+    <AttributeValue
+      attrName={"attr"}
+      attrInfo={{
+        value: attrValue,
+        type: attrTypeValue.string,
+      }}
+    />
+  );
 
-  expect(wrapper.find('ElemString').length).toEqual(1);
-  expect(wrapper.props()).toEqual({attrValue: attrValue});
+  expect(wrapper.find("ElemString").length).toEqual(1);
+  expect(wrapper.props()).toEqual({ attrValue: attrValue });
 });
 
 it("show object type AttributeValue", () => {
-  const attrValue = {id: 100, name: 'hoge'};
-  const wrapper = shallow(<AttributeValue
-    attrName={'attr'}
-    attrInfo={{
-      value: attrValue,
-      type: attrTypeValue.object,
-    }} />);
+  const attrValue = { id: 100, name: "hoge" };
+  const wrapper = shallow(
+    <AttributeValue
+      attrName={"attr"}
+      attrInfo={{
+        value: attrValue,
+        type: attrTypeValue.object,
+      }}
+    />
+  );
 
-  expect(wrapper.find('ElemObject').length).toEqual(1);
-  expect(wrapper.props()).toEqual({attrValue: attrValue});
+  expect(wrapper.find("ElemObject").length).toEqual(1);
+  expect(wrapper.props()).toEqual({ attrValue: attrValue });
 });
