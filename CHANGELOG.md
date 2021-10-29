@@ -7,6 +7,7 @@
 ### Changed
 
 ### Fixed
+* Fixed an issue that caused redirects by incorrect URL links
 
 ## v3.3.1
 

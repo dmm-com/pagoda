@@ -4,7 +4,7 @@ var complete_processing = function(data) {
 
   container.empty();
   for(var entry of data['entries']) {
-    var new_elem = $(`<a class="list-group-item" href="/entry/show/${entry['id']}">${entry['name']} (${entry['entity']})</a>`);
+    var new_elem = $(`<a class="list-group-item" href="/entry/show/${entry['id']}/">${entry['name']} (${entry['entity']})</a>`);
 
     container.append(new_elem);
   }

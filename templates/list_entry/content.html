@@ -22,9 +22,9 @@
           {% if entry.status|bitwise_and:STATUS_ENTRY.CREATING %}
             <td>{{ entry.name }} [作成中]</td>
           {% elif entry.status|bitwise_and:STATUS_ENTRY.EDITING %}
-            <td><a href='/entry/show/{{ entry.id }}'>{{ entry.name }} [編集中]</a></td>
+            <td><a href='/entry/show/{{ entry.id }}/'>{{ entry.name }} [編集中]</a></td>
           {% else %}
-            <td><a href='/entry/show/{{ entry.id }}'>{{ entry.name }}</a></td>
+            <td><a href='/entry/show/{{ entry.id }}/'>{{ entry.name }}</a></td>
           {% endif %}
 
           <td><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/entry/do_delete/{{ entry.id }}/">del</button></td>

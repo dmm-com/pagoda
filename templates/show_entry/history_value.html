@@ -18,7 +18,7 @@
   <ul class='list-group'>
   {% for co_attrv in attrv.value %}
     <li class='list-group-item'>
-      <a href='/entry/show/{{ co_attrv.id }}'>
+      <a href='/entry/show/{{ co_attrv.id }}/'>
         {{ co_attrv.name }}
       </a>
     </li>
@@ -41,7 +41,7 @@
         {{ attrv.value.value }}
       </div>
       <div class='col-9'>
-        <a href='/entry/show/{{ attrv.referral.id }}'>{{ attrv.referral.name }}</a>
+        <a href='/entry/show/{{ attrv.referral.id }}/'>{{ attrv.referral.name }}</a>
       </div>
     </div>
 
@@ -54,7 +54,7 @@
             {{ co_attrv.value }}
           </div>
           <div class='col-9'>
-            <a href='/entry/show/{{ co_attrv.referral.id }}'>{{ co_attrv.referral.name }}</a>
+            <a href='/entry/show/{{ co_attrv.referral.id }}/'>{{ co_attrv.referral.name }}</a>
           </div>
         </div>
       </li>
