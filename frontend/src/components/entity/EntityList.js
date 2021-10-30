@@ -151,7 +151,7 @@ export function EntityList({ entities }) {
 EntityList.propTypes = {
   entities: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.string.isRequired,
+      id: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
       note: PropTypes.string.isRequired,
     })

@@ -90,7 +90,6 @@ export function ShowEntry({}) {
         {!entry.loading && (
           <EntryForm
             entityId={entry.value.schema.id}
-            entryId={entry.id}
             initName={entry.value.name}
             initAttributes={entry.value.attrs}
           />
