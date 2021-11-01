@@ -1301,13 +1301,17 @@ class Entry(ACLBase):
                 value = value[:-1]
             return value
 
-        def _set_attrinfo(attr, attrv, container, is_recursive=False):
+        def _set_attrinfo(entity_attr, attr, attrv, container, is_recursive=False):
             attrinfo = {
-                'name': attr.name,
-                'type': attr.type,
+                'name': entity_attr.name,
+                'type': entity_attr.type,
                 'key': '',
                 'value': '',
                 'referral_id': '',
+                'permission': {
+                    'is_public': attr.is_public if attr else True,
+                    'default_permission': attr.default_permission if attr else ACLType.Nothing.id,
+                },
             }
 
             # Convert data format for mapping of Elasticsearch according to the data type
@@ -1315,7 +1319,8 @@ class Entry(ACLBase):
                 # This is the processing to be safe even if the empty AttributeValue was passed.
                 pass
 
-            elif (attr.type & AttrTypeValue['string'] or attr.type & AttrTypeValue['text']):
+            elif (entity_attr.type & AttrTypeValue['string'] or
+                  entity_attr.type & AttrTypeValue['text']):
                 # When the value was date format, Elasticsearch detect it date type
                 # automatically. This processing explicitly set value to the date typed
                 # parameter.
@@ -1325,25 +1330,25 @@ class Entry(ACLBase):
                 else:
                     attrinfo['value'] = truncate(attrv.value)
 
-            elif attr.type & AttrTypeValue['boolean']:
+            elif entity_attr.type & AttrTypeValue['boolean']:
                 attrinfo['value'] = str(attrv.boolean)
 
-            elif attr.type & AttrTypeValue['date']:
+            elif entity_attr.type & AttrTypeValue['date']:
                 attrinfo['date_value'] = attrv.date
 
-            elif attr.type & AttrTypeValue['named']:
+            elif entity_attr.type & AttrTypeValue['named']:
                 attrinfo['key'] = attrv.value
 
                 if attrv.referral and attrv.referral.is_active:
                     attrinfo['value'] = truncate(attrv.referral.name)
                     attrinfo['referral_id'] = attrv.referral.id
 
-            elif attr.type & AttrTypeValue['object']:
+            elif entity_attr.type & AttrTypeValue['object']:
                 if attrv.referral and attrv.referral.is_active:
                     attrinfo['value'] = truncate(attrv.referral.name)
                     attrinfo['referral_id'] = attrv.referral.id
 
-            elif attr.type & AttrTypeValue['group']:
+            elif entity_attr.type & AttrTypeValue['group']:
                 if attrv.value:
                     group = Group.objects.filter(id=attrv.value, is_active=True).first()
                     if group:
@@ -1351,22 +1356,28 @@ class Entry(ACLBase):
                         attrinfo['referral_id'] = group.id
 
             # Basically register attribute information whatever value doesn't exist
-            if not (attr.type & AttrTypeValue['array'] and not is_recursive):
+            if not (entity_attr.type & AttrTypeValue['array'] and not is_recursive):
                 container.append(attrinfo)
 
-            elif attr.type & AttrTypeValue['array'] and not is_recursive and attrv is not None:
+            elif (entity_attr.type & AttrTypeValue['array'] and
+                  not is_recursive and attrv is not None):
                 # Here is the case of parent array, set each child values
-                [_set_attrinfo(attr, x, container, True) for x in attrv.data_array.all()]
+                [_set_attrinfo(entity_attr, attr, x, container, True)
+                 for x in attrv.data_array.all()]
 
                 # If there is no value in container,
                 # this set blank value for maching blank search request
-                if not [x for x in container if x['name'] == attr.name]:
+                if not [x for x in container if x['name'] == entity_attr.name]:
                     container.append(attrinfo)
 
         document = {
             'entity': {'id': self.schema.id, 'name': self.schema.name},
             'name': self.name,
             'attr': [],
+            'permission': {
+                'is_public': self.is_public,
+                'default_permission': self.default_permission,
+            }
         }
 
         # The reason why this is a beat around the bush processing is for the case that Attibutes
@@ -1376,11 +1387,11 @@ class Entry(ACLBase):
         for entity_attr in self.schema.attrs.filter(is_active=True):
             attrv = None
 
-            attr = self.attrs.filter(schema=entity_attr, is_active=True)
+            attr = self.attrs.filter(schema=entity_attr, is_active=True).first()
             if attr:
-                attrv = attr.first().get_latest_value()
+                attrv = attr.get_latest_value()
 
-            _set_attrinfo(entity_attr, attrv, document['attr'])
+            _set_attrinfo(entity_attr, attr, attrv, document['attr'])
 
         return document
 

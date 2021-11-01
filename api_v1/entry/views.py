@@ -1,6 +1,7 @@
 import pytz
 
 from api_v1.auth import AironeTokenAuth
+from airone.lib.acl import ACLType
 from airone.lib.profile import airone_profile
 from django.conf import settings
 from django.db.models import Q
@@ -12,6 +13,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
+from dashboard.views import _search_entries
 from entity.models import Entity
 from entry.models import Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
@@ -32,7 +34,7 @@ class EntrySearchAPI(APIView):
         hint_entity = request.data.get('entities')
         hint_entry_name = request.data.get('entry_name', '')
         hint_attr = request.data.get('attrinfo')
-        hint_referral = request.data.get('referral')
+        hint_referral = request.data.get('referral', False)
         entry_limit = request.data.get('entry_limit', CONFIG_ENTRY.MAX_LIST_ENTRIES)
 
         if (not isinstance(hint_entity, list) or
@@ -45,28 +47,22 @@ class EntrySearchAPI(APIView):
         if any([len(str(x)) > CONFIG_ENTRY.MAX_QUERY_SIZE * 2 for x in hint_attr]):
             return Response("Sending parameter is too large", status=400)
 
-        # convert hint_referral type to be eligible for search_entries method
-        if hint_referral is None:
-            hint_referral = False
-
+        # check entity params
         hint_entity_ids = []
         for hint in hint_entity:
             try:
-                if Entity.objects.filter(id=hint).exists():
-                    hint_entity_ids.append(hint)
-
+                entity = Entity.objects.filter(id=hint, is_active=True).first()
             except ValueError:
                 # This may happen when a string value is specified in the entities parameter
-                entity = Entity.objects.filter(name=hint).first()
-                if entity:
-                    hint_entity_ids.append(entity.id)
+                entity = Entity.objects.filter(name=hint, is_active=True).first()
 
-        resp = Entry.search_entries(user, hint_entity_ids, hint_attr, entry_limit, **{
-            'hint_referral': hint_referral,
-            'entry_name': hint_entry_name,
-        })
+            if entity and user.has_permission(entity, ACLType.Readable):
+                hint_entity_ids.append(entity.id)
 
-        return Response({'result': resp}, content_type='application/json; charset=UTF-8')
+        return Response({
+            'result': _search_entries(
+                user, hint_entity_ids, hint_attr, hint_entry_name, hint_referral, entry_limit)
+        }, content_type='application/json; charset=UTF-8')
 
 
 class EntryReferredAPI(APIView):

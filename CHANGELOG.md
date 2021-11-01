@@ -13,6 +13,7 @@
 
 ### Fixed
 * Fixed bug AttributeValue.parent_attr is different with child's one (#272)
+* Fixed no permission check in advanced search (#282)
 
 ## v3.3.0
 

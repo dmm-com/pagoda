@@ -15,7 +15,7 @@
         <input type='hidden' name='entities' value='[{{ entities }}]' />
         <input type='hidden' name='attrinfo' value='[]' />
         <input type='hidden' name='export_style' value='' />
-        {% if has_referral %}
+        {% if has_referral is not False %}
           <input type='hidden' id='param_export_csv_referral' name='has_referral' value='' />
         {% endif %}
 
@@ -45,7 +45,7 @@
       </th>
       {% endfor %}
 
-      {% if has_referral %}
+      {% if has_referral is not False %}
       <th>
         参照エントリ<br/>
         <input type='text' class='input-sm narrow_down_referral'></input>
@@ -59,94 +59,98 @@
       <th id='entry_name'><a href='/entry/show/{{ result.entry.id }}/'>{{ result.entry.name }} [{{ result.entity.name }}]</a></th>
 
       {% for hint_attr in hint_attrs %}
-        {% with result.attrs|get_item:hint_attr.name as attr %}
-          {% if attr.type == attr_type.string %}
-            <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
+        {% if result.permission is False %}
+          <td class='table-secondary' id='{{ hint_attr.name }}'>Permission denied.</td>
+        {% else %}
+          {% with result.attrs|get_item:hint_attr.name as attr %}
+            {% if attr.type == attr_type.string %}
+              <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
 
-          {% elif attr.type == attr_type.textarea %}
-            <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
+            {% elif attr.type == attr_type.textarea %}
+              <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
 
-          {% elif attr.type == attr_type.boolean %}
-            <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
+            {% elif attr.type == attr_type.boolean %}
+              <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
 
-          {% elif attr.type == attr_type.date %}
-            <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
+            {% elif attr.type == attr_type.date %}
+              <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
 
-          {% elif attr.type == attr_type.entry %}
-            <td id='{{ hint_attr.name }}'><a href='/entry/show/{{ attr.value.id }}/'>{{ attr.value.name }}</a></td>
+            {% elif attr.type == attr_type.entry %}
+              <td id='{{ hint_attr.name }}'><a href='/entry/show/{{ attr.value.id }}/'>{{ attr.value.name }}</a></td>
 
-          {% elif attr.type == attr_type.named_entry %}
-            <td id='{{ hint_attr.name }}'>
-              {% for key, value in attr.value.items %}
-              <div class='row'>
-                <div class='col'>
-                  <p class='url_conv'>{{ key }}</p>
-                </div>
-                <div class='col'>
-                  <a href='/entry/show/{{ value.id }}/'>{{ value.name }}</a>
-                </div>
-              </div>
-              {% endfor %}
-            </td>
-
-          {% elif attr.type == attr_type.group %}
-            <td id='{{ hint_attr.name }}'><a href='/group/'>{{ attr.value.name }}</a></td>
-
-          {% elif attr.type == attr_type.array_string %}
-            <td id='{{ hint_attr.name }}'>
-              <ul class='list-group'>
-              {% for value in attr.value %}
-                <li class='list-group-item'>{{ value }}</li>
-              {% endfor %}
-              </ul>
-            </td>
-
-          {% elif attr.type == attr_type.array_entry %}
-            <td id='{{ hint_attr.name }}'>
-              <ul class='list-group'>
-              {% for value in attr.value %}
-                <li class='list-group-item'><a href='/entry/show/{{ value.id }}/'>{{ value.name }}</a></li>
-              {% endfor %}
-              </ul>
-            </td>
-
-          {% elif attr.type == attr_type.array_group %}
-            <td id='{{ hint_attr.name }}'>
-              <ul class='list-group'>
-              {% for value in attr.value %}
-                <li class='list-group-item'><a href='/group'>{{ value.name }}</a></li>
-              {% endfor %}
-              </ul>
-            </td>
-
-          {% elif attr.type == attr_type.array_named_entry %}
-            <td id='{{ hint_attr.name }}'>
-              <ul class='list-group'>
-              {% for item in attr.value %}
-                {% for key, value in item.items %}
-                <li class='list-group-item'>
-                  <div class='row'>
-                    <div class='col'>
-                      <p class='url_conv'>{{ key }}</p>
-                    </div>
-                    <div class='col'>
-                      <a href='/entry/show/{{ value.id }}/'>{{ value.name }}</a>
-                    </div>
+            {% elif attr.type == attr_type.named_entry %}
+              <td id='{{ hint_attr.name }}'>
+                {% for key, value in attr.value.items %}
+                <div class='row'>
+                  <div class='col'>
+                    <p class='url_conv'>{{ key }}</p>
                   </div>
-                </li>
+                  <div class='col'>
+                    <a href='/entry/show/{{ value.id }}/'>{{ value.name }}</a>
+                  </div>
+                </div>
                 {% endfor %}
-              {% endfor %}
-              </ul>
-            </td>
+              </td>
 
-          {% else %}
-            <td id='{{ hint_attr.name }}'></td>
+            {% elif attr.type == attr_type.group %}
+              <td id='{{ hint_attr.name }}'><a href='/group/'>{{ attr.value.name }}</a></td>
 
-          {% endif %}
-        {% endwith %}
+            {% elif attr.type == attr_type.array_string %}
+              <td id='{{ hint_attr.name }}'>
+                <ul class='list-group'>
+                {% for value in attr.value %}
+                  <li class='list-group-item'>{{ value }}</li>
+                {% endfor %}
+                </ul>
+              </td>
+
+            {% elif attr.type == attr_type.array_entry %}
+              <td id='{{ hint_attr.name }}'>
+                <ul class='list-group'>
+                {% for value in attr.value %}
+                  <li class='list-group-item'><a href='/entry/show/{{ value.id }}/'>{{ value.name }}</a></li>
+                {% endfor %}
+                </ul>
+              </td>
+
+            {% elif attr.type == attr_type.array_group %}
+              <td id='{{ hint_attr.name }}'>
+                <ul class='list-group'>
+                {% for value in attr.value %}
+                  <li class='list-group-item'><a href='/group/'>{{ value.name }}</a></li>
+                {% endfor %}
+                </ul>
+              </td>
+
+            {% elif attr.type == attr_type.array_named_entry %}
+              <td id='{{ hint_attr.name }}'>
+                <ul class='list-group'>
+                {% for item in attr.value %}
+                  {% for key, value in item.items %}
+                  <li class='list-group-item'>
+                    <div class='row'>
+                      <div class='col'>
+                        <p class='url_conv'>{{ key }}</p>
+                      </div>
+                      <div class='col'>
+                        <a href='/entry/show/{{ value.id }}/'>{{ value.name }}</a>
+                      </div>
+                    </div>
+                  </li>
+                  {% endfor %}
+                {% endfor %}
+                </ul>
+              </td>
+            {% elif attr.permission is False %}
+              <td class='table-secondary' id='{{ hint_attr.name }}'>Permission denied.</td>
+            {% else %}
+              <td class='table-secondary' id='{{ hint_attr.name }}'></td>
+            {% endif %}
+          {% endwith %}
+        {% endif %}
       {% endfor %}
 
-      {% if has_referral %}
+      {% if has_referral is not False %}
       <td id='referral'>
         <ul class='list-group'>
           {% for referral in result.referrals %}
@@ -212,7 +216,7 @@
 
       <div class="modal-footer">
         <span class="mr-auto">
-          {% if has_referral %}
+          {% if has_referral is not False %}
             <input type='checkbox' id='modal_cond_add_referral' checked='True'> 参照エントリも含める</input>
           {% else %}
             <input type='checkbox' id='modal_cond_add_referral'> 参照エントリも含める</input>

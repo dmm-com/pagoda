@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from airone.lib import elasticsearch
+from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeStr
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
@@ -186,9 +187,17 @@ class ElasticSearchTest(TestCase):
                                     'type': attr.schema.type,
                                     'key': '',
                                     'value': attr_value.value,
-                                    'referral_id': ''
+                                    'referral_id': '',
+                                    'permission': {
+                                        'is_public': True,
+                                        'default_permission': ACLType.Nothing.id
+                                    }
                                 }
-                            ]
+                            ],
+                            'permission': {
+                                'is_public': True,
+                                'default_permission': ACLType.Nothing.id
+                            }
                         },
                         'sort': [entry.name]
                     }
@@ -215,7 +224,15 @@ class ElasticSearchTest(TestCase):
                         {
                             'type': attr.schema.type,
                             'value': attr_value.value,
+                            'permission': {
+                                'is_public': True,
+                                'default_permission': ACLType.Nothing.id
+                            }
                         }
                 },
+                'permission': {
+                    'is_public': True,
+                    'default_permission': ACLType.Nothing.id
+                }
             }
         ])

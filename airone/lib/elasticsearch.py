@@ -750,6 +750,10 @@ def make_search_results(res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
             'entity': {'id': entry.schema.id, 'name': entry.schema.name},
             'entry': {'id': entry.id, 'name': entry.name},
             'attrs': {},
+            'permission': {
+                'is_public': entry.is_public,
+                'default_permission': entry.default_permission,
+            }
         }
 
         # When 'hint_referral' parameter is specifed, return referred entries for each results
@@ -765,7 +769,9 @@ def make_search_results(res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
             if attrinfo['name'] in ret_info['attrs']:
                 ret_attrinfo = ret_info['attrs'][attrinfo['name']]
             else:
-                ret_attrinfo = ret_info['attrs'][attrinfo['name']] = {}
+                ret_attrinfo = ret_info['attrs'][attrinfo['name']] = {
+                    'permission': attrinfo['permission']
+                }
 
             # if target attribute is array type, then values would be stored in array
             if attrinfo['name'] not in ret_info['attrs']:

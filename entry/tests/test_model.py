@@ -3193,10 +3193,33 @@ class ModelTest(AironeTestCase):
             set_attrs = [x for x in es_registering_value['attr'] if x['name'] == attrname]
 
             self.assertTrue(all([x['type'] == attr.schema.type for x in set_attrs]))
+            self.assertTrue(all([x['permission'] == {
+                'is_public': True,
+                'default_permission': ACLType.Nothing.id
+            } for x in set_attrs]))
             for param_name in ['key', 'value', 'referral_id', 'date_value']:
                 if param_name in attrinfo:
                     self.assertEqual(sorted([x[param_name] for x in set_attrs]),
                                      sorted(attrinfo[param_name]))
+
+    def test_get_es_document_without_attribute_value(self):
+        # If the AttributeValue does not exist, permission returns the default
+        self._entity.attrs.add(self._attr.schema)
+        self._entry.attrs.add(self._attr)
+
+        result = self._entry.get_es_document()
+        self.assertEqual(result['attr'], [{
+            'name': self._attr.name,
+            'type': self._attr.schema.type,
+            'key': '',
+            'value': '',
+            'referral_id': '',
+            'permission': {
+                'is_public': True,
+                'default_permission': ACLType.Nothing.id,
+
+            },
+        }])
 
     def test_get_es_document_when_referred_entry_was_deleted(self):
         # This entry refers self._entry which will be deleted later
@@ -3223,6 +3246,7 @@ class ModelTest(AironeTestCase):
             'key': '',
             'value': self._entry.name,
             'referral_id': self._entry.id,
+            'permission': {'is_public': True, 'default_permission': ACLType.Nothing.id},
         }])
 
         # Delete an entry which is referred by ref_entry
@@ -3237,6 +3261,7 @@ class ModelTest(AironeTestCase):
             'key': '',
             'value': '',        # expected not to have information about deleted entry
             'referral_id': '',  # expected not to have information about deleted entry
+            'permission': {'is_public': True, 'default_permission': ACLType.Nothing.id},
         }])
 
     def test_get_attrv_method_of_entry(self):

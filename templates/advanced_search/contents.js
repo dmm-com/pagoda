@@ -94,7 +94,9 @@ $('#do_search').on('click', function() {
 
   var is_all_entities = $('#select_all_entity').is(':checked');
 
-  location.href = `/dashboard/advanced_search_result?has_referral=${ $('#add_referral').is(':checked') }&is_all_entities=${ is_all_entities }&attrinfo=${ encoded_attrinfo }&${ entities }`;
+  var has_referral = $('#add_referral').is(':checked') ? 'has_referral' : ''
+
+  location.href = `/dashboard/advanced_search_result?${ has_referral }&is_all_entities=${ is_all_entities }&attrinfo=${ encoded_attrinfo }&${ entities }`;
 });
 
 $('#select_all_entity').on('click', function() {

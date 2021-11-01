@@ -18,7 +18,13 @@ function make_attr_elem(attr, hint_attr) {
             </div>`;
   }
 
-  if (attr && attr.value) {
+  if (attr && attr.permission == false) {
+    new_elem.append("Permission denied.");
+    new_elem.addClass('table-secondary');
+    return new_elem;
+  }
+
+  if (attr && attr.type) {
     switch (attr.type) {
       case {{ attr_type.string }}:
       case {{ attr_type.textarea }}:
@@ -83,6 +89,8 @@ function make_attr_elem(attr, hint_attr) {
         new_elem.append(elem_ul);
         break;
     }
+  } else {
+    new_elem.addClass('table-secondary');
   }
 
   return new_elem;
@@ -100,10 +108,14 @@ function reconstruct_tbody(results) {
     new_elem_entry.append(`<th id=entry_name><a href='/entry/show/${ result.entry.id }/'>${ result.entry.name } [${ result.entity.name}]</a></th>`);
 
     {% for hint_attr in hint_attrs %}
-      new_elem_entry.append(make_attr_elem(result.attrs['{{ hint_attr.name }}'], '{{ hint_attr.name }}'));
+      if(result.permission == false){
+        new_elem_entry.append("<td class='table-secondary' id='{{ hint_attr.name }}'>Permission denied.</td>");
+      }else{
+        new_elem_entry.append(make_attr_elem(result.attrs['{{ hint_attr.name }}'], '{{ hint_attr.name }}'));
+      }
     {% endfor %}
 
-    {% if has_referral %}
+    {% if has_referral is not False %}
       let elem_ref_td = $('<td id=referral />');
       let elem_ref_ul = $("<ul class='list-group'/>");
 
@@ -146,7 +158,7 @@ $(document).ready(function() {
           attrinfo: get_attrinfo(),
       };
 
-      {% if has_referral %}
+      {% if has_referral is not False %}
       request_params['referral'] = $('.narrow_down_referral').val();
       {% endif %}
 
@@ -179,7 +191,7 @@ $(document).ready(function() {
         }
         params.push('entry_name=' + $('.hint_entry_name').val());
         params.push('attrinfo=' + encodeURIComponent(JSON.stringify(get_attrinfo())));
-        {% if has_referral %}
+        {% if has_referral is not False %}
         params.push('has_referral=' + $('.narrow_down_referral').val());
         {% endif %}
         window.history.pushState('', '', 'advanced_search_result?' + params.join('&'));
@@ -288,15 +300,17 @@ $(document).ready(function() {
 
     // set get parameters
     params.push(`is_all_entities=${ '{{ is_all_entities }}'.toLowerCase() }`);
-    params.push(`has_referral=${ $('#modal_cond_add_referral').is(':checked') }`);
+    params.push($('#modal_cond_add_referral').is(':checked') ? 'has_referral' : '');
 
     '{{ entities }}'.split(',').forEach(function(val) {
       params.push(`entity[]=${ val }`);
     });
 
-    $('#modal_condition_selected_attr').find('option').each(function(i, elem) {
-      params.push(`attr[]=${ encodeURIComponent($(elem).val()) }`);
-    });
+    const attrinfo = $('#modal_condition_selected_attr').find('option').map(function() {
+      //params.push(`attr[]=${ encodeURIComponent($(elem).val()) }`);
+      return {'name': this.value};
+    }).get();
+    params.push(`&attrinfo=${ encodeURIComponent(JSON.stringify(attrinfo)) }`);
 
     location.href = `/dashboard/advanced_search_result?${ params.join('&') }`;
   });
