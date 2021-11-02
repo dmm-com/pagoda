@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { shallow, mount } from "enzyme";
+import { shallow } from "enzyme";
 import React from "react";
 
 import { DjangoContext } from "../../utils/DjangoContext";
