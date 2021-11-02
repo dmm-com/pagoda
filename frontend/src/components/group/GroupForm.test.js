@@ -28,7 +28,7 @@ jest.mock("../../utils/AironeAPIClient", () => {
 
       return Promise.resolve({});
     }),
-  }
+  };
 });
 import { GroupForm } from "./GroupForm";
 
@@ -38,77 +38,76 @@ beforeEach(() => {
   testContext = {};
 });
 
-
-describe('test for GrouForm component', () => {
+describe("test for GrouForm component", () => {
   const TestUsers = [
-    {id: 10, username: 'userA'},
-    {id: 11, username: 'userB'},
-    {id: 12, username: 'userC'},
+    { id: 10, username: "userA" },
+    { id: 11, username: "userB" },
+    { id: 12, username: "userC" },
   ];
 
   it("check initial state variables", () => {
     const wrapper = shallow(
-      <GroupForm users={TestUsers}
-                 group={{id: 10, name: 'groupname', members: TestUsers}} />
+      <GroupForm
+        users={TestUsers}
+        group={{ id: 10, name: "groupname", members: TestUsers }}
+      />
     );
 
-    expect(wrapper.state('name')).toEqual('groupname');
-    expect(wrapper.state('members')).toEqual([10, 11, 12]);
+    expect(wrapper.state("name")).toEqual("groupname");
+    expect(wrapper.state("members")).toEqual([10, 11, 12]);
   });
 
   it("check initial state variables without specifying group parameter", () => {
-    const wrapper = shallow(
-      <GroupForm users={TestUsers} />
-    );
+    const wrapper = shallow(<GroupForm users={TestUsers} />);
 
-    expect(wrapper.state('name')).toEqual('');
-    expect(wrapper.state('members')).toEqual([]);
+    expect(wrapper.state("name")).toEqual("");
+    expect(wrapper.state("members")).toEqual([]);
   });
 
-  it('submit to create new Group instance', () => {
-    const wrapper = shallow(
-      <GroupForm users={TestUsers} />
-    );
+  it("submit to create new Group instance", () => {
+    const wrapper = shallow(<GroupForm users={TestUsers} />);
 
     /* set state variables of GroupForm component */
     wrapper.setState({
-      name: 'newGroupName',
+      name: "newGroupName",
       members: [20, 21],
     });
 
     /* simulate to submit request form */
-    wrapper.find('form').simulate('submit', {
+    wrapper.find("form").simulate("submit", {
       preventDefault: jest.fn().mockReturnValue(),
     });
 
     expect(testContext).toEqual({
       createGroupIsCalled: true,
-      name: 'newGroupName',
+      name: "newGroupName",
       members: [20, 21],
     });
   });
 
-  it('submit to udpate existed Group instance', () => {
+  it("submit to udpate existed Group instance", () => {
     const wrapper = shallow(
-      <GroupForm users={TestUsers}
-                 group={{id: 10, name: 'groupname', members: TestUsers}} />
+      <GroupForm
+        users={TestUsers}
+        group={{ id: 10, name: "groupname", members: TestUsers }}
+      />
     );
 
     /* set state variables of GroupForm component */
     wrapper.setState({
-      name: 'newGroupName',
+      name: "newGroupName",
       members: [20, 21],
     });
 
     /* simulate to submit request form */
-    wrapper.find('form').simulate('submit', {
+    wrapper.find("form").simulate("submit", {
       preventDefault: jest.fn().mockReturnValue(),
     });
 
     expect(testContext).toEqual({
       updateGroupIsCalled: true,
       group_id: 10,
-      name: 'newGroupName',
+      name: "newGroupName",
       members: [20, 21],
     });
   });

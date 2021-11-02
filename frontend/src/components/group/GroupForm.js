@@ -15,18 +15,20 @@ export class GroupForm extends React.Component {
 
     this.state = {
       name: props.group?.name ?? "",
-      members: props.group?.members ? props.group?.members.map((m) => m.id) : [],
+      members: props.group?.members
+        ? props.group?.members.map((m) => m.id)
+        : [],
     };
   }
 
-  handleChangeSelectedOptions = (event) => {
+  handleChangeSelectedOptions(event) {
     const options = Array.from(event.target.options, (o) => o);
     const values = options.filter((o) => o.selected).map((o) => o.value);
 
     this.setState({ members: values });
-  };
+  }
 
-  handleSubmit = (event) => {
+  handleSubmit(event) {
     const { group, history } = this.props;
     const { name, members } = this.state;
 
@@ -36,12 +38,12 @@ export class GroupForm extends React.Component {
       });
     } else {
       createGroup(name, members).then(() => {
-        history.replace(groupsPath())
+        history.replace(groupsPath());
       });
     }
 
     event.preventDefault();
-  };
+  }
 
   render() {
     const { users, history, classes } = this.props;
