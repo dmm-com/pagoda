@@ -11,7 +11,7 @@ import { alpha, makeStyles } from "@material-ui/core/styles";
 import AccountBox from "@material-ui/icons/AccountBox";
 import FormatListBulletedIcon from "@material-ui/icons/FormatListBulleted";
 import SearchIcon from "@material-ui/icons/Search";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 

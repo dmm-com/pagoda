@@ -10,7 +10,6 @@ import {
   entityEntriesPath,
   entityHistoryPath,
   entityPath,
-  entryPath,
   groupPath,
   groupsPath,
   importEntitiesPath,
