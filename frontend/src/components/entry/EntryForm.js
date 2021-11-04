@@ -38,10 +38,11 @@ export function EntryForm({ entityId, entryId, initName = "", initAttributes = {
     })
   );
 
-  const handleChangeAttribute = (event) => {
-    console.log('[onix/handleChangeAttribute] event.target.hoge: ' + event.target.hoge);
+  const handleChangeAttribute = (event, name, valueInfo) => {
+    console.log('[onix/handleChangeAttribute] name: ' + name);
     console.log('[onix/handleChangeAttribute] event.target.name: ' + event.target.name);
     console.log('[onix/handleChangeAttribute] input value: ' + event.target.value);
+    console.log(valueInfo);
 
     /*
     attributes[event.target.name] = event.target.value;
@@ -58,9 +59,11 @@ export function EntryForm({ entityId, entryId, initName = "", initAttributes = {
   const handleSubmit = (event) => {
     const attrs = attributes.map((attribute) => {
       return {
+        // entity_attr_id
         id: "4",
-        type: "2",
         value: [{ data: attribute.name }],
+        // type: "2",
+        // referral_key
       };
     });
 

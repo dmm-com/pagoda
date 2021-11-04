@@ -18,22 +18,24 @@ function handleNarrowDownGroups(event) {
   console.log('[onix/handleNarrowDownGroups(00)]');
 };
 
-function ElemString({ attrValue, handleChange }) {
+function ElemString({ attrName, attrValue, index, handleChange }) {
   return (
     <Input
       type="text"
-      name={''}
       value={attrValue}
-      onChange={handleChange}
+      onChange={(e) => handleChange(e, attrName)}
     />
   );
 }
 
-function ElemBool({ attrValue, handleChange }) {
-  return <Checkbox name={'hoge'} checked={attrValue} onChange={handleChange} />;
+function ElemBool({ attrName, attrValue, handleChange }) {
+  return <Checkbox
+      checked={attrValue}
+      onChange={(e) => handleChange(e, attrName)}
+  />;
 }
 
-function ElemObject({ attrValue, handleChange }) {
+function ElemObject({ attrName, attrValue, handleChange }) {
   //  return <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
@@ -41,7 +43,19 @@ function ElemObject({ attrValue, handleChange }) {
         <>
           <ListItem key="1" dense button divider>
             <ListItemIcon>
-              <Checkbox name={'hoge'} edge="start" tabIndex={-1} disableRipple onChange={handleChange} />
+              <Checkbox
+                  edge="start"
+                  tabIndex={-1}
+                  disableRipple
+                  onChange={(e) => {
+                    handleChange(e, attrName, {
+                        id: attrValue.id,
+                        name: attrValue.name,
+                        type: attrValue.type,
+                        checked: e.target.checked,
+                    });
+                  }}
+              />
             </ListItemIcon>
             <ListItemText primary={attrValue.name} />
           </ListItem>
@@ -52,16 +66,18 @@ function ElemObject({ attrValue, handleChange }) {
   );
 }
 
-function ElemNamedObject({ attrValue, handleChange }) {
+function ElemNamedObject({ attrName, attrValue, handleChange }) {
   return (
     <>
-      <Input name={'hoge'} type="text" value={attrValue.key} onChange={handleChange}/>
-      <ElemObject attrValue={attrValue} handleChange={handleChange}></ElemObject>
+      <Input type="text" value={attrValue.key}
+             onChange={(e) => handleChange(e, attrName)}
+      />
+      <ElemObject attrName={attrName} attrValue={attrValue} handleChange={handleChange} />
     </>
   );
 }
 
-function ElemGroup({ attrValue, handleChange }) {
+function ElemGroup({ attrName, attrValue, handleChange }) {
   //  return <a href={groupsPath()}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
@@ -69,7 +85,9 @@ function ElemGroup({ attrValue, handleChange }) {
         <>
           <ListItem key="1" dense button divider>
             <ListItemIcon>
-              <Checkbox name={'hoge'} edge="start" tabIndex={-1} disableRipple />
+              <Checkbox edge="start" tabIndex={-1} disableRipple
+                        onChange={(e) => handleChange(e, attrName)}
+              />
             </ListItemIcon>
             <ListItemText primary={attrValue.name} />
           </ListItem>
@@ -91,6 +109,7 @@ export function EditAttributeValue({
     case djangoContext.attrTypeValue.object:
       return (
         <ElemObject
+          attrName={attrName}
           attrValue={attrInfo.value}
           handleChange={handleChangeAttribute}
         />
@@ -99,6 +118,7 @@ export function EditAttributeValue({
     case djangoContext.attrTypeValue.boolean:
       return (
         <ElemBool
+          attrName={attrName}
           attrValue={attrInfo.value}
           handleChange={handleChangeAttribute}
         />
@@ -109,6 +129,7 @@ export function EditAttributeValue({
     case djangoContext.attrTypeValue.date:
       return (
         <ElemString
+          attrName={attrName}
           attrValue={attrInfo.value}
           handleChange={handleChangeAttribute}
         />
@@ -117,6 +138,7 @@ export function EditAttributeValue({
     case djangoContext.attrTypeValue.named_object:
       return (
         <ElemNamedObject
+          attrName={attrName}
           attrValue={attrInfo.value}
           handleChange={handleChangeAttribute}
         />
@@ -129,6 +151,7 @@ export function EditAttributeValue({
             return (
               <ListItem key={n}>
                 <ElemObject
+                  attrName={attrName}
                   attrValue={info}
                   handleChange={handleChangeAttribute}
                 />
@@ -145,7 +168,9 @@ export function EditAttributeValue({
             return (
               <ListItem key={n}>
                 <ElemString
+                  attrName={attrName}
                   attrValue={info}
+                  index={n}
                   handleChange={handleChangeAttribute}
                 />
               </ListItem>
@@ -161,6 +186,7 @@ export function EditAttributeValue({
             return (
               <ListItem key={n}>
                 <ElemNamedObject
+                  attrName={attrName}
                   attrValue={info}
                   handleChange={handleChangeAttribute}
                 />
@@ -177,6 +203,7 @@ export function EditAttributeValue({
             return (
               <ListItem key={n}>
                 <ElemGroup
+                  attrName={attrName}
                   attrValue={info}
                   handleChange={handleChangeAttribute}
                 />
@@ -189,6 +216,7 @@ export function EditAttributeValue({
     case djangoContext.attrTypeValue.group:
       return (
         <ElemGroup
+          attrName={attrName}
           attrValue={attrInfo.value}
           handleChange={handleChangeAttribute}
         />
