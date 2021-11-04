@@ -11,31 +11,45 @@ import React from "react";
 import { DjangoContext } from "../../utils/DjangoContext";
 
 function handleNarrowDownEntries(event) {
-  console.log('[onix/handleNarrowDownEntries(00)]');
-};
+  console.log("[onix/handleNarrowDownEntries(00)]");
+}
 
 function handleNarrowDownGroups(event) {
-  console.log('[onix/handleNarrowDownGroups(00)]');
-};
+  console.log("[onix/handleNarrowDownGroups(00)]");
+}
 
-function ElemString({ attrName, attrValue, index, handleChange }) {
+function ElemString({ attrName, attrValue, attrType, index, handleChange }) {
   return (
     <Input
       type="text"
       value={attrValue}
-      onChange={(e) => handleChange(e, attrName)}
+      onChange={(e) =>
+        handleChange(e, attrName, {
+          type: attrType,
+          index: index,
+          value: e.target.value,
+        })
+      }
     />
   );
 }
 
-function ElemBool({ attrName, attrValue, handleChange }) {
-  return <Checkbox
+function ElemBool({ attrName, attrValue, attrType, handleChange }) {
+  return (
+    <Checkbox
       checked={attrValue}
-      onChange={(e) => handleChange(e, attrName)}
-  />;
+      onChange={(e) =>
+        handleChange(e, attrName, {
+          type: attrType,
+          index: undefined,
+          checked: e.target.checked,
+        })
+      }
+    />
+  );
 }
 
-function ElemObject({ attrName, attrValue, handleChange }) {
+function ElemObject({ attrName, attrValue, attrType, index, handleChange }) {
   //  return <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
@@ -44,40 +58,65 @@ function ElemObject({ attrName, attrValue, handleChange }) {
           <ListItem key="1" dense button divider>
             <ListItemIcon>
               <Checkbox
-                  edge="start"
-                  tabIndex={-1}
-                  disableRipple
-                  onChange={(e) => {
-                    handleChange(e, attrName, {
-                        id: attrValue.id,
-                        name: attrValue.name,
-                        type: attrValue.type,
-                        checked: e.target.checked,
-                    });
-                  }}
+                edge="start"
+                tabIndex={-1}
+                disableRipple
+                onChange={(e) => {
+                  handleChange(e, attrName, {
+                    type: attrType,
+                    index: index,
+                    id: attrValue.id,
+                    name: attrValue.name,
+                    checked: e.target.checked,
+                  });
+                }}
               />
             </ListItemIcon>
             <ListItemText primary={attrValue.name} />
           </ListItem>
         </>
       </List>
-      <Input text="text" placeholder="エントリ名で絞り込む" onChange={handleNarrowDownEntries}/>
+      <Input
+        text="text"
+        placeholder="エントリ名で絞り込む"
+        onChange={handleNarrowDownEntries}
+      />
     </Card>
   );
 }
 
-function ElemNamedObject({ attrName, attrValue, handleChange }) {
+function ElemNamedObject({
+  attrName,
+  attrValue,
+  attrType,
+  index,
+  handleChange,
+}) {
   return (
     <>
-      <Input type="text" value={attrValue.key}
-             onChange={(e) => handleChange(e, attrName)}
+      <Input
+        type="text"
+        value={attrValue.key}
+        onChange={(e) =>
+          handleChange(e, attrName, {
+            type: attrType,
+            index: index,
+            key: e.target.value,
+          })
+        }
       />
-      <ElemObject attrName={attrName} attrValue={attrValue} handleChange={handleChange} />
+      <ElemObject
+        attrName={attrName}
+        attrValue={attrValue}
+        attrType={attrType}
+        index={index}
+        handleChange={handleChange}
+      />
     </>
   );
 }
 
-function ElemGroup({ attrName, attrValue, handleChange }) {
+function ElemGroup({ attrName, attrValue, attrType, index, handleChange }) {
   //  return <a href={groupsPath()}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
@@ -85,15 +124,30 @@ function ElemGroup({ attrName, attrValue, handleChange }) {
         <>
           <ListItem key="1" dense button divider>
             <ListItemIcon>
-              <Checkbox edge="start" tabIndex={-1} disableRipple
-                        onChange={(e) => handleChange(e, attrName)}
+              <Checkbox
+                edge="start"
+                tabIndex={-1}
+                disableRipple
+                onChange={(e) =>
+                  handleChange(e, attrName, {
+                    type: attrType,
+                    index: index,
+                    id: attrValue.id,
+                    name: attrValue.name,
+                    checked: e.target.checked,
+                  })
+                }
               />
             </ListItemIcon>
             <ListItemText primary={attrValue.name} />
           </ListItem>
         </>
       </List>
-      <Input text="text" placeholder="グループ名で絞り込む" onChange={handleNarrowDownGroups}/>
+      <Input
+        text="text"
+        placeholder="グループ名で絞り込む"
+        onChange={handleNarrowDownGroups}
+      />
     </Card>
   );
 }
@@ -111,6 +165,7 @@ export function EditAttributeValue({
         <ElemObject
           attrName={attrName}
           attrValue={attrInfo.value}
+          attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
         />
       );
@@ -120,6 +175,7 @@ export function EditAttributeValue({
         <ElemBool
           attrName={attrName}
           attrValue={attrInfo.value}
+          attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
         />
       );
@@ -131,6 +187,7 @@ export function EditAttributeValue({
         <ElemString
           attrName={attrName}
           attrValue={attrInfo.value}
+          attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
         />
       );
@@ -140,6 +197,7 @@ export function EditAttributeValue({
         <ElemNamedObject
           attrName={attrName}
           attrValue={attrInfo.value}
+          attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
         />
       );
@@ -153,6 +211,8 @@ export function EditAttributeValue({
                 <ElemObject
                   attrName={attrName}
                   attrValue={info}
+                  attrType={attrInfo.type}
+                  index={n}
                   handleChange={handleChangeAttribute}
                 />
               </ListItem>
@@ -170,6 +230,7 @@ export function EditAttributeValue({
                 <ElemString
                   attrName={attrName}
                   attrValue={info}
+                  attrType={attrInfo.type}
                   index={n}
                   handleChange={handleChangeAttribute}
                 />
@@ -188,6 +249,8 @@ export function EditAttributeValue({
                 <ElemNamedObject
                   attrName={attrName}
                   attrValue={info}
+                  attrType={attrInfo.type}
+                  index={n}
                   handleChange={handleChangeAttribute}
                 />
               </ListItem>
@@ -205,6 +268,8 @@ export function EditAttributeValue({
                 <ElemGroup
                   attrName={attrName}
                   attrValue={info}
+                  attrType={attrInfo.type}
+                  index={n}
                   handleChange={handleChangeAttribute}
                 />
               </ListItem>
@@ -218,6 +283,7 @@ export function EditAttributeValue({
         <ElemGroup
           attrName={attrName}
           attrValue={attrInfo.value}
+          attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
         />
       );

@@ -23,7 +23,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // FIXME handle attribute types
-export function EntryForm({ entityId, entryId, initName = "", initAttributes = {} }) {
+export function EntryForm({
+  entityId,
+  entryId,
+  initName = "",
+  initAttributes = {},
+}) {
   const classes = useStyles();
   const history = useHistory();
 
@@ -39,9 +44,7 @@ export function EntryForm({ entityId, entryId, initName = "", initAttributes = {
   );
 
   const handleChangeAttribute = (event, name, valueInfo) => {
-    console.log('[onix/handleChangeAttribute] name: ' + name);
-    console.log('[onix/handleChangeAttribute] event.target.name: ' + event.target.name);
-    console.log('[onix/handleChangeAttribute] input value: ' + event.target.value);
+    console.log("[onix/handleChangeAttribute] name: " + name);
     console.log(valueInfo);
 
     /*
