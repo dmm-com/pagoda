@@ -1,5 +1,6 @@
 import Card from "@material-ui/core/Card";
 import Checkbox from "@material-ui/core/Checkbox";
+import Input from "@material-ui/core/Input";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
@@ -9,11 +10,19 @@ import React from "react";
 
 import { DjangoContext } from "../../utils/DjangoContext";
 
+function handleNarrowDownEntries(event) {
+  console.log('[onix/handleNarrowDownEntries(00)]');
+};
+
+function handleNarrowDownGroups(event) {
+  console.log('[onix/handleNarrowDownGroups(00)]');
+};
+
 function ElemString({ attrValue, handleChange }) {
   return (
-    <input
+    <Input
       type="text"
-      name={attrValue}
+      name={''}
       value={attrValue}
       onChange={handleChange}
     />
@@ -21,7 +30,7 @@ function ElemString({ attrValue, handleChange }) {
 }
 
 function ElemBool({ attrValue, handleChange }) {
-  return <Checkbox checked={attrValue} />;
+  return <Checkbox name={'hoge'} checked={attrValue} onChange={handleChange} />;
 }
 
 function ElemObject({ attrValue, handleChange }) {
@@ -32,13 +41,13 @@ function ElemObject({ attrValue, handleChange }) {
         <>
           <ListItem key="1" dense button divider>
             <ListItemIcon>
-              <Checkbox edge="start" tabIndex={-1} disableRipple />
+              <Checkbox name={'hoge'} edge="start" tabIndex={-1} disableRipple onChange={handleChange} />
             </ListItemIcon>
             <ListItemText primary={attrValue.name} />
           </ListItem>
         </>
       </List>
-      <input text="text" placeholder="エントリ名で絞り込む" />
+      <Input text="text" placeholder="エントリ名で絞り込む" onChange={handleNarrowDownEntries}/>
     </Card>
   );
 }
@@ -46,8 +55,8 @@ function ElemObject({ attrValue, handleChange }) {
 function ElemNamedObject({ attrValue, handleChange }) {
   return (
     <>
-      <input type="text" value={attrValue.key} />
-      <ElemObject attrValue={attrValue}></ElemObject>
+      <Input name={'hoge'} type="text" value={attrValue.key} onChange={handleChange}/>
+      <ElemObject attrValue={attrValue} handleChange={handleChange}></ElemObject>
     </>
   );
 }
@@ -60,13 +69,13 @@ function ElemGroup({ attrValue, handleChange }) {
         <>
           <ListItem key="1" dense button divider>
             <ListItemIcon>
-              <Checkbox edge="start" tabIndex={-1} disableRipple />
+              <Checkbox name={'hoge'} edge="start" tabIndex={-1} disableRipple />
             </ListItemIcon>
             <ListItemText primary={attrValue.name} />
           </ListItem>
         </>
       </List>
-      <input text="text" placeholder="グループ名で絞り込む" />
+      <Input text="text" placeholder="グループ名で絞り込む" onChange={handleNarrowDownGroups}/>
     </Card>
   );
 }

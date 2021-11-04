@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // FIXME handle attribute types
-export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
+export function EntryForm({ entityId, entryId, initName = "", initAttributes = {} }) {
   const classes = useStyles();
   const history = useHistory();
 
@@ -39,6 +39,11 @@ export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
   );
 
   const handleChangeAttribute = (event) => {
+    console.log('[onix/handleChangeAttribute] event.target.hoge: ' + event.target.hoge);
+    console.log('[onix/handleChangeAttribute] event.target.name: ' + event.target.name);
+    console.log('[onix/handleChangeAttribute] input value: ' + event.target.value);
+
+    /*
     attributes[event.target.name] = event.target.value;
     const updated = attributes.map((attribute) => {
       if (attribute.name === event.target.name) {
@@ -47,6 +52,7 @@ export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
       return attribute;
     });
     setAttributes(updated);
+    */
   };
 
   const handleSubmit = (event) => {
@@ -57,9 +63,22 @@ export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
         value: [{ data: attribute.name }],
       };
     });
-    createEntry(entityId, name, attrs)
-      .then((resp) => resp.json())
-      .then((_) => history.push(entityEntriesPath(entityId)));
+
+    console.log(attrs);
+
+    if (entryId === undefined) {
+      /*
+      createEntry(entityId, name, attrs)
+        .then((resp) => resp.json())
+        .then((_) => history.push(entityEntriesPath(entityId)));
+      */
+    } else {
+      /*
+      updateEntry(entryId, name, attrs)
+        .then((resp) => resp.json())
+        .then((_) => history.push(entityEntriesPath(entityId)));
+      */
+    }
 
     event.preventDefault();
   };
