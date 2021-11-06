@@ -16,18 +16,19 @@ export function EditEntity({}) {
 
   const entity = useAsync(async () => {
     if (entityId !== undefined) {
-      return getEntity(entityId).then((resp) => resp.json());
+      const resp = await getEntity(entityId);
+      return await resp.json();
     }
-    return Promise.resolve({});
+    return {};
   });
 
   const referralEntities = useAsync(async () => {
     if (entityId === undefined) {
-      return getEntities()
-        .then((resp) => resp.json())
-        .then((data) => data.entities);
+      const resp = await getEntities();
+      const data = await resp.json();
+      return data.entities;
     }
-    return Promise.resolve([]);
+    return [];
   });
 
   const [tabValue, setTabValue] = useState(0);

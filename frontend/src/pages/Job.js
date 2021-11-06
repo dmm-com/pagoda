@@ -22,7 +22,10 @@ const useStyles = makeStyles((theme) => ({
 export function Job({}) {
   const classes = useStyles();
 
-  const jobs = useAsync(async () => getJobs().then((resp) => resp.json()), []);
+  const jobs = useAsync(async () => {
+    const resp = await getJobs();
+    return await resp.json();
+  }, []);
 
   return (
     <div className="container-fluid">
