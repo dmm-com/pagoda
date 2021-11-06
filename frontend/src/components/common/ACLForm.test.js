@@ -9,10 +9,8 @@ import ACLForm from "./ACLForm";
 
 test("should render a component with essential props", function () {
   const acl = {
-    object: {
-      name: "entity1",
-      is_public: true,
-    },
+    name: "entity1",
+    is_public: true,
     acltypes: [
       {
         id: 1,

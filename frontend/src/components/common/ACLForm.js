@@ -23,12 +23,19 @@ const useStyles = makeStyles((theme) => ({
 export default function ACLForm({ acl }) {
   const classes = useStyles();
 
-  const [isPublic, setIsPublic] = useState(acl.object.is_public);
+  const [isPublic, setIsPublic] = useState(acl.is_public);
   const [permissions, setPermissions] = useState(
     acl.members.reduce((obj, m) => {
-      return { ...obj, [m.name]: m.current_permission };
+      return {
+        ...obj,
+        [m.name]:
+          m.current_permission > 0
+            ? m.current_permission
+            : acl.default_permission,
+      };
     }, {})
   );
+  console.log(permissions);
 
   const handleSubmit = (event) => {
     // TODO submit to API
@@ -108,5 +115,16 @@ export default function ACLForm({ acl }) {
 }
 
 ACLForm.propTypes = {
-  acl: PropTypes.object.isRequired,
+  acl: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    is_public: PropTypes.bool.isRequired,
+    default_permission: PropTypes.number.isRequired,
+    acltypes: PropTypes.array.isRequired,
+    members: PropTypes.arrayOf(
+      PropTypes.shape({
+        name: PropTypes.string.isRequired,
+        current_permission: PropTypes.number.isRequired,
+      })
+    ).isRequired,
+  }).isRequired,
 };

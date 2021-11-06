@@ -96,30 +96,7 @@ export function getAdvancedSearchResults() {
 }
 
 export function getACL(objectId) {
-  return new Promise((resolve, _) => {
-    resolve({
-      object: {
-        name: "entity1",
-        is_public: true,
-      },
-      acltypes: [
-        {
-          id: 1,
-          name: "Nothing",
-        },
-        {
-          id: 2,
-          name: "Full Controllable",
-        },
-      ],
-      members: [
-        {
-          name: "admin",
-          current_permission: 1,
-        },
-      ],
-    });
-  });
+  return fetch(`/acl/api/v2/acls/${objectId}`);
 }
 
 // NOTE it calls non-API endpoint

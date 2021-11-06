@@ -12,7 +12,8 @@ export function ACL({}) {
   const { entityId } = useParams();
 
   const acl = useAsync(async () => {
-    return getACL(entityId);
+    const resp = await getACL(entityId);
+    return await resp.json();
   });
 
   return (
@@ -26,7 +27,7 @@ export function ACL({}) {
 
       {!acl.loading && (
         <>
-          <Typography>{acl.value.object.name} の ACL 設定</Typography>
+          <Typography>{acl.value.name} の ACL 設定</Typography>
           <ACLForm acl={acl.value} />
         </>
       )}
