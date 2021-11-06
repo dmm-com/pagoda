@@ -42,9 +42,9 @@ tr:nth-child(even){
       <table class='table'>
         <thead>
           <tr>
+            <th>エンティティ</th>
             <th>エントリ</th>
             <th>更新属性</th>
-            <th></th>
             <th>更新ユーザ</th>
             <th>更新時刻</th>
           </tr>
@@ -52,31 +52,9 @@ tr:nth-child(even){
         <tbody>
           {% for elem in last_entries %}
           <tr>
-            <td>[{{ elem.entry.schema.name }}] <a href='/entry/show/{{ elem.entry.id }}'>{{ elem.entry.name }}</td>
-            <td>{{ elem.attr.name }}：</td>
-            {% if elem.attr.type == attr_type.string %}
-              <td>{{ elem.attr_value.value }}</td>
-            {% elif elem.attr.type == attr_type.textarea %}
-              <td><pre>{{ elem.attr_value.value }}</pre></td>
-            {% elif elem.attr_value.value == attr_type.entry%}
-              <td><a href="/entry/show/{{ elem.attr_value.referral.id}}">{{ elem.attr_value.referral.name }}</a></td>
-            {% elif elem.attr_value.value == attr_type.array_string %}
-              <td>
-                <ul class='list-group'>
-                  {% for co_value in elem.attr_value_array %}
-                  <li class='list-group-item'>{{ co_value.value }}</li>
-                  {% endfor %}
-                </ul>
-              </td>
-            {% elif value.attr_type == attr_type.array_entry %}
-              <td>
-                <ul class='list-group'>
-                  {% for co_value in elem.attr_value_array %}
-                  <li class='list-group-item'><a href="/entry/show/{{ co_value.referral.id }}">{{ co_value.referral.name }}</a></li>
-                  {% endfor %}
-                </ul>
-              </td>
-            {% endif %}
+            <td>{{ elem.entity.name }}</td>
+            <td><a href='/entry/show/{{ elem.entry.id }}/'>{{ elem.entry.name }}</td>
+            <td>{{ elem.attr_type.name }}</td>
             <td>{{ elem.attr_value.created_user }}</td>
             <td>{{ elem.attr_value.created_time }}</td>
           </tr>

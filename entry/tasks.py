@@ -12,7 +12,7 @@ from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.log import Logger
 from airone.lib.types import AttrTypeValue
 from airone.celery import app
-from entity.models import Entity
+from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute
 from user.models import User
 from datetime import datetime
@@ -202,16 +202,14 @@ def create_entry_attrs(self, job_id):
         recv_data = json.loads(job.params)
         # Create new Attributes objects based on the specified value
         for entity_attr in entry.schema.attrs.filter(is_active=True):
-            # skip for unpermitted attributes
-            if not entity_attr.is_active or not user.has_permission(entity_attr, ACLType.Readable):
-                continue
-
             # This creates Attibute object that contains AttributeValues.
             # But the add_attribute_from_base may return None when target Attribute instance
             # has already been created or is creating by other process. In that case, this job
             # do nothing about that Attribute instance.
             attr = entry.add_attribute_from_base(entity_attr, user)
-            if not attr or not any([int(x['id']) == attr.schema.id for x in recv_data['attrs']]):
+
+            # skip for unpermitted attributes
+            if not user.has_permission(entity_attr, ACLType.Writable):
                 continue
 
             # When job is canceled during this processing, abort it after deleting the created entry
@@ -220,13 +218,16 @@ def create_entry_attrs(self, job_id):
                 return
 
             # make an initial AttributeValue object if the initial value is specified
-            attr_data = [x for x in recv_data['attrs'] if int(x['id']) == attr.schema.id][0]
+            attr_data = [x for x in recv_data['attrs'] if int(x['id']) == entity_attr.id]
+
+            if not attr or not attr_data:
+                continue
 
             # register new AttributeValue to the "attr"
             try:
-                attr.add_value(user, _convert_data_value(attr, attr_data))
+                attr.add_value(user, _convert_data_value(attr, attr_data[0]))
             except ValueError as e:
-                Logger.warning('(%s) attr_data: %s' % (e, str(attr_data)))
+                Logger.warning('(%s) attr_data: %s' % (e, str(attr_data[0])))
 
         # Delete duplicate attrs because this processing may execute concurrently
         for entity_attr in entry.schema.attrs.filter(is_active=True):
@@ -270,8 +271,15 @@ def edit_entry_attrs(self, job_id):
         entry = Entry.objects.get(id=job.target.id)
 
         recv_data = json.loads(job.params)
+
         for info in recv_data['attrs']:
-            attr = Attribute.objects.get(id=info['id'])
+            if info['id']:
+                attr = Attribute.objects.get(id=info['id'])
+            else:
+                entity_attr = EntityAttr.objects.get(id=info['entity_attr_id'])
+                attr = entry.attrs.filter(schema=entity_attr, is_active=True).first()
+                if not attr:
+                    attr = entry.add_attribute_from_base(entity_attr, user)
 
             try:
                 converted_value = _convert_data_value(attr, info)

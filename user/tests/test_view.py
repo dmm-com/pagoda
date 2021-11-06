@@ -1,7 +1,10 @@
 import json
+from datetime import timedelta
 
 from django.test import TestCase, Client
 from django.urls import reverse
+from unittest.mock import patch
+from unittest.mock import Mock
 from user.forms import UsernameBasedPasswordResetForm
 from user.models import User
 from user.views import PasswordReset
@@ -151,19 +154,46 @@ class ViewTest(TestCase):
         resp = self.client.get(reverse('user:edit', args=[0]))
         self.assertEqual(resp.status_code, 303)
 
-    def test_edit_get_page(self):
+    def test_edit_get_with_guest_login(self):
+        self._guest_login()
+
+        user = User.objects.get(username='admin')
+        resp = self.client.get(reverse('user:edit', args=[user.id]))
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'),
+                         "You don't have permission to access")
+
+    def test_edit_get_with_admin_login(self):
         self._admin_login()
+        self.client.put('/api/v1/user/access_token')
 
         for username in ['guest', 'admin']:
-            user = User.objects.get(username='admin')
+            user = User.objects.get(username=username)
             resp = self.client.get(reverse('user:edit', args=[user.id]))
             self.assertEqual(resp.status_code, 200)
 
             # Check context of response
             self.assertTemplateUsed(template_name='edit_user.html')
+            self.assertEqual(resp.context['user_id'], user.id)
             self.assertEqual(resp.context['user_name'], user.username)
-            self.assertEqual(resp.context['token'], user.token)
+            self.assertEqual(resp.context['user_email'], user.email)
+            self.assertEqual(resp.context['user_is_superuser'], user.is_superuser)
+            self.assertEqual(resp.context['token'], user.token if username == 'admin' else None)
             self.assertEqual(resp.context['token_lifetime'], user.token_lifetime)
+            self.assertEqual(resp.context['token_created'],
+                             (user.token.created.strftime('%Y/%m/%d %H:%M:%S')
+                              if username == 'admin' else None))
+            self.assertEqual(resp.context['token_expire'],
+                             ((user.token.created + timedelta(seconds=user.token_lifetime)
+                               ).strftime('%Y/%m/%d %H:%M:%S') if username == 'admin' else None))
+            self.assertEqual(resp.context['is_authenticated_by_local'], True)
+
+    def test_edit_for_inactive_user(self):
+        self._admin_login()
+        user = User.objects.create(username='test', email='test@example.com', is_active=False)
+
+        resp = self.client.get(reverse('user:edit', args=[user.id]))
+        self.assertEqual(resp.status_code, 404)
 
     def test_edit_post_without_login(self):
         user = User.objects.create(username='test', email='test@example.com')
@@ -312,6 +342,18 @@ class ViewTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(user.token_lifetime, 10)
 
+    def test_edit_post_for_inactive_user(self):
+        self._admin_login()
+        user = User.objects.create(username='test', email='test@example.com', is_active=False)
+
+        params = {
+            'name': 'hoge',
+            'email': 'hoge@example.com',
+        }
+        resp = self.client.post(reverse('user:do_edit', args=[user.id]),
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 404)
+
     def test_edit_passwd_get_without_login(self):
         resp = self.client.get(reverse('user:edit_passwd', args=[0]))
         self.assertEqual(resp.status_code, 303)
@@ -341,6 +383,13 @@ class ViewTest(TestCase):
         self.assertEqual(resp.context['user_id'], user.id)
         self.assertEqual(resp.context['user_name'], user.username)
         self.assertEqual(resp.context['user_grade'], 'super')
+
+    def test_edit_passwd_get_for_inactive_user(self):
+        self._admin_login()
+        user = User.objects.create(username='test', email='test@example.com', is_active=False)
+
+        resp = self.client.get(reverse('user:edit_passwd', args=[user.id]))
+        self.assertEqual(resp.status_code, 404)
 
     def test_edit_passwd_post_without_login(self):
         params = {
@@ -400,6 +449,20 @@ class ViewTest(TestCase):
         user = User.objects.get(id=params['id'])
         self.assertEqual(resp.status_code, 400)
         self.assertTrue(user.check_password('guest'))  # Not updated
+
+    def test_edit_passwd_for_inactive_user(self):
+        self._admin_login()
+        user = User.objects.create(username='test', email='test@example.com', is_active=False)
+
+        params = {
+            'id': user.id,
+            'old_passwd': 'guest',
+            'new_passwd': 'hoge',
+            'chk_passwd': 'hoge',
+        }
+        resp = self.client.post(reverse('user:do_edit_passwd', args=[params['id']]),
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 404)
 
     def test_edit_passwd_with_admin_login_and_empty_pass(self):
         self._admin_login()
@@ -472,6 +535,20 @@ class ViewTest(TestCase):
         self.assertEqual(resp.status_code, 400)
         self.assertTrue(user.check_password('guest'))  # Not updated
 
+    def test_su_edit_passwd_for_inactive_user(self):
+        self._admin_login()
+        user = User.objects.create(username='test', email='test@example.com', is_active=False)
+
+        params = {
+            'id': user.id,
+            'old_passwd': 'guest',
+            'new_passwd': 'hoge',
+            'chk_passwd': 'hoge',
+        }
+        resp = self.client.post(reverse('user:do_su_edit_passwd', args=[params['id']]),
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 404)
+
     def test_delete_post(self):
         name = "someuser"
 
@@ -536,6 +613,54 @@ class ViewTest(TestCase):
 
         self.assertEqual(resp.status_code, 400)
         self.assertTrue(User.objects.get(username='testuser').is_active)
+
+    def test_delete_post_for_inactive_user(self):
+        self._admin_login()
+        user = User.objects.create(username='test', email='test@example.com', is_active=False)
+
+        params = {
+            'name': 'hoge',
+            'email': 'hoge@example.com',
+        }
+        resp = self.client.post(reverse('user:do_delete', args=[user.id]),
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 404)
+
+    @patch('user.views.LDAPBackend.is_authenticated', Mock(return_value=True))
+    def test_post_chnage_auth_with_correct_password(self):
+        self._guest_login()
+
+        resp = self.client.post(reverse('user:change_ldap_auth'),
+                                json.dumps({'ldap_password': 'CORRECT_PASSWORD'}),
+                                'application/json')
+        self.guest.refresh_from_db()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(self.guest.authenticate_type, User.AUTH_TYPE_LDAP)
+
+    @patch('user.views.LDAPBackend.is_authenticated', Mock(return_value=False))
+    def test_post_chnage_auth_with_incorrect_password(self):
+        self._guest_login()
+
+        resp = self.client.post(reverse('user:change_ldap_auth'),
+                                json.dumps({'ldap_password': 'INCORRECT_PASSWORD'}),
+                                'application/json')
+        self.assertEqual(resp.status_code, 400)
+
+    def test_post_chnage_auth_with_invalid_parameters(self):
+        self._guest_login()
+
+        invalid_parameters = [
+            {'invalid_parameter': 'value'},
+            [{'invalid_parameter': 'value'}],
+            {'ldap_password': {'invalid_value_type': 'value'}},
+            {'ldap_password': [1, 2, 3, 4]},
+            {'ldap_password': 1234},
+        ]
+        for _param in invalid_parameters:
+            resp = self.client.post(reverse('user:change_ldap_auth'),
+                                    json.dumps(_param),
+                                    'application/json')
+            self.assertEqual(resp.status_code, 400)
 
     def test_password_reset_with_invalid_username(self):
         user = self._create_user('testuser', authenticate_type=User.AUTH_TYPE_LDAP)

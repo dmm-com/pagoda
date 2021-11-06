@@ -614,3 +614,66 @@ class ViewTest(AironeViewTest):
         resp = self.client.get('/entry/api/v1/get_entry_info/%d' % entry.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()['id'], entry.id)
+
+    def test_create_entry_attr(self):
+        user = self.guest_login()
+
+        # initialize Entity and Entry
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        entity_attr = EntityAttr.objects.create(**{
+            'name': 'attr',
+            'type': AttrTypeValue['string'],
+            'created_user': user,
+            'parent_entity': entity,
+        })
+        entity.attrs.add(entity_attr)
+        entry = Entry.objects.create(name='Entry', schema=entity, created_user=user)
+
+        # Attribute does not exist
+        params = {
+            'entity_attr_id': entity_attr.id,
+        }
+        resp = self.client.post('/entry/api/v1/create_entry_attr/%s' % entry.id,
+                                json.dumps(params), 'application/json')
+        attr = entry.attrs.get(schema=entity_attr, is_active=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()['id'], attr.id)
+
+        # Attribute exists
+        resp = self.client.post('/entry/api/v1/create_entry_attr/%s' % entry.id,
+                                json.dumps(params), 'application/json')
+        attr = entry.attrs.get(schema=entity_attr, is_active=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()['id'], attr.id)
+
+    def test_create_entry_attr_without_param(self):
+        user = self.guest_login()
+
+        # initialize Entity and Entry
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        entry = Entry.objects.create(name='Entry', schema=entity, created_user=user)
+
+        # specify EntityAttr that does not int
+        params = {
+            'entity_attr_id': 'hoge',
+        }
+        resp = self.client.post('/entry/api/v1/create_entry_attr/%s' % entry.id,
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'Invalid parameters are specified')
+
+        # specify EntityAttr that does not exist
+        params = {
+            'entity_attr_id': 999999,
+        }
+        resp = self.client.post('/entry/api/v1/create_entry_attr/%s' % entry.id,
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content,
+                         b'There is no EntityAttr which is specified by entity_attr_id')
+
+        # specify Entry that does not exist
+        resp = self.client.post('/entry/api/v1/create_entry_attr/999999',
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'There is no Entry which is specified by entry_id')

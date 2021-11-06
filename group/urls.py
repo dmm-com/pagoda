@@ -1,9 +1,10 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 
 from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^api/v2/', include(('group.api_v2.urls', 'group.api_v2'))),
     url(r'^edit/(\d+)$', views.edit, name='edit'),
     url(r'^do_edit/(\d+)$', views.do_edit, name='do_edit'),
     url(r'^create$', views.create, name='create'),
