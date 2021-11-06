@@ -21,16 +21,18 @@ import {
 } from "../utils/AironeAPIClient";
 
 export function ShowEntry({}) {
-  const { entityId, entryId } = useParams();
+  const { entryId } = useParams();
 
   const [tabValue, setTabValue] = useState(0);
 
   // TODO get an entry only if show/edit pages
   const entry = useAsync(async () => {
-    if (entryId !== undefined) {
-      return getEntry(entityId, entryId);
-    }
-    return Promise.resolve({});
+    return getEntry(entryId).then((resp) => {
+      if (!resp.ok) {
+        throw new Error("entry not found");
+      }
+      return resp.json();
+    });
   });
 
   const entryHistory = useAsync(async () => {
@@ -47,6 +49,10 @@ export function ShowEntry({}) {
     return getACL(entryId);
   });
 
+  if (entry.error !== undefined) {
+    return <p>FIX TO SHOW: {entry.error.toString()}</p>;
+  }
+
   return (
     <div>
       <AironeBreadcrumbs>
@@ -56,9 +62,14 @@ export function ShowEntry({}) {
         <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
-        <Typography component={Link} to={entityEntriesPath(entityId)}>
-          {entityId}
-        </Typography>
+        {!entry.loading && (
+          <Typography
+            component={Link}
+            to={entityEntriesPath(entry.value.schema.id)}
+          >
+            {entry.value.schema.name}
+          </Typography>
+        )}
         <Typography color="textPrimary">{entryId}</Typography>
       </AironeBreadcrumbs>
 
@@ -72,26 +83,23 @@ export function ShowEntry({}) {
       </Tabs>
 
       <div hidden={tabValue !== 0}>
-        {!entry.loading && (
-          <EntryAttributes attributes={entry.value.attributes} />
-        )}
+        {!entry.loading && <EntryAttributes attributes={entry.value.attrs} />}
       </div>
 
       <div hidden={tabValue !== 1}>
         {!entry.loading && (
           <EntryForm
-            entityId={entityId}
-            entryId={entityId}
+            entityId={entry.value.schema.id}
             initName={entry.value.name}
-            initAttributes={entry.value.attributes}
+            initAttributes={entry.value.attrs}
           />
         )}
       </div>
 
       <div hidden={tabValue !== 2}>
-        {!referredEntries.loading && (
+        {!entry.loading && !referredEntries.loading && (
           <EntryReferral
-            entityId={entityId}
+            entityId={entry.value.schema.id}
             referredEntries={referredEntries.value}
           />
         )}
@@ -104,7 +112,9 @@ export function ShowEntry({}) {
       </div>
 
       <div hidden={tabValue !== 4}>
-        <CopyForm entityId={entityId} entryId={entryId} />
+        {!entry.loading && (
+          <CopyForm entityId={entry.value.schema.id} entryId={entryId} />
+        )}
       </div>
 
       <div hidden={tabValue !== 5}>

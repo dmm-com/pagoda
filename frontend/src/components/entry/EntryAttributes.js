@@ -2,14 +2,21 @@ import { Table, TableBody, TableCell, TableRow } from "@material-ui/core";
 import PropTypes from "prop-types";
 import React from "react";
 
+import { AttributeValue } from "./AttributeValue";
+
 export default function EntryAttributes({ attributes }) {
   return (
     <Table>
       <TableBody>
-        {attributes.map((attr) => (
-          <TableRow key={attr.name}>
-            <TableCell>{attr.name}</TableCell>
-            <TableCell>{attr.value}</TableCell>
+        {Object.keys(attributes).map((attrname) => (
+          <TableRow key={attrname}>
+            <TableCell>{attrname}</TableCell>
+            <TableCell>
+              <AttributeValue
+                attrName={attrname}
+                attrInfo={attributes[attrname]}
+              />
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -18,10 +25,5 @@ export default function EntryAttributes({ attributes }) {
 }
 
 EntryAttributes.propTypes = {
-  attributes: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      value: PropTypes.string.isRequired,
-    })
-  ).isRequired,
+  attributes: PropTypes.object.isRequired,
 };

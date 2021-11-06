@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 import { showEntryPath } from "../../Routes";
 
-export default function EntryReferral({ entityId, referredEntries }) {
+export default function EntryReferral({ referredEntries }) {
   return (
     <div className="row" id="referred_objects">
       <div className="col">
@@ -18,7 +18,7 @@ export default function EntryReferral({ entityId, referredEntries }) {
             <Typography
               key={entry.id}
               component={Link}
-              to={showEntryPath(entityId, entry.id)}
+              to={showEntryPath(entry.id)}
             >
               {entry.name} ({entry.entity})
             </Typography>
@@ -30,7 +30,6 @@ export default function EntryReferral({ entityId, referredEntries }) {
 }
 
 EntryReferral.propTypes = {
-  entityId: PropTypes.string.isRequired,
   referredEntries: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,

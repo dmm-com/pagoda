@@ -1,0 +1,5 @@
+# NBSP, instead of whitespace
+hoge:
+  - name: entry
+    attrs:
+      test: fuga

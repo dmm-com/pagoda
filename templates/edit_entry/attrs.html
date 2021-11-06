@@ -152,7 +152,7 @@
   {% if is_edit %}
   <td>
     {% if attr.id %}
-      <a href="/acl/{{ attr.id }}"><button type="button" class="btn btn-info btn-sm">ACL</button></a>
+      <a href="/acl/{{ attr.id }}/"><button type="button" class="btn btn-info btn-sm">ACL</button></a>
     {% else %}
       <button type="button" class="btn btn-info btn-sm" id="create_entry_attr" url="/entry/api/v1/create_entry_attr/{{ entry.id }}" entity_attr_id="{{ attr.entity_attr_id }}">ACL</button></a>
     {% endif %}

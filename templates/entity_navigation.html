@@ -1,11 +1,11 @@
 <div class="row">
   <div class="col">
     <div class="float-left">
-      <button name="button_new" type="button" class="btn btn-primary" onclick="location.href='/entry/create/{{ entity.id }}'">エントリ作成</button>
+      <button name="button_new" type="button" class="btn btn-primary" onclick="location.href='/entry/create/{{ entity.id }}/'">エントリ作成</button>
       <button name="button_edit" type="button" class="btn btn-info" onclick="location.href='/entity/edit/{{ entity.id }}'">エンティティ編集</button>
-      <button name="button_set_acl" type="button" class="btn btn-info" onclick="location.href='/acl/{{ entity.id }}'">エンティティの ACL</button>
+      <button name="button_set_acl" type="button" class="btn btn-info" onclick="location.href='/acl/{{ entity.id }}/'">エンティティの ACL</button>
       <button name="button_export" type="button" class="btn btn-secondary export_entry_with_yaml">エクスポート</button>
-      <button name="button_import" type="button" class="btn btn-secondary" onclick="location.href='/entry/import/{{ entity.id }}'">インポート</button>
+      <button name="button_import" type="button" class="btn btn-secondary" onclick="location.href='/entry/import/{{ entity.id }}/'">インポート</button>
       <button name="button_export" type="button" class="btn btn-secondary export_entry_with_csv">CSV で出力</button>
     </div>
   </div>

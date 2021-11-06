@@ -9,7 +9,6 @@ import {
   entityEntriesPath,
   entityHistoryPath,
   entityPath,
-  entryPath,
   groupPath,
   groupsPath,
   importEntitiesPath,
@@ -72,10 +71,6 @@ export function AppRouter({}) {
             <Route
               path={importEntitiesPath(":entityId")}
               component={ImportEntry}
-            />
-            <Route
-              path={entryPath(":entityId", ":entryId")}
-              component={EditEntry}
             />
             <Route
               path={entityEntriesPath(":entityId", ":entityId")}

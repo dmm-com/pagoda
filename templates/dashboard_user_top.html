@@ -53,7 +53,7 @@ tr:nth-child(even){
           {% for elem in last_entries %}
           <tr>
             <td>{{ elem.entity.name }}</td>
-            <td><a href='/entry/show/{{ elem.entry.id }}'>{{ elem.entry.name }}</td>
+            <td><a href='/entry/show/{{ elem.entry.id }}/'>{{ elem.entry.name }}</td>
             <td>{{ elem.attr_type.name }}</td>
             <td>{{ elem.attr_value.created_user }}</td>
             <td>{{ elem.attr_value.created_time }}</td>
