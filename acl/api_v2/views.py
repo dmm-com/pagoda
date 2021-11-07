@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 
 from acl.api_v2.serializers import ACLSerializer
@@ -19,9 +19,11 @@ class FullPermission(BasePermission):
         return True
 
 
-class ACLAPI(viewsets.ReadOnlyModelViewSet):
+class ACLAPI(mixins.RetrieveModelMixin,
+             mixins.UpdateModelMixin,
+             viewsets.GenericViewSet):
     queryset = ACLBase.objects.all()
     serializer_class = ACLSerializer
-    permission_classes = [IsAuthenticated & FullPermission]
 
-    # TODO support update operation
+    # TODO write-specific permission
+    permission_classes = [IsAuthenticated & FullPermission]
