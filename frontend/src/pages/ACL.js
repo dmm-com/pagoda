@@ -28,7 +28,7 @@ export function ACL({}) {
       {!acl.loading && (
         <>
           <Typography>{acl.value.name} の ACL 設定</Typography>
-          <ACLForm acl={acl.value} />
+          <ACLForm objectId={entityId} acl={acl.value} />
         </>
       )}
     </div>

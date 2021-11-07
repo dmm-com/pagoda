@@ -14,16 +14,19 @@ import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 
+import { updateACL } from "../../utils/AironeAPIClient";
+
 const useStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
 }));
 
-export default function ACLForm({ acl }) {
+export default function ACLForm({ objectId, acl }) {
   const classes = useStyles();
 
   const [isPublic, setIsPublic] = useState(acl.is_public);
+  // TODO correct way to collect member permissions?
   const [permissions, setPermissions] = useState(
     acl.members.reduce((obj, m) => {
       return {
@@ -35,15 +38,31 @@ export default function ACLForm({ acl }) {
       };
     }, {})
   );
-  console.log(permissions);
 
-  const handleSubmit = (event) => {
-    // TODO submit to API
-    event.preventDefault();
+  const handleSubmit = async () => {
+    // TODO better name?
+    const aclSettings = acl.members.map((member) => {
+      return {
+        member_id: member.id,
+        member_type: member.type,
+        value: permissions[member.name],
+      };
+    });
+
+    await updateACL(
+      objectId,
+      acl.name,
+      acl.objtype,
+      isPublic,
+      acl.default_permission,
+      aclSettings
+    );
+
+    // TODO redirect
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form>
       <div className="container">
         <div className="row">
           <div className="col">
@@ -59,9 +78,9 @@ export default function ACLForm({ acl }) {
             <span className="float-right">
               <Button
                 className={classes.button}
-                type="submit"
                 variant="contained"
                 color="secondary"
+                onClick={handleSubmit}
               >
                 保存
               </Button>
@@ -115,15 +134,19 @@ export default function ACLForm({ acl }) {
 }
 
 ACLForm.propTypes = {
+  objectId: PropTypes.string.isRequired,
   acl: PropTypes.shape({
     name: PropTypes.string.isRequired,
     is_public: PropTypes.bool.isRequired,
     default_permission: PropTypes.number.isRequired,
+    objtype: PropTypes.number.isRequired,
     acltypes: PropTypes.array.isRequired,
     members: PropTypes.arrayOf(
       PropTypes.shape({
+        id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
         current_permission: PropTypes.number.isRequired,
+        type: PropTypes.string.isRequired,
       })
     ).isRequired,
   }).isRequired,

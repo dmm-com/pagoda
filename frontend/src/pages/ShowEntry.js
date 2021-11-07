@@ -118,7 +118,7 @@ export function ShowEntry({}) {
       </div>
 
       <div hidden={tabValue !== 5}>
-        {!acl.loading && <ACLForm acl={acl.value} />}
+        {!acl.loading && <ACLForm objectId={entryId} acl={acl.value} />}
       </div>
     </div>
   );
