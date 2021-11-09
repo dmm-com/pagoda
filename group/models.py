@@ -17,5 +17,10 @@ class Group(DjangoGroup):
         self.save()
 
     def has_permission(self, target_obj, permission_level):
+        # A bypass processing to rapidly return.
+        # This condition is effective when the public objects are majority.
+        if target_obj.is_public:
+            return True
+
         return any([permission_level.id <= x.get_aclid() for x
                     in self.permissions.all() if target_obj.id == x.get_objid()])

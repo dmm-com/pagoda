@@ -993,19 +993,7 @@ class Entry(ACLBase):
         attr = Attribute.objects.create(name=base.name,
                                         schema=base,
                                         created_user=request_user,
-                                        parent_entry=self,
-                                        is_public=base.is_public,
-                                        default_permission=base.default_permission)
-
-        # inherits permissions of base object for user
-        [[user.permissions.add(getattr(attr, permission.name))
-            for permission in user.get_acls(base)]
-            for user in User.objects.filter(is_active=True)]
-
-        # inherits permissions of base object for each groups
-        [[group.permissions.add(getattr(attr, permission.name))
-            for permission in group.get_acls(base)]
-            for group in Group.objects.all()]
+                                        parent_entry=self)
 
         self.attrs.add(attr)
 
