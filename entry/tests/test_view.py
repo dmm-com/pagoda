@@ -3789,7 +3789,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(ref_entry.name, 'changed_name')
 
         # check entry changing reflects to the ElasticSearch
-        ret = Entry.search_entries(user, [entity.id])
+        ret = Entry.search_entries(user, [entity.id], [{'name': 'ref'}])
         self.assertEqual(ret['ret_count'], 1)
         self.assertEqual(ret['ret_values'][0]['entry']['name'], 'entry')
         self.assertEqual(ret['ret_values'][0]['attrs']['ref']['value']['name'], 'changed_name')

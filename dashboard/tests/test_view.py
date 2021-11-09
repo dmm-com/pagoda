@@ -44,9 +44,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse('dashboard:search'), {'query': query})
         self.assertEqual(resp.status_code, 200)
-
-        self.assertEqual(len(resp.context['results']),
-                         Entry.objects.filter(name__icontains=query).count())
+        self.assertEqual(len(resp.context['entries']), 7)
 
     def test_search_with_big_query(self):
         resp = self.client.get(reverse('dashboard:search'),
@@ -69,46 +67,48 @@ class ViewTest(AironeViewTest):
             {'query': 'あ' * int(CONFIG.MAX_QUERY_SIZE / len('あ'.encode('utf-8')))})
         self.assertEqual(resp.status_code, 200)
 
-    def test_search_entry_deduped_result(self):
+    def test_search_entry_only_redirect(self):
         query = 'srv001'
-
-        # In fixture, Entry 'srv001' has Attribute 'attr-str' and AttributeValue 'I am srv001'.
-        # Search result should be displayed as single row.
+        entry = Entry.objects.get(name=query, is_active=True)
 
         resp = self.client.get(reverse('dashboard:search'), {'query': query})
-        self.assertEqual(resp.status_code, 200)
-
-        self.assertEqual(len(resp.context['results']), 1)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, '/entry/show/%s/' % entry.id)
 
     def test_search_entry_from_value(self):
-        resp = self.client.get(reverse('dashboard:search'), {'query': 'hoge'})
-        self.assertEqual(resp.status_code, 200)
+        entry = Entry.objects.get(name='srv001', is_active=True)
 
-        self.assertEqual(len(resp.context['results']), 1)
+        resp = self.client.get(reverse('dashboard:search'), {'query': 'hoge'})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, '/entry/show/%s/' % entry.id)
 
     def test_search_invalid_objects(self):
         resp = self.client.get(reverse('dashboard:search'), {'query': 'hogefuga'})
         self.assertEqual(resp.status_code, 200)
 
-        self.assertEqual(len(resp.context['results']), 0)
+        self.assertEqual(len(resp.context['entries']), 0)
 
     def test_search_entry_from_value_with_unnecessary_whitespaces(self):
-        resp = self.client.get(reverse('dashboard:search'), {'query': '  hoge  '})
-        self.assertEqual(resp.status_code, 200)
+        entry = Entry.objects.get(name='srv001', is_active=True)
 
-        self.assertEqual(len(resp.context['results']), 1)
+        resp = self.client.get(reverse('dashboard:search'), {'query': '  hoge  '})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, '/entry/show/%s/' % entry.id)
 
     def test_show_dashboard_with_airone_user(self):
         # prepare the data of the imported file
         obj = yaml.safe_load(self.open_fixture_file('entry.yaml'))
-        obj_attrv_list = sorted(obj['AttributeValue'], key=lambda x: x['id'], reverse=True)
         obj_entity_list = sorted(obj['Entity'], key=lambda x: x['id'])
+        entry = Entry.objects.get(name='srv001', is_active=True)
 
         resp = self.client.get(reverse('dashboard:index'))
         self.assertEqual(resp.status_code, 200)
         self.assertIsInstance(resp.context["version"], str)
-        for i, x in enumerate(resp.context["last_entries"]):
-            self.assertEqual(x['attr_value'].id, obj_attrv_list[i]['id'])
+        self.assertEqual([x['attr_value'].id for x in resp.context["last_entries"]],
+                         [entry.attrs.get(schema__name='attr-str').get_latest_value().id,
+                          entry.attrs.get(schema__name='attr-arr-obj').get_latest_value().id,
+                          entry.attrs.get(schema__name='attr-arr-str').get_latest_value().id,
+                          entry.attrs.get(schema__name='attr-obj').get_latest_value().id])
         for i, x in enumerate(resp.context["navigator"]['entities']):
             self.assertEqual(x.id, obj_entity_list[i]['id'])
 

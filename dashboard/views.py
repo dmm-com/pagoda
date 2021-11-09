@@ -8,8 +8,12 @@ from airone.lib.http import http_file_upload
 from airone.lib.http import HttpResponseSeeOther
 from airone.lib.profile import airone_profile
 from airone.lib.log import Logger
+
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
 from django.http.response import JsonResponse
+from django.shortcuts import redirect
+
 from entity.admin import EntityResource, EntityAttrResource
 from entry.admin import EntryResource, AttrResource, AttrValueResource
 from entity.models import Entity, EntityAttr
@@ -27,102 +31,13 @@ IMPORT_INFOS = [
 ]
 
 
-def _search_entries(user, hint_entity_ids, hint_attrs, entry_name, hint_referral,
-                    entry_limit=CONFIG.MAXIMUM_SEARCH_RESULTS):
-    attr_names = [x['name'] for x in hint_attrs]
-    results = {'ret_count': 0, 'ret_values': []}
-    for hint_entity_id in hint_entity_ids:
-        entity = Entity.objects.filter(id=hint_entity_id, is_active=True).first()
-
-        # Check EntityAttr for which user does not have readable permission
-        non_permission_entityattrs = [
-            x.name for x in entity.attrs.filter(name__in=attr_names, is_active=True)
-            if not user.has_permission(x, ACLType.Readable)]
-
-        search_results = Entry.search_entries(
-            user,
-            [hint_entity_id],
-            hint_attrs,
-            entry_limit if len(results['ret_values']) < entry_limit else 0,
-            entry_name,
-            hint_referral=hint_referral),
-
-        results['ret_count'] += search_results[0]['ret_count']
-        for entryinfo in search_results[0]['ret_values']:
-
-            # Check number of result values
-            if len(results['ret_values']) >= CONFIG.MAXIMUM_SEARCH_RESULTS:
-                continue
-            # Check Entry for which user does not have readable permission
-            if (not entryinfo['permission']['is_public'] and
-                    entryinfo['permission']['default_permission'] < ACLType.Readable.id):
-                entry = Entry.objects.filter(id=entryinfo['entry']['id'], is_active=True).first()
-                if not entry:
-                    Logger.warning('Non exist entry (id:%s) is registered in ESS.' %
-                                   entryinfo['entry']['id'])
-                    continue
-                if not user.has_permission(entry, ACLType.Readable):
-                    ret_value = {
-                        'entity': entryinfo['entity'],
-                        'entry': entryinfo['entry'],
-                        'attrs': {},
-                        'permission': False,
-                    }
-                    if 'referrals' in entryinfo:
-                        ret_value['referrals'] = entryinfo['referrals']
-
-                    results['ret_values'].append(ret_value)
-                    continue
-
-            ret_value = {
-                'entity': entryinfo['entity'],
-                'entry': entryinfo['entry'],
-                'attrs': {},
-                'permission': True,
-            }
-            if 'referrals' in entryinfo:
-                ret_value['referrals'] = entryinfo['referrals']
-
-            # Check Attribute for which user does not have readable permission
-            for attr_name in attr_names:
-                if attr_name in non_permission_entityattrs:
-                    ret_value['attrs'][attr_name] = {'permission': False}
-                    continue
-
-                if attr_name not in entryinfo['attrs'].keys():
-                    continue
-
-                if (not entryinfo['attrs'][attr_name]['permission']['is_public'] and
-                        entryinfo['attrs'][attr_name]['permission']['default_permission'] <
-                        ACLType.Readable.id):
-                    entry = Entry.objects.filter(id=entryinfo['entry']['id'],
-                                                 is_active=True).first()
-                    if not entry:
-                        Logger.warning('Non exist entry (id:%s) is registered in ESS.' %
-                                       entryinfo['entry']['id'])
-                        continue
-                    attr = entry.attrs.filter(schema__name=attr_name, is_active=True).first()
-                    if not attr:
-                        continue
-                    if not user.has_permission(attr, ACLType.Readable):
-                        ret_value['attrs'][attr_name] = {'permission': False}
-                        continue
-
-                ret_value['attrs'][attr_name] = entryinfo['attrs'][attr_name]
-                ret_value['attrs'][attr_name]['permission'] = True
-
-            results['ret_values'].append(ret_value)
-
-    return results
-
-
 @airone_profile
 def index(request):
     context = {}
     if request.user.is_authenticated and User.objects.filter(id=request.user.id).exists():
         history = []
         # Sort by newest attribute update date (id is auto increment)
-        for attr_value in AttributeValue.objects.order_by(
+        for attr_value in AttributeValue.objects.filter(is_latest=True).order_by(
                 'id').reverse()[:CONFIG.LAST_ENTRY_HISTORY]:
             parent_attr = attr_value.parent_attr
             parent_entry = parent_attr.parent_entry
@@ -179,49 +94,62 @@ def do_import_data(request, context):
     return HttpResponseSeeOther('/dashboard/')
 
 
+def _search_by_keyword(user, query, entity_name, per_page, page_num):
+    # correct entries that contans query at EntryName or AttributeValue
+    search_result = Entry.search_entries_for_simple(
+        user, query, entity_name, per_page, (page_num-1)*per_page)
+
+    return (search_result['ret_count'], search_result['ret_values'])
+
+
 @airone_profile
 @http_get
 def search(request):
+    user = User.objects.get(id=request.user.id)
     query = request.GET.get('query')
+    entity_name = request.GET.get('entity')
+    try:
+        page_num = int(request.GET.get('page', 1))
+        if page_num < 1:
+            return HttpResponse("Invalid pege parameter is specified", status=400)
+    except Exception:
+        return HttpResponse("Invalid pege parameter is specified", status=400)
+
     if not query:
         return HttpResponse("Invalid query parameter is specified", status=400)
 
     if len(query.encode('utf-8')) > CONFIG.MAX_QUERY_SIZE:
         return HttpResponse("Sending parameter is too large", status=400)
 
-    target_models = [Entry, AttributeValue]
-
     modified_query = query.strip()
-    search_results = sum([x.search(modified_query) for x in target_models], [])
-    dic = {}
 
-    for result in search_results:
-        eid = result['object'].id
-        if eid not in dic:
-            dic[eid] = {
-                'types': [],
-                'object': result['object'],
-                'hints': []
-            }
+    # When an available 'entity' parameter is specified and get an entry information which exactly
+    # matches, this returns entry results
+    if entity_name:
+        entry = Entry.objects.filter(name=query, schema__name=entity_name, is_active=True).first()
+        if entry and user.has_permission(entry, ACLType.Readable):
+            return redirect('/entry/show/%s/' % entry.id)
 
-        dic[eid]['types'].append(result['type'])
-        if result['hint'] != '':
-            dic[eid]['hints'].append(result['hint'])
+    per_page = CONFIG.MAXIMUM_SEARCH_RESULTS
+    (count, entries) = _search_by_keyword(user, modified_query, entity_name, per_page, page_num)
 
-    results = []
-    for result in dic.values():
-        results.append({
-            'type': ', '.join(result['types']),
-            'object': result['object'],
-            'hint': ', '.join(result['hints'])
+    if count == 1:
+        return redirect('/entry/show/%s/' % entries[0]['id'])
+
+    p = Paginator(['' for x in range(count)], per_page)
+    try:
+        page_obj = p.page(page_num)
+    except PageNotAnInteger:
+        return HttpResponse('Invalid page number. It must be unsigned integer', status=400)
+    except EmptyPage:
+        return HttpResponse('Invalid page number. The page doesn\'t have anything', status=400)
+
+    else:
+        return render(request, 'show_search_results.html', {
+            'entries': entries,
+            'query': modified_query,
+            'page_obj': page_obj,
         })
-
-    results.sort(key=lambda x: x['object'].name)
-
-    return render(request, 'show_search_results.html', {
-        'search_query': modified_query,
-        'results': results,
-    })
 
 
 @airone_profile
@@ -276,7 +204,12 @@ def advanced_search_result(request):
 
     return render(request, 'advanced_search_result.html', {
         'hint_attrs': hint_attrs,
-        'results': _search_entries(user, hint_entity_ids, hint_attrs, entry_name, has_referral),
+        'results': Entry.search_entries(user,
+                                        hint_entity_ids,
+                                        hint_attrs,
+                                        CONFIG.MAXIMUM_SEARCH_RESULTS,
+                                        entry_name,
+                                        hint_referral=has_referral),
         'max_num': CONFIG.MAXIMUM_SEARCH_RESULTS,
         'entities': ','.join([str(x) for x in hint_entity_ids]),
         'has_referral': has_referral,

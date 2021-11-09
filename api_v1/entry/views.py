@@ -13,7 +13,6 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from dashboard.views import _search_entries
 from entity.models import Entity
 from entry.models import Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
@@ -59,10 +58,15 @@ class EntrySearchAPI(APIView):
             if entity and user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
 
-        return Response({
-            'result': _search_entries(
-                user, hint_entity_ids, hint_attr, hint_entry_name, hint_referral, entry_limit)
-        }, content_type='application/json; charset=UTF-8')
+        resp = Entry.search_entries(user,
+                                    hint_entity_ids,
+                                    hint_attr,
+                                    entry_limit,
+                                    hint_entry_name,
+                                    hint_referral,
+                                    True)
+
+        return Response({'result': resp}, content_type='application/json; charset=UTF-8')
 
 
 class EntryReferredAPI(APIView):

@@ -6,7 +6,7 @@ import yaml
 from airone.celery import app
 from airone.lib.types import AttrTypeValue
 from django.conf import settings
-from dashboard.views import _search_entries
+from entry.models import Entry
 from job.models import Job
 from natsort import natsorted
 
@@ -129,7 +129,6 @@ def _yaml_export(job, values, recv_data, has_referral):
             return
 
         for attrinfo in recv_data['attrinfo']:
-            data['attrs'][attrinfo['name']] = ''
             if attrinfo['name'] in entry_info['attrs']:
                 _adata = entry_info['attrs'][attrinfo['name']]
                 if 'value' not in _adata:
@@ -168,8 +167,12 @@ def export_search_result(self, job_id):
     if 'entry_name' in recv_data and recv_data['entry_name']:
         hint_entry_name = recv_data['entry_name']
 
-    resp = _search_entries(user, recv_data['entities'], recv_data['attrinfo'], hint_entry_name,
-                           has_referral, settings.ES_CONFIG['MAXIMUM_RESULTS_NUM'])
+    resp = Entry.search_entries(user,
+                                recv_data['entities'],
+                                recv_data['attrinfo'],
+                                settings.ES_CONFIG['MAXIMUM_RESULTS_NUM'],
+                                hint_referral=has_referral,
+                                entry_name=hint_entry_name)
 
     io_stream = None
     if recv_data['export_style'] == 'yaml':

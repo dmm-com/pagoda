@@ -48,7 +48,7 @@
       {% if has_referral is not False %}
       <th>
         参照エントリ<br/>
-        <input type='text' class='input-sm narrow_down_referral'></input>
+        <input type='text' class='input-sm narrow_down_referral' value="{{ has_referral|default_if_none:'' }}"></input>
       </th>
       {% endif %}
     </tr>
@@ -60,7 +60,9 @@
 
       {% for hint_attr in hint_attrs %}
         {% if result.permission is False %}
-          <td class='table-secondary' id='{{ hint_attr.name }}'>Permission denied.</td>
+          <td class='table-secondary' id='{{ hint_attr.name }}'>Permission denied</td>
+        {% elif hint_attr.name not in result.attrs %}
+          <td class='table-secondary' id='{{ hint_attr.name }}'></td>
         {% else %}
           {% with result.attrs|get_item:hint_attr.name as attr %}
             {% if attr.type == attr_type.string %}

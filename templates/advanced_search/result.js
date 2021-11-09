@@ -137,9 +137,15 @@ $(document).ready(function() {
 
   function get_attrinfo() {
     ret_value = $('.hint_attr_value').map(function() {
-      return {
-        'name': $(this).attr('attrname'),
-        'keyword': $(this).val(),
+      if ($(this).val()){
+        return {
+          'name': $(this).attr('attrname'),
+          'keyword': $(this).val(),
+        }
+      } else {
+        return {
+          'name': $(this).attr('attrname')
+        }
       }
     }).get();
 
@@ -299,18 +305,33 @@ $(document).ready(function() {
     var params = [];
 
     // set get parameters
-    params.push(`is_all_entities=${ '{{ is_all_entities }}'.toLowerCase() }`);
-    params.push($('#modal_cond_add_referral').is(':checked') ? 'has_referral' : '');
+    if ('{{ is_all_entities }}' === 'True'){
+      params.push('is_all_entities=' + '{{ is_all_entities }}'.toLowerCase());
+    } else {
+      '{{ entities }}'.split(',').forEach(function(val) {
+        params.push('entity[]=' + val);
+      });
+    }
 
-    '{{ entities }}'.split(',').forEach(function(val) {
-      params.push(`entity[]=${ val }`);
-    });
+    params.push(`entry_name=${$('.hint_entry_name').val()}`)
 
     const attrinfo = $('#modal_condition_selected_attr').find('option').map(function() {
-      //params.push(`attr[]=${ encodeURIComponent($(elem).val()) }`);
-      return {'name': this.value};
+      var hint_attr_value = $(`.hint_attr_value[attrname="${this.value }"]`).val()
+      if (hint_attr_value){
+        return {'name': this.value, 'keyword': hint_attr_value};
+      } else {
+        return {'name': this.value};
+      }
     }).get();
-    params.push(`&attrinfo=${ encodeURIComponent(JSON.stringify(attrinfo)) }`);
+    params.push('attrinfo=' + encodeURIComponent(JSON.stringify(attrinfo)));
+
+    if ($('#modal_cond_add_referral').is(':checked')){
+      var has_referral = '';
+      if ($('.narrow_down_referral').val()){
+        has_referral = $('.narrow_down_referral').val()
+      }
+      params.push('has_referral=' + has_referral);
+    }
 
     location.href = `/dashboard/advanced_search_result?${ params.join('&') }`;
   });

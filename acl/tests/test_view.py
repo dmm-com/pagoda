@@ -1,4 +1,5 @@
 import json
+from airone.lib.elasticsearch import ESS
 
 from group.models import Group
 from django.urls import reverse
@@ -125,11 +126,8 @@ class ViewTest(AironeViewTest):
         attrbase = EntityAttr.objects.create(name='hoge',
                                              created_user=user,
                                              parent_entity=entity)
-
-        attr = Attribute.objects.create(name='hoge',
-                                        schema=attrbase,
-                                        created_user=user,
-                                        parent_entry=entry)
+        entity.attrs.add(attrbase)
+        attr = entry.add_attribute_from_base(attrbase, user)
 
         resp = self.send_set_request(attr, user)
 
@@ -137,6 +135,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.json()['redirect_url'], '/entry/edit/%s' % entry.id)
         self.assertEqual(user.permissions.last(), attr.writable)
         self.assertFalse(Attribute.objects.get(id=attr.id).is_public)
+        search_result = ESS().search(body={'query': {'term': {'name': entry.name}}})
+        self.assertFalse(search_result['hits']['hits'][0]['_source']['attr'][0]['permission'])
 
     def test_post_acl_set_entry(self):
         user = self.admin_login()
@@ -149,6 +149,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.json()['redirect_url'], '/entry/show/%s' % entry.id)
         self.assertEqual(user.permissions.last(), entry.writable)
         self.assertFalse(Entry.objects.get(id=entry.id).is_public)
+        search_result = ESS().search(body={'query': {'term': {'name': entry.name}}})
+        self.assertFalse(search_result['hits']['hits'][0]['_source']['permission'])
 
     def test_post_acl_set_nothing(self):
         user = self.admin_login()

@@ -124,6 +124,12 @@ def set(request, recv_data):
     elif isinstance(acl_obj, Attribute):
         redirect_url = '/entry/edit/%s' % acl_obj.parent_entry.id
 
+    if isinstance(acl_obj, Attribute):
+        acl_obj = acl_obj.parent_entry
+
+    if isinstance(acl_obj, Entry):
+        acl_obj.register_es()
+
     return JsonResponse({
         'redirect_url': redirect_url,
         'msg': 'Success to update ACL of "%s"' % acl_obj.name,

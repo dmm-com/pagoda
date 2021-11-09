@@ -12,27 +12,42 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-  {% if results %}
+<div class="container-fluid search-result">
+  <nav aria-label="Page navigator">
+      <a id="page_count">{{ page_obj.start_index }} - {{ page_obj.end_index }} / {{ page_obj.paginator.count }}</a>
+
+      {% if page_obj.has_previous %}
+          <button type="button" id="prev_page" class="btn btn-sm btn-primary" onclick="location.href='?query={{ query }}&page={{ page_obj.previous_page_number }}'">＜</button>
+      {% else %}
+          <button type="button" id="prev_page" class="btn btn-sm btn-primary" disabled>＜</button>
+      {% endif %}
+
+      {% if page_obj.has_next %}
+          <button type="button" id="next_page" class="btn btn-sm btn-primary" onclick="location.href='?query={{ query }}&page={{ page_obj.next_page_number }}'">＞</button>
+      {% else %}
+          <button type="button" id="next_page" class="btn btn-sm btn-primary" disabled>＞</button>
+      {% endif %}
+  </nav>
+
+  {% if entries %}
     <table class="table table-bordered">
       <tr>
         <th>Name</th>
         <th>Note</th>
       </tr>
-      {% for result in results %}
-      <tr {% if result.object.name == search_query %} class="table-primary" {% endif %}>
-        {% if result.type == "Entity" %}
-          <td><a href="/entry/{{ result.object.id }}/">{{ result.object.name }}</a></td>
+      {% for entry in entries %}
+      <tr id="entryinfo" {% if entry.name == query %} class="table-primary" {% endif %}>
+        <td id="name"><a href="/entry/show/{{ entry.id }}/">{{ entry.name }}</a>{%if not entry.permission %}(Permission denied){% endif %}</td>
+        {% if entry.attr %}
+          <td id="note">{{ entry.attr.name }}: {{ entry.attr.value }}</td>
         {% else %}
-          <td><a href="/entry/show/{{ result.object.id }}/">{{ result.object.name }}</a></td>
+          <td id="note"></td>
         {% endif %}
-
-        <td>{{ result.hint }}</td>
       </tr>
       {% endfor %}
     </table>
   {% else %}
-    該当情報なし
+    <a id="search-result">該当情報なし</a>
   {% endif %}
 </div>
 {% endblock %}

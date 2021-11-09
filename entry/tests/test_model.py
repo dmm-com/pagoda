@@ -1622,7 +1622,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(ret['ret_values'][0]['entry']['name'], 'e-1')
 
         # check functionallity of the 'entry_name' parameter
-        ret = Entry.search_entries(user, [], entry_name='e-1')
+        ret = Entry.search_entries(user, [entity.id], entry_name='e-1')
         self.assertEqual(ret['ret_count'], 2)
 
         # check combination of 'entry_name' and 'hint_attrs' parameter
@@ -1634,16 +1634,6 @@ class ModelTest(AironeTestCase):
         ret = Entry.search_entries(user, [entity.id], [{'name': 'str', 'keyword': 'FOO-10'}])
         self.assertEqual(ret['ret_count'], 1)
         self.assertEqual(ret['ret_values'][0]['entry']['name'], 'e-10')
-
-        # check functionallity of the 'hint_attr_value' parameter
-        ret = Entry.search_entries(user, [entity.id], hint_attr_value='foo-0')
-        self.assertEqual(ret['ret_count'], 1)
-        self.assertEqual(ret['ret_values'][0]['entry']['name'], 'e-0')
-
-        # check whether keyword would be insensitive case
-        ret = Entry.search_entries(user, [entity.id], hint_attr_value='FOO-0')
-        self.assertEqual(ret['ret_count'], 1)
-        self.assertEqual(ret['ret_values'][0]['entry']['name'], 'e-0')
 
     def test_search_entries_with_hint_referral(self):
         user = User.objects.create(username='hoge')
@@ -1712,8 +1702,10 @@ class ModelTest(AironeTestCase):
             ]
         }
 
+        entity_ids = []
         for (name, attrinfos) in entity_info.items():
             entity = Entity.objects.create(name=name, created_user=user)
+            entity_ids.append(entity.id)
 
             for attrinfo in attrinfos:
                 entity.attrs.add(EntityAttr.objects.create(**{
@@ -1735,7 +1727,7 @@ class ModelTest(AironeTestCase):
                 entry.register_es()
 
         # search entries by only attribute name and keyword without entity with exclusive attrs
-        ret = Entry.search_entries(user, [], [{'name': 'foo', 'keyword': ''},
+        ret = Entry.search_entries(user, entity_ids, [{'name': 'foo', 'keyword': ''},
                                    {'name': 'bar', 'keyword': ''}])
         self.assertEqual(ret['ret_count'], 10)
         self.assertEqual(sorted([x['entry']['name'] for x in ret['ret_values']]),
@@ -1743,24 +1735,16 @@ class ModelTest(AironeTestCase):
 
         # search entries by only attribute name and keyword without entity
         # with exclusive attrs and one keyword
-        ret = Entry.search_entries(user, [], [{'name': 'foo', 'keyword': '3'},
+        ret = Entry.search_entries(user, entity_ids, [{'name': 'foo', 'keyword': '3'},
                                    {'name': 'bar', 'keyword': ''}])
         self.assertEqual(ret['ret_count'], 1)
         self.assertEqual(sorted([x['entry']['name'] for x in ret['ret_values']]), sorted(['E1-3']))
 
         # search entries by only attribute name and keyword without entity
         # with exclusive hint attrs and keywords
-        ret = Entry.search_entries(user, [], [{'name': 'foo', 'keyword': '3'},
+        ret = Entry.search_entries(user, entity_ids, [{'name': 'foo', 'keyword': '3'},
                                    {'name': 'bar', 'keyword': '3'}])
         self.assertEqual(ret['ret_count'], 0)
-
-        # search entries using or_match parameter
-        hints = [
-            {'name': x.name, 'keyword': '3'} for x in EntityAttr.objects.filter(is_active=True)]
-        ret = Entry.search_entries(user, [], hints, or_match=True)
-        self.assertEqual(ret['ret_count'], 2)
-        self.assertEqual(sorted([x['entry']['name'] for x in ret['ret_values']]),
-                         sorted(['E1-3', 'E2-3']))
 
     def test_search_entries_about_insensitive_case(self):
         user = User.objects.create(username='hoge')
@@ -1771,7 +1755,7 @@ class ModelTest(AironeTestCase):
 
         # This checks entry_name parameter would be insensitive case
         for name in ['foo', 'fOO', 'OO', 'f']:
-            resp = Entry.search_entries(user, [], entry_name="foo")
+            resp = Entry.search_entries(user, [entity.id], entry_name=name)
             self.assertEqual(resp['ret_count'], 1)
             self.assertEqual(resp['ret_values'][0]['entry']['id'], entry.id)
 
@@ -1838,7 +1822,7 @@ class ModelTest(AironeTestCase):
             hint_attr = {'name': attr_name, 'keyword': ''}
             ret = Entry.search_entries(self._user, [entity.id], hint_attrs=[hint_attr])
             self.assertEqual(ret['ret_count'], 1)
-            self.assertEqual(len(ret['ret_values'][0]['attrs']), len(ref_info))
+            self.assertEqual(len(ret['ret_values'][0]['attrs']), 1)
 
             for (_name, _info) in ret['ret_values'][0]['attrs'].items():
                 self.assertTrue(_name in ref_info)
@@ -2316,7 +2300,7 @@ class ModelTest(AironeTestCase):
             e2.register_es()
 
         # search
-        resp = Entry.search_entries(user, [], entry_name="AAA")
+        resp = Entry.search_entries(user, [entity.id], entry_name="AAA")
 
         # 6 results should be returned
         self.assertEqual(resp['ret_count'], 6)
@@ -2916,10 +2900,10 @@ class ModelTest(AironeTestCase):
             self.assertEqual(ret['ret_count'], 0)
 
         # check functionallity of the 'entry_name' parameter
-        ret = Entry.search_entries(user, [], entry_name=CONFIG.EMPTY_SEARCH_CHARACTER)
+        ret = Entry.search_entries(user, [entity.id], entry_name=CONFIG.EMPTY_SEARCH_CHARACTER)
         self.assertEqual(ret['ret_count'], 1)
 
-        ret = Entry.search_entries(user, [], entry_name=double_empty_search_character)
+        ret = Entry.search_entries(user, [entity.id], entry_name=double_empty_search_character)
         self.assertEqual(ret['ret_count'], 0)
 
         # check combination of 'entry_name' and 'hint_attrs' parameter
@@ -3021,29 +3005,29 @@ class ModelTest(AironeTestCase):
         """
         test_suites = []
         test_suites.append([
-            {'or_match': True, 'ret_cnt': 3, 'search_word': [
+            {'ret_cnt': 3, 'search_word': [
                 {'name': 'str1', 'keyword': 'foo'}]},
-            {'or_match': True, 'ret_cnt': 2, 'search_word': [
+            {'ret_cnt': 0, 'search_word': [
                 {'name': 'str1', 'keyword': 'foo&bar'},
                 {'name': 'str2', 'keyword': 'foo&bar'}]},
-            {'or_match': True, 'ret_cnt': 1, 'search_word': [
+            {'ret_cnt': 0, 'search_word': [
                 {'name': 'str1', 'keyword': 'foo&bar&baz'},
                 {'name': 'str2', 'keyword': 'foo&bar&baz'},
                 {'name': 'str3', 'keyword': 'foo&bar&baz'}]},
-            {'or_match': True, 'ret_cnt': 3, 'search_word': [
+            {'ret_cnt': 3, 'search_word': [
                 {'name': 'arr_str', 'keyword': 'hoge'}], },
-            {'or_match': True, 'ret_cnt': 2, 'search_word': [
+            {'ret_cnt': 2, 'search_word': [
                 {'name': 'arr_str', 'keyword': 'hoge&fuga'}]},
-            {'or_match': True, 'ret_cnt': 1, 'search_word': [
+            {'ret_cnt': 1, 'search_word': [
                 {'name': 'arr_str', 'keyword': 'hoge&fuga&piyo'}]},
-            {'or_match': False, 'ret_cnt': 3, 'search_word': [
+            {'ret_cnt': 3, 'search_word': [
                 {'name': 'str1', 'keyword': 'foo'},
                 {'name': 'arr_str', 'keyword': 'hoge'}]},
-            {'or_match': False, 'ret_cnt': 2, 'search_word': [
+            {'ret_cnt': 2, 'search_word': [
                 {'name': 'str1', 'keyword': 'foo'},
                 {'name': 'str2', 'keyword': 'bar'},
                 {'name': 'arr_str', 'keyword': 'hoge&fuga'}]},
-            {'or_match': False, 'ret_cnt': 1, 'search_word': [
+            {'ret_cnt': 1, 'search_word': [
                 {'name': 'str1', 'keyword': 'foo'},
                 {'name': 'str2', 'keyword': 'bar'},
                 {'name': 'arr_str', 'keyword': 'hoge&fuga&piyo'}]},
@@ -3053,29 +3037,29 @@ class ModelTest(AironeTestCase):
         Test case that contains only 'or'
         """
         test_suites.append([
-            {'or_match': True, 'ret_cnt': 3, 'search_word': [
+            {'ret_cnt': 3, 'search_word': [
                 {'name': 'str1', 'keyword': 'foo|bar'}]},
-            {'or_match': True, 'ret_cnt': 2, 'search_word': [
+            {'ret_cnt': 1, 'search_word': [
                 {'name': 'str2', 'keyword': 'bar|baz'},
                 {'name': 'str3', 'keyword': 'bar|baz'}]},
-            {'or_match': True, 'ret_cnt': 3, 'search_word': [
+            {'ret_cnt': 1, 'search_word': [
                 {'name': 'str1', 'keyword': 'foo|bar|baz'},
                 {'name': 'str2', 'keyword': 'foo|bar|baz'},
                 {'name': 'str3', 'keyword': 'foo|bar|baz'}]},
-            {'or_match': True, 'ret_cnt': 3, 'search_word': [
+            {'ret_cnt': 3, 'search_word': [
                 {'name': 'arr_str', 'keyword': 'hoge|fuga'}]},
-            {'or_match': True, 'ret_cnt': 2, 'search_word': [
+            {'ret_cnt': 2, 'search_word': [
                 {'name': 'arr_str', 'keyword': 'fuga|piyo'}]},
-            {'or_match': True, 'ret_cnt': 3, 'search_word': [
+            {'ret_cnt': 3, 'search_word': [
                 {'name': 'arr_str', 'keyword': 'hoge|fuga|piyo'}]},
-            {'or_match': False, 'ret_cnt': 2, 'search_word': [
+            {'ret_cnt': 2, 'search_word': [
                 {'name': 'str2', 'keyword': 'foo|bar'},
                 {'name': 'arr_str', 'keyword': 'hoge'}]},
-            {'or_match': False, 'ret_cnt': 1, 'search_word': [
+            {'ret_cnt': 1, 'search_word': [
                 {'name': 'str2', 'keyword': 'foo|bar'},
                 {'name': 'str3', 'keyword': 'bar|baz'},
                 {'name': 'arr_str', 'keyword': 'hoge|fuga'}]},
-            {'or_match': False, 'ret_cnt': 1, 'search_word': [
+            {'ret_cnt': 1, 'search_word': [
                 {'name': 'str3', 'keyword': 'foo|baz'},
                 {'name': 'arr_str', 'keyword': 'hoge|fuga|piyo'}]},
         ])
@@ -3084,21 +3068,21 @@ class ModelTest(AironeTestCase):
         Test cases that contain 'and' and 'or'
         """
         test_suites.append([
-            {'or_match': True, 'ret_cnt': 3, 'search_word': [
+            {'ret_cnt': 3, 'search_word': [
                 {'name': 'str1', 'keyword': 'foo|bar'}]},
-            {'or_match': True, 'ret_cnt': 2, 'search_word': [
+            {'ret_cnt': 0, 'search_word': [
                 {'name': 'str1', 'keyword': 'foo&baz|bar'},
                 {'name': 'str2', 'keyword': 'foo&baz|bar'},
                 {'name': 'str3', 'keyword': 'foo&baz|bar'}]},
-            {'or_match': True, 'ret_cnt': 3, 'search_word': [
+            {'ret_cnt': 0, 'search_word': [
                 {'name': 'str1', 'keyword': 'foo|bar&baz'},
                 {'name': 'str2', 'keyword': 'foo|bar&baz'},
                 {'name': 'str3', 'keyword': 'foo|bar&baz'}]},
-            {'or_match': True, 'ret_cnt': 2, 'search_word': [
+            {'ret_cnt': 2, 'search_word': [
                 {'name': 'arr_str', 'keyword': 'hoge&piyo|fuga'}]},
-            {'or_match': True, 'ret_cnt': 2, 'search_word': [
+            {'ret_cnt': 2, 'search_word': [
                 {'name': 'arr_str', 'keyword': 'piyo|hoge&fuga'}]},
-            {'or_match': False, 'ret_cnt': 2, 'search_word': [
+            {'ret_cnt': 2, 'search_word': [
                 {'name': 'str1', 'keyword': 'foo'},
                 {'name': 'str2', 'keyword': 'bar|baz'},
                 {'name': 'arr_str', 'keyword': 'hoge&piyo|fuga'}]},
@@ -3106,8 +3090,7 @@ class ModelTest(AironeTestCase):
 
         for x in test_suites:
             for test_suite in x:
-                ret = Entry.search_entries(user, [], test_suite['search_word'],
-                                           or_match=test_suite['or_match'])
+                ret = Entry.search_entries(user, [entity.id], test_suite['search_word'])
                 self.assertEqual(ret['ret_count'], test_suite['ret_cnt'])
 
     def test_search_entries_entry_name(self):
@@ -3125,7 +3108,7 @@ class ModelTest(AironeTestCase):
 
         search_words = {'foo': 1, 'bar&baz': 1, 'foo|bar': 3, 'foo|bar&baz': 2}
         for word, count in search_words.items():
-            ret = Entry.search_entries(user, [], entry_name=word)
+            ret = Entry.search_entries(user, [entity.id], entry_name=word)
             self.assertEqual(ret['ret_count'], count)
 
     def test_search_entries_get_regex_pattern(self):
@@ -3145,9 +3128,16 @@ class ModelTest(AironeTestCase):
             })
 
         for test_suite in test_suites:
-            ret = Entry.search_entries(user, [], entry_name=test_suite['search_word'])
+            ret = Entry.search_entries(user, [entity.id], entry_name=test_suite['search_word'])
             self.assertEqual(ret['ret_count'], test_suite['ret_cnt'])
             self.assertEqual(ret['ret_values'][0]['entry']['name'], test_suite['ret_entry_name'])
+
+    def test_search_entries_with_is_output_all(self):
+        self._entity.attrs.add(self._attr.schema)
+        self._entry.attrs.add(self._attr)
+        self._entry.register_es()
+        ret = Entry.search_entries(self._user, [self._entity.id], is_output_all=True)
+        self.assertEqual(ret['ret_values'][0]['attrs'], {'attr': {'permission': True, 'type': 2}})
 
     def test_get_es_document(self):
         user = User.objects.create(username='hoge')
@@ -3193,10 +3183,7 @@ class ModelTest(AironeTestCase):
             set_attrs = [x for x in es_registering_value['attr'] if x['name'] == attrname]
 
             self.assertTrue(all([x['type'] == attr.schema.type for x in set_attrs]))
-            self.assertTrue(all([x['permission'] == {
-                'is_public': True,
-                'default_permission': ACLType.Nothing.id
-            } for x in set_attrs]))
+            self.assertTrue(all([x['permission'] is True for x in set_attrs]))
             for param_name in ['key', 'value', 'referral_id', 'date_value']:
                 if param_name in attrinfo:
                     self.assertEqual(sorted([x[param_name] for x in set_attrs]),
@@ -3214,11 +3201,7 @@ class ModelTest(AironeTestCase):
             'key': '',
             'value': '',
             'referral_id': '',
-            'permission': {
-                'is_public': True,
-                'default_permission': ACLType.Nothing.id,
-
-            },
+            'permission': True,
         }])
 
     def test_get_es_document_when_referred_entry_was_deleted(self):
@@ -3246,7 +3229,7 @@ class ModelTest(AironeTestCase):
             'key': '',
             'value': self._entry.name,
             'referral_id': self._entry.id,
-            'permission': {'is_public': True, 'default_permission': ACLType.Nothing.id},
+            'permission': True,
         }])
 
         # Delete an entry which is referred by ref_entry
@@ -3261,7 +3244,7 @@ class ModelTest(AironeTestCase):
             'key': '',
             'value': '',        # expected not to have information about deleted entry
             'referral_id': '',  # expected not to have information about deleted entry
-            'permission': {'is_public': True, 'default_permission': ACLType.Nothing.id},
+            'permission': True,
         }])
 
     def test_get_attrv_method_of_entry(self):

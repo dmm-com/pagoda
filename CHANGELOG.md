@@ -8,12 +8,12 @@
 
 ### Fixed
 * Fixed an issue that caused redirects by incorrect URL links
+* Fixed no permission check in advanced search and simple search(#282)
 
 ## v3.3.1
 
 ### Fixed
 * Fixed bug AttributeValue.parent_attr is different with child's one (#272)
-* Fixed no permission check in advanced search (#282)
 
 ## v3.3.0
 
