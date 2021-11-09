@@ -33,19 +33,15 @@ export function EntryForm({
   const history = useHistory();
 
   const [name, setName] = useState(initName);
-  const [attributes, setAttributes] = useState(
-    Object.keys(initAttributes).map((attrname) => {
-      return {
-        name: attrname,
-        value: initAttributes[attrname].value,
-        type: initAttributes[attrname].type,
-      };
-    })
-  );
+  const [attributes, setAttributes] = useState(initAttributes);
 
   const handleChangeAttribute = (event, name, valueInfo) => {
     console.log("[onix/handleChangeAttribute] name: " + name);
     console.log(valueInfo);
+    console.log(attributes);
+
+    attributes[name].value = valueInfo.value;
+    setAttributes({...attributes});
 
     /*
     attributes[event.target.name] = event.target.value;
@@ -127,13 +123,13 @@ export function EntryForm({
           </TableRow>
         </TableHead>
         <TableBody>
-          {attributes.map((attribute, index) => (
+          {Object.keys(attributes).map((attributeName, index) => (
             <TableRow key={index}>
-              <TableCell>{attribute.name}</TableCell>
+              <TableCell>{attributeName}</TableCell>
               <TableCell>
                 <EditAttributeValue
-                  attrName={attribute.name}
-                  attrInfo={attribute}
+                  attrName={attributeName}
+                  attrInfo={attributes[attributeName]}
                   handleChangeAttribute={handleChangeAttribute}
                 />
               </TableCell>

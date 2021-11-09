@@ -92,11 +92,12 @@ function ElemNamedObject({
   index,
   handleChange,
 }) {
+  const key = Object.keys(attrValue)[0];
   return (
     <>
       <Input
         type="text"
-        value={attrValue.key}
+        value={key}
         onChange={(e) =>
           handleChange(e, attrName, {
             type: attrType,
@@ -107,7 +108,7 @@ function ElemNamedObject({
       />
       <ElemObject
         attrName={attrName}
-        attrValue={attrValue}
+        attrValue={attrValue[key]}
         attrType={attrType}
         index={index}
         handleChange={handleChange}
