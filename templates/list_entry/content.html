@@ -1,9 +1,13 @@
-{% include 'list_entry/nav_search.html'%}
+{% include 'list_entry/nav_page.html'%}
 
 {% load bitwise_tags %}
 <div class="row">
   <div class="col">
     {% csrf_token %}
+    <form method='get'>
+      <input name="keyword" type='text' value="{{ keyword | default:"" }}" placeholder='絞り込む'/>
+      <input name="page" type="hidden" value="1" />
+    </form>
     <table class="table table-bordered">
       <thead>
         <tr>
@@ -18,9 +22,9 @@
           {% if entry.status|bitwise_and:STATUS_ENTRY.CREATING %}
             <td>{{ entry.name }} [作成中]</td>
           {% elif entry.status|bitwise_and:STATUS_ENTRY.EDITING %}
-            <td><a href='/entry/show/{{ entry.id }}'>{{ entry.name }} [編集中]</a></td>
+            <td><a href='/entry/show/{{ entry.id }}/'>{{ entry.name }} [編集中]</a></td>
           {% else %}
-            <td><a href='/entry/show/{{ entry.id }}'>{{ entry.name }}</a></td>
+            <td><a href='/entry/show/{{ entry.id }}/'>{{ entry.name }}</a></td>
           {% endif %}
 
           <td><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/entry/do_delete/{{ entry.id }}/">del</button></td>

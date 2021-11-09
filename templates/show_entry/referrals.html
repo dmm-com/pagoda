@@ -5,7 +5,7 @@
     <input id='narrow_down_referral' text='text' placeholder='絞り込む' />
     <div class='list-group' id='referral_entries'>
       {% for object in referred_objects %}
-      <a class="list-group-item" href="/entry/show/{{ object.id }}">{{ object.name }} ({{ object.schema.name }})</a>
+      <a class="list-group-item" href="/entry/show/{{ object.id }}/">{{ object.name }} ({{ object.schema.name }})</a>
       {% endfor %}
     </div>
   </div>

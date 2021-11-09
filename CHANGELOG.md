@@ -2,6 +2,46 @@
 
 ## In development
 
+### Added
+
+### Changed
+
+### Fixed
+* Fixed an issue that caused redirects by incorrect URL links
+
+## v3.3.1
+
+### Fixed
+* Fixed bug AttributeValue.parent_attr is different with child's one (#272)
+
+## v3.3.0
+
+### Added
+* Added the django-replicated library (#166)
+* Added job function that cannot be canceled (#199)
+* Added param of editting user for ldap (#256)
+
+### Changed
+* Changed to remove complement_attrs when requesting show entry page (#166)
+* Changed the logout from GET to POST (#166)
+* Changed the HTTP method on the entry.export page from GET to POST (#166)
+* Changed not to create tokens with GET user.access_token API (#166)
+* Changed the behavior of token refresh (#208)
+* Upgrade Django version from v3.2.4 to v3.2.5 (#254)
+* Changed cookie of session to secure attribute, and to return HSTS header (#257)
+
+### Fixed
+* Fixed the problem that the URL of Webhook API is different (#202)
+* Fixed some attributes are not updated in advanced search results (#230)
+* Fixed that the entry being created cannot be deleted (#242)
+* Fixed update history of TOP page (#258)
+* Fixed unused URL settings (#278)
+
+### Refactored
+* Refactored the entry list page
+
+## v3.2.0
+
 ### Changed
 * Update Django to version 3.2.4 LTS (#153)
 
@@ -9,6 +49,10 @@
 * Fixed the result being different depending on the hint_attr_value of
   search_entries (#158)
 * Fixed a problem in the processing of import entry (#159)
+* Fixed `urls` to avoid some warnings (#174)
+* Fixed LDAP error output due to authentication failed (#179)
+* Fixed a warning log with an SSL connection to the extarnal (#182)
+* Fixed an exception error when specifying an invalid offset in GET entry API (#183)
 * Fixed a bug that raises an exception at API handler of update entry (#186)
 
 ## v3.1.0

@@ -7,7 +7,7 @@ function make_attr_elem(attr, hint_attr) {
 
     var value_str = '';
     if (ref_value) {
-      value_str = `<a href='/entry/show/${ ref_value.id }'>${ ref_value.name }</a>`;
+      value_str = `<a href='/entry/show/${ ref_value.id }/'>${ ref_value.name }</a>`;
     }
 
     return `<div class='row'> \
@@ -29,7 +29,7 @@ function make_attr_elem(attr, hint_attr) {
 
       case {{ attr_type.entry }}:
         if (attr.value) {
-          new_elem.append($(`<a href='/entry/show/${ attr.value.id }'>${ attr.value.name }</a>`));
+          new_elem.append($(`<a href='/entry/show/${ attr.value.id }/'>${ attr.value.name }</a>`));
         }
         break;
 
@@ -55,7 +55,7 @@ function make_attr_elem(attr, hint_attr) {
         var elem_ul = $("<ul class='list-group'/>");
         for(var value of attr.value) {
           if(value) {
-            elem_ul.append($(`<li class='list-group-item'><a href='/entry/show/${ value.id }'>${ value.name }</a></li>`));
+            elem_ul.append($(`<li class='list-group-item'><a href='/entry/show/${ value.id }/'>${ value.name }</a></li>`));
           } else {
             elem_ul.append($(`<li class='list-group-item' />`));
           }
@@ -108,7 +108,7 @@ function reconstruct_tbody(results) {
       let elem_ref_ul = $("<ul class='list-group'/>");
 
       for(let ref of result.referrals) {
-        elem_ref_ul.append($(`<li class='list-group-item'><a href='/entry/show/${ ref.id }'>${ ref.name } / ${ ref.schema }</a></li>`));
+        elem_ref_ul.append($(`<li class='list-group-item'><a href='/entry/show/${ ref.id }/'>${ ref.name } / ${ ref.schema }</a></li>`));
       }
 
       elem_ref_td.append(elem_ref_ul)

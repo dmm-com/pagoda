@@ -2,17 +2,19 @@
   <div class='col'>
     <table class="table table-bordered airone-entry-table-show table-striped">
       {% for attr in attributes %}
-      <tr>
+      <tr id='{{ attr.name|cut:" " }}'>
         <td class='attr'>{{ attr.name }}</td>
         <td>
-        {% if attr.type == attr_type.string %}
+        {% if not attr.permission %}
+          <span>Permission denied.</span>
+        {% elif attr.type == attr_type.string %}
           <span class='url_conv'>{{ attr.last_value }}</span>
         {% elif attr.type == attr_type.textarea %}
           <span class='url_conv textarea'>{{ attr.last_value }}</span>
         {% elif attr.type == attr_type.date %}
           <span>{{ attr.last_value|date:"Y-m-d" }}</span>
         {% elif attr.type == attr_type.entry and attr.last_value %}
-          <a href='/entry/show/{{ attr.last_value.id }}'>{{ attr.last_value.name }}</a>{% if attr.last_value.deleted %}(deleted){% endif %}
+          <a href='/entry/show/{{ attr.last_value.id }}/'>{{ attr.last_value.name }}</a>{% if attr.last_value.deleted %}(deleted){% endif %}
         {% elif attr.type == attr_type.array_string %}
           <ul class='list-group'>
           {% for value in attr.last_value %}
@@ -23,7 +25,7 @@
           <ul class='list-group'>
           {% for refer in attr.last_value %}
             <li class='list-group-item'>
-              <a href='/entry/show/{{ refer.id }}'>
+              <a href='/entry/show/{{ refer.id }}/'>
                 {{ refer.name }}
               </a>
               {% if refer.deleted %}(deleted){% endif %}
@@ -44,7 +46,7 @@
             </div>
             <div class='col-9'>
               {% if attr.last_value.id %}
-              <a href='/entry/show/{{ attr.last_value.id }}'>{{ attr.last_value.name }}</a>{% if attr.last_value.deleted %}(deleted){% endif %}
+              <a href='/entry/show/{{ attr.last_value.id }}/'>{{ attr.last_value.name }}</a>{% if attr.last_value.deleted %}(deleted){% endif %}
               {% endif %}
             </div>
           </div>
@@ -58,7 +60,7 @@
                   <span class='url_conv'>{{ data.value }}</span>
                 </div>
                 <div class='col-9'>
-                  <a href='/entry/show/{{ data.id }}'>{{ data.name }}</a>
+                  <a href='/entry/show/{{ data.id }}/'>{{ data.name }}</a>
                 </div>
               </div>
             </li>

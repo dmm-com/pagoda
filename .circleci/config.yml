@@ -179,6 +179,24 @@ jobs:
           name: Deploy contents to the gh_pages branch
           command: ./scripts/deploy_gh_pages_using_circle-ci.sh
 
+  frontend:
+    docker:
+      - image: circleci/node
+    steps:
+      - checkout
+      - run:
+          name: Resolve dependency
+          command: |
+            npm install
+      - run:
+          name: lint
+          command: |
+            npm run lint
+      - run:
+          name: test
+          command: |
+            npm run test
+
 workflows:
   version: 2
   build_and_test:
@@ -186,6 +204,7 @@ workflows:
       - python36
       - python38
       - pep8
+      - frontend
       - mypy
       - build_gh_page:
           filters:

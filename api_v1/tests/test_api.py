@@ -19,6 +19,7 @@ from entry.settings import CONFIG as ENTRY_CONFIG
 
 from unittest import mock
 from datetime import date, datetime, timedelta
+from rest_framework.authtoken.models import Token
 
 
 class APITest(AironeViewTest):
@@ -254,6 +255,7 @@ class APITest(AironeViewTest):
 
     def test_post_entry_with_token(self):
         admin = User.objects.create(username='admin', is_superuser='True')
+        Token.objects.create(user=admin)
 
         entity = Entity.objects.create(name='Entity', created_user=admin)
         params = {
@@ -670,6 +672,19 @@ class APITest(AironeViewTest):
         self.assertEqual(len(resp.json()), ENTRY_CONFIG.MAX_LIST_ENTRIES)
         self.assertEqual([x['name'] for x in resp.json()], ['bar', 'baz'])
 
+    def test_get_entry_with_invalid_offset(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name='Entity', created_user=user)
+        Entry.objects.create(name='entry', schema=entity, created_user=user)
+
+        # Send a request with an invalid offset parameter
+        offset_params = ['-1', 'str']
+        for param in offset_params:
+            resp = self.client.get('/api/v1/entry', {'entity': 'Entity', 'offset': param})
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.json()['result'], 'Parameter "offset" is numerically')
+
     def test_get_deleted_entry(self):
         user = self.guest_login()
 
@@ -767,6 +782,7 @@ class APITest(AironeViewTest):
     @mock.patch('api_v1.auth.datetime')
     def test_expiring_token_lifetime(self, dt_mock):
         user = User.objects.create(username='testuser')
+        Token.objects.create(user=user)
 
         entity = Entity.objects.create(name='E1', created_user=user)
         Entry.objects.create(name='e1', schema=entity, created_user=user,)
@@ -826,6 +842,7 @@ class APITest(AironeViewTest):
     @mock.patch('entry.tasks.notify_create_entry.delay')
     def test_create_entry_that_has_user_authorized_attribute(self, mock_notify_create_entry):
         users = {x: User.objects.create(username=x, is_superuser=False) for x in ['_u1', '_u2']}
+        [Token.objects.create(user=x) for x in users.values()]
 
         # declare notification mock
         self._test_data['notify_create_entry_is_called'] = False

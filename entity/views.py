@@ -2,6 +2,8 @@ import re
 import io
 import yaml
 
+import custom_view
+
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.db.models import Q
@@ -150,6 +152,12 @@ def do_edit(request, entity_id, recv_data):
     if entity.get_status(Entity.STATUS_EDITING):
         return HttpResponse('Target entity is now under processing', status=400)
 
+    if custom_view.is_custom('edit_entity'):
+        resp = custom_view.call_custom('edit_entity', None, entity, recv_data['name'],
+                                       recv_data['attrs'])
+        if resp:
+            return resp
+
     # update status parameters
     if recv_data['is_toplevel']:
         entity.set_status(Entity.STATUS_TOP_LEVEL)
@@ -158,7 +166,6 @@ def do_edit(request, entity_id, recv_data):
 
     # update entity metatada informations to new ones
     entity.set_status(Entity.STATUS_EDITING)
-    entity.save()
 
     # Create a new job to edit entity and run it
     job = Job.new_edit_entity(user, entity, params=recv_data)
@@ -209,6 +216,11 @@ def do_create(request, recv_data):
     # get user object that current access
     user = User.objects.get(id=request.user.id)
 
+    if custom_view.is_custom('create_entity'):
+        resp = custom_view.call_custom('create_entity', None, recv_data['name'], recv_data['attrs'])
+        if resp:
+            return resp
+
     # create EntityAttr objects
     entity = Entity(name=recv_data['name'],
                     note=recv_data['note'],
@@ -217,7 +229,7 @@ def do_create(request, recv_data):
 
     # set status parameters
     if recv_data['is_toplevel']:
-        entity.set_status(Entity.STATUS_TOP_LEVEL)
+        entity.status = Entity.STATUS_TOP_LEVEL
 
     entity.save()
 
@@ -288,6 +300,11 @@ def do_delete(request, entity_id, recv_data):
     if Entry.objects.filter(schema=entity, is_active=True).exists():
         return HttpResponse('cannot delete Entity because one or more Entries are not deleted',
                             status=400)
+
+    if custom_view.is_custom('delete_entity'):
+        resp = custom_view.call_custom('delete_entity', None, entity)
+        if resp:
+            return resp
 
     # save deleting target name before do it
     ret['name'] = entity.name

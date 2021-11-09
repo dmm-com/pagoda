@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^get_attr_referrals/(\d+)/$', views.get_attr_referrals, name='get_attr_referrals'),
     url(r'^get_entry_history/(\d+)/$', views.get_entry_history, name='get_entry_history'),
     url(r'^get_entry_info/(\d+)$', views.get_entry_info, name='get_entry_info'),
+    url(r'^create_entry_attr/(\d+)$', views.create_entry_attr, name='create_entry_attr'),
 ]

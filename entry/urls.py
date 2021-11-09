@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^(\d+)/$', views.index, name='index'),
     url(r'^acl/(\d+)/$', acl_views.index, name='acl'),
     url(r'^api/v1/', include(('entry.api_v1.urls', 'entry.api_v1'))),
+    url(r'^api/v2/', include(('entry.api_v2.urls', 'entry.api_v2'))),
     url(r'^copy/(\d+)/$', views.copy, name='copy'),
     url(r'^create/(\d+)/$', views.create, name='create'),
     url(r'^do_copy/(\d+)$', views.do_copy, name='do_copy'),

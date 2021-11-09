@@ -1,17 +1,16 @@
 import json
 
 from airone.lib.test import AironeViewTest
-
-from job.models import Job, JobOperation
+from django.urls import reverse
 from entry import tasks
 from entry.models import Entry
 from entity.models import Entity
-from django.urls import reverse
+from job.settings import CONFIG
+from job.models import Job, JobOperation
 
+from requests_html import HTML
 from unittest.mock import patch
 from unittest.mock import Mock
-
-from job.settings import CONFIG
 
 # constants using this tests
 _TEST_MAX_LIST_VIEW = 2
@@ -45,8 +44,20 @@ class ViewTest(AironeViewTest):
         # checks number of the returned objects are as expected
         resp = self.client.get('/job/')
         self.assertEqual(resp.status_code, 200)
-
+        self.assertTemplateUsed('list_jobs.html')
         self.assertEqual(len(resp.context['jobs']), _TEST_MAX_LIST_VIEW)
+
+        for i, job in enumerate(
+                Job.objects.filter(user=user).order_by('-created_at')[:_TEST_MAX_LIST_VIEW]):
+            self.assertEqual(resp.context['jobs'][i]['id'], job.id)
+            self.assertEqual(resp.context['jobs'][i]['target'], job.target)
+            self.assertEqual(resp.context['jobs'][i]['text'], job.text)
+            self.assertEqual(resp.context['jobs'][i]['status'], job.status)
+            self.assertEqual(resp.context['jobs'][i]['operation'], job.operation)
+            self.assertEqual(resp.context['jobs'][i]['can_cancel'], True)
+            self.assertEqual(resp.context['jobs'][i]['created_at'], job.created_at)
+            self.assertEqual(resp.context['jobs'][i]['operation'], job.operation)
+            self.assertGreaterEqual(resp.context['jobs'][i]['passed_time'], 0)
 
         # checks all job objects will be returned
         resp = self.client.get('/job/?nolimit=1')
@@ -82,6 +93,14 @@ class ViewTest(AironeViewTest):
         # Confirm that the delete job can be obtained
         self.assertEqual(len(resp.context['jobs']), 1)
         self.assertEqual(resp.context['jobs'][0]['operation'], JobOperation.DELETE_ENTRY.value)
+
+        # check respond HTML has expected elements which are specified of CSS selectors
+        parser = HTML(html=resp.content.decode('utf-8'))
+        job_elems = parser.find('#entry_container .job_info')
+        self.assertEqual(len(job_elems), 1)
+        for job_elem in job_elems:
+            for _cls in ['target', 'status', 'execution_time', 'created_at', 'note', 'operation']:
+                self.assertIsNotNone(job_elem.find('.%s' % _cls))
 
     def test_get_non_target_job(self):
         user = self.guest_login()
