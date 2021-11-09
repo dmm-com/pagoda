@@ -21,13 +21,12 @@ export function User({}) {
   const classes = useStyles();
 
   const users = useAsync(async () => {
-    return getUsers()
-      .then((resp) => resp.json())
-      .then((data) =>
-        django_context.user.is_superuser
-          ? data
-          : data.filter((d) => d.id === django_context.user.id)
-      );
+    const resp = await getUsers();
+    const data = await resp.json();
+
+    return django_context.user.is_superuser
+      ? data
+      : data.filter((d) => d.id === django_context.user.id);
   });
 
   return (

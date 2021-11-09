@@ -7,12 +7,11 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  ListSubheader,
 } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
-import { alpha, makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import React, { useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -77,19 +76,19 @@ export function AdvancedSearch({}) {
   const [attrNameFilter, setAttrNameFilter] = useState("");
 
   const entities = useAsync(async () => {
-    return getEntities()
-      .then((resp) => resp.json())
-      .then((data) => data.entities);
+    const resp = await getEntities();
+    const data = await resp.json();
+    return data.entities;
   });
 
   // TODO should be better to fetch all the values once, then filter it
   const attrs = useAsync(async () => {
     if (selectedEntityIds.length > 0) {
-      return getEntityAttrs(selectedEntityIds)
-        .then((resp) => resp.json())
-        .then((data) => data.result);
+      const resp = await getEntityAttrs(selectedEntityIds);
+      const data = await resp.json();
+      return data.result;
     } else {
-      return Promise.resolve([]);
+      return [];
     }
   }, [selectedEntityIds]);
 

@@ -12,7 +12,7 @@ export function ACL({}) {
   const { entityId } = useParams();
 
   const acl = useAsync(async () => {
-    return getACL(entityId);
+    return await getACL(entityId);
   });
 
   return (

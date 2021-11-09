@@ -1,6 +1,10 @@
 module.exports = {
-  plugins: ['import'],
-  rules: {},
+  plugins: ['import', 'unused-imports', 'react'],
+  rules: {
+    'react/jsx-uses-react': 'error',
+    'react/jsx-uses-vars': 'error',
+    'unused-imports/no-unused-imports': 'error',
+  },
   parserOptions: {
     sourceType: "module",
     ecmaVersion: 11,

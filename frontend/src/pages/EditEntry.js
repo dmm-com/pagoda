@@ -13,9 +13,9 @@ export function EditEntry({}) {
 
   const entry = useAsync(async () => {
     if (entryId !== undefined) {
-      return getEntry(entryId);
+      return await getEntry(entryId);
     }
-    return Promise.resolve({});
+    return {};
   });
 
   return (
@@ -35,8 +35,7 @@ export function EditEntry({}) {
 
       {!entry.loading && (
         <EntryForm
-          entityId={entityId}
-          entryId={entityId}
+          entityId={Number(entityId)}
           initName={entry.value.name}
           initAttributes={entry.value.attributes}
         />
