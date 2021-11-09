@@ -40,7 +40,8 @@ export function EntityHistory({}) {
   const { entityId } = useParams();
 
   const history = useAsync(async () => {
-    return getEntityHistory(entityId).then((resp) => resp.json());
+    const resp = await getEntityHistory(entityId);
+    return await resp.json();
   });
 
   return (

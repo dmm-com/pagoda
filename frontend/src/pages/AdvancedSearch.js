@@ -76,19 +76,19 @@ export function AdvancedSearch({}) {
   const [attrNameFilter, setAttrNameFilter] = useState("");
 
   const entities = useAsync(async () => {
-    return getEntities()
-      .then((resp) => resp.json())
-      .then((data) => data.entities);
+    const resp = await getEntities();
+    const data = await resp.json();
+    return data.entities;
   });
 
   // TODO should be better to fetch all the values once, then filter it
   const attrs = useAsync(async () => {
     if (selectedEntityIds.length > 0) {
-      return getEntityAttrs(selectedEntityIds)
-        .then((resp) => resp.json())
-        .then((data) => data.result);
+      const resp = await getEntityAttrs(selectedEntityIds);
+      const data = await resp.json();
+      return data.result;
     } else {
-      return Promise.resolve([]);
+      return [];
     }
   }, [selectedEntityIds]);
 

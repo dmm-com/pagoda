@@ -24,7 +24,8 @@ export function Group({}) {
   const classes = useStyles();
 
   const groups = useAsync(async () => {
-    return getGroups().then((resp) => resp.json());
+    const resp = await getGroups();
+    return await resp.json();
   });
 
   return (

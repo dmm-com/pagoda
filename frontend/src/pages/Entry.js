@@ -39,15 +39,15 @@ export function Entry({}) {
   const [tabValue, setTabValue] = useState(1);
 
   const entries = useAsync(async () => {
-    return getEntries(entityId, true)
-      .then((resp) => resp.json())
-      .then((data) => data.results);
+    const resp = await getEntries(entityId, true);
+    const data = await resp.json();
+    return data.results;
   });
 
   const deletedEntries = useAsync(async () => {
-    return getEntries(entityId, false)
-      .then((resp) => resp.json())
-      .then((data) => data.results);
+    const resp = await getEntries(entityId, false);
+    const data = await resp.json();
+    return data.results;
   });
 
   const handleTabChange = (event, newValue) => {
