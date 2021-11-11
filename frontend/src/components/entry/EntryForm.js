@@ -34,6 +34,29 @@ export function EntryForm({
   const classes = useStyles();
   const history = useHistory();
 
+  /* FIXME attach checked flag to entry-like types
+  const initAttr = Object.keys(initAttributes).map((attrName) => {
+      const attrValue = initAttributes[attrName];
+      switch (attrValue.type) {
+      case djangoContext.attrTypeValue.object:
+        return {
+          name: attrName,
+          value: {
+            ...attrValue,
+            checked: true,
+        }};
+      default:
+        return {
+          name: attrName,
+          value: attrValue,
+        };
+      }
+  }).reduce((elem, acc) => {
+      acc[elem.name] = elem.value;
+      return acc;
+  }, {});
+   */
+
   const [name, setName] = useState(initName);
   const [attributes, setAttributes] = useState(initAttributes);
 
@@ -44,6 +67,11 @@ export function EntryForm({
 
     switch(valueInfo.type) {
       case djangoContext.attrTypeValue.string:
+        attributes[name].value = valueInfo.value;
+        setAttributes({...attributes});
+        break;
+
+      case djangoContext.attrTypeValue.object:
         attributes[name].value = valueInfo.value;
         setAttributes({...attributes});
         break;
@@ -82,6 +110,9 @@ export function EntryForm({
         setAttributes({...attributes});
         break;
 
+      default:
+        console.log("[onix/handleChangeAttribute/switch] valueInfo: ");
+        console.log(valueInfo);
     }
 
     /*
