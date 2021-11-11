@@ -49,32 +49,16 @@ class APITest(AironeViewTest):
             ref_e.append(Entry.objects.create(name='r-%d' % index, schema=ref_entity,
                                               created_user=admin))
 
-        entity = Entity.objects.create(name='Entity', created_user=admin)
-        attr_params = [
-            {'name': 'val', 'type': AttrTypeValue['string']},
-            {'name': 'ref', 'type': AttrTypeValue['object'], 'ref': ref_entity},
-            {'name': 'name', 'type': AttrTypeValue['named_object'], 'ref': ref_entity},
-            {'name': 'bool', 'type': AttrTypeValue['boolean']},
-            {'name': 'date', 'type': AttrTypeValue['date']},
-            {'name': 'group', 'type': AttrTypeValue['group']},
-            {'name': 'groups', 'type': AttrTypeValue['array_group']},
-            {'name': 'text', 'type': AttrTypeValue['text']},
-            {'name': 'vals', 'type': AttrTypeValue['array_string']},
-            {'name': 'refs', 'type': AttrTypeValue['array_object'], 'ref': ref_entity},
-            {'name': 'names', 'type': AttrTypeValue['array_named_object'], 'ref': ref_entity},
-        ]
-        for attr_info in attr_params:
-            entity_attr = EntityAttr.objects.create(**{
-                'name': attr_info['name'],
-                'type': attr_info['type'],
-                'created_user': admin,
-                'parent_entity': entity,
-            })
-            if 'ref' in attr_info:
-                entity_attr.referral.add(attr_info['ref'])
+        params = self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY.copy()
+        for param in params:
+            if param['type'] & AttrTypeValue['object']:
+                param['ref'] = ref_entity
 
-            entity.attrs.add(entity_attr)
-
+        entity = self.create_entity(**{
+            'user': admin,
+            'name': 'Entity',
+            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        })
         params = {
             'name': 'entry1',
             'entity': entity.name,

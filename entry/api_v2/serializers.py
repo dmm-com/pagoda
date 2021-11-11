@@ -56,9 +56,10 @@ class GetEntrySerializer(serializers.ModelSerializer):
 
             elif attr.schema.type & AttrTypeValue['named']:
                 return {
-                    'key': attrv.value,
-                    'id': attrv.referral.id if attrv.referral else None,
-                    'name': attrv.referral.name if attrv.referral else '',
+                    attrv.value: {
+                        'id': attrv.referral.id if attrv.referral else None,
+                        'name': attrv.referral.name if attrv.referral else '',
+                    }
                 }
 
             elif attr.schema.type & AttrTypeValue['object']:
