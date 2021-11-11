@@ -54,12 +54,31 @@ export function EntryForm({
         break;
 
       case djangoContext.attrTypeValue.named_object:
-        attributes[name].value.key = valueInfo.key;
+        attributes[name].value = {
+          [valueInfo.key]: Object.values(attributes[name].value)[0]
+        };
+        setAttributes({...attributes});
+        break;
+
+      case djangoContext.attrTypeValue.array_named_object:
+        attributes[name].value[valueInfo.index] = {
+          [valueInfo.key]: Object.values(attributes[name].value[valueInfo.index])[0]
+        };
         setAttributes({...attributes});
         break;
 
       case djangoContext.attrTypeValue.boolean:
         attributes[name].value = valueInfo.checked;
+        setAttributes({...attributes});
+        break;
+
+      case djangoContext.attrTypeValue.date:
+        attributes[name].value = valueInfo.value;
+        setAttributes({...attributes});
+        break;
+
+      case djangoContext.attrTypeValue.text:
+        attributes[name].value = valueInfo.value;
         setAttributes({...attributes});
         break;
 
