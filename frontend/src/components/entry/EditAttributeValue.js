@@ -93,6 +93,8 @@ function ElemNamedObject({
   handleChange,
 }) {
   const key = Object.keys(attrValue)[0];
+  console.log(`[onix/EditAttributeValue.ElemNamedObject] key: ${key}`);
+  console.log(attrValue);
   return (
     <>
       <Input

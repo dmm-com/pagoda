@@ -35,10 +35,16 @@ ElemObject.propTypes = {
 };
 
 function ElemNamedObject({ attrValue }) {
+  console.log(`[onix/ElemNamedObject(00)]`);
+  console.log(attrValue);
+
+  const key = Object.keys(attrValue)[0];
   return (
     <div>
-      <div>{attrValue.key}</div>:{" "}
-      <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>
+      <div>{key}</div>:{" "}
+      <a href={showEntryPath(attrValue[key].id)}>
+        {attrValue[key].name}
+      </a>
     </div>
   );
 }

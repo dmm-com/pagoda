@@ -15,6 +15,7 @@ import { entityEntriesPath } from "../../Routes";
 import { createEntry } from "../../utils/AironeAPIClient";
 
 import { EditAttributeValue } from "./EditAttributeValue";
+import { DjangoContext } from "../../utils/DjangoContext";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -29,6 +30,7 @@ export function EntryForm({
   initName = "",
   initAttributes = {},
 }) {
+  const djangoContext = DjangoContext.getInstance();
   const classes = useStyles();
   const history = useHistory();
 
@@ -40,8 +42,28 @@ export function EntryForm({
     console.log(valueInfo);
     console.log(attributes);
 
-    attributes[name].value = valueInfo.value;
-    setAttributes({...attributes});
+    switch(valueInfo.type) {
+      case djangoContext.attrTypeValue.string:
+        attributes[name].value = valueInfo.value;
+        setAttributes({...attributes});
+        break;
+
+      case djangoContext.attrTypeValue.array_string:
+        attributes[name].value[valueInfo.index] = valueInfo.value;
+        setAttributes({...attributes});
+        break;
+
+      case djangoContext.attrTypeValue.named_object:
+        attributes[name].value.key = valueInfo.key;
+        setAttributes({...attributes});
+        break;
+
+      case djangoContext.attrTypeValue.boolean:
+        attributes[name].value = valueInfo.checked;
+        setAttributes({...attributes});
+        break;
+
+    }
 
     /*
     attributes[event.target.name] = event.target.value;
