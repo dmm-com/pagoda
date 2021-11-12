@@ -59,7 +59,7 @@
       <th id='entry_name'><a href='/entry/show/{{ result.entry.id }}/'>{{ result.entry.name }} [{{ result.entity.name }}]</a></th>
 
       {% for hint_attr in hint_attrs %}
-        {% if result.permission is False %}
+        {% if result.is_readble is False %}
           <td class='table-secondary' id='{{ hint_attr.name }}'>Permission denied</td>
         {% elif hint_attr.name not in result.attrs %}
           <td class='table-secondary' id='{{ hint_attr.name }}'></td>
@@ -143,7 +143,7 @@
                 {% endfor %}
                 </ul>
               </td>
-            {% elif attr.permission is False %}
+            {% elif attr.is_readble is False %}
               <td class='table-secondary' id='{{ hint_attr.name }}'>Permission denied.</td>
             {% else %}
               <td class='table-secondary' id='{{ hint_attr.name }}'></td>
