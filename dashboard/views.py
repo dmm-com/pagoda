@@ -94,10 +94,10 @@ def do_import_data(request, context):
     return HttpResponseSeeOther('/dashboard/')
 
 
-def _search_by_keyword(user, query, entity_name, per_page, page_num):
+def _search_by_keyword(query, entity_name, per_page, page_num):
     # correct entries that contans query at EntryName or AttributeValue
     search_result = Entry.search_entries_for_simple(
-        user, query, entity_name, per_page, (page_num-1)*per_page)
+        query, entity_name, per_page, (page_num-1)*per_page)
 
     return (search_result['ret_count'], search_result['ret_values'])
 
@@ -131,7 +131,7 @@ def search(request):
             return redirect('/entry/show/%s/' % entry.id)
 
     per_page = CONFIG.MAXIMUM_SEARCH_RESULTS
-    (count, entries) = _search_by_keyword(user, modified_query, entity_name, per_page, page_num)
+    (count, entries) = _search_by_keyword(modified_query, entity_name, per_page, page_num)
 
     if count == 1:
         return redirect('/entry/show/%s/' % entries[0]['id'])

@@ -111,13 +111,13 @@ class ESS(Elasticsearch):
                                     'type': 'integer',
                                     'index': 'false',
                                 },
-                                'permission': {
+                                'is_readble': {
                                     'type': 'boolean',
                                     'index': 'true',
                                 }
                             }
                         },
-                        'permission': {
+                        'is_readble': {
                             'type': 'boolean',
                             'index': 'true',
                         }
@@ -253,9 +253,7 @@ def make_query_for_simple(hint_string: str, hint_entity_name: str, offset: int) 
                                         },
                                         'inner_hits': {
                                             '_source': [
-                                                'attr.name',
-                                                'attr.value',
-                                                'attr.permission'
+                                                'attr.name'
                                             ]
                                         }
                                     }
@@ -267,8 +265,7 @@ def make_query_for_simple(hint_string: str, hint_entity_name: str, offset: int) 
             }
         },
         '_source': [
-            'name',
-            'permission'
+            'name'
         ],
         'sort': [{
             '_score': {
@@ -816,10 +813,10 @@ def make_search_results(user: User, res: Dict[str, Any], hint_attrs: List[Dict[s
             } for x in entry.get_referred_objects()]
 
         # Check for has permission to Entry
-        if entry_info['permission'] or user.has_permission(entry, ACLType.Readable):
-            ret_info['permission'] = True
+        if entry_info['is_readble'] or user.has_permission(entry, ACLType.Readable):
+            ret_info['is_readble'] = True
         else:
-            ret_info['permission'] = False
+            ret_info['is_readble'] = False
             results['ret_values'].append(ret_info)
             continue
 
@@ -842,12 +839,12 @@ def make_search_results(user: User, res: Dict[str, Any], hint_attrs: List[Dict[s
                     ret_info['attrs'][attrinfo['name']] = ret_attrinfo
 
             # Check for has permission to EntityAttr
-            if attrinfo['name'] not in [x['name'] for x in hint_attrs if x['permission']]:
-                ret_attrinfo['permission'] = False
+            if attrinfo['name'] not in [x['name'] for x in hint_attrs if x['is_readble']]:
+                ret_attrinfo['is_readble'] = False
                 continue
 
             # Check for has permission to Attribute
-            if not attrinfo['permission']:
+            if not attrinfo['is_readble']:
                 attr = entry.attrs.filter(schema__name=attrinfo['name'], is_active=True).first()
                 if not attr:
                     Logger.warning('Non exist Attribute (entry:%s, name:%s) is registered in ESS.'
@@ -855,10 +852,10 @@ def make_search_results(user: User, res: Dict[str, Any], hint_attrs: List[Dict[s
                     continue
 
                 if not user.has_permission(attr, ACLType.Readable):
-                    ret_attrinfo['permission'] = False
+                    ret_attrinfo['is_readble'] = False
                     continue
 
-            ret_attrinfo['permission'] = True
+            ret_attrinfo['is_readble'] = True
 
             ret_attrinfo['type'] = attrinfo['type']
             if (attrinfo['type'] == AttrTypeValue['string'] or
@@ -910,53 +907,21 @@ def make_search_results(user: User, res: Dict[str, Any], hint_attrs: List[Dict[s
     return results
 
 
-def make_search_results_for_simple(user: User, res: Dict[str, Any], limit: int,) -> Dict[str, str]:
-    from entry.models import Entry
-
+def make_search_results_for_simple(res: Dict[str, Any]) -> Dict[str, str]:
     result = {
         'ret_count': res['hits']['total'],
         'ret_values': [],
     }
 
     for resp_entry in res['hits']['hits']:
-        if len(result['ret_values']) >= limit:
-            break
 
         ret_value = {
             'id': resp_entry['_id'],
             'name': resp_entry['_source']['name'],
         }
 
-        entry = Entry.objects.filter(id=resp_entry['_id'], is_active=True).first()
-        if not entry:
-            Logger.warning('Non exist Entry (id:%s) is registered in ESS.' % resp_entry['_id'])
-            continue
-
-        # Check for has permission to Entry
-        if (not resp_entry['_source']['permission'] or
-                not user.has_permission(entry.schema, ACLType.Readable)):
-            if not user.has_permission(entry, ACLType.Readable):
-                ret_value['permission'] = False
-                result['ret_values'].append(ret_value)
-                continue
-
-        ret_value['permission'] = True
-
         for resp_entry_attr in resp_entry['inner_hits']['attr']['hits']['hits']:
-            entry_attr = entry.attrs.filter(name=resp_entry_attr['_source']['name'],
-                                            is_active=True).first()
-            if not entry_attr:
-                Logger.warning('Non exist Attribute (entry:%s ,name:%s) is registered in ESS.' %
-                               (entry.id, resp_entry_attr['_source']['name']))
-                continue
-
-            # Check for has permission to Attribute
-            if (not resp_entry_attr['_source']['permission'] or
-                    not user.has_permission(entry_attr.schema, ACLType.Readable)):
-                if not user.has_permission(entry_attr, ACLType.Readable):
-                    continue
-
-            ret_value['attr'] = resp_entry_attr['_source']
+            ret_value['attr'] = resp_entry_attr['_source']['name']
             break
 
         result['ret_values'].append(ret_value)

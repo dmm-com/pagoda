@@ -1100,20 +1100,20 @@ class Entry(ACLBase):
             attrinfo['type'] = entity_attr.type
             attrinfo['is_mandatory'] = entity_attr.is_mandatory
             attrinfo['index'] = entity_attr.index
-            attrinfo['permission'] = True
+            attrinfo['is_readble'] = True
             attrinfo['last_value'] = AttrDefaultValue[entity_attr.type]
 
             # check that attribute exists
             attr = self.attrs.filter(is_active=True, schema=entity_attr).first()
             if not attr:
-                attrinfo['permission'] = user.has_permission(entity_attr, permission)
+                attrinfo['is_readble'] = user.has_permission(entity_attr, permission)
                 ret_attrs.append(attrinfo)
                 continue
             attrinfo['id'] = attr.id
 
             # check permission of attributes
             if not user.has_permission(attr, permission):
-                attrinfo['permission'] = False
+                attrinfo['is_readble'] = False
                 ret_attrs.append(attrinfo)
                 continue
 
@@ -1309,7 +1309,7 @@ class Entry(ACLBase):
                 'key': '',
                 'value': '',
                 'referral_id': '',
-                'permission': True if (
+                'is_readble': True if (
                     not attr or attr.is_public or attr.default_permission >= ACLType.Readable.id
                 ) else False
             }
@@ -1374,7 +1374,7 @@ class Entry(ACLBase):
             'entity': {'id': self.schema.id, 'name': self.schema.name},
             'name': self.name,
             'attr': [],
-            'permission': True if (
+            'is_readble': True if (
                 self.is_public or self.default_permission >= ACLType.Readable.id
             ) else False
         }
@@ -1487,10 +1487,10 @@ class Entry(ACLBase):
                         'Name of Attribute': {
                             'type': (int),
                             'value': (any),
-                            'permission': (bool),
+                            'is_readble': (bool),
                         }
                     }
-                    'permission': (bool),
+                    'is_readble': (bool),
                 ],
             }
         """
@@ -1505,14 +1505,13 @@ class Entry(ACLBase):
                 continue
 
             # Check for has permission to EntityAttr
-
-            for index, hint_attr in enumerate(hint_attrs):
+            for hint_attr in hint_attrs:
                 if 'name' not in hint_attr:
                     continue
 
                 hint_entity_attr = entity.attrs.filter(name=hint_attr['name'],
                                                        is_active=True).first()
-                hint_attrs[index]['permission'] = True if (
+                hint_attr['is_readble'] = True if (
                     hint_entity_attr and user.has_permission(hint_entity_attr, ACLType.Readable)
                 ) else False
 
@@ -1531,7 +1530,7 @@ class Entry(ACLBase):
                 for entity_attr in entity.attrs.filter(is_active=True):
                     output_attrs.append({
                         'name': entity_attr.name,
-                        'permission': True if (
+                        'is_readble': True if (
                             user.has_permission(entity_attr, ACLType.Readable)) else False
                     })
             else:
@@ -1546,7 +1545,7 @@ class Entry(ACLBase):
         return results
 
     @classmethod
-    def search_entries_for_simple(kls, user, hint_attr_value, hint_entity_name=None,
+    def search_entries_for_simple(kls, hint_attr_value, hint_entity_name=None,
                                   limit=CONFIG.MAX_LIST_ENTRIES, offset=0):
         """Method called from simple search.
         Returns the count and values of entries with hint_attr_value.
@@ -1554,11 +1553,9 @@ class Entry(ACLBase):
         Do the following:
         1. Create a query for Elasticsearch search. (make_query_for_attrv)
         2. Execute the created query. (execute_query)
-        3. Check permissions,
-           process the search results, and return. (make_search_results_for_attrv)
+        3. Process the search results, and return. (make_search_results_for_attrv)
 
         Args:
-            user (:obj:`str`, optional): User who executed the process
             hint_attr_value (str): Search string for AttributeValue
             hint_entity_name (str): Defaults to None.
                 Search string for Entity Name
@@ -1575,11 +1572,7 @@ class Entry(ACLBase):
                 'ret_values': [
                     'id': (str),
                     'name': (str),
-                    'permission': (bool),
-                    'attr': {
-                        'name': (str),
-                        'value': (str),
-                    }
+                    'attr': (str),
                 ],
             }
 
@@ -1594,7 +1587,7 @@ class Entry(ACLBase):
                 'ret_values': [],
             }
 
-        return make_search_results_for_simple(user, resp, limit)
+        return make_search_results_for_simple(resp)
 
     @classmethod
     def get_all_es_docs(kls):

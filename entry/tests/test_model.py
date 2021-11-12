@@ -1028,7 +1028,7 @@ class ModelTest(AironeTestCase):
             self.assertEqual(result['type'], attr.schema.type)
             self.assertEqual(result['is_mandatory'], attr.schema.is_mandatory)
             self.assertEqual(result['index'], attr.schema.index)
-            self.assertEqual(result['permission'], True)
+            self.assertEqual(result['is_readble'], True)
             self.assertEqual(result['last_value'], attrinfo[attr.name]['exp_val'])
 
     def test_get_available_attrs_with_multi_attribute(self):
@@ -3137,7 +3137,7 @@ class ModelTest(AironeTestCase):
         self._entry.attrs.add(self._attr)
         self._entry.register_es()
         ret = Entry.search_entries(self._user, [self._entity.id], is_output_all=True)
-        self.assertEqual(ret['ret_values'][0]['attrs'], {'attr': {'permission': True, 'type': 2}})
+        self.assertEqual(ret['ret_values'][0]['attrs'], {'attr': {'is_readble': True, 'type': 2}})
 
     def test_get_es_document(self):
         user = User.objects.create(username='hoge')
@@ -3183,7 +3183,7 @@ class ModelTest(AironeTestCase):
             set_attrs = [x for x in es_registering_value['attr'] if x['name'] == attrname]
 
             self.assertTrue(all([x['type'] == attr.schema.type for x in set_attrs]))
-            self.assertTrue(all([x['permission'] is True for x in set_attrs]))
+            self.assertTrue(all([x['is_readble'] is True for x in set_attrs]))
             for param_name in ['key', 'value', 'referral_id', 'date_value']:
                 if param_name in attrinfo:
                     self.assertEqual(sorted([x[param_name] for x in set_attrs]),
@@ -3201,7 +3201,7 @@ class ModelTest(AironeTestCase):
             'key': '',
             'value': '',
             'referral_id': '',
-            'permission': True,
+            'is_readble': True,
         }])
 
     def test_get_es_document_when_referred_entry_was_deleted(self):
@@ -3229,7 +3229,7 @@ class ModelTest(AironeTestCase):
             'key': '',
             'value': self._entry.name,
             'referral_id': self._entry.id,
-            'permission': True,
+            'is_readble': True,
         }])
 
         # Delete an entry which is referred by ref_entry
@@ -3244,7 +3244,7 @@ class ModelTest(AironeTestCase):
             'key': '',
             'value': '',        # expected not to have information about deleted entry
             'referral_id': '',  # expected not to have information about deleted entry
-            'permission': True,
+            'is_readble': True,
         }])
 
     def test_get_attrv_method_of_entry(self):

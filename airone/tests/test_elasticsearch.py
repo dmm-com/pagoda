@@ -161,9 +161,7 @@ class ElasticSearchTest(TestCase):
                                             },
                                             'inner_hits': {
                                                 '_source': [
-                                                    'attr.name',
-                                                    'attr.value',
-                                                    'attr.permission',
+                                                    'attr.name'
                                                 ]
                                             }
                                         }
@@ -175,8 +173,7 @@ class ElasticSearchTest(TestCase):
                 }
             },
             '_source': [
-                'name',
-                'permission',
+                'name'
             ],
             'sort': [{
                 '_score': {
@@ -244,10 +241,10 @@ class ElasticSearchTest(TestCase):
                                     'key': '',
                                     'value': attr_value.value,
                                     'referral_id': '',
-                                    'permission': True
+                                    'is_readble': True
                                 }
                             ],
-                            'permission': True
+                            'is_readble': True
                         },
                         'sort': [entry.name]
                     }
@@ -255,7 +252,7 @@ class ElasticSearchTest(TestCase):
             }
         }
 
-        hint_attrs = [{'name': 'test_attr', 'keyword': '', 'permission': True}]
+        hint_attrs = [{'name': 'test_attr', 'keyword': '', 'is_readble': True}]
         results = elasticsearch.make_search_results(self._user, res, hint_attrs, 100, False)
 
         self.assertEqual(results['ret_count'], 1)
@@ -274,10 +271,10 @@ class ElasticSearchTest(TestCase):
                         {
                             'type': attr.schema.type,
                             'value': attr_value.value,
-                            'permission': True
+                            'is_readble': True
                         }
                 },
-                'permission': True
+                'is_readble': True
             }
         ])
 
@@ -304,8 +301,7 @@ class ElasticSearchTest(TestCase):
                         '_type': 'entry',
                         '_id': entry.id,
                         '_source': {
-                            'name': entry.name,
-                            'permission': True,
+                            'name': entry.name
                         },
                         'inner_hits': {
                             'attr': {
@@ -315,9 +311,7 @@ class ElasticSearchTest(TestCase):
                                         '_type': 'entry',
                                         '_id': entry.id,
                                         '_source': {
-                                            'name': attr.name,
-                                            'value': attr_value.value,
-                                            'permission': True,
+                                            'name': attr.name
                                         },
                                     }]
                                 }
@@ -328,18 +322,13 @@ class ElasticSearchTest(TestCase):
             }
         }
 
-        results = elasticsearch.make_search_results_for_simple(self._user, res, 100)
+        results = elasticsearch.make_search_results_for_simple(res)
 
         self.assertEqual(results['ret_count'], 1)
         self.assertEqual(results['ret_values'], [
             {
                 'id': entry.id,
                 'name': entry.name,
-                'attr': {
-                    'name': attr.name,
-                    'value': attr_value.value,
-                    'permission': True,
-                },
-                'permission': True
+                'attr': attr.name,
             }
         ])

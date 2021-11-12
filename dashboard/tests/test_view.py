@@ -338,8 +338,8 @@ class ViewTest(AironeViewTest):
         })
         self.assertEqual(resp.context['results']['ret_count'], 1)
         resp_attrs = resp.context['results']['ret_values'][0]['attrs']
-        self.assertFalse(resp_attrs['attr-str']['permission'])
-        self.assertTrue(resp_attrs['attr-obj']['permission'])
+        self.assertFalse(resp_attrs['attr-str']['is_readble'])
+        self.assertTrue(resp_attrs['attr-obj']['is_readble'])
 
         # check when not have permission to read Entry
         entry = Entry.objects.get(name='srv001', schema__name='Server')
@@ -353,7 +353,7 @@ class ViewTest(AironeViewTest):
         })
         self.assertEqual(resp.context['results']['ret_count'], 1)
         resp_entry = resp.context['results']['ret_values'][0]
-        self.assertFalse(resp_entry['permission'])
+        self.assertFalse(resp_entry['is_readble'])
         self.assertEqual(resp_entry['attrs'], {})
 
         guest_user.permissions.add(entry.readable)
@@ -364,7 +364,7 @@ class ViewTest(AironeViewTest):
         })
         self.assertEqual(resp.context['results']['ret_count'], 1)
         resp_entry = resp.context['results']['ret_values'][0]
-        self.assertTrue(resp_entry['permission'])
+        self.assertTrue(resp_entry['is_readble'])
         self.assertEqual(resp_entry['attrs']['attr-obj']['value'], {'id': 8, 'name': 'entry11'})
 
         # check when not have permission to read Attribute
@@ -379,7 +379,7 @@ class ViewTest(AironeViewTest):
         })
         self.assertEqual(resp.context['results']['ret_count'], 1)
         resp_attr = resp.context['results']['ret_values'][0]['attrs']['attr-obj']
-        self.assertFalse(resp_attr['permission'])
+        self.assertFalse(resp_attr['is_readble'])
         self.assertFalse('value' in resp_attr)
 
         guest_user.permissions.add(attr.readable)
@@ -389,7 +389,7 @@ class ViewTest(AironeViewTest):
         })
         self.assertEqual(resp.context['results']['ret_count'], 1)
         resp_attr = resp.context['results']['ret_values'][0]['attrs']['attr-obj']
-        self.assertTrue(resp_attr['permission'])
+        self.assertTrue(resp_attr['is_readble'])
         self.assertEqual(resp_attr['value'], {'id': 8, 'name': 'entry11'})
 
     @patch('dashboard.tasks.export_search_result.delay',

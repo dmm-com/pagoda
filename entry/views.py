@@ -165,7 +165,7 @@ def create(request, entity_id):
             'type': x.type,
             'name': x.name,
             'is_mandatory': x.is_mandatory,
-            'permission': True if user.has_permission(x, ACLType.Writable) else False
+            'is_readble': True if user.has_permission(x, ACLType.Writable) else False
         } for x in entity.attrs.filter(is_active=True).order_by('index')]
     }
 
