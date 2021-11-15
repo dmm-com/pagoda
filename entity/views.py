@@ -353,6 +353,7 @@ def dashboard(request, entity_id):
             'referral_count': [{
                 'referral': r.name,
                 'count': AttributeValue.objects.filter(**{
+                    'parent_attr__parent_entry__is_active': True,
                     'parent_attr__is_active': True,
                     'parent_attr__schema': attr,
                     'is_latest': True,
