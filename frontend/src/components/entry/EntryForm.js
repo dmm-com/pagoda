@@ -133,6 +133,7 @@ export function EntryForm({
         break;
 
       case djangoContext.attrTypeValue.object:
+      case djangoContext.attrTypeValue.group:
         attributes[name].value = {
           ...attributes[name].value,
           checked: valueInfo.checked,
@@ -145,19 +146,46 @@ export function EntryForm({
         setAttributes({ ...attributes });
         break;
 
-      case djangoContext.attrTypeValue.named_object:
-        attributes[name].value = {
-          [valueInfo.key]: Object.values(attributes[name].value)[0],
+      case djangoContext.attrTypeValue.array_object:
+      case djangoContext.attrTypeValue.array_group:
+        attributes[name].value[valueInfo.index] = {
+          ...attributes[name].value[valueInfo.index],
+          checked: valueInfo.checked,
         };
         setAttributes({ ...attributes });
         break;
 
+      case djangoContext.attrTypeValue.named_object:
+        if (event.target.type === "text") {
+          attributes[name].value = {
+            [valueInfo.key]: Object.values(attributes[name].value)[0],
+          };
+        }
+        if (event.target.type === "checkbox") {
+          const key = Object.keys(attributes[name].value)[0];
+          attributes[name].value[key] = {
+            ...attributes[name].value[key],
+            checked: valueInfo.checked,
+          };
+        }
+        setAttributes({ ...attributes });
+        break;
+
       case djangoContext.attrTypeValue.array_named_object:
-        attributes[name].value[valueInfo.index] = {
-          [valueInfo.key]: Object.values(
-            attributes[name].value[valueInfo.index]
-          )[0],
-        };
+        if (event.target.type === "text") {
+          attributes[name].value[valueInfo.index] = {
+            [valueInfo.key]: Object.values(
+              attributes[name].value[valueInfo.index]
+            )[0],
+          };
+        }
+        if (event.target.type === "checkbox") {
+          const key = Object.keys(attributes[name].value[valueInfo.index])[0];
+          attributes[name].value[valueInfo.index][key] = {
+            ...attributes[name].value[valueInfo.index][key],
+            checked: valueInfo.checked,
+          };
+        }
         setAttributes({ ...attributes });
         break;
 
