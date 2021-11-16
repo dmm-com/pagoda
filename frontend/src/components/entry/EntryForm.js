@@ -34,28 +34,60 @@ export function EntryForm({
   const classes = useStyles();
   const history = useHistory();
 
+  console.log(`[onix/00] initAttributes`);
+  console.log(initAttributes);
+
   /* FIXME attach checked flag to entry-like types
-  const initAttr = Object.keys(initAttributes).map((attrName) => {
+   */
+  const changedInitAttr = Object.keys(initAttributes).map((attrName) => {
       const attrValue = initAttributes[attrName];
       switch (attrValue.type) {
       case djangoContext.attrTypeValue.object:
         return {
           name: attrName,
           value: {
-            ...attrValue,
+            id: attrValue.value.id,
+            name: attrValue.value.name,
             checked: true,
         }};
+
+      case djangoContext.attrTypeValue.named_object:
+        const key = Object.keys(attrValue.value)[0];
+        const value = attrValue.value[key];
+
+        return {
+          name: attrName,
+          value: {
+            key: {
+              id: value.id,
+              name: value.name,
+              checked: true,
+            },
+          }
+        };
+
+      case djangoContext.attrTypeValue.array_object:
+        return {
+          name: attrName,
+          value: attrValue.value.map((val) => {
+            return {
+              id: val.id,
+              name: val.name,
+              checked: true,
+            };
+          }),
+        }
+
       default:
         return {
           name: attrName,
           value: attrValue,
         };
       }
-  }).reduce((elem, acc) => {
+  }).reduce((acc, elem) => {
       acc[elem.name] = elem.value;
       return acc;
   }, {});
-   */
 
   const [name, setName] = useState(initName);
   const [attributes, setAttributes] = useState(initAttributes);
