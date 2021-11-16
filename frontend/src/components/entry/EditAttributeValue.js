@@ -61,6 +61,7 @@ function ElemObject({ attrName, attrValue, attrType, index, handleChange }) {
                 edge="start"
                 tabIndex={-1}
                 disableRipple
+                checked={attrValue.checked}
                 onChange={(e) => {
                   handleChange(e, attrName, {
                     type: attrType,
@@ -131,6 +132,7 @@ function ElemGroup({ attrName, attrValue, attrType, index, handleChange }) {
                 edge="start"
                 tabIndex={-1}
                 disableRipple
+                checked={attrValue.checked}
                 onChange={(e) =>
                   handleChange(e, attrName, {
                     type: attrType,
@@ -244,6 +246,8 @@ export function EditAttributeValue({
       );
 
     case djangoContext.attrTypeValue.array_named_object:
+      console.log("[onix/array_named_object(00)]");
+      console.log(attrInfo);
       return (
         <List>
           {attrInfo.value.map((info, n) => {

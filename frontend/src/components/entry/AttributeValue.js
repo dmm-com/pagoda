@@ -42,9 +42,7 @@ function ElemNamedObject({ attrValue }) {
   return (
     <div>
       <div>{key}</div>:{" "}
-      <a href={showEntryPath(attrValue[key].id)}>
-        {attrValue[key].name}
-      </a>
+      <a href={showEntryPath(attrValue[key].id)}>{attrValue[key].name}</a>
     </div>
   );
 }

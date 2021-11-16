@@ -11,11 +11,9 @@ import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { entityEntriesPath } from "../../Routes";
-import { createEntry } from "../../utils/AironeAPIClient";
+import { DjangoContext } from "../../utils/DjangoContext";
 
 import { EditAttributeValue } from "./EditAttributeValue";
-import { DjangoContext } from "../../utils/DjangoContext";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -39,107 +37,143 @@ export function EntryForm({
 
   /* FIXME attach checked flag to entry-like types
    */
-  const changedInitAttr = Object.keys(initAttributes).map((attrName) => {
+  const changedInitAttr = Object.keys(initAttributes)
+    .map((attrName) => {
       const attrValue = initAttributes[attrName];
       switch (attrValue.type) {
-      case djangoContext.attrTypeValue.object:
-        return {
-          name: attrName,
-          value: {
-            id: attrValue.value.id,
-            name: attrValue.value.name,
-            checked: true,
-        }};
-
-      case djangoContext.attrTypeValue.named_object:
-        const key = Object.keys(attrValue.value)[0];
-        const value = attrValue.value[key];
-
-        return {
-          name: attrName,
-          value: {
-            key: {
-              id: value.id,
-              name: value.name,
-              checked: true,
+        case djangoContext.attrTypeValue.group:
+        case djangoContext.attrTypeValue.object:
+          return {
+            name: attrName,
+            value: {
+              value: {
+                ...attrValue.value,
+                checked: true,
+              },
+              type: attrValue.type,
             },
-          }
-        };
+          };
 
-      case djangoContext.attrTypeValue.array_object:
-        return {
-          name: attrName,
-          value: attrValue.value.map((val) => {
-            return {
-              id: val.id,
-              name: val.name,
-              checked: true,
-            };
-          }),
-        }
+        case djangoContext.attrTypeValue.named_object:
+          const name = Object.keys(attrValue.value)[0];
+          const value = attrValue.value[name];
 
-      default:
-        return {
-          name: attrName,
-          value: attrValue,
-        };
+          return {
+            name: attrName,
+            value: {
+              value: {
+                [name]: {
+                  id: value.id,
+                  name: value.name,
+                  checked: true,
+                },
+              },
+              type: attrValue.type,
+            },
+          };
+
+        case djangoContext.attrTypeValue.array_group:
+        case djangoContext.attrTypeValue.array_object:
+          return {
+            name: attrName,
+            value: {
+              value: attrValue.value.map((val) => {
+                return {
+                  ...val,
+                  checked: true,
+                };
+              }),
+              type: attrValue.type,
+            },
+          };
+
+        case djangoContext.attrTypeValue.array_named_object:
+          return {
+            name: attrName,
+            value: {
+              value: attrValue.value.map((val) => {
+                const name = Object.keys(val)[0];
+                const value = val[name];
+                return {
+                  [name]: {
+                    ...value,
+                    checked: true,
+                  },
+                };
+              }),
+              type: attrValue.type,
+            },
+          };
+
+        default:
+          return {
+            name: attrName,
+            value: attrValue,
+          };
       }
-  }).reduce((acc, elem) => {
+    })
+    .reduce((acc, elem) => {
       acc[elem.name] = elem.value;
       return acc;
-  }, {});
+    }, {});
+  console.log(changedInitAttr);
 
   const [name, setName] = useState(initName);
-  const [attributes, setAttributes] = useState(initAttributes);
+  const [attributes, setAttributes] = useState(changedInitAttr);
 
   const handleChangeAttribute = (event, name, valueInfo) => {
-    console.log("[onix/handleChangeAttribute] name: " + name);
-    console.log(valueInfo);
-    console.log(attributes);
+    // console.log("[onix/handleChangeAttribute] name: " + name);
+    // console.log(valueInfo);
+    // console.log(attributes);
 
-    switch(valueInfo.type) {
+    switch (valueInfo.type) {
       case djangoContext.attrTypeValue.string:
         attributes[name].value = valueInfo.value;
-        setAttributes({...attributes});
+        setAttributes({ ...attributes });
         break;
 
       case djangoContext.attrTypeValue.object:
-        attributes[name].value = valueInfo.value;
-        setAttributes({...attributes});
+        attributes[name].value = {
+          ...attributes[name].value,
+          checked: valueInfo.checked,
+        };
+        setAttributes({ ...attributes });
         break;
 
       case djangoContext.attrTypeValue.array_string:
         attributes[name].value[valueInfo.index] = valueInfo.value;
-        setAttributes({...attributes});
+        setAttributes({ ...attributes });
         break;
 
       case djangoContext.attrTypeValue.named_object:
         attributes[name].value = {
-          [valueInfo.key]: Object.values(attributes[name].value)[0]
+          [valueInfo.key]: Object.values(attributes[name].value)[0],
         };
-        setAttributes({...attributes});
+        setAttributes({ ...attributes });
         break;
 
       case djangoContext.attrTypeValue.array_named_object:
         attributes[name].value[valueInfo.index] = {
-          [valueInfo.key]: Object.values(attributes[name].value[valueInfo.index])[0]
+          [valueInfo.key]: Object.values(
+            attributes[name].value[valueInfo.index]
+          )[0],
         };
-        setAttributes({...attributes});
+        setAttributes({ ...attributes });
         break;
 
       case djangoContext.attrTypeValue.boolean:
         attributes[name].value = valueInfo.checked;
-        setAttributes({...attributes});
+        setAttributes({ ...attributes });
         break;
 
       case djangoContext.attrTypeValue.date:
         attributes[name].value = valueInfo.value;
-        setAttributes({...attributes});
+        setAttributes({ ...attributes });
         break;
 
       case djangoContext.attrTypeValue.text:
         attributes[name].value = valueInfo.value;
-        setAttributes({...attributes});
+        setAttributes({ ...attributes });
         break;
 
       default:
@@ -147,6 +181,8 @@ export function EntryForm({
         console.log(valueInfo);
     }
 
+    console.log("[onix/handleChangeAttribute] name: " + name);
+    console.log(attributes);
     /*
     attributes[event.target.name] = event.target.value;
     const updated = attributes.map((attribute) => {
