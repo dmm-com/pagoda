@@ -3139,6 +3139,66 @@ class ModelTest(AironeTestCase):
         ret = Entry.search_entries(self._user, [self._entity.id], is_output_all=True)
         self.assertEqual(ret['ret_values'][0]['attrs'], {'attr': {'is_readble': True, 'type': 2}})
 
+    def test_search_entries_for_simple(self):
+        self._entity.attrs.add(self._attr.schema)
+        self._entry.attrs.add(self._attr)
+        self._entry.attrs.first().add_value(self._user, 'hoge')
+        self._entry.register_es()
+
+        # search by Entry name
+        ret = Entry.search_entries_for_simple('entry')
+        self.assertEqual(ret['ret_count'], 1)
+        self.assertEqual(ret['ret_values'][0], {
+            'id': str(self._entry.id),
+            'name': self._entry.name,
+        })
+
+        # search by AttributeValue
+        ret = Entry.search_entries_for_simple('hoge')
+        self.assertEqual(ret['ret_count'], 1)
+        self.assertEqual(ret['ret_values'][0], {
+            'id': str(self._entry.id),
+            'name': self._entry.name,
+            'attr': self._attr.schema.name,
+        })
+
+    def test_search_entries_for_simple_with_hint_entity_name(self):
+        self._entry.register_es()
+        entity = Entity.objects.create(name='entity2', created_user=self._user)
+        entry = Entry.objects.create(name='entry2', schema=entity, created_user=self._user)
+        entry.register_es()
+
+        ret = Entry.search_entries_for_simple('entry')
+        self.assertEqual(ret['ret_count'], 2)
+        self.assertEqual([x['name'] for x in ret['ret_values']], ['entry', 'entry2'])
+
+        ret = Entry.search_entries_for_simple('entry', 'entity')
+        self.assertEqual(ret['ret_count'], 1)
+        self.assertEqual([x['name'] for x in ret['ret_values']], ['entry'])
+
+    def test_search_entries_for_simple_with_limit_offset(self):
+        for i in range(0, 10):
+            entry = Entry.objects.create(
+                name='e-%s' % i, schema=self._entity, created_user=self._user)
+            entry.register_es()
+
+        ret = Entry.search_entries_for_simple('e-', limit=5)
+        self.assertEqual(ret['ret_count'], 10)
+        self.assertEqual([x['name'] for x in ret['ret_values']], ['e-%s' % x for x in range(0, 5)])
+
+        ret = Entry.search_entries_for_simple('e-', offset=5)
+        self.assertEqual(ret['ret_count'], 10)
+        self.assertEqual([x['name'] for x in ret['ret_values']], ['e-%s' % x for x in range(5, 10)])
+
+        # param larger than max_result_window
+        ret = Entry.search_entries_for_simple('e-', limit=500001)
+        self.assertEqual(ret['ret_count'], 0)
+        self.assertEqual(ret['ret_values'], [])
+
+        ret = Entry.search_entries_for_simple('e-', offset=500001)
+        self.assertEqual(ret['ret_count'], 0)
+        self.assertEqual(ret['ret_values'], [])
+
     def test_get_es_document(self):
         user = User.objects.create(username='hoge')
         test_group = Group.objects.create(name='test-group')

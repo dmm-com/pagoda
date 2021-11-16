@@ -1577,6 +1577,13 @@ class Entry(ACLBase):
             }
 
         """
+        # by elasticsearch limit, from + size must be less than or equal to max_result_window
+        if offset + limit > settings.ES_CONFIG['MAXIMUM_RESULTS_NUM']:
+            return {
+                'ret_count': 0,
+                'ret_values': [],
+            }
+
         query = make_query_for_simple(hint_attr_value, hint_entity_name, offset)
 
         resp = execute_query(query, limit)
