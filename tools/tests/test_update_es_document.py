@@ -60,7 +60,7 @@ class UpdateESDocuemntlTest(AironeTestCase):
 
         register_documents(self._es, self._es._index)
 
-        ret = Entry.search_entries(self.user, [self.entity.id])
+        ret = Entry.search_entries(self.user, [self.entity.id], [{'name': 'attr'}])
         self.assertEqual(ret['ret_count'], 3)
 
         entry_info = [x for x in ret['ret_values'] if x['entry']['id'] == entry.id][0]

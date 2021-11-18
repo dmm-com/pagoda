@@ -8,6 +8,7 @@
 
 ### Fixed
 * Fixed an issue that caused redirects by incorrect URL links
+* Fixed no permission check in advanced search and simple search(#282)
 * Fixed a different number of entries displayed on the entity dashboard (#308)
 
 ## v3.3.1

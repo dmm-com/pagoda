@@ -76,7 +76,7 @@ class APITest(AironeViewTest):
 
             result = resp.json()['result']
             self.assertEqual(result['ret_count'], 2)
-            self.assertFalse('referrals' in result)
+            [self.assertFalse('referrals' in x) for x in result['ret_values']]
 
         # send search request with 'hint_referral' parameter
         params = {
@@ -283,3 +283,49 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()['result']['ret_count'], 0)
         self.assertEqual(resp.json()['result']['ret_values'], [])
+
+    def test_search_with_entry_limit(self):
+        user = self.guest_login()
+
+        # Initialize Entity and Entries, then register created entries to the Elasticsearch
+        entity = Entity.objects.create(name='entity', created_user=user)
+        for name in ['foo', 'bar', 'baz']:
+            Entry.objects.create(name=name, schema=entity, created_user=user).register_es()
+
+        # send search request with a part of name of entries
+        params = {
+            'entities': ['entity'],
+            'entry_name': 'ba',
+            'attrinfo': [],
+            'entry_limit': 1,
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()['result']['ret_count'], 2)
+        self.assertEqual(len([x for x in resp.json()['result']['ret_values']]), 1)
+
+    def test_search_with_no_permission_entity(self):
+        user = self.guest_login()
+
+        # Initialize Entity and Entries, then register created entries to the Elasticsearch
+        entity = Entity.objects.create(name='entity', created_user=user)
+        for name in ['foo', 'bar', 'baz']:
+            Entry.objects.create(name=name, schema=entity, created_user=user).register_es()
+
+        # Initialize no permission Entity
+        no_entity = Entity.objects.create(name='no_entity', created_user=user, is_public=False)
+        for name in ['foo', 'bar', 'baz']:
+            Entry.objects.create(name=name, schema=no_entity, created_user=user).register_es()
+
+        # send search request with a part of name of entries
+        params = {
+            'entities': ['entity', 'no_entity'],
+            'entry_name': 'ba',
+            'attrinfo': [],
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()['result']['ret_count'], 2)
+        self.assertEqual(len([x for x in resp.json()['result']['ret_values']]), 2)
+        self.assertEqual([x['entity']['name'] for x in resp.json()['result']['ret_values']],
+                         ['entity', 'entity'])

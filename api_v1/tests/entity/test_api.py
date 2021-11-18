@@ -45,11 +45,11 @@ class APITest(AironeViewTest):
                             log.output[0]))
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(sorted(resp.json()['result']), sorted(['foo', 'bar', 'hoge', 'fuga']))
+        self.assertEqual(resp.json()['result'], sorted(['foo', 'bar', 'hoge', 'fuga']))
 
     def test_get_partial_entity_attrs(self):
         entities = Entity.objects.filter(name__contains='test_entity')
         resp = self.client.get('/api/v1/entity/attrs/%s' % ','.join([str(x.id) for x in entities]))
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(sorted(resp.json()['result']), sorted(['bar', 'fuga']))
+        self.assertEqual(resp.json()['result'], sorted(['bar', 'fuga']))

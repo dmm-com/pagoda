@@ -36,15 +36,6 @@ class ElasticSearchTest(TestCase):
         p2 = elasticsearch._get_regex_pattern('^keyword$')
         self.assertEqual(p2, '.*^?[kK][eE][yY][wW][oO][rR][dD]$?.*')
 
-    def test_make_key_for_each_block_of_keywords(self):
-        key1 = elasticsearch._make_key_for_each_block_of_keywords(
-            {'name': 'name'}, 'keyword', True)
-        self.assertEqual(key1, 'keyword')
-
-        key2 = elasticsearch._make_key_for_each_block_of_keywords(
-            {'name': 'name'}, 'keyword', False)
-        self.assertEqual(key2, 'keyword_name')
-
     def test_is_matched_keyword(self):
         # if it has the same value with a hint
         self.assertTrue(elasticsearch._is_matched_entry(
@@ -78,11 +69,9 @@ class ElasticSearchTest(TestCase):
 
     def test_make_query(self):
         query = elasticsearch.make_query(
-            hint_entity_ids=['1'],
+            hint_entity=self._entity,
             hint_attrs=[{'name': 'a1', 'keyword': 'a'}, {'name': 'a2', 'keyword': ''}],
-            hint_attr_value=None,
             entry_name='entry1',
-            or_match=False,
         )
 
         self.assertEqual(query, {
@@ -93,11 +82,7 @@ class ElasticSearchTest(TestCase):
                             'nested': {
                                 'path': 'entity',
                                 'query': {
-                                    'bool': {
-                                        'should': [
-                                            {'term': {'entity.id': 1}}
-                                        ]
-                                    }
+                                    'term': {'entity.id': self._entity.id}
                                 }
                             }
                         },
@@ -153,6 +138,75 @@ class ElasticSearchTest(TestCase):
             }
         })
 
+    def test_make_query_for_simple(self):
+        query = elasticsearch.make_query_for_simple('hoge', None, 0)
+        self.assertEqual(query, {
+            'query': {
+                'bool': {
+                    'must': [{
+                        'bool': {
+                            'should': [{
+                                'regexp': {
+                                    'name': '.*[hH][oO][gG][eE].*'
+                                }
+                            }, {
+                                'bool': {
+                                    'filter': {
+                                        'nested': {
+                                            'path': 'attr',
+                                            'query': {
+                                                'regexp': {
+                                                    'attr.value': '.*[hH][oO][gG][eE].*'
+                                                }
+                                            },
+                                            'inner_hits': {
+                                                '_source': [
+                                                    'attr.name'
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }]
+                        }
+                    }]
+                }
+            },
+            '_source': [
+                'name'
+            ],
+            'sort': [{
+                '_score': {
+                    'order': 'desc'
+                },
+                'name.keyword': {
+                    'order': 'asc'
+                }
+            }],
+            'from': 0,
+        })
+
+        # set hint_entity_name
+        query = elasticsearch.make_query_for_simple('hoge', 'fuga', 0)
+        self.assertEqual(query['query']['bool']['must'][1], {
+            'bool': {
+                'filter': [{
+                    'nested': {
+                        'path': 'entity',
+                        'query': {
+                            'term': {
+                                'entity.name': 'fuga'
+                            }
+                        }
+                    }
+                }]
+            }
+        })
+
+        # set offset
+        query = elasticsearch.make_query_for_simple('hoge', 'fuga', 100)
+        self.assertEqual(query['from'], 100)
+
     def test_make_search_results(self):
         entry = Entry.objects.create(name='test_entry',
                                      schema=self._entity,
@@ -186,9 +240,11 @@ class ElasticSearchTest(TestCase):
                                     'type': attr.schema.type,
                                     'key': '',
                                     'value': attr_value.value,
-                                    'referral_id': ''
+                                    'referral_id': '',
+                                    'is_readble': True
                                 }
-                            ]
+                            ],
+                            'is_readble': True
                         },
                         'sort': [entry.name]
                     }
@@ -196,8 +252,8 @@ class ElasticSearchTest(TestCase):
             }
         }
 
-        hint_attrs = [{'name': 'test_attr', 'keyword': ''}]
-        results = elasticsearch.make_search_results(res, hint_attrs, 100, False)
+        hint_attrs = [{'name': 'test_attr', 'keyword': '', 'is_readble': True}]
+        results = elasticsearch.make_search_results(self._user, res, hint_attrs, 100, False)
 
         self.assertEqual(results['ret_count'], 1)
         self.assertEqual(results['ret_values'], [
@@ -215,7 +271,64 @@ class ElasticSearchTest(TestCase):
                         {
                             'type': attr.schema.type,
                             'value': attr_value.value,
+                            'is_readble': True
                         }
                 },
+                'is_readble': True
+            }
+        ])
+
+    def test_make_search_results_for_simple(self):
+        entry = Entry.objects.create(name='test_entry',
+                                     schema=self._entity,
+                                     created_user=self._user)
+        attr = Attribute.objects.create(name='test',
+                                        schema=self._entity_attr,
+                                        created_user=self._user,
+                                        parent_entry=entry)
+        attr_value = AttributeValue.objects.create(value='test_attr_value',
+                                                   created_user=self._user,
+                                                   parent_attr=attr)
+        entry.attrs.add(attr)
+        attr.values.add(attr_value)
+        attr.save()
+
+        res = {
+            'hits': {
+                'total': 1,
+                'hits': [
+                    {
+                        '_type': 'entry',
+                        '_id': entry.id,
+                        '_source': {
+                            'name': entry.name
+                        },
+                        'inner_hits': {
+                            'attr': {
+                                'hits': {
+                                    'total': 1,
+                                    'hits': [{
+                                        '_type': 'entry',
+                                        '_id': entry.id,
+                                        '_source': {
+                                            'name': attr.name
+                                        },
+                                    }]
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+
+        results = elasticsearch.make_search_results_for_simple(res)
+
+        self.assertEqual(results['ret_count'], 1)
+        self.assertEqual(results['ret_values'], [
+            {
+                'id': entry.id,
+                'name': entry.name,
+                'attr': attr.name,
             }
         ])
