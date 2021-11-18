@@ -8,6 +8,7 @@
 
 ### Fixed
 * Fixed an issue that caused redirects by incorrect URL links
+* Fixed a different number of entries displayed on the entity dashboard (#308)
 
 ## v3.3.1
 
