@@ -14,8 +14,8 @@ import { useHistory } from "react-router-dom";
 import { DjangoContext } from "../../utils/DjangoContext";
 
 import { EditAttributeValue } from "./EditAttributeValue";
-import {useAsync} from "react-use";
-import {getAttrReferrals} from "../../utils/AironeAPIClient";
+import { useAsync } from "react-use";
+import { getAttrReferrals } from "../../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -50,10 +50,12 @@ export function EntryForm({
             value: {
               id: attrValue.id,
               type: attrValue.type,
-              value: {
-                ...attrValue.value,
-                checked: true,
-              },
+              value: [
+                {
+                  ...attrValue.value,
+                  checked: true,
+                },
+              ],
             },
           };
 
@@ -67,11 +69,13 @@ export function EntryForm({
               id: attrValue.id,
               type: attrValue.type,
               value: {
-                [name]: {
-                  id: value.id,
-                  name: value.name,
-                  checked: true,
-                },
+                [name]: [
+                  {
+                    id: value.id,
+                    name: value.name,
+                    checked: true,
+                  },
+                ],
               },
             },
           };
@@ -84,10 +88,12 @@ export function EntryForm({
               id: attrValue.id,
               type: attrValue.type,
               value: attrValue.value.map((val) => {
-                return {
-                  ...val,
-                  checked: true,
-                };
+                return [
+                  {
+                    ...val,
+                    checked: true,
+                  },
+                ];
               }),
             },
           };
@@ -102,10 +108,12 @@ export function EntryForm({
                 const name = Object.keys(val)[0];
                 const value = val[name];
                 return {
-                  [name]: {
-                    ...value,
-                    checked: true,
-                  },
+                  [name]: [
+                    {
+                      ...value,
+                      checked: true,
+                    },
+                  ],
                 };
               }),
             },
@@ -237,6 +245,8 @@ export function EntryForm({
 
     console.log("[onix/handleNarrowDownEntries(01)] refs: ");
     console.log(refs);
+
+    console.log(attributes);
 
     // TODO update state?
   };

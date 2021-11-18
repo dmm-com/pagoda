@@ -8,9 +8,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import PropTypes from "prop-types";
 import React from "react";
 
-import {
-  getAttrReferrals,
-} from "../../utils/AironeAPIClient";
+import { getAttrReferrals } from "../../utils/AironeAPIClient";
 
 import { DjangoContext } from "../../utils/DjangoContext";
 
@@ -49,33 +47,43 @@ function ElemBool({ attrName, attrValue, attrType, handleChange }) {
   );
 }
 
-function ElemObject({ attrId, attrName, attrValue, attrType, index, handleChange, handleNarrowDownEntries }) {
+function ElemObject({
+  attrId,
+  attrName,
+  attrValue,
+  attrType,
+  index,
+  handleChange,
+  handleNarrowDownEntries,
+}) {
   //  return <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
       <List>
-        <>
-          <ListItem key="1" dense button divider>
-            <ListItemIcon>
-              <Checkbox
-                edge="start"
-                tabIndex={-1}
-                disableRipple
-                checked={attrValue.checked}
-                onChange={(e) => {
-                  handleChange(e, attrName, {
-                    type: attrType,
-                    index: index,
-                    id: attrValue.id,
-                    name: attrValue.name,
-                    checked: e.target.checked,
-                  });
-                }}
-              />
-            </ListItemIcon>
-            <ListItemText primary={attrValue.name} />
-          </ListItem>
-        </>
+        {attrValue.map((value) => {
+          return (
+            <ListItem key="1" dense button divider>
+              <ListItemIcon>
+                <Checkbox
+                  edge="start"
+                  tabIndex={-1}
+                  disableRipple
+                  checked={value.checked}
+                  onChange={(e) => {
+                    handleChange(e, attrName, {
+                      type: attrType,
+                      index: index,
+                      id: value.id,
+                      name: value.name,
+                      checked: e.target.checked,
+                    });
+                  }}
+                />
+              </ListItemIcon>
+              <ListItemText primary={value.name} />
+            </ListItem>
+          );
+        })}
       </List>
       <Input
         text="text"

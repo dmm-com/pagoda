@@ -52,7 +52,7 @@ export function getEntries(entityId, isActive = true) {
 }
 
 export function getAttrReferrals(attr_id) {
-  return fetch(`/entry/api/v1/get_attr_referrals/${ attr_id }/`);
+  return fetch(`/entry/api/v1/get_attr_referrals/${attr_id}/`);
 }
 
 export function importEntries(entityId, formData) {
