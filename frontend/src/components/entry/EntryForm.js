@@ -14,6 +14,8 @@ import { useHistory } from "react-router-dom";
 import { DjangoContext } from "../../utils/DjangoContext";
 
 import { EditAttributeValue } from "./EditAttributeValue";
+import {useAsync} from "react-use";
+import {getAttrReferrals} from "../../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -46,11 +48,12 @@ export function EntryForm({
           return {
             name: attrName,
             value: {
+              id: attrValue.id,
+              type: attrValue.type,
               value: {
                 ...attrValue.value,
                 checked: true,
               },
-              type: attrValue.type,
             },
           };
 
@@ -61,6 +64,8 @@ export function EntryForm({
           return {
             name: attrName,
             value: {
+              id: attrValue.id,
+              type: attrValue.type,
               value: {
                 [name]: {
                   id: value.id,
@@ -68,7 +73,6 @@ export function EntryForm({
                   checked: true,
                 },
               },
-              type: attrValue.type,
             },
           };
 
@@ -77,13 +81,14 @@ export function EntryForm({
           return {
             name: attrName,
             value: {
+              id: attrValue.id,
+              type: attrValue.type,
               value: attrValue.value.map((val) => {
                 return {
                   ...val,
                   checked: true,
                 };
               }),
-              type: attrValue.type,
             },
           };
 
@@ -91,6 +96,8 @@ export function EntryForm({
           return {
             name: attrName,
             value: {
+              id: attrValue.id,
+              type: attrValue.type,
               value: attrValue.value.map((val) => {
                 const name = Object.keys(val)[0];
                 const value = val[name];
@@ -101,7 +108,6 @@ export function EntryForm({
                   },
                 };
               }),
-              type: attrValue.type,
             },
           };
 
@@ -223,6 +229,18 @@ export function EntryForm({
     */
   };
 
+  const handleNarrowDownEntries = async (attrId) => {
+    console.log("[onix/handleNarrowDownEntries(00)] attrId: " + attrId);
+
+    const resp = await getAttrReferrals(attrId);
+    const refs = await resp.json();
+
+    console.log("[onix/handleNarrowDownEntries(01)] refs: ");
+    console.log(refs);
+
+    // TODO update state?
+  };
+
   const handleSubmit = (event) => {
     const attrs = attributes.map((attribute) => {
       return {
@@ -299,6 +317,7 @@ export function EntryForm({
                   attrName={attributeName}
                   attrInfo={attributes[attributeName]}
                   handleChangeAttribute={handleChangeAttribute}
+                  handleNarrowDownEntries={handleNarrowDownEntries}
                 />
               </TableCell>
             </TableRow>

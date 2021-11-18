@@ -86,6 +86,7 @@ class GetEntrySerializer(serializers.ModelSerializer):
 
         return {
                 x.schema.name: {
+                    'id': x.id,
                     'type': x.schema.type,
                     'value': get_attr_value(x),
                 }

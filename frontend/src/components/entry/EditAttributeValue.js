@@ -14,14 +14,6 @@ import {
 
 import { DjangoContext } from "../../utils/DjangoContext";
 
-async function handleNarrowDownEntries(event, attrId) {
-  console.log("[onix/handleNarrowDownEntries(00)] attrId: " + attrId);
-
-  const refs = await getAttrReferrals(attrId);
-  console.log("[onix/handleNarrowDownEntries(01)] refs: ");
-  console.log(refs);
-}
-
 function handleNarrowDownGroups(event) {
   console.log("[onix/handleNarrowDownGroups(00)]");
 }
@@ -57,7 +49,7 @@ function ElemBool({ attrName, attrValue, attrType, handleChange }) {
   );
 }
 
-function ElemObject({ attrName, attrValue, attrType, index, handleChange }) {
+function ElemObject({ attrId, attrName, attrValue, attrType, index, handleChange, handleNarrowDownEntries }) {
   //  return <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
@@ -88,18 +80,20 @@ function ElemObject({ attrName, attrValue, attrType, index, handleChange }) {
       <Input
         text="text"
         placeholder="エントリ名で絞り込む"
-        onChange={(e) => handleNarrowDownEntries(e, attrValue.id)}
+        onChange={(e) => handleNarrowDownEntries(attrId)}
       />
     </Card>
   );
 }
 
 function ElemNamedObject({
+  attrId,
   attrName,
   attrValue,
   attrType,
   index,
   handleChange,
+  handleNarrowDownEntries,
 }) {
   const key = Object.keys(attrValue)[0];
   console.log(`[onix/EditAttributeValue.ElemNamedObject] key: ${key}`);
@@ -118,11 +112,13 @@ function ElemNamedObject({
         }
       />
       <ElemObject
+        attrId={attrId}
         attrName={attrName}
         attrValue={attrValue[key]}
         attrType={attrType}
         index={index}
         handleChange={handleChange}
+        handleNarrowDownEntries={handleNarrowDownEntries}
       />
     </>
   );
@@ -169,6 +165,7 @@ export function EditAttributeValue({
   attrName,
   attrInfo,
   handleChangeAttribute,
+  handleNarrowDownEntries,
 }) {
   const djangoContext = DjangoContext.getInstance();
 
@@ -176,10 +173,12 @@ export function EditAttributeValue({
     case djangoContext.attrTypeValue.object:
       return (
         <ElemObject
+          attrId={attrInfo.id}
           attrName={attrName}
           attrValue={attrInfo.value}
           attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
+          handleNarrowDownEntries={handleNarrowDownEntries}
         />
       );
 
@@ -208,10 +207,12 @@ export function EditAttributeValue({
     case djangoContext.attrTypeValue.named_object:
       return (
         <ElemNamedObject
+          attrId={attrInfo.id}
           attrName={attrName}
           attrValue={attrInfo.value}
           attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
+          handleNarrowDownEntries={handleNarrowDownEntries}
         />
       );
 
@@ -222,11 +223,13 @@ export function EditAttributeValue({
             return (
               <ListItem key={n}>
                 <ElemObject
+                  attrId={attrInfo.id}
                   attrName={attrName}
                   attrValue={info}
                   attrType={attrInfo.type}
                   index={n}
                   handleChange={handleChangeAttribute}
+                  handleNarrowDownEntries={handleNarrowDownEntries}
                 />
               </ListItem>
             );
@@ -262,11 +265,13 @@ export function EditAttributeValue({
             return (
               <ListItem key={n}>
                 <ElemNamedObject
+                  attrId={attrInfo.id}
                   attrName={attrName}
                   attrValue={info}
                   attrType={attrInfo.type}
                   index={n}
                   handleChange={handleChangeAttribute}
+                  handleNarrowDownEntries={handleNarrowDownEntries}
                 />
               </ListItem>
             );
