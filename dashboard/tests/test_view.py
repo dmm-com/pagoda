@@ -803,3 +803,41 @@ class ViewTest(AironeViewTest):
         resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
         self.assertEqual(len(resp_data['Entity']), 2)
         self.assertEqual([x['name'] for x in resp_data['Entity']], ['bar', 'baz'])
+
+    @patch('dashboard.tasks.export_search_result.delay',
+           Mock(side_effect=dashboard_tasks.export_search_result))
+    def test_yaml_export_with_referral(self):
+        user = self.admin
+
+        # initialize Entities
+        ref_entity = Entity.objects.create(name='ReferredEntity', created_user=user)
+        entity = Entity.objects.create(name='entity', created_user=user)
+        entity_attr = EntityAttr.objects.create(name='attr_ref',
+                                                type=AttrTypeValue['object'],
+                                                created_user=user,
+                                                parent_entity=entity)
+        entity_attr.referral.add(ref_entity)
+        entity.attrs.add(entity_attr)
+
+        # initialize Entries
+        ref_entry = Entry.objects.create(name='ref', schema=ref_entity, created_user=user)
+        ref_entry.register_es()
+
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry.attrs.first().add_value(user, ref_entry)
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [ref_entity.id],
+            'attrinfo': [],
+            'export_style': 'yaml',
+            'has_referral': '',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        self.assertEqual(len(resp_data['ReferredEntity']), 1)
+        referrals = resp_data['ReferredEntity'][0]['referrals']
+        self.assertEqual(len(referrals), 1)
+        self.assertEqual(referrals[0]['entity'], 'entity')
+        self.assertEqual(referrals[0]['entry'], 'entry')

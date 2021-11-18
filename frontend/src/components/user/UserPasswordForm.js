@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function UserPasswordForm({ user, asSuperuser }) {
+export function UserPasswordForm({ user, asSuperuser = false }) {
   const classes = useStyles();
   const history = useHistory();
 
@@ -115,5 +115,5 @@ UserPasswordForm.propTypes = {
     id: PropTypes.number.isRequired,
     username: PropTypes.string.isRequired,
   }),
-  asSuperuser: PropTypes.bool.isRequired,
+  asSuperuser: PropTypes.bool,
 };

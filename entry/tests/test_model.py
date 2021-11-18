@@ -164,13 +164,10 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
         attr = entry.add_attribute_from_base(attrbase, user)
 
-        self.assertEqual(user.permissions.filter(name='writable').count(), 2)
-        self.assertEqual(user.permissions.filter(name='writable').first(), attrbase.writable)
-        self.assertEqual(user.permissions.filter(name='writable').last(), attr.writable)
-
-        # checks that acl metadata is inherited
-        self.assertFalse(attr.is_public)
-        self.assertEqual(attr.default_permission, attrbase.default_permission)
+        # checks that acl metadata is not inherited
+        self.assertTrue(attr.is_public)
+        self.assertEqual(attr.default_permission, ACLType.Nothing.id)
+        self.assertEqual(list(user.permissions.filter(name='writable').all()), [attrbase.writable])
 
     def test_inherite_attribute_permission_of_group(self):
         user = User.objects.create(username='hoge')
@@ -186,11 +183,9 @@ class ModelTest(AironeTestCase):
         group.permissions.add(attrbase.writable)
 
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
-        attr = entry.add_attribute_from_base(attrbase, user)
+        entry.add_attribute_from_base(attrbase, user)
 
-        self.assertEqual(group.permissions.filter(name='writable').count(), 2)
-        self.assertEqual(group.permissions.filter(name='writable').first(), attrbase.writable)
-        self.assertEqual(group.permissions.filter(name='writable').last(), attr.writable)
+        self.assertEqual(list(group.permissions.filter(name='writable').all()), [attrbase.writable])
 
     def test_update_attribute_from_base(self):
         user = User.objects.create(username='hoge')
@@ -3352,6 +3347,7 @@ class ModelTest(AironeTestCase):
 
         # This checks both users have permissions for Attribute 'attr'
         attr = entry.attrs.first()
+        self.assertTrue(attr.is_public)
         self.assertTrue(all([g.has_permission(attr, ACLType.Full) for g in groups]))
         self.assertTrue(all([u.has_permission(attr, ACLType.Full) for u in [user1, user2]]))
 

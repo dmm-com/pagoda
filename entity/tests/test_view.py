@@ -926,8 +926,12 @@ class ViewTest(AironeViewTest):
                             for x in ret_info['referral_count']]))
 
         # checks statistics information would show correcting value, even if an entry was deleted.
-        for i in range(0, 2):
-            Entry.objects.get(name='entry-%d' % i, schema=entity).delete()
+        Entry.objects.get(name='entry-0', schema=entity).delete()
+
+        # if Attribute is not deleted
+        entry1 = Entry.objects.get(name='entry-1', schema=entity)
+        entry1.is_active = False
+        entry1.save(update_fields=['is_active'])
 
         # delete no referral entry
         Entry.objects.get(name='entry-%d' % (CONFIG.DASHBOARD_NUM_ITEMS + 1),

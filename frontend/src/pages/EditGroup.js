@@ -12,11 +12,13 @@ export function EditGroup({}) {
   let { groupId } = useParams();
 
   const users = useAsync(async () => {
-    return getUsers().then((resp) => resp.json());
+    const resp = await getUsers();
+    return await resp.json();
   });
   const group = useAsync(async () => {
     if (groupId !== undefined) {
-      return getGroup(groupId).then((resp) => resp.json());
+      const resp = await getGroup(groupId);
+      return await resp.json();
     }
   });
 

@@ -31,9 +31,9 @@ export function AdvancedSearchResults({}) {
     : [];
 
   const results = useAsync(async () => {
-    return searchEntries(entityIds, entryName, attrInfo)
-      .then((resp) => resp.json())
-      .then((data) => data.result.ret_values);
+    const resp = await searchEntries(entityIds, entryName, attrInfo);
+    const data = await resp.json();
+    return data.result.ret_values;
   });
 
   return (
