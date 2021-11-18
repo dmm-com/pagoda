@@ -51,6 +51,10 @@ export function getEntries(entityId, isActive = true) {
   );
 }
 
+export function getAttrReferrals(attr_id) {
+  return fetch(`/entry/api/v1/get_attr_referrals/${ attr_id }/`);
+}
+
 export function importEntries(entityId, formData) {
   return fetch(`/entry/do_import/${entityId}/`, {
     method: "POST",
@@ -169,6 +173,10 @@ export function createEntry(entityId, name, attrs) {
       attrs: attrs,
     }),
   });
+}
+
+export function updateEntry(entityId, name, attrs) {
+  return Promise.resolve({});
 }
 
 // NOTE it calls non-API endpoint

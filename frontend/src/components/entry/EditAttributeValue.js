@@ -8,10 +8,18 @@ import ListItemText from "@material-ui/core/ListItemText";
 import PropTypes from "prop-types";
 import React from "react";
 
+import {
+  getAttrReferrals,
+} from "../../utils/AironeAPIClient";
+
 import { DjangoContext } from "../../utils/DjangoContext";
 
-function handleNarrowDownEntries(event) {
-  console.log("[onix/handleNarrowDownEntries(00)]");
+async function handleNarrowDownEntries(event, attrId) {
+  console.log("[onix/handleNarrowDownEntries(00)] attrId: " + attrId);
+
+  const refs = await getAttrReferrals(attrId);
+  console.log("[onix/handleNarrowDownEntries(01)] refs: ");
+  console.log(refs);
 }
 
 function handleNarrowDownGroups(event) {
@@ -80,7 +88,7 @@ function ElemObject({ attrName, attrValue, attrType, index, handleChange }) {
       <Input
         text="text"
         placeholder="エントリ名で絞り込む"
-        onChange={handleNarrowDownEntries}
+        onChange={(e) => handleNarrowDownEntries(e, attrValue.id)}
       />
     </Card>
   );
