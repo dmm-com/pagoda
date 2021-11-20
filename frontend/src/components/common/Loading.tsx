@@ -2,7 +2,8 @@ import { CircularProgress } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
-import React from "react";
+import * as React from "react";
+import { FC } from "react";
 
 const useStyles = makeStyles((theme) => ({
   loading: {
@@ -17,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function Loading() {
+export const Loading: FC = () => {
   const classes = useStyles();
 
   return (
@@ -28,4 +29,4 @@ export function Loading() {
       </Box>
     </Box>
   );
-}
+};

@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import React from "react";
 
 import { groupsPath, showEntryPath } from "../../Routes";
-import { DjangoContext } from "../../utils/DjangoContext";
+import { DjangoContext } from "../../utils/DjangoContext.ts";
 
 function ElemString({ attrValue }) {
   return <div>{attrValue}</div>;

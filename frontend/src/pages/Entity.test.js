@@ -31,6 +31,7 @@ test("should match snapshot", async () => {
     },
   ];
 
+  /* eslint-disable */
   jest
     .spyOn(require("../utils/AironeAPIClient"), "getEntities")
     .mockResolvedValueOnce({
@@ -40,6 +41,7 @@ test("should match snapshot", async () => {
         });
       },
     });
+  /* eslint-enable */
 
   const fragment = await waitFor(() => {
     return render(<Entity />, {

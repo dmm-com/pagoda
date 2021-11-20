@@ -1,4 +1,7 @@
 class User {
+  id: number;
+  isSuperuser: boolean;
+
   constructor(user) {
     this.id = user.id;
     this.isSuperuser = user.isSuperuser;
@@ -7,11 +10,15 @@ class User {
 
 // A JavaScript representation for Django context
 export class DjangoContext {
+  version: string;
+  attrTypeValue: any;
+  user: User | undefined;
+
+  private static _instance: DjangoContext | undefined;
+
   constructor(context) {
     this.version = context.version;
-    this.user = context.user ? new User(context.user) : {};
-
-    this._instance = null;
+    this.user = context.user ? new User(context.user) : undefined;
 
     this.attrTypeValue = {
       string: 2,
@@ -29,8 +36,8 @@ export class DjangoContext {
   }
 
   static getInstance() {
-    if (window.django_context) {
-      this._instance = new DjangoContext(window.django_context);
+    if ((window as any).django_context) {
+      this._instance = new DjangoContext((window as any).django_context);
     }
     return this._instance;
   }

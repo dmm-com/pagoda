@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "target": "es5",
+    "jsx": "react"
+  },
+  "include": ["./frontend/src/**/*"]
+}

@@ -8,8 +8,16 @@ module.exports = {
     filename: "new-ui.js",
     path: path.resolve('static/js')
   },
+  resolve: {
+    extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
+  },
   module: {
     rules: [
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: 'ts-loader',
+      },
       {
         test: /\.js$/,
         exclude: /node_modules/,

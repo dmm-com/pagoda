@@ -17,7 +17,7 @@ import { useAsync } from "react-use";
 
 import { jobsPath, searchPath, topPath, userPath } from "../Routes";
 import { getRecentJobs } from "../utils/AironeAPIClient";
-import { DjangoContext } from "../utils/DjangoContext";
+import { DjangoContext } from "../utils/DjangoContext.ts";
 
 const useStyles = makeStyles((theme) => ({
   root: {

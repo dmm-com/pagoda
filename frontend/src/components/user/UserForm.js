@@ -18,7 +18,7 @@ import {
   refreshAccessToken,
   updateUser,
 } from "../../utils/AironeAPIClient";
-import { DjangoContext } from "../../utils/DjangoContext";
+import { DjangoContext } from "../../utils/DjangoContext.ts";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -95,7 +95,7 @@ export function UserForm({ user }) {
               <Typography>メールアドレス</Typography>
             </TableCell>
             <TableCell>
-              {djangoContext.user.is_superuser ? (
+              {djangoContext.user?.is_superuser ? (
                 <input
                   type="email"
                   name="email"
@@ -108,7 +108,7 @@ export function UserForm({ user }) {
               )}
             </TableCell>
           </TableRow>
-          {djangoContext.user.is_superuser ? (
+          {djangoContext.user?.is_superuser ? (
             <TableRow>
               <TableCell>
                 <Typography>管理者権限を付与</Typography>

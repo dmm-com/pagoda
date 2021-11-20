@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import React, { useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
-import { PaginatedTable } from "../common/PaginatedTable";
+import { PaginatedTable } from "../common/PaginatedTable.tsx";
 
 import { AttributeValue } from "./AttributeValue";
 

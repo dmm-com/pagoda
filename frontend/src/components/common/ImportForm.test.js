@@ -10,7 +10,12 @@ import { ImportForm } from "./ImportForm";
 test("should render a component with essential props", function () {
   expect(() =>
     render(
-      <ImportForm importFunc={() => {}} redirectPath={"/path/to/redirect"} />
+      <ImportForm
+        importFunc={() => {
+          /* tasks for import */
+        }}
+        redirectPath={"/path/to/redirect"}
+      />
     )
   ).not.toThrow();
 });

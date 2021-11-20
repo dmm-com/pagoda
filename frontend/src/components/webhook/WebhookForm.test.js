@@ -8,6 +8,7 @@ import React from "react";
 import { WebhookForm } from "./WebhookForm.js";
 
 test("should render a component with essential props", async () => {
+  /* eslint-disable */
   jest
     .spyOn(require("../../utils/AironeAPIClient"), "getWebhooks")
     .mockResolvedValueOnce({
@@ -15,6 +16,7 @@ test("should render a component with essential props", async () => {
         return Promise.resolve([]);
       },
     });
+  /* eslint-enable */
 
   await waitFor(() => {
     expect(() => render(<WebhookForm entityId={"0"} />)).not.toThrow();

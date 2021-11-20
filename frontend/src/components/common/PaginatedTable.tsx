@@ -6,19 +6,26 @@ import {
   TablePagination,
 } from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
-import PropTypes from "prop-types";
-import React, { useState } from "react";
+import * as React from "react";
+import { FC, ReactElement, useState } from "react";
+
+interface Props {
+  rows: any[];
+  tableHeadRow: ReactElement;
+  tableBodyRowGenerator: (row: any) => ReactElement;
+  rowsPerPageOptions: number[];
+}
 
 /**
  * Paginate table shows given rows
  *
  */
-export function PaginatedTable({
+export const PaginatedTable: FC<Props> = ({
   rows,
   tableHeadRow,
   tableBodyRowGenerator,
   rowsPerPageOptions,
-}) {
+}) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0] ?? 0);
 
@@ -50,11 +57,4 @@ export function PaginatedTable({
       />
     </Paper>
   );
-}
-
-PaginatedTable.propTypes = {
-  rows: PropTypes.array.isRequired,
-  tableHeadRow: PropTypes.object.isRequired,
-  tableBodyRowGenerator: PropTypes.func.isRequired,
-  rowsPerPageOptions: PropTypes.arrayOf(PropTypes.number).isRequired,
 };

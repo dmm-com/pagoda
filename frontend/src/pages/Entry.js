@@ -19,7 +19,7 @@ import {
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { CreateButton } from "../components/common/CreateButton";
 import { EditButton } from "../components/common/EditButton";
-import { Loading } from "../components/common/Loading";
+import { Loading } from "../components/common/Loading.tsx";
 import { EntryList } from "../components/entry/EntryList";
 import { exportEntries, getEntries } from "../utils/AironeAPIClient";
 

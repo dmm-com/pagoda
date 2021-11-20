@@ -17,7 +17,7 @@ import {
 import { deleteEntity } from "../../utils/AironeAPIClient";
 import { DeleteButton } from "../common/DeleteButton";
 import { EditButton } from "../common/EditButton";
-import { PaginatedTable } from "../common/PaginatedTable";
+import { PaginatedTable } from "../common/PaginatedTable.tsx";
 
 const useStyles = makeStyles((theme) => ({
   button: {

@@ -54,7 +54,7 @@ export function WebhookForm({ entityId }) {
   }, [isUpdated]);
 
   const [open, setOpen] = React.useState(false);
-  const [webhook_headers, setWebhookHeaders] = React.useState(Array());
+  const [webhook_headers, setWebhookHeaders] = React.useState([]);
   const [is_available, setAvailability] = React.useState(false);
   const [webhook_url, setWebhookURL] = React.useState("");
   const [webhook_label, setWebhookLabel] = React.useState("");
@@ -74,7 +74,7 @@ export function WebhookForm({ entityId }) {
             value: value,
           };
         })
-      : Array();
+      : [];
     setWebhookHeaders(headers);
     setAlertMsg("");
     setAvailability(item ? item.is_enabled : false);

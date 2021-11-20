@@ -10,7 +10,7 @@ import { showEntryPath } from "../../Routes";
 import { deleteEntry, restoreEntry } from "../../utils/AironeAPIClient";
 import { ConfirmableButton } from "../common/ConfirmableButton";
 import { DeleteButton } from "../common/DeleteButton";
-import { PaginatedTable } from "../common/PaginatedTable";
+import { PaginatedTable } from "../common/PaginatedTable.tsx";
 
 const useStyles = makeStyles((theme) => ({
   button: {

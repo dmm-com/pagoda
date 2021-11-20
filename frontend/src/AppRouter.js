@@ -64,10 +64,7 @@ export function AppRouter({}) {
           <Switch>
             <Route path={advancedSearchPath()} component={AdvancedSearch} />
             <Route path={newEntryPath(":entityId")} component={EditEntry} />
-            <Route
-              path={showEntryPath(":entityId", ":entryId")}
-              component={ShowEntry}
-            />
+            <Route path={showEntryPath(":entryId")} component={ShowEntry} />
             <Route
               path={importEntitiesPath(":entityId")}
               component={ImportEntry}
