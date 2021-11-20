@@ -5,7 +5,7 @@
 import { render } from "@testing-library/react";
 import React from "react";
 
-import ACLForm from "./ACLForm";
+import { ACLForm } from "./ACLForm";
 
 test("should render a component with essential props", function () {
   const acl = {

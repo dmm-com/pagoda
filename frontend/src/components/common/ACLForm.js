@@ -1,4 +1,5 @@
 import {
+  MenuItem,
   Select,
   Table,
   TableBody,
@@ -13,6 +14,7 @@ import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
+import { useHistory } from "react-router-dom";
 
 import { updateACL } from "../../utils/AironeAPIClient";
 
@@ -22,8 +24,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ACLForm({ objectId, acl }) {
+export function ACLForm({ objectId, acl }) {
   const classes = useStyles();
+  const history = useHistory();
 
   const [isPublic, setIsPublic] = useState(acl.is_public);
   // TODO correct way to collect member permissions?
@@ -58,7 +61,7 @@ export default function ACLForm({ objectId, acl }) {
       aclSettings
     );
 
-    // TODO redirect
+    history.go(0);
   };
 
   return (
@@ -71,7 +74,7 @@ export default function ACLForm({ objectId, acl }) {
               <input
                 type="checkbox"
                 name="is_public"
-                value={isPublic}
+                checked={isPublic}
                 onChange={(e) => setIsPublic(e.target.checked)}
               />
             </span>
@@ -118,9 +121,9 @@ export default function ACLForm({ objectId, acl }) {
                     }
                   >
                     {acl.acltypes.map((acltype) => (
-                      <option key={acltype.id} value={acltype.id}>
+                      <MenuItem key={acltype.id} value={acltype.id}>
                         {acltype.name}
-                      </option>
+                      </MenuItem>
                     ))}
                   </Select>
                 </TableCell>
