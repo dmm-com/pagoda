@@ -7,15 +7,13 @@ from airone.lib.acl import ACLType
 from user.models import User
 
 
-class FullPermission(BasePermission):
+class ACLFullPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         if not isinstance(obj, ACLBase):
             return False
-
         user = User.objects.get(id=request.user.id)
         if not user.has_permission(obj, ACLType.Full):
             return False
-
         return True
 
 
@@ -25,5 +23,4 @@ class ACLAPI(mixins.RetrieveModelMixin,
     queryset = ACLBase.objects.all()
     serializer_class = ACLSerializer
 
-    # TODO write-specific permission
-    permission_classes = [IsAuthenticated & FullPermission]
+    permission_classes = [IsAuthenticated & ACLFullPermission]

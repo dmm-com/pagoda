@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLType, ACLObjType
@@ -44,7 +45,7 @@ class ACLSerializer(serializers.ModelSerializer):
         return [{'id': x.id,
                  'name': x.username,
                  'current_permission': get_current_permission(x),
-                 'type': 'user'} for x in User.objects.filter(is_active=True)] +\
+                 'type': 'user'} for x in User.objects.filter(is_active=True)] + \
                [{'id': x.id,
                  'name': x.name,
                  'current_permission': get_current_permission(x),
@@ -53,7 +54,16 @@ class ACLSerializer(serializers.ModelSerializer):
     def validate_default_permission(self, default_permission: int):
         return default_permission in ACLType.all()
 
-    # TODO validate_permissions
+    def validate(self, attrs: Dict[str, Any]):
+        user = User.objects.get(id=self.context['request'].user.id)
+        if not user.may_permitted(self.instance.id, ACLType.Full, **{
+            'is_public': attrs['is_public'],
+            'default_permission': attrs['default_permission'],
+            'acl_settings': attrs['acl']
+        }):
+            raise ValidationError("Inadmissible setting."
+                                  "By this change you will never change this ACL")
+        return attrs
 
     def update(self, instance, validated_data):
         acl_obj = getattr(self._get_acl_model(validated_data['objtype']),
