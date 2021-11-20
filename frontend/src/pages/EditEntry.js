@@ -13,9 +13,9 @@ export function EditEntry({}) {
 
   const entry = useAsync(async () => {
     if (entryId !== undefined) {
-      return getEntry(entryId);
+      return await getEntry(entryId);
     }
-    return Promise.resolve({});
+    return {};
   });
 
   return (

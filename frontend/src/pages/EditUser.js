@@ -13,7 +13,8 @@ export function EditUser({}) {
 
   const user = useAsync(async () => {
     if (userId) {
-      return getUser(userId).then((resp) => resp.json());
+      const resp = await getUser(userId);
+      return await resp.json();
     }
   });
 

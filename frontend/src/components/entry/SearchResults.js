@@ -1,17 +1,10 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-} from "@material-ui/core";
-import Paper from "@material-ui/core/Paper";
+import { TableCell, TableRow } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import PropTypes from "prop-types";
 import React, { useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";
+
+import { PaginatedTable } from "../common/PaginatedTable";
 
 import { AttributeValue } from "./AttributeValue";
 
@@ -22,9 +15,6 @@ export function SearchResults({
 }) {
   const location = useLocation();
   const history = useHistory();
-
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(100);
 
   const [entryFilter, entryFilterDispatcher] = useReducer((_, event) => {
     return event.target.value;
@@ -60,80 +50,56 @@ export function SearchResults({
     }
   };
 
-  const handlePageChange = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleRowsPerPageChange = (event) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
-  };
-
   return (
-    <Paper>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <Typography>Name</Typography>
-                <input
-                  text="text"
-                  placeholder="絞り込む"
-                  defaultValue={defaultEntryFilter}
-                  onChange={entryFilterDispatcher}
-                  onKeyPress={handleKeyPress}
+    <PaginatedTable
+      rows={results}
+      tableHeadRow={
+        <TableRow>
+          <TableCell>
+            <Typography>Name</Typography>
+            <input
+              text="text"
+              placeholder="絞り込む"
+              defaultValue={defaultEntryFilter}
+              onChange={entryFilterDispatcher}
+              onKeyPress={handleKeyPress}
+            />
+          </TableCell>
+          {attrNames.map((attrName) => (
+            <TableCell key={attrName}>
+              <Typography>{attrName}</Typography>
+              <input
+                text="text"
+                placeholder="絞り込む"
+                defaultValue={defaultAttrsFilter[attrName] || ""}
+                onChange={(e) =>
+                  attrsFilterDispatcher({ event: e, name: attrName })
+                }
+                onKeyPress={handleKeyPress}
+              />
+            </TableCell>
+          ))}
+        </TableRow>
+      }
+      tableBodyRowGenerator={(result, index) => (
+        <TableRow key={index}>
+          <TableCell>
+            <Typography>{result.entry.name}</Typography>
+          </TableCell>
+          {attrNames.map((attrName) => (
+            <TableCell key={attrName}>
+              {result.attrs[attrName] && (
+                <AttributeValue
+                  attrName={attrName}
+                  attrInfo={result.attrs[attrName]}
                 />
-              </TableCell>
-              {attrNames.map((attrName) => (
-                <TableCell key={attrName}>
-                  <Typography>{attrName}</Typography>
-                  <input
-                    text="text"
-                    placeholder="絞り込む"
-                    defaultValue={defaultAttrsFilter[attrName] || ""}
-                    onChange={(e) =>
-                      attrsFilterDispatcher({ event: e, name: attrName })
-                    }
-                    onKeyPress={handleKeyPress}
-                  />
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {results
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((result, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <Typography>{result.entry.name}</Typography>
-                  </TableCell>
-                  {attrNames.map((attrName) => (
-                    <TableCell key={attrName}>
-                      {result.attrs[attrName] && (
-                        <AttributeValue
-                          attrName={attrName}
-                          attrInfo={result.attrs[attrName]}
-                        />
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[100, 250, 1000]}
-        component="div"
-        count={results.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handlePageChange}
-        onRowsPerPageChange={handleRowsPerPageChange}
-      />
-    </Paper>
+              )}
+            </TableCell>
+          ))}
+        </TableRow>
+      )}
+      rowsPerPageOptions={[100, 250, 1000]}
+    />
   );
 }
 

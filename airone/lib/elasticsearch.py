@@ -6,7 +6,11 @@ from datetime import datetime
 from django.conf import settings
 from django.db.models import Q
 from elasticsearch import Elasticsearch
+from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
+from airone.lib.log import Logger
+from entity.models import Entity
+from user.models import User
 from entry.settings import CONFIG
 
 
@@ -41,9 +45,10 @@ class ESS(Elasticsearch):
             body = {"index": {"max_result_window": settings.ES_CONFIG['MAXIMUM_RESULTS_NUM']}}
             self.indices.put_settings(index=self._index, body=body)
 
-        return super(ESS, self).search(index=self._index,
-                                       size=settings.ES_CONFIG['MAXIMUM_RESULTS_NUM'], *args,
-                                       **kwargs)
+        if 'size' not in kwargs:
+            kwargs['size'] = settings.ES_CONFIG['MAXIMUM_RESULTS_NUM']
+
+        return super(ESS, self).search(index=self._index, *args, **kwargs)
 
     def recreate_index(self) -> None:
         self.indices.delete(index=self._index, ignore=[400, 404])
@@ -105,8 +110,16 @@ class ESS(Elasticsearch):
                                 'referral_id': {
                                     'type': 'integer',
                                     'index': 'false',
+                                },
+                                'is_readble': {
+                                    'type': 'boolean',
+                                    'index': 'true',
                                 }
                             }
+                        },
+                        'is_readble': {
+                            'type': 'boolean',
+                            'index': 'true',
                         }
                     }
                 }
@@ -116,15 +129,17 @@ class ESS(Elasticsearch):
 
 __all__ = [
     'make_query',
+    'make_query_for_simple',
     'execute_query',
     'make_search_results',
+    'make_search_results_for_simple',
     'prepend_escape_character',
     'is_date_check'
 ]
 
 
-def make_query(hint_entity_ids: List[str], hint_attrs: List[Dict[str, str]],
-               hint_attr_value: Optional[Any], entry_name: str, or_match: bool) -> Dict[str, str]:
+def make_query(hint_entity: Entity, hint_attrs: List[Dict[str, str]], entry_name: str
+               ) -> Dict[str, str]:
     """Create a search query for Elasticsearch.
 
     Do the following:
@@ -136,11 +151,9 @@ def make_query(hint_entity_ids: List[str], hint_attrs: List[Dict[str, str]],
     6. Build queries along keywords.
 
     Args:
-        hint_entity_ids (list(str)): Entity ID specified in the search condition input
+        hint_entity (Entity): Entity ID specified in the search condition input
         hint_attrs (list(dict[str, str])): A list of search strings and attribute sets
         entry_name (str): Search string for entry name
-        or_match (bool): Flag to determine whether the simple search or
-            advanced search is called
 
     Returns:
         dict[str, str]: The created search query is returned.
@@ -162,7 +175,9 @@ def make_query(hint_entity_ids: List[str], hint_attrs: List[Dict[str, str]],
         'nested': {
             'path': 'entity',
             'query': {
-                'bool': {'should': [{'term': {'entity.id': int(x)}} for x in hint_entity_ids]}
+                'term': {
+                    'entity.id': hint_entity.id
+                }
             }
         }
     })
@@ -187,28 +202,97 @@ def make_query(hint_entity_ids: List[str], hint_attrs: List[Dict[str, str]],
             }
         })
 
-    if hint_attr_value:
-        query['query']['bool']['filter'].append({
-            'nested': {
-                'path': 'attr',
-                'query': {
-                    'regexp': {
-                        'attr.value': ".*" + _get_regex_pattern(str(hint_attr_value)) + ".*"
-                    }
-                }
-            }
-        })
-
     attr_query: Dict = {}
 
     # filter attribute by keywords
     for hint in [x for x in hint_attrs if 'name' in x and 'keyword' in x and x['keyword']]:
-        _parse_or_search(hint, or_match, attr_query)
+        _parse_or_search(hint, attr_query)
 
     # Build queries along keywords
     if attr_query:
         query['query']['bool']['filter'].append(
-            _build_queries_along_keywords(hint_attrs, attr_query, or_match))
+            _build_queries_along_keywords(hint_attrs, attr_query))
+
+    return query
+
+
+def make_query_for_simple(hint_string: str, hint_entity_name: str, offset: int) -> Dict[str, str]:
+    """Create a search query for Elasticsearch.
+
+    Do the following:
+        Create a query to search by AttributeValue and Entry Name.
+        inner_hits returns only filtered attributes
+
+    Args:
+        hint_string (str): Search string
+        hint_entity_name (str): Search string for Entity Name
+        offset (int): Offset number
+
+    Returns:
+        dict[str, str]: The created search query is returned.
+
+    """
+    query: Dict = {
+        'query': {
+            'bool': {
+                'must': [{
+                    'bool': {
+                        'should': [{
+                            'regexp': {
+                                'name': _get_regex_pattern(hint_string)
+                            }
+                        }, {
+                            'bool': {
+                                'filter': {
+                                    'nested': {
+                                        'path': 'attr',
+                                        'query': {
+                                            'regexp': {
+                                                'attr.value': _get_regex_pattern(hint_string)
+                                            }
+                                        },
+                                        'inner_hits': {
+                                            '_source': [
+                                                'attr.name'
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }]
+                    }
+                }]
+            }
+        },
+        '_source': [
+            'name'
+        ],
+        'sort': [{
+            '_score': {
+                'order': 'desc'
+            },
+            'name.keyword': {
+                'order': 'asc'
+            }
+        }],
+        'from': offset
+    }
+
+    if hint_entity_name:
+        query['query']['bool']['must'].append({
+            'bool': {
+                'filter': [{
+                    'nested': {
+                        'path': 'entity',
+                        'query': {
+                            'term': {
+                                'entity.name': hint_entity_name
+                            }
+                        }
+                    }
+                }]
+            }
+        })
 
     return query
 
@@ -325,16 +409,13 @@ def _make_entry_name_query(entry_name: str) -> Dict[str, str]:
     return entry_name_or_query
 
 
-def _parse_or_search(hint: Dict[str, str], or_match: bool, attr_query: Dict[str, str])\
-        -> Dict[str, str]:
+def _parse_or_search(hint: Dict[str, str], attr_query: Dict[str, str]) -> Dict[str, str]:
     """Performs keyword analysis processing.
 
     The search keyword is separated by OR and passed to the next process.
 
     Args:
         hint (dict[str, str]): Dictionary of attribute names and search keywords to be processed
-        or_match (bool): Flag to determine whether the simple search or
-            advanced search is called
         attr_query (dict[str, str]): Search query being created
 
     Returns:
@@ -347,12 +428,12 @@ def _parse_or_search(hint: Dict[str, str], or_match: bool, attr_query: Dict[str,
     # Split and process keywords with 'or'
     for keyword_divided_or in hint['keyword'].split(CONFIG.OR_SEARCH_CHARACTER):
 
-        _parse_and_search(hint, keyword_divided_or, or_match, attr_query, duplicate_keys)
+        _parse_and_search(hint, keyword_divided_or, attr_query, duplicate_keys)
 
     return attr_query
 
 
-def _parse_and_search(hint: Dict[str, str], keyword_divided_or: str, or_match: bool,
+def _parse_and_search(hint: Dict[str, str], keyword_divided_or: str,
                       attr_query: Dict[str, Any], duplicate_keys: List[str]) -> Dict[str, str]:
     """Analyze the keywords separated by `OR`
 
@@ -375,8 +456,6 @@ def _parse_and_search(hint: Dict[str, str], keyword_divided_or: str, or_match: b
     Args:
         hint (dict[str, str]): Dictionary of attribute names and search keywords to be processed
         keyword_divided_or (str): Character string with search keywords separated by OR
-        or_match (bool): Flag to determine whether the simple search or
-            advanced search is called
         attr_query (dict[str, str]): Search query being created
         duplicate_keys (list(str)): Holds a list of the smallest character strings
             that separate search keywords with AND and OR.
@@ -390,7 +469,7 @@ def _parse_and_search(hint: Dict[str, str], keyword_divided_or: str, or_match: b
 
     # Keyword divided by 'or' is processed by dividing by 'and'
     for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
-        key = _make_key_for_each_block_of_keywords(hint, keyword, or_match)
+        key = keyword + '_' + hint['name']
 
         # Skip if keywords overlap
         if key in duplicate_keys:
@@ -398,44 +477,13 @@ def _parse_and_search(hint: Dict[str, str], keyword_divided_or: str, or_match: b
         else:
             duplicate_keys.append(key)
 
-        if or_match:
-            if key not in attr_query:
-                # Add keyword if temporary variable doesn't contain keyword
-                attr_query[key] = {'bool': {'should': []}}
-
-            attr_query[key]['bool']['should'].append(
-                _make_an_attribute_filter(hint, keyword))
-        else:
-            attr_query[key] = _make_an_attribute_filter(hint, keyword)
+        attr_query[key] = _make_an_attribute_filter(hint, keyword)
 
     return attr_query
 
 
-def _make_key_for_each_block_of_keywords(hint: Dict[str, str], keyword: str, or_match: bool) -> str:
-    """Create a key for each block of minimal keywords.
-
-    Create a key for each block of keywords.
-    For simple search, the keyword is used as a key.
-    In case of advanced search, attribute name is given to judge for each attribute.
-
-    Args:
-        hint (dict[str, str]): Dictionary of attribute names and search keywords to be processed
-        keyword (str): String of the smallest unit in which search keyword is
-            separated by AND and OR
-        or_match (bool): Flag to determine whether the simple search or
-            advanced search is called
-
-    Returns:
-        dict[str, str]: For simple search, the keyword of the argument is returned.
-            In the case of advanced search,
-            the attribute name is assigned to the argument keyword and returned.
-
-    """
-    return keyword if or_match else keyword + '_' + hint['name']
-
-
 def _build_queries_along_keywords(hint_attrs: List[Dict[str, str]], attr_query: Dict[str, str],
-                                  or_match: bool) -> Dict[str, str]:
+                                  ) -> Dict[str, str]:
     """Build queries along search terms.
 
     Do the following:
@@ -458,8 +506,6 @@ def _build_queries_along_keywords(hint_attrs: List[Dict[str, str]], attr_query: 
         hint_attrs (list(dict[str, str])): A list of search strings and attribute sets
         attr_query (dict[str, str]): A query that summarizes attributes
             by the smallest unit of a search keyword
-        or_match (bool): Flag to determine whether the simple search or
-            advanced search is called
 
     Returns:
         dict[str, str]: Assemble and return the attribute value part of the search query.
@@ -467,7 +513,7 @@ def _build_queries_along_keywords(hint_attrs: List[Dict[str, str]], attr_query: 
     """
 
     # Get the keyword.
-    hints = [x for x in hint_attrs if x['keyword']] if not or_match else [hint_attrs[0]]
+    hints = [x for x in hint_attrs if 'keyword' in x and x['keyword']]
     res_query: Dict[str, Any] = {}
 
     for hint in hints:
@@ -484,13 +530,10 @@ def _build_queries_along_keywords(hint_attrs: List[Dict[str, str]], attr_query: 
                         and_query[keyword_divided_or] = {'bool': {'filter': []}}
 
                     and_query[keyword_divided_or]['bool']['filter'].append(
-                        attr_query[_make_key_for_each_block_of_keywords(
-                                           hint, keyword, or_match)])
+                        attr_query[keyword + '_' + hint['name']])
 
             else:
-                and_query[keyword_divided_or] = attr_query[
-                    _make_key_for_each_block_of_keywords(hint, keyword_divided_or, or_match)
-                ]
+                and_query[keyword_divided_or] = attr_query[keyword_divided_or + '_' + hint['name']]
 
             if CONFIG.OR_SEARCH_CHARACTER in hint['keyword']:
 
@@ -614,8 +657,8 @@ def _is_matched_entry(attrs: List[Dict[str, str]], hint_attrs: List[Dict[str, st
     hint_keywords = {h['name']: h['keyword'] for h in hint_attrs if 'keyword' in h}
 
     for attr in attrs:
-        tpe = attr['type']
-        if tpe == AttrTypeValue['string'] or tpe == AttrTypeValue['text']:
+        type = attr['type']
+        if type == AttrTypeValue['string'] or type == AttrTypeValue['text']:
             hint_keyword = hint_keywords.get(attr['name'], '')
 
             # it checks anchor operators if it exists because its not supported by Elasticsearch
@@ -626,7 +669,7 @@ def _is_matched_entry(attrs: List[Dict[str, str]], hint_attrs: List[Dict[str, st
     return True
 
 
-def execute_query(query: Dict[str, str]) -> Dict[str, str]:
+def execute_query(query: Dict[str, str], size: int = 0) -> Dict[str, str]:
     """Run a search query.
 
     Args:
@@ -639,15 +682,23 @@ def execute_query(query: Dict[str, str]) -> Dict[str, str]:
         dict[str, str]: Search execution result
 
     """
+    kwargs = {
+        'body': query,
+        'ignore': [404],
+        'sort': ['name.keyword:asc']
+    }
+    if size:
+        kwargs['size'] = size
+
     try:
-        res = ESS().search(body=query, ignore=[404], sort=['name.keyword:asc'])
+        res = ESS().search(**kwargs)
     except Exception as e:
         raise(e)
 
     return res
 
 
-def make_search_results(res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
+def make_search_results(user: User, res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
                         limit: int, hint_referral: str) -> Dict[str, str]:
     """Acquires and returns the attribute values held by each search result
 
@@ -674,6 +725,7 @@ def make_search_results(res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
 
     Args:
         res (`str`, optional): Search results for Elasticsearch
+        hint_attrs (list(dict[str, str])):  A list of search strings and attribute sets
         limit (int): Maximum number of search results to return
         hint_referral (str): Input value used to refine the reference entry.
             Use only for advanced searches.
@@ -736,12 +788,12 @@ def make_search_results(res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
             break
 
         hit_infos[entry] = [
-            x['_source']['attr'] for x in res['hits']['hits'] if int(x['_id']) == entry.id
+            x['_source'] for x in res['hits']['hits'] if int(x['_id']) == entry.id
         ][0]
 
-    for (entry, hit_attrs) in sorted(hit_infos.items(), key=lambda x: x[0].name):
+    for (entry, entry_info) in sorted(hit_infos.items(), key=lambda x: x[0].name):
         # ignore an entry doesn't match hint attrs
-        if not _is_matched_entry(hit_attrs, hint_attrs):
+        if not _is_matched_entry(entry_info['attr'], hint_attrs):
             # subtract number from hitted count because it will be ignored
             results['ret_count'] -= 1
             continue
@@ -760,8 +812,20 @@ def make_search_results(res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
                 'schema': x.schema.name,
             } for x in entry.get_referred_objects()]
 
+        # Check for has permission to Entry
+        if entry_info['is_readble'] or user.has_permission(entry, ACLType.Readable):
+            ret_info['is_readble'] = True
+        else:
+            ret_info['is_readble'] = False
+            results['ret_values'].append(ret_info)
+            continue
+
         # formalize attribute values according to the type
-        for attrinfo in hit_attrs:
+        for attrinfo in entry_info['attr']:
+            # Skip other than the target Attribute
+            if attrinfo['name'] not in [x['name'] for x in hint_attrs]:
+                continue
+
             if attrinfo['name'] in ret_info['attrs']:
                 ret_attrinfo = ret_info['attrs'][attrinfo['name']]
             else:
@@ -773,6 +837,25 @@ def make_search_results(res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
                     ret_info['attrs'][attrinfo['name']] = []
                 else:
                     ret_info['attrs'][attrinfo['name']] = ret_attrinfo
+
+            # Check for has permission to EntityAttr
+            if attrinfo['name'] not in [x['name'] for x in hint_attrs if x['is_readble']]:
+                ret_attrinfo['is_readble'] = False
+                continue
+
+            # Check for has permission to Attribute
+            if not attrinfo['is_readble']:
+                attr = entry.attrs.filter(schema__name=attrinfo['name'], is_active=True).first()
+                if not attr:
+                    Logger.warning('Non exist Attribute (entry:%s, name:%s) is registered in ESS.'
+                                   % (entry.id, attrinfo['name']))
+                    continue
+
+                if not user.has_permission(attr, ACLType.Readable):
+                    ret_attrinfo['is_readble'] = False
+                    continue
+
+            ret_attrinfo['is_readble'] = True
 
             ret_attrinfo['type'] = attrinfo['type']
             if (attrinfo['type'] == AttrTypeValue['string'] or
@@ -822,6 +905,28 @@ def make_search_results(res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
         results['ret_values'].append(ret_info)
 
     return results
+
+
+def make_search_results_for_simple(res: Dict[str, Any]) -> Dict[str, str]:
+    result = {
+        'ret_count': res['hits']['total'],
+        'ret_values': [],
+    }
+
+    for resp_entry in res['hits']['hits']:
+
+        ret_value = {
+            'id': resp_entry['_id'],
+            'name': resp_entry['_source']['name'],
+        }
+
+        for resp_entry_attr in resp_entry['inner_hits']['attr']['hits']['hits']:
+            ret_value['attr'] = resp_entry_attr['_source']['name']
+            break
+
+        result['ret_values'].append(ret_value)
+
+    return result
 
 
 def is_date_check(value: str) -> Optional[Tuple[str, datetime]]:

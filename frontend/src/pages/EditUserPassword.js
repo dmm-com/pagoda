@@ -12,9 +12,8 @@ export function EditUserPassword({}) {
   const { userId } = useParams();
 
   const user = useAsync(async () => {
-    return getUser(userId)
-      .then((resp) => resp.json())
-      .then((data) => data);
+    const resp = await getUser(userId);
+    return await resp.json();
   });
 
   return (

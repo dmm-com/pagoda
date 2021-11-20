@@ -9,7 +9,7 @@ import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
 import { ACLForm } from "../components/common/ACLForm";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import CopyForm from "../components/entry/CopyForm";
-import EntryAttributes from "../components/entry/EntryAttributes";
+import { EntryAttributes } from "../components/entry/EntryAttributes";
 import { EntryForm } from "../components/entry/EntryForm";
 import EntryHistory from "../components/entry/EntryHistory";
 import EntryReferral from "../components/entry/EntryReferral";
@@ -27,22 +27,21 @@ export function ShowEntry({}) {
 
   // TODO get an entry only if show/edit pages
   const entry = useAsync(async () => {
-    return getEntry(entryId).then((resp) => {
-      if (!resp.ok) {
-        throw new Error("entry not found");
-      }
-      return resp.json();
-    });
+    const resp = await getEntry(entryId);
+    if (!resp.ok) {
+      throw new Error("entry not found");
+    }
+    return await resp.json();
   });
 
   const entryHistory = useAsync(async () => {
-    return getEntryHistory(entryId);
+    return await getEntryHistory(entryId);
   });
 
   const referredEntries = useAsync(async () => {
-    return getReferredEntries(entryId)
-      .then((resp) => resp.json())
-      .then((data) => data.entries);
+    const resp = await getReferredEntries(entryId);
+    const data = await resp.json();
+    return data.entries;
   });
 
   const acl = useAsync(async () => {

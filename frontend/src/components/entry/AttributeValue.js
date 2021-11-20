@@ -10,9 +10,20 @@ function ElemString({ attrValue }) {
   return <div>{attrValue}</div>;
 }
 
+ElemString.propTypes = {
+  attrValue: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]).isRequired,
+};
+
 function ElemObject({ attrValue }) {
   return <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>;
 }
+
+ElemObject.propTypes = {
+  attrValue: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+  }).isRequired,
+};
 
 function ElemNamedObject({ attrValue }) {
   const key = Object.keys(attrValue)[0];
@@ -24,9 +35,19 @@ function ElemNamedObject({ attrValue }) {
   );
 }
 
+ElemNamedObject.propTypes = {
+  attrValue: PropTypes.object.isRequired,
+};
+
 function ElemGroup({ attrValue }) {
   return <a href={groupsPath()}>{attrValue.name}</a>;
 }
+
+ElemGroup.propTypes = {
+  attrValue: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+  }).isRequired,
+};
 
 export function AttributeValue({ attrName, attrInfo }) {
   const djangoContext = DjangoContext.getInstance();
@@ -47,52 +68,44 @@ export function AttributeValue({ attrName, attrInfo }) {
     case djangoContext.attrTypeValue.array_object:
       return (
         <List>
-          {attrInfo.value.map((info, n) => {
-            return (
-              <ListItem key={n}>
-                <ElemObject attrValue={info} />
-              </ListItem>
-            );
-          })}
+          {attrInfo.value.map((info, n) => (
+            <ListItem key={n}>
+              <ElemObject attrValue={info} />
+            </ListItem>
+          ))}
         </List>
       );
 
     case djangoContext.attrTypeValue.array_string:
       return (
         <List>
-          {attrInfo.value.map((info, n) => {
-            return (
-              <ListItem key={n}>
-                <ElemString attrValue={info} />
-              </ListItem>
-            );
-          })}
+          {attrInfo.value.map((info, n) => (
+            <ListItem key={n}>
+              <ElemString attrValue={info} />
+            </ListItem>
+          ))}
         </List>
       );
 
     case djangoContext.attrTypeValue.array_named_object:
       return (
         <List>
-          {attrInfo.value.map((info, n) => {
-            return (
-              <ListItem key={n}>
-                <ElemNamedObject attrValue={info} />
-              </ListItem>
-            );
-          })}
+          {attrInfo.value.map((info, n) => (
+            <ListItem key={n}>
+              <ElemNamedObject attrValue={info} />
+            </ListItem>
+          ))}
         </List>
       );
 
     case djangoContext.attrTypeValue.array_group:
       return (
         <List>
-          {attrInfo.value.map((info, n) => {
-            return (
-              <ListItem key={n}>
-                <ElemGroup attrValue={info} />
-              </ListItem>
-            );
-          })}
+          {attrInfo.value.map((info, n) => (
+            <ListItem key={n}>
+              <ElemGroup attrValue={info} />
+            </ListItem>
+          ))}
         </List>
       );
 
@@ -103,5 +116,8 @@ export function AttributeValue({ attrName, attrInfo }) {
 
 AttributeValue.propTypes = {
   attrName: PropTypes.string.isRequired,
-  attrInfo: PropTypes.object.isRequired,
+  attrInfo: PropTypes.shape({
+    type: PropTypes.number.isRequired,
+    value: PropTypes.any.isRequired,
+  }).isRequired,
 };

@@ -129,7 +129,6 @@ def _yaml_export(job, values, recv_data, has_referral):
             return
 
         for attrinfo in recv_data['attrinfo']:
-            data['attrs'][attrinfo['name']] = ''
             if attrinfo['name'] in entry_info['attrs']:
                 _adata = entry_info['attrs'][attrinfo['name']]
                 if 'value' not in _adata:

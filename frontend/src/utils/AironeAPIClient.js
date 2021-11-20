@@ -83,18 +83,6 @@ export function searchEntries(
   });
 }
 
-export function getAdvancedSearchResults() {
-  return new Promise((resolve, _) => {
-    resolve([
-      {
-        name: "test",
-        attr1: "val1",
-        attr2: "val2",
-      },
-    ]);
-  });
-}
-
 export function getACL(objectId) {
   return fetch(`/acl/api/v2/acls/${objectId}`);
 }

@@ -25,9 +25,9 @@ export function Entity({}) {
   const classes = useStyles();
 
   const entities = useAsync(async () => {
-    return getEntities()
-      .then((resp) => resp.json())
-      .then((data) => data.entities);
+    const resp = await getEntities();
+    const data = await resp.json();
+    return data.entities;
   });
 
   return (

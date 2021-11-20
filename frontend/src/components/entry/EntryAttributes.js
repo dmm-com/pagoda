@@ -4,7 +4,7 @@ import React from "react";
 
 import { AttributeValue } from "./AttributeValue";
 
-export default function EntryAttributes({ attributes }) {
+export function EntryAttributes({ attributes }) {
   return (
     <Table>
       <TableBody>
