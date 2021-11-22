@@ -1513,16 +1513,15 @@ class Entry(ACLBase):
                 continue
 
             # Check for has permission to EntityAttr, when is_output_all flag
-            output_attrs = []
+            output_attrs = hint_attrs
             if is_output_all:
                 for entity_attr in entity.attrs.filter(is_active=True):
-                    output_attrs.append({
-                        'name': entity_attr.name,
-                        'is_readble': True if (
-                            user.has_permission(entity_attr, ACLType.Readable)) else False
-                    })
-            else:
-                output_attrs = hint_attrs
+                    if entity_attr.name not in [x['name'] for x in hint_attrs if 'name' in x]:
+                        output_attrs.append({
+                            'name': entity_attr.name,
+                            'is_readble': True if (
+                                user.has_permission(entity_attr, ACLType.Readable)) else False
+                        })
 
             # retrieve data from database on the basis of the result of elasticsearch
             search_result = make_search_results(user, resp, output_attrs, limit, hint_referral)
