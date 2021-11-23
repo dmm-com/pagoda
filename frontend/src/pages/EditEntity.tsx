@@ -1,17 +1,17 @@
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import Typography from "@material-ui/core/Typography";
-import React, { useState } from "react";
+import React, { FC, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entitiesPath, entityEntriesPath, topPath } from "../Routes.ts";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
-import { EntityForm } from "../components/entity/EntityForm.tsx";
-import { WebhookForm } from "../components/webhook/WebhookForm.tsx";
-import { getEntities, getEntity } from "../utils/AironeAPIClient.ts";
+import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { EntityForm } from "../components/entity/EntityForm";
+import { WebhookForm } from "../components/webhook/WebhookForm";
+import { getEntities, getEntity } from "../utils/AironeAPIClient";
 
-export function EditEntity({}) {
+export const EditEntity: FC = () => {
   const { entityId } = useParams();
 
   const entity = useAsync(async () => {
@@ -56,8 +56,8 @@ export function EditEntity({}) {
       </AironeBreadcrumbs>
 
       <Tabs value={tabValue} onChange={handleTabChange}>
-        <Tab label="編集" index={0} />
-        <Tab label="設定" index={1} />
+        <Tab label="編集" />
+        <Tab label="設定" />
       </Tabs>
 
       <div hidden={tabValue !== 0}>
@@ -85,4 +85,4 @@ export function EditEntity({}) {
       </div>
     </div>
   );
-}
+};

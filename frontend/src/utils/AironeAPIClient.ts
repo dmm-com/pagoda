@@ -83,7 +83,7 @@ export function searchEntries(
   });
 }
 
-export function getACL(objectId) {
+export function getACL(objectId: number) {
   return new Promise((resolve, _) => {
     resolve({
       object: {

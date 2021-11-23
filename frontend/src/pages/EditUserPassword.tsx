@@ -1,14 +1,14 @@
 import Typography from "@material-ui/core/Typography";
-import React from "react";
+import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { topPath, usersPath } from "../Routes.ts";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
-import { UserPasswordForm } from "../components/user/UserPasswordForm.tsx";
-import { getUser } from "../utils/AironeAPIClient.ts";
+import { topPath, usersPath } from "../Routes";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { UserPasswordForm } from "../components/user/UserPasswordForm";
+import { getUser } from "../utils/AironeAPIClient";
 
-export function EditUserPassword({}) {
+export const EditUserPassword: FC = () => {
   const { userId } = useParams();
 
   const user = useAsync(async () => {
@@ -31,9 +31,9 @@ export function EditUserPassword({}) {
       {!user.loading && (
         <UserPasswordForm
           user={user.value}
-          asSuperuser={django_context.user.is_superuser}
+          asSuperuser={(window as any).django_context.user.is_superuser}
         />
       )}
     </div>
   );
-}
+};

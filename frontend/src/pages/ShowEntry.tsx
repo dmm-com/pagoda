@@ -1,32 +1,32 @@
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import Typography from "@material-ui/core/Typography";
-import React, { useState } from "react";
+import React, { FC, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entitiesPath, entityEntriesPath, topPath } from "../Routes.ts";
-import ACLForm from "../components/common/ACLForm.tsx";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
-import CopyForm from "../components/entry/CopyForm.tsx";
-import { EntryAttributes } from "../components/entry/EntryAttributes.tsx";
-import { EntryForm } from "../components/entry/EntryForm.tsx";
-import EntryHistory from "../components/entry/EntryHistory.tsx";
-import EntryReferral from "../components/entry/EntryReferral.tsx";
+import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
+import { ACLForm } from "../components/common/ACLForm";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { CopyForm } from "../components/entry/CopyForm";
+import { EntryAttributes } from "../components/entry/EntryAttributes";
+import { EntryForm } from "../components/entry/EntryForm";
+import { EntryHistory } from "../components/entry/EntryHistory";
+import { EntryReferral } from "../components/entry/EntryReferral";
 import {
   getACL,
   getEntry,
   getEntryHistory,
   getReferredEntries,
-} from "../utils/AironeAPIClient.ts";
+} from "../utils/AironeAPIClient";
 
-export function ShowEntry({}) {
+export const ShowEntry: FC = () => {
   const { entryId } = useParams();
 
   const [tabValue, setTabValue] = useState(0);
 
   // TODO get an entry only if show/edit pages
-  const entry = useAsync(async () => {
+  const entry: any = useAsync(async () => {
     const resp = await getEntry(entryId);
     if (!resp.ok) {
       throw new Error("entry not found");
@@ -34,7 +34,7 @@ export function ShowEntry({}) {
     return await resp.json();
   });
 
-  const entryHistory = useAsync(async () => {
+  const entryHistory: any = useAsync(async () => {
     return await getEntryHistory(entryId);
   });
 
@@ -73,12 +73,12 @@ export function ShowEntry({}) {
       </AironeBreadcrumbs>
 
       <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)}>
-        <Tab label="表示" index={0} />
-        <Tab label="編集" index={1} />
-        <Tab label="参照エントリ一覧" index={2} />
-        <Tab label="変更履歴" index={3} />
-        <Tab label="コピー" index={4} />
-        <Tab label="ACL設定" index={5} />
+        <Tab label="表示" />
+        <Tab label="編集" />
+        <Tab label="参照エントリ一覧" />
+        <Tab label="変更履歴" />
+        <Tab label="コピー" />
+        <Tab label="ACL設定" />
       </Tabs>
 
       <div hidden={tabValue !== 0}>
@@ -97,10 +97,7 @@ export function ShowEntry({}) {
 
       <div hidden={tabValue !== 2}>
         {!entry.loading && !referredEntries.loading && (
-          <EntryReferral
-            entityId={entry.value.schema.id}
-            referredEntries={referredEntries.value}
-          />
+          <EntryReferral referredEntries={referredEntries.value} />
         )}
       </div>
 
@@ -121,4 +118,4 @@ export function ShowEntry({}) {
       </div>
     </div>
   );
-}
+};

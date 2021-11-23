@@ -1,15 +1,15 @@
 import Typography from "@material-ui/core/Typography";
-import React from "react";
+import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { groupsPath, topPath } from "../Routes.ts";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
-import { GroupForm } from "../components/group/GroupForm.tsx";
-import { getGroup, getUsers } from "../utils/AironeAPIClient.ts";
+import { groupsPath, topPath } from "../Routes";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { GroupForm } from "../components/group/GroupForm";
+import { getGroup, getUsers } from "../utils/AironeAPIClient";
 
-export function EditGroup({}) {
-  let { groupId } = useParams();
+export const EditGroup: FC = () => {
+  const { groupId } = useParams();
 
   const users = useAsync(async () => {
     const resp = await getUsers();
@@ -39,4 +39,4 @@ export function EditGroup({}) {
       )}
     </div>
   );
-}
+};

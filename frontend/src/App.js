@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import { AppRouter } from "./AppRouter";
-import { ErrorHandler } from "./ErrorHandler";
+import { AppRouter } from "./AppRouter.tsx";
+import { ErrorHandler } from "./ErrorHandler.tsx";
 
 function App({}) {
   return (

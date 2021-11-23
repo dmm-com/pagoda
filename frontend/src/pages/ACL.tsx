@@ -1,17 +1,17 @@
 import Typography from "@material-ui/core/Typography";
-import React from "react";
+import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { topPath } from "../Routes.ts";
-import ACLForm from "../components/common/ACLForm.tsx";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
-import { getACL } from "../utils/AironeAPIClient.ts";
+import { topPath } from "../Routes";
+import { ACLForm } from "../components/common/ACLForm";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { getACL } from "../utils/AironeAPIClient";
 
-export function ACL({}) {
-  const { entityId } = useParams();
+export const ACL: FC = () => {
+  const { entityId } = useParams<{ entityId: number }>();
 
-  const acl = useAsync(async () => {
+  const acl: any = useAsync(async () => {
     return await getACL(entityId);
   });
 
@@ -32,4 +32,4 @@ export function ACL({}) {
       )}
     </div>
   );
-}
+};

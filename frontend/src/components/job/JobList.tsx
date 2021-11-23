@@ -12,7 +12,7 @@ import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
-import React from "react";
+import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
@@ -24,7 +24,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function JobList({ jobs }) {
+interface Props {
+  jobs: any[];
+}
+
+export const JobList: FC<Props> = ({ jobs }) => {
   const classes = useStyles();
 
   return (
@@ -106,4 +110,4 @@ export function JobList({ jobs }) {
       </Table>
     </TableContainer>
   );
-}
+};

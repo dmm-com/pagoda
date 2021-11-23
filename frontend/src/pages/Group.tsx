@@ -1,15 +1,15 @@
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
-import React from "react";
+import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { importGroupsPath, newGroupPath, topPath } from "../Routes.ts";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
-import { CreateButton } from "../components/common/CreateButton.tsx";
-import { GroupList } from "../components/group/GroupList.tsx";
-import { downloadExportedGroups, getGroups } from "../utils/AironeAPIClient.ts";
+import { importGroupsPath, newGroupPath, topPath } from "../Routes";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { CreateButton } from "../components/common/CreateButton";
+import { GroupList } from "../components/group/GroupList";
+import { downloadExportedGroups, getGroups } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function Group({}) {
+export const Group: FC = () => {
   const classes = useStyles();
 
   const groups = useAsync(async () => {
@@ -66,4 +66,4 @@ export function Group({}) {
       {!groups.loading && <GroupList groups={groups.value} />}
     </div>
   );
-}
+};

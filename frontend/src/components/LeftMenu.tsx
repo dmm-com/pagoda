@@ -1,12 +1,12 @@
 import { List, ListItem, ListItemText } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
 import { makeStyles } from "@material-ui/core/styles";
-import React from "react";
+import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entityPath } from "../Routes.ts";
-import { getEntities } from "../utils/AironeAPIClient.ts";
+import { entityPath } from "../Routes";
+import { getEntities } from "../utils/AironeAPIClient";
 import { EntityStatus } from "../utils/Constants";
 
 const useStyles = makeStyles((theme) => ({
@@ -16,15 +16,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function LeftMenu({}) {
+export const LeftMenu: FC = () => {
   const classes = useStyles();
 
   const entities = useAsync(async () => {
-    return getEntities()
-      .then((resp) => resp.json())
-      .then((data) =>
-        data.entities.filter((e) => e.status & EntityStatus.TOP_LEVEL)
-      );
+    const resp = await getEntities();
+    const data = await resp.json();
+    return data.entities.filter((e) => e.status & EntityStatus.TOP_LEVEL);
   });
 
   return (
@@ -45,4 +43,4 @@ export function LeftMenu({}) {
       </List>
     </Box>
   );
-}
+};

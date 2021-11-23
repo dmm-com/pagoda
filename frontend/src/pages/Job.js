@@ -7,7 +7,7 @@ import { useAsync } from "react-use";
 
 import { topPath } from "../Routes.ts";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
-import { JobList } from "../components/job/JobList";
+import { JobList } from "../components/job/JobList.tsx";
 import { getJobs } from "../utils/AironeAPIClient.ts";
 
 const useStyles = makeStyles((theme) => ({

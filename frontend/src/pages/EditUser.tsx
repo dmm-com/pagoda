@@ -1,14 +1,14 @@
 import Typography from "@material-ui/core/Typography";
-import React from "react";
+import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { topPath, usersPath } from "../Routes.ts";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
-import { UserForm } from "../components/user/UserForm.tsx";
-import { getUser } from "../utils/AironeAPIClient.ts";
+import { topPath, usersPath } from "../Routes";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { UserForm } from "../components/user/UserForm";
+import { getUser } from "../utils/AironeAPIClient";
 
-export function EditUser({}) {
+export const EditUser: FC = () => {
   const { userId } = useParams();
 
   const user = useAsync(async () => {
@@ -33,4 +33,4 @@ export function EditUser({}) {
       {!user.loading && <UserForm user={user.value} />}
     </div>
   );
-}
+};

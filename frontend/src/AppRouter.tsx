@@ -1,5 +1,5 @@
 import Grid from "@material-ui/core/Grid";
-import React from "react";
+import React, { FC } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 import {
@@ -24,7 +24,7 @@ import {
   showEntryPath,
   userPath,
   usersPath,
-} from "./Routes.ts";
+} from "./Routes";
 import { Header } from "./components/Header";
 import { LeftMenu } from "./components/LeftMenu";
 import { ACL } from "./pages/ACL";
@@ -36,7 +36,7 @@ import { EditEntry } from "./pages/EditEntry";
 import { EditGroup } from "./pages/EditGroup";
 import { EditUser } from "./pages/EditUser";
 import { EditUserPassword } from "./pages/EditUserPassword";
-import { Entity } from "./pages/Entity.tsx";
+import { Entity } from "./pages/Entity";
 import { EntityHistory } from "./pages/EntityHistory";
 import { Entry } from "./pages/Entry";
 import { Group } from "./pages/Group";
@@ -48,7 +48,7 @@ import { Job } from "./pages/Job";
 import { ShowEntry } from "./pages/ShowEntry";
 import { User } from "./pages/User";
 
-export function AppRouter({}) {
+export const AppRouter: FC = () => {
   return (
     <Router>
       <Grid container>
@@ -65,14 +65,8 @@ export function AppRouter({}) {
             <Route path={advancedSearchPath()} component={AdvancedSearch} />
             <Route path={newEntryPath(":entityId")} component={EditEntry} />
             <Route path={showEntryPath(":entryId")} component={ShowEntry} />
-            <Route
-              path={importEntitiesPath(":entityId")}
-              component={ImportEntry}
-            />
-            <Route
-              path={entityEntriesPath(":entityId", ":entityId")}
-              component={Entry}
-            />
+            <Route path={importEntitiesPath()} component={ImportEntry} />
+            <Route path={entityEntriesPath(":entityId")} component={Entry} />
             <Route
               path={entityHistoryPath(":entityId")}
               component={EntityHistory}
@@ -102,4 +96,4 @@ export function AppRouter({}) {
       </Grid>
     </Router>
   );
-}
+};

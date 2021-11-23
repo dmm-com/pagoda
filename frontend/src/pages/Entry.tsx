@@ -4,7 +4,7 @@ import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
-import React, { useState } from "react";
+import React, { FC, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -15,13 +15,13 @@ import {
   importEntriesPath,
   newEntryPath,
   topPath,
-} from "../Routes.ts";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
-import { CreateButton } from "../components/common/CreateButton.tsx";
-import { EditButton } from "../components/common/EditButton.tsx";
-import { Loading } from "../components/common/Loading.tsx";
-import { EntryList } from "../components/entry/EntryList.tsx";
-import { exportEntries, getEntries } from "../utils/AironeAPIClient.ts";
+} from "../Routes";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { CreateButton } from "../components/common/CreateButton";
+import { EditButton } from "../components/common/EditButton";
+import { Loading } from "../components/common/Loading";
+import { EntryList } from "../components/entry/EntryList";
+import { exportEntries, getEntries } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -32,9 +32,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function Entry({}) {
+export const Entry: FC = () => {
   const classes = useStyles();
-  let { entityId } = useParams();
+  const { entityId } = useParams();
 
   const [tabValue, setTabValue] = useState(1);
 
@@ -112,10 +112,10 @@ export function Entry({}) {
       <Divider />
 
       <Tabs value={tabValue} onChange={handleTabChange}>
-        <Tab label="ダッシュボード" index={0} />
-        <Tab label="エントリ一覧" index={1} />
-        <Tab label="ダッシュボードの設定" index={2} />
-        <Tab label="削除エントリの復旧" index={3} />
+        <Tab label="ダッシュボード" />
+        <Tab label="エントリ一覧" />
+        <Tab label="ダッシュボードの設定" />
+        <Tab label="削除エントリの復旧" />
       </Tabs>
 
       <div hidden={tabValue !== 0}>ダッシュボード</div>
@@ -145,4 +145,4 @@ export function Entry({}) {
       </div>
     </div>
   );
-}
+};

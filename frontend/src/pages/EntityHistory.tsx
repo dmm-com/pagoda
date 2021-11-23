@@ -6,13 +6,13 @@ import {
   TableRow,
   Typography,
 } from "@material-ui/core";
-import React from "react";
+import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entitiesPath, topPath } from "../Routes.ts";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
-import { getEntityHistory } from "../utils/AironeAPIClient.ts";
+import { entitiesPath, topPath } from "../Routes";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { getEntityHistory } from "../utils/AironeAPIClient";
 
 const Operations = {
   ADD: 1 << 0,
@@ -36,7 +36,7 @@ const TargetOperation = {
   DEL_ENTRY: Operations.DEL + Targets.ENTRY,
 };
 
-export function EntityHistory({}) {
+export const EntityHistory: FC = () => {
   const { entityId } = useParams();
 
   const history = useAsync(async () => {
@@ -124,4 +124,4 @@ export function EntityHistory({}) {
       </Table>
     </div>
   );
-}
+};

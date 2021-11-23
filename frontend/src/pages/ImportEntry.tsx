@@ -1,13 +1,13 @@
 import Typography from "@material-ui/core/Typography";
-import React from "react";
+import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 
-import { entitiesPath, entityEntriesPath, topPath } from "../Routes.ts";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
-import { ImportForm } from "../components/common/ImportForm.tsx";
-import { importEntries } from "../utils/AironeAPIClient.ts";
+import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { ImportForm } from "../components/common/ImportForm";
+import { importEntries } from "../utils/AironeAPIClient";
 
-export function ImportEntry({}) {
+export const ImportEntry: FC = () => {
   const { entityId } = useParams();
 
   return (
@@ -31,4 +31,4 @@ export function ImportEntry({}) {
       />
     </div>
   );
-}
+};

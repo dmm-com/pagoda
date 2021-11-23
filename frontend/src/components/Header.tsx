@@ -11,13 +11,13 @@ import { alpha, makeStyles } from "@material-ui/core/styles";
 import AccountBox from "@material-ui/icons/AccountBox";
 import FormatListBulletedIcon from "@material-ui/icons/FormatListBulleted";
 import SearchIcon from "@material-ui/icons/Search";
-import React, { useState } from "react";
+import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { jobsPath, searchPath, topPath, userPath } from "../Routes.ts";
-import { getRecentJobs } from "../utils/AironeAPIClient.ts";
-import { DjangoContext } from "../utils/DjangoContext.ts";
+import { jobsPath, searchPath, topPath, userPath } from "../Routes";
+import { getRecentJobs } from "../utils/AironeAPIClient";
+import { DjangoContext } from "../utils/DjangoContext";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -70,12 +70,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function Header({}) {
+export const Header: FC = () => {
   const classes = useStyles();
   const history = useHistory();
 
-  const [userAnchorEl, setUserAnchorEl] = useState();
-  const [jobAnchorEl, setJobAnchorEl] = useState();
+  const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
+  const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();
 
   const djangoContext = DjangoContext.getInstance();
 
@@ -197,4 +197,4 @@ export function Header({}) {
       </AppBar>
     </div>
   );
-}
+};

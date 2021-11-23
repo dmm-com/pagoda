@@ -12,14 +12,14 @@ import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
-import React, { useReducer, useState } from "react";
+import React, { FC, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { searchPath, topPath } from "../Routes.ts";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
+import { searchPath, topPath } from "../Routes";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
-import { getEntities, getEntityAttrs } from "../utils/AironeAPIClient.ts";
+import { getEntities, getEntityAttrs } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   description: {
@@ -55,7 +55,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function AdvancedSearch({}) {
+export const AdvancedSearch: FC = () => {
   const classes = useStyles();
 
   const [selectedEntityIds, toggleSelectedEntityIds] = useReducer(
@@ -185,7 +185,6 @@ export function AdvancedSearch({}) {
           )}
         </List>
         <input
-          text="text"
           className={classes.entityFilter}
           placeholder="エンティティ名で絞り込む"
           value={entityNameFilter}
@@ -235,7 +234,6 @@ export function AdvancedSearch({}) {
           )}
         </List>
         <input
-          text="text"
           className={classes.attrFilter}
           placeholder="属性名で絞り込む"
           value={attrNameFilter}
@@ -256,4 +254,4 @@ export function AdvancedSearch({}) {
       </Grid>
     </div>
   );
-}
+};

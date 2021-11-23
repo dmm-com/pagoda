@@ -8,10 +8,10 @@ import {
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
-import React, { useState } from "react";
+import React, { FC, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
-import { topPath } from "./Routes.ts";
+import { topPath } from "./Routes";
 
 const useStyles = makeStyles((theme) => ({
   errorDescription: {
@@ -30,7 +30,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function ErrorFallback({ error }) {
+interface Props {
+  error: Error;
+}
+
+const ErrorFallback: FC<Props> = ({ error }) => {
   const classes = useStyles();
   const [open, setOpen] = useState(true);
 
@@ -67,13 +71,13 @@ function ErrorFallback({ error }) {
       </DialogContent>
     </Dialog>
   );
-}
+};
 
-export function ErrorHandler({ children }) {
+export const ErrorHandler: FC = ({ children }) => {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>{children}</ErrorBoundary>
   );
-}
+};
 
 ErrorHandler.propTypes = {
   children: PropTypes.any.isRequired,

@@ -1,7 +1,7 @@
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
-import React from "react";
+import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
 import {
@@ -9,8 +9,8 @@ import {
   entitiesPath,
   groupsPath,
   usersPath,
-} from "../Routes.ts";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
+} from "../Routes";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function Dashboard({}) {
+export const Dashboard: FC = () => {
   const classes = useStyles();
 
   return (
@@ -74,4 +74,4 @@ export function Dashboard({}) {
       </div>
     </div>
   );
-}
+};
