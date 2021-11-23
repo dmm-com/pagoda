@@ -15,13 +15,13 @@ import {
   importEntriesPath,
   newEntryPath,
   topPath,
-} from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { CreateButton } from "../components/common/CreateButton";
-import { EditButton } from "../components/common/EditButton";
+} from "../Routes.ts";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
+import { CreateButton } from "../components/common/CreateButton.tsx";
+import { EditButton } from "../components/common/EditButton.tsx";
 import { Loading } from "../components/common/Loading.tsx";
-import { EntryList } from "../components/entry/EntryList";
-import { exportEntries, getEntries } from "../utils/AironeAPIClient";
+import { EntryList } from "../components/entry/EntryList.tsx";
+import { exportEntries, getEntries } from "../utils/AironeAPIClient.ts";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -124,7 +124,11 @@ export function Entry({}) {
         {entries.loading ? (
           <Loading />
         ) : (
-          <EntryList entityId={entityId} entries={entries.value} />
+          <EntryList
+            entityId={entityId}
+            entries={entries.value}
+            restoreMode={false}
+          />
         )}
       </div>
 

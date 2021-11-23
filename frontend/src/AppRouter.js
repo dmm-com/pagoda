@@ -24,7 +24,7 @@ import {
   showEntryPath,
   userPath,
   usersPath,
-} from "./Routes";
+} from "./Routes.ts";
 import { Header } from "./components/Header";
 import { LeftMenu } from "./components/LeftMenu";
 import { ACL } from "./pages/ACL";
@@ -36,7 +36,7 @@ import { EditEntry } from "./pages/EditEntry";
 import { EditGroup } from "./pages/EditGroup";
 import { EditUser } from "./pages/EditUser";
 import { EditUserPassword } from "./pages/EditUserPassword";
-import { Entity } from "./pages/Entity";
+import { Entity } from "./pages/Entity.tsx";
 import { EntityHistory } from "./pages/EntityHistory";
 import { Entry } from "./pages/Entry";
 import { Group } from "./pages/Group";

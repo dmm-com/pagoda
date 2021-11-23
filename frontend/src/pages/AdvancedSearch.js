@@ -16,10 +16,10 @@ import React, { useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { searchPath, topPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { searchPath, topPath } from "../Routes.ts";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
 import { Loading } from "../components/common/Loading";
-import { getEntities, getEntityAttrs } from "../utils/AironeAPIClient";
+import { getEntities, getEntityAttrs } from "../utils/AironeAPIClient.ts";
 
 const useStyles = makeStyles((theme) => ({
   description: {

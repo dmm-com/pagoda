@@ -6,13 +6,12 @@ import {
   TablePagination,
 } from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
-import * as React from "react";
-import { FC, ReactElement, useState } from "react";
+import React, { FC, ReactElement, useState } from "react";
 
 interface Props {
   rows: any[];
   tableHeadRow: ReactElement;
-  tableBodyRowGenerator: (row: any) => ReactElement;
+  tableBodyRowGenerator: (row: any, index: number) => ReactElement;
   rowsPerPageOptions: number[];
 }
 
@@ -26,8 +25,10 @@ export const PaginatedTable: FC<Props> = ({
   tableBodyRowGenerator,
   rowsPerPageOptions,
 }) => {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(rowsPerPageOptions[0] ?? 0);
+  const [page, setPage] = useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(
+    rowsPerPageOptions[0] ?? 0
+  );
 
   const handleRowsPerPageChange = (event) => {
     setRowsPerPage(+event.target.value);
@@ -42,7 +43,7 @@ export const PaginatedTable: FC<Props> = ({
           <TableBody>
             {rows
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row) => tableBodyRowGenerator(row))}
+              .map((row, index) => tableBodyRowGenerator(row, index))}
           </TableBody>
         </Table>
       </TableContainer>

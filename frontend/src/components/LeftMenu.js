@@ -5,8 +5,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entityPath } from "../Routes";
-import { getEntities } from "../utils/AironeAPIClient";
+import { entityPath } from "../Routes.ts";
+import { getEntities } from "../utils/AironeAPIClient.ts";
 import { EntityStatus } from "../utils/Constants";
 
 const useStyles = makeStyles((theme) => ({

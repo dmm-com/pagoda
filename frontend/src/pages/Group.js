@@ -5,11 +5,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { importGroupsPath, newGroupPath, topPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { CreateButton } from "../components/common/CreateButton";
-import { GroupList } from "../components/group/GroupList";
-import { downloadExportedGroups, getGroups } from "../utils/AironeAPIClient";
+import { importGroupsPath, newGroupPath, topPath } from "../Routes.ts";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
+import { CreateButton } from "../components/common/CreateButton.tsx";
+import { GroupList } from "../components/group/GroupList.tsx";
+import { downloadExportedGroups, getGroups } from "../utils/AironeAPIClient.ts";
 
 const useStyles = makeStyles((theme) => ({
   button: {

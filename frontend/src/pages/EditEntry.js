@@ -3,10 +3,10 @@ import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { EntryForm } from "../components/entry/EntryForm";
-import { getEntry } from "../utils/AironeAPIClient";
+import { entitiesPath, entityEntriesPath, topPath } from "../Routes.ts";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
+import { EntryForm } from "../components/entry/EntryForm.tsx";
+import { getEntry } from "../utils/AironeAPIClient.ts";
 
 export function EditEntry({}) {
   const { entityId, entryId } = useParams();

@@ -10,9 +10,9 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entitiesPath, topPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { getEntityHistory } from "../utils/AironeAPIClient";
+import { entitiesPath, topPath } from "../Routes.ts";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
+import { getEntityHistory } from "../utils/AironeAPIClient.ts";
 
 const Operations = {
   ADD: 1 << 0,

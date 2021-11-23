@@ -3,10 +3,10 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { groupsPath, topPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { GroupForm } from "../components/group/GroupForm";
-import { getGroup, getUsers } from "../utils/AironeAPIClient";
+import { groupsPath, topPath } from "../Routes.ts";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
+import { GroupForm } from "../components/group/GroupForm.tsx";
+import { getGroup, getUsers } from "../utils/AironeAPIClient.ts";
 
 export function EditGroup({}) {
   let { groupId } = useParams();

@@ -1,0 +1,142 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should match snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="container-fluid"
+  >
+    <nav
+      aria-label="breadcrumb"
+      class="MuiTypography-root MuiBreadcrumbs-root makeStyles-breadcrumbs-2 MuiTypography-body1 MuiTypography-colorTextSecondary"
+    >
+      <ol
+        class="MuiBreadcrumbs-ol"
+      >
+        <li
+          class="MuiBreadcrumbs-li"
+        >
+          <a
+            class="MuiTypography-root MuiTypography-body1"
+            href="/new-ui/"
+          >
+            Top
+          </a>
+        </li>
+        <li
+          aria-hidden="true"
+          class="MuiBreadcrumbs-separator"
+        >
+          /
+        </li>
+        <li
+          class="MuiBreadcrumbs-li"
+        >
+          <p
+            class="MuiTypography-root MuiTypography-body1 MuiTypography-colorTextPrimary"
+          >
+            エンティティ一覧
+          </p>
+        </li>
+      </ol>
+    </nav>
+    <div
+      class="row"
+    >
+      <div
+        class="col"
+      >
+        <div
+          class="float-left"
+        >
+          <a
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-3 MuiButton-containedPrimary"
+            href="/new-ui/entities/new"
+            role="button"
+            tabindex="0"
+          >
+            <span
+              class="MuiButton-label"
+            >
+              <span
+                class="MuiButton-startIcon MuiButton-iconSizeMedium"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                  />
+                </svg>
+              </span>
+              エンティティ作成
+            </span>
+          </a>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-button-1 MuiButton-outlinedSecondary"
+            tabindex="0"
+            type="button"
+          >
+            <span
+              class="MuiButton-label"
+            >
+              エクスポート
+            </span>
+          </button>
+          <a
+            aria-disabled="false"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-button-1 MuiButton-outlinedSecondary"
+            href="/new-ui/entities/import"
+            role="button"
+            tabindex="0"
+          >
+            <span
+              class="MuiButton-label"
+            >
+              インポート
+            </span>
+          </a>
+        </div>
+        <div
+          class="float-right"
+        />
+      </div>
+    </div>
+    <div
+      class="MuiBox-root MuiBox-root-6"
+    >
+      <div
+        class="MuiBox-root MuiBox-root-7 makeStyles-loading-4"
+      >
+        <div
+          class="MuiCircularProgress-root MuiCircularProgress-colorPrimary MuiCircularProgress-indeterminate"
+          role="progressbar"
+          style="width: 40px; height: 40px;"
+        >
+          <svg
+            class="MuiCircularProgress-svg"
+            viewBox="22 22 44 44"
+          >
+            <circle
+              class="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate"
+              cx="44"
+              cy="44"
+              fill="none"
+              r="20.2"
+              stroke-width="3.6"
+            />
+          </svg>
+        </div>
+        <p
+          class="MuiTypography-root makeStyles-text-5 MuiTypography-body1"
+        >
+          Loading...
+        </p>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

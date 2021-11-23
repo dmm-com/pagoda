@@ -11,7 +11,7 @@ import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
-import { topPath } from "./Routes";
+import { topPath } from "./Routes.ts";
 
 const useStyles = makeStyles((theme) => ({
   errorDescription: {

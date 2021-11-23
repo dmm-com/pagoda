@@ -3,10 +3,10 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { topPath, usersPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { UserForm } from "../components/user/UserForm";
-import { getUser } from "../utils/AironeAPIClient";
+import { topPath, usersPath } from "../Routes.ts";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
+import { UserForm } from "../components/user/UserForm.tsx";
+import { getUser } from "../utils/AironeAPIClient.ts";
 
 export function EditUser({}) {
   const { userId } = useParams();

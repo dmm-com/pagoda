@@ -3,10 +3,10 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { topPath, usersPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { UserPasswordForm } from "../components/user/UserPasswordForm";
-import { getUser } from "../utils/AironeAPIClient";
+import { topPath, usersPath } from "../Routes.ts";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
+import { UserPasswordForm } from "../components/user/UserPasswordForm.tsx";
+import { getUser } from "../utils/AironeAPIClient.ts";
 
 export function EditUserPassword({}) {
   const { userId } = useParams();

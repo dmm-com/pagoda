@@ -9,8 +9,8 @@ import {
   entitiesPath,
   groupsPath,
   usersPath,
-} from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+} from "../Routes.ts";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
 
 const useStyles = makeStyles((theme) => ({
   button: {

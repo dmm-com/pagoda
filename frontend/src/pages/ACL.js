@@ -3,10 +3,10 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { topPath } from "../Routes";
-import ACLForm from "../components/common/ACLForm";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { getACL } from "../utils/AironeAPIClient";
+import { topPath } from "../Routes.ts";
+import ACLForm from "../components/common/ACLForm.tsx";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
+import { getACL } from "../utils/AironeAPIClient.ts";
 
 export function ACL({}) {
   const { entityId } = useParams();

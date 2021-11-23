@@ -5,20 +5,20 @@ import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
-import ACLForm from "../components/common/ACLForm";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import CopyForm from "../components/entry/CopyForm";
-import { EntryAttributes } from "../components/entry/EntryAttributes";
-import { EntryForm } from "../components/entry/EntryForm";
-import EntryHistory from "../components/entry/EntryHistory";
-import EntryReferral from "../components/entry/EntryReferral";
+import { entitiesPath, entityEntriesPath, topPath } from "../Routes.ts";
+import ACLForm from "../components/common/ACLForm.tsx";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
+import CopyForm from "../components/entry/CopyForm.tsx";
+import { EntryAttributes } from "../components/entry/EntryAttributes.tsx";
+import { EntryForm } from "../components/entry/EntryForm.tsx";
+import EntryHistory from "../components/entry/EntryHistory.tsx";
+import EntryReferral from "../components/entry/EntryReferral.tsx";
 import {
   getACL,
   getEntry,
   getEntryHistory,
   getReferredEntries,
-} from "../utils/AironeAPIClient";
+} from "../utils/AironeAPIClient.ts";
 
 export function ShowEntry({}) {
   const { entryId } = useParams();
