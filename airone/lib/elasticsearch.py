@@ -235,33 +235,7 @@ def make_query_for_simple(hint_string: str, hint_entity_name: str, offset: int) 
     query: Dict = {
         'query': {
             'bool': {
-                'must': [{
-                    'bool': {
-                        'should': [{
-                            'regexp': {
-                                'name': _get_regex_pattern(hint_string)
-                            }
-                        }, {
-                            'bool': {
-                                'filter': {
-                                    'nested': {
-                                        'path': 'attr',
-                                        'query': {
-                                            'regexp': {
-                                                'attr.value': _get_regex_pattern(hint_string)
-                                            }
-                                        },
-                                        'inner_hits': {
-                                            '_source': [
-                                                'attr.name'
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }]
-                    }
-                }]
+                'must': []
             }
         },
         '_source': [
@@ -278,19 +252,24 @@ def make_query_for_simple(hint_string: str, hint_entity_name: str, offset: int) 
         'from': offset
     }
 
+    hint_query: Dict = {
+        'bool': {
+            'should': []
+        }
+    }
+    hint_query['bool']['should'].append(_make_entry_name_query(hint_string))
+    hint_query['bool']['should'].append(_make_attr_query_for_simple(hint_string))
+    query['query']['bool']['must'].append(hint_query)
+
     if hint_entity_name:
         query['query']['bool']['must'].append({
-            'bool': {
-                'filter': [{
-                    'nested': {
-                        'path': 'entity',
-                        'query': {
-                            'term': {
-                                'entity.name': hint_entity_name
-                            }
-                        }
+            'nested': {
+                'path': 'entity',
+                'query': {
+                    'term': {
+                        'entity.name': hint_entity_name
                     }
-                }]
+                }
             }
         })
 
@@ -383,7 +362,7 @@ def _make_entry_name_query(entry_name: str) -> Dict[str, str]:
 
         entry_name_and_query: Dict = {
             'bool': {
-                'filter': []
+                'must': []
             }
         }
 
@@ -392,14 +371,14 @@ def _make_entry_name_query(entry_name: str) -> Dict[str, str]:
             name_val = _get_hint_keyword_val(keyword)
             if name_val:
                 # When normal conditions are specified
-                entry_name_and_query['bool']['filter'].append({
+                entry_name_and_query['bool']['must'].append({
                     'regexp': {
                         'name': _get_regex_pattern(name_val)
                     }
                 })
             else:
                 # When blank is specified in the condition
-                entry_name_and_query['bool']['filter'].append({
+                entry_name_and_query['bool']['must'].append({
                     'match': {
                         'name': ''
                     }
@@ -407,6 +386,63 @@ def _make_entry_name_query(entry_name: str) -> Dict[str, str]:
         entry_name_or_query['bool']['should'].append(entry_name_and_query)
 
     return entry_name_or_query
+
+
+def _make_attr_query_for_simple(hint_string: str) -> Dict[str, str]:
+    """Create a search query for the AttributeValue in simple search.
+
+    Divides the search string with OR.
+    Divide the divided character string with AND.
+    Create a regular expression pattern query with the smallest unit string.
+
+    Args:
+        hint_string (str): Search string for AttributeValue
+
+    Returns:
+        dict[str, str]: AttributeValue search query
+
+    """
+
+    attr_query: Dict = {
+        'bool': {
+            'filter': {
+                'nested': {
+                    'path': 'attr',
+                    'inner_hits': {
+                        '_source': [
+                            'attr.name'
+                        ]
+                    }
+                }
+            }
+        }
+    }
+
+    attr_or_query: Dict = {
+        'bool': {
+            'should': []
+        }
+    }
+    for keyword_divided_or in hint_string.split(CONFIG.OR_SEARCH_CHARACTER):
+        if not keyword_divided_or:
+            continue
+
+        attr_and_query: Dict = {
+            'bool': {
+                'filter': []
+            }
+        }
+        for keyword_divided_and in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
+            attr_and_query['bool']['filter'].append({
+                'regexp': {
+                    'attr.value': _get_regex_pattern(keyword_divided_and)
+                }
+            })
+        attr_or_query['bool']['should'].append(attr_and_query)
+
+    attr_query['bool']['filter']['nested']['query'] = attr_or_query
+
+    return attr_query
 
 
 def _parse_or_search(hint: Dict[str, str], attr_query: Dict[str, str]) -> Dict[str, str]:
