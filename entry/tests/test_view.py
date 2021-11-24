@@ -3419,7 +3419,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(attrv1.get_value(), attr.get_latest_value().get_value())
 
-        resp = Entry.search_entries(user, [entity.id])
+        resp = Entry.search_entries(user, [entity.id], [], is_output_all=True)
         self.assertEqual(resp['ret_count'], 1)
         for attr_name, data in resp['ret_values'][0]['attrs'].items():
             self.assertEqual(data['type'], attr_info[attr_name]['type'])

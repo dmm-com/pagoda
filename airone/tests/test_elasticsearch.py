@@ -70,7 +70,7 @@ class ElasticSearchTest(TestCase):
     def test_make_query(self):
         query = elasticsearch.make_query(
             hint_entity=self._entity,
-            hint_attrs=[{'name': 'a1', 'keyword': 'a'}, {'name': 'a2', 'keyword': ''}],
+            hint_attrs=[{'name': 'a1', 'keyword': 'hoge|fu&ga'}, {'name': 'a2', 'keyword': ''}],
             entry_name='entry1',
         )
 
@@ -91,7 +91,7 @@ class ElasticSearchTest(TestCase):
                                 'should': [
                                     {
                                         'bool': {
-                                            'filter': [
+                                            'must': [
                                                 {'regexp': {'name': '.*[eE][nN][tT][rR][yY]1.*'}}
                                             ]
                                         }
@@ -113,24 +113,48 @@ class ElasticSearchTest(TestCase):
                             }
                         },
                         {
-                            'nested': {
-                                'path': 'attr',
-                                'query': {
-                                    'bool': {
-                                        'filter': [
-                                            {'term': {'attr.name': 'a1'}},
-                                            {
-                                                'bool': {
-                                                    'should': [
-                                                        {'match': {'attr.value': 'a'}},
-                                                        {'regexp': {'attr.value': '.*[aA].*'}}
-                                                    ]
-                                                }
-                                            }
-                                        ]
-                                    }
+                            'bool': {'should': [{
+                                'nested': {
+                                    'path': 'attr',
+                                    'query': {'bool': {'filter': [
+                                        {'term': {'attr.name': 'a1'}},
+                                        {'bool': {
+                                            'should': [
+                                                {'match': {'attr.value': 'hoge'}},
+                                                {'regexp': {'attr.value': '.*[hH][oO][gG][eE].*'}}
+                                            ]
+                                        }}
+                                    ]}}
                                 }
-                            }
+                            }, {
+                                'bool': {'filter': [{
+                                    'nested': {
+                                        'path': 'attr',
+                                        'query': {'bool': {'filter': [
+                                            {'term': {'attr.name': 'a1'}},
+                                            {'bool': {
+                                                'should': [
+                                                    {'match': {'attr.value': 'fu'}},
+                                                    {'regexp': {'attr.value': '.*[fF][uU].*'}}
+                                                ]
+                                            }}
+                                        ]}}
+                                    }
+                                }, {
+                                    'nested': {
+                                        'path': 'attr',
+                                        'query': {'bool': {'filter': [
+                                            {'term': {'attr.name': 'a1'}},
+                                            {'bool': {
+                                                'should': [
+                                                    {'match': {'attr.value': 'ga'}},
+                                                    {'regexp': {'attr.value': '.*[gG][aA].*'}}
+                                                ]
+                                            }}
+                                        ]}}
+                                    }
+                                }]}
+                            }]}
                         }
                     ],
                     'should': []
@@ -139,38 +163,48 @@ class ElasticSearchTest(TestCase):
         })
 
     def test_make_query_for_simple(self):
-        query = elasticsearch.make_query_for_simple('hoge', None, 0)
+        query = elasticsearch.make_query_for_simple('hoge|fuga&1', None, 0)
         self.assertEqual(query, {
             'query': {
-                'bool': {
-                    'must': [{
+                'bool': {'must': [{
+                    'bool': {'should': [{
                         'bool': {
                             'should': [{
-                                'regexp': {
-                                    'name': '.*[hH][oO][gG][eE].*'
-                                }
+                                'bool': {'must': [
+                                    {'regexp': {'name': '.*[hH][oO][gG][eE].*'}}
+                                ]}
                             }, {
-                                'bool': {
-                                    'filter': {
-                                        'nested': {
-                                            'path': 'attr',
-                                            'query': {
-                                                'regexp': {
-                                                    'attr.value': '.*[hH][oO][gG][eE].*'
-                                                }
-                                            },
-                                            'inner_hits': {
-                                                '_source': [
-                                                    'attr.name'
-                                                ]
-                                            }
-                                        }
-                                    }
-                                }
+                                'bool': {'must': [
+                                    {'regexp': {'name': '.*[fF][uU][gG][aA].*'}},
+                                    {'regexp': {'name': '.*1.*'}}
+                                ]}
                             }]
                         }
-                    }]
-                }
+                    }, {
+                        'bool': {
+                            'filter': {
+                                'nested': {
+                                    'path': 'attr',
+                                    'query': {'bool': {'should': [{
+                                        'bool': {'filter': [
+                                            {'regexp': {'attr.value': '.*[hH][oO][gG][eE].*'}}
+                                        ]}
+                                    }, {
+                                        'bool': {'filter': [
+                                            {'regexp': {'attr.value': '.*[fF][uU][gG][aA].*'}},
+                                            {'regexp': {'attr.value': '.*1.*'}}
+                                        ]}
+                                    }]}},
+                                    'inner_hits': {
+                                        '_source': [
+                                            'attr.name'
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }]}
+                }]}
             },
             '_source': [
                 'name'
@@ -189,17 +223,13 @@ class ElasticSearchTest(TestCase):
         # set hint_entity_name
         query = elasticsearch.make_query_for_simple('hoge', 'fuga', 0)
         self.assertEqual(query['query']['bool']['must'][1], {
-            'bool': {
-                'filter': [{
-                    'nested': {
-                        'path': 'entity',
-                        'query': {
-                            'term': {
-                                'entity.name': 'fuga'
-                            }
-                        }
+            'nested': {
+                'path': 'entity',
+                'query': {
+                    'term': {
+                        'entity.name': 'fuga'
                     }
-                }]
+                }
             }
         })
 

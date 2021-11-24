@@ -103,7 +103,7 @@ function reconstruct_tbody(results) {
   elem_parent.children().remove();
 
   for(var result of results) {
-    var new_elem_entry = $('<tr/>');
+    var new_elem_entry = $('<tr id=entryinfo/>');
 
     new_elem_entry.append(`<th id=entry_name><a href='/entry/show/${ result.entry.id }/'>${ result.entry.name } [${ result.entity.name}]</a></th>`);
 

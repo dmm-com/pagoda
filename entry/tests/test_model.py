@@ -3130,9 +3130,15 @@ class ModelTest(AironeTestCase):
     def test_search_entries_with_is_output_all(self):
         self._entity.attrs.add(self._attr.schema)
         self._entry.attrs.add(self._attr)
+        self._entry.attrs.first().add_value(self._user, 'hoge')
         self._entry.register_es()
         ret = Entry.search_entries(self._user, [self._entity.id], is_output_all=True)
-        self.assertEqual(ret['ret_values'][0]['attrs'], {'attr': {'is_readble': True, 'type': 2}})
+        self.assertEqual(ret['ret_values'][0]['attrs'],
+                         {'attr': {'value': 'hoge', 'is_readble': True, 'type': 2}})
+
+        ret = Entry.search_entries(self._user, [self._entity.id],
+                                   [{'name': 'attr', 'keyword': '^ge'}], is_output_all=True)
+        self.assertEqual(ret['ret_count'], 0)
 
     def test_search_entries_for_simple(self):
         self._entity.attrs.add(self._attr.schema)
