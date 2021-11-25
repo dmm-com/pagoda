@@ -249,21 +249,50 @@ export function EntryForm({
     console.log("[onix/handleNarrowDownEntries(01)] before modified attributes: ");
     console.log(attributes);
 
+    function _getUpdatedValues(currentValue) {
+        return refs.results.map((r) => {
+          return {
+            id: r.id,
+            name: r.name,
+            checked: currentValue.find((x) => x.id == r.id)?.checked ? true : false,
+          }
+        });
+    }
+
     // TODO update state?
     switch (attrType) {
-      case djangoContext.attrTypeValue.named_object:
-        const additionalValues = refs.results.filter((r) => r.id !== attrValueId).map((r) => {
-            return {
-              ...r,
-              checked: false,
-            };
-        })
-        for (const attrKey in Object.keys(attributes[attrName].value)) {
-            // FIXME attributes[attrName].value[attrKey] is undefined???
-            attributes[attrName].value[attrKey] = attributes[attrName].value[attrKey].concat(additionalValues);
-        }
+      case djangoContext.attrTypeValue.object:
+        attributes[attrName].value = _getUpdatedValues(attributes[attrName].value);
+
         setAttributes({ ...attributes });
         break;
+
+      case djangoContext.attrTypeValue.array_object:
+        attributes[attrName].value = attributes[attrName].value.map((curr) => {
+          return _getUpdatedValues(curr);
+        });
+
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.named_object:
+        let attrKey = Object.keys(attributes[attrName].value)[0];
+        attributes[attrName].value[attrKey] = _getUpdatedValues(attributes[attrName].value[attrKey]);
+
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.array_named_object:
+        // please FIX ME
+        attributes[attrName].value = attributes[attrName].value.map((curr) => {
+          let attrKey = Object.keys(curr)[0];
+          return _getUpdatedValues(curr[attrKey]);
+        });
+
+        setAttributes({ ...attributes });
+        break;
+
+
     }
 
     console.log("[onix/handleNarrowDownEntries(01)] after modified attributes: ");

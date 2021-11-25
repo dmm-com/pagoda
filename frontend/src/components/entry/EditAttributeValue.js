@@ -62,7 +62,7 @@ function ElemObject({
       <List>
         {attrValue.map((value) => {
           return (
-            <ListItem key="1" dense button divider>
+            <ListItem key={ value.id } dense button divider>
               <ListItemIcon>
                 <Checkbox
                   edge="start"
@@ -107,8 +107,6 @@ function ElemNamedObject({
   handleNarrowDownEntries,
 }) {
   const key = Object.keys(attrValue)[0];
-  console.log(`[onix/EditAttributeValue.ElemNamedObject] key: ${key}`);
-  console.log(attrValue);
   return (
     <>
       <Input
