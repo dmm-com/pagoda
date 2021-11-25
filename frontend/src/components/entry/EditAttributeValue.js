@@ -88,7 +88,10 @@ function ElemObject({
       <Input
         text="text"
         placeholder="エントリ名で絞り込む"
-        onChange={(e) => handleNarrowDownEntries(attrId)}
+        onChange={(e) => {
+            const attrValueId = attrValue.find((value) => value.checked)?.id;
+            handleNarrowDownEntries(attrId, attrName, attrType, attrValueId);
+        }}
       />
     </Card>
   );

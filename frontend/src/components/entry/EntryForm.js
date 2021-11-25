@@ -237,7 +237,7 @@ export function EntryForm({
     */
   };
 
-  const handleNarrowDownEntries = async (attrId) => {
+  const handleNarrowDownEntries = async (attrId, attrName, attrType, attrValueId) => {
     console.log("[onix/handleNarrowDownEntries(00)] attrId: " + attrId);
 
     const resp = await getAttrReferrals(attrId);
@@ -246,9 +246,28 @@ export function EntryForm({
     console.log("[onix/handleNarrowDownEntries(01)] refs: ");
     console.log(refs);
 
+    console.log("[onix/handleNarrowDownEntries(01)] before modified attributes: ");
     console.log(attributes);
 
     // TODO update state?
+    switch (attrType) {
+      case djangoContext.attrTypeValue.named_object:
+        const additionalValues = refs.results.filter((r) => r.id !== attrValueId).map((r) => {
+            return {
+              ...r,
+              checked: false,
+            };
+        })
+        for (const attrKey in Object.keys(attributes[attrName].value)) {
+            // FIXME attributes[attrName].value[attrKey] is undefined???
+            attributes[attrName].value[attrKey] = attributes[attrName].value[attrKey].concat(additionalValues);
+        }
+        setAttributes({ ...attributes });
+        break;
+    }
+
+    console.log("[onix/handleNarrowDownEntries(01)] after modified attributes: ");
+    console.log(attributes);
   };
 
   const handleSubmit = (event) => {
