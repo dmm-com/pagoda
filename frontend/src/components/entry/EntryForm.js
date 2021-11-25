@@ -237,7 +237,13 @@ export function EntryForm({
     */
   };
 
-  const handleNarrowDownEntries = async (attrId, attrName, attrType, attrValueId) => {
+  const handleNarrowDownEntries = async (
+    e,
+    attrId,
+    attrName,
+    attrType,
+    attrValueId
+  ) => {
     console.log("[onix/handleNarrowDownEntries(00)] attrId: " + attrId);
 
     const resp = await getAttrReferrals(attrId);
@@ -246,23 +252,34 @@ export function EntryForm({
     console.log("[onix/handleNarrowDownEntries(01)] refs: ");
     console.log(refs);
 
-    console.log("[onix/handleNarrowDownEntries(01)] before modified attributes: ");
+    console.log(
+      "[onix/handleNarrowDownEntries(01)] before modified attributes: "
+    );
     console.log(attributes);
 
     function _getUpdatedValues(currentValue) {
-        return refs.results.map((r) => {
+      return refs.results.map((r) => {
+        // TODO
+        if (r.name.includes(e.target.value)) {
           return {
             id: r.id,
             name: r.name,
-            checked: currentValue.find((x) => x.id == r.id)?.checked ? true : false,
-          }
-        });
+            checked: currentValue.find((x) => x.id == r.id)?.checked
+              ? true
+              : false,
+          };
+        } else {
+          return {};
+        }
+      });
     }
 
     // TODO update state?
     switch (attrType) {
       case djangoContext.attrTypeValue.object:
-        attributes[attrName].value = _getUpdatedValues(attributes[attrName].value);
+        attributes[attrName].value = _getUpdatedValues(
+          attributes[attrName].value
+        );
 
         setAttributes({ ...attributes });
         break;
@@ -277,7 +294,9 @@ export function EntryForm({
 
       case djangoContext.attrTypeValue.named_object:
         let attrKey = Object.keys(attributes[attrName].value)[0];
-        attributes[attrName].value[attrKey] = _getUpdatedValues(attributes[attrName].value[attrKey]);
+        attributes[attrName].value[attrKey] = _getUpdatedValues(
+          attributes[attrName].value[attrKey]
+        );
 
         setAttributes({ ...attributes });
         break;
@@ -286,16 +305,16 @@ export function EntryForm({
         // please FIX ME
         attributes[attrName].value = attributes[attrName].value.map((curr) => {
           let attrKey = Object.keys(curr)[0];
-          return _getUpdatedValues(curr[attrKey]);
+          return { attrKey: _getUpdatedValues(curr[attrKey]) };
         });
 
         setAttributes({ ...attributes });
         break;
-
-
     }
 
-    console.log("[onix/handleNarrowDownEntries(01)] after modified attributes: ");
+    console.log(
+      "[onix/handleNarrowDownEntries(01)] after modified attributes: "
+    );
     console.log(attributes);
   };
 

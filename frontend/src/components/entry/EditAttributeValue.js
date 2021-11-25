@@ -62,7 +62,7 @@ function ElemObject({
       <List>
         {attrValue.map((value) => {
           return (
-            <ListItem key={ value.id } dense button divider>
+            <ListItem key={value.id} dense button divider>
               <ListItemIcon>
                 <Checkbox
                   edge="start"
@@ -89,8 +89,8 @@ function ElemObject({
         text="text"
         placeholder="エントリ名で絞り込む"
         onChange={(e) => {
-            const attrValueId = attrValue.find((value) => value.checked)?.id;
-            handleNarrowDownEntries(attrId, attrName, attrType, attrValueId);
+          const attrValueId = attrValue.find((value) => value.checked)?.id;
+          handleNarrowDownEntries(e, attrId, attrName, attrType, attrValueId);
         }}
       />
     </Card>
