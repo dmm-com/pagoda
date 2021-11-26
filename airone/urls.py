@@ -22,10 +22,13 @@ urlpatterns = [
     url(r'^job/', include(('job.urls', 'job'))),
     url(r'^auth/login/', auth_views.LoginView.as_view(
         redirect_authenticated_user=True,
+        extra_context={
+            'idp': list(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.keys())[0]
+            if hasattr(settings, 'SOCIAL_AUTH_SAML_ENABLED_IDPS') else None
+        },
     ), name='login'),
     url(r'^auth/logout/', auth_view.logout, name='logout'),
-    url(r'^oauth/', include('social_django.urls', namespace='social')),
-    url(r'^accounts/profile/', views.index, name='index'),
+    url(r'^auth/sso/', include('social_django.urls', namespace='social')),
     url(r'^webhook/', include(('webhook.urls', 'webhook'))),
 ]
 
