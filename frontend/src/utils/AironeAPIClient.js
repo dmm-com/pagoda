@@ -84,29 +84,30 @@ export function searchEntries(
 }
 
 export function getACL(objectId) {
-  return new Promise((resolve, _) => {
-    resolve({
-      object: {
-        name: "entity1",
-        is_public: true,
-      },
-      acltypes: [
-        {
-          id: 1,
-          name: "Nothing",
-        },
-        {
-          id: 2,
-          name: "Full Controllable",
-        },
-      ],
-      members: [
-        {
-          name: "admin",
-          current_permission: 1,
-        },
-      ],
-    });
+  return fetch(`/acl/api/v2/acls/${objectId}`);
+}
+
+export function updateACL(
+  objectId,
+  name,
+  objectType,
+  isPublic,
+  defaultPermission,
+  acl
+) {
+  return fetch(`/acl/api/v2/acls/${objectId}`, {
+    method: "PUT",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify({
+      name: name,
+      objtype: objectType,
+      is_public: isPublic,
+      default_permission: defaultPermission,
+      acl: acl,
+    }),
   });
 }
 
@@ -422,23 +423,6 @@ export function getJobs(noLimit = 0) {
 
 export function getRecentJobs() {
   return fetch(`/api/v1/job/`);
-}
-
-// NOTE it calls non-API endpoint
-// FIXME implement internal API then call it
-export function updateACL(objectId, objectType, acl, defaultPermission) {
-  return fetch(`/acl/set`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({
-      object_id: objectId,
-      object_type: objectType,
-      acl: acl,
-      default_permission: defaultPermission,
-    }),
-  });
 }
 
 export function getWebhooks(entityId) {
