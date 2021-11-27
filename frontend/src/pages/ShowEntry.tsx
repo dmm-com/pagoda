@@ -45,7 +45,8 @@ export const ShowEntry: FC = () => {
   });
 
   const acl = useAsync(async () => {
-    return await getACL(entryId);
+    const resp = await getACL(entryId);
+    return await resp.json();
   });
 
   if (entry.error !== undefined) {
@@ -114,7 +115,7 @@ export const ShowEntry: FC = () => {
       </div>
 
       <div hidden={tabValue !== 5}>
-        {!acl.loading && <ACLForm acl={acl.value} />}
+        {!acl.loading && <ACLForm objectId={entryId} acl={acl.value} />}
       </div>
     </div>
   );

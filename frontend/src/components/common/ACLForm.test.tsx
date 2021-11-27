@@ -9,10 +9,8 @@ import { ACLForm } from "./ACLForm";
 
 test("should render a component with essential props", function () {
   const acl = {
-    object: {
-      name: "entity1",
-      is_public: true,
-    },
+    name: "entity1",
+    is_public: true,
     acltypes: [
       {
         id: 1,
@@ -30,5 +28,5 @@ test("should render a component with essential props", function () {
       },
     ],
   };
-  expect(() => render(<ACLForm acl={acl} />)).not.toThrow();
+  expect(() => render(<ACLForm objectId={1} acl={acl} />)).not.toThrow();
 });

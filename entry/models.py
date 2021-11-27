@@ -1439,7 +1439,7 @@ class Entry(ACLBase):
         return ret_values
 
     @classmethod
-    def search_entries(kls, user, hint_entity_ids, hint_attrs=[], limit=CONFIG.MAX_LIST_ENTRIES,
+    def search_entries(kls, user, hint_entity_ids, hint_attrs=None, limit=CONFIG.MAX_LIST_ENTRIES,
                        entry_name=None, hint_referral=False, is_output_all=False):
         """Main method called from advanced search.
 
@@ -1482,6 +1482,9 @@ class Entry(ACLBase):
                 ],
             }
         """
+        if not hint_attrs:
+            hint_attrs = []
+
         results = {
             'ret_count': 0,
             'ret_values': [],
@@ -1513,19 +1516,17 @@ class Entry(ACLBase):
                 continue
 
             # Check for has permission to EntityAttr, when is_output_all flag
-            output_attrs = []
             if is_output_all:
                 for entity_attr in entity.attrs.filter(is_active=True):
-                    output_attrs.append({
-                        'name': entity_attr.name,
-                        'is_readble': True if (
-                            user.has_permission(entity_attr, ACLType.Readable)) else False
-                    })
-            else:
-                output_attrs = hint_attrs
+                    if entity_attr.name not in [x['name'] for x in hint_attrs if 'name' in x]:
+                        hint_attrs.append({
+                            'name': entity_attr.name,
+                            'is_readble': True if (
+                                user.has_permission(entity_attr, ACLType.Readable)) else False
+                        })
 
             # retrieve data from database on the basis of the result of elasticsearch
-            search_result = make_search_results(user, resp, output_attrs, limit, hint_referral)
+            search_result = make_search_results(user, resp, hint_attrs, limit, hint_referral)
             results['ret_count'] += search_result['ret_count']
             results['ret_values'].extend(search_result['ret_values'])
             limit -= results['ret_count']
