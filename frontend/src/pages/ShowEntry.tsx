@@ -21,7 +21,7 @@ import {
 } from "../utils/AironeAPIClient";
 
 export const ShowEntry: FC = () => {
-  const { entryId } = useParams();
+  const { entryId } = useParams<{ entityId: number }>();
 
   const [tabValue, setTabValue] = useState(0);
 

@@ -9,7 +9,7 @@ import { GroupForm } from "../components/group/GroupForm";
 import { getGroup, getUsers } from "../utils/AironeAPIClient";
 
 export const EditGroup: FC = () => {
-  const { groupId } = useParams();
+  const { groupId } = useParams<{ groupId: number }>();
 
   const users = useAsync(async () => {
     const resp = await getUsers();

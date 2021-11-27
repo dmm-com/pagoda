@@ -89,7 +89,7 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props {
   entity?: {
-    id: string;
+    id: number;
     name: string;
     note: string;
     isTopLevel: boolean;

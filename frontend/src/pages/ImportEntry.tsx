@@ -8,7 +8,7 @@ import { ImportForm } from "../components/common/ImportForm";
 import { importEntries } from "../utils/AironeAPIClient";
 
 export const ImportEntry: FC = () => {
-  const { entityId } = useParams();
+  const { entityId } = useParams<{ entityId: number }>();
 
   return (
     <div>

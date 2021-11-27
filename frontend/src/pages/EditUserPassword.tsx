@@ -9,7 +9,7 @@ import { UserPasswordForm } from "../components/user/UserPasswordForm";
 import { getUser } from "../utils/AironeAPIClient";
 
 export const EditUserPassword: FC = () => {
-  const { userId } = useParams();
+  const { userId } = useParams<{ userId: number }>();
 
   const user = useAsync(async () => {
     const resp = await getUser(userId);

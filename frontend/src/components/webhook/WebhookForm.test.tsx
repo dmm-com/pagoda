@@ -19,7 +19,7 @@ test("should render a component with essential props", async () => {
   /* eslint-enable */
 
   await waitFor(() => {
-    expect(() => render(<WebhookForm entityId={"0"} />)).not.toThrow();
+    expect(() => render(<WebhookForm entityId={0} />)).not.toThrow();
   });
 
   jest.clearAllMocks();

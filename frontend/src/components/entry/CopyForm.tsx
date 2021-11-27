@@ -8,7 +8,7 @@ import { copyEntry } from "../../utils/AironeAPIClient";
 
 interface Props {
   entityId: number;
-  entryId: string;
+  entryId: number;
 }
 
 export const CopyForm: FC<Props> = ({ entityId, entryId }) => {

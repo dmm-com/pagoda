@@ -12,7 +12,7 @@ import { WebhookForm } from "../components/webhook/WebhookForm";
 import { getEntities, getEntity } from "../utils/AironeAPIClient";
 
 export const EditEntity: FC = () => {
-  const { entityId } = useParams();
+  const { entityId } = useParams<{ entityId: number }>();
 
   const entity = useAsync(async () => {
     if (entityId !== undefined) {

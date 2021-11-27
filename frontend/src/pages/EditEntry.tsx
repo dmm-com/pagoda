@@ -9,7 +9,8 @@ import { EntryForm } from "../components/entry/EntryForm";
 import { getEntry } from "../utils/AironeAPIClient";
 
 export const EditEntry: FC = () => {
-  const { entityId, entryId } = useParams();
+  const { entityId, entryId } =
+    useParams<{ entityId: number; entryId: number }>();
 
   const entry: any = useAsync(async () => {
     if (entryId !== undefined) {

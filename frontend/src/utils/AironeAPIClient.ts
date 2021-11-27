@@ -3,30 +3,30 @@ import fileDownload from "js-file-download";
 
 // Get CSRF Token from Cookie set by Django
 // see https://docs.djangoproject.com/en/3.2/ref/csrf/
-function getCsrfToken() {
+function getCsrfToken(): string {
   return Cookies.get("csrftoken");
 }
 
-export function getEntity(entityId) {
+export function getEntity(entityId: number): Promise<Response> {
   return fetch(`/entity/api/v2/entities/${entityId}`);
 }
 
-export function getEntities() {
+export function getEntities(): Promise<Response> {
   return fetch("/entity/api/v1/get_entities");
 }
 
-export function getEntityHistory(entityId) {
+export function getEntityHistory(entityId: number): Promise<Response> {
   return fetch(`/entity/api/v2/history/${entityId}`);
 }
 
 // NOTE it calls non-API endpoint
-export function downloadExportedEntities(filename) {
+export function downloadExportedEntities(filename: string): Promise<void> {
   return fetch("/entity/export/")
     .then((resp) => resp.blob())
     .then((blob) => fileDownload(blob, filename));
 }
 
-export function importEntities(formData) {
+export function importEntities(formData: FormData): Promise<Response> {
   return fetch(`/dashboard/do_import/`, {
     method: "POST",
     headers: {
@@ -36,22 +36,28 @@ export function importEntities(formData) {
   });
 }
 
-export function getEntityAttrs(entityIds) {
+export function getEntityAttrs(entityIds: number[]): Promise<Response> {
   return fetch(`/api/v1/entity/attrs/${entityIds.join(",")}`);
 }
 
-export function getEntry(entryId) {
+export function getEntry(entryId: number): Promise<Response> {
   return fetch(`/entry/api/v2/${entryId}`);
 }
 
-export function getEntries(entityId, isActive = true) {
+export function getEntries(
+  entityId: number,
+  isActive = true
+): Promise<Response> {
   const isActiveParam = isActive ? "True" : "False";
   return fetch(
     `/entry/api/v1/get_entries/${entityId}?is_active=${isActiveParam}`
   );
 }
 
-export function importEntries(entityId, formData) {
+export function importEntries(
+  entityId: number,
+  formData: FormData
+): Promise<Response> {
   return fetch(`/entry/do_import/${entityId}/`, {
     method: "POST",
     headers: {
@@ -63,11 +69,11 @@ export function importEntries(entityId, formData) {
 
 // FIXME it should be better to implement a new internal API than this
 export function searchEntries(
-  entityIds = [],
+  entityIds: number[] = [],
   entryName = "",
-  attrInfo = [],
+  attrInfo: object[] = [],
   entryLimit = 99999
-) {
+): Promise<Response> {
   return fetch(`/api/v1/entry/search`, {
     method: "POST",
     headers: {
@@ -83,18 +89,18 @@ export function searchEntries(
   });
 }
 
-export function getACL(objectId: number) {
+export function getACL(objectId: number): Promise<Response> {
   return fetch(`/acl/api/v2/acls/${objectId}`);
 }
 
 export function updateACL(
   objectId: number,
-  name,
-  objectType,
-  isPublic,
-  defaultPermission,
-  acl
-) {
+  name: string,
+  objectType: string,
+  isPublic: boolean,
+  defaultPermission: number,
+  acl: object
+): Promise<Response> {
   return fetch(`/acl/api/v2/acls/${objectId}`, {
     method: "PUT",
     headers: {
@@ -113,7 +119,12 @@ export function updateACL(
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function createEntity(name, note, isTopLevel, attrs) {
+export function createEntity(
+  name: string,
+  note: string,
+  isTopLevel: boolean,
+  attrs: object[]
+): Promise<Response> {
   return fetch(`/entity/do_create`, {
     method: "POST",
     headers: {
@@ -130,7 +141,13 @@ export function createEntity(name, note, isTopLevel, attrs) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function updateEntity(entityId, name, note, isTopLevel, attrs) {
+export function updateEntity(
+  entityId: number,
+  name: string,
+  note: string,
+  isTopLevel: boolean,
+  attrs: object[]
+): Promise<Response> {
   return fetch(`/entity/do_edit/${entityId}`, {
     method: "POST",
     headers: {
@@ -147,7 +164,7 @@ export function updateEntity(entityId, name, note, isTopLevel, attrs) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function deleteEntity(entityId) {
+export function deleteEntity(entityId: number): Promise<Response> {
   return fetch(`/entity/do_delete/${entityId}`, {
     method: "POST",
     headers: {
@@ -159,7 +176,11 @@ export function deleteEntity(entityId) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function createEntry(entityId, name, attrs) {
+export function createEntry(
+  entityId: number,
+  name: string,
+  attrs: object[]
+): Promise<Response> {
   return fetch(`/entry/do_create/${entityId}/`, {
     method: "POST",
     headers: {
@@ -174,7 +195,7 @@ export function createEntry(entityId, name, attrs) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function deleteEntry(entryId) {
+export function deleteEntry(entryId: number): Promise<Response> {
   return fetch(`/entry/do_delete/${entryId}/`, {
     method: "POST",
     headers: {
@@ -186,7 +207,7 @@ export function deleteEntry(entryId) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function restoreEntry(entryId) {
+export function restoreEntry(entryId: number): Promise<Response> {
   return fetch(`/entry/do_restore/${entryId}/`, {
     method: "POST",
     headers: {
@@ -196,7 +217,7 @@ export function restoreEntry(entryId) {
   });
 }
 
-export function copyEntry(entryId, entries) {
+export function copyEntry(entryId: number, entries: string): Promise<Response> {
   return fetch(`/entry/do_copy/${entryId}`, {
     method: "POST",
     headers: {
@@ -208,7 +229,7 @@ export function copyEntry(entryId, entries) {
   });
 }
 
-export function getEntryHistory(entryId) {
+export function getEntryHistory(entryId: number): Promise<object> {
   return new Promise((resolve, _) => {
     resolve([
       {
@@ -228,26 +249,35 @@ export function getEntryHistory(entryId) {
   });
 }
 
-export function getReferredEntries(entryId) {
+export function getReferredEntries(entryId: number): Promise<Response> {
   return fetch(`/entry/api/v1/get_referrals/${entryId}`);
 }
 
-export function exportEntries(entityId, format) {
+export function exportEntries(
+  entityId: number,
+  format: string
+): Promise<Response> {
   return fetch(`/entry/export/${entityId}?format=${format}`);
 }
 
 // FIXME implement internal API then call it
-export function getUser(userId) {
+export function getUser(userId: number): Promise<Response> {
   return fetch(`/user/api/v2/users/${userId}`);
 }
 
-export function getUsers() {
+export function getUsers(): Promise<Response> {
   return fetch("/user/api/v2/users");
 }
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function createUser(name, email, password, isSuperuser, tokenLifetime) {
+export function createUser(
+  name: string,
+  email: string,
+  password: string,
+  isSuperuser: boolean,
+  tokenLifetime: number
+): Promise<Response> {
   return fetch(`/user/do_create`, {
     method: "POST",
     headers: {
@@ -265,7 +295,13 @@ export function createUser(name, email, password, isSuperuser, tokenLifetime) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function updateUser(userId, name, email, isSuperuser, tokenLifetime) {
+export function updateUser(
+  userId: number,
+  name: string,
+  email: string,
+  isSuperuser: boolean,
+  tokenLifetime: number
+): Promise<Response> {
   return fetch(`/user/do_edit/${userId}`, {
     method: "POST",
     headers: {
@@ -282,7 +318,7 @@ export function updateUser(userId, name, email, isSuperuser, tokenLifetime) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function deleteUser(userId) {
+export function deleteUser(userId: number): Promise<Response> {
   return fetch(`/user/do_delete/${userId}`, {
     method: "POST",
     headers: {
@@ -293,14 +329,14 @@ export function deleteUser(userId) {
 }
 
 // NOTE it calls non-API endpoint
-export function downloadExportedUsers(filename) {
+export function downloadExportedUsers(filename: string): Promise<void> {
   return fetch("/user/export/")
     .then((resp) => resp.blob())
     .then((blob) => fileDownload(blob, filename));
 }
 
 // FIXME implement V2 API
-export function refreshAccessToken() {
+export function refreshAccessToken(): Promise<Response> {
   return fetch("/api/v1/user/access_token/", {
     method: "PUT",
     headers: {
@@ -312,11 +348,11 @@ export function refreshAccessToken() {
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
 export function updateUserPassword(
-  userId,
-  oldPassword,
-  newPassword,
-  checkPassword
-) {
+  userId: number,
+  oldPassword: string,
+  newPassword: string,
+  checkPassword: string
+): Promise<Response> {
   return fetch(`/user/do_edit_passwd/${userId}`, {
     method: "POST",
     headers: {
@@ -333,10 +369,10 @@ export function updateUserPassword(
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
 export function updateUserPasswordAsSuperuser(
-  userId,
-  newPassword,
-  checkPassword
-) {
+  userId: number,
+  newPassword: string,
+  checkPassword: string
+): Promise<Response> {
   return fetch(`/user/do_su_edit_passwd/${userId}`, {
     method: "POST",
     headers: {
@@ -350,17 +386,20 @@ export function updateUserPasswordAsSuperuser(
 }
 
 // FIXME implement internal API then call it
-export function getGroups() {
+export function getGroups(): Promise<Response> {
   return fetch("/group/api/v2/groups");
 }
 
-export function getGroup(groupId) {
+export function getGroup(groupId: number): Promise<Response> {
   return fetch(`/group/api/v2/groups/${groupId}`);
 }
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function createGroup(name, members) {
+export function createGroup(
+  name: string,
+  members: number[]
+): Promise<Response> {
   return fetch(`/group/do_create`, {
     method: "POST",
     headers: {
@@ -375,7 +414,11 @@ export function createGroup(name, members) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function updateGroup(groupId, name, members) {
+export function updateGroup(
+  groupId: number,
+  name: string,
+  members: number[]
+): Promise<Response> {
   return fetch(`/group/do_edit/${groupId}`, {
     method: "POST",
     headers: {
@@ -390,7 +433,7 @@ export function updateGroup(groupId, name, members) {
 
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
-export function deleteGroup(groupId) {
+export function deleteGroup(groupId: number): Promise<Response> {
   return fetch(`/group/do_delete/${groupId}`, {
     method: "POST",
     headers: {
@@ -401,13 +444,13 @@ export function deleteGroup(groupId) {
 }
 
 // NOTE it calls non-API endpoint
-export function downloadExportedGroups(filename) {
+export function downloadExportedGroups(filename: string): Promise<void> {
   return fetch("/group/export/")
     .then((resp) => resp.blob())
     .then((blob) => fileDownload(blob, filename));
 }
 
-export function importGroups(formData) {
+export function importGroups(formData: FormData): Promise<Response> {
   return fetch(`/group/do_import/`, {
     method: "POST",
     headers: {
@@ -417,19 +460,22 @@ export function importGroups(formData) {
   });
 }
 
-export function getJobs(noLimit = 0) {
+export function getJobs(noLimit = 0): Promise<Response> {
   return fetch(`/job/api/v2/jobs?nolimit=${noLimit}`);
 }
 
-export function getRecentJobs() {
+export function getRecentJobs(): Promise<Response> {
   return fetch(`/api/v1/job/`);
 }
 
-export function getWebhooks(entityId) {
+export function getWebhooks(entityId: number): Promise<Response> {
   return fetch(`/webhook/api/v2/${entityId}`);
 }
 
-export function setWebhook(entityId, request_parameter) {
+export function setWebhook(
+  entityId: number,
+  request_parameter: object
+): Promise<Response> {
   return fetch(`/webhook/api/v1/set/${entityId}`, {
     method: "POST",
     headers: {
@@ -439,7 +485,7 @@ export function setWebhook(entityId, request_parameter) {
   });
 }
 
-export function deleteWebhook(webhookId) {
+export function deleteWebhook(webhookId: number): Promise<Response> {
   return fetch(`/webhook/api/v1/del/${webhookId}`, {
     method: "DELETE",
     headers: {

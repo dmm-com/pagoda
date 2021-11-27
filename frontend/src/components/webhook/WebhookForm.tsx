@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface Props {
-  entityId: string;
+  entityId: number;
 }
 
 export const WebhookForm: FC<Props> = ({ entityId }) => {

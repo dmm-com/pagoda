@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
 
 export const Entry: FC = () => {
   const classes = useStyles();
-  const { entityId } = useParams();
+  const { entityId } = useParams<{ entityId: number }>();
 
   const [tabValue, setTabValue] = useState(1);
 

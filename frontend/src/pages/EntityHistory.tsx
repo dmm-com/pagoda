@@ -37,7 +37,7 @@ const TargetOperation = {
 };
 
 export const EntityHistory: FC = () => {
-  const { entityId } = useParams();
+  const { entityId } = useParams<{ entityId: number }>();
 
   const history = useAsync(async () => {
     const resp = await getEntityHistory(entityId);

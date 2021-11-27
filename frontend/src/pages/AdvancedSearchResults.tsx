@@ -24,7 +24,7 @@ export const AdvancedSearchResults: FC = () => {
   const location = useLocation();
 
   const params = new URLSearchParams(location.search);
-  const entityIds = params.getAll("entity");
+  const entityIds = params.getAll("entity").map((id) => Number(id));
   const entryName = params.has("entry_name") ? params.get("entry_name") : "";
   const attrInfo = params.has("attrinfo")
     ? JSON.parse(params.get("attrinfo"))
