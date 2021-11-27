@@ -1,15 +1,16 @@
 import React from "react";
+import { FC } from "react";
 import ReactDOM from "react-dom";
 
-import { AppRouter } from "./AppRouter.tsx";
-import { ErrorHandler } from "./ErrorHandler.tsx";
+import { AppRouter } from "./AppRouter";
+import { ErrorHandler } from "./ErrorHandler";
 
-function App({}) {
+const App: FC = () => {
   return (
     <ErrorHandler>
       <AppRouter />
     </ErrorHandler>
   );
-}
+};
 
 ReactDOM.render(<App />, document.getElementById("app"));

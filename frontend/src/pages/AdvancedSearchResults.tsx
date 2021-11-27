@@ -3,15 +3,15 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import SettingsIcon from "@material-ui/icons/Settings";
-import React from "react";
+import React, { FC } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { advancedSearchPath, topPath } from "../Routes.ts";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs.tsx";
+import { advancedSearchPath, topPath } from "../Routes";
+import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
-import { SearchResults } from "../components/entry/SearchResults.tsx";
-import { searchEntries } from "../utils/AironeAPIClient.ts";
+import { SearchResults } from "../components/entry/SearchResults";
+import { searchEntries } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function AdvancedSearchResults({}) {
+export const AdvancedSearchResults: FC = () => {
   const classes = useStyles();
   const location = useLocation();
 
@@ -83,4 +83,4 @@ export function AdvancedSearchResults({}) {
       )}
     </div>
   );
-}
+};

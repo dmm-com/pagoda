@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   entry: {
-    index: "./frontend/src/App.js"
+    index: "./frontend/src/App.tsx"
   },
   output: {
     filename: "new-ui.js",
