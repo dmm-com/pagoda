@@ -14,6 +14,7 @@
     "lint": "npx eslint frontend ; npx prettier --check frontend",
     "fix": "npx eslint --fix frontend ; npx prettier --write frontend",
     "test": "npx jest frontend",
+    "test:ci": "npx jest frontend --maxWorkers=4",
     "test:update": "npx jest -u frontend"
   },
   "repository": {
