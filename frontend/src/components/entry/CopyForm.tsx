@@ -16,10 +16,10 @@ export const CopyForm: FC<Props> = ({ entityId, entryId }) => {
 
   const [entries, setEntries] = useState("");
 
-  const handleSubmit = (event) => {
-    copyEntry(entryId, entries).then((_) =>
-      history.push(entityEntriesPath(entityId))
-    );
+  const handleSubmit = async (event) => {
+    await copyEntry(entryId, entries);
+    history.push(entityEntriesPath(entityId));
+
     event.preventDefault();
   };
 

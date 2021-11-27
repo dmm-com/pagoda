@@ -230,7 +230,7 @@ export function copyEntry(entryId: number, entries: string): Promise<Response> {
 }
 
 export function getEntryHistory(entryId: number): Promise<object> {
-  return new Promise((resolve, _) => {
+  return new Promise((resolve) => {
     resolve([
       {
         attr_name: "test",

@@ -146,7 +146,7 @@ export const Header: FC = () => {
               id="job-menu"
               anchorEl={jobAnchorEl}
               open={Boolean(jobAnchorEl)}
-              onClose={(e) => setJobAnchorEl(null)}
+              onClose={() => setJobAnchorEl(null)}
               keepMounted
             >
               {!recentJobs.loading && recentJobs.value.length > 0 ? (

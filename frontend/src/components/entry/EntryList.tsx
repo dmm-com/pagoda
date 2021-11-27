@@ -43,11 +43,11 @@ export const EntryList: FC<Props> = ({ entries, restoreMode }) => {
   };
 
   const handleDelete = (event, entryId) => {
-    deleteEntry(entryId).then((_) => history.go(0));
+    deleteEntry(entryId).then(() => history.go(0));
   };
 
   const handleRestore = (event, entryId) => {
-    restoreEntry(entryId).then((_) => history.go(0));
+    restoreEntry(entryId).then(() => history.go(0));
   };
 
   const filteredEntries = entries.filter((e) => {

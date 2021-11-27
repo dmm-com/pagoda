@@ -9,7 +9,7 @@ import { entityPath } from "../Routes";
 import { getEntities } from "../utils/AironeAPIClient";
 import { EntityStatus } from "../utils/Constants";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   LeftMenu: {
     backgroundColor: "#d2d4d5",
     height: "100vh",

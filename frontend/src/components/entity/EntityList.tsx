@@ -42,7 +42,7 @@ export const EntityList: FC<Props> = ({ entities }) => {
   const [keyword, setKeyword] = useState("");
 
   const handleDelete = (event, entityId) => {
-    deleteEntity(entityId).then((_) => history.go(0));
+    deleteEntity(entityId).then(() => history.go(0));
   };
 
   const filteredEntities = entities.filter((entity) => {

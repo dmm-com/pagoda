@@ -56,7 +56,7 @@ export const EntryForm: FC<Props> = ({
     setAttributes(updated);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     const attrs = attributes.map((attribute) => {
       return {
         id: "4",
@@ -64,9 +64,9 @@ export const EntryForm: FC<Props> = ({
         value: [{ data: attribute.name }],
       };
     });
-    createEntry(entityId, name, attrs)
-      .then((resp) => resp.json())
-      .then((_) => history.push(entityEntriesPath(entityId)));
+
+    await createEntry(entityId, name, attrs);
+    history.push(entityEntriesPath(entityId));
 
     event.preventDefault();
   };

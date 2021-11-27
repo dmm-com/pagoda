@@ -39,7 +39,7 @@ export const UserList: FC<Props> = ({ users }) => {
   const history = useHistory();
 
   const handleDelete = (event, userId) => {
-    deleteUser(userId).then((_) => history.go(0));
+    deleteUser(userId).then(() => history.go(0));
   };
 
   return (
