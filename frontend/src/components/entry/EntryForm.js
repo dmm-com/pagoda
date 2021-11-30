@@ -168,10 +168,13 @@ export function EntryForm({
 
       case djangoContext.attrTypeValue.array_object:
       case djangoContext.attrTypeValue.array_group:
-        attributes[name].value[valueInfo.index] = {
-          ...attributes[name].value[valueInfo.index],
-          checked: valueInfo.checked,
-        };
+        attributes[name].value[valueInfo.index] = attributes[name].value[valueInfo.index].map((x) => {
+          return {
+            id: x.id,
+            name: x.name,
+            checked: (x.id == valueInfo.id && valueInfo.checked) ? true : false,
+          }
+        });
         setAttributes({ ...attributes });
         break;
 
@@ -183,10 +186,13 @@ export function EntryForm({
         }
         if (event.target.type === "checkbox") {
           const key = Object.keys(attributes[name].value)[0];
-          attributes[name].value[key] = {
-            ...attributes[name].value[key],
-            checked: valueInfo.checked,
-          };
+          attributes[name].value[key] = attributes[name].value[key].map((x) => {
+            return {
+              id: x.id,
+              name: x.name,
+              checked: (x.id == valueInfo.id && valueInfo.checked) ? true : false,
+            }
+          });
         }
         setAttributes({ ...attributes });
         break;
@@ -201,10 +207,13 @@ export function EntryForm({
         }
         if (event.target.type === "checkbox") {
           const key = Object.keys(attributes[name].value[valueInfo.index])[0];
-          attributes[name].value[valueInfo.index][key] = {
-            ...attributes[name].value[valueInfo.index][key],
-            checked: valueInfo.checked,
-          };
+          attributes[name].value[valueInfo.index][key] = attributes[name].value[valueInfo.index][key].map((x) => {
+            return {
+              id: x.id,
+              name: x.name,
+              checked: (x.id == valueInfo.id && valueInfo.checked) ? true : false,
+            }
+          });
         }
         setAttributes({ ...attributes });
         break;
