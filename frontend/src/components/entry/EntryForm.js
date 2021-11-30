@@ -136,9 +136,12 @@ export function EntryForm({
   const [attributes, setAttributes] = useState(changedInitAttr);
 
   const handleChangeAttribute = (event, name, valueInfo) => {
-    // console.log("[onix/handleChangeAttribute] name: " + name);
-    // console.log(valueInfo);
+    console.log("[onix/handleChangeAttribute(00)] name: " + name);
+    console.log("[onix/handleChangeAttribute(00)] valueInfo: ");
+    console.log(valueInfo);
     // console.log(attributes);
+    console.log(`[onix/handleChangeAttribute(00/before)] attributes`);
+    console.log(attributes);
 
     switch (valueInfo.type) {
       case djangoContext.attrTypeValue.string:
@@ -148,10 +151,13 @@ export function EntryForm({
 
       case djangoContext.attrTypeValue.object:
       case djangoContext.attrTypeValue.group:
-        attributes[name].value = {
-          ...attributes[name].value,
-          checked: valueInfo.checked,
-        };
+        attributes[name].valueattributes[name].value.map((x) => {
+          return {
+            id: x.id,
+            name: x.name,
+            checked: (x.id == valueInfo.id && valueInfo.checked) ? true : false,
+          }
+        });
         setAttributes({ ...attributes });
         break;
 
@@ -223,7 +229,7 @@ export function EntryForm({
         console.log(valueInfo);
     }
 
-    console.log("[onix/handleChangeAttribute] name: " + name);
+    console.log(`[onix/handleChangeAttribute(00/after)] attributes`);
     console.log(attributes);
     /*
     attributes[event.target.name] = event.target.value;
