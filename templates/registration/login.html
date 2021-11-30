@@ -10,7 +10,9 @@
       {% endif %}
     </form>
     <p>
-      <a href="{% url 'social:begin' 'google-oauth2' %}">Google OAuth</a>
+      {% if idp %}
+      <a href="{% url 'social:begin' 'saml' %}?idp={{ idp }}">SSO</a>
+      {% endif %}
     </p>
     <p>
       If you forget your password, you can <a href="{% url 'user:password_reset' %}">Reset Password</a>.

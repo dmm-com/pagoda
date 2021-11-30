@@ -32,9 +32,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = 'SOCIAL_AUTH_GOOGLE_OAUTH2_KEY'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET'
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -245,15 +242,44 @@ ES_CONFIG = {
 #     'airone.auth.ldap.LDAPBackend',
 # )
 
+#
+# Note: Disable SSO authentication by default in the mean time.
+# (c.f. https://python-social-auth.readthedocs.io/en/latest/backends/saml.html)
+# AUTHENTICATION_BACKENDS = (
+#     'social_core.backends.saml.SAMLAuth',
+# )
+# SOCIAL_AUTH_SAML_SP_ENTITY_ID = ''
+# SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ''
+# SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ''
+# SOCIAL_AUTH_SAML_ORG_INFO = {
+#     '': {
+#         'name': '',
+#         'displayname': '',
+#         'url': '',
+#     }
+# }
+# SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = {
+#     'givenName': '',
+#     'emailAddress': '',
+# }
+# SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
+#     'givenName': '',
+#     'emailAddress': ''
+# }
+# SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+#     '': {
+#         'entity_id': '',
+#         'url': '',
+#         'x509cert': '''
+#         ''',
+#         'attr_user_permanent_id': '',
+#         'attr_name': '',
+#         'attr_username': '',
+#     }
+# }
+
+
 AUTHENTICATION_BACKENDS = (
-    'social_core.backends.open_id.OpenIdAuth',
-    'social_core.backends.google.GoogleOpenId',
-    'social_core.backends.google.GoogleOAuth2',
-
-    # 'social_core.backends.github.GithubOAuth2',
-    # 'social_core.backends.twitter.TwitterOAuth',
-    # 'social_core.backends.facebook.FacebookOAuth2',
-
     'django.contrib.auth.backends.ModelBackend',
 )
 
