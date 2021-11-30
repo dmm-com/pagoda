@@ -248,33 +248,22 @@ export function EntryForm({
 
     const resp = await getAttrReferrals(attrId);
     const refs = await resp.json();
-
-    console.log("[onix/handleNarrowDownEntries(01)] refs: ");
-    console.log(refs);
-
-    console.log(
-      "[onix/handleNarrowDownEntries(01)] before modified attributes: "
-    );
-    console.log(attributes);
+    const userInputValue = e.target.value;
 
     function _getUpdatedValues(currentValue) {
-      return refs.results.map((r) => {
-        // TODO
-        if (r.name.includes(e.target.value)) {
-          return {
-            id: r.id,
-            name: r.name,
-            checked: currentValue.find((x) => x.id == r.id)?.checked
-              ? true
-              : false,
-          };
-        } else {
-          return {};
-        }
+      return refs.results.filter((r) => {
+        return (r.name.includes(userInputValue) || currentValue.find((x) => x.id === r.id && x.checked));
+      }).map((r) => {
+        return {
+          id: r.id,
+          name: r.name,
+          checked: currentValue.find((x) => x.id == r.id)?.checked
+            ? true
+            : false,
+        };
       });
     }
 
-    // TODO update state?
     switch (attrType) {
       case djangoContext.attrTypeValue.object:
         attributes[attrName].value = _getUpdatedValues(
@@ -302,7 +291,6 @@ export function EntryForm({
         break;
 
       case djangoContext.attrTypeValue.array_named_object:
-        // please FIX ME
         attributes[attrName].value = attributes[attrName].value.map((curr) => {
           let attrKey = Object.keys(curr)[0];
           return { attrKey: _getUpdatedValues(curr[attrKey]) };
@@ -311,11 +299,6 @@ export function EntryForm({
         setAttributes({ ...attributes });
         break;
     }
-
-    console.log(
-      "[onix/handleNarrowDownEntries(01)] after modified attributes: "
-    );
-    console.log(attributes);
   };
 
   const handleSubmit = (event) => {
