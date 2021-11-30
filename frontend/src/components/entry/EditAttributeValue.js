@@ -12,10 +12,6 @@ import { getAttrReferrals } from "../../utils/AironeAPIClient";
 
 import { DjangoContext } from "../../utils/DjangoContext";
 
-function handleNarrowDownGroups(event) {
-  console.log("[onix/handleNarrowDownGroups(00)]");
-}
-
 function ElemString({ attrName, attrValue, attrType, index, handleChange }) {
   return (
     <Input
@@ -89,8 +85,7 @@ function ElemObject({
         text="text"
         placeholder="エントリ名で絞り込む"
         onChange={(e) => {
-          const attrValueId = attrValue.find((value) => value.checked)?.id;
-          handleNarrowDownEntries(e, attrId, attrName, attrType, attrValueId);
+          handleNarrowDownEntries(e, attrId, attrName, attrType);
         }}
       />
     </Card>
@@ -133,38 +128,49 @@ function ElemNamedObject({
   );
 }
 
-function ElemGroup({ attrName, attrValue, attrType, index, handleChange }) {
+function ElemGroup({
+  attrName,
+  attrValue,
+  attrType,
+  index,
+  handleChange,
+  handleNarrowDownGroups,
+}) {
   //  return <a href={groupsPath()}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
       <List>
-        <>
-          <ListItem key="1" dense button divider>
-            <ListItemIcon>
-              <Checkbox
-                edge="start"
-                tabIndex={-1}
-                disableRipple
-                checked={attrValue.checked}
-                onChange={(e) =>
-                  handleChange(e, attrName, {
-                    type: attrType,
-                    index: index,
-                    id: attrValue.id,
-                    name: attrValue.name,
-                    checked: e.target.checked,
-                  })
-                }
-              />
-            </ListItemIcon>
-            <ListItemText primary={attrValue.name} />
-          </ListItem>
-        </>
+        {attrValue.map((value) => {
+          return (
+            <ListItem key={value.id} dense button divider>
+              <ListItemIcon>
+                <Checkbox
+                  edge="start"
+                  tabIndex={-1}
+                  disableRipple
+                  checked={value.checked}
+                  onChange={(e) =>
+                    handleChange(e, attrName, {
+                      type: attrType,
+                      index: index,
+                      id: value.id,
+                      name: value.name,
+                      checked: e.target.checked,
+                    })
+                  }
+                />
+              </ListItemIcon>
+              <ListItemText primary={value.name} />
+            </ListItem>
+          );
+        })}
       </List>
       <Input
         text="text"
         placeholder="グループ名で絞り込む"
-        onChange={handleNarrowDownGroups}
+        onChange={(e) => {
+          handleNarrowDownGroups(e, attrName, attrType);
+        }}
       />
     </Card>
   );
@@ -175,6 +181,7 @@ export function EditAttributeValue({
   attrInfo,
   handleChangeAttribute,
   handleNarrowDownEntries,
+  handleNarrowDownGroups,
 }) {
   const djangoContext = DjangoContext.getInstance();
 
@@ -300,6 +307,7 @@ export function EditAttributeValue({
                   attrType={attrInfo.type}
                   index={n}
                   handleChange={handleChangeAttribute}
+                  handleNarrowDownGroups={handleNarrowDownGroups}
                 />
               </ListItem>
             );
@@ -314,6 +322,7 @@ export function EditAttributeValue({
           attrValue={attrInfo.value}
           attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
+          handleNarrowDownGroups={handleNarrowDownGroups}
         />
       );
   }

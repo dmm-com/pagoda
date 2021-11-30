@@ -15,7 +15,7 @@ import { DjangoContext } from "../../utils/DjangoContext";
 
 import { EditAttributeValue } from "./EditAttributeValue";
 import { useAsync } from "react-use";
-import { getAttrReferrals } from "../../utils/AironeAPIClient";
+import { getAttrReferrals, getGroups } from "../../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -237,13 +237,51 @@ export function EntryForm({
     */
   };
 
-  const handleNarrowDownEntries = async (
-    e,
-    attrId,
-    attrName,
-    attrType,
-    attrValueId
-  ) => {
+  const handleNarrowDownGroups = async (e, attrName, attrType) => {
+    const resp = await getGroups();
+    const refs = await resp.json();
+    const userInputValue = e.target.value;
+
+    function _getUpdatedValues(currentValue) {
+      return refs
+        .filter((r) => {
+          return (
+            r.name.includes(userInputValue) ||
+            currentValue.find((x) => x.id === r.id && x.checked)
+          );
+        })
+        .map((r) => {
+          // return refs.map((r) => {
+          return {
+            id: r.id,
+            name: r.name,
+            checked: currentValue.find((x) => x.id == r.id)?.checked
+              ? true
+              : false,
+          };
+        });
+    }
+
+    switch (attrType) {
+      case djangoContext.attrTypeValue.group:
+        attributes[attrName].value = _getUpdatedValues(
+          attributes[attrName].value
+        );
+
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.array_group:
+        attributes[attrName].value = attributes[attrName].value.map((curr) => {
+          return _getUpdatedValues(curr);
+        });
+
+        setAttributes({ ...attributes });
+        break;
+    }
+  };
+
+  const handleNarrowDownEntries = async (e, attrId, attrName, attrType) => {
     console.log("[onix/handleNarrowDownEntries(00)] attrId: " + attrId);
 
     const resp = await getAttrReferrals(attrId);
@@ -251,17 +289,22 @@ export function EntryForm({
     const userInputValue = e.target.value;
 
     function _getUpdatedValues(currentValue) {
-      return refs.results.filter((r) => {
-        return (r.name.includes(userInputValue) || currentValue.find((x) => x.id === r.id && x.checked));
-      }).map((r) => {
-        return {
-          id: r.id,
-          name: r.name,
-          checked: currentValue.find((x) => x.id == r.id)?.checked
-            ? true
-            : false,
-        };
-      });
+      return refs.results
+        .filter((r) => {
+          return (
+            r.name.includes(userInputValue) ||
+            currentValue.find((x) => x.id === r.id && x.checked)
+          );
+        })
+        .map((r) => {
+          return {
+            id: r.id,
+            name: r.name,
+            checked: currentValue.find((x) => x.id == r.id)?.checked
+              ? true
+              : false,
+          };
+        });
     }
 
     switch (attrType) {
@@ -378,6 +421,7 @@ export function EntryForm({
                   attrInfo={attributes[attributeName]}
                   handleChangeAttribute={handleChangeAttribute}
                   handleNarrowDownEntries={handleNarrowDownEntries}
+                  handleNarrowDownGroups={handleNarrowDownGroups}
                 />
               </TableCell>
             </TableRow>
