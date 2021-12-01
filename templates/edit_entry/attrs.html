@@ -1,5 +1,5 @@
-{% for attr in attributes %}
 {% load bitwise_tags %}
+{% for attr in attributes %}
 <tr id='{{ attr.name|cut:" " }}'>
   <td>
     {% if attr.is_mandatory %}<strong>(*)</strong>{% endif %}{{ attr.name }}
@@ -8,7 +8,15 @@
   {% if not attr.is_readble %}
     <span>Permission denied.</span>  
   {% else %}
-    {% if attr.type|bitwise_and:attr_type_value.array %}
+    {% if not attr.id and attr.entity_attr_id %}
+    <!--
+      In this case, target attribute is middle of processing for making in the background.
+      It would not be better to display this attribute normally, but it also not be better
+      to hide. So, this emphasize "The current attribute is under processing to make".
+    -->
+    <div class="p-3 mb-2 bg-light text-dark">Current Attribute is under processing to make (plz, wait for a while)</div>
+
+    {% elif attr.type|bitwise_and:attr_type_value.array %}
       <div>
         <button type="button" class="btn btn-primary btn-sm" name='add_attr' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}">add row</button>
         <div class='array_element' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}>

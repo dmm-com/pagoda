@@ -4,6 +4,16 @@ var get_register_attrs = function(base) {
   var attrs = []
 
   {% for attr in attributes %}
+    /*
+      This condition is necessary because attr.id might be None
+    when a new EntityAttr is added on an Entity until Attribute
+    instance is created on this Entry.
+
+      This prevents to sending AttributeValue data before
+    corresponding Attribute instance is created.
+    */
+    {% if attr.id %}
+
   attrs.push({
     'entity_attr_id': '{{ attr.entity_attr_id}}',
     'id': '{{ attr.id }}',
@@ -19,6 +29,8 @@ var get_register_attrs = function(base) {
       return {'data': $(e).val(), 'index': $(e).attr('index')};
     }).get(),
   });
+
+    {% endif %}
   {% endfor %}
 
   return attrs;
