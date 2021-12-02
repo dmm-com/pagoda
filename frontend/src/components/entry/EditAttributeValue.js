@@ -1,5 +1,8 @@
 import Card from "@material-ui/core/Card";
 import Checkbox from "@material-ui/core/Checkbox";
+import Radio from "@material-ui/core/Radio";
+import RadioGroup from "@material-ui/core/RadioGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Input from "@material-ui/core/Input";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -139,6 +142,7 @@ function ElemGroup({
   //  return <a href={groupsPath()}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
+      {/*
       <List>
         {attrValue.map((value) => {
           return (
@@ -165,6 +169,22 @@ function ElemGroup({
           );
         })}
       </List>
+      */}
+			<RadioGroup
+					aria-label="gender"
+					name="radio-buttons-group"
+				>
+        {attrValue.map((value) => {
+          return (
+            <FormControlLabel
+              key={value.id}
+              value={value.id}
+              control={<Radio checked={value.checked}/>}
+              label={value.name} />
+          );
+        })}
+			</RadioGroup>
+
       <Input
         text="text"
         placeholder="グループ名で絞り込む"
