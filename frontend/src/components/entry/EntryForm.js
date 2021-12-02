@@ -151,7 +151,7 @@ export function EntryForm({
 
       case djangoContext.attrTypeValue.object:
       case djangoContext.attrTypeValue.group:
-        attributes[name].valueattributes[name].value.map((x) => {
+        attributes[name].value = attributes[name].value.map((x) => {
           return {
             id: x.id,
             name: x.name,
