@@ -155,8 +155,8 @@ export function EntryForm({
           return {
             id: x.id,
             name: x.name,
-            checked: (x.id == valueInfo.id && valueInfo.checked) ? true : false,
-          }
+            checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+          };
         });
         setAttributes({ ...attributes });
         break;
@@ -168,12 +168,14 @@ export function EntryForm({
 
       case djangoContext.attrTypeValue.array_object:
       case djangoContext.attrTypeValue.array_group:
-        attributes[name].value[valueInfo.index] = attributes[name].value[valueInfo.index].map((x) => {
+        attributes[name].value[valueInfo.index] = attributes[name].value[
+          valueInfo.index
+        ].map((x) => {
           return {
             id: x.id,
             name: x.name,
-            checked: (x.id == valueInfo.id && valueInfo.checked) ? true : false,
-          }
+            checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+          };
         });
         setAttributes({ ...attributes });
         break;
@@ -184,14 +186,14 @@ export function EntryForm({
             [valueInfo.key]: Object.values(attributes[name].value)[0],
           };
         }
-        if (event.target.type === "checkbox") {
+        if (event.target.type === "radio") {
           const key = Object.keys(attributes[name].value)[0];
           attributes[name].value[key] = attributes[name].value[key].map((x) => {
             return {
               id: x.id,
               name: x.name,
-              checked: (x.id == valueInfo.id && valueInfo.checked) ? true : false,
-            }
+              checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+            };
           });
         }
         setAttributes({ ...attributes });
@@ -205,14 +207,16 @@ export function EntryForm({
             )[0],
           };
         }
-        if (event.target.type === "checkbox") {
+        if (event.target.type === "radio") {
           const key = Object.keys(attributes[name].value[valueInfo.index])[0];
-          attributes[name].value[valueInfo.index][key] = attributes[name].value[valueInfo.index][key].map((x) => {
+          attributes[name].value[valueInfo.index][key] = attributes[name].value[
+            valueInfo.index
+          ][key].map((x) => {
             return {
               id: x.id,
               name: x.name,
-              checked: (x.id == valueInfo.id && valueInfo.checked) ? true : false,
-            }
+              checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+            };
           });
         }
         setAttributes({ ...attributes });

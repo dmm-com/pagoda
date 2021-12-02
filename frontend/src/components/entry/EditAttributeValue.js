@@ -58,32 +58,26 @@ function ElemObject({
   //  return <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
-      <List>
+      <RadioGroup aria-label="object" name="radio-buttons-group">
         {attrValue.map((value) => {
           return (
-            <ListItem key={value.id} dense button divider>
-              <ListItemIcon>
-                <Checkbox
-                  edge="start"
-                  tabIndex={-1}
-                  disableRipple
-                  checked={value.checked}
-                  onChange={(e) => {
-                    handleChange(e, attrName, {
-                      type: attrType,
-                      index: index,
-                      id: value.id,
-                      name: value.name,
-                      checked: e.target.checked,
-                    });
-                  }}
-                />
-              </ListItemIcon>
-              <ListItemText primary={value.name} />
-            </ListItem>
+            <FormControlLabel
+              key={value.id}
+              control={<Radio checked={value.checked} />}
+              label={value.name}
+              onChange={(e) =>
+                handleChange(e, attrName, {
+                  type: attrType,
+                  index: index,
+                  id: value.id,
+                  name: value.name,
+                  checked: e.target.checked,
+                })
+              }
+            />
           );
         })}
-      </List>
+      </RadioGroup>
       <Input
         text="text"
         placeholder="エントリ名で絞り込む"
@@ -142,48 +136,26 @@ function ElemGroup({
   //  return <a href={groupsPath()}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
-      {/*
-      <List>
-        {attrValue.map((value) => {
-          return (
-            <ListItem key={value.id} dense button divider>
-              <ListItemIcon>
-                <Checkbox
-                  edge="start"
-                  tabIndex={-1}
-                  disableRipple
-                  checked={value.checked}
-                  onChange={(e) =>
-                    handleChange(e, attrName, {
-                      type: attrType,
-                      index: index,
-                      id: value.id,
-                      name: value.name,
-                      checked: e.target.checked,
-                    })
-                  }
-                />
-              </ListItemIcon>
-              <ListItemText primary={value.name} />
-            </ListItem>
-          );
-        })}
-      </List>
-      */}
-			<RadioGroup
-					aria-label="gender"
-					name="radio-buttons-group"
-				>
+      <RadioGroup aria-label="group" name="radio-buttons-group">
         {attrValue.map((value) => {
           return (
             <FormControlLabel
               key={value.id}
-              value={value.id}
-              control={<Radio checked={value.checked}/>}
-              label={value.name} />
+              control={<Radio checked={value.checked} />}
+              label={value.name}
+              onChange={(e) =>
+                handleChange(e, attrName, {
+                  type: attrType,
+                  index: index,
+                  id: value.id,
+                  name: value.name,
+                  checked: e.target.checked,
+                })
+              }
+            />
           );
         })}
-			</RadioGroup>
+      </RadioGroup>
 
       <Input
         text="text"
