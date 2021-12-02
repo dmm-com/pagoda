@@ -89,5 +89,6 @@ class GetEntrySerializer(serializers.ModelSerializer):
                     'id': x.id,
                     'type': x.schema.type,
                     'value': get_attr_value(x),
+                    'schema_id': x.schema.id,
                 }
                 for x in obj.attrs.filter(is_active=True)}

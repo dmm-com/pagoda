@@ -5,17 +5,19 @@ import {
   TableHead,
   TableRow,
 } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 
+import {
+  getAttrReferrals,
+  getGroups,
+  updateEntry,
+} from "../../utils/AironeAPIClient";
 import { DjangoContext } from "../../utils/DjangoContext";
 
 import { EditAttributeValue } from "./EditAttributeValue";
-import { useAsync } from "react-use";
-import { getAttrReferrals, getGroups } from "../../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -364,49 +366,52 @@ export function EntryForm({
   };
 
   const handleSubmit = (event) => {
-    const attrs = attributes.map((attribute) => {
-      return {
-        // entity_attr_id
-        id: "4",
-        value: [{ data: attribute.name }],
-        // type: "2",
-        // referral_key
-      };
-    });
+    console.log(attributes);
 
-    console.log(attrs);
+    const updatedAttr = Object.entries(attributes)
+      // for temporary
+      .filter(
+        ([attrName, attrValue]) =>
+          attrValue.type === djangoContext.attrTypeValue.string
+      )
+      .map(([attrName, attrValue]) => {
+        return {
+          entity_attr_id: attrValue.schema_id,
+          id: attrValue.id,
+          type: attrValue.type,
+          value: [
+            {
+              data: attrValue.value,
+            },
+          ],
+          referral_key: [],
+        };
+      });
 
+    console.log(entryId);
+    console.log(updatedAttr);
+
+    // FIXME entryId is always undefined????
     if (entryId === undefined) {
-      /*
-      createEntry(entityId, name, attrs)
-        .then((resp) => resp.json())
-        .then((_) => history.push(entityEntriesPath(entityId)));
-      */
+      // createEntry(entityId, name, attrs)
+      //   .then((resp) => resp.json())
+      //   .then((_) => history.push(entityEntriesPath(entityId)));
     } else {
-      /*
-      updateEntry(entryId, name, attrs)
+      updateEntry(entryId, name, updatedAttr)
         .then((resp) => resp.json())
         .then((_) => history.push(entityEntriesPath(entityId)));
-      */
     }
 
-    event.preventDefault();
+    // TODO reload
+    // event.preventDefault();
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
+      {/* ^ FIXME form??? */}
+      <button onClick={handleSubmit}>submit</button>
       <div className="row">
         <div className="col">
-          <div className="float-right">
-            <Button
-              className={classes.button}
-              type="submit"
-              variant="contained"
-              color="secondary"
-            >
-              保存
-            </Button>
-          </div>
           <Table className="table table-bordered">
             <TableBody>
               <TableRow>
@@ -448,7 +453,7 @@ export function EntryForm({
         </TableBody>
       </Table>
       <strong>(*)</strong> は必須項目
-    </form>
+    </div>
   );
 }
 

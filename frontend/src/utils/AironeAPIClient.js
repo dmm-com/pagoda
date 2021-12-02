@@ -175,8 +175,17 @@ export function createEntry(entityId, name, attrs) {
   });
 }
 
-export function updateEntry(entityId, name, attrs) {
-  return Promise.resolve({});
+export function updateEntry(entryId, name, attrs) {
+  return fetch(`/entry/do_edit/${entryId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      entry_name: name,
+      attrs: attrs,
+    }),
+  });
 }
 
 // NOTE it calls non-API endpoint
