@@ -1,3 +1,4 @@
+import { Box } from "@material-ui/core";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -147,7 +148,7 @@ export function WebhookForm({ entityId }) {
   };
 
   return (
-    <div>
+    <Box>
       <Button
         className={classes.button}
         onClick={handleOpenModal}
@@ -191,14 +192,14 @@ export function WebhookForm({ entityId }) {
         open={open}
         onClose={handleCloseModal}
       >
-        <div className={classes.paper}>
-          <div hidden={alert_msg === ""}>
+        <Box className={classes.paper}>
+          <Box hidden={alert_msg === ""}>
             <Alert severity="warning">{alert_msg}</Alert>
-          </div>
+          </Box>
 
           <h2 id="transition-modal-title">Webhook の登録</h2>
           <form className={classes.root} noValidate autoComplete="off">
-            <div>
+            <Box>
               <TextField
                 id="input-webhoook-url"
                 label="Webhook URL"
@@ -206,9 +207,9 @@ export function WebhookForm({ entityId }) {
                 value={webhook_url}
                 onChange={handleChangeWebhookURL}
               />
-            </div>
+            </Box>
 
-            <div>
+            <Box>
               <TextField
                 id="input-label"
                 label="Label (Optional)"
@@ -216,8 +217,8 @@ export function WebhookForm({ entityId }) {
                 value={webhook_label}
                 onChange={handleChangeWebhookLabel}
               />
-            </div>
-            <div>
+            </Box>
+            <Box>
               <FormControl component="fieldset">
                 <FormGroup aria-label="position" row>
                   <FormControlLabel
@@ -234,15 +235,15 @@ export function WebhookForm({ entityId }) {
                   />
                 </FormGroup>
               </FormControl>
-            </div>
+            </Box>
 
-            <div>
+            <Box>
               <h2>Additional Headers (Optional)</h2>
-            </div>
+            </Box>
 
-            <div className={classes.webhook_headers_container}>
+            <Box className={classes.webhook_headers_container}>
               {webhook_headers.map((data, index) => (
-                <div key={index}>
+                <Box key={index}>
                   <TextField
                     className={classes.header_key}
                     label="Header Key {index}"
@@ -264,14 +265,14 @@ export function WebhookForm({ entityId }) {
                   >
                     -
                   </Button>
-                </div>
+                </Box>
               ))}
-            </div>
+            </Box>
 
-            <div>
+            <Box>
               ここで入力した情報を、リクエストのヘッダ情報に付加します。必要に応じてご入力ください。
-            </div>
-            <div>
+            </Box>
+            <Box>
               <Button
                 variant="contained"
                 color="primary"
@@ -279,7 +280,7 @@ export function WebhookForm({ entityId }) {
               >
                 +
               </Button>
-            </div>
+            </Box>
           </form>
 
           <Button
@@ -291,9 +292,9 @@ export function WebhookForm({ entityId }) {
           >
             {webhookId === 0 ? "REGISTER" : "UPDATE"}
           </Button>
-        </div>
+        </Box>
       </Modal>
-    </div>
+    </Box>
   );
 }
 

@@ -1,4 +1,4 @@
-import { Divider } from "@material-ui/core";
+import { Box, Divider } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
@@ -55,7 +55,7 @@ export function Entry({}) {
   };
 
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -66,9 +66,9 @@ export function Entry({}) {
         <Typography color="textPrimary">エントリ一覧</Typography>
       </AironeBreadcrumbs>
 
-      <div className="row">
-        <div className="col">
-          <div className="float-left">
+      <Box className="row">
+        <Box className="col">
+          <Box className="float-left">
             <CreateButton to={newEntryPath(entityId)}>
               エントリ作成
             </CreateButton>
@@ -105,9 +105,9 @@ export function Entry({}) {
             >
               インポート
             </Button>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
       <Divider />
 
@@ -118,19 +118,19 @@ export function Entry({}) {
         <Tab label="削除エントリの復旧" index={3} />
       </Tabs>
 
-      <div hidden={tabValue !== 0}>ダッシュボード</div>
+      <Box hidden={tabValue !== 0}>ダッシュボード</Box>
 
-      <div hidden={tabValue !== 1}>
+      <Box hidden={tabValue !== 1}>
         {entries.loading ? (
           <Loading />
         ) : (
           <EntryList entityId={entityId} entries={entries.value} />
         )}
-      </div>
+      </Box>
 
-      <div hidden={tabValue !== 2}>ダッシュボードの設定</div>
+      <Box hidden={tabValue !== 2}>ダッシュボードの設定</Box>
 
-      <div hidden={tabValue !== 3}>
+      <Box hidden={tabValue !== 3}>
         {!deletedEntries.loading && (
           <EntryList
             entityId={entityId}
@@ -138,7 +138,7 @@ export function Entry({}) {
             restoreMode={true}
           />
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

@@ -94,7 +94,7 @@ export function Header({}) {
   };
 
   return (
-    <div className={classes.root}>
+    <Box className={classes.root}>
       <AppBar position="static">
         <Toolbar>
           <Typography
@@ -171,10 +171,10 @@ export function Header({}) {
             </Menu>
           </Box>
 
-          <div className={classes.search}>
-            <div className={classes.searchIcon}>
+          <Box className={classes.search}>
+            <Box className={classes.searchIcon}>
               <SearchIcon />
-            </div>
+            </Box>
             <InputBase
               placeholder="Search…"
               classes={{
@@ -192,9 +192,9 @@ export function Header({}) {
             >
               検索
             </Button>
-          </div>
+          </Box>
         </Toolbar>
       </AppBar>
-    </div>
+    </Box>
   );
 }

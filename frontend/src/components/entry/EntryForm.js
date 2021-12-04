@@ -1,4 +1,6 @@
 import {
+  Box,
+  Input,
   Table,
   TableBody,
   TableCell,
@@ -64,9 +66,9 @@ export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="row">
-        <div className="col">
-          <div className="float-right">
+      <Box className="row">
+        <Box className="col">
+          <Box className="float-right">
             <Button
               className={classes.button}
               type="submit"
@@ -75,13 +77,13 @@ export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
             >
               保存
             </Button>
-          </div>
+          </Box>
           <Table className="table table-bordered">
             <TableBody>
               <TableRow>
                 <TableCell>エントリ名</TableCell>
                 <TableCell>
-                  <input
+                  <Input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -90,8 +92,8 @@ export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
               </TableRow>
             </TableBody>
           </Table>
-        </div>
-      </div>
+        </Box>
+      </Box>
       <Table className="table table-bordered">
         <TableHead>
           <TableRow>
@@ -104,7 +106,7 @@ export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
             <TableRow key={index}>
               <TableCell>{attribute.name}</TableCell>
               <TableCell>
-                <input
+                <Input
                   type="text"
                   name={attribute.name}
                   value={attribute.value}

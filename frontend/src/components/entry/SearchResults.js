@@ -1,4 +1,4 @@
-import { TableCell, TableRow } from "@material-ui/core";
+import { Input, TableCell, TableRow } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import PropTypes from "prop-types";
 import React, { useReducer } from "react";
@@ -57,7 +57,7 @@ export function SearchResults({
         <TableRow>
           <TableCell>
             <Typography>Name</Typography>
-            <input
+            <Input
               text="text"
               placeholder="絞り込む"
               defaultValue={defaultEntryFilter}
@@ -68,7 +68,7 @@ export function SearchResults({
           {attrNames.map((attrName) => (
             <TableCell key={attrName}>
               <Typography>{attrName}</Typography>
-              <input
+              <Input
                 text="text"
                 placeholder="絞り込む"
                 defaultValue={defaultAttrsFilter[attrName] || ""}

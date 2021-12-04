@@ -1,3 +1,4 @@
+import { Box } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
@@ -31,7 +32,7 @@ export function Entity({}) {
   });
 
   return (
-    <div className="container-fluid">
+    <Box className="container-fluid">
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -39,9 +40,9 @@ export function Entity({}) {
         <Typography color="textPrimary">エンティティ一覧</Typography>
       </AironeBreadcrumbs>
 
-      <div className="row">
-        <div className="col">
-          <div className="float-left">
+      <Box className="row">
+        <Box className="col">
+          <Box className="float-left">
             <CreateButton to={newEntityPath()}>エンティティ作成</CreateButton>
             <Button
               className={classes.button}
@@ -60,16 +61,16 @@ export function Entity({}) {
             >
               インポート
             </Button>
-          </div>
-          <div className="float-right" />
-        </div>
-      </div>
+          </Box>
+          <Box className="float-right" />
+        </Box>
+      </Box>
 
       {entities.loading ? (
         <Loading />
       ) : (
         <EntityList entities={entities.value} />
       )}
-    </div>
+    </Box>
   );
 }

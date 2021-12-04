@@ -1,3 +1,4 @@
+import { Box } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { Link, useParams } from "react-router-dom";
@@ -17,7 +18,7 @@ export function ACL({}) {
   });
 
   return (
-    <div className="container-fluid">
+    <Box className="container-fluid">
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -31,6 +32,6 @@ export function ACL({}) {
           <ACLForm objectId={entityId} acl={acl.value} />
         </>
       )}
-    </div>
+    </Box>
   );
 }

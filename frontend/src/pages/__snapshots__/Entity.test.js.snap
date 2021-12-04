@@ -3,11 +3,11 @@
 exports[`should match snapshot 1`] = `
 <DocumentFragment>
   <div
-    class="container-fluid"
+    class="MuiBox-root MuiBox-root-2 container-fluid"
   >
     <nav
       aria-label="breadcrumb"
-      class="MuiTypography-root MuiBreadcrumbs-root makeStyles-breadcrumbs-2 MuiTypography-body1 MuiTypography-colorTextSecondary"
+      class="MuiTypography-root MuiBreadcrumbs-root makeStyles-breadcrumbs-3 MuiTypography-body1 MuiTypography-colorTextSecondary"
     >
       <ol
         class="MuiBreadcrumbs-ol"
@@ -40,17 +40,17 @@ exports[`should match snapshot 1`] = `
       </ol>
     </nav>
     <div
-      class="row"
+      class="MuiBox-root MuiBox-root-4 row"
     >
       <div
-        class="col"
+        class="MuiBox-root MuiBox-root-5 col"
       >
         <div
-          class="float-left"
+          class="MuiBox-root MuiBox-root-6 float-left"
         >
           <a
             aria-disabled="false"
-            class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-3 MuiButton-containedPrimary"
+            class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-7 MuiButton-containedPrimary"
             href="/new-ui/entities/new"
             role="button"
             tabindex="0"
@@ -101,15 +101,15 @@ exports[`should match snapshot 1`] = `
           </a>
         </div>
         <div
-          class="float-right"
+          class="MuiBox-root MuiBox-root-8 float-right"
         />
       </div>
     </div>
     <div
-      class="MuiBox-root MuiBox-root-6"
+      class="MuiBox-root MuiBox-root-11"
     >
       <div
-        class="MuiBox-root MuiBox-root-7 makeStyles-loading-4"
+        class="MuiBox-root MuiBox-root-12 makeStyles-loading-9"
       >
         <div
           class="MuiCircularProgress-root MuiCircularProgress-colorPrimary MuiCircularProgress-indeterminate"
@@ -131,7 +131,7 @@ exports[`should match snapshot 1`] = `
           </svg>
         </div>
         <p
-          class="MuiTypography-root makeStyles-text-5 MuiTypography-body1"
+          class="MuiTypography-root makeStyles-text-10 MuiTypography-body1"
         >
           Loading...
         </p>
