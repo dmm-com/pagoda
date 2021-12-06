@@ -68,7 +68,8 @@ class APITest(AironeViewTest):
         for hint_entity in hint_entities:
             params = {
                 'entities': hint_entity,
-                'attrinfo': [{'name': 'attr', 'keyword': 'data-5'}]
+                'attrinfo': [{'name': 'attr', 'keyword': 'data-5'}],
+                'is_output_all': False,
             }
             resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
 
@@ -83,6 +84,7 @@ class APITest(AironeViewTest):
             'entities': [ref_entity.id],
             'attrinfo': [],
             'referral': '',
+            'is_output_all': False,
         }
         resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
@@ -96,6 +98,7 @@ class APITest(AironeViewTest):
             'entities': [ref_entity.id],
             'attrinfo': [],
             'referral': 'hogefuga',  # this is invalid referral name
+            'is_output_all': False,
         }
         resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
@@ -329,3 +332,49 @@ class APITest(AironeViewTest):
         self.assertEqual(len([x for x in resp.json()['result']['ret_values']]), 2)
         self.assertEqual([x['entity']['name'] for x in resp.json()['result']['ret_values']],
                          ['entity', 'entity'])
+
+    def test_search_without_is_output_all(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name='entity', created_user=user)
+        entity_attr1 = EntityAttr.objects.create(**{
+                'name': 'attr1',
+                'type': AttrTypeValue['string'],
+                'created_user': user,
+                'parent_entity': entity,
+        })
+        entity_attr2 = EntityAttr.objects.create(**{
+                'name': 'attr2',
+                'type': AttrTypeValue['string'],
+                'created_user': user,
+                'parent_entity': entity,
+        })
+        entity.attrs.add(entity_attr1)
+        entity.attrs.add(entity_attr2)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry.attrs.get(schema__name='attr1').add_value(user, 'value1')
+        entry.attrs.get(schema__name='attr2').add_value(user, 'value2')
+        entry.register_es()
+
+        # is_output_all false
+        params = {
+            'entities': [entity.id],
+            'attrinfo': [{'name': 'attr1'}],
+            'is_output_all': False,
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+
+        self.assertEqual(resp.status_code, 200)
+        result = resp.json()['result']
+        self.assertEqual(list(result['ret_values'][0]['attrs'].keys()), ['attr1'])
+
+        # is_output_all is default true
+        params = {
+            'entities': [entity.id],
+            'attrinfo': [{'name': 'attr1'}],
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+
+        self.assertEqual(resp.status_code, 200)
+        result = resp.json()['result']
+        self.assertEqual(list(result['ret_values'][0]['attrs'].keys()), ['attr1', 'attr2'])

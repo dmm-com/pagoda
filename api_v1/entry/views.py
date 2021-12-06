@@ -34,10 +34,12 @@ class EntrySearchAPI(APIView):
         hint_entry_name = request.data.get('entry_name', '')
         hint_attr = request.data.get('attrinfo')
         hint_referral = request.data.get('referral', False)
+        is_output_all = request.data.get('is_output_all', True)
         entry_limit = request.data.get('entry_limit', CONFIG_ENTRY.MAX_LIST_ENTRIES)
 
         if (not isinstance(hint_entity, list) or
                 not isinstance(hint_attr, list) or
+                not isinstance(is_output_all, bool) or
                 not isinstance(entry_limit, int)):
             return Response('The type of parameter is incorrect',
                             status=status.HTTP_400_BAD_REQUEST)
@@ -64,7 +66,7 @@ class EntrySearchAPI(APIView):
                                     entry_limit,
                                     hint_entry_name,
                                     hint_referral,
-                                    True)
+                                    is_output_all)
 
         return Response({'result': resp}, content_type='application/json; charset=UTF-8')
 
