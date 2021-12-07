@@ -291,11 +291,20 @@ def _get_regex_pattern(keyword: str) -> str:
     escaped = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS, keyword)
 
     # Elasticsearch doesn't support anchor operators,
-    # so it supports both ignoring it and handle it as a normal character
-    chars = escaped.replace('^', '^?').replace('$', '$?')
+    begin = '.*'
+    if escaped[0] == '^':
+        begin = ''
+        escaped = escaped.lstrip('^')
 
-    return '.*%s.*' % ''.join(['[%s%s]' % (
-        x.lower(), x.upper()) if x.isalpha() else x for x in chars])
+    end = '.*'
+    if escaped and escaped[-1] == '$':
+        end = ''
+        escaped = escaped.rstrip('$')
+
+    body = ''.join(['[%s%s]' % (
+        x.lower(), x.upper()) if x.isalpha() else x for x in escaped])
+
+    return begin + body + end
 
 
 def prepend_escape_character(escape_character_list: List[str], keyword: str) -> str:
@@ -686,25 +695,6 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
     }
 
 
-def _is_matched_entry(attrs: List[Dict[str, str]], hint_attrs: List[Dict[str, str]]) -> bool:
-    """
-    Predicate if an entry matches hint attrs
-    """
-    hint_keywords = {h['name']: h['keyword'] for h in hint_attrs if 'keyword' in h}
-
-    for attr in attrs:
-        type = attr['type']
-        if type == AttrTypeValue['string'] or type == AttrTypeValue['text']:
-            hint_keyword = hint_keywords.get(attr['name'], '')
-
-            # it checks anchor operators if it exists because its not supported by Elasticsearch
-            if len(hint_keyword) > 1 and (hint_keyword[0] == '^' or hint_keyword[-1] == '$'):
-                if not re.search(hint_keyword, attr['value']):
-                    return False
-
-    return True
-
-
 def execute_query(query: Dict[str, str], size: int = 0) -> Dict[str, str]:
     """Run a search query.
 
@@ -828,12 +818,6 @@ def make_search_results(user: User, res: Dict[str, Any], hint_attrs: List[Dict[s
         ][0]
 
     for (entry, entry_info) in sorted(hit_infos.items(), key=lambda x: x[0].name):
-        # ignore an entry doesn't match hint attrs
-        if not _is_matched_entry(entry_info['attr'], hint_attrs):
-            # subtract number from hitted count because it will be ignored
-            results['ret_count'] -= 1
-            continue
-
         ret_info: Dict[str, Any] = {
             'entity': {'id': entry.schema.id, 'name': entry.schema.name},
             'entry': {'id': entry.id, 'name': entry.name},

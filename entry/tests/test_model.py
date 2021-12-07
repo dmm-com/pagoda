@@ -3114,7 +3114,7 @@ class ModelTest(AironeTestCase):
                      '[', ']', '{', '}', ';', '+', ':', '*', ',', '<', '>', '.', '/', '?', '_', ' ']
         test_suites = []
         for i, add_char in enumerate(add_chars):
-            entry_name = 'test%s%s' % (i, add_char)
+            entry_name = 'test%s%s' % (add_char, i)
             entry = Entry.objects.create(name=entry_name, schema=entity, created_user=user)
             entry.register_es()
 

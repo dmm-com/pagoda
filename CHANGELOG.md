@@ -7,6 +7,7 @@
 ### Changed
 
 ### Fixed
+* Fixed not being able to use regexp in entry names in the entry search API (#314)
 
 ## v3.4.0
 
