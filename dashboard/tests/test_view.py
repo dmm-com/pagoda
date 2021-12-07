@@ -237,16 +237,24 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.content.decode('utf-8'), 'The attrinfo parameters is required')
 
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
-            'entity[]': [x.id for x in Entity.objects.filter(name__regex='^entity-')],
+            'attrinfo': 'hoge',
         })
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content.decode('utf-8'), 'The attrinfo parameters is required')
+        self.assertEqual(resp.content.decode('utf-8'), 'The attrinfo parameter is not JSON')
 
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
-            'is_all_entities': 'true',
+            'attrinfo': json.dumps([{'hoge': 'attr'}]),
         })
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content.decode('utf-8'), 'The attrinfo parameters is required')
+        self.assertEqual(resp.content.decode('utf-8'),
+                         'The name key is required for attrinfo parameter')
+
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'attrinfo': json.dumps([{'name': []}]),
+        })
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'),
+                         'Invalid name key value for attrinfo parameter')
 
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
             'attrinfo': json.dumps([{'name': 'attr'}]),
@@ -255,10 +263,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.content.decode('utf-8'), 'The entity[] parameters are required')
 
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
-            'attrinfo': 'hoge',
+            'attrinfo': json.dumps([{'name': 'attr'}]),
+            'entity[]': ['hoge']
         })
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content.decode('utf-8'), 'The attrinfo parameter is not JSON')
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid entity ID is specified')
 
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
             'attrinfo': json.dumps([{'name': 'attr'}]),

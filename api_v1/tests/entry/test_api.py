@@ -8,6 +8,33 @@ from entry.models import Entry
 
 
 class APITest(AironeViewTest):
+    def test_search_invalid_param(self):
+        self.admin_login()
+        valid_params = {
+            'entities': [1],
+            'attrinfo': [],
+        }
+        invalid_params = [
+            {'entities': 'hoge'},
+            {'entry_name': ['hoge']},
+            {'attrinfo': 'hoge'},
+            {'is_output_all': 'hoge'},
+            {'referral': ['hoge']},
+            {'entry_limit': 'hoge'},
+        ]
+        for invalid_param in invalid_params:
+            params = {**valid_params, **invalid_param}
+            resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.content, b'"The type of parameter is incorrect"')
+
+        params = {**valid_params, **{
+            'attrinfo': [{'hoge': 'value'}]
+        }}
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"The name key is required for attrinfo parameter"')
+
     def test_narrow_down_advanced_search_results(self):
         user = self.admin_login()
 

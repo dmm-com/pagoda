@@ -181,11 +181,15 @@ def advanced_search_result(request):
         hint_attrs = json.loads(attrinfo)
     except json.JSONDecodeError:
         return HttpResponse("The attrinfo parameter is not JSON", status=400)
-    attr_names = [x['name'] for x in hint_attrs]
+    if not all(['name' in x for x in hint_attrs]):
+        return HttpResponse("The name key is required for attrinfo parameter", status=400)
+    if not all([isinstance(x['name'], str) for x in hint_attrs]):
+        return HttpResponse("Invalid name key value for attrinfo parameter", status=400)
 
     # check entity params
     hint_entity_ids = []
     if is_all_entities:
+        attr_names = [x['name'] for x in hint_attrs]
         attrs = sum(
             [list(EntityAttr.objects.filter(name=x, is_active=True)) for x in attr_names], [])
         hint_entity_ids = list(set([x.parent_entity.id for x in attrs if x and
@@ -195,6 +199,8 @@ def advanced_search_result(request):
             return HttpResponse("The entity[] parameters are required", status=400)
 
         for entity_id in recv_entity:
+            if not entity_id.isnumeric():
+                return HttpResponse("Invalid entity ID is specified", status=400)
             entity = Entity.objects.filter(id=entity_id, is_active=True).first()
             if not entity:
                 return HttpResponse("Invalid entity ID is specified", status=400)

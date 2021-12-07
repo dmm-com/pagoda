@@ -8,6 +8,7 @@
 
 ### Fixed
 * Fixed not being able to use regexp in entry names in the entry search API (#314)
+* Fixed an exception error when specifying an invalid parameter in advanced search (#327)
 
 ## v3.4.0
 

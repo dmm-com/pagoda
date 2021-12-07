@@ -38,8 +38,10 @@ class EntrySearchAPI(APIView):
         entry_limit = request.data.get('entry_limit', CONFIG_ENTRY.MAX_LIST_ENTRIES)
 
         if (not isinstance(hint_entity, list) or
+                not isinstance(hint_entry_name, str) or
                 not isinstance(hint_attr, list) or
                 not isinstance(is_output_all, bool) or
+                not isinstance(hint_referral, (str, bool)) or
                 not isinstance(entry_limit, int)):
             return Response('The type of parameter is incorrect',
                             status=status.HTTP_400_BAD_REQUEST)
@@ -48,17 +50,27 @@ class EntrySearchAPI(APIView):
         if any([len(str(x)) > CONFIG_ENTRY.MAX_QUERY_SIZE * 2 for x in hint_attr]):
             return Response("Sending parameter is too large", status=400)
 
-        # check entity params
+        # check entities params
         hint_entity_ids = []
         for hint in hint_entity:
-            try:
-                entity = Entity.objects.filter(id=hint, is_active=True).first()
-            except ValueError:
-                # This may happen when a string value is specified in the entities parameter
-                entity = Entity.objects.filter(name=hint, is_active=True).first()
+            entity = None
+            if isinstance(hint, int):
+                entity = Entity.objects.filter(Q(is_active=True),
+                                               Q(id=hint) | Q(name=hint)).first()
+            elif isinstance(hint, str):
+                if hint.isnumeric():
+                    entity = Entity.objects.filter(Q(is_active=True),
+                                                   Q(id=hint) | Q(name=hint)).first()
+                else:
+                    # This may happen when a string value is specified in the entities parameter
+                    entity = Entity.objects.filter(name=hint, is_active=True).first()
 
             if entity and user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
+
+        # check attrinfo params
+        if not all(['name' in x for x in hint_attr]):
+            return Response("The name key is required for attrinfo parameter", status=400)
 
         resp = Entry.search_entries(user,
                                     hint_entity_ids,
