@@ -53,6 +53,7 @@ export function EntryForm({
             value: {
               id: attrValue.id,
               type: attrValue.type,
+              schema_id: attrValue.schema_id,
               value: [
                 {
                   ...attrValue.value,
@@ -71,6 +72,7 @@ export function EntryForm({
             value: {
               id: attrValue.id,
               type: attrValue.type,
+              schema_id: attrValue.schema_id,
               value: {
                 [name]: [
                   {
@@ -90,6 +92,7 @@ export function EntryForm({
             value: {
               id: attrValue.id,
               type: attrValue.type,
+              schema_id: attrValue.schema_id,
               value: attrValue.value.map((val) => {
                 return [
                   {
@@ -107,6 +110,7 @@ export function EntryForm({
             value: {
               id: attrValue.id,
               type: attrValue.type,
+              schema_id: attrValue.schema_id,
               value: attrValue.value.map((val) => {
                 const name = Object.keys(val)[0];
                 const value = val[name];
@@ -154,8 +158,7 @@ export function EntryForm({
       case djangoContext.attrTypeValue.group:
         attributes[name].value = attributes[name].value.map((x) => {
           return {
-            id: x.id,
-            name: x.name,
+            ...x,
             checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
           };
         });
@@ -173,8 +176,7 @@ export function EntryForm({
           valueInfo.index
         ].map((x) => {
           return {
-            id: x.id,
-            name: x.name,
+            ...x,
             checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
           };
         });
@@ -191,8 +193,7 @@ export function EntryForm({
           const key = Object.keys(attributes[name].value)[0];
           attributes[name].value[key] = attributes[name].value[key].map((x) => {
             return {
-              id: x.id,
-              name: x.name,
+              ...x,
               checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
             };
           });
@@ -214,8 +215,7 @@ export function EntryForm({
             valueInfo.index
           ][key].map((x) => {
             return {
-              id: x.id,
-              name: x.name,
+              ...x,
               checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
             };
           });
@@ -367,7 +367,7 @@ export function EntryForm({
       // for temporary
       .filter(
         ([attrName, attrValue]) =>
-          attrValue.type === djangoContext.attrTypeValue.object
+          attrValue.type === djangoContext.attrTypeValue.string || attrValue.type === djangoContext.attrTypeValue.object
       )
       .map(([attrName, attrValue]) => {
         console.log("handleSubmit");
@@ -375,7 +375,7 @@ export function EntryForm({
         switch (attrValue.type) {
           case djangoContext.attrTypeValue.string:
             return {
-              entity_attr_id: attrValue.schema_id,
+              entity_attr_id: String(attrValue.schema_id),
               id: String(attrValue.id),
               type: attrValue.type,
               value: [
@@ -388,7 +388,7 @@ export function EntryForm({
 
           case djangoContext.attrTypeValue.object:
             return {
-              entity_attr_id: "",
+              entity_attr_id: String(attrValue.schema_id),
               id: String(attrValue.id),
               type: attrValue.type,
               value: [
