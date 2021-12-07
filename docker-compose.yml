@@ -10,6 +10,8 @@ services:
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       TZ: "Asia/Tokyo"
+    volumes:
+      - mysql:/var/lib/mysql
 
   elasticsearch:
     image: elasticsearch:6.8.16
@@ -40,3 +42,7 @@ services:
     hostname: memcached
     ports:
       - 11211:11211
+
+volumes:
+  mysql:
+    driver: local
