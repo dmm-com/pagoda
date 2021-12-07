@@ -176,7 +176,7 @@ export function createEntry(entityId, name, attrs) {
 }
 
 export function updateEntry(entryId, name, attrs) {
-  return fetch(`/entry/do_edit/${entryId}/`, {
+  return fetch(`/entry/do_edit/${entryId}`, {
     method: "POST",
     headers: {
       "X-CSRFToken": getCsrfToken(),

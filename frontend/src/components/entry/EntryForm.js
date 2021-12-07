@@ -9,6 +9,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
+import { showEntryPath } from "../../Routes";
 
 import {
   getAttrReferrals,
@@ -132,7 +133,6 @@ export function EntryForm({
       acc[elem.name] = elem.value;
       return acc;
     }, {});
-  console.log(changedInitAttr);
 
   const [name, setName] = useState(initName);
   const [attributes, setAttributes] = useState(changedInitAttr);
@@ -141,7 +141,6 @@ export function EntryForm({
     console.log("[onix/handleChangeAttribute(00)] name: " + name);
     console.log("[onix/handleChangeAttribute(00)] valueInfo: ");
     console.log(valueInfo);
-    // console.log(attributes);
     console.log(`[onix/handleChangeAttribute(00/before)] attributes`);
     console.log(attributes);
 
@@ -303,8 +302,6 @@ export function EntryForm({
   };
 
   const handleNarrowDownEntries = async (e, attrId, attrName, attrType) => {
-    console.log("[onix/handleNarrowDownEntries(00)] attrId: " + attrId);
-
     const resp = await getAttrReferrals(attrId);
     const refs = await resp.json();
     const userInputValue = e.target.value;
@@ -366,8 +363,6 @@ export function EntryForm({
   };
 
   const handleSubmit = (event) => {
-    console.log(attributes);
-
     const updatedAttr = Object.entries(attributes)
       // for temporary
       .filter(
@@ -375,31 +370,38 @@ export function EntryForm({
           attrValue.type === djangoContext.attrTypeValue.string
       )
       .map(([attrName, attrValue]) => {
-        return {
-          entity_attr_id: attrValue.schema_id,
-          id: attrValue.id,
-          type: attrValue.type,
-          value: [
-            {
-              data: attrValue.value,
-            },
-          ],
-          referral_key: [],
-        };
+        switch(attrValue.type) {
+          case: djangoContext.attrTypeValue.string:
+            return {
+              entity_attr_id: attrValue.schema_id,
+              id: String(attrValue.id),
+              type: attrValue.type,
+              value: [
+                {
+                  data: attrValue.value,
+                },
+              ],
+              referral_key: [],
+            };
+
+          // case: djangoContext.attrTypeValue.object:
+            // return {}
+        }
       });
 
-    console.log(entryId);
+    console.log(`[onix/handleSubmit] entryId` + entryId);
     console.log(updatedAttr);
 
     // FIXME entryId is always undefined????
     if (entryId === undefined) {
-      // createEntry(entityId, name, attrs)
-      //   .then((resp) => resp.json())
-      //   .then((_) => history.push(entityEntriesPath(entityId)));
+      createEntry(entityId, name, attrs)
+       .then((resp) => resp.json())
+       .then((_) => history.push(entityEntriesPath(entityId)));
+
     } else {
       updateEntry(entryId, name, updatedAttr)
         .then((resp) => resp.json())
-        .then((_) => history.push(entityEntriesPath(entityId)));
+        .then((_) => history.push(showEntryPath(entryId)));
     }
 
     // TODO reload

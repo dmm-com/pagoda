@@ -20,7 +20,7 @@ class GetEntrySerializer(serializers.ModelSerializer):
 
     def get_attrs(self, obj):
         def get_attr_value(attr):
-            attrv = attr.get_latest_value(is_readonly=False)
+            attrv = attr.get_latest_value(is_readonly=True)
 
             if not attrv:
                 return ''
