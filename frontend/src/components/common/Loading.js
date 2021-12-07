@@ -21,7 +21,7 @@ export function Loading() {
   const classes = useStyles();
 
   return (
-    <Box>
+    <Box data-testid="loading">
       <Box className={classes.loading}>
         <CircularProgress />
         <Typography className={classes.text}>Loading...</Typography>
