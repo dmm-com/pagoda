@@ -367,11 +367,13 @@ export function EntryForm({
       // for temporary
       .filter(
         ([attrName, attrValue]) =>
-          attrValue.type === djangoContext.attrTypeValue.string
+          attrValue.type === djangoContext.attrTypeValue.object
       )
       .map(([attrName, attrValue]) => {
-        switch(attrValue.type) {
-          case: djangoContext.attrTypeValue.string:
+        console.log("handleSubmit");
+        console.log(attrValue);
+        switch (attrValue.type) {
+          case djangoContext.attrTypeValue.string:
             return {
               entity_attr_id: attrValue.schema_id,
               id: String(attrValue.id),
@@ -384,8 +386,19 @@ export function EntryForm({
               referral_key: [],
             };
 
-          // case: djangoContext.attrTypeValue.object:
-            // return {}
+          case djangoContext.attrTypeValue.object:
+            return {
+              entity_attr_id: "",
+              id: String(attrValue.id),
+              type: attrValue.type,
+              value: [
+                {
+                  data: attrValue.value.filter((x) => x.checked)[0].id ?? "",
+                  index: String(0),
+                },
+              ],
+              referral_key: [],
+            };
         }
       });
 
@@ -395,9 +408,8 @@ export function EntryForm({
     // FIXME entryId is always undefined????
     if (entryId === undefined) {
       createEntry(entityId, name, attrs)
-       .then((resp) => resp.json())
-       .then((_) => history.push(entityEntriesPath(entityId)));
-
+        .then((resp) => resp.json())
+        .then((_) => history.push(entityEntriesPath(entityId)));
     } else {
       updateEntry(entryId, name, updatedAttr)
         .then((resp) => resp.json())
