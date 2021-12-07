@@ -186,12 +186,15 @@ def advanced_search_result(request):
     if not recv_attr and not attrinfo:
         return HttpResponse("The attr[] or attrinfo parameters is required", status=400)
 
-    # build hint attrs from JSON encoded params,
-    # or attr[] the older param to keep backward compatibility
+    # The "attr" parameter guarantees backward compatibility.
+    # The "atterinfo" is another parameter,
+    # that has same purpose that indicates which attributes to search,
+    # And "attrinfo" is prioritize than "attr".
     # TODO deprecate attr[]
     hint_attrs = [{'name': x} for x in recv_attr]
     if attrinfo:
         try:
+            # build hint attrs from JSON encoded params
             hint_attrs = json.loads(attrinfo)
         except json.JSONDecodeError:
             return HttpResponse("The attrinfo parameter is not JSON", status=400)
