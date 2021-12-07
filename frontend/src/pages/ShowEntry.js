@@ -6,7 +6,7 @@ import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
-import ACLForm from "../components/common/ACLForm";
+import { ACLForm } from "../components/common/ACLForm";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import CopyForm from "../components/entry/CopyForm";
 import { EntryAttributes } from "../components/entry/EntryAttributes";
@@ -45,7 +45,8 @@ export function ShowEntry({}) {
   });
 
   const acl = useAsync(async () => {
-    return await getACL(entryId);
+    const resp = await getACL(entryId);
+    return await resp.json();
   });
 
   if (entry.error !== undefined) {
@@ -117,7 +118,7 @@ export function ShowEntry({}) {
       </div>
 
       <div hidden={tabValue !== 5}>
-        {!acl.loading && <ACLForm acl={acl.value} />}
+        {!acl.loading && <ACLForm objectId={entryId} acl={acl.value} />}
       </div>
     </div>
   );
