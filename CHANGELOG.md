@@ -11,6 +11,7 @@
 * Fixed no permission check in advanced search and simple search(#282)
 * Fixed a different number of entries displayed on the entity dashboard (#308)
 * Fixed an error when specifying old parameters in advanced search (#323)
+* Fixed different count of ret_values in advanced search results (#324)
 
 ## v3.3.1
 

@@ -1529,7 +1529,7 @@ class Entry(ACLBase):
             search_result = make_search_results(user, resp, hint_attrs, limit, hint_referral)
             results['ret_count'] += search_result['ret_count']
             results['ret_values'].extend(search_result['ret_values'])
-            limit -= results['ret_count']
+            limit -= search_result['ret_count']
 
         return results
 
