@@ -162,6 +162,7 @@ $(document).ready(function() {
           entities: '{{ entities }}'.split(','),
           entry_name: $('.hint_entry_name').val(),
           attrinfo: get_attrinfo(),
+          is_output_all: false,
       };
 
       {% if has_referral is not False %}

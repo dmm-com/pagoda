@@ -169,18 +169,35 @@ def advanced_search_result(request):
     user = User.objects.get(id=request.user.id)
 
     recv_entity = request.GET.getlist('entity[]')
+    recv_attr = request.GET.getlist('attr[]')
     is_all_entities = request.GET.get('is_all_entities') == 'true'
     has_referral = request.GET.get('has_referral', False)
     attrinfo = request.GET.get('attrinfo')
     entry_name = request.GET.get('entry_name')
 
+    # check referral params
+    # process of converting older param for backward compatibility
+    if has_referral == 'true':
+        has_referral = ''
+    if has_referral == 'false':
+        has_referral = False
+
     # check attribute params
-    if not attrinfo:
-        return HttpResponse("The attrinfo parameters is required", status=400)
-    try:
-        hint_attrs = json.loads(attrinfo)
-    except json.JSONDecodeError:
-        return HttpResponse("The attrinfo parameter is not JSON", status=400)
+    if not recv_attr and not attrinfo:
+        return HttpResponse("The attr[] or attrinfo parameters is required", status=400)
+
+    # The "attr" parameter guarantees backward compatibility.
+    # The "atterinfo" is another parameter,
+    # that has same purpose that indicates which attributes to search,
+    # And "attrinfo" is prioritize than "attr".
+    # TODO deprecate attr[]
+    hint_attrs = [{'name': x} for x in recv_attr]
+    if attrinfo:
+        try:
+            # build hint attrs from JSON encoded params
+            hint_attrs = json.loads(attrinfo)
+        except json.JSONDecodeError:
+            return HttpResponse("The attrinfo parameter is not JSON", status=400)
     attr_names = [x['name'] for x in hint_attrs]
 
     # check entity params
