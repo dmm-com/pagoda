@@ -308,28 +308,6 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
             'attrinfo': '[]',
             'entity[]': [Entity.objects.get(name='Entity1').id],
-            'has_referral': '',
-        })
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.context['results']['ret_count'], 3)
-        self.assertEqual(resp.context['results']['ret_values'][0]['referrals'], [{
-            'id': ref_entry.id,
-            'name': ref_entry.name,
-            'schema': ref_entry.schema.name,
-        }])
-
-        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
-            'attrinfo': '[]',
-            'entity[]': [Entity.objects.get(name='Entity1').id],
-            'has_referral': 'srv001',
-        })
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.context['results']['ret_count'], 1)
-
-        # specified older param 'true' to ''
-        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
-            'attrinfo': '[]',
-            'entity[]': [Entity.objects.get(name='Entity1').id],
             'has_referral': 'true',
         })
         self.assertEqual(resp.status_code, 200)
@@ -340,11 +318,21 @@ class ViewTest(AironeViewTest):
             'schema': ref_entry.schema.name,
         }])
 
-        # specified older param 'false' to False
+        # test to show advanced_search_result page with referral_name param
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
             'attrinfo': '[]',
             'entity[]': [Entity.objects.get(name='Entity1').id],
-            'has_referral': 'false',
+            'has_referral': 'true',
+            'referral_name': 'srv001',
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['results']['ret_count'], 1)
+
+        # test to show advanced_search_result page with invalid has_referal param
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'attrinfo': '[]',
+            'entity[]': [Entity.objects.get(name='Entity1').id],
+            'has_referral': 'hoge',
         })
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context['results']['ret_count'], 3)
@@ -474,13 +462,143 @@ class ViewTest(AironeViewTest):
         # register entry information to the index database
         entry.register_es()
 
-        # send request to export data
         exporting_attr_names = ['str', 'text', 'bool', 'date', 'obj', 'grp', 'name',
                                 'arr_str', 'arr_obj', 'arr_grp', 'arr_name']
+
+        # test to export_search_result without mandatory params
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'attrinfo': [{'name': x} for x in exporting_attr_names],
+            'export_style': 'csv',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
         resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
             'entities': [entity.id],
-            'attrinfo': [{'name': x} for x in ['str', 'text', 'bool', 'date', 'obj', 'grp', 'name',
-                                               'arr_str', 'arr_obj', 'arr_grp', 'arr_name']],
+            'export_style': 'csv',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [entity.id],
+            'attrinfo': [{'name': x} for x in exporting_attr_names],
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        # test to export_search_result with invalid params
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': 'hoge',
+            'attrinfo': [{'name': x} for x in exporting_attr_names],
+            'export_style': 'csv',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [{'key': 'value'}],
+            'attrinfo': [{'name': x} for x in exporting_attr_names],
+            'export_style': 'csv',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': ['hoge'],
+            'attrinfo': [{'name': x} for x in exporting_attr_names],
+            'export_style': 'csv',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [9999],
+            'attrinfo': [{'name': x} for x in exporting_attr_names],
+            'export_style': 'csv',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [entity.id],
+            'attrinfo': 'hoge',
+            'export_style': 'csv',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [entity.id],
+            'attrinfo': ['hoge'],
+            'export_style': 'csv',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [entity.id],
+            'attrinfo': [{'hoge': 'value'}],
+            'export_style': 'csv',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [entity.id],
+            'attrinfo': [{'name': ['hoge']}],
+            'export_style': 'csv',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [entity.id],
+            'attrinfo': [{'name': 'hoge', 'keyword': ['hoge']}],
+            'export_style': 'csv',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [entity.id],
+            'attrinfo': [{'name': x} for x in exporting_attr_names],
+            'export_style': 'hoge',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid "export_type" is specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [entity.id],
+            'attrinfo': [{'name': x} for x in exporting_attr_names],
+            'export_style': 'csv',
+            'entry_name': [],
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [entity.id],
+            'attrinfo': [{'name': x} for x in exporting_attr_names],
+            'export_style': 'csv',
+            'has_referral': 'hoge',
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [entity.id],
+            'attrinfo': [{'name': x} for x in exporting_attr_names],
+            'export_style': 'csv',
+            'referral_name': [],
+        }), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Invalid parameters are specified')
+
+        # send request to export data
+        resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
+            'entities': [entity.id],
+            'attrinfo': [{'name': x} for x in exporting_attr_names],
             'export_style': 'csv',
         }), 'application/json')
         self.assertEqual(resp.status_code, 200)
@@ -523,7 +641,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
             'entities': [ref_entity.id],
             'attrinfo': [],
-            'has_referral': '',
+            'has_referral': True,
             'export_style': 'csv',
         }), 'application/json')
         self.assertEqual(resp.status_code, 200)
@@ -538,7 +656,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(reverse('dashboard:export_search_result'), json.dumps({
             'entities': [ref_entity.id],
             'attrinfo': [],
-            'has_referral': 'hogefuga',
+            'has_referral': True,
+            'referral_name': 'hogefuga',
             'export_style': 'csv',
         }), 'application/json')
         self.assertEqual(resp.status_code, 200)
@@ -871,7 +990,7 @@ class ViewTest(AironeViewTest):
             'entities': [ref_entity.id],
             'attrinfo': [],
             'export_style': 'yaml',
-            'has_referral': '',
+            'has_referral': True,
         }), 'application/json')
         self.assertEqual(resp.status_code, 200)
 

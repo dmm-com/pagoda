@@ -216,7 +216,7 @@ def _is_valid(params, meta_info):
         return False
     # These are type checks of each parameters
     if not all([isinstance(params[x['name']], x['type'])
-                for x in meta_info if 'omittable' not in x]):
+                for x in meta_info if x['name'] in params.keys()]):
         return False
     # These are value checks of each parameters
     for _meta in meta_info:

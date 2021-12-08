@@ -115,7 +115,7 @@ function reconstruct_tbody(results) {
       }
     {% endfor %}
 
-    {% if has_referral is not False %}
+    {% if has_referral%}
       let elem_ref_td = $('<td id=referral />');
       let elem_ref_ul = $("<ul class='list-group'/>");
 
@@ -165,7 +165,7 @@ $(document).ready(function() {
           is_output_all: false,
       };
 
-      {% if has_referral is not False %}
+      {% if has_referral%}
       request_params['referral'] = $('.narrow_down_referral').val();
       {% endif %}
 
@@ -193,13 +193,18 @@ $(document).ready(function() {
         // preserve a permalnk via pushState API to the advanced_search view (not entry-search API)
         // to filter search results with attribute keywords
         let params = [];
-        for (const entity of '{{ entities }}'.split(',')) {
-            params.push('entity[]=' +  entity);
-        }
+        {% if is_all_entities %}
+        params.push('is_all_entities=true');
+        {% else %}
+        '{{ entities }}'.split(',').forEach(function(val) {
+          params.push('entity[]=' + val);
+        });
+        {% endif %}
         params.push('entry_name=' + $('.hint_entry_name').val());
         params.push('attrinfo=' + encodeURIComponent(JSON.stringify(get_attrinfo())));
-        {% if has_referral is not False %}
-        params.push('has_referral=' + $('.narrow_down_referral').val());
+        {% if has_referral %}
+        params.push('has_referral=true');
+        params.push('referral_name=' + $('.narrow_down_referral').val());
         {% endif %}
         window.history.pushState('', '', 'advanced_search_result?' + params.join('&'));
 
@@ -248,7 +253,8 @@ $(document).ready(function() {
         'entities': '{{ entities }}'.split(','),
         'attrinfo': get_attrinfo(),
         'entry_name': $('.hint_entry_name').val(),
-        'has_referral': $('.narrow_down_referral').val(),
+        'has_referral': true,
+        'referral_name': $('.narrow_down_referral').val(),
         'export_style': style,
       }),
       dataType:      'json',
@@ -327,11 +333,8 @@ $(document).ready(function() {
     params.push('attrinfo=' + encodeURIComponent(JSON.stringify(attrinfo)));
 
     if ($('#modal_cond_add_referral').is(':checked')){
-      var has_referral = '';
-      if ($('.narrow_down_referral').val()){
-        has_referral = $('.narrow_down_referral').val()
-      }
-      params.push('has_referral=' + has_referral);
+      params.push('has_referral=true');
+      params.push(`referral_name=${$('.narrow_down_referral').val() ?? ''}`);
     }
 
     location.href = `/dashboard/advanced_search_result?${ params.join('&') }`;

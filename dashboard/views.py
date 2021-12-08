@@ -171,16 +171,16 @@ def advanced_search_result(request):
     recv_entity = request.GET.getlist('entity[]')
     recv_attr = request.GET.getlist('attr[]')
     is_all_entities = request.GET.get('is_all_entities') == 'true'
-    has_referral = request.GET.get('has_referral', False)
+    has_referral = request.GET.get('has_referral') == 'true'
+    referral_name = request.GET.get('referral_name')
     attrinfo = request.GET.get('attrinfo')
     entry_name = request.GET.get('entry_name')
 
     # check referral params
-    # process of converting older param for backward compatibility
-    if has_referral == 'true':
-        has_referral = ''
-    if has_referral == 'false':
-        has_referral = False
+    # # process of converting older param for backward compatibility
+    hint_referral = '' if has_referral else False
+    if referral_name:
+        hint_referral = referral_name
 
     # check attribute params
     # The "attr" parameter guarantees backward compatibility.
@@ -230,10 +230,11 @@ def advanced_search_result(request):
                                         hint_attrs,
                                         CONFIG.MAXIMUM_SEARCH_RESULTS,
                                         entry_name,
-                                        hint_referral=has_referral),
+                                        hint_referral),
         'max_num': CONFIG.MAXIMUM_SEARCH_RESULTS,
         'entities': ','.join([str(x) for x in hint_entity_ids]),
         'has_referral': has_referral,
+        'referral_name': referral_name,
         'is_all_entities': is_all_entities,
         'entry_name': entry_name,
     })
@@ -241,10 +242,15 @@ def advanced_search_result(request):
 
 @airone_profile
 @http_post([
-    {'name': 'entities', 'type': list,
-     'checker': lambda x: all([Entity.objects.filter(id=y) for y in x['entities']])},
-    {'name': 'attrinfo', 'type': list},
-    {'name': 'has_referral', 'type': str, 'omittable': True},
+    {'name': 'entities', 'type': list, 'checker': lambda x: all(
+        [(isinstance(y, str) and y.isnumeric()) or isinstance(y, int) and
+         Entity.objects.filter(id=y) for y in x['entities']])},
+    {'name': 'attrinfo', 'type': list, 'meta': [
+        {'name': 'name', 'type': str},
+        {'name': 'keyword', 'type': str, 'omittable': True}
+    ]},
+    {'name': 'has_referral', 'type': bool, 'omittable': True},
+    {'name': 'referral_name', 'type': str, 'omittable': True},
     {'name': 'entry_name', 'type': str, 'omittable': True},
     {'name': 'export_style', 'type': str},
 ])

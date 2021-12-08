@@ -11,6 +11,9 @@
 * Fixed not being able to use regexp in entry names in the entry search API (#314)
 * Fixed an exception error when specifying an invalid parameter in advanced search (#327)
 
+### Refactored
+* Refactored referral param in advanced search (#326)
+
 ## v3.4.1
 
 ## Fixed
