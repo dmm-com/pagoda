@@ -7,6 +7,13 @@
 ### Changed
 
 ### Fixed
+* Fixed an issue where advanced search narrow down was slow (#321)
+
+## v3.4.1
+
+## Fixed
+* Fixed an error when specifying old parameters in advanced search (#323)
+* Fixed different count of ret_values in advanced search results (#324)
 
 ## v3.4.0
 
@@ -29,7 +36,6 @@
 * Fixed implementation for ACL inheritance for Attribute
 * Fixed no permission check in advanced search and simple search(#282)
 * Fixed a different number of entries displayed on the entity dashboard (#308)
-* Fixed an issue where advanced search narrow down was slow (#321)
 
 ### Refactored
 * Refactored the entry list page

@@ -182,6 +182,11 @@ class ViewTest(AironeViewTest):
         # test to show advanced_search_result page
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
             'entity[]': [x.id for x in Entity.objects.filter(name__regex='^entity-')],
+            'attr[]': ['attr'],  # an older param will be deprecated
+        })
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'entity[]': [x.id for x in Entity.objects.filter(name__regex='^entity-')],
             'attrinfo': json.dumps([{'name': 'attr'}]),  # A newer param
         })
         self.assertEqual(resp.status_code, 200)
@@ -234,19 +239,22 @@ class ViewTest(AironeViewTest):
         # test to show advanced_search_result page without mandatory params
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {})
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content.decode('utf-8'), 'The attrinfo parameters is required')
+        self.assertEqual(resp.content.decode('utf-8'),
+                         'The attr[] or attrinfo parameters is required')
 
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
             'entity[]': [x.id for x in Entity.objects.filter(name__regex='^entity-')],
         })
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content.decode('utf-8'), 'The attrinfo parameters is required')
+        self.assertEqual(resp.content.decode('utf-8'),
+                         'The attr[] or attrinfo parameters is required')
 
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
             'is_all_entities': 'true',
         })
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content.decode('utf-8'), 'The attrinfo parameters is required')
+        self.assertEqual(resp.content.decode('utf-8'),
+                         'The attr[] or attrinfo parameters is required')
 
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
             'attrinfo': json.dumps([{'name': 'attr'}]),
@@ -309,6 +317,30 @@ class ViewTest(AironeViewTest):
         })
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context['results']['ret_count'], 1)
+
+        # specified older param 'true' to ''
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'attrinfo': '[]',
+            'entity[]': [Entity.objects.get(name='Entity1').id],
+            'has_referral': 'true',
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['results']['ret_count'], 3)
+        self.assertEqual(resp.context['results']['ret_values'][0]['referrals'], [{
+            'id': ref_entry.id,
+            'name': ref_entry.name,
+            'schema': ref_entry.schema.name,
+        }])
+
+        # specified older param 'false' to False
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'attrinfo': '[]',
+            'entity[]': [Entity.objects.get(name='Entity1').id],
+            'has_referral': 'false',
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['results']['ret_count'], 3)
+        self.assertTrue(all(['referrals' not in x for x in resp.context['results']['ret_values']]))
 
     def test_show_advanced_search_results_with_no_permission(self):
         guest_user = self.guest_login()
