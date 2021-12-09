@@ -215,7 +215,6 @@ export function EditAttributeValue({
       );
 
     case djangoContext.attrTypeValue.named_object:
-      console.log("named_object/attrInfo", attrInfo);
       return (
         <ElemNamedObject
           attrId={attrInfo.id}

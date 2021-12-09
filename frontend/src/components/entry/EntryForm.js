@@ -37,9 +37,6 @@ export function EntryForm({
   const classes = useStyles();
   const history = useHistory();
 
-  console.log(`[onix/00] initAttributes`);
-  console.log(initAttributes);
-
   /* FIXME attach checked flag to entry-like types
    */
   const changedInitAttr = Object.keys(initAttributes)
@@ -142,12 +139,6 @@ export function EntryForm({
   const [attributes, setAttributes] = useState(changedInitAttr);
 
   const handleChangeAttribute = (event, name, valueInfo) => {
-    console.log("[onix/handleChangeAttribute(00)] name: " + name);
-    console.log("[onix/handleChangeAttribute(00)] valueInfo: ");
-    console.log(valueInfo);
-    console.log(`[onix/handleChangeAttribute(00/before)] attributes`);
-    console.log(attributes);
-
     switch (valueInfo.type) {
       case djangoContext.attrTypeValue.string:
         attributes[name].value = valueInfo.value;
@@ -237,24 +228,7 @@ export function EntryForm({
         attributes[name].value = valueInfo.value;
         setAttributes({ ...attributes });
         break;
-
-      default:
-        console.log("[onix/handleChangeAttribute/switch] valueInfo: ");
-        console.log(valueInfo);
     }
-
-    console.log(`[onix/handleChangeAttribute(00/after)] attributes`);
-    console.log(attributes);
-    /*
-    attributes[event.target.name] = event.target.value;
-    const updated = attributes.map((attribute) => {
-      if (attribute.name === event.target.name) {
-        attribute.value = event.target.value;
-      }
-      return attribute;
-    });
-    setAttributes(updated);
-    */
   };
 
   const handleNarrowDownGroups = async (e, attrName, attrType) => {
@@ -471,10 +445,6 @@ export function EntryForm({
       }
     );
 
-    console.log(`[onix/handleSubmit] entryId` + entryId);
-    console.log(updatedAttr);
-
-    // FIXME entryId is always undefined????
     if (entryId === undefined) {
       createEntry(entityId, name, attrs)
         .then((resp) => resp.json())
@@ -485,9 +455,6 @@ export function EntryForm({
         // go(n) - (function) Moves the pointer in the history stack by n entries
         .then((_) => history.go(0));
     }
-
-    // TODO reload
-    // event.preventDefault();
   };
 
   return (
