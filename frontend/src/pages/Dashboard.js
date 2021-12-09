@@ -1,3 +1,4 @@
+import { Box } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
@@ -26,12 +27,12 @@ export function Dashboard({}) {
   const classes = useStyles();
 
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography color="textPrimary">Top</Typography>
       </AironeBreadcrumbs>
 
-      <div className={classes.links}>
+      <Box className={classes.links}>
         <Button
           className={classes.button}
           variant="contained"
@@ -71,7 +72,7 @@ export function Dashboard({}) {
         >
           グループ管理 &#x000bb;
         </Button>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

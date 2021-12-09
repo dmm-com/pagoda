@@ -1,3 +1,4 @@
+import { Box } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
@@ -20,28 +21,28 @@ export default function CopyForm({ entityId, entryId }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="row">
-        <div className="col">
-          <div className="float-left">
+      <Box className="row">
+        <Box className="col">
+          <Box className="float-left">
             入力した各行毎に同じ属性値を持つ別エントリを作成
-          </div>
-          <div className="float-right">
+          </Box>
+          <Box className="float-right">
             <Button type="submit" variant="contained">
               コピー
             </Button>
-          </div>
-        </div>
-      </div>
-      <div className="row">
-        <div className="col-5">
+          </Box>
+        </Box>
+      </Box>
+      <Box className="row">
+        <Box className="col-5">
           <textarea
             cols={40}
             rows={10}
             value={entries}
             onChange={(e) => setEntries(e.target.value)}
           />
-        </div>
-      </div>
+        </Box>
+      </Box>
     </form>
   );
 }

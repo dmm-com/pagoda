@@ -1,6 +1,8 @@
+import { Box } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
+import { Input } from "@material-ui/icons";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -32,10 +34,10 @@ export function ImportForm({ importFunc, redirectPath }) {
   };
 
   return (
-    <div>
+    <Box>
       <form onSubmit={onSubmit}>
-        <div>
-          <input type="file" onChange={onChange} />
+        <Box>
+          <Input type="file" onChange={onChange} />
           <Button
             className={classes.button}
             type="submit"
@@ -44,10 +46,10 @@ export function ImportForm({ importFunc, redirectPath }) {
           >
             保存
           </Button>
-        </div>
+        </Box>
       </form>
       <Typography>(注：CSV 形式のデータはインポートできません)</Typography>
-    </div>
+    </Box>
   );
 }
 

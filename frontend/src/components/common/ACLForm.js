@@ -1,4 +1,6 @@
 import {
+  Box,
+  Checkbox,
   MenuItem,
   Select,
   Table,
@@ -66,14 +68,12 @@ export function ACLForm({ objectId, acl }) {
 
   return (
     <form>
-      <div className="container">
-        <div className="row">
-          <div className="col">
+      <Box className="container">
+        <Box className="row">
+          <Box className="col">
             <span className="float-left">
               公開：
-              <input
-                type="checkbox"
-                name="is_public"
+              <Checkbox
                 checked={isPublic}
                 onChange={(e) => setIsPublic(e.target.checked)}
               />
@@ -88,9 +88,9 @@ export function ACLForm({ objectId, acl }) {
                 保存
               </Button>
             </span>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
       <TableContainer component={Paper}>
         <Table>

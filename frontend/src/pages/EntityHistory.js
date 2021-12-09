@@ -1,4 +1,5 @@
 import {
+  Box,
   Table,
   TableBody,
   TableCell,
@@ -45,7 +46,7 @@ export function EntityHistory({}) {
   });
 
   return (
-    <div className="container">
+    <Box className="container">
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -122,6 +123,6 @@ export function EntityHistory({}) {
             ))}
         </TableBody>
       </Table>
-    </div>
+    </Box>
   );
 }

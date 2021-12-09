@@ -1,3 +1,4 @@
+import { Box } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
@@ -29,7 +30,7 @@ export function Group({}) {
   });
 
   return (
-    <div className="container-fluid">
+    <Box className="container-fluid">
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -37,9 +38,9 @@ export function Group({}) {
         <Typography color="textPrimary">グループ管理</Typography>
       </AironeBreadcrumbs>
 
-      <div className="row">
-        <div className="col">
-          <div className="float-left">
+      <Box className="row">
+        <Box className="col">
+          <Box className="float-left">
             <CreateButton to={newGroupPath()}>新規作成</CreateButton>
             <Button
               className={classes.button}
@@ -58,12 +59,12 @@ export function Group({}) {
             >
               インポート
             </Button>
-          </div>
-          <div className="float-right"></div>
-        </div>
-      </div>
+          </Box>
+          <Box className="float-right"></Box>
+        </Box>
+      </Box>
 
       {!groups.loading && <GroupList groups={groups.value} />}
-    </div>
+    </Box>
   );
 }

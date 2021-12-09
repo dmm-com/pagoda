@@ -37,7 +37,7 @@ export function AdvancedSearchResults({}) {
   });
 
   return (
-    <div className="container-fluid">
+    <Box className="container-fluid">
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -81,6 +81,6 @@ export function AdvancedSearchResults({}) {
       ) : (
         <Loading />
       )}
-    </div>
+    </Box>
   );
 }
