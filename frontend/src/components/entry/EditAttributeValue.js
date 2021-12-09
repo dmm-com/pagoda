@@ -209,6 +209,7 @@ export function EditAttributeValue({
       );
 
     case djangoContext.attrTypeValue.named_object:
+      console.log("named_object/attrInfo", attrInfo);
       return (
         <ElemNamedObject
           attrId={attrInfo.id}
@@ -261,8 +262,6 @@ export function EditAttributeValue({
       );
 
     case djangoContext.attrTypeValue.array_named_object:
-      console.log("[onix/array_named_object(00)]");
-      console.log(attrInfo);
       return (
         <List>
           {attrInfo.value.map((info, n) => {

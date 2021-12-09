@@ -9,8 +9,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
-import { showEntryPath } from "../../Routes";
 
+import { showEntryPath } from "../../Routes";
 import {
   getAttrReferrals,
   getGroups,
@@ -367,7 +367,10 @@ export function EntryForm({
       // for temporary
       .filter(
         ([attrName, attrValue]) =>
-          attrValue.type === djangoContext.attrTypeValue.string || attrValue.type === djangoContext.attrTypeValue.object
+          attrValue.type === djangoContext.attrTypeValue.string ||
+          attrValue.type === djangoContext.attrTypeValue.object ||
+          attrValue.type === djangoContext.attrTypeValue.named_object ||
+          attrValue.type === djangoContext.attrTypeValue.array_object
       )
       .map(([attrName, attrValue]) => {
         console.log("handleSubmit");
@@ -397,6 +400,57 @@ export function EntryForm({
                   index: String(0),
                 },
               ],
+              referral_key: [],
+            };
+
+          case djangoContext.attrTypeValue.named_object:
+            console.log("named_object/attrValue", attrValue);
+            return {
+              entity_attr_id: String(attrValue.schema_id),
+              id: String(attrValue.id),
+              type: attrValue.type,
+              value: [
+                {
+                  data:
+                    Object.values(attrValue.value)[0].filter(
+                      (x) => x.checked
+                    )[0].id ?? "",
+                  index: String(0),
+                },
+              ],
+              referral_key: [
+                {
+                  data: Object.keys(attrValue.value)[0],
+                  index: String(0),
+                },
+              ],
+              // TODO array_named_entry
+              // value: Object.values(attrValue.value).map((x, index) => {
+              //   return {
+              //     data: x.filter((y) => y.checked)[0].id ?? "",
+              //     index: String(index),
+              //   };
+              // }),
+              // TODO array_named_entry
+              // referral_key: Object.keys(attrValue.value).map((x, index) => {
+              //   return {
+              //     data: x.filter((y) => y.checked)[0].id ?? "",
+              //     index: String(index),
+              //   };
+              // }),
+            };
+
+          case djangoContext.attrTypeValue.array_object:
+            return {
+              entity_attr_id: String(attrValue.schema_id),
+              id: String(attrValue.id),
+              type: attrValue.type,
+              value: attrValue.value.map((x, index) => {
+                return {
+                  data: x.filter((y) => y.checked)[0].id ?? "",
+                  index: index,
+                };
+              }),
               referral_key: [],
             };
         }
