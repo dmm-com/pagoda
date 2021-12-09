@@ -1,7 +1,6 @@
-import { Input, TableCell, TableRow } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
-import RestoreIcon from "@material-ui/icons/Restore";
+import RestoreIcon from "@mui/icons-material/Restore";
+import { Input, TableCell, TableRow, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import PropTypes from "prop-types";
 import React, { useRef, useState } from "react";
 import { Link, useHistory } from "react-router-dom";

@@ -1,4 +1,7 @@
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
+  Box,
+  Button,
   Input,
   List,
   ListItemText,
@@ -9,12 +12,9 @@ import {
   TableCell,
   TableHead,
   TableRow,
-} from "@material-ui/core";
-import Box from "@material-ui/core/Box";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
-import DeleteIcon from "@material-ui/icons/Delete";
+  Typography,
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";

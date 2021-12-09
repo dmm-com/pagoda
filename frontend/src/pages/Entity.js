@@ -1,7 +1,5 @@
-import { Box } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
+import { Box, Button, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";

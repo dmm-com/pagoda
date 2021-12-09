@@ -1,6 +1,4 @@
-import { Box } from "@material-ui/core";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
+import { Box, List, ListItem } from "@mui/material";
 import PropTypes from "prop-types";
 import React from "react";
 

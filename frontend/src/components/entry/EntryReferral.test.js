@@ -6,6 +6,8 @@ import { render } from "@testing-library/react";
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 
+import { TestWrapper } from "../../utils/TestWrapper";
+
 import EntryReferral from "./EntryReferral";
 
 test("should render a component with essential props", function () {
@@ -20,7 +22,8 @@ test("should render a component with essential props", function () {
     render(
       <BrowserRouter>
         <EntryReferral entityId={"1"} referredEntries={referredEntries} />
-      </BrowserRouter>
+      </BrowserRouter>,
+      { wrapper: TestWrapper }
     )
   ).not.toThrow();
 });

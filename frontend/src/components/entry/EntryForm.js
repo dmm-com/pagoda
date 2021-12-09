@@ -1,14 +1,14 @@
 import {
   Box,
+  Button,
   Input,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
-} from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import { makeStyles } from "@material-ui/core/styles";
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";

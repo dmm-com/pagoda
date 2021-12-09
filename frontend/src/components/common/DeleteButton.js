@@ -1,5 +1,5 @@
-import { makeStyles } from "@material-ui/core/styles";
-import DeleteIcon from "@material-ui/icons/Delete";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { makeStyles } from "@mui/styles";
 import PropTypes from "prop-types";
 import React from "react";
 
