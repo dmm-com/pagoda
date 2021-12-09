@@ -80,6 +80,9 @@ function ElemObject({
         onChange={(e) => {
           handleNarrowDownEntries(e, attrId, attrName, attrType);
         }}
+        onClick={(e) => {
+          handleNarrowDownEntries(e, attrId, attrName, attrType);
+        }}
       />
     </Card>
   );
@@ -157,6 +160,9 @@ function ElemGroup({
         text="text"
         placeholder="グループ名で絞り込む"
         onChange={(e) => {
+          handleNarrowDownGroups(e, attrName, attrType);
+        }}
+        onClick={(e) => {
           handleNarrowDownGroups(e, attrName, attrType);
         }}
       />
