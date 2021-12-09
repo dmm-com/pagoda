@@ -354,7 +354,7 @@ export function EntryForm({
       case djangoContext.attrTypeValue.array_named_object:
         attributes[attrName].value = attributes[attrName].value.map((curr) => {
           let attrKey = Object.keys(curr)[0];
-          return { attrKey: _getUpdatedValues(curr[attrKey]) };
+          return { [attrKey]: _getUpdatedValues(curr[attrKey]) };
         });
 
         setAttributes({ ...attributes });
@@ -370,11 +370,10 @@ export function EntryForm({
           attrValue.type === djangoContext.attrTypeValue.string ||
           attrValue.type === djangoContext.attrTypeValue.object ||
           attrValue.type === djangoContext.attrTypeValue.named_object ||
-          attrValue.type === djangoContext.attrTypeValue.array_object
+          attrValue.type === djangoContext.attrTypeValue.array_object ||
+          attrValue.type === djangoContext.attrTypeValue.array_named_object
       )
       .map(([attrName, attrValue]) => {
-        console.log("handleSubmit");
-        console.log(attrValue);
         switch (attrValue.type) {
           case djangoContext.attrTypeValue.string:
             return {
@@ -404,7 +403,6 @@ export function EntryForm({
             };
 
           case djangoContext.attrTypeValue.named_object:
-            console.log("named_object/attrValue", attrValue);
             return {
               entity_attr_id: String(attrValue.schema_id),
               id: String(attrValue.id),
@@ -424,20 +422,25 @@ export function EntryForm({
                   index: String(0),
                 },
               ],
-              // TODO array_named_entry
-              // value: Object.values(attrValue.value).map((x, index) => {
-              //   return {
-              //     data: x.filter((y) => y.checked)[0].id ?? "",
-              //     index: String(index),
-              //   };
-              // }),
-              // TODO array_named_entry
-              // referral_key: Object.keys(attrValue.value).map((x, index) => {
-              //   return {
-              //     data: x.filter((y) => y.checked)[0].id ?? "",
-              //     index: String(index),
-              //   };
-              // }),
+            };
+
+          case djangoContext.attrTypeValue.array_named_object:
+            return {
+              entity_attr_id: String(attrValue.schema_id),
+              id: String(attrValue.id),
+              type: attrValue.type,
+              value: attrValue.value.map((x, index) => {
+                return {
+                  data: Object.values(x)[0].filter((y) => y.checked)[0]?.id ?? "",
+                  index: index,
+                };
+              }),
+              referral_key: attrValue.value.map((x, index) => {
+                return {
+                  data: Object.keys(x)[0],
+                  index: index,
+                };
+              }),
             };
 
           case djangoContext.attrTypeValue.array_object:
