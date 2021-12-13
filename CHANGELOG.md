@@ -10,6 +10,7 @@
 * Fixed an issue where advanced search narrow down was slow (#321)
 * Fixed not being able to use regexp in entry names in the entry search API (#314)
 * Fixed an exception error when specifying an invalid parameter in advanced search (#327)
+* Fixed the order of entities when is_all_entities is specified in advanced search (#330)
 
 ### Refactored
 * Refactored referral param in advanced search (#326)

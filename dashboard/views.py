@@ -202,14 +202,11 @@ def advanced_search_result(request):
             return HttpResponse("Invalid name key value for attrinfo parameter", status=400)
 
     # check entity params
-    hint_entity_ids = []
     if is_all_entities:
         attr_names = [x['name'] for x in hint_attrs]
-        attrs = sum(
-            [list(EntityAttr.objects.filter(name=x, is_active=True)) for x in attr_names], [])
-        hint_entity_ids = list(set([x.parent_entity.id for x in attrs if x and
-                                   user.has_permission(x.parent_entity, ACLType.Readable)]))
-    else:
+        recv_entity = list(EntityAttr.objects.filter(
+            name__in=attr_names, is_active=True, parent_entity__is_active=True
+        ).order_by('parent_entity__name').values_list('parent_entity__id', flat=True).distinct())
         if not recv_entity:
             return HttpResponse("The entity[] parameters are required", status=400)
 

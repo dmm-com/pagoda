@@ -283,16 +283,43 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content.decode('utf-8'), 'Invalid entity ID is specified')
 
+        # test to show advanced_search_result page with large param
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'entity[]': [Entity.objects.get(name='Entity1').id],
+            'entry_name': 'a' * 250
+        })
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Sending parameter is too large')
+
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'entity[]': [Entity.objects.get(name='Entity1').id],
+            'attrinfo': json.dumps([{'name': 'attr', 'keyword': 'a' * 250}]),
+        })
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'), 'Sending parameter is too large')
+
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'entity[]': [Entity.objects.get(name='Entity1').id],
+            'entry_name': 'a' * 249
+        })
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
+            'entity[]': [Entity.objects.get(name='Entity1').id],
+            'attrinfo': json.dumps([{'name': 'attr', 'keyword': 'a' * 249}]),
+        })
+        self.assertEqual(resp.status_code, 200)
+
         # test to show advanced_search_result page with is_all_entries param
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
             'attrinfo': json.dumps([{'name': 'attr'}]),
             'is_all_entities': 'true',
         })
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(sorted(resp.context['entities'].split(',')),
-                         sorted([str(Entity.objects.get(name='entity-%d' % i).id)
-                                 for i in range(2)]))
+        self.assertEqual(resp.context['entities'].split(','),
+                         [str(Entity.objects.get(name='entity-%d' % i).id) for i in range(2)])
         self.assertEqual(resp.context['results']['ret_count'], 20)
+        self.assertEqual(resp.context['is_all_entities'], True)
 
         # test to show advanced_search_result page with entry_name param
         resp = self.client.get(reverse('dashboard:advanced_search_result'), {
