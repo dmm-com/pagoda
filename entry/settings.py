@@ -7,7 +7,7 @@ CONFIG = Settings({
         'MAX_LABEL_STRING': 45,
     },
     'MAX_HISTORY_COUNT': 10,
-    'MAX_QUERY_SIZE': 512,
+    'MAX_QUERY_SIZE': 249,  # '.*' + '[aA]'*249 + '.*' = 1000
     'EMPTY_SEARCH_CHARACTER': '\\',
     'EMPTY_SEARCH_CHARACTER_CODE': chr(165),
     'AND_SEARCH_CHARACTER': '&',

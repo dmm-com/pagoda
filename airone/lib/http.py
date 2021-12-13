@@ -220,6 +220,10 @@ def _is_valid(params, meta_info):
         return False
     # These are value checks of each parameters
     for _meta in meta_info:
+        # Skip no value
+        if 'omittable' in _meta and _meta['name'] not in params:
+            continue
+
         # The case specified value is str
         if (_meta['type'] == str and 'checker' in _meta and not _meta['checker'](params)):
             return False

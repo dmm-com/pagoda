@@ -18,6 +18,7 @@ from entity.admin import EntityResource, EntityAttrResource
 from entry.admin import EntryResource, AttrResource, AttrValueResource
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, AttributeValue
+from entry.settings import CONFIG as CONFIG_ENTRY
 from job.models import Job
 from user.models import User
 from .settings import CONFIG
@@ -174,7 +175,11 @@ def advanced_search_result(request):
     has_referral = request.GET.get('has_referral') == 'true'
     referral_name = request.GET.get('referral_name')
     attrinfo = request.GET.get('attrinfo')
-    entry_name = request.GET.get('entry_name')
+    entry_name = request.GET.get('entry_name', '')
+
+    # forbid to input large size request
+    if len(entry_name) > CONFIG_ENTRY.MAX_QUERY_SIZE:
+        return HttpResponse("Sending parameter is too large", status=400)
 
     # check referral params
     # # process of converting older param for backward compatibility
@@ -196,10 +201,16 @@ def advanced_search_result(request):
         except json.JSONDecodeError:
             return HttpResponse("The attrinfo parameter is not JSON", status=400)
 
-        if not all(['name' in x for x in hint_attrs]):
-            return HttpResponse("The name key is required for attrinfo parameter", status=400)
-        if not all([isinstance(x['name'], str) for x in hint_attrs]):
-            return HttpResponse("Invalid name key value for attrinfo parameter", status=400)
+        for hint_attr in hint_attrs:
+            if 'name' not in hint_attr:
+                return HttpResponse("The name key is required for attrinfo parameter", status=400)
+            if not isinstance(hint_attr['name'], str):
+                return HttpResponse("Invalid value for attrinfo parameter", status=400)
+            if 'keyword' in hint_attr:
+                if not isinstance(hint_attr['keyword'], str):
+                    return HttpResponse("Invalid value for attrinfo parameter", status=400)
+                if len(hint_attr['keyword']) > CONFIG_ENTRY.MAX_QUERY_SIZE:
+                    return HttpResponse("Sending parameter is too large", status=400)
 
     # check entity params
     if is_all_entities:
@@ -208,17 +219,21 @@ def advanced_search_result(request):
             name__in=attr_names, is_active=True, parent_entity__is_active=True
         ).order_by('parent_entity__name').values_list('parent_entity__id', flat=True).distinct())
         if not recv_entity:
-            return HttpResponse("The entity[] parameters are required", status=400)
+            return HttpResponse("Invalid value for attribute parameter", status=400)
 
-        for entity_id in recv_entity:
-            if not entity_id.isnumeric():
-                return HttpResponse("Invalid entity ID is specified", status=400)
-            entity = Entity.objects.filter(id=entity_id, is_active=True).first()
-            if not entity:
-                return HttpResponse("Invalid entity ID is specified", status=400)
+    if not recv_entity:
+        return HttpResponse("The entity[] parameters are required", status=400)
 
-            if user.has_permission(entity, ACLType.Readable):
-                hint_entity_ids.append(entity.id)
+    hint_entity_ids = []
+    for entity_id in recv_entity:
+        if not isinstance(entity_id, int) and not entity_id.isnumeric():
+            return HttpResponse("Invalid entity ID is specified", status=400)
+        entity = Entity.objects.filter(id=entity_id, is_active=True).first()
+        if not entity:
+            return HttpResponse("Invalid entity ID is specified", status=400)
+
+        if user.has_permission(entity, ACLType.Readable):
+            hint_entity_ids.append(entity.id)
 
     return render(request, 'advanced_search_result.html', {
         'hint_attrs': hint_attrs,
@@ -244,18 +259,17 @@ def advanced_search_result(request):
          Entity.objects.filter(id=y) for y in x['entities']])},
     {'name': 'attrinfo', 'type': list, 'meta': [
         {'name': 'name', 'type': str},
-        {'name': 'keyword', 'type': str, 'omittable': True}
+        {'name': 'keyword', 'type': str, 'omittable': True,
+         'checker': lambda x: len(x['keyword']) <= CONFIG_ENTRY.MAX_QUERY_SIZE}
     ]},
     {'name': 'has_referral', 'type': bool, 'omittable': True},
     {'name': 'referral_name', 'type': str, 'omittable': True},
-    {'name': 'entry_name', 'type': str, 'omittable': True},
-    {'name': 'export_style', 'type': str},
+    {'name': 'entry_name', 'type': str, 'omittable': True,
+     'checker': lambda x: len(x['entry_name']) <= CONFIG_ENTRY.MAX_QUERY_SIZE},
+    {'name': 'export_style', 'type': str,
+     'checker': lambda x: x['export_style'] == 'yaml' or x['export_style'] == 'csv'},
 ])
 def export_search_result(request, recv_data):
-    # additional validation
-    if recv_data['export_style'] != 'yaml' and recv_data['export_style'] != 'csv':
-        return HttpResponse('Invalid "export_type" is specified', status=400)
-
     user = User.objects.get(id=request.user.id)
 
     # check whether same job is sent
