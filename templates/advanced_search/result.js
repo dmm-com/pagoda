@@ -334,7 +334,7 @@ $(document).ready(function() {
 
     if ($('#modal_cond_add_referral').is(':checked')){
       params.push('has_referral=true');
-      params.push(`referral_name=${$('.narrow_down_referral').val() ?? ''}`);
+      params.push(`referral_name=${$('.narrow_down_referral').val() || ''}`);
     }
 
     location.href = `/dashboard/advanced_search_result?${ params.join('&') }`;
