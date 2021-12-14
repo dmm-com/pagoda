@@ -244,8 +244,10 @@ export function EntryForm({
   };
 
   const handleClickDeleteListItem = (e, attrName, index) => {
-    console.log("handleClickDeleteListItem attrName", attrName);
-    console.log("handleClickDeleteListItem index", index);
+    if (index !== undefined) {
+      attributes[attrName].value.splice(index, 1);
+      setAttributes({ ...attributes });
+    }
   };
 
   const handleNarrowDownGroups = async (e, attrName, attrType) => {

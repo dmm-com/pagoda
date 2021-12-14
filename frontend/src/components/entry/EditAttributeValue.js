@@ -2,8 +2,8 @@ import { Button } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
 import Card from "@material-ui/core/Card";
 import Checkbox from "@material-ui/core/Checkbox";
-import Grid from "@material-ui/core/Grid";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Grid from "@material-ui/core/Grid";
 import Input from "@material-ui/core/Input";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -14,19 +14,40 @@ import React from "react";
 
 import { DjangoContext } from "../../utils/DjangoContext";
 
-function ElemString({ attrName, attrValue, attrType, index, handleChange }) {
+function ElemString({
+  attrName,
+  attrValue,
+  attrType,
+  index,
+  handleChange,
+  handleClickDeleteListItem,
+}) {
   return (
-    <Input
-      type="text"
-      value={attrValue}
-      onChange={(e) =>
-        handleChange(e, attrName, {
-          type: attrType,
-          index: index,
-          value: e.target.value,
-        })
-      }
-    />
+    <Grid container>
+      <Grid item>
+        <Input
+          type="text"
+          value={attrValue}
+          onChange={(e) =>
+            handleChange(e, attrName, {
+              type: attrType,
+              index: index,
+              value: e.target.value,
+            })
+          }
+        />
+      </Grid>
+      {index !== undefined && (
+        <Grid item>
+          <Button
+            variant="outlined"
+            onClick={(e) => handleClickDeleteListItem(e, attrName, index)}
+          >
+            del
+          </Button>
+        </Grid>
+      )}
+    </Grid>
   );
 }
 
@@ -91,14 +112,16 @@ function ElemObject({
           />
         </Card>
       </Grid>
-      <Grid item>
-        <Button
-          variant="outlined"
-          onClick={(e) => handleClickDeleteListItem(e, attrName, index)}
-        >
-          del
-        </Button>
-      </Grid>
+      {index !== undefined && (
+        <Grid item>
+          <Button
+            variant="outlined"
+            onClick={(e) => handleClickDeleteListItem(e, attrName, index)}
+          >
+            del
+          </Button>
+        </Grid>
+      )}
     </Grid>
   );
 }
@@ -148,42 +171,57 @@ function ElemGroup({
   index,
   handleChange,
   handleNarrowDownGroups,
+  handleClickDeleteListItem,
 }) {
   //  return <a href={groupsPath()}>{attrValue.name}</a>;
   return (
-    <Card variant="outlined">
-      <RadioGroup aria-label="group" name="radio-buttons-group">
-        {attrValue.map((value) => {
-          return (
-            <FormControlLabel
-              key={value.id}
-              control={<Radio checked={value.checked} />}
-              label={value.name}
-              onChange={(e) =>
-                handleChange(e, attrName, {
-                  type: attrType,
-                  index: index,
-                  id: value.id,
-                  name: value.name,
-                  checked: e.target.checked,
-                })
-              }
-            />
-          );
-        })}
-      </RadioGroup>
+    <Grid container>
+      <Grid item>
+        <Card variant="outlined">
+          <RadioGroup aria-label="group" name="radio-buttons-group">
+            {attrValue.map((value) => {
+              return (
+                <FormControlLabel
+                  key={value.id}
+                  control={<Radio checked={value.checked} />}
+                  label={value.name}
+                  onChange={(e) =>
+                    handleChange(e, attrName, {
+                      type: attrType,
+                      index: index,
+                      id: value.id,
+                      name: value.name,
+                      checked: e.target.checked,
+                    })
+                  }
+                />
+              );
+            })}
+          </RadioGroup>
 
-      <Input
-        text="text"
-        placeholder="グループ名で絞り込む"
-        onChange={(e) => {
-          handleNarrowDownGroups(e, attrName, attrType);
-        }}
-        onClick={(e) => {
-          handleNarrowDownGroups(e, attrName, attrType);
-        }}
-      />
-    </Card>
+          <Input
+            text="text"
+            placeholder="グループ名で絞り込む"
+            onChange={(e) => {
+              handleNarrowDownGroups(e, attrName, attrType);
+            }}
+            onClick={(e) => {
+              handleNarrowDownGroups(e, attrName, attrType);
+            }}
+          />
+        </Card>
+      </Grid>
+      {handleClickDeleteListItem && (
+        <Grid item>
+          <Button
+            variant="outlined"
+            onClick={(e) => handleClickDeleteListItem(e, attrName, index)}
+          >
+            del
+          </Button>
+        </Grid>
+      )}
+    </Grid>
   );
 }
 
@@ -238,6 +276,7 @@ export function EditAttributeValue({
           attrValue={attrInfo.value}
           attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
+          handleClickDeleteListItem={handleClickDeleteListItem}
         />
       );
 
@@ -305,6 +344,7 @@ export function EditAttributeValue({
                     attrType={attrInfo.type}
                     index={n}
                     handleChange={handleChangeAttribute}
+                    handleClickDeleteListItem={handleClickDeleteListItem}
                   />
                 </ListItem>
               );
@@ -346,22 +386,32 @@ export function EditAttributeValue({
 
     case djangoContext.attrTypeValue.array_group:
       return (
-        <List>
-          {attrInfo.value.map((info, n) => {
-            return (
-              <ListItem key={n}>
-                <ElemGroup
-                  attrName={attrName}
-                  attrValue={info}
-                  attrType={attrInfo.type}
-                  index={n}
-                  handleChange={handleChangeAttribute}
-                  handleNarrowDownGroups={handleNarrowDownGroups}
-                />
-              </ListItem>
-            );
-          })}
-        </List>
+        <Box>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={(e) => handleClickAddListItem(e, [])}
+          >
+            add
+          </Button>
+          <List>
+            {attrInfo.value.map((info, n) => {
+              return (
+                <ListItem key={n}>
+                  <ElemGroup
+                    attrName={attrName}
+                    attrValue={info}
+                    attrType={attrInfo.type}
+                    index={n}
+                    handleChange={handleChangeAttribute}
+                    handleNarrowDownGroups={handleNarrowDownGroups}
+                    handleClickDeleteListItem={handleClickDeleteListItem}
+                  />
+                </ListItem>
+              );
+            })}
+          </List>
+        </Box>
       );
 
     case djangoContext.attrTypeValue.group:
