@@ -163,9 +163,8 @@ export function EntryForm({
       case djangoContext.attrTypeValue.array_object:
       case djangoContext.attrTypeValue.array_group:
         // In this case, new blank co-Attribute value will be added
-        if(valueInfo.index >= attributes[name].value.length) {
+        if (valueInfo.index >= attributes[name].value.length) {
           attributes[name].value.push(valueInfo.value);
-
         } else {
           attributes[name].value[valueInfo.index] = attributes[name].value[
             valueInfo.index
@@ -200,9 +199,8 @@ export function EntryForm({
 
       case djangoContext.attrTypeValue.array_named_object:
         // In this case, new blank co-Attribute value will be added
-        if(valueInfo.index >= attributes[name].value.length) {
+        if (valueInfo.index >= attributes[name].value.length) {
           attributes[name].value.push(valueInfo.value);
-
         } else {
           if (event.target.type === "text") {
             attributes[name].value[valueInfo.index] = {
@@ -213,19 +211,17 @@ export function EntryForm({
           }
           if (event.target.type === "radio") {
             const key = Object.keys(attributes[name].value[valueInfo.index])[0];
-            attributes[name].value[valueInfo.index][key] = attributes[name].value[
-              valueInfo.index
-            ][key].map((x) => {
+            attributes[name].value[valueInfo.index][key] = attributes[
+              name
+            ].value[valueInfo.index][key].map((x) => {
               return {
                 ...x,
-                checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+                checked:
+                  x.id == valueInfo.id && valueInfo.checked ? true : false,
               };
             });
           }
-
-
         }
-
 
         setAttributes({ ...attributes });
         break;
@@ -245,6 +241,11 @@ export function EntryForm({
         setAttributes({ ...attributes });
         break;
     }
+  };
+
+  const handleClickDeleteListItem = (e, attrName, index) => {
+    console.log("handleClickDeleteListItem attrName", attrName);
+    console.log("handleClickDeleteListItem index", index);
   };
 
   const handleNarrowDownGroups = async (e, attrName, attrType) => {
@@ -271,8 +272,6 @@ export function EntryForm({
           };
         });
     }
-
-    // TODO delete handler?
 
     switch (attrType) {
       case djangoContext.attrTypeValue.group:
@@ -515,6 +514,7 @@ export function EntryForm({
                   handleChangeAttribute={handleChangeAttribute}
                   handleNarrowDownEntries={handleNarrowDownEntries}
                   handleNarrowDownGroups={handleNarrowDownGroups}
+                  handleClickDeleteListItem={handleClickDeleteListItem}
                 />
               </TableCell>
             </TableRow>
