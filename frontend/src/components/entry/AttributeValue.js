@@ -1,4 +1,5 @@
 import Checkbox from "@material-ui/core/Checkbox";
+import { Box } from "@material-ui/core";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import PropTypes from "prop-types";
@@ -40,10 +41,10 @@ function ElemNamedObject({ attrValue }) {
 
   const key = Object.keys(attrValue)[0];
   return (
-    <div>
-      <div>{key}</div>:{" "}
+    <Box>
+      <Box>{key}</Box>:{" "}
       <a href={showEntryPath(attrValue[key].id)}>{attrValue[key].name}</a>
-    </div>
+    </Box>
   );
 }
 

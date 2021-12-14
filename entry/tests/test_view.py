@@ -1610,21 +1610,21 @@ class ViewTest(AironeViewTest):
 
         entry = Entry.objects.get(name='entry1')
         test_params = [{
-            'user': admin, 'permission': ACLType.Writable, 'attrs': [
-                {'name': 'attr0', 'permission': True, 'last_value': 'hoge'},
-                {'name': 'attr1', 'permission': True, 'last_value': 'fuga'}]}, {
-            'user': user, 'permission': ACLType.Readable, 'attrs': [
-                {'name': 'attr0', 'permission': True, 'last_value': 'hoge'},
-                {'name': 'attr1', 'permission': True, 'last_value': 'fuga'}]}, {
-            'user': user, 'permission': ACLType.Writable, 'attrs': [
-                {'name': 'attr0', 'permission': False, 'last_value': ''},
-                {'name': 'attr1', 'permission': True, 'last_value': 'fuga'}]
+            'user': admin, 'is_readble': ACLType.Writable, 'attrs': [
+                {'name': 'attr0', 'is_readble': True, 'last_value': 'hoge'},
+                {'name': 'attr1', 'is_readble': True, 'last_value': 'fuga'}]}, {
+            'user': user, 'is_readble': ACLType.Readable, 'attrs': [
+                {'name': 'attr0', 'is_readble': True, 'last_value': 'hoge'},
+                {'name': 'attr1', 'is_readble': True, 'last_value': 'fuga'}]}, {
+            'user': user, 'is_readble': ACLType.Writable, 'attrs': [
+                {'name': 'attr0', 'is_readble': False, 'last_value': ''},
+                {'name': 'attr1', 'is_readble': True, 'last_value': 'fuga'}]
         }]
         for test_param in test_params:
-            context = entry.get_available_attrs(test_param['user'], test_param['permission'])
+            context = entry.get_available_attrs(test_param['user'], test_param['is_readble'])
             for index, test_param_attr in enumerate(test_param['attrs']):
                 self.assertEqual(context[index]['name'], test_param_attr['name'])
-                self.assertEqual(context[index]['permission'], test_param_attr['permission'])
+                self.assertEqual(context[index]['is_readble'], test_param_attr['is_readble'])
                 self.assertEqual(context[index]['last_value'], test_param_attr['last_value'])
 
     @patch('entry.tasks.create_entry_attrs.delay', Mock(side_effect=tasks.create_entry_attrs))
@@ -3419,7 +3419,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(attrv1.get_value(), attr.get_latest_value().get_value())
 
-        resp = Entry.search_entries(user, [entity.id])
+        resp = Entry.search_entries(user, [entity.id], [], is_output_all=True)
         self.assertEqual(resp['ret_count'], 1)
         for attr_name, data in resp['ret_values'][0]['attrs'].items():
             self.assertEqual(data['type'], attr_info[attr_name]['type'])
@@ -3789,7 +3789,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(ref_entry.name, 'changed_name')
 
         # check entry changing reflects to the ElasticSearch
-        ret = Entry.search_entries(user, [entity.id])
+        ret = Entry.search_entries(user, [entity.id], [{'name': 'ref'}])
         self.assertEqual(ret['ret_count'], 1)
         self.assertEqual(ret['ret_values'][0]['entry']['name'], 'entry')
         self.assertEqual(ret['ret_values'][0]['attrs']['ref']['value']['name'], 'changed_name')

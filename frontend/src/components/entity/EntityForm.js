@@ -1,4 +1,5 @@
 import {
+  Input,
   List,
   ListItemText,
   MenuItem,
@@ -153,10 +154,10 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="container-fluid">
-        <div className="row">
-          <div className="col">
-            <div className="float-right">
+      <Box className="container-fluid">
+        <Box className="row">
+          <Box className="col">
+            <Box className="float-right">
               <Button
                 className={classes.button}
                 type="submit"
@@ -165,13 +166,13 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
               >
                 保存
               </Button>
-            </div>
+            </Box>
             <Table className="table table-bordered">
               <TableBody>
                 <TableRow>
                   <TableCell>エンティティ名</TableCell>
                   <TableCell>
-                    <input
+                    <Input
                       type="text"
                       name="name"
                       value={name}
@@ -182,7 +183,7 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
                 <TableRow>
                   <TableCell>備考</TableCell>
                   <TableCell>
-                    <input
+                    <Input
                       type="text"
                       name="note"
                       size="50"
@@ -194,7 +195,7 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
                 <TableRow>
                   <TableCell>サイドバーに表示</TableCell>
                   <TableCell>
-                    <input
+                    <Input
                       type="checkbox"
                       checked={isTopLevel}
                       onChange={(e) => setIsTopLevel(e.target.checked)}
@@ -218,7 +219,7 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
                 {attributes.map((attr, index) => (
                   <TableRow key={index} className="attr">
                     <TableCell>
-                      <input
+                      <Input
                         type="text"
                         className="attr_name"
                         value={attr.name}
@@ -291,7 +292,7 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
                     </TableCell>
 
                     <TableCell>
-                      <div>
+                      <Box>
                         <input
                           type="checkbox"
                           checked={attr.is_mandatory}
@@ -304,9 +305,9 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
                           }
                         />
                         必須
-                      </div>
-                      <div>
-                        <input
+                      </Box>
+                      <Box>
+                        <Input
                           type="checkbox"
                           checked={attr.is_delete_in_chain}
                           onChange={(e) =>
@@ -318,7 +319,7 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
                           }
                         />
                         関連削除
-                      </div>
+                      </Box>
                     </TableCell>
 
                     <TableCell>
@@ -336,11 +337,11 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
                 ))}
               </TableBody>
             </Table>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
-        <div className="row">
-          <div className="col">
+        <Box className="row">
+          <Box className="col">
             <Button
               className={classes.button}
               variant="outlined"
@@ -349,9 +350,9 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
             >
               属性追加
             </Button>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
     </form>
   );
 }

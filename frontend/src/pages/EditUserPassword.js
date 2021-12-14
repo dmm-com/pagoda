@@ -1,3 +1,4 @@
+import { Box } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { Link, useParams } from "react-router-dom";
@@ -17,7 +18,7 @@ export function EditUserPassword({}) {
   });
 
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -34,6 +35,6 @@ export function EditUserPassword({}) {
           asSuperuser={django_context.user.is_superuser}
         />
       )}
-    </div>
+    </Box>
   );
 }

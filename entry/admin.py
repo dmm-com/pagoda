@@ -75,6 +75,7 @@ class AttrValueResource(AironeModelResource):
 
             instance.save(update_fields=['is_latest', 'data_type', 'parent_attrv'])
             self._saved_instance = instance
+            attr.parent_entry.register_es()
 
     @classmethod
     def after_import_completion(self, results):
@@ -89,6 +90,8 @@ class AttrValueResource(AironeModelResource):
 
                     # append related AttributeValue if it's not existed
                     attr_value.data_array.add(AttributeValue.objects.get(id=child_id))
+
+            attr_value.parent_attr.parent_entry.register_es()
 
 
 class AttrResource(AironeModelResource):
@@ -122,6 +125,7 @@ class AttrResource(AironeModelResource):
 
             if not entry.attrs.filter(id=instance.id).exists():
                 entry.attrs.add(instance)
+                entry.register_es()
 
 
 class EntryResource(AironeModelResource):

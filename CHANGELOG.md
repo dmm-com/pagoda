@@ -7,7 +7,44 @@
 ### Changed
 
 ### Fixed
+* Fixed an issue where advanced search narrow down was slow (#321)
+* Fixed not being able to use regexp in entry names in the entry search API (#314)
+* Fixed an exception error when specifying an invalid parameter in advanced search (#327)
+* Fixed the order of entities when is_all_entities is specified in advanced search (#330)
+
+### Refactored
+* Refactored referral param in advanced search (#326)
+
+## v3.4.1
+
+## Fixed
+* Fixed an error when specifying old parameters in advanced search (#323)
+* Fixed different count of ret_values in advanced search results (#324)
+
+## v3.4.0
+
+### Added
+* Added param of editting user for ldap (#256)
+* Added attach referring entries on yaml export
+* (WIP) Added a new UI in React
+
+### Changed
+* Changed redirect authenticated users to the top page
+* Changed cookie of session to secure attribute, and to return HSTS header (#257)
+
+### Fixed
+* Fixed that the entry being created cannot be deleted (#242)
+* Fixed update history of TOP page (#258)
+* Fixed unused URL settings (#278)
+* Fixed Escape \ on ES query
+* Fixed a missing null check on the deleted list entry page
 * Fixed an issue that caused redirects by incorrect URL links
+* Fixed implementation for ACL inheritance for Attribute
+* Fixed no permission check in advanced search and simple search(#282)
+* Fixed a different number of entries displayed on the entity dashboard (#308)
+
+### Refactored
+* Refactored the entry list page
 
 ## v3.3.1
 
@@ -19,7 +56,6 @@
 ### Added
 * Added the django-replicated library (#166)
 * Added job function that cannot be canceled (#199)
-* Added param of editting user for ldap (#256)
 
 ### Changed
 * Changed to remove complement_attrs when requesting show entry page (#166)
@@ -28,17 +64,10 @@
 * Changed not to create tokens with GET user.access_token API (#166)
 * Changed the behavior of token refresh (#208)
 * Upgrade Django version from v3.2.4 to v3.2.5 (#254)
-* Changed cookie of session to secure attribute, and to return HSTS header (#257)
 
 ### Fixed
 * Fixed the problem that the URL of Webhook API is different (#202)
 * Fixed some attributes are not updated in advanced search results (#230)
-* Fixed that the entry being created cannot be deleted (#242)
-* Fixed update history of TOP page (#258)
-* Fixed unused URL settings (#278)
-
-### Refactored
-* Refactored the entry list page
 
 ## v3.2.0
 

@@ -16,7 +16,8 @@ from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeText
 from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
 from airone.lib.types import AttrTypeValue, AttrDefaultValue
 from airone.lib.elasticsearch import (
-    ESS, make_query, execute_query, make_search_results, is_date_check)
+    ESS, make_query, make_query_for_simple, execute_query,
+    make_search_results, make_search_results_for_simple, is_date_check)
 from airone.lib import auto_complement
 
 from .settings import CONFIG
@@ -993,19 +994,7 @@ class Entry(ACLBase):
         attr = Attribute.objects.create(name=base.name,
                                         schema=base,
                                         created_user=request_user,
-                                        parent_entry=self,
-                                        is_public=base.is_public,
-                                        default_permission=base.default_permission)
-
-        # inherits permissions of base object for user
-        [[user.permissions.add(getattr(attr, permission.name))
-            for permission in user.get_acls(base)]
-            for user in User.objects.filter(is_active=True)]
-
-        # inherits permissions of base object for each groups
-        [[group.permissions.add(getattr(attr, permission.name))
-            for permission in group.get_acls(base)]
-            for group in Group.objects.all()]
+                                        parent_entry=self)
 
         self.attrs.add(attr)
 
@@ -1099,20 +1088,20 @@ class Entry(ACLBase):
             attrinfo['type'] = entity_attr.type
             attrinfo['is_mandatory'] = entity_attr.is_mandatory
             attrinfo['index'] = entity_attr.index
-            attrinfo['permission'] = True
+            attrinfo['is_readble'] = True
             attrinfo['last_value'] = AttrDefaultValue[entity_attr.type]
 
             # check that attribute exists
             attr = self.attrs.filter(is_active=True, schema=entity_attr).first()
             if not attr:
-                attrinfo['permission'] = user.has_permission(entity_attr, permission)
+                attrinfo['is_readble'] = user.has_permission(entity_attr, permission)
                 ret_attrs.append(attrinfo)
                 continue
             attrinfo['id'] = attr.id
 
             # check permission of attributes
             if not user.has_permission(attr, permission):
-                attrinfo['permission'] = False
+                attrinfo['is_readble'] = False
                 ret_attrs.append(attrinfo)
                 continue
 
@@ -1301,13 +1290,16 @@ class Entry(ACLBase):
                 value = value[:-1]
             return value
 
-        def _set_attrinfo(attr, attrv, container, is_recursive=False):
+        def _set_attrinfo(entity_attr, attr, attrv, container, is_recursive=False):
             attrinfo = {
-                'name': attr.name,
-                'type': attr.type,
+                'name': entity_attr.name,
+                'type': entity_attr.type,
                 'key': '',
                 'value': '',
                 'referral_id': '',
+                'is_readble': True if (
+                    not attr or attr.is_public or attr.default_permission >= ACLType.Readable.id
+                ) else False
             }
 
             # Convert data format for mapping of Elasticsearch according to the data type
@@ -1315,7 +1307,8 @@ class Entry(ACLBase):
                 # This is the processing to be safe even if the empty AttributeValue was passed.
                 pass
 
-            elif (attr.type & AttrTypeValue['string'] or attr.type & AttrTypeValue['text']):
+            elif (entity_attr.type & AttrTypeValue['string'] or
+                  entity_attr.type & AttrTypeValue['text']):
                 # When the value was date format, Elasticsearch detect it date type
                 # automatically. This processing explicitly set value to the date typed
                 # parameter.
@@ -1325,25 +1318,25 @@ class Entry(ACLBase):
                 else:
                     attrinfo['value'] = truncate(attrv.value)
 
-            elif attr.type & AttrTypeValue['boolean']:
+            elif entity_attr.type & AttrTypeValue['boolean']:
                 attrinfo['value'] = str(attrv.boolean)
 
-            elif attr.type & AttrTypeValue['date']:
+            elif entity_attr.type & AttrTypeValue['date']:
                 attrinfo['date_value'] = attrv.date
 
-            elif attr.type & AttrTypeValue['named']:
+            elif entity_attr.type & AttrTypeValue['named']:
                 attrinfo['key'] = attrv.value
 
                 if attrv.referral and attrv.referral.is_active:
                     attrinfo['value'] = truncate(attrv.referral.name)
                     attrinfo['referral_id'] = attrv.referral.id
 
-            elif attr.type & AttrTypeValue['object']:
+            elif entity_attr.type & AttrTypeValue['object']:
                 if attrv.referral and attrv.referral.is_active:
                     attrinfo['value'] = truncate(attrv.referral.name)
                     attrinfo['referral_id'] = attrv.referral.id
 
-            elif attr.type & AttrTypeValue['group']:
+            elif entity_attr.type & AttrTypeValue['group']:
                 if attrv.value:
                     group = Group.objects.filter(id=attrv.value, is_active=True).first()
                     if group:
@@ -1351,22 +1344,27 @@ class Entry(ACLBase):
                         attrinfo['referral_id'] = group.id
 
             # Basically register attribute information whatever value doesn't exist
-            if not (attr.type & AttrTypeValue['array'] and not is_recursive):
+            if not (entity_attr.type & AttrTypeValue['array'] and not is_recursive):
                 container.append(attrinfo)
 
-            elif attr.type & AttrTypeValue['array'] and not is_recursive and attrv is not None:
+            elif (entity_attr.type & AttrTypeValue['array'] and
+                  not is_recursive and attrv is not None):
                 # Here is the case of parent array, set each child values
-                [_set_attrinfo(attr, x, container, True) for x in attrv.data_array.all()]
+                [_set_attrinfo(entity_attr, attr, x, container, True)
+                 for x in attrv.data_array.all()]
 
                 # If there is no value in container,
                 # this set blank value for maching blank search request
-                if not [x for x in container if x['name'] == attr.name]:
+                if not [x for x in container if x['name'] == entity_attr.name]:
                     container.append(attrinfo)
 
         document = {
             'entity': {'id': self.schema.id, 'name': self.schema.name},
             'name': self.name,
             'attr': [],
+            'is_readble': True if (
+                self.is_public or self.default_permission >= ACLType.Readable.id
+            ) else False
         }
 
         # The reason why this is a beat around the bush processing is for the case that Attibutes
@@ -1376,11 +1374,11 @@ class Entry(ACLBase):
         for entity_attr in self.schema.attrs.filter(is_active=True):
             attrv = None
 
-            attr = self.attrs.filter(schema=entity_attr, is_active=True)
+            attr = self.attrs.filter(schema=entity_attr, is_active=True).first()
             if attr:
-                attrv = attr.first().get_latest_value()
+                attrv = attr.get_latest_value()
 
-            _set_attrinfo(entity_attr, attrv, document['attr'])
+            _set_attrinfo(entity_attr, attr, attrv, document['attr'])
 
         return document
 
@@ -1441,14 +1439,14 @@ class Entry(ACLBase):
         return ret_values
 
     @classmethod
-    def search_entries(kls, user, hint_entity_ids, hint_attrs=[], limit=CONFIG.MAX_LIST_ENTRIES,
-                       entry_name=None, or_match=False, hint_referral=False, hint_attr_value=None):
-        """Main method called from simple search and advanced search.
+    def search_entries(kls, user, hint_entity_ids, hint_attrs=None, limit=CONFIG.MAX_LIST_ENTRIES,
+                       entry_name=None, hint_referral=False, is_output_all=False):
+        """Main method called from advanced search.
 
         Do the following:
         1. Create a query for Elasticsearch search. (make_query)
         2. Execute the created query. (execute_query)
-        3. Search the reference entry,
+        3. Search the reference entry, Check permissions,
            process the search results, and return. (make_search_results)
 
         Args:
@@ -1459,28 +1457,133 @@ class Entry(ACLBase):
             limit (int): Defaults to 100.
                 Maximum number of search results to return
             entry_name (str): Search string for entry name
-            or_match (bool): Defaults to False.
-                Flag to determine whether the simple search or advanced search is called
             hint_referral (str): Defaults to False.
                 Input value used to refine the reference entry.
                 Use only for advanced searches.
+            is_output_all (bool): Defaults to False.
+                Flag to output all attribute values.
 
         Returns:
-            dict[str, str]: As a result of the search,
+            dict[str, any]: As a result of the search,
                 the acquired entry and the attribute value of the entry are returned.
+            {
+                'ret_count': (int),
+                'ret_values': [
+                    'entity': {'id': (int), 'name': (str)},
+                    'entry': {'id': (int), 'name': (str)},
+                    'attrs': {
+                        'Name of Attribute': {
+                            'type': (int),
+                            'value': (any),
+                            'is_readble': (bool),
+                        }
+                    }
+                    'is_readble': (bool),
+                ],
+            }
+        """
+        if not hint_attrs:
+            hint_attrs = []
+
+        results = {
+            'ret_count': 0,
+            'ret_values': [],
+        }
+        for hint_entity_id in hint_entity_ids:
+            # Check for has permission to Entity
+            entity = Entity.objects.filter(id=hint_entity_id, is_active=True).first()
+            if not (entity and user.has_permission(entity, ACLType.Readable)):
+                continue
+
+            # Check for has permission to EntityAttr
+            for hint_attr in hint_attrs:
+                if 'name' not in hint_attr:
+                    continue
+
+                hint_entity_attr = entity.attrs.filter(name=hint_attr['name'],
+                                                       is_active=True).first()
+                hint_attr['is_readble'] = True if (
+                    hint_entity_attr and user.has_permission(hint_entity_attr, ACLType.Readable)
+                ) else False
+
+            # make query for elasticsearch to retrieve data user wants
+            query = make_query(entity, hint_attrs, entry_name)
+
+            # sending request to elasticsearch with making query
+            resp = execute_query(query)
+
+            if 'status' in resp and resp['status'] == 404:
+                continue
+
+            # Check for has permission to EntityAttr, when is_output_all flag
+            if is_output_all:
+                for entity_attr in entity.attrs.filter(is_active=True):
+                    if entity_attr.name not in [x['name'] for x in hint_attrs if 'name' in x]:
+                        hint_attrs.append({
+                            'name': entity_attr.name,
+                            'is_readble': True if (
+                                user.has_permission(entity_attr, ACLType.Readable)) else False
+                        })
+
+            # retrieve data from database on the basis of the result of elasticsearch
+            search_result = make_search_results(user, resp, hint_attrs, limit, hint_referral)
+            results['ret_count'] += search_result['ret_count']
+            results['ret_values'].extend(search_result['ret_values'])
+            limit -= search_result['ret_count']
+
+        return results
+
+    @classmethod
+    def search_entries_for_simple(kls, hint_attr_value, hint_entity_name=None,
+                                  limit=CONFIG.MAX_LIST_ENTRIES, offset=0):
+        """Method called from simple search.
+        Returns the count and values of entries with hint_attr_value.
+
+        Do the following:
+        1. Create a query for Elasticsearch search. (make_query_for_attrv)
+        2. Execute the created query. (execute_query)
+        3. Process the search results, and return. (make_search_results_for_attrv)
+
+        Args:
+            hint_attr_value (str): Search string for AttributeValue
+            hint_entity_name (str): Defaults to None.
+                Search string for Entity Name
+            limit (int): Defaults to 100.
+                Maximum number of search results to return
+            offset (int): Defaults to 0.
+                Number of offset
+
+        Returns:
+            dict[str, any]: As a result of the search,
+                the acquired entry and the attribute value of the entry are returned.
+            {
+                'ret_count': (int),
+                'ret_values': [
+                    'id': (str),
+                    'name': (str),
+                    'attr': (str),
+                ],
+            }
 
         """
-        # make query for elasticsearch to retrieve data user wants
-        query = make_query(hint_entity_ids, hint_attrs, hint_attr_value, entry_name, or_match)
+        # by elasticsearch limit, from + size must be less than or equal to max_result_window
+        if offset + limit > settings.ES_CONFIG['MAXIMUM_RESULTS_NUM']:
+            return {
+                'ret_count': 0,
+                'ret_values': [],
+            }
 
-        # sending request to elasticsearch with making query
-        resp = execute_query(query)
+        query = make_query_for_simple(hint_attr_value, hint_entity_name, offset)
+
+        resp = execute_query(query, limit)
 
         if 'status' in resp and resp['status'] == 404:
-            return {'ret_count': 0, 'ret_values': []}
+            return {
+                'ret_count': 0,
+                'ret_values': [],
+            }
 
-        # retrieve data from database on the basis of the result of elasticsearch
-        return make_search_results(resp, hint_attrs, limit, hint_referral)
+        return make_search_results_for_simple(resp)
 
     @classmethod
     def get_all_es_docs(kls):

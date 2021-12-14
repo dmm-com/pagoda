@@ -1,6 +1,8 @@
 import {
   Box,
   Button,
+  Input,
+  Link,
   Table,
   TableBody,
   TableCell,
@@ -78,12 +80,12 @@ export function UserForm({ user }) {
             </TableCell>
             <TableCell>
               {djangoContext.user.is_superuser ? (
-                <input
+                <Input
                   type="text"
                   name="name"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  required="required"
+                  required
                 />
               ) : (
                 <Typography>{username}</Typography>
@@ -96,12 +98,12 @@ export function UserForm({ user }) {
             </TableCell>
             <TableCell>
               {djangoContext.user.is_superuser ? (
-                <input
+                <Input
                   type="email"
                   name="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required="required"
+                  required
                 />
               ) : (
                 <Typography>{email}</Typography>
@@ -114,7 +116,7 @@ export function UserForm({ user }) {
                 <Typography>管理者権限を付与</Typography>
               </TableCell>
               <TableCell>
-                <input
+                <Input
                   type="checkbox"
                   name="is_superuser"
                   value={isSuperuser}
@@ -129,12 +131,12 @@ export function UserForm({ user }) {
                 <Typography>パスワード</Typography>
               </TableCell>
               <TableCell>
-                <input
+                <Input
                   type="password"
                   name="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required="required"
+                  required
                 />
               </TableCell>
             </TableRow>
@@ -146,15 +148,15 @@ export function UserForm({ user }) {
                     <Typography>AccessToken</Typography>
                   </TableCell>
                   <TableCell>
-                    <p id="access_token">{user.token}</p>
-                    <button
+                    <Link id="access_token">{user.token}</Link>
+                    <Button
                       type="button"
                       id="refresh_token"
                       className="btn btn-primary btn-sm"
                       onChange={handleRefreshAccessToken}
                     >
                       Refresh
-                    </button>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ) : null}
@@ -164,7 +166,7 @@ export function UserForm({ user }) {
                 </TableCell>
                 <TableCell>
                   <Box className={classes.tokenLifetime}>
-                    <input
+                    <Input
                       type="text"
                       name="token_lifetime"
                       value={tokenLifetime}

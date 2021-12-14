@@ -1,4 +1,4 @@
-import { TableCell, TableRow } from "@material-ui/core";
+import { Input, TableCell, TableRow } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import RestoreIcon from "@material-ui/icons/Restore";
@@ -53,7 +53,7 @@ export function EntryList({ entries, restoreMode = false }) {
         <TableRow>
           <TableCell>
             <span className={classes.entryName}>エントリ名</span>
-            <input
+            <Input
               className={classes.entryName}
               text="text"
               placeholder="絞り込む"

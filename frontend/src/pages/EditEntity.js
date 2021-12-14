@@ -1,3 +1,4 @@
+import { Box } from "@material-ui/core";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import Typography from "@material-ui/core/Typography";
@@ -38,7 +39,7 @@ export function EditEntity({}) {
   };
 
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -60,7 +61,7 @@ export function EditEntity({}) {
         <Tab label="設定" index={1} />
       </Tabs>
 
-      <div hidden={tabValue !== 0}>
+      <Box hidden={tabValue !== 0}>
         {!entity.loading && !referralEntities.loading && (
           <EntityForm
             entity={{
@@ -73,8 +74,8 @@ export function EditEntity({}) {
             referralEntities={referralEntities.value}
           />
         )}
-      </div>
-      <div hidden={tabValue !== 1}>
+      </Box>
+      <Box hidden={tabValue !== 1}>
         {entityId !== undefined ? (
           <WebhookForm entityId={entityId} />
         ) : (
@@ -82,7 +83,7 @@ export function EditEntity({}) {
             未作成のエンティティはWebhookを設定できません。まずエンティティを作成してください。
           </Typography>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

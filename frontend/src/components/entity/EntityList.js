@@ -1,4 +1,4 @@
-import { TableCell, TableRow } from "@material-ui/core";
+import { Input, TableCell, TableRow } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
@@ -49,8 +49,10 @@ export function EntityList({ entities }) {
         <TableRow>
           <TableCell>
             <span className={classes.entityName}>エンティティ名</span>
-            <input
-              data-testid="entityName"
+            <Input
+              inputProps={{
+                "data-testid": "entityName",
+              }}
               className={classes.entityName}
               text="text"
               placeholder="絞り込む"

@@ -1,8 +1,10 @@
 import {
+  Box,
   Card,
   CardHeader,
   Checkbox,
   FormControlLabel,
+  Input,
   List,
   ListItem,
   ListItemIcon,
@@ -130,7 +132,7 @@ export function AdvancedSearch({}) {
   };
 
   return (
-    <div className="container-fluid">
+    <Box className="container-fluid">
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -165,7 +167,6 @@ export function AdvancedSearch({}) {
                     key={entity.id}
                     dense
                     button
-                    divider
                     onClick={() => toggleSelectedEntityIds(entity.id)}
                   >
                     <ListItemIcon>
@@ -184,7 +185,7 @@ export function AdvancedSearch({}) {
             <Loading />
           )}
         </List>
-        <input
+        <Input
           text="text"
           className={classes.entityFilter}
           placeholder="エンティティ名で絞り込む"
@@ -215,7 +216,6 @@ export function AdvancedSearch({}) {
                     key={attr}
                     dense
                     button
-                    divider
                     onClick={() => toggleSelectedAttrs(attr)}
                   >
                     <ListItemIcon>
@@ -234,7 +234,7 @@ export function AdvancedSearch({}) {
             <Loading />
           )}
         </List>
-        <input
+        <Input
           text="text"
           className={classes.attrFilter}
           placeholder="属性名で絞り込む"
@@ -254,6 +254,6 @@ export function AdvancedSearch({}) {
           </Button>
         </Grid>
       </Grid>
-    </div>
+    </Box>
   );
 }

@@ -1,3 +1,4 @@
+import { Box } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
@@ -28,7 +29,7 @@ export function Job({}) {
   }, []);
 
   return (
-    <div className="container-fluid">
+    <Box className="container-fluid">
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -36,9 +37,9 @@ export function Job({}) {
         <Typography color="textPrimary">ジョブ一覧</Typography>
       </AironeBreadcrumbs>
 
-      <div className="row">
-        <div className="col">
-          <div className="float-left">
+      <Box className="row">
+        <Box className="col">
+          <Box className="float-left">
             <Button
               className={classes.button}
               variant="outlined"
@@ -46,12 +47,12 @@ export function Job({}) {
             >
               全件表示
             </Button>
-          </div>
-          <div className="float-right"></div>
-        </div>
-      </div>
+          </Box>
+          <Box className="float-right"></Box>
+        </Box>
+      </Box>
 
       {!jobs.loading && <JobList jobs={jobs.value} />}
-    </div>
+    </Box>
   );
 }

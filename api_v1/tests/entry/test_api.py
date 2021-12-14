@@ -8,6 +8,47 @@ from entry.models import Entry
 
 
 class APITest(AironeViewTest):
+    def test_search_invalid_param(self):
+        self.admin_login()
+        valid_params = {
+            'entities': [1],
+            'attrinfo': [],
+        }
+        invalid_params = [
+            {'entities': 'hoge'},
+            {'entry_name': ['hoge']},
+            {'attrinfo': 'hoge'},
+            {'is_output_all': 'hoge'},
+            {'referral': ['hoge']},
+            {'entry_limit': 'hoge'},
+        ]
+        for invalid_param in invalid_params:
+            params = {**valid_params, **invalid_param}
+            resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.content, b'"The type of parameter is incorrect"')
+
+        params = {**valid_params, **{
+            'attrinfo': [{'hoge': 'value'}]
+        }}
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"The name key is required for attrinfo parameter"')
+
+        params = {**valid_params, **{
+            'attrinfo': [{'name': ['hoge']}]
+        }}
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"Invalid value for attrinfo parameter"')
+
+        params = {**valid_params, **{
+            'attrinfo': [{'name': 'value', 'keyword': ['hoge']}]
+        }}
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"Invalid value for attrinfo parameter"')
+
     def test_narrow_down_advanced_search_results(self):
         user = self.admin_login()
 
@@ -68,7 +109,8 @@ class APITest(AironeViewTest):
         for hint_entity in hint_entities:
             params = {
                 'entities': hint_entity,
-                'attrinfo': [{'name': 'attr', 'keyword': 'data-5'}]
+                'attrinfo': [{'name': 'attr', 'keyword': 'data-5'}],
+                'is_output_all': False,
             }
             resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
 
@@ -76,13 +118,14 @@ class APITest(AironeViewTest):
 
             result = resp.json()['result']
             self.assertEqual(result['ret_count'], 2)
-            self.assertFalse('referrals' in result)
+            [self.assertFalse('referrals' in x) for x in result['ret_values']]
 
         # send search request with 'hint_referral' parameter
         params = {
             'entities': [ref_entity.id],
             'attrinfo': [],
             'referral': '',
+            'is_output_all': False,
         }
         resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
@@ -96,6 +139,7 @@ class APITest(AironeViewTest):
             'entities': [ref_entity.id],
             'attrinfo': [],
             'referral': 'hogefuga',  # this is invalid referral name
+            'is_output_all': False,
         }
         resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
@@ -242,16 +286,39 @@ class APITest(AironeViewTest):
             }])
 
     def test_search_with_large_size_parameter(self):
-        LARGE_DATA = 'A' * 2048
         self.admin_login()
 
         params = {
             'entities': ['entity-1'],
-            'attrinfo': [{'name': 'attr', 'keyword': LARGE_DATA}]
+            'attrinfo': [{'name': 'attr', 'keyword': 'A' * 250}],
         }
         resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content, b'"Sending parameter is too large"')
+
+        params = {
+            'entities': ['entity-1'],
+            'attrinfo': [{'name': 'attr'}],
+            'entry_name': 'A' * 250,
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"Sending parameter is too large"')
+
+        params = {
+            'entities': ['entity-1'],
+            'attrinfo': [{'name': 'attr', 'keyword': 'A' * 249}],
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        params = {
+            'entities': ['entity-1'],
+            'attrinfo': [{'name': 'attr'}],
+            'entry_name': 'A' * 249,
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
 
     def test_search_with_hint_entry_name(self):
         user = self.guest_login()
@@ -283,3 +350,106 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()['result']['ret_count'], 0)
         self.assertEqual(resp.json()['result']['ret_values'], [])
+
+    def test_search_with_entry_limit(self):
+        user = self.guest_login()
+
+        # Initialize Entity and Entries, then register created entries to the Elasticsearch
+        entity = Entity.objects.create(name='entity', created_user=user)
+        for name in ['foo', 'bar', 'baz']:
+            Entry.objects.create(name=name, schema=entity, created_user=user).register_es()
+
+        # send search request with a part of name of entries
+        params = {
+            'entities': ['entity'],
+            'entry_name': 'ba',
+            'attrinfo': [],
+            'entry_limit': 1,
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()['result']['ret_count'], 2)
+        self.assertEqual(len([x for x in resp.json()['result']['ret_values']]), 1)
+
+    def test_search_with_no_permission_entity(self):
+        user = self.guest_login()
+
+        # Initialize Entity and Entries, then register created entries to the Elasticsearch
+        entity = Entity.objects.create(name='entity', created_user=user)
+        for name in ['foo', 'bar', 'baz']:
+            Entry.objects.create(name=name, schema=entity, created_user=user).register_es()
+
+        # Initialize no permission Entity
+        no_entity = Entity.objects.create(name='no_entity', created_user=user, is_public=False)
+        for name in ['foo', 'bar', 'baz']:
+            Entry.objects.create(name=name, schema=no_entity, created_user=user).register_es()
+
+        # send search request with a part of name of entries
+        params = {
+            'entities': ['entity', 'no_entity'],
+            'entry_name': 'ba',
+            'attrinfo': [],
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()['result']['ret_count'], 2)
+        self.assertEqual(len([x for x in resp.json()['result']['ret_values']]), 2)
+        self.assertEqual([x['entity']['name'] for x in resp.json()['result']['ret_values']],
+                         ['entity', 'entity'])
+
+    def test_search_without_is_output_all(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name='entity', created_user=user)
+        entity_attr1 = EntityAttr.objects.create(**{
+                'name': 'attr1',
+                'type': AttrTypeValue['string'],
+                'created_user': user,
+                'parent_entity': entity,
+        })
+        entity_attr2 = EntityAttr.objects.create(**{
+                'name': 'attr2',
+                'type': AttrTypeValue['string'],
+                'created_user': user,
+                'parent_entity': entity,
+        })
+        entity.attrs.add(entity_attr1)
+        entity.attrs.add(entity_attr2)
+        entry = Entry.objects.create(name='entry', schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry.attrs.get(schema__name='attr1').add_value(user, 'value1')
+        entry.attrs.get(schema__name='attr2').add_value(user, 'value2')
+        entry.register_es()
+
+        # is_output_all false
+        params = {
+            'entities': [entity.id],
+            'attrinfo': [{'name': 'attr1'}],
+            'is_output_all': False,
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+
+        self.assertEqual(resp.status_code, 200)
+        result = resp.json()['result']
+        self.assertEqual(list(result['ret_values'][0]['attrs'].keys()), ['attr1'])
+
+        # is_output_all is default true
+        params = {
+            'entities': [entity.id],
+            'attrinfo': [{'name': 'attr1'}],
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+
+        self.assertEqual(resp.status_code, 200)
+        result = resp.json()['result']
+        self.assertEqual(list(result['ret_values'][0]['attrs'].keys()), ['attr1', 'attr2'])
+
+    def test_search_with_invalid_entity_param(self):
+        self.guest_login()
+
+        params = {
+            'entities': [],
+            'attrinfo': [{'name': 'attr'}],
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"The entities parameters are required"')

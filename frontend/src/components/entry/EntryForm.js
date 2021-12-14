@@ -1,4 +1,6 @@
 import {
+  Box,
+  Input,
   Table,
   TableBody,
   TableCell,
@@ -487,7 +489,7 @@ export function EntryForm({
               <TableRow>
                 <TableCell>エントリ名</TableCell>
                 <TableCell>
-                  <input
+                  <Input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -496,8 +498,8 @@ export function EntryForm({
               </TableRow>
             </TableBody>
           </Table>
-        </div>
-      </div>
+        </Box>
+      </Box>
       <Table className="table table-bordered">
         <TableHead>
           <TableRow>

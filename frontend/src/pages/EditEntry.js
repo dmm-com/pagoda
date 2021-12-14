@@ -1,3 +1,4 @@
+import { Box } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { useParams, Link } from "react-router-dom";
@@ -21,7 +22,7 @@ export function EditEntry({}) {
   });
 
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -43,6 +44,6 @@ export function EditEntry({}) {
           initAttributes={entry.value.attributes}
         />
       )}
-    </div>
+    </Box>
   );
 }

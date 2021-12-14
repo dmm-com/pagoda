@@ -5,7 +5,7 @@
       <tr id='{{ attr.name|cut:" " }}'>
         <td class='attr'>{{ attr.name }}</td>
         <td>
-        {% if not attr.permission %}
+        {% if not attr.is_readble %}
           <span>Permission denied.</span>
         {% elif attr.type == attr_type.string %}
           <span class='url_conv'>{{ attr.last_value }}</span>

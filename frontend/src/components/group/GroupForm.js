@@ -1,4 +1,4 @@
-import { Select } from "@material-ui/core";
+import { Box, Input, Select } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
@@ -42,17 +42,17 @@ export function GroupForm({ users, group }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div>
+      <Box>
         <Typography>グループ名</Typography>
-        <input
+        <Input
           type="text"
           name="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          required="required"
+          required
         />
-      </div>
-      <div>
+      </Box>
+      <Box>
         <Typography>ユーザ管理</Typography>
         <Select
           multiple
@@ -67,7 +67,7 @@ export function GroupForm({ users, group }) {
             </option>
           ))}
         </Select>
-      </div>
+      </Box>
       <Button
         className={classes.button}
         type="submit"
