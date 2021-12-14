@@ -162,14 +162,21 @@ export function EntryForm({
 
       case djangoContext.attrTypeValue.array_object:
       case djangoContext.attrTypeValue.array_group:
-        attributes[name].value[valueInfo.index] = attributes[name].value[
-          valueInfo.index
-        ].map((x) => {
-          return {
-            ...x,
-            checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
-          };
-        });
+        // In this case, new blank co-Attribute value will be added
+        if(valueInfo.index >= attributes[name].value.length) {
+          attributes[name].value.push(valueInfo.value);
+
+        } else {
+          attributes[name].value[valueInfo.index] = attributes[name].value[
+            valueInfo.index
+          ].map((x) => {
+            return {
+              ...x,
+              checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+            };
+          });
+        }
+
         setAttributes({ ...attributes });
         break;
 
@@ -192,24 +199,34 @@ export function EntryForm({
         break;
 
       case djangoContext.attrTypeValue.array_named_object:
-        if (event.target.type === "text") {
-          attributes[name].value[valueInfo.index] = {
-            [valueInfo.key]: Object.values(
-              attributes[name].value[valueInfo.index]
-            )[0],
-          };
-        }
-        if (event.target.type === "radio") {
-          const key = Object.keys(attributes[name].value[valueInfo.index])[0];
-          attributes[name].value[valueInfo.index][key] = attributes[name].value[
-            valueInfo.index
-          ][key].map((x) => {
-            return {
-              ...x,
-              checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+        // In this case, new blank co-Attribute value will be added
+        if(valueInfo.index >= attributes[name].value.length) {
+          attributes[name].value.push(valueInfo.value);
+
+        } else {
+          if (event.target.type === "text") {
+            attributes[name].value[valueInfo.index] = {
+              [valueInfo.key]: Object.values(
+                attributes[name].value[valueInfo.index]
+              )[0],
             };
-          });
+          }
+          if (event.target.type === "radio") {
+            const key = Object.keys(attributes[name].value[valueInfo.index])[0];
+            attributes[name].value[valueInfo.index][key] = attributes[name].value[
+              valueInfo.index
+            ][key].map((x) => {
+              return {
+                ...x,
+                checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+              };
+            });
+          }
+
+
         }
+
+
         setAttributes({ ...attributes });
         break;
 
@@ -436,7 +453,7 @@ export function EntryForm({
               type: attrValue.type,
               value: attrValue.value.map((x, index) => {
                 return {
-                  data: x.filter((y) => y.checked)[0].id ?? "",
+                  data: x.filter((y) => y.checked)[0]?.id ?? "",
                   index: index,
                 };
               }),

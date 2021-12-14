@@ -53,7 +53,6 @@ function ElemObject({
   handleChange,
   handleNarrowDownEntries,
 }) {
-  //  return <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>;
   return (
     <Card variant="outlined">
       <RadioGroup aria-label="object" name="radio-buttons-group">
@@ -181,11 +180,11 @@ export function EditAttributeValue({
 }) {
   const djangoContext = DjangoContext.getInstance();
 
-  const handleClickAddListItem = (e) => {
+  const handleClickAddListItem = (e, value) => {
     handleChangeAttribute(e, attrName, {
       type: attrInfo.type,
       index: attrInfo.value.length,
-      value: "",
+      value: value,
     });
   };
 
@@ -240,23 +239,32 @@ export function EditAttributeValue({
 
     case djangoContext.attrTypeValue.array_object:
       return (
-        <List>
-          {attrInfo.value.map((info, n) => {
-            return (
-              <ListItem key={n}>
-                <ElemObject
-                  attrId={attrInfo.id}
-                  attrName={attrName}
-                  attrValue={info}
-                  attrType={attrInfo.type}
-                  index={n}
-                  handleChange={handleChangeAttribute}
-                  handleNarrowDownEntries={handleNarrowDownEntries}
-                />
-              </ListItem>
-            );
-          })}
-        </List>
+        <Box>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={(e) => handleClickAddListItem(e, [])}
+          >
+            add
+          </Button>
+          <List>
+            {attrInfo.value.map((info, n) => {
+              return (
+                <ListItem key={n}>
+                  <ElemObject
+                    attrId={attrInfo.id}
+                    attrName={attrName}
+                    attrValue={info}
+                    attrType={attrInfo.type}
+                    index={n}
+                    handleChange={handleChangeAttribute}
+                    handleNarrowDownEntries={handleNarrowDownEntries}
+                  />
+                </ListItem>
+              );
+            })}
+          </List>
+        </Box>
       );
 
     case djangoContext.attrTypeValue.array_string:
@@ -265,7 +273,7 @@ export function EditAttributeValue({
           <Button
             variant="contained"
             color="primary"
-            onClick={handleClickAddListItem}
+            onClick={(e) => handleClickAddListItem(e, "")}
           >
             add
           </Button>
@@ -290,7 +298,11 @@ export function EditAttributeValue({
     case djangoContext.attrTypeValue.array_named_object:
       return (
         <Box>
-          <Button variant="contained" color="primary">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={(e) => handleClickAddListItem(e, {'': []})}
+          >
             add
           </Button>
           <List>
