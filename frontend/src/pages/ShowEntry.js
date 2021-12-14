@@ -69,7 +69,9 @@ export function ShowEntry({}) {
             {entry.value.schema.name}
           </Typography>
         )}
-        <Typography color="textPrimary">{entryId}</Typography>
+        {!entry.loading && (
+          <Typography color="textPrimary">{entry.value.name}</Typography>
+        )}
       </AironeBreadcrumbs>
 
       <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)}>

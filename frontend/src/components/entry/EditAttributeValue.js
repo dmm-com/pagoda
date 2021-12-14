@@ -1,3 +1,5 @@
+import { Button } from "@material-ui/core";
+import Box from "@material-ui/core/Box";
 import Card from "@material-ui/core/Card";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
@@ -179,6 +181,16 @@ export function EditAttributeValue({
 }) {
   const djangoContext = DjangoContext.getInstance();
 
+  const handleClickAddListItem = (e) => {
+    handleChangeAttribute(e, attrName, {
+      type: attrInfo.type,
+      index: attrInfo.value.length,
+      value: "",
+    });
+  };
+
+  const handleClickDeleteListItem = (e) => {};
+
   switch (attrInfo.type) {
     case djangoContext.attrTypeValue.object:
       return (
@@ -249,42 +261,56 @@ export function EditAttributeValue({
 
     case djangoContext.attrTypeValue.array_string:
       return (
-        <List>
-          {attrInfo.value.map((info, n) => {
-            return (
-              <ListItem key={n}>
-                <ElemString
-                  attrName={attrName}
-                  attrValue={info}
-                  attrType={attrInfo.type}
-                  index={n}
-                  handleChange={handleChangeAttribute}
-                />
-              </ListItem>
-            );
-          })}
-        </List>
+        <Box>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleClickAddListItem}
+          >
+            add
+          </Button>
+          <List>
+            {attrInfo.value.map((info, n) => {
+              return (
+                <ListItem key={n}>
+                  <ElemString
+                    attrName={attrName}
+                    attrValue={info}
+                    attrType={attrInfo.type}
+                    index={n}
+                    handleChange={handleChangeAttribute}
+                  />
+                </ListItem>
+              );
+            })}
+          </List>
+        </Box>
       );
 
     case djangoContext.attrTypeValue.array_named_object:
       return (
-        <List>
-          {attrInfo.value.map((info, n) => {
-            return (
-              <ListItem key={n}>
-                <ElemNamedObject
-                  attrId={attrInfo.id}
-                  attrName={attrName}
-                  attrValue={info}
-                  attrType={attrInfo.type}
-                  index={n}
-                  handleChange={handleChangeAttribute}
-                  handleNarrowDownEntries={handleNarrowDownEntries}
-                />
-              </ListItem>
-            );
-          })}
-        </List>
+        <Box>
+          <Button variant="contained" color="primary">
+            add
+          </Button>
+          <List>
+            {attrInfo.value.map((info, n) => {
+              return (
+                <ListItem key={n}>
+                  <ElemNamedObject
+                    attrId={attrInfo.id}
+                    attrName={attrName}
+                    attrValue={info}
+                    attrType={attrInfo.type}
+                    index={n}
+                    handleChange={handleChangeAttribute}
+                    handleNarrowDownEntries={handleNarrowDownEntries}
+                  />
+                </ListItem>
+              );
+            })}
+          </List>
+        </Box>
       );
 
     case djangoContext.attrTypeValue.array_group:

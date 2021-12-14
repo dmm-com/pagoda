@@ -10,7 +10,6 @@ import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { showEntryPath } from "../../Routes";
 import {
   getAttrReferrals,
   getGroups,
@@ -255,6 +254,8 @@ export function EntryForm({
           };
         });
     }
+
+    // TODO delete handler?
 
     switch (attrType) {
       case djangoContext.attrTypeValue.group:
