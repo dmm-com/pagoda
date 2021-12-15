@@ -155,7 +155,7 @@ $(document).ready(function() {
   function narrow_results_down(e) {
     if(! (e.keyCode != 13 || sending_request)) {
       sending_request = true;
-
+      MessageBox.clear();
       $('#entry_count').text('(...処理中...)');
 
       request_params = {
@@ -209,6 +209,7 @@ $(document).ready(function() {
         window.history.pushState('', '', 'advanced_search_result?' + params.join('&'));
 
       }).fail(function(data){
+        sending_request = false;
         MessageBox.error(data.responseText);
       });
     }
