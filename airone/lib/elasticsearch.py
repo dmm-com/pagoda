@@ -709,11 +709,12 @@ def execute_query(query: Dict[str, str], size: int = 0) -> Dict[str, str]:
 
     """
     kwargs = {
+        'size': settings.ES_CONFIG['MAXIMUM_RESULTS_NUM'],
         'body': query,
         'ignore': [404],
         'sort': ['name.keyword:asc']
     }
-    if size:
+    if size and isinstance(size, int):
         kwargs['size'] = size
 
     try:
