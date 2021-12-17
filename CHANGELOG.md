@@ -5,6 +5,7 @@
 ### Added
 
 ### Changed
+* Updated Django version that fixed security bug (CVE-2021-44420)
 
 ### Fixed
 * Fixed an issue where advanced search narrow down was slow (#321)
