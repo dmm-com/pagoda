@@ -15,11 +15,12 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import DeleteIcon from "@material-ui/icons/Delete";
+import GroupIcon from "@material-ui/icons/Group";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
-import { entitiesPath } from "../../Routes";
+import { aclPath, entitiesPath } from "../../Routes";
 import { createEntity, updateEntity } from "../../utils/AironeAPIClient";
 
 const BaseAttributeTypes = {
@@ -323,15 +324,27 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
                     </TableCell>
 
                     <TableCell>
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        className={classes.button}
-                        startIcon={<DeleteIcon />}
-                        onClick={(e) => handleDeleteAttribute(e, index)}
-                      >
-                        削除
-                      </Button>
+                      <Box sx={{ flexDirection: "row" }}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          className={classes.button}
+                          startIcon={<GroupIcon />}
+                          component={Link}
+                          to={aclPath(attr.id)}
+                        >
+                          ACL
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          className={classes.button}
+                          startIcon={<DeleteIcon />}
+                          onClick={(e) => handleDeleteAttribute(e, index)}
+                        >
+                          削除
+                        </Button>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
