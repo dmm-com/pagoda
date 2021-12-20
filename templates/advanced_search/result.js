@@ -254,7 +254,7 @@ $(document).ready(function() {
         'entities': '{{ entities }}'.split(','),
         'attrinfo': get_attrinfo(),
         'entry_name': $('.hint_entry_name').val(),
-        'has_referral': true,
+        'has_referral': $('.narrow_down_referral').val() !== undefined,
         'referral_name': $('.narrow_down_referral').val(),
         'export_style': style,
       }),
