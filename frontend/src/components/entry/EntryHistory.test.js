@@ -5,6 +5,8 @@
 import { render } from "@testing-library/react";
 import React from "react";
 
+import { TestWrapper } from "../../utils/TestWrapper";
+
 import EntryHistory from "./EntryHistory";
 
 test("should render a component with essential props", function () {
@@ -23,5 +25,7 @@ test("should render a component with essential props", function () {
       },
     },
   ];
-  expect(() => render(<EntryHistory histories={histories} />)).not.toThrow();
+  expect(() =>
+    render(<EntryHistory histories={histories} />, { wrapper: TestWrapper })
+  ).not.toThrow();
 });

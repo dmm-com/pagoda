@@ -5,8 +5,8 @@ import {
   DialogContent,
   DialogTitle,
   Typography,
-} from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";

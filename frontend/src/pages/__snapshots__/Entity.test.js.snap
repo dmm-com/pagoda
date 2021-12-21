@@ -1,3 +1,1344 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`should match snapshot 1`] = `"<div class=\\"MuiBox-root MuiBox-root-2 container-fluid\\"><nav class=\\"MuiTypography-root MuiBreadcrumbs-root makeStyles-breadcrumbs-3 MuiTypography-body1 MuiTypography-colorTextSecondary\\" aria-label=\\"breadcrumb\\"><ol class=\\"MuiBreadcrumbs-ol\\"><li class=\\"MuiBreadcrumbs-li\\"><a class=\\"MuiTypography-root MuiTypography-body1\\" href=\\"/new-ui/\\">Top</a></li><li aria-hidden=\\"true\\" class=\\"MuiBreadcrumbs-separator\\">/</li><li class=\\"MuiBreadcrumbs-li\\"><p class=\\"MuiTypography-root MuiTypography-body1 MuiTypography-colorTextPrimary\\">エンティティ一覧</p></li></ol></nav><div class=\\"MuiBox-root MuiBox-root-4 row\\"><div class=\\"MuiBox-root MuiBox-root-5 col\\"><div class=\\"MuiBox-root MuiBox-root-6 float-left\\"><a class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-7 MuiButton-containedPrimary\\" tabindex=\\"0\\" role=\\"button\\" aria-disabled=\\"false\\" href=\\"/new-ui/entities/new\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z\\"></path></svg></span>エンティティ作成</span><span class=\\"MuiTouchRipple-root\\"></span></a><button class=\\"MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-button-1 MuiButton-outlinedSecondary\\" tabindex=\\"0\\" type=\\"button\\"><span class=\\"MuiButton-label\\">エクスポート</span><span class=\\"MuiTouchRipple-root\\"></span></button><a class=\\"MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-button-1 MuiButton-outlinedSecondary\\" tabindex=\\"0\\" role=\\"button\\" aria-disabled=\\"false\\" href=\\"/new-ui/entities/import\\"><span class=\\"MuiButton-label\\">インポート</span><span class=\\"MuiTouchRipple-root\\"></span></a></div><div class=\\"MuiBox-root MuiBox-root-8 float-right\\"></div></div></div><div class=\\"MuiPaper-root MuiPaper-elevation1 MuiPaper-rounded\\"><div class=\\"MuiPaper-root MuiTableContainer-root MuiPaper-elevation1 MuiPaper-rounded\\"><table class=\\"MuiTable-root\\"><thead class=\\"MuiTableHead-root\\"><tr class=\\"MuiTableRow-root MuiTableRow-head\\"><th class=\\"MuiTableCell-root MuiTableCell-head\\" scope=\\"col\\"><span class=\\"makeStyles-entityName-14\\">エンティティ名</span><div class=\\"MuiInputBase-root MuiInput-root MuiInput-underline makeStyles-entityName-14\\" text=\\"text\\"><input placeholder=\\"絞り込む\\" type=\\"text\\" data-testid=\\"entityName\\" class=\\"MuiInputBase-input MuiInput-input\\" value=\\"\\"></div></th><th class=\\"MuiTableCell-root MuiTableCell-head\\" scope=\\"col\\"><p class=\\"MuiTypography-root MuiTypography-body1\\">備考</p></th><th class=\\"MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight\\" scope=\\"col\\"></th></tr></thead><tbody class=\\"MuiTableBody-root\\"><tr class=\\"MuiTableRow-root\\" data-testid=\\"entityTableRow\\"><td class=\\"MuiTableCell-root MuiTableCell-body\\"><a class=\\"MuiTypography-root MuiTypography-body1\\" href=\\"/new-ui/entities/1/entries\\">aaa</a></td><td class=\\"MuiTableCell-root MuiTableCell-body\\"><p class=\\"MuiTypography-root MuiTypography-body1\\"></p></td><td class=\\"MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight\\"><a class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-15 MuiButton-containedPrimary\\" tabindex=\\"0\\" role=\\"button\\" aria-disabled=\\"false\\" href=\\"/new-ui/entities/1\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z\\"></path></svg></span>エンティティ編集</span><span class=\\"MuiTouchRipple-root\\"></span></a><a class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-13 MuiButton-containedPrimary\\" tabindex=\\"0\\" role=\\"button\\" aria-disabled=\\"false\\" href=\\"/new-ui/entities/1/history\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z\\"></path></svg></span>変更履歴</span><span class=\\"MuiTouchRipple-root\\"></span></a><a class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-13 MuiButton-containedPrimary\\" tabindex=\\"0\\" role=\\"button\\" aria-disabled=\\"false\\" href=\\"/new-ui/acl/1\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z\\"></path></svg></span>ACL</span><span class=\\"MuiTouchRipple-root\\"></span></a><span><button class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-16 MuiButton-containedSecondary\\" tabindex=\\"0\\" type=\\"button\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z\\"></path></svg></span>削除</span><span class=\\"MuiTouchRipple-root\\"></span></button></span></td></tr><tr class=\\"MuiTableRow-root\\" data-testid=\\"entityTableRow\\"><td class=\\"MuiTableCell-root MuiTableCell-body\\"><a class=\\"MuiTypography-root MuiTypography-body1\\" href=\\"/new-ui/entities/2/entries\\">aaaaa</a></td><td class=\\"MuiTableCell-root MuiTableCell-body\\"><p class=\\"MuiTypography-root MuiTypography-body1\\"></p></td><td class=\\"MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight\\"><a class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-15 MuiButton-containedPrimary\\" tabindex=\\"0\\" role=\\"button\\" aria-disabled=\\"false\\" href=\\"/new-ui/entities/2\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z\\"></path></svg></span>エンティティ編集</span><span class=\\"MuiTouchRipple-root\\"></span></a><a class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-13 MuiButton-containedPrimary\\" tabindex=\\"0\\" role=\\"button\\" aria-disabled=\\"false\\" href=\\"/new-ui/entities/2/history\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z\\"></path></svg></span>変更履歴</span><span class=\\"MuiTouchRipple-root\\"></span></a><a class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-13 MuiButton-containedPrimary\\" tabindex=\\"0\\" role=\\"button\\" aria-disabled=\\"false\\" href=\\"/new-ui/acl/2\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z\\"></path></svg></span>ACL</span><span class=\\"MuiTouchRipple-root\\"></span></a><span><button class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-16 MuiButton-containedSecondary\\" tabindex=\\"0\\" type=\\"button\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z\\"></path></svg></span>削除</span><span class=\\"MuiTouchRipple-root\\"></span></button></span></td></tr><tr class=\\"MuiTableRow-root\\" data-testid=\\"entityTableRow\\"><td class=\\"MuiTableCell-root MuiTableCell-body\\"><a class=\\"MuiTypography-root MuiTypography-body1\\" href=\\"/new-ui/entities/3/entries\\">bbbbb</a></td><td class=\\"MuiTableCell-root MuiTableCell-body\\"><p class=\\"MuiTypography-root MuiTypography-body1\\"></p></td><td class=\\"MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight\\"><a class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-15 MuiButton-containedPrimary\\" tabindex=\\"0\\" role=\\"button\\" aria-disabled=\\"false\\" href=\\"/new-ui/entities/3\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z\\"></path></svg></span>エンティティ編集</span><span class=\\"MuiTouchRipple-root\\"></span></a><a class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-13 MuiButton-containedPrimary\\" tabindex=\\"0\\" role=\\"button\\" aria-disabled=\\"false\\" href=\\"/new-ui/entities/3/history\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z\\"></path></svg></span>変更履歴</span><span class=\\"MuiTouchRipple-root\\"></span></a><a class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-13 MuiButton-containedPrimary\\" tabindex=\\"0\\" role=\\"button\\" aria-disabled=\\"false\\" href=\\"/new-ui/acl/3\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z\\"></path></svg></span>ACL</span><span class=\\"MuiTouchRipple-root\\"></span></a><span><button class=\\"MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button-16 MuiButton-containedSecondary\\" tabindex=\\"0\\" type=\\"button\\"><span class=\\"MuiButton-label\\"><span class=\\"MuiButton-startIcon MuiButton-iconSizeMedium\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z\\"></path></svg></span>削除</span><span class=\\"MuiTouchRipple-root\\"></span></button></span></td></tr></tbody></table></div><div class=\\"MuiTablePagination-root\\"><div class=\\"MuiToolbar-root MuiToolbar-regular MuiTablePagination-toolbar MuiToolbar-gutters\\"><div class=\\"MuiTablePagination-spacer\\"></div><p class=\\"MuiTypography-root MuiTablePagination-caption MuiTypography-body2 MuiTypography-colorInherit\\" >Rows per page:</p><div class=\\"MuiInputBase-root MuiTablePagination-input MuiTablePagination-selectRoot\\"><div class=\\"MuiSelect-root MuiSelect-select MuiTablePagination-select MuiSelect-selectMenu MuiInputBase-input\\" tabindex=\\"0\\" role=\\"button\\" aria-haspopup=\\"listbox\\"  >100</div><input aria-hidden=\\"true\\" tabindex=\\"-1\\" class=\\"MuiSelect-nativeInput\\" value=\\"100\\"><svg class=\\"MuiSvgIcon-root MuiSelect-icon MuiTablePagination-selectIcon\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M7 10l5 5 5-5z\\"></path></svg></div><p class=\\"MuiTypography-root MuiTablePagination-caption MuiTypography-body2 MuiTypography-colorInherit\\">1-3 of 3</p><div class=\\"MuiTablePagination-actions\\"><button class=\\"MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit Mui-disabled Mui-disabled\\" tabindex=\\"-1\\" type=\\"button\\" disabled=\\"\\" title=\\"Previous page\\" aria-label=\\"Previous page\\"><span class=\\"MuiIconButton-label\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M15.41 16.09l-4.58-4.59 4.58-4.59L14 5.5l-6 6 6 6z\\"></path></svg></span></button><button class=\\"MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit Mui-disabled Mui-disabled\\" tabindex=\\"-1\\" type=\\"button\\" disabled=\\"\\" title=\\"Next page\\" aria-label=\\"Next page\\"><span class=\\"MuiIconButton-label\\"><svg class=\\"MuiSvgIcon-root\\" focusable=\\"false\\" viewBox=\\"0 0 24 24\\" aria-hidden=\\"true\\"><path d=\\"M8.59 16.34l4.58-4.59-4.58-4.59L10 5.75l6 6-6 6z\\"></path></svg></span></button></div></div></div></div></div>"`;
+exports[`should match snapshot 1`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="container-fluid MuiBox-root css-0"
+      >
+        <nav
+          aria-label="breadcrumb"
+          class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root makeStyles-breadcrumbs-2 css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+        >
+          <ol
+            class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+          >
+            <li
+              class="MuiBreadcrumbs-li"
+            >
+              <a
+                class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                href="/new-ui/"
+              >
+                Top
+              </a>
+            </li>
+            <li
+              aria-hidden="true"
+              class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+            >
+              /
+            </li>
+            <li
+              class="MuiBreadcrumbs-li"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+              >
+                エンティティ一覧
+              </p>
+            </li>
+          </ol>
+        </nav>
+        <div
+          class="row MuiBox-root css-0"
+        >
+          <div
+            class="col MuiBox-root css-0"
+          >
+            <div
+              class="float-left MuiBox-root css-0"
+            >
+              <a
+                class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-3 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                href="/new-ui/entities/new"
+                tabindex="0"
+              >
+                <span
+                  class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                    data-testid="AddIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                    />
+                  </svg>
+                </span>
+                エンティティ作成
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </a>
+              <button
+                class="MuiButton-root MuiButton-outlined MuiButton-outlinedSecondary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root makeStyles-button-1 css-wnpvqa-MuiButtonBase-root-MuiButton-root"
+                tabindex="0"
+                type="button"
+              >
+                エクスポート
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </button>
+              <a
+                class="MuiButton-root MuiButton-outlined MuiButton-outlinedSecondary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root makeStyles-button-1 css-wnpvqa-MuiButtonBase-root-MuiButton-root"
+                href="/new-ui/entities/import"
+                tabindex="0"
+              >
+                インポート
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </a>
+            </div>
+            <div
+              class="float-right MuiBox-root css-0"
+            />
+          </div>
+        </div>
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
+        >
+          <div
+            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiTableContainer-root css-11xur9t-MuiPaper-root-MuiTableContainer-root"
+          >
+            <table
+              class="MuiTable-root css-rqglhn-MuiTable-root"
+            >
+              <thead
+                class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+              >
+                <tr
+                  class="MuiTableRow-root MuiTableRow-head css-1q1u3t4-MuiTableRow-root"
+                >
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ygcj2i-MuiTableCell-root"
+                    scope="col"
+                  >
+                    <span
+                      class="makeStyles-entityName-7"
+                    >
+                      エンティティ名
+                    </span>
+                    <div
+                      class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary makeStyles-entityName-7 css-a88p61-MuiInputBase-root-MuiInput-root"
+                      text="text"
+                    >
+                      <input
+                        class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                        data-testid="entityName"
+                        placeholder="絞り込む"
+                        type="text"
+                        value=""
+                      />
+                    </div>
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ygcj2i-MuiTableCell-root"
+                    scope="col"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    >
+                      備考
+                    </p>
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeMedium css-1azl6jz-MuiTableCell-root"
+                    scope="col"
+                  />
+                </tr>
+              </thead>
+              <tbody
+                class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+              >
+                <tr
+                  class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                  data-testid="entityTableRow"
+                >
+                  <td
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  >
+                    <a
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      href="/new-ui/entities/1/entries"
+                    >
+                      aaa
+                    </a>
+                  </td>
+                  <td
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    />
+                  </td>
+                  <td
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeMedium css-177gid-MuiTableCell-root"
+                  >
+                    <a
+                      class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-8 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                      href="/new-ui/entities/1"
+                      tabindex="0"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="EditIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                          />
+                        </svg>
+                      </span>
+                      エンティティ編集
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </a>
+                    <a
+                      class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                      href="/new-ui/entities/1/history"
+                      tabindex="0"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="HistoryIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                          />
+                        </svg>
+                      </span>
+                      変更履歴
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </a>
+                    <a
+                      class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                      href="/new-ui/acl/1"
+                      tabindex="0"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="GroupIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                          />
+                        </svg>
+                      </span>
+                      ACL
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </a>
+                    <span>
+                      <button
+                        class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-9 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <span
+                          class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="DeleteIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                            />
+                          </svg>
+                        </span>
+                        削除
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                        />
+                      </button>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                  data-testid="entityTableRow"
+                >
+                  <td
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  >
+                    <a
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      href="/new-ui/entities/2/entries"
+                    >
+                      aaaaa
+                    </a>
+                  </td>
+                  <td
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    />
+                  </td>
+                  <td
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeMedium css-177gid-MuiTableCell-root"
+                  >
+                    <a
+                      class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-8 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                      href="/new-ui/entities/2"
+                      tabindex="0"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="EditIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                          />
+                        </svg>
+                      </span>
+                      エンティティ編集
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </a>
+                    <a
+                      class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                      href="/new-ui/entities/2/history"
+                      tabindex="0"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="HistoryIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                          />
+                        </svg>
+                      </span>
+                      変更履歴
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </a>
+                    <a
+                      class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                      href="/new-ui/acl/2"
+                      tabindex="0"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="GroupIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                          />
+                        </svg>
+                      </span>
+                      ACL
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </a>
+                    <span>
+                      <button
+                        class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-9 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <span
+                          class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="DeleteIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                            />
+                          </svg>
+                        </span>
+                        削除
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                        />
+                      </button>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                  data-testid="entityTableRow"
+                >
+                  <td
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  >
+                    <a
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      href="/new-ui/entities/3/entries"
+                    >
+                      bbbbb
+                    </a>
+                  </td>
+                  <td
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    />
+                  </td>
+                  <td
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeMedium css-177gid-MuiTableCell-root"
+                  >
+                    <a
+                      class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-8 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                      href="/new-ui/entities/3"
+                      tabindex="0"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="EditIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                          />
+                        </svg>
+                      </span>
+                      エンティティ編集
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </a>
+                    <a
+                      class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                      href="/new-ui/entities/3/history"
+                      tabindex="0"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="HistoryIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                          />
+                        </svg>
+                      </span>
+                      変更履歴
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </a>
+                    <a
+                      class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                      href="/new-ui/acl/3"
+                      tabindex="0"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="GroupIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                          />
+                        </svg>
+                      </span>
+                      ACL
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </a>
+                    <span>
+                      <button
+                        class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-9 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <span
+                          class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="DeleteIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                            />
+                          </svg>
+                        </span>
+                        削除
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                        />
+                      </button>
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div
+            class="MuiTablePagination-root css-jtlhu6-MuiTablePagination-root"
+          >
+            <div
+              class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular MuiTablePagination-toolbar css-11bfvty-MuiToolbar-root-MuiTablePagination-toolbar"
+            >
+              <div
+                class="MuiTablePagination-spacer css-1psng7p-MuiTablePagination-spacer"
+              />
+              <p
+                class="MuiTablePagination-selectLabel css-pdct74-MuiTablePagination-selectLabel"
+                id="mui-2"
+              >
+                Rows per page:
+              </p>
+              <div
+                class="MuiInputBase-root MuiInputBase-colorPrimary css-16c50h-MuiInputBase-root-MuiTablePagination-select"
+              >
+                <div
+                  aria-expanded="false"
+                  aria-haspopup="listbox"
+                  aria-labelledby="mui-2 mui-1"
+                  class="MuiTablePagination-select MuiSelect-select MuiSelect-standard MuiInputBase-input css-194a1fa-MuiSelect-select-MuiInputBase-input"
+                  id="mui-1"
+                  role="button"
+                  tabindex="0"
+                >
+                  100
+                </div>
+                <input
+                  aria-hidden="true"
+                  class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
+                  tabindex="-1"
+                  value="100"
+                />
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTablePagination-selectIcon MuiSelect-icon MuiSelect-iconStandard css-pqjvzy-MuiSvgIcon-root-MuiSelect-icon"
+                  data-testid="ArrowDropDownIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M7 10l5 5 5-5z"
+                  />
+                </svg>
+              </div>
+              <p
+                class="MuiTablePagination-displayedRows css-levciy-MuiTablePagination-displayedRows"
+              >
+                1–3 of 3
+              </p>
+              <div
+                class="MuiTablePagination-actions"
+              >
+                <button
+                  aria-label="Go to previous page"
+                  class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-colorInherit MuiIconButton-sizeMedium css-zylse7-MuiButtonBase-root-MuiIconButton-root"
+                  disabled=""
+                  tabindex="-1"
+                  title="Go to previous page"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                    data-testid="KeyboardArrowLeftIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M15.41 16.09l-4.58-4.59 4.58-4.59L14 5.5l-6 6 6 6z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  aria-label="Go to next page"
+                  class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-colorInherit MuiIconButton-sizeMedium css-zylse7-MuiButtonBase-root-MuiIconButton-root"
+                  disabled=""
+                  tabindex="-1"
+                  title="Go to next page"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                    data-testid="KeyboardArrowRightIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M8.59 16.34l4.58-4.59-4.58-4.59L10 5.75l6 6-6 6z"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="container-fluid MuiBox-root css-0"
+    >
+      <nav
+        aria-label="breadcrumb"
+        class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root makeStyles-breadcrumbs-2 css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+      >
+        <ol
+          class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+        >
+          <li
+            class="MuiBreadcrumbs-li"
+          >
+            <a
+              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+              href="/new-ui/"
+            >
+              Top
+            </a>
+          </li>
+          <li
+            aria-hidden="true"
+            class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+          >
+            /
+          </li>
+          <li
+            class="MuiBreadcrumbs-li"
+          >
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+            >
+              エンティティ一覧
+            </p>
+          </li>
+        </ol>
+      </nav>
+      <div
+        class="row MuiBox-root css-0"
+      >
+        <div
+          class="col MuiBox-root css-0"
+        >
+          <div
+            class="float-left MuiBox-root css-0"
+          >
+            <a
+              class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-3 css-sghohy-MuiButtonBase-root-MuiButton-root"
+              href="/new-ui/entities/new"
+              tabindex="0"
+            >
+              <span
+                class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                  data-testid="AddIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                  />
+                </svg>
+              </span>
+              エンティティ作成
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </a>
+            <button
+              class="MuiButton-root MuiButton-outlined MuiButton-outlinedSecondary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root makeStyles-button-1 css-wnpvqa-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              エクスポート
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </button>
+            <a
+              class="MuiButton-root MuiButton-outlined MuiButton-outlinedSecondary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root makeStyles-button-1 css-wnpvqa-MuiButtonBase-root-MuiButton-root"
+              href="/new-ui/entities/import"
+              tabindex="0"
+            >
+              インポート
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </a>
+          </div>
+          <div
+            class="float-right MuiBox-root css-0"
+          />
+        </div>
+      </div>
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
+      >
+        <div
+          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiTableContainer-root css-11xur9t-MuiPaper-root-MuiTableContainer-root"
+        >
+          <table
+            class="MuiTable-root css-rqglhn-MuiTable-root"
+          >
+            <thead
+              class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+            >
+              <tr
+                class="MuiTableRow-root MuiTableRow-head css-1q1u3t4-MuiTableRow-root"
+              >
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ygcj2i-MuiTableCell-root"
+                  scope="col"
+                >
+                  <span
+                    class="makeStyles-entityName-7"
+                  >
+                    エンティティ名
+                  </span>
+                  <div
+                    class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary makeStyles-entityName-7 css-a88p61-MuiInputBase-root-MuiInput-root"
+                    text="text"
+                  >
+                    <input
+                      class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                      data-testid="entityName"
+                      placeholder="絞り込む"
+                      type="text"
+                      value=""
+                    />
+                  </div>
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ygcj2i-MuiTableCell-root"
+                  scope="col"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  >
+                    備考
+                  </p>
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-alignRight MuiTableCell-sizeMedium css-1azl6jz-MuiTableCell-root"
+                  scope="col"
+                />
+              </tr>
+            </thead>
+            <tbody
+              class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+            >
+              <tr
+                class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                data-testid="entityTableRow"
+              >
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                >
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/new-ui/entities/1/entries"
+                  >
+                    aaa
+                  </a>
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  />
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeMedium css-177gid-MuiTableCell-root"
+                >
+                  <a
+                    class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-8 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                    href="/new-ui/entities/1"
+                    tabindex="0"
+                  >
+                    <span
+                      class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="EditIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                        />
+                      </svg>
+                    </span>
+                    エンティティ編集
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </a>
+                  <a
+                    class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                    href="/new-ui/entities/1/history"
+                    tabindex="0"
+                  >
+                    <span
+                      class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="HistoryIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                        />
+                      </svg>
+                    </span>
+                    変更履歴
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </a>
+                  <a
+                    class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                    href="/new-ui/acl/1"
+                    tabindex="0"
+                  >
+                    <span
+                      class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="GroupIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                        />
+                      </svg>
+                    </span>
+                    ACL
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </a>
+                  <span>
+                    <button
+                      class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-9 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                      tabindex="0"
+                      type="button"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="DeleteIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                          />
+                        </svg>
+                      </span>
+                      削除
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </button>
+                  </span>
+                </td>
+              </tr>
+              <tr
+                class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                data-testid="entityTableRow"
+              >
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                >
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/new-ui/entities/2/entries"
+                  >
+                    aaaaa
+                  </a>
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  />
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeMedium css-177gid-MuiTableCell-root"
+                >
+                  <a
+                    class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-8 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                    href="/new-ui/entities/2"
+                    tabindex="0"
+                  >
+                    <span
+                      class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="EditIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                        />
+                      </svg>
+                    </span>
+                    エンティティ編集
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </a>
+                  <a
+                    class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                    href="/new-ui/entities/2/history"
+                    tabindex="0"
+                  >
+                    <span
+                      class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="HistoryIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                        />
+                      </svg>
+                    </span>
+                    変更履歴
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </a>
+                  <a
+                    class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                    href="/new-ui/acl/2"
+                    tabindex="0"
+                  >
+                    <span
+                      class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="GroupIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                        />
+                      </svg>
+                    </span>
+                    ACL
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </a>
+                  <span>
+                    <button
+                      class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-9 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                      tabindex="0"
+                      type="button"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="DeleteIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                          />
+                        </svg>
+                      </span>
+                      削除
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </button>
+                  </span>
+                </td>
+              </tr>
+              <tr
+                class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                data-testid="entityTableRow"
+              >
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                >
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/new-ui/entities/3/entries"
+                  >
+                    bbbbb
+                  </a>
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  />
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeMedium css-177gid-MuiTableCell-root"
+                >
+                  <a
+                    class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-8 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                    href="/new-ui/entities/3"
+                    tabindex="0"
+                  >
+                    <span
+                      class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="EditIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                        />
+                      </svg>
+                    </span>
+                    エンティティ編集
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </a>
+                  <a
+                    class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                    href="/new-ui/entities/3/history"
+                    tabindex="0"
+                  >
+                    <span
+                      class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="HistoryIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                        />
+                      </svg>
+                    </span>
+                    変更履歴
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </a>
+                  <a
+                    class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                    href="/new-ui/acl/3"
+                    tabindex="0"
+                  >
+                    <span
+                      class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="GroupIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                        />
+                      </svg>
+                    </span>
+                    ACL
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </a>
+                  <span>
+                    <button
+                      class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-9 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                      tabindex="0"
+                      type="button"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="DeleteIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                          />
+                        </svg>
+                      </span>
+                      削除
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </button>
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div
+          class="MuiTablePagination-root css-jtlhu6-MuiTablePagination-root"
+        >
+          <div
+            class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular MuiTablePagination-toolbar css-11bfvty-MuiToolbar-root-MuiTablePagination-toolbar"
+          >
+            <div
+              class="MuiTablePagination-spacer css-1psng7p-MuiTablePagination-spacer"
+            />
+            <p
+              class="MuiTablePagination-selectLabel css-pdct74-MuiTablePagination-selectLabel"
+              id="mui-2"
+            >
+              Rows per page:
+            </p>
+            <div
+              class="MuiInputBase-root MuiInputBase-colorPrimary css-16c50h-MuiInputBase-root-MuiTablePagination-select"
+            >
+              <div
+                aria-expanded="false"
+                aria-haspopup="listbox"
+                aria-labelledby="mui-2 mui-1"
+                class="MuiTablePagination-select MuiSelect-select MuiSelect-standard MuiInputBase-input css-194a1fa-MuiSelect-select-MuiInputBase-input"
+                id="mui-1"
+                role="button"
+                tabindex="0"
+              >
+                100
+              </div>
+              <input
+                aria-hidden="true"
+                class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
+                tabindex="-1"
+                value="100"
+              />
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTablePagination-selectIcon MuiSelect-icon MuiSelect-iconStandard css-pqjvzy-MuiSvgIcon-root-MuiSelect-icon"
+                data-testid="ArrowDropDownIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M7 10l5 5 5-5z"
+                />
+              </svg>
+            </div>
+            <p
+              class="MuiTablePagination-displayedRows css-levciy-MuiTablePagination-displayedRows"
+            >
+              1–3 of 3
+            </p>
+            <div
+              class="MuiTablePagination-actions"
+            >
+              <button
+                aria-label="Go to previous page"
+                class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-colorInherit MuiIconButton-sizeMedium css-zylse7-MuiButtonBase-root-MuiIconButton-root"
+                disabled=""
+                tabindex="-1"
+                title="Go to previous page"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                  data-testid="KeyboardArrowLeftIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M15.41 16.09l-4.58-4.59 4.58-4.59L14 5.5l-6 6 6 6z"
+                  />
+                </svg>
+              </button>
+              <button
+                aria-label="Go to next page"
+                class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-colorInherit MuiIconButton-sizeMedium css-zylse7-MuiButtonBase-root-MuiIconButton-root"
+                disabled=""
+                tabindex="-1"
+                title="Go to next page"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                  data-testid="KeyboardArrowRightIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M8.59 16.34l4.58-4.59-4.58-4.59L10 5.75l6 6-6 6z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;

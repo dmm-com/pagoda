@@ -6,7 +6,7 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
 import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";

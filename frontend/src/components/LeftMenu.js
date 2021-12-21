@@ -1,6 +1,5 @@
-import { List, ListItem, ListItemText } from "@material-ui/core";
-import Box from "@material-ui/core/Box";
-import { makeStyles } from "@material-ui/core/styles";
+import { Box, List, ListItem, ListItemText } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";

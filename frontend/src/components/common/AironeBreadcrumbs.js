@@ -1,6 +1,6 @@
-import { Breadcrumbs } from "@material-ui/core";
-import { grey } from "@material-ui/core/colors";
-import { makeStyles } from "@material-ui/core/styles";
+import { Breadcrumbs } from "@mui/material";
+import { grey } from "@mui/material/colors";
+import { makeStyles } from "@mui/styles";
 import PropTypes from "prop-types";
 import React from "react";
 

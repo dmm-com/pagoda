@@ -1,5 +1,4 @@
-import { Box } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
+import { Box, Typography } from "@mui/material";
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -11,6 +10,8 @@ import { getEntry } from "../utils/AironeAPIClient";
 
 export function EditEntry({}) {
   const { entityId, entryId } = useParams();
+
+  console.log(`[onix/page.EditEntry(00)] entryId: ` + entryId);
 
   const entry = useAsync(async () => {
     if (entryId !== undefined) {
@@ -37,6 +38,7 @@ export function EditEntry({}) {
       {!entry.loading && (
         <EntryForm
           entityId={Number(entityId)}
+          entryId={Number(entryId)}
           initName={entry.value.name}
           initAttributes={entry.value.attributes}
         />

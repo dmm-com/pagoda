@@ -1,7 +1,4 @@
-import { Box } from "@material-ui/core";
-import Tab from "@material-ui/core/Tab";
-import Tabs from "@material-ui/core/Tabs";
-import Typography from "@material-ui/core/Typography";
+import { Box, Tab, Tabs, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";

@@ -2,18 +2,15 @@
  * @jest-environment jsdom
  */
 
-import { Router } from "@material-ui/icons";
 import { render } from "@testing-library/react";
 import React from "react";
+
+import { TestWrapper } from "../../utils/TestWrapper";
 
 import { SearchResults } from "./SearchResults";
 
 test("should render a component with essential props", function () {
   expect(() =>
-    render(
-      <Router>
-        <SearchResults results={[]} />
-      </Router>
-    )
+    render(<SearchResults results={[]} />, { wrapper: TestWrapper })
   ).not.toThrow();
 });

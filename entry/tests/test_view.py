@@ -3805,7 +3805,7 @@ class ViewTest(AironeViewTest):
         params = {'entry_name': 'entry', 'attrs': []}
         for entity_attr in entity.attrs.all():
             params['attrs'].append({
-                'id': entity_attr.id,
+                'id': str(entity_attr.id),
                 'type': entity_attr.type,
                 'value': [{'data': 'hoge', 'index': 0}],
                 'referral_key': [],

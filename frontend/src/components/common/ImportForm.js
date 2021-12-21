@@ -1,8 +1,5 @@
-import { Box } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
-import { Input } from "@material-ui/icons";
+import { Box, Button, Input, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
