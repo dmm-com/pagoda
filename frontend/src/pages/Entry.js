@@ -17,7 +17,7 @@ import { CreateButton } from "../components/common/CreateButton";
 import { EditButton } from "../components/common/EditButton";
 import { Loading } from "../components/common/Loading";
 import { EntryList } from "../components/entry/EntryList";
-import { exportEntries, getEntries } from "../utils/AironeAPIClient";
+import { exportEntries, getEntries, getEntity } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -33,6 +33,11 @@ export function Entry({}) {
   let { entityId } = useParams();
 
   const [tabValue, setTabValue] = useState(1);
+
+  const entity = useAsync(async () => {
+    const resp = await getEntity(entityId);
+    return await resp.json();
+  });
 
   const entries = useAsync(async () => {
     const resp = await getEntries(entityId, true);
@@ -59,7 +64,9 @@ export function Entry({}) {
         <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
-        <Typography color="textPrimary">エントリ一覧</Typography>
+        <Typography color="textPrimary">
+          {entity.loading ? "" : entity.value.name}
+        </Typography>
       </AironeBreadcrumbs>
 
       <Box className="row">
