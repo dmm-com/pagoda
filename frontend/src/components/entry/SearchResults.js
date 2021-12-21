@@ -1,5 +1,4 @@
-import { Input, TableCell, TableRow } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
+import { Input, TableCell, TableRow, Typography } from "@mui/material";
 import PropTypes from "prop-types";
 import React, { useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";

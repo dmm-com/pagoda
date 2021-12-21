@@ -1,5 +1,4 @@
-import { Box } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
+import { Box, Typography } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
 

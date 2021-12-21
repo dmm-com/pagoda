@@ -1,9 +1,7 @@
-import { Input, TableCell, TableRow } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
-import GroupIcon from "@material-ui/icons/Group";
-import HistoryIcon from "@material-ui/icons/History";
+import GroupIcon from "@mui/icons-material/Group";
+import HistoryIcon from "@mui/icons-material/History";
+import { Button, Input, TableCell, TableRow, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";

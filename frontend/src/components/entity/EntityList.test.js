@@ -5,12 +5,15 @@
 import { screen } from "@testing-library/dom";
 import { fireEvent, render } from "@testing-library/react";
 import React from "react";
-import { MemoryRouter } from "react-router-dom";
+
+import { TestWrapper } from "../../utils/TestWrapper";
 
 import { EntityList } from "./EntityList";
 
 test("should render with essential props", () => {
-  expect(() => render(<EntityList entities={[]} />)).not.toThrow();
+  expect(() =>
+    render(<EntityList entities={[]} />, { wrapper: TestWrapper })
+  ).not.toThrow();
 });
 
 test("should filter entities with given keyword", () => {
@@ -33,7 +36,7 @@ test("should filter entities with given keyword", () => {
   ];
 
   render(<EntityList entities={entities} />, {
-    wrapper: MemoryRouter,
+    wrapper: TestWrapper,
   });
 
   fireEvent.change(screen.getByTestId("entityName"), {

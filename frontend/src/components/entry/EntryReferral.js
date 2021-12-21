@@ -1,5 +1,4 @@
-import { Box, Input } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
+import { Box, Input, Typography } from "@mui/material";
 import PropTypes from "prop-types";
 import React from "react";
 import { Link } from "react-router-dom";

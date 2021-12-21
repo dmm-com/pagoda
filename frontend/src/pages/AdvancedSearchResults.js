@@ -1,8 +1,6 @@
-import Box from "@material-ui/core/Box";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
-import SettingsIcon from "@material-ui/icons/Settings";
+import SettingsIcon from "@mui/icons-material/Settings";
+import { Box, Button, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -58,14 +56,13 @@ export function AdvancedSearchResults({}) {
           className={classes.button}
           variant="outlined"
           startIcon={<SettingsIcon />}
-          color="default"
         >
           高度な検索
         </Button>
-        <Button className={classes.button} variant="outlined" color="primary">
+        <Button className={classes.button} variant="outlined">
           YAML 出力
         </Button>
-        <Button className={classes.button} variant="outlined" color="primary">
+        <Button className={classes.button} variant="outlined">
           CSV 出力
         </Button>
       </Box>

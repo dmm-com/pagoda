@@ -1,16 +1,21 @@
-import { Badge, Divider, Menu, MenuItem } from "@material-ui/core";
-import AppBar from "@material-ui/core/AppBar";
-import Box from "@material-ui/core/Box";
-import Button from "@material-ui/core/Button";
-import IconButton from "@material-ui/core/IconButton";
-import InputBase from "@material-ui/core/InputBase";
-import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
-import { grey } from "@material-ui/core/colors";
-import { alpha, makeStyles } from "@material-ui/core/styles";
-import AccountBox from "@material-ui/icons/AccountBox";
-import FormatListBulletedIcon from "@material-ui/icons/FormatListBulleted";
-import SearchIcon from "@material-ui/icons/Search";
+import AccountBox from "@mui/icons-material/AccountBox";
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import {
+  alpha,
+  AppBar,
+  Badge,
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
+  TextField,
+  Toolbar,
+  Typography,
+} from "@mui/material";
+import { grey } from "@mui/material/colors";
+import { makeStyles } from "@mui/styles";
 import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -24,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
   },
   menu: {
-    marginRight: theme.spacing(2),
+    margin: theme.spacing(0, 1),
   },
   title: {
     flexGrow: 1,
@@ -32,17 +37,14 @@ const useStyles = makeStyles((theme) => ({
   },
 
   search: {
-    position: "relative",
+    display: "flex",
     borderRadius: theme.shape.borderRadius,
     backgroundColor: alpha(theme.palette.common.white, 0.15),
     "&:hover": {
       backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
-    marginRight: theme.spacing(2),
-    marginLeft: 0,
-    width: "100%",
+    margin: theme.spacing(0, 1),
     [theme.breakpoints.up("sm")]: {
-      marginLeft: theme.spacing(3),
       width: "auto",
     },
   },
@@ -55,17 +57,9 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     justifyContent: "center",
   },
-  inputRoot: {
-    color: "inherit",
-  },
-  inputInput: {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
-    transition: theme.transitions.create("width"),
-    width: "100%",
-    [theme.breakpoints.up("md")]: {
-      width: "20ch",
+  searchTextFieldInput: {
+    "&::placeholder": {
+      color: "white",
     },
   },
 }));
@@ -172,16 +166,11 @@ export function Header({}) {
           </Box>
 
           <Box className={classes.search}>
-            <Box className={classes.searchIcon}>
-              <SearchIcon />
-            </Box>
-            <InputBase
+            <TextField
+              InputProps={{ classes: { input: classes.searchTextFieldInput } }}
+              variant="outlined"
+              size="small"
               placeholder="Search…"
-              classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput,
-              }}
-              inputProps={{ "aria-label": "search" }}
               onChange={(e) => setEntryQuery(e.target.value)}
               onKeyPress={handleSearchQuery}
             />
