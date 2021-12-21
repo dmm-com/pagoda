@@ -1,14 +1,17 @@
-import { Button } from "@material-ui/core";
-import Box from "@material-ui/core/Box";
-import Card from "@material-ui/core/Card";
-import Checkbox from "@material-ui/core/Checkbox";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Grid from "@material-ui/core/Grid";
-import Input from "@material-ui/core/Input";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import Radio from "@material-ui/core/Radio";
-import RadioGroup from "@material-ui/core/RadioGroup";
+import {
+  Button,
+  Box,
+  Card,
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  Input,
+  List,
+  ListItem,
+  Radio,
+  RadioGroup,
+} from "@mui/material";
+
 import PropTypes from "prop-types";
 import React from "react";
 
