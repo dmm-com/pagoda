@@ -1,3 +1,4 @@
+import GroupIcon from "@mui/icons-material/Group";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Box,
@@ -17,9 +18,9 @@ import {
 import { makeStyles } from "@mui/styles";
 import PropTypes from "prop-types";
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
-import { entitiesPath } from "../../Routes";
+import { aclPath, entitiesPath } from "../../Routes";
 import { createEntity, updateEntity } from "../../utils/AironeAPIClient";
 
 const BaseAttributeTypes = {
@@ -323,15 +324,27 @@ export function EntityForm({ entity = {}, referralEntities = [] }) {
                     </TableCell>
 
                     <TableCell>
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        className={classes.button}
-                        startIcon={<DeleteIcon />}
-                        onClick={(e) => handleDeleteAttribute(e, index)}
-                      >
-                        削除
-                      </Button>
+                      <Box sx={{ flexDirection: "row" }}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          className={classes.button}
+                          startIcon={<GroupIcon />}
+                          component={Link}
+                          to={aclPath(attr.id)}
+                        >
+                          ACL
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          className={classes.button}
+                          startIcon={<DeleteIcon />}
+                          onClick={(e) => handleDeleteAttribute(e, index)}
+                        >
+                          削除
+                        </Button>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
