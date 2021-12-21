@@ -482,8 +482,8 @@ export function EntryForm({
     <div>
       {/* ^ FIXME form??? */}
       <button onClick={handleSubmit}>submit</button>
-      <div className="row">
-        <div className="col">
+      <Box className="row">
+        <Box className="col">
           <Table className="table table-bordered">
             <TableBody>
               <TableRow>
