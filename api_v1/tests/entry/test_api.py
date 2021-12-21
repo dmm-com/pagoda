@@ -8,6 +8,47 @@ from entry.models import Entry
 
 
 class APITest(AironeViewTest):
+    def test_search_invalid_param(self):
+        self.admin_login()
+        valid_params = {
+            'entities': [1],
+            'attrinfo': [],
+        }
+        invalid_params = [
+            {'entities': 'hoge'},
+            {'entry_name': ['hoge']},
+            {'attrinfo': 'hoge'},
+            {'is_output_all': 'hoge'},
+            {'referral': ['hoge']},
+            {'entry_limit': 'hoge'},
+        ]
+        for invalid_param in invalid_params:
+            params = {**valid_params, **invalid_param}
+            resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.content, b'"The type of parameter is incorrect"')
+
+        params = {**valid_params, **{
+            'attrinfo': [{'hoge': 'value'}]
+        }}
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"The name key is required for attrinfo parameter"')
+
+        params = {**valid_params, **{
+            'attrinfo': [{'name': ['hoge']}]
+        }}
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"Invalid value for attrinfo parameter"')
+
+        params = {**valid_params, **{
+            'attrinfo': [{'name': 'value', 'keyword': ['hoge']}]
+        }}
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"Invalid value for attrinfo parameter"')
+
     def test_narrow_down_advanced_search_results(self):
         user = self.admin_login()
 
@@ -245,16 +286,39 @@ class APITest(AironeViewTest):
             }])
 
     def test_search_with_large_size_parameter(self):
-        LARGE_DATA = 'A' * 2048
         self.admin_login()
 
         params = {
             'entities': ['entity-1'],
-            'attrinfo': [{'name': 'attr', 'keyword': LARGE_DATA}]
+            'attrinfo': [{'name': 'attr', 'keyword': 'A' * 250}],
         }
         resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content, b'"Sending parameter is too large"')
+
+        params = {
+            'entities': ['entity-1'],
+            'attrinfo': [{'name': 'attr'}],
+            'entry_name': 'A' * 250,
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"Sending parameter is too large"')
+
+        params = {
+            'entities': ['entity-1'],
+            'attrinfo': [{'name': 'attr', 'keyword': 'A' * 249}],
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
+
+        params = {
+            'entities': ['entity-1'],
+            'attrinfo': [{'name': 'attr'}],
+            'entry_name': 'A' * 249,
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 200)
 
     def test_search_with_hint_entry_name(self):
         user = self.guest_login()
@@ -378,3 +442,14 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         result = resp.json()['result']
         self.assertEqual(list(result['ret_values'][0]['attrs'].keys()), ['attr1', 'attr2'])
+
+    def test_search_with_invalid_entity_param(self):
+        self.guest_login()
+
+        params = {
+            'entities': [],
+            'attrinfo': [{'name': 'attr'}],
+        }
+        resp = self.client.post('/api/v1/entry/search', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"The entities parameters are required"')

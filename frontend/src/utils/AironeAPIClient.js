@@ -51,6 +51,10 @@ export function getEntries(entityId, isActive = true) {
   );
 }
 
+export function getAttrReferrals(attr_id) {
+  return fetch(`/entry/api/v1/get_attr_referrals/${attr_id}/`);
+}
+
 export function importEntries(entityId, formData) {
   return fetch(`/entry/do_import/${entityId}/`, {
     method: "POST",
@@ -161,6 +165,19 @@ export function deleteEntity(entityId) {
 // FIXME implement internal API then call it
 export function createEntry(entityId, name, attrs) {
   return fetch(`/entry/do_create/${entityId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      entry_name: name,
+      attrs: attrs,
+    }),
+  });
+}
+
+export function updateEntry(entryId, name, attrs) {
+  return fetch(`/entry/do_edit/${entryId}`, {
     method: "POST",
     headers: {
       "X-CSRFToken": getCsrfToken(),

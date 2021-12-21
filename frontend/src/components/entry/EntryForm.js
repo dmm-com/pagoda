@@ -9,12 +9,19 @@ import {
   TableRow,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
+
 import PropTypes from "prop-types";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { entityEntriesPath } from "../../Routes";
-import { createEntry } from "../../utils/AironeAPIClient";
+import {
+  getAttrReferrals,
+  getGroups,
+  updateEntry,
+} from "../../utils/AironeAPIClient";
+import { DjangoContext } from "../../utils/DjangoContext";
+
+import { EditAttributeValue } from "./EditAttributeValue";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -23,61 +30,462 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // FIXME handle attribute types
-export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
+export function EntryForm({
+  entityId,
+  entryId,
+  initName = "",
+  initAttributes = {},
+}) {
+  const djangoContext = DjangoContext.getInstance();
   const classes = useStyles();
   const history = useHistory();
 
-  const [name, setName] = useState(initName);
-  const [attributes, setAttributes] = useState(
-    Object.keys(initAttributes).map((attrname) => {
-      return {
-        name: attrname,
-        value: initAttributes[attrname].value,
-        type: initAttributes[attrname].type,
-      };
-    })
-  );
+  /* FIXME attach checked flag to entry-like types
+   */
+  const changedInitAttr = Object.keys(initAttributes)
+    .map((attrName) => {
+      const attrValue = initAttributes[attrName];
+      switch (attrValue.type) {
+        case djangoContext.attrTypeValue.group:
+        case djangoContext.attrTypeValue.object:
+          return {
+            name: attrName,
+            value: {
+              id: attrValue.id,
+              type: attrValue.type,
+              schema_id: attrValue.schema_id,
+              value: [
+                {
+                  ...attrValue.value,
+                  checked: true,
+                },
+              ],
+            },
+          };
 
-  const handleChangeAttribute = (event) => {
-    attributes[event.target.name] = event.target.value;
-    const updated = attributes.map((attribute) => {
-      if (attribute.name === event.target.name) {
-        attribute.value = event.target.value;
+        case djangoContext.attrTypeValue.named_object:
+          const name = Object.keys(attrValue.value)[0];
+          const value = attrValue.value[name];
+
+          return {
+            name: attrName,
+            value: {
+              id: attrValue.id,
+              type: attrValue.type,
+              schema_id: attrValue.schema_id,
+              value: {
+                [name]: [
+                  {
+                    id: value.id,
+                    name: value.name,
+                    checked: true,
+                  },
+                ],
+              },
+            },
+          };
+
+        case djangoContext.attrTypeValue.array_group:
+        case djangoContext.attrTypeValue.array_object:
+          return {
+            name: attrName,
+            value: {
+              id: attrValue.id,
+              type: attrValue.type,
+              schema_id: attrValue.schema_id,
+              value: attrValue.value.map((val) => {
+                return [
+                  {
+                    ...val,
+                    checked: true,
+                  },
+                ];
+              }),
+            },
+          };
+
+        case djangoContext.attrTypeValue.array_named_object:
+          return {
+            name: attrName,
+            value: {
+              id: attrValue.id,
+              type: attrValue.type,
+              schema_id: attrValue.schema_id,
+              value: attrValue.value.map((val) => {
+                const name = Object.keys(val)[0];
+                const value = val[name];
+                return {
+                  [name]: [
+                    {
+                      ...value,
+                      checked: true,
+                    },
+                  ],
+                };
+              }),
+            },
+          };
+
+        default:
+          return {
+            name: attrName,
+            value: attrValue,
+          };
       }
-      return attribute;
-    });
-    setAttributes(updated);
+    })
+    .reduce((acc, elem) => {
+      acc[elem.name] = elem.value;
+      return acc;
+    }, {});
+
+  const [name, setName] = useState(initName);
+  const [attributes, setAttributes] = useState(changedInitAttr);
+
+  const handleChangeAttribute = (event, name, valueInfo) => {
+    switch (valueInfo.type) {
+      case djangoContext.attrTypeValue.string:
+        attributes[name].value = valueInfo.value;
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.object:
+      case djangoContext.attrTypeValue.group:
+        attributes[name].value = attributes[name].value.map((x) => {
+          return {
+            ...x,
+            checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+          };
+        });
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.array_string:
+        attributes[name].value[valueInfo.index] = valueInfo.value;
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.array_object:
+      case djangoContext.attrTypeValue.array_group:
+        // In this case, new blank co-Attribute value will be added
+        if (valueInfo.index >= attributes[name].value.length) {
+          attributes[name].value.push(valueInfo.value);
+        } else {
+          attributes[name].value[valueInfo.index] = attributes[name].value[
+            valueInfo.index
+          ].map((x) => {
+            return {
+              ...x,
+              checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+            };
+          });
+        }
+
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.named_object:
+        if (event.target.type === "text") {
+          attributes[name].value = {
+            [valueInfo.key]: Object.values(attributes[name].value)[0],
+          };
+        }
+        if (event.target.type === "radio") {
+          const key = Object.keys(attributes[name].value)[0];
+          attributes[name].value[key] = attributes[name].value[key].map((x) => {
+            return {
+              ...x,
+              checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+            };
+          });
+        }
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.array_named_object:
+        // In this case, new blank co-Attribute value will be added
+        if (valueInfo.index >= attributes[name].value.length) {
+          attributes[name].value.push(valueInfo.value);
+        } else {
+          if (event.target.type === "text") {
+            attributes[name].value[valueInfo.index] = {
+              [valueInfo.key]: Object.values(
+                attributes[name].value[valueInfo.index]
+              )[0],
+            };
+          }
+          if (event.target.type === "radio") {
+            const key = Object.keys(attributes[name].value[valueInfo.index])[0];
+            attributes[name].value[valueInfo.index][key] = attributes[
+              name
+            ].value[valueInfo.index][key].map((x) => {
+              return {
+                ...x,
+                checked:
+                  x.id == valueInfo.id && valueInfo.checked ? true : false,
+              };
+            });
+          }
+        }
+
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.boolean:
+        attributes[name].value = valueInfo.checked;
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.date:
+        attributes[name].value = valueInfo.value;
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.text:
+        attributes[name].value = valueInfo.value;
+        setAttributes({ ...attributes });
+        break;
+    }
+  };
+
+  const handleClickDeleteListItem = (e, attrName, index) => {
+    if (index !== undefined) {
+      attributes[attrName].value.splice(index, 1);
+      setAttributes({ ...attributes });
+    }
+  };
+
+  const handleNarrowDownGroups = async (e, attrName, attrType) => {
+    const resp = await getGroups();
+    const refs = await resp.json();
+    const userInputValue = e.target.value;
+
+    function _getUpdatedValues(currentValue) {
+      return refs
+        .filter((r) => {
+          return (
+            r.name.includes(userInputValue) ||
+            currentValue.find((x) => x.id === r.id && x.checked)
+          );
+        })
+        .map((r) => {
+          // return refs.map((r) => {
+          return {
+            id: r.id,
+            name: r.name,
+            checked: currentValue.find((x) => x.id == r.id)?.checked
+              ? true
+              : false,
+          };
+        });
+    }
+
+    switch (attrType) {
+      case djangoContext.attrTypeValue.group:
+        attributes[attrName].value = _getUpdatedValues(
+          attributes[attrName].value
+        );
+
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.array_group:
+        attributes[attrName].value = attributes[attrName].value.map((curr) => {
+          return _getUpdatedValues(curr);
+        });
+
+        setAttributes({ ...attributes });
+        break;
+    }
+  };
+
+  const handleNarrowDownEntries = async (e, attrId, attrName, attrType) => {
+    const resp = await getAttrReferrals(attrId);
+    const refs = await resp.json();
+    const userInputValue = e.target.value;
+
+    function _getUpdatedValues(currentValue) {
+      return refs.results
+        .filter((r) => {
+          return (
+            r.name.includes(userInputValue) ||
+            currentValue.find((x) => x.id === r.id && x.checked)
+          );
+        })
+        .map((r) => {
+          return {
+            id: r.id,
+            name: r.name,
+            checked: currentValue.find((x) => x.id == r.id)?.checked
+              ? true
+              : false,
+          };
+        });
+    }
+
+    switch (attrType) {
+      case djangoContext.attrTypeValue.object:
+        attributes[attrName].value = _getUpdatedValues(
+          attributes[attrName].value
+        );
+
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.array_object:
+        attributes[attrName].value = attributes[attrName].value.map((curr) => {
+          return _getUpdatedValues(curr);
+        });
+
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.named_object:
+        let attrKey = Object.keys(attributes[attrName].value)[0];
+        attributes[attrName].value[attrKey] = _getUpdatedValues(
+          attributes[attrName].value[attrKey]
+        );
+
+        setAttributes({ ...attributes });
+        break;
+
+      case djangoContext.attrTypeValue.array_named_object:
+        attributes[attrName].value = attributes[attrName].value.map((curr) => {
+          let attrKey = Object.keys(curr)[0];
+          return { [attrKey]: _getUpdatedValues(curr[attrKey]) };
+        });
+
+        setAttributes({ ...attributes });
+        break;
+    }
   };
 
   const handleSubmit = (event) => {
-    const attrs = attributes.map((attribute) => {
-      return {
-        id: "4",
-        type: "2",
-        value: [{ data: attribute.name }],
-      };
-    });
-    createEntry(entityId, name, attrs)
-      .then((resp) => resp.json())
-      .then((_) => history.push(entityEntriesPath(entityId)));
+    const updatedAttr = Object.entries(attributes).map(
+      ([attrName, attrValue]) => {
+        switch (attrValue.type) {
+          case djangoContext.attrTypeValue.string:
+          case djangoContext.attrTypeValue.text:
+          case djangoContext.attrTypeValue.boolean:
+          case djangoContext.attrTypeValue.date:
+            return {
+              entity_attr_id: String(attrValue.schema_id),
+              id: String(attrValue.id),
+              type: attrValue.type,
+              value: [
+                {
+                  data: attrValue.value,
+                },
+              ],
+              referral_key: [],
+            };
 
-    event.preventDefault();
+          case djangoContext.attrTypeValue.array_string:
+            return {
+              entity_attr_id: String(attrValue.schema_id),
+              id: String(attrValue.id),
+              type: attrValue.type,
+              value: attrValue.value.map((x, index) => {
+                return {
+                  data: x,
+                  index: index,
+                };
+              }),
+              referral_key: [],
+            };
+
+          case djangoContext.attrTypeValue.object:
+          case djangoContext.attrTypeValue.group:
+            return {
+              entity_attr_id: String(attrValue.schema_id),
+              id: String(attrValue.id),
+              type: attrValue.type,
+              value: [
+                {
+                  data: attrValue.value.filter((x) => x.checked)[0].id ?? "",
+                  index: String(0),
+                },
+              ],
+              referral_key: [],
+            };
+
+          case djangoContext.attrTypeValue.named_object:
+            return {
+              entity_attr_id: String(attrValue.schema_id),
+              id: String(attrValue.id),
+              type: attrValue.type,
+              value: [
+                {
+                  data:
+                    Object.values(attrValue.value)[0].filter(
+                      (x) => x.checked
+                    )[0].id ?? "",
+                  index: String(0),
+                },
+              ],
+              referral_key: [
+                {
+                  data: Object.keys(attrValue.value)[0],
+                  index: String(0),
+                },
+              ],
+            };
+
+          case djangoContext.attrTypeValue.array_named_object:
+            return {
+              entity_attr_id: String(attrValue.schema_id),
+              id: String(attrValue.id),
+              type: attrValue.type,
+              value: attrValue.value.map((x, index) => {
+                return {
+                  data:
+                    Object.values(x)[0].filter((y) => y.checked)[0]?.id ?? "",
+                  index: index,
+                };
+              }),
+              referral_key: attrValue.value.map((x, index) => {
+                return {
+                  data: Object.keys(x)[0],
+                  index: index,
+                };
+              }),
+            };
+
+          case djangoContext.attrTypeValue.array_object:
+          case djangoContext.attrTypeValue.array_group:
+            return {
+              entity_attr_id: String(attrValue.schema_id),
+              id: String(attrValue.id),
+              type: attrValue.type,
+              value: attrValue.value.map((x, index) => {
+                return {
+                  data: x.filter((y) => y.checked)[0]?.id ?? "",
+                  index: index,
+                };
+              }),
+              referral_key: [],
+            };
+        }
+      }
+    );
+
+    if (entryId === undefined) {
+      createEntry(entityId, name, attrs)
+        .then((resp) => resp.json())
+        .then((_) => history.push(entityEntriesPath(entityId)));
+    } else {
+      updateEntry(entryId, name, updatedAttr)
+        .then((resp) => resp.json())
+        // go(n) - (function) Moves the pointer in the history stack by n entries
+        .then((_) => history.go(0));
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
+      {/* ^ FIXME form??? */}
+      <button onClick={handleSubmit}>submit</button>
       <Box className="row">
         <Box className="col">
-          <Box className="float-right">
-            <Button
-              className={classes.button}
-              type="submit"
-              variant="contained"
-              color="secondary"
-            >
-              保存
-            </Button>
-          </Box>
           <Table className="table table-bordered">
             <TableBody>
               <TableRow>
@@ -102,15 +510,17 @@ export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {attributes.map((attribute, index) => (
+          {Object.keys(attributes).map((attributeName, index) => (
             <TableRow key={index}>
-              <TableCell>{attribute.name}</TableCell>
+              <TableCell>{attributeName}</TableCell>
               <TableCell>
-                <Input
-                  type="text"
-                  name={attribute.name}
-                  value={attribute.value}
-                  onChange={handleChangeAttribute}
+                <EditAttributeValue
+                  attrName={attributeName}
+                  attrInfo={attributes[attributeName]}
+                  handleChangeAttribute={handleChangeAttribute}
+                  handleNarrowDownEntries={handleNarrowDownEntries}
+                  handleNarrowDownGroups={handleNarrowDownGroups}
+                  handleClickDeleteListItem={handleClickDeleteListItem}
                 />
               </TableCell>
             </TableRow>
@@ -118,7 +528,7 @@ export function EntryForm({ entityId, initName = "", initAttributes = {} }) {
         </TableBody>
       </Table>
       <strong>(*)</strong> は必須項目
-    </form>
+    </div>
   );
 }
 

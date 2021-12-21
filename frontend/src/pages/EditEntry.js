@@ -11,6 +11,8 @@ import { getEntry } from "../utils/AironeAPIClient";
 export function EditEntry({}) {
   const { entityId, entryId } = useParams();
 
+  console.log(`[onix/page.EditEntry(00)] entryId: ` + entryId);
+
   const entry = useAsync(async () => {
     if (entryId !== undefined) {
       return await getEntry(entryId);
@@ -36,6 +38,7 @@ export function EditEntry({}) {
       {!entry.loading && (
         <EntryForm
           entityId={Number(entityId)}
+          entryId={Number(entryId)}
           initName={entry.value.name}
           initAttributes={entry.value.attributes}
         />
