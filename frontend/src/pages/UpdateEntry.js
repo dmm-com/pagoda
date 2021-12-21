@@ -1,4 +1,3 @@
-import { Box } from "@material-ui/core";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import Typography from "@material-ui/core/Typography";
@@ -7,10 +6,10 @@ import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
-import { ACLForm } from "../components/common/ACLForm";
+import ACLForm from "../components/common/ACLForm";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import CopyForm from "../components/entry/CopyForm";
-import { EntryAttributes } from "../components/entry/EntryAttributes";
+import EntryAttributes from "../components/entry/EntryAttributes";
 import { EntryForm } from "../components/entry/EntryForm";
 import EntryHistory from "../components/entry/EntryHistory";
 import EntryReferral from "../components/entry/EntryReferral";
@@ -24,30 +23,30 @@ import {
 export function ShowEntry({}) {
   const { entryId } = useParams();
 
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState(1);
 
   // TODO get an entry only if show/edit pages
   const entry = useAsync(async () => {
-    const resp = await getEntry(entryId);
-    if (!resp.ok) {
-      throw new Error("entry not found");
-    }
-    return await resp.json();
+    return getEntry(entryId).then((resp) => {
+      if (!resp.ok) {
+        throw new Error("entry not found");
+      }
+      return resp.json();
+    });
   });
 
   const entryHistory = useAsync(async () => {
-    return await getEntryHistory(entryId);
+    return getEntryHistory(entryId);
   });
 
   const referredEntries = useAsync(async () => {
-    const resp = await getReferredEntries(entryId);
-    const data = await resp.json();
-    return data.entries;
+    return getReferredEntries(entryId)
+      .then((resp) => resp.json())
+      .then((data) => data.entries);
   });
 
   const acl = useAsync(async () => {
-    const resp = await getACL(entryId);
-    return await resp.json();
+    return getACL(entryId);
   });
 
   if (entry.error !== undefined) {
@@ -55,7 +54,7 @@ export function ShowEntry({}) {
   }
 
   return (
-    <Box>
+    <div>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -71,9 +70,7 @@ export function ShowEntry({}) {
             {entry.value.schema.name}
           </Typography>
         )}
-        {!entry.loading && (
-          <Typography color="textPrimary">{entry.value.name}</Typography>
-        )}
+        <Typography color="textPrimary">{entryId}</Typography>
       </AironeBreadcrumbs>
 
       <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)}>
@@ -85,45 +82,45 @@ export function ShowEntry({}) {
         <Tab label="ACL設定" index={5} />
       </Tabs>
 
-      <Box hidden={tabValue !== 0}>
+      <div hidden={tabValue !== 0}>
         {!entry.loading && <EntryAttributes attributes={entry.value.attrs} />}
-      </Box>
+      </div>
 
-      <Box hidden={tabValue !== 1}>
+      <div hidden={tabValue !== 1}>
         {!entry.loading && (
           <EntryForm
             entityId={entry.value.schema.id}
-            entryId={entryId}
+            entryId={entry.id}
             initName={entry.value.name}
             initAttributes={entry.value.attrs}
           />
         )}
-      </Box>
+      </div>
 
-      <Box hidden={tabValue !== 2}>
+      <div hidden={tabValue !== 2}>
         {!entry.loading && !referredEntries.loading && (
           <EntryReferral
             entityId={entry.value.schema.id}
             referredEntries={referredEntries.value}
           />
         )}
-      </Box>
+      </div>
 
-      <Box hidden={tabValue !== 3}>
+      <div hidden={tabValue !== 3}>
         {!entryHistory.loading && (
           <EntryHistory histories={entryHistory.value} />
         )}
-      </Box>
+      </div>
 
-      <Box hidden={tabValue !== 4}>
+      <div hidden={tabValue !== 4}>
         {!entry.loading && (
           <CopyForm entityId={entry.value.schema.id} entryId={entryId} />
         )}
-      </Box>
+      </div>
 
-      <Box hidden={tabValue !== 5}>
-        {!acl.loading && <ACLForm objectId={entryId} acl={acl.value} />}
-      </Box>
-    </Box>
+      <div hidden={tabValue !== 5}>
+        {!acl.loading && <ACLForm acl={acl.value} />}
+      </div>
+    </div>
   );
 }

@@ -20,7 +20,7 @@ class GetEntrySerializer(serializers.ModelSerializer):
 
     def get_attrs(self, obj):
         def get_attr_value(attr):
-            attrv = attr.get_latest_value(is_readonly=False)
+            attrv = attr.get_latest_value(is_readonly=True)
 
             if not attrv:
                 return ''
@@ -56,9 +56,10 @@ class GetEntrySerializer(serializers.ModelSerializer):
 
             elif attr.schema.type & AttrTypeValue['named']:
                 return {
-                    'name': attrv.value,
-                    'ref_id': attrv.referral.id if attrv.referral else None,
-                    'ref_name': attrv.referral.name if attrv.referral else '',
+                    attrv.value: {
+                        'id': attrv.referral.id if attrv.referral else None,
+                        'name': attrv.referral.name if attrv.referral else '',
+                    }
                 }
 
             elif attr.schema.type & AttrTypeValue['object']:
@@ -85,7 +86,9 @@ class GetEntrySerializer(serializers.ModelSerializer):
 
         return {
                 x.schema.name: {
+                    'id': x.id,
                     'type': x.schema.type,
                     'value': get_attr_value(x),
+                    'schema_id': x.schema.id,
                 }
                 for x in obj.attrs.filter(is_active=True)}
