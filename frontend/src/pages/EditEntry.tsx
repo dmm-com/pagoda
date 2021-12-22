@@ -1,4 +1,4 @@
-import Typography from "@material-ui/core/Typography";
+import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -20,7 +20,7 @@ export const EditEntry: FC = () => {
   });
 
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -37,10 +37,11 @@ export const EditEntry: FC = () => {
       {!entry.loading && (
         <EntryForm
           entityId={Number(entityId)}
+          entryId={entry.value.id}
           initName={entry.value.name}
           initAttributes={entry.value.attributes}
         />
       )}
-    </div>
+    </Box>
   );
 };

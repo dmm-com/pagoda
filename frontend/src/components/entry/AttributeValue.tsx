@@ -1,10 +1,17 @@
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
+import { Checkbox, Box, List, ListItem } from "@mui/material";
 import PropTypes from "prop-types";
 import * as React from "react";
 
 import { groupsPath, showEntryPath } from "../../Routes";
 import { DjangoContext } from "../../utils/DjangoContext";
+
+function ElemBool({ attrValue }) {
+  return <Checkbox checked={attrValue} disabled />;
+}
+
+ElemBool.propTypes = {
+  attrValue: PropTypes.bool.isRequired,
+};
 
 function ElemString({ attrValue }) {
   return <div>{attrValue}</div>;
@@ -26,12 +33,15 @@ ElemObject.propTypes = {
 };
 
 function ElemNamedObject({ attrValue }) {
+  console.log(`[onix/ElemNamedObject(00)]`);
+  console.log(attrValue);
+
   const key = Object.keys(attrValue)[0];
   return (
-    <div>
-      <div>{key}</div>:{" "}
+    <Box>
+      <Box>{key}</Box>:{" "}
       <a href={showEntryPath(attrValue[key].id)}>{attrValue[key].name}</a>
-    </div>
+    </Box>
   );
 }
 
@@ -58,9 +68,11 @@ export function AttributeValue({ attrName, attrInfo }) {
 
     case djangoContext.attrTypeValue.string:
     case djangoContext.attrTypeValue.text:
-    case djangoContext.attrTypeValue.boolean:
     case djangoContext.attrTypeValue.date:
       return <ElemString attrValue={attrInfo.value} />;
+
+    case djangoContext.attrTypeValue.boolean:
+      return <ElemBool attrValue={attrInfo.value} />;
 
     case djangoContext.attrTypeValue.named_object:
       return <ElemNamedObject attrValue={attrInfo.value} />;

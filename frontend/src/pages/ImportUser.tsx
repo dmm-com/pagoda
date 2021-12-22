@@ -1,4 +1,4 @@
-import Typography from "@material-ui/core/Typography";
+import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
@@ -9,7 +9,7 @@ import { importGroups } from "../utils/AironeAPIClient";
 
 export const ImportUser: FC = () => {
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -22,6 +22,6 @@ export const ImportUser: FC = () => {
 
       {/* call the 'groups' exporter, not for 'users' */}
       <ImportForm importFunc={importGroups} redirectPath={usersPath()} />
-    </div>
+    </Box>
   );
 };

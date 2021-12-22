@@ -2242,6 +2242,7 @@ class ModelTest(AironeTestCase):
 
         resp = Entry.search_entries(user, [entity.id], [{'name': 'foo', 'keyword': 'ref'}], limit=5)
         self.assertEqual(resp['ret_count'], 10)
+        self.assertEqual(len(resp['ret_values']), 5)
 
     def test_search_entities_have_individual_attrs(self):
         user = User.objects.create(username='hoge')
@@ -3114,7 +3115,7 @@ class ModelTest(AironeTestCase):
                      '[', ']', '{', '}', ';', '+', ':', '*', ',', '<', '>', '.', '/', '?', '_', ' ']
         test_suites = []
         for i, add_char in enumerate(add_chars):
-            entry_name = 'test%s%s' % (i, add_char)
+            entry_name = 'test%s%s' % (add_char, i)
             entry = Entry.objects.create(name=entry_name, schema=entity, created_user=user)
             entry.register_es()
 

@@ -1,7 +1,6 @@
-import { TableCell, TableRow } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
-import RestoreIcon from "@material-ui/icons/Restore";
+import RestoreIcon from "@mui/icons-material/Restore";
+import { Input, TableCell, TableRow, Theme, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
@@ -11,7 +10,7 @@ import { ConfirmableButton } from "../common/ConfirmableButton";
 import { DeleteButton } from "../common/DeleteButton";
 import { PaginatedTable } from "../common/PaginatedTable";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -61,7 +60,7 @@ export const EntryList: FC<Props> = ({ entries, restoreMode }) => {
         <TableRow>
           <TableCell>
             <span className={classes.entryName}>エントリ名</span>
-            <input
+            <Input
               className={classes.entryName}
               value={keyword}
               placeholder="絞り込む"

@@ -1,4 +1,4 @@
-import Typography from "@material-ui/core/Typography";
+import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
@@ -9,7 +9,7 @@ import { importEntities } from "../utils/AironeAPIClient";
 
 export const ImportEntity: FC = () => {
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -21,6 +21,6 @@ export const ImportEntity: FC = () => {
       </AironeBreadcrumbs>
 
       <ImportForm importFunc={importEntities} redirectPath={entitiesPath()} />
-    </div>
+    </Box>
   );
 };

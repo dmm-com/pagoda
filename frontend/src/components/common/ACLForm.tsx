@@ -1,5 +1,9 @@
 import {
+  Box,
+  Button,
+  Checkbox,
   MenuItem,
+  Paper,
   Select,
   Table,
   TableBody,
@@ -7,17 +11,16 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-} from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import Paper from "@material-ui/core/Paper";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
+  Theme,
+  Typography,
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { updateACL } from "../../utils/AironeAPIClient";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -70,14 +73,12 @@ export const ACLForm: FC<Props> = ({ objectId, acl }) => {
 
   return (
     <form>
-      <div className="container">
-        <div className="row">
-          <div className="col">
+      <Box className="container">
+        <Box className="row">
+          <Box className="col">
             <span className="float-left">
               公開：
-              <input
-                type="checkbox"
-                name="is_public"
+              <Checkbox
                 checked={isPublic}
                 onChange={(e) => setIsPublic(e.target.checked)}
               />
@@ -92,9 +93,9 @@ export const ACLForm: FC<Props> = ({ objectId, acl }) => {
                 保存
               </Button>
             </span>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
       <TableContainer component={Paper}>
         <Table>

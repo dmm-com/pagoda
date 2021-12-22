@@ -1,6 +1,5 @@
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
+import { Box, Button, Theme, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -15,7 +14,7 @@ import {
   getEntities,
 } from "../utils/AironeAPIClient";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -31,7 +30,7 @@ export const Entity: FC = () => {
   });
 
   return (
-    <div className="container-fluid">
+    <Box className="container-fluid">
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -39,9 +38,9 @@ export const Entity: FC = () => {
         <Typography color="textPrimary">エンティティ一覧</Typography>
       </AironeBreadcrumbs>
 
-      <div className="row">
-        <div className="col">
-          <div className="float-left">
+      <Box className="row">
+        <Box className="col">
+          <Box className="float-left">
             <CreateButton to={newEntityPath()}>エンティティ作成</CreateButton>
             <Button
               className={classes.button}
@@ -60,16 +59,16 @@ export const Entity: FC = () => {
             >
               インポート
             </Button>
-          </div>
-          <div className="float-right" />
-        </div>
-      </div>
+          </Box>
+          <Box className="float-right" />
+        </Box>
+      </Box>
 
       {entities.loading ? (
         <Loading />
       ) : (
         <EntityList entities={entities.value} />
       )}
-    </div>
+    </Box>
   );
 };

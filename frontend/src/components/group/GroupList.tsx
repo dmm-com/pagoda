@@ -1,15 +1,15 @@
 import {
   List,
   ListItem,
+  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-} from "@material-ui/core";
-import Paper from "@material-ui/core/Paper";
-import Typography from "@material-ui/core/Typography";
+  Typography,
+} from "@mui/material";
 import React, { FC } from "react";
 import { Link, useHistory } from "react-router-dom";
 

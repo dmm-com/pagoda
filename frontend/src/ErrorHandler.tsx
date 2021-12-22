@@ -4,16 +4,17 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  Theme,
   Typography,
-} from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import PropTypes from "prop-types";
 import React, { FC, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 import { topPath } from "./Routes";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   errorDescription: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),

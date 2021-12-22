@@ -1,9 +1,9 @@
-import { Breadcrumbs } from "@material-ui/core";
-import { grey } from "@material-ui/core/colors";
-import { makeStyles } from "@material-ui/core/styles";
+import { Breadcrumbs, Theme } from "@mui/material";
+import { grey } from "@mui/material/colors";
+import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   breadcrumbs: {
     padding: theme.spacing(1),
     marginBottom: theme.spacing(1),

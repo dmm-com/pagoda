@@ -1,7 +1,15 @@
-import { Table, TableBody, TableCell, TableRow } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
+import {
+  Box,
+  Button,
+  Input,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  Theme,
+  Typography,
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -11,7 +19,7 @@ import {
   updateUserPasswordAsSuperuser,
 } from "../../utils/AironeAPIClient";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -78,37 +86,37 @@ export const UserPasswordForm: FC<Props> = ({ user, asSuperuser = false }) => {
             </TableCell>
             <TableCell>
               {!asSuperuser && (
-                <div className={classes.passwordField}>
+                <Box className={classes.passwordField}>
                   <dt>
                     <label htmlFor="new_password">Old password</label>
                   </dt>
-                  <input
+                  <Input
                     type="password"
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
                   />
-                </div>
+                </Box>
               )}
-              <div className={classes.passwordField}>
+              <Box className={classes.passwordField}>
                 <dt>
                   <label htmlFor="new_password">New password</label>
                 </dt>
-                <input
+                <Input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                 />
-              </div>
-              <div className={classes.passwordField}>
+              </Box>
+              <Box className={classes.passwordField}>
                 <dt>
                   <label htmlFor="chk_password">Confirm new password</label>
                 </dt>
-                <input
+                <Input
                   type="password"
                   value={checkPassword}
                   onChange={(e) => setCheckPassword(e.target.value)}
                 />
-              </div>
+              </Box>
             </TableCell>
           </TableRow>
         </TableBody>

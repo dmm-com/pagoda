@@ -2,9 +2,14 @@
  * @jest-environment jsdom
  */
 
-import { render, waitFor } from "@testing-library/react";
+import {
+  render,
+  waitForElementToBeRemoved,
+  screen,
+} from "@testing-library/react";
 import React from "react";
-import { MemoryRouter } from "react-router-dom";
+
+import { TestWrapper } from "../utils/TestWrapper";
 
 import { Entity } from "./Entity";
 
@@ -15,17 +20,17 @@ afterEach(() => {
 test("should match snapshot", async () => {
   const entities = [
     {
-      id: "1",
+      id: 1,
       name: "aaa",
       note: "",
     },
     {
-      id: "2",
+      id: 2,
       name: "aaaaa",
       note: "",
     },
     {
-      id: "3",
+      id: 3,
       name: "bbbbb",
       note: "",
     },
@@ -34,7 +39,7 @@ test("should match snapshot", async () => {
   /* eslint-disable */
   jest
     .spyOn(require("../utils/AironeAPIClient"), "getEntities")
-    .mockResolvedValueOnce({
+    .mockResolvedValue({
       json() {
         return Promise.resolve({
           entities: entities,
@@ -43,11 +48,11 @@ test("should match snapshot", async () => {
     });
   /* eslint-enable */
 
-  const fragment = await waitFor(() => {
-    return render(<Entity />, {
-      wrapper: MemoryRouter,
-    }).asFragment();
+  // wait async calls and get rendered fragment
+  const result = render(<Entity />, {
+    wrapper: TestWrapper,
   });
+  await waitForElementToBeRemoved(screen.getByTestId("loading"));
 
-  expect(fragment).toMatchSnapshot();
+  expect(result).toMatchSnapshot();
 });

@@ -1,5 +1,4 @@
-import { TableCell, TableRow } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
+import { Input, TableCell, TableRow, Typography } from "@mui/material";
 import React, { FC, useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
@@ -67,7 +66,7 @@ export const SearchResults: FC<Props> = ({
         <TableRow>
           <TableCell>
             <Typography>Name</Typography>
-            <input
+            <Input
               placeholder="絞り込む"
               defaultValue={defaultEntryFilter}
               onChange={entryFilterDispatcher}
@@ -77,7 +76,7 @@ export const SearchResults: FC<Props> = ({
           {attrNames.map((attrName) => (
             <TableCell key={attrName}>
               <Typography>{attrName}</Typography>
-              <input
+              <Input
                 placeholder="絞り込む"
                 defaultValue={defaultAttrsFilter[attrName] || ""}
                 onChange={(e) =>

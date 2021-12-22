@@ -1,4 +1,4 @@
-import Typography from "@material-ui/core/Typography";
+import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -23,7 +23,7 @@ export const EditGroup: FC = () => {
   });
 
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -37,6 +37,6 @@ export const EditGroup: FC = () => {
       {!users.loading && !group.loading && (
         <GroupForm users={users.value} group={group.value} />
       )}
-    </div>
+    </Box>
   );
 };

@@ -1,14 +1,12 @@
-import { Select } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
+import { Box, Button, Input, Select, Theme, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { ChangeEvent, FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { groupsPath } from "../../Routes";
 import { createGroup, updateGroup } from "../../utils/AironeAPIClient";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -62,23 +60,24 @@ export const GroupForm: FC<Props> = ({ users, group }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div>
+      <Box>
         <Typography>グループ名</Typography>
-        <input
+        <Input
           type="text"
           name="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          required={true}
+          required
         />
-      </div>
-      <div>
+      </Box>
+      <Box>
         <Typography>ユーザ管理</Typography>
         <Select
           multiple
           native
           variant="outlined"
           value={members}
+          // @ts-ignore Typings are not considering `native`
           onChange={handleChangeSelectedOptions}
         >
           {users.map((user) => (
@@ -87,7 +86,7 @@ export const GroupForm: FC<Props> = ({ users, group }) => {
             </option>
           ))}
         </Select>
-      </div>
+      </Box>
       <Button
         className={classes.button}
         type="submit"

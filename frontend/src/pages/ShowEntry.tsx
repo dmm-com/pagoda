@@ -1,6 +1,4 @@
-import Tab from "@material-ui/core/Tab";
-import Tabs from "@material-ui/core/Tabs";
-import Typography from "@material-ui/core/Typography";
+import { Box, Tab, Tabs, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -54,7 +52,7 @@ export const ShowEntry: FC = () => {
   }
 
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -70,7 +68,9 @@ export const ShowEntry: FC = () => {
             {entry.value.schema.name}
           </Typography>
         )}
-        <Typography color="textPrimary">{entryId}</Typography>
+        {!entry.loading && (
+          <Typography color="textPrimary">{entry.value.name}</Typography>
+        )}
       </AironeBreadcrumbs>
 
       <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)}>
@@ -82,41 +82,42 @@ export const ShowEntry: FC = () => {
         <Tab label="ACL設定" />
       </Tabs>
 
-      <div hidden={tabValue !== 0}>
+      <Box hidden={tabValue !== 0}>
         {!entry.loading && <EntryAttributes attributes={entry.value.attrs} />}
-      </div>
+      </Box>
 
-      <div hidden={tabValue !== 1}>
+      <Box hidden={tabValue !== 1}>
         {!entry.loading && (
           <EntryForm
             entityId={entry.value.schema.id}
+            entryId={entry.value.id}
             initName={entry.value.name}
             initAttributes={entry.value.attrs}
           />
         )}
-      </div>
+      </Box>
 
-      <div hidden={tabValue !== 2}>
+      <Box hidden={tabValue !== 2}>
         {!entry.loading && !referredEntries.loading && (
           <EntryReferral referredEntries={referredEntries.value} />
         )}
-      </div>
+      </Box>
 
-      <div hidden={tabValue !== 3}>
+      <Box hidden={tabValue !== 3}>
         {!entryHistory.loading && (
           <EntryHistory histories={entryHistory.value} />
         )}
-      </div>
+      </Box>
 
-      <div hidden={tabValue !== 4}>
+      <Box hidden={tabValue !== 4}>
         {!entry.loading && (
           <CopyForm entityId={entry.value.schema.id} entryId={entryId} />
         )}
-      </div>
+      </Box>
 
-      <div hidden={tabValue !== 5}>
+      <Box hidden={tabValue !== 5}>
         {!acl.loading && <ACLForm objectId={entryId} acl={acl.value} />}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };

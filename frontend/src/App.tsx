@@ -1,3 +1,4 @@
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import React from "react";
 import { FC } from "react";
 import ReactDOM from "react-dom";
@@ -6,10 +7,13 @@ import { AppRouter } from "./AppRouter";
 import { ErrorHandler } from "./ErrorHandler";
 
 const App: FC = () => {
+  const theme = createTheme();
   return (
-    <ErrorHandler>
-      <AppRouter />
-    </ErrorHandler>
+    <ThemeProvider theme={theme}>
+      <ErrorHandler>
+        <AppRouter />
+      </ErrorHandler>
+    </ThemeProvider>
   );
 };
 

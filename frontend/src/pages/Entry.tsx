@@ -1,9 +1,13 @@
-import { Divider } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import Tab from "@material-ui/core/Tab";
-import Tabs from "@material-ui/core/Tabs";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
+import {
+  Box,
+  Button,
+  Divider,
+  Tab,
+  Tabs,
+  Theme,
+  Typography,
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -23,7 +27,7 @@ import { Loading } from "../components/common/Loading";
 import { EntryList } from "../components/entry/EntryList";
 import { exportEntries, getEntries } from "../utils/AironeAPIClient";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -55,7 +59,7 @@ export const Entry: FC = () => {
   };
 
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -66,9 +70,9 @@ export const Entry: FC = () => {
         <Typography color="textPrimary">エントリ一覧</Typography>
       </AironeBreadcrumbs>
 
-      <div className="row">
-        <div className="col">
-          <div className="float-left">
+      <Box className="row">
+        <Box className="col">
+          <Box className="float-left">
             <CreateButton to={newEntryPath(entityId)}>
               エントリ作成
             </CreateButton>
@@ -105,9 +109,9 @@ export const Entry: FC = () => {
             >
               インポート
             </Button>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
       <Divider />
 
@@ -118,9 +122,9 @@ export const Entry: FC = () => {
         <Tab label="削除エントリの復旧" />
       </Tabs>
 
-      <div hidden={tabValue !== 0}>ダッシュボード</div>
+      <Box hidden={tabValue !== 0}>ダッシュボード</Box>
 
-      <div hidden={tabValue !== 1}>
+      <Box hidden={tabValue !== 1}>
         {entries.loading ? (
           <Loading />
         ) : (
@@ -130,11 +134,11 @@ export const Entry: FC = () => {
             restoreMode={false}
           />
         )}
-      </div>
+      </Box>
 
-      <div hidden={tabValue !== 2}>ダッシュボードの設定</div>
+      <Box hidden={tabValue !== 2}>ダッシュボードの設定</Box>
 
-      <div hidden={tabValue !== 3}>
+      <Box hidden={tabValue !== 3}>
         {!deletedEntries.loading && (
           <EntryList
             entityId={entityId}
@@ -142,7 +146,7 @@ export const Entry: FC = () => {
             restoreMode={true}
           />
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };

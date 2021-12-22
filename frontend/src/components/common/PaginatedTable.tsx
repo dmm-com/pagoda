@@ -1,11 +1,11 @@
 import {
+  Paper,
   Table,
   TableBody,
   TableContainer,
   TableHead,
   TablePagination,
-} from "@material-ui/core";
-import Paper from "@material-ui/core/Paper";
+} from "@mui/material";
 import React, { FC, ReactElement, useState } from "react";
 
 interface Props {

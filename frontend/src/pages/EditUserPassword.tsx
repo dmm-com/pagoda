@@ -1,4 +1,4 @@
-import Typography from "@material-ui/core/Typography";
+import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -17,7 +17,7 @@ export const EditUserPassword: FC = () => {
   });
 
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -34,6 +34,6 @@ export const EditUserPassword: FC = () => {
           asSuperuser={(window as any).django_context.user.is_superuser}
         />
       )}
-    </div>
+    </Box>
   );
 };

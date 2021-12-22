@@ -1,4 +1,10 @@
+import DeleteIcon from "@mui/icons-material/Delete";
+import GroupIcon from "@mui/icons-material/Group";
 import {
+  Box,
+  Button,
+  Checkbox,
+  Input,
   List,
   ListItemText,
   MenuItem,
@@ -8,16 +14,14 @@ import {
   TableCell,
   TableHead,
   TableRow,
-} from "@material-ui/core";
-import Box from "@material-ui/core/Box";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
-import DeleteIcon from "@material-ui/icons/Delete";
+  Theme,
+  Typography,
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
-import { entitiesPath } from "../../Routes";
+import { aclPath, entitiesPath } from "../../Routes";
 import { createEntity, updateEntity } from "../../utils/AironeAPIClient";
 
 const BaseAttributeTypes = {
@@ -81,7 +85,7 @@ export const AttributeTypes = {
   },
 };
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -171,10 +175,10 @@ export const EntityForm: FC<Props> = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="container-fluid">
-        <div className="row">
-          <div className="col">
-            <div className="float-right">
+      <Box className="container-fluid">
+        <Box className="row">
+          <Box className="col">
+            <Box className="float-right">
               <Button
                 className={classes.button}
                 type="submit"
@@ -183,13 +187,13 @@ export const EntityForm: FC<Props> = ({
               >
                 保存
               </Button>
-            </div>
+            </Box>
             <Table className="table table-bordered">
               <TableBody>
                 <TableRow>
                   <TableCell>エンティティ名</TableCell>
                   <TableCell>
-                    <input
+                    <Input
                       type="text"
                       name="name"
                       value={name}
@@ -200,7 +204,7 @@ export const EntityForm: FC<Props> = ({
                 <TableRow>
                   <TableCell>備考</TableCell>
                   <TableCell>
-                    <input
+                    <Input
                       type="text"
                       name="note"
                       value={note}
@@ -211,8 +215,7 @@ export const EntityForm: FC<Props> = ({
                 <TableRow>
                   <TableCell>サイドバーに表示</TableCell>
                   <TableCell>
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={isTopLevel}
                       onChange={(e) => setIsTopLevel(e.target.checked)}
                     />
@@ -235,7 +238,7 @@ export const EntityForm: FC<Props> = ({
                 {attributes.map((attr, index) => (
                   <TableRow key={index} className="attr">
                     <TableCell>
-                      <input
+                      <Input
                         type="text"
                         className="attr_name"
                         value={attr.name}
@@ -308,7 +311,7 @@ export const EntityForm: FC<Props> = ({
                     </TableCell>
 
                     <TableCell>
-                      <div>
+                      <Box>
                         <input
                           type="checkbox"
                           checked={attr.is_mandatory}
@@ -321,10 +324,9 @@ export const EntityForm: FC<Props> = ({
                           }
                         />
                         必須
-                      </div>
-                      <div>
-                        <input
-                          type="checkbox"
+                      </Box>
+                      <Box>
+                        <Checkbox
                           checked={attr.is_delete_in_chain}
                           onChange={(e) =>
                             handleChangeAttributeValue(
@@ -335,29 +337,41 @@ export const EntityForm: FC<Props> = ({
                           }
                         />
                         関連削除
-                      </div>
+                      </Box>
                     </TableCell>
 
                     <TableCell>
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        className={classes.button}
-                        startIcon={<DeleteIcon />}
-                        onClick={(e) => handleDeleteAttribute(e, index)}
-                      >
-                        削除
-                      </Button>
+                      <Box sx={{ flexDirection: "row" }}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          className={classes.button}
+                          startIcon={<GroupIcon />}
+                          component={Link}
+                          to={aclPath(attr.id)}
+                        >
+                          ACL
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          className={classes.button}
+                          startIcon={<DeleteIcon />}
+                          onClick={(e) => handleDeleteAttribute(e, index)}
+                        >
+                          削除
+                        </Button>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
-        <div className="row">
-          <div className="col">
+        <Box className="row">
+          <Box className="col">
             <Button
               className={classes.button}
               variant="outlined"
@@ -366,9 +380,9 @@ export const EntityForm: FC<Props> = ({
             >
               属性追加
             </Button>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
     </form>
   );
 };

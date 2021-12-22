@@ -5,6 +5,8 @@
 import { render } from "@testing-library/react";
 import React from "react";
 
+import { TestWrapper } from "../../utils/TestWrapper";
+
 import { ImportForm } from "./ImportForm";
 
 test("should render a component with essential props", function () {
@@ -13,7 +15,8 @@ test("should render a component with essential props", function () {
       <ImportForm
         importFunc={() => Promise.resolve()}
         redirectPath={"/path/to/redirect"}
-      />
+      />,
+      { wrapper: TestWrapper }
     )
   ).not.toThrow();
 });

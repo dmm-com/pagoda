@@ -1,11 +1,12 @@
 import {
+  Box,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
 import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -45,7 +46,7 @@ export const EntityHistory: FC = () => {
   });
 
   return (
-    <div className="container">
+    <Box className="container">
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -122,6 +123,6 @@ export const EntityHistory: FC = () => {
             ))}
         </TableBody>
       </Table>
-    </div>
+    </Box>
   );
 };

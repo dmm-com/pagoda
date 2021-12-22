@@ -5,6 +5,8 @@
 import { render } from "@testing-library/react";
 import React from "react";
 
+import { TestWrapper } from "../../utils/TestWrapper";
+
 import { ACLForm } from "./ACLForm";
 
 test("should render a component with essential props", function () {
@@ -28,5 +30,7 @@ test("should render a component with essential props", function () {
       },
     ],
   };
-  expect(() => render(<ACLForm objectId={1} acl={acl} />)).not.toThrow();
+  expect(() =>
+    render(<ACLForm acl={acl} objectId={1} />, { wrapper: TestWrapper })
+  ).not.toThrow();
 });

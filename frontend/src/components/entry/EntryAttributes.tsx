@@ -1,6 +1,5 @@
-import { Table, TableBody, TableCell, TableRow } from "@material-ui/core";
-import * as React from "react";
-import { FC } from "react";
+import { Table, TableBody, TableCell, TableRow } from "@mui/material";
+import React, { FC } from "react";
 
 import { AttributeValue } from "./AttributeValue";
 

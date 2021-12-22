@@ -165,20 +165,20 @@ def export_search_result(self, job_id):
     user = job.user
     recv_data = json.loads(job.params)
 
-    has_referral = False
-    if 'has_referral' in recv_data:
-        has_referral = recv_data['has_referral']
+    has_referral = recv_data.get('has_referral', False)
+    referral_name = recv_data.get('referral_name')
+    entry_name = recv_data.get('entry_name')
 
-    hint_entry_name = ''
-    if 'entry_name' in recv_data and recv_data['entry_name']:
-        hint_entry_name = recv_data['entry_name']
+    hint_referral = '' if has_referral else False
+    if referral_name:
+        hint_referral = referral_name
 
     resp = Entry.search_entries(user,
                                 recv_data['entities'],
                                 recv_data['attrinfo'],
                                 settings.ES_CONFIG['MAXIMUM_RESULTS_NUM'],
-                                hint_referral=has_referral,
-                                entry_name=hint_entry_name)
+                                entry_name,
+                                hint_referral)
 
     io_stream = None
     if recv_data['export_style'] == 'yaml':

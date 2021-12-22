@@ -1,17 +1,20 @@
 import {
+  Box,
+  Button,
   Card,
   CardHeader,
   Checkbox,
   FormControlLabel,
+  Grid,
+  Input,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
-} from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import Grid from "@material-ui/core/Grid";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
+  Theme,
+  Typography,
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -21,7 +24,7 @@ import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
 import { getEntities, getEntityAttrs } from "../utils/AironeAPIClient";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   description: {
     margin: theme.spacing(1),
   },
@@ -130,7 +133,7 @@ export const AdvancedSearch: FC = () => {
   };
 
   return (
-    <div className="container-fluid">
+    <Box className="container-fluid">
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -165,7 +168,6 @@ export const AdvancedSearch: FC = () => {
                     key={entity.id}
                     dense
                     button
-                    divider
                     onClick={() => toggleSelectedEntityIds(entity.id)}
                   >
                     <ListItemIcon>
@@ -184,7 +186,7 @@ export const AdvancedSearch: FC = () => {
             <Loading />
           )}
         </List>
-        <input
+        <Input
           className={classes.entityFilter}
           placeholder="エンティティ名で絞り込む"
           value={entityNameFilter}
@@ -214,7 +216,6 @@ export const AdvancedSearch: FC = () => {
                     key={attr}
                     dense
                     button
-                    divider
                     onClick={() => toggleSelectedAttrs(attr)}
                   >
                     <ListItemIcon>
@@ -233,7 +234,7 @@ export const AdvancedSearch: FC = () => {
             <Loading />
           )}
         </List>
-        <input
+        <Input
           className={classes.attrFilter}
           placeholder="属性名で絞り込む"
           value={attrNameFilter}
@@ -252,6 +253,6 @@ export const AdvancedSearch: FC = () => {
           </Button>
         </Grid>
       </Grid>
-    </div>
+    </Box>
   );
 };

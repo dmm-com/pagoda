@@ -15,7 +15,7 @@
         <input type='hidden' name='entities' value='[{{ entities }}]' />
         <input type='hidden' name='attrinfo' value='[]' />
         <input type='hidden' name='export_style' value='' />
-        {% if has_referral is not False %}
+        {% if has_referral %}
           <input type='hidden' id='param_export_csv_referral' name='has_referral' value='' />
         {% endif %}
 
@@ -45,10 +45,10 @@
       </th>
       {% endfor %}
 
-      {% if has_referral is not False %}
+      {% if has_referral %}
       <th>
         参照エントリ<br/>
-        <input type='text' class='input-sm narrow_down_referral' value="{{ has_referral|default_if_none:'' }}"></input>
+        <input type='text' class='input-sm narrow_down_referral' value="{{ referral_name|default_if_none:'' }}"></input>
       </th>
       {% endif %}
     </tr>
@@ -152,7 +152,7 @@
         {% endif %}
       {% endfor %}
 
-      {% if has_referral is not False %}
+      {% if has_referral %}
       <td id='referral'>
         <ul class='list-group'>
           {% for referral in result.referrals %}
@@ -218,7 +218,7 @@
 
       <div class="modal-footer">
         <span class="mr-auto">
-          {% if has_referral is not False %}
+          {% if has_referral %}
             <input type='checkbox' id='modal_cond_add_referral' checked='True'> 参照エントリも含める</input>
           {% else %}
             <input type='checkbox' id='modal_cond_add_referral'> 参照エントリも含める</input>

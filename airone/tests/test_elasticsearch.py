@@ -34,38 +34,7 @@ class ElasticSearchTest(TestCase):
 
         # with anchor operators
         p2 = elasticsearch._get_regex_pattern('^keyword$')
-        self.assertEqual(p2, '.*^?[kK][eE][yY][wW][oO][rR][dD]$?.*')
-
-    def test_is_matched_keyword(self):
-        # if it has the same value with a hint
-        self.assertTrue(elasticsearch._is_matched_entry(
-            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeStr.TYPE}],
-            hint_attrs=[{'name': 'attr', 'keyword': 'keyword'}]
-        ))
-
-        # if a hint has ^ and/or $, it matches with the keyword as a regexp
-        self.assertTrue(elasticsearch._is_matched_entry(
-            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeStr.TYPE}],
-            hint_attrs=[{'name': 'attr', 'keyword': '^keyword'}]
-        ))
-        self.assertFalse(elasticsearch._is_matched_entry(
-            attrs=[{'name': 'attr', 'value': '111keyword', 'type': AttrTypeStr.TYPE}],
-            hint_attrs=[{'name': 'attr', 'keyword': '^keyword'}]
-        ))
-        self.assertTrue(elasticsearch._is_matched_entry(
-            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeStr.TYPE}],
-            hint_attrs=[{'name': 'attr', 'keyword': 'keyword$'}]
-        ))
-        self.assertFalse(elasticsearch._is_matched_entry(
-            attrs=[{'name': 'attr', 'value': 'keyword111', 'type': AttrTypeStr.TYPE}],
-            hint_attrs=[{'name': 'attr', 'keyword': 'keyword$'}]
-        ))
-
-        # if a hint is blank
-        self.assertTrue(elasticsearch._is_matched_entry(
-            attrs=[{'name': 'attr', 'value': 'keyword', 'type': AttrTypeStr.TYPE}],
-            hint_attrs=[{'name': 'attr', 'keyword': ''}]
-        ))
+        self.assertEqual(p2, '[kK][eE][yY][wW][oO][rR][dD]')
 
     def test_make_query(self):
         query = elasticsearch.make_query(

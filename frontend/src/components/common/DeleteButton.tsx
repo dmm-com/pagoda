@@ -1,10 +1,11 @@
-import { makeStyles } from "@material-ui/core/styles";
-import DeleteIcon from "@material-ui/icons/Delete";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Theme } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, ReactElement } from "react";
 
 import { ConfirmableButton } from "./ConfirmableButton";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },

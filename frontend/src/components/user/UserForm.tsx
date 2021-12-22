@@ -1,13 +1,17 @@
 import {
   Box,
   Button,
+  Checkbox,
+  Input,
+  Link,
   Table,
   TableBody,
   TableCell,
   TableRow,
+  Theme,
   Typography,
-} from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -19,7 +23,7 @@ import {
 } from "../../utils/AironeAPIClient";
 import { DjangoContext } from "../../utils/DjangoContext";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -89,13 +93,13 @@ export const UserForm: FC<Props> = ({ user }) => {
               <Typography>名前</Typography>
             </TableCell>
             <TableCell>
-              {djangoContext.user?.isSuperuser ? (
-                <input
+              {djangoContext.user.isSuperuser ? (
+                <Input
                   type="text"
                   name="name"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  required={true}
+                  required
                 />
               ) : (
                 <Typography>{username}</Typography>
@@ -107,13 +111,13 @@ export const UserForm: FC<Props> = ({ user }) => {
               <Typography>メールアドレス</Typography>
             </TableCell>
             <TableCell>
-              {djangoContext.user?.isSuperuser ? (
-                <input
+              {djangoContext.user.isSuperuser ? (
+                <Input
                   type="email"
                   name="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required={true}
+                  required
                 />
               ) : (
                 <Typography>{email}</Typography>
@@ -126,8 +130,7 @@ export const UserForm: FC<Props> = ({ user }) => {
                 <Typography>管理者権限を付与</Typography>
               </TableCell>
               <TableCell>
-                <input
-                  type="checkbox"
+                <Checkbox
                   name="is_superuser"
                   checked={isSuperuser}
                   onChange={(e) => setIsSuperuser(e.target.checked)}
@@ -141,12 +144,12 @@ export const UserForm: FC<Props> = ({ user }) => {
                 <Typography>パスワード</Typography>
               </TableCell>
               <TableCell>
-                <input
+                <Input
                   type="password"
                   name="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required={true}
+                  required
                 />
               </TableCell>
             </TableRow>
@@ -158,15 +161,15 @@ export const UserForm: FC<Props> = ({ user }) => {
                     <Typography>AccessToken</Typography>
                   </TableCell>
                   <TableCell>
-                    <p id="access_token">{user.token}</p>
-                    <button
+                    <Link id="access_token">{user.token}</Link>
+                    <Button
                       type="button"
                       id="refresh_token"
                       className="btn btn-primary btn-sm"
                       onChange={handleRefreshAccessToken}
                     >
                       Refresh
-                    </button>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ) : null}
@@ -176,7 +179,7 @@ export const UserForm: FC<Props> = ({ user }) => {
                 </TableCell>
                 <TableCell>
                   <Box className={classes.tokenLifetime}>
-                    <input
+                    <Input
                       type="text"
                       name="token_lifetime"
                       value={tokenLifetime}

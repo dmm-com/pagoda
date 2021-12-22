@@ -30,41 +30,64 @@ class EntrySearchAPI(APIView):
     def post(self, request, format=None):
         user = User.objects.get(id=request.user.id)
 
-        hint_entity = request.data.get('entities')
+        hint_entities = request.data.get('entities')
         hint_entry_name = request.data.get('entry_name', '')
-        hint_attr = request.data.get('attrinfo')
+        hint_attrs = request.data.get('attrinfo')
         hint_referral = request.data.get('referral', False)
+        is_output_all = request.data.get('is_output_all', True)
         entry_limit = request.data.get('entry_limit', CONFIG_ENTRY.MAX_LIST_ENTRIES)
 
-        if (not isinstance(hint_entity, list) or
-                not isinstance(hint_attr, list) or
+        if (not isinstance(hint_entities, list) or
+                not isinstance(hint_entry_name, str) or
+                not isinstance(hint_attrs, list) or
+                not isinstance(is_output_all, bool) or
+                not isinstance(hint_referral, (str, bool)) or
                 not isinstance(entry_limit, int)):
             return Response('The type of parameter is incorrect',
                             status=status.HTTP_400_BAD_REQUEST)
 
         # forbid to input large size request
-        if any([len(str(x)) > CONFIG_ENTRY.MAX_QUERY_SIZE * 2 for x in hint_attr]):
+        if len(hint_entry_name) > CONFIG_ENTRY.MAX_QUERY_SIZE:
             return Response("Sending parameter is too large", status=400)
 
-        # check entity params
+        # check attribute params
+        for hint_attr in hint_attrs:
+            if 'name' not in hint_attr:
+                return Response("The name key is required for attrinfo parameter", status=400)
+            if not isinstance(hint_attr['name'], str):
+                return Response("Invalid value for attrinfo parameter", status=400)
+            if hint_attr.get('keyword'):
+                if not isinstance(hint_attr['keyword'], str):
+                    return Response("Invalid value for attrinfo parameter", status=400)
+                # forbid to input large size request
+                if len(hint_attr['keyword']) > CONFIG_ENTRY.MAX_QUERY_SIZE:
+                    return Response("Sending parameter is too large", status=400)
+
+        # check entities params
+        if not hint_entities:
+            return Response("The entities parameters are required", status=400)
         hint_entity_ids = []
-        for hint in hint_entity:
-            try:
-                entity = Entity.objects.filter(id=hint, is_active=True).first()
-            except ValueError:
-                # This may happen when a string value is specified in the entities parameter
-                entity = Entity.objects.filter(name=hint, is_active=True).first()
+        for hint_entity in hint_entities:
+            entity = None
+            if isinstance(hint_entity, int):
+                entity = Entity.objects.filter(id=hint_entity, is_active=True).first()
+            elif isinstance(hint_entity, str):
+                if hint_entity.isnumeric():
+                    entity = Entity.objects.filter(Q(id=hint_entity) | Q(name=hint_entity),
+                                                   Q(is_active=True)).first()
+                else:
+                    entity = Entity.objects.filter(name=hint_entity, is_active=True).first()
 
             if entity and user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
 
         resp = Entry.search_entries(user,
                                     hint_entity_ids,
-                                    hint_attr,
+                                    hint_attrs,
                                     entry_limit,
                                     hint_entry_name,
                                     hint_referral,
-                                    True)
+                                    is_output_all)
 
         return Response({'result': resp}, content_type='application/json; charset=UTF-8')
 

@@ -1,4 +1,4 @@
-import Typography from "@material-ui/core/Typography";
+import { Box, Input, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
@@ -14,13 +14,13 @@ interface Props {
 
 export const EntryReferral: FC<Props> = ({ referredEntries }) => {
   return (
-    <div className="row" id="referred_objects">
-      <div className="col">
+    <Box className="row" id="referred_objects">
+      <Box className="col">
         <h5 id="referral_entry_count">
           (エントリ数：{referredEntries.length})
         </h5>
-        <input id="narrow_down_referral" placeholder="絞り込む" />
-        <div className="list-group" id="referral_entries">
+        <Input id="narrow_down_referral" placeholder="絞り込む" />
+        <Box className="list-group" id="referral_entries">
           {referredEntries.map((entry) => (
             <Typography
               key={entry.id}
@@ -30,8 +30,8 @@ export const EntryReferral: FC<Props> = ({ referredEntries }) => {
               {entry.name} ({entry.entity})
             </Typography>
           ))}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 };

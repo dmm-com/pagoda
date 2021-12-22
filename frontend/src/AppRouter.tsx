@@ -1,4 +1,4 @@
-import Grid from "@material-ui/core/Grid";
+import { Grid } from "@mui/material";
 import React, { FC } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 

@@ -1,10 +1,8 @@
-import { CircularProgress } from "@material-ui/core";
-import Box from "@material-ui/core/Box";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
+import { Box, CircularProgress, Theme, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   loading: {
     margin: "auto",
     padding: theme.spacing(1),
@@ -21,7 +19,7 @@ export const Loading: FC = () => {
   const classes = useStyles();
 
   return (
-    <Box>
+    <Box data-testid="loading">
       <Box className={classes.loading}>
         <CircularProgress />
         <Typography className={classes.text}>Loading...</Typography>

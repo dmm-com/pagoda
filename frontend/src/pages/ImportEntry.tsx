@@ -1,4 +1,4 @@
-import Typography from "@material-ui/core/Typography";
+import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 
@@ -11,7 +11,7 @@ export const ImportEntry: FC = () => {
   const { entityId } = useParams<{ entityId: number }>();
 
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -29,6 +29,6 @@ export const ImportEntry: FC = () => {
         importFunc={importEntries.bind(null, entityId)}
         redirectPath={entityEntriesPath(entityId)}
       />
-    </div>
+    </Box>
   );
 };

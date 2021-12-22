@@ -5,6 +5,8 @@
 import { render } from "@testing-library/react";
 import React from "react";
 
+import { TestWrapper } from "../../utils/TestWrapper";
+
 import { UserForm } from "./UserForm";
 
 test("should render a component with essential props", function () {
@@ -15,5 +17,5 @@ test("should render a component with essential props", function () {
     },
   };
 
-  expect(() => render(<UserForm />)).not.toThrow();
+  expect(() => render(<UserForm />, { wrapper: TestWrapper })).not.toThrow();
 });

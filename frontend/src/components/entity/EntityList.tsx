@@ -1,9 +1,14 @@
-import { TableCell, TableRow } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
-import GroupIcon from "@material-ui/icons/Group";
-import HistoryIcon from "@material-ui/icons/History";
+import GroupIcon from "@mui/icons-material/Group";
+import HistoryIcon from "@mui/icons-material/History";
+import {
+  Button,
+  Input,
+  TableCell,
+  TableRow,
+  Theme,
+  Typography,
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
@@ -18,7 +23,7 @@ import { DeleteButton } from "../common/DeleteButton";
 import { EditButton } from "../common/EditButton";
 import { PaginatedTable } from "../common/PaginatedTable";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -56,8 +61,10 @@ export const EntityList: FC<Props> = ({ entities }) => {
         <TableRow>
           <TableCell>
             <span className={classes.entityName}>エンティティ名</span>
-            <input
-              data-testid="entityName"
+            <Input
+              inputProps={{
+                "data-testid": "entityName",
+              }}
               className={classes.entityName}
               placeholder="絞り込む"
               value={keyword}

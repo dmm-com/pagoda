@@ -105,8 +105,11 @@ $('#do_search').on('click', function() {
   }).get();
   params.push('attrinfo=' + encodeURIComponent(JSON.stringify(attrinfo)))
 
-  var has_referral = $('#add_referral').is(':checked') ? 'has_referral' : ''
-  params.push(has_referral)
+  var has_referral = $('#add_referral').is(':checked')
+  if (has_referral){
+    params.push('has_referral=true');
+    params.push('referral_name=');
+  }
 
   location.href = `/dashboard/advanced_search_result?${ params.join('&') }`;
 });

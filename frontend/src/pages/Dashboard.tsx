@@ -1,6 +1,5 @@
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
+import { Box, Button, Theme, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
@@ -12,7 +11,7 @@ import {
 } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -26,12 +25,12 @@ export const Dashboard: FC = () => {
   const classes = useStyles();
 
   return (
-    <div>
+    <Box>
       <AironeBreadcrumbs>
         <Typography color="textPrimary">Top</Typography>
       </AironeBreadcrumbs>
 
-      <div className={classes.links}>
+      <Box className={classes.links}>
         <Button
           className={classes.button}
           variant="contained"
@@ -71,7 +70,7 @@ export const Dashboard: FC = () => {
         >
           グループ管理 &#x000bb;
         </Button>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };

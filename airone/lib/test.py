@@ -6,6 +6,7 @@ from airone.lib.types import AttrTypeValue
 from django.test import TestCase, Client, override_settings
 from django.conf import settings
 from entity.models import Entity, EntityAttr
+from entry.models import Entry
 from user.models import User
 from .elasticsearch import ESS
 
@@ -17,6 +18,21 @@ from .elasticsearch import ESS
     'TIMEOUT': 300
 })
 class AironeTestCase(TestCase):
+
+    ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY = [
+        {'name': 'val', 'type': AttrTypeValue['string']},
+        {'name': 'ref', 'type': AttrTypeValue['object']},
+        {'name': 'name', 'type': AttrTypeValue['named_object']},
+        {'name': 'bool', 'type': AttrTypeValue['boolean']},
+        {'name': 'date', 'type': AttrTypeValue['date']},
+        {'name': 'group', 'type': AttrTypeValue['group']},
+        {'name': 'groups', 'type': AttrTypeValue['array_group']},
+        {'name': 'text', 'type': AttrTypeValue['text']},
+        {'name': 'vals', 'type': AttrTypeValue['array_string']},
+        {'name': 'refs', 'type': AttrTypeValue['array_object']},
+        {'name': 'names', 'type': AttrTypeValue['array_named_object']},
+    ]
+
     def setUp(self):
         # Before starting test, clear all documents in the Elasticsearch of test index
         self._es = ESS()
@@ -52,16 +68,36 @@ class AironeTestCase(TestCase):
 
         entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
         for attr_info in attrs:
-            EntityAttr.objects.create(**{
+            entity_attr = EntityAttr.objects.create(**{
                 'name': attr_info['name'],
                 'type': _get_entity_attr_params(attr_info, 'type', AttrTypeValue['string']),
                 'is_mandatory': _get_entity_attr_params(attr_info, 'is_mandatory', False),
                 'parent_entity': entity,
                 'created_user': user,
             })
-            entity.attrs.add()
+
+            if 'ref' in attr_info:
+                entity_attr.referral.add(attr_info['ref'])
+
+            entity.attrs.add(entity_attr)
 
         return entity
+
+    def add_entry(self, user, name, schema, values={}):
+        entry = Entry.objects.create(name=name, schema=schema, created_user=user)
+        entry.complement_attrs(user)
+
+        for (attrname, value) in values.items():
+            print('[onix/add_entry(10)] attrname: %s' % attrname)
+            print('[onix/add_entry(10)] value: %s' % value)
+
+            attr = entry.attrs.get(schema__name=attrname)
+            attr.add_value(user, value)
+
+        # register it to the elasticsearch
+        entry.register_es()
+
+        return entry
 
 
 class AironeViewTest(AironeTestCase):
