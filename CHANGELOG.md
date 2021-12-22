@@ -13,6 +13,7 @@
 * Fixed an exception error when specifying an invalid parameter in advanced search (#327)
 * Fixed the order of entities when is_all_entities is specified in advanced search (#330)
 * Fixed that cannot be retried after error when narrowing down in advanced search (#332)
+* Fixed an issue with array type attributes when copying entries (#342)
 
 ### Refactored
 * Refactored referral param in advanced search (#326)
