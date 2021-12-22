@@ -870,8 +870,10 @@ class ModelTest(AironeTestCase):
             self.assertEqual(cloned_attr.values.last().parent_attr, cloned_attr)
 
             # checks AttributeValue.parent_attr for each child AttributeValue(s)
-            for co_attrv in cloned_attr.values.last().data_array.all():
+            cloned_attrv = cloned_attr.values.last()
+            for co_attrv in cloned_attrv.data_array.all():
                 self.assertEqual(co_attrv.parent_attr, cloned_attr)
+                self.assertEqual(co_attrv.parent_attrv, cloned_attrv)
 
     def test_clone_entry_with_non_permitted_attributes(self):
         # set EntityAttr attr3 is not public
