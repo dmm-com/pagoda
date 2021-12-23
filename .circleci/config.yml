@@ -195,7 +195,7 @@ jobs:
       - run:
           name: test
           command: |
-            npm run test
+            npm run test:ci
 
 workflows:
   version: 2

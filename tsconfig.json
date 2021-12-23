@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "target": "es5",
+    "jsx": "react",
+    "lib": ["dom", "dom.iterable", "es2019"],
+    "esModuleInterop": true
+  },
+  "include": ["./frontend/src/**/*"]
+}
