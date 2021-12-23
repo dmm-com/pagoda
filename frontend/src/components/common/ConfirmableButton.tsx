@@ -1,5 +1,4 @@
 import { Button, Dialog, DialogActions, DialogTitle } from "@mui/material";
-import PropTypes from "prop-types";
 import React, { FC, ReactNode } from "react";
 
 type Props = {
@@ -70,9 +69,4 @@ export const ConfirmableButton: FC<Props> = ({
       </Dialog>
     </span>
   );
-};
-
-ConfirmableButton.propTypes = {
-  dialogTitle: PropTypes.string.isRequired,
-  onClickYes: PropTypes.func.isRequired,
 };
