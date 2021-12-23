@@ -1,4 +1,6 @@
 import { Grid } from "@mui/material";
+import { Theme } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
@@ -26,7 +28,6 @@ import {
   usersPath,
 } from "./Routes";
 import { Header } from "./components/Header";
-import { LeftMenu } from "./components/LeftMenu";
 import { ACL } from "./pages/ACL";
 import { AdvancedSearch } from "./pages/AdvancedSearch";
 import { AdvancedSearchResults } from "./pages/AdvancedSearchResults";
@@ -48,19 +49,21 @@ import { Job } from "./pages/Job";
 import { ShowEntry } from "./pages/ShowEntry";
 import { User } from "./pages/User";
 
+const useStyles = makeStyles<Theme>((theme) => ({}));
+
 export const AppRouter: FC = () => {
+  const classes = useStyles();
   return (
     <Router>
       <Grid container>
-        <Grid item xs={12}>
+        <Grid item xs={2}></Grid>
+        <Grid item xs={8}>
           <Header />
         </Grid>
+        <Grid item xs={2}></Grid>
 
-        <Grid item xs={2}>
-          <LeftMenu />
-        </Grid>
-
-        <Grid item xs={10}>
+        <Grid item xs={2}></Grid>
+        <Grid item xs={8}>
           <Switch>
             <Route path={advancedSearchPath()} component={AdvancedSearch} />
             <Route path={newEntryPath(":entityId")} component={EditEntry} />
@@ -93,6 +96,7 @@ export const AppRouter: FC = () => {
             <Route path="/" component={Dashboard} />
           </Switch>
         </Grid>
+        <Grid item xs={2}></Grid>
       </Grid>
     </Router>
   );
