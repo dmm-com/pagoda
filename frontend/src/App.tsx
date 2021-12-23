@@ -13,7 +13,7 @@ const App: FC = () => {
         main: "#607D8B",
       },
       background: {
-        default: "primary",
+        default: "#607D8B",
       },
     },
   });

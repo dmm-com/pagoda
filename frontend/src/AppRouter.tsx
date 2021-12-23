@@ -49,18 +49,22 @@ import { Job } from "./pages/Job";
 import { ShowEntry } from "./pages/ShowEntry";
 import { User } from "./pages/User";
 
-const useStyles = makeStyles<Theme>((theme) => ({}));
+const useStyles = makeStyles<Theme>((theme) => ({
+  headerPadding: {
+    backgroundColor: theme.palette.background.default,
+  },
+}));
 
 export const AppRouter: FC = () => {
+  // TODO remove it
   const classes = useStyles();
+
   return (
     <Router>
       <Grid container>
-        <Grid item xs={2}></Grid>
-        <Grid item xs={8}>
+        <Grid item xs={12}>
           <Header />
         </Grid>
-        <Grid item xs={2}></Grid>
 
         <Grid item xs={2}></Grid>
         <Grid item xs={8}>
