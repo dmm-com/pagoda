@@ -1,38 +1,25 @@
 import { Checkbox, Box, List, ListItem } from "@mui/material";
-import PropTypes from "prop-types";
 import * as React from "react";
+import { FC } from "react";
 
 import { groupsPath, showEntryPath } from "../../Routes";
 import { DjangoContext } from "../../utils/DjangoContext";
 
-function ElemBool({ attrValue }) {
+const ElemBool: FC<{ attrValue: boolean }> = ({ attrValue }) => {
   return <Checkbox checked={attrValue} disabled />;
-}
-
-ElemBool.propTypes = {
-  attrValue: PropTypes.bool.isRequired,
 };
 
-function ElemString({ attrValue }) {
+const ElemString: FC<{ attrValue: string | boolean }> = ({ attrValue }) => {
   return <div>{attrValue}</div>;
-}
-
-ElemString.propTypes = {
-  attrValue: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]).isRequired,
 };
 
-function ElemObject({ attrValue }) {
+const ElemObject: FC<{ attrValue: { id: number; name: string } }> = ({
+  attrValue,
+}) => {
   return <a href={showEntryPath(attrValue.id)}>{attrValue.name}</a>;
-}
-
-ElemObject.propTypes = {
-  attrValue: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-  }).isRequired,
 };
 
-function ElemNamedObject({ attrValue }) {
+const ElemNamedObject: FC<{ attrValue: any }> = ({ attrValue }) => {
   console.log(`[onix/ElemNamedObject(00)]`);
   console.log(attrValue);
 
@@ -43,23 +30,21 @@ function ElemNamedObject({ attrValue }) {
       <a href={showEntryPath(attrValue[key].id)}>{attrValue[key].name}</a>
     </Box>
   );
-}
-
-ElemNamedObject.propTypes = {
-  attrValue: PropTypes.object.isRequired,
 };
 
-function ElemGroup({ attrValue }) {
+const ElemGroup: FC<{ attrValue: { name: string } }> = ({ attrValue }) => {
   return <a href={groupsPath()}>{attrValue.name}</a>;
-}
-
-ElemGroup.propTypes = {
-  attrValue: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-  }).isRequired,
 };
 
-export function AttributeValue({ attrName, attrInfo }) {
+interface Props {
+  attrName: string;
+  attrInfo: {
+    type: number;
+    value: any;
+  };
+}
+
+export const AttributeValue: FC<Props> = ({ attrName, attrInfo }) => {
   const djangoContext = DjangoContext.getInstance();
 
   switch (attrInfo.type) {
@@ -124,12 +109,4 @@ export function AttributeValue({ attrName, attrInfo }) {
     case djangoContext.attrTypeValue.group:
       return <ElemGroup attrValue={attrInfo.value} />;
   }
-}
-
-AttributeValue.propTypes = {
-  attrName: PropTypes.string.isRequired,
-  attrInfo: PropTypes.shape({
-    type: PropTypes.number.isRequired,
-    value: PropTypes.any.isRequired,
-  }).isRequired,
 };

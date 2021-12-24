@@ -147,7 +147,7 @@ export const EntryForm: FC<Props> = ({
   const [name, setName] = useState(initName);
   const [attributes, setAttributes] = useState(changedInitAttr);
 
-  const handleChangeAttribute = (event, name, valueInfo) => {
+  const handleChangeAttribute = (event, name: string, valueInfo) => {
     switch (valueInfo.type) {
       case djangoContext.attrTypeValue.string:
         attributes[name].value = valueInfo.value;
@@ -159,7 +159,7 @@ export const EntryForm: FC<Props> = ({
         attributes[name].value = attributes[name].value.map((x) => {
           return {
             ...x,
-            checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+            checked: x.id == valueInfo.id && valueInfo.checked,
           };
         });
         setAttributes({ ...attributes });
@@ -181,7 +181,7 @@ export const EntryForm: FC<Props> = ({
           ].map((x) => {
             return {
               ...x,
-              checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+              checked: x.id == valueInfo.id && valueInfo.checked,
             };
           });
         }
@@ -200,7 +200,7 @@ export const EntryForm: FC<Props> = ({
           attributes[name].value[key] = attributes[name].value[key].map((x) => {
             return {
               ...x,
-              checked: x.id == valueInfo.id && valueInfo.checked ? true : false,
+              checked: x.id == valueInfo.id && valueInfo.checked,
             };
           });
         }
@@ -226,8 +226,7 @@ export const EntryForm: FC<Props> = ({
             ].value[valueInfo.index][key].map((x) => {
               return {
                 ...x,
-                checked:
-                  x.id == valueInfo.id && valueInfo.checked ? true : false,
+                checked: x.id == valueInfo.id && valueInfo.checked,
               };
             });
           }
@@ -253,14 +252,18 @@ export const EntryForm: FC<Props> = ({
     }
   };
 
-  const handleClickDeleteListItem = (e, attrName, index) => {
+  const handleClickDeleteListItem = (attrName: string, index?: number) => {
     if (index !== undefined) {
       attributes[attrName].value.splice(index, 1);
       setAttributes({ ...attributes });
     }
   };
 
-  const handleNarrowDownGroups = async (e, attrName, attrType) => {
+  const handleNarrowDownGroups = async (
+    e,
+    attrName: string,
+    attrType: string
+  ) => {
     const resp = await getGroups();
     const refs = await resp.json();
     const userInputValue = e.target.value;
@@ -274,13 +277,10 @@ export const EntryForm: FC<Props> = ({
           );
         })
         .map((r) => {
-          // return refs.map((r) => {
           return {
             id: r.id,
             name: r.name,
-            checked: currentValue.find((x) => x.id == r.id)?.checked
-              ? true
-              : false,
+            checked: currentValue.find((x) => x.id == r.id)?.checked === true,
           };
         });
     }
@@ -304,7 +304,12 @@ export const EntryForm: FC<Props> = ({
     }
   };
 
-  const handleNarrowDownEntries = async (e, attrId, attrName, attrType) => {
+  const handleNarrowDownEntries = async (
+    e,
+    attrId: number,
+    attrName: string,
+    attrType: string
+  ) => {
     const resp = await getAttrReferrals(attrId);
     const refs = await resp.json();
     const userInputValue = e.target.value;
@@ -321,9 +326,7 @@ export const EntryForm: FC<Props> = ({
           return {
             id: r.id,
             name: r.name,
-            checked: currentValue.find((x) => x.id == r.id)?.checked
-              ? true
-              : false,
+            checked: currentValue.find((x) => x.id == r.id)?.checked === true,
           };
         });
     }

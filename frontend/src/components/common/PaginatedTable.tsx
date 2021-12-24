@@ -6,12 +6,12 @@ import {
   TableHead,
   TablePagination,
 } from "@mui/material";
-import React, { FC, ReactElement, useState } from "react";
+import React, { ReactElement, useState } from "react";
 
-interface Props {
-  rows: any[];
+interface Props<T> {
+  rows: T[];
   tableHeadRow: ReactElement;
-  tableBodyRowGenerator: (row: any, index: number) => ReactElement;
+  tableBodyRowGenerator: (row: T, index: number) => ReactElement;
   rowsPerPageOptions: number[];
 }
 
@@ -19,12 +19,12 @@ interface Props {
  * Paginate table shows given rows
  *
  */
-export const PaginatedTable: FC<Props> = ({
+export const PaginatedTable = <T,>({
   rows,
   tableHeadRow,
   tableBodyRowGenerator,
   rowsPerPageOptions,
-}) => {
+}: Props<T>) => {
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(
     rowsPerPageOptions[0] ?? 0

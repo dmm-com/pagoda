@@ -77,8 +77,10 @@ export const GroupForm: FC<Props> = ({ users, group }) => {
           native
           variant="outlined"
           value={members}
+          /* eslint-disable */
           // @ts-ignore Typings are not considering `native`
           onChange={handleChangeSelectedOptions}
+          /* eslint-enable */
         >
           {users.map((user) => (
             <option key={user.id} value={user.id}>
