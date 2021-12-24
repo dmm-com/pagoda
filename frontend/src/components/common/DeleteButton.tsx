@@ -1,7 +1,7 @@
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Theme } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { FC, ReactElement } from "react";
+import React, { FC, ReactElement, SyntheticEvent } from "react";
 
 import { ConfirmableButton } from "./ConfirmableButton";
 
@@ -12,7 +12,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface Props {
-  handleDelete: (e: any) => void;
+  handleDelete: (e: SyntheticEvent) => void;
   startIcon?: ReactElement;
 }
 
