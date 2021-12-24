@@ -10,5 +10,7 @@
       {% endif %}
     </form>
     <p>If you forget your password, you can <a href="{% url 'user:password_reset' %}">Reset Password</a>.</p>
+    <!-- custom script -->
+    {% include 'custom_script.html' %}
   </body>
 </html>

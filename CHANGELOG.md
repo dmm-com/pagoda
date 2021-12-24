@@ -3,6 +3,7 @@
 ## In development
 
 ### Added
+* Added to be able to insert custom javascript
 
 ### Changed
 * Updated Django version that fixed security bug (CVE-2021-44420)
