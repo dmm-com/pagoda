@@ -100,28 +100,38 @@ export const Header: FC = () => {
     <Box className={classes.root}>
       <AppBar position="static" className={classes.centeritem}>
         <Toolbar>
-          <Typography
-            variant="h6"
-            className={classes.title}
-            component={Link}
-            to={topPath()}
-          >
-            AirOne(New UI) {djangoContext.version}
-          </Typography>
-          <Typography className={classes.shortcut}>
-            <MenuItem>
-              <Typography textAlign="center">エンティティ一覧</Typography>
-            </MenuItem>
-            <MenuItem>
-              <Typography textAlign="center">高度な検索</Typography>
-            </MenuItem>
-            <MenuItem>
-              <Typography textAlign="center">ユーザ管理</Typography>
-            </MenuItem>
-            <MenuItem>
-              <Typography textAlign="center">グループ管理</Typography>
-            </MenuItem>
-          </Typography>
+          {/* FIX ME. I want to remove this style coding in component */}
+          <Box sx={{ alignItems: 'flex-end', display: 'flex'}}>
+              <Typography
+                variant="h6"
+                className={classes.title}
+                component={Link}
+                to={topPath()}
+              >
+                AirOne(New UI)
+              </Typography>
+              <Typography>
+                {djangoContext.version}
+              </Typography>
+          </Box>
+
+					<Box className={classes.menu}>
+            {/* FIX ME!!! */}
+						<Menu open={open} className={classes.shortcut}>
+							<MenuItem>
+								<Typography textAlign="center">エンティティ一覧</Typography>
+							</MenuItem>
+							<MenuItem>
+								<Typography textAlign="center">高度な検索</Typography>
+							</MenuItem>
+							<MenuItem>
+								<Typography textAlign="center">ユーザ管理</Typography>
+							</MenuItem>
+							<MenuItem>
+								<Typography textAlign="center">グループ管理</Typography>
+							</MenuItem>
+						</Menu>
+					</Box>
 
           <Box className={classes.menu}>
             <IconButton
