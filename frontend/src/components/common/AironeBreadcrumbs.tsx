@@ -1,7 +1,7 @@
 import { Breadcrumbs, Theme } from "@mui/material";
+import { Toolbar } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
-import { Toolbar } from "@mui/material";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   breadcrumbs: {

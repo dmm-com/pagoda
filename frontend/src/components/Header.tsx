@@ -27,7 +27,7 @@ import { DjangoContext } from "../utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   root: {
-    flexGrow: 1,
+    //flexGrow: 1,
   },
   centeritem: {
     paddingLeft: "10%",
@@ -37,8 +37,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
     margin: theme.spacing(0, 1),
   },
   title: {
-    flexGrow: 1,
+    //flexGrow: 1,
     color: "white",
+  },
+  shortcut: {
+    flexGrow: 1,
+    flexDirection: "row",
   },
 
   search: {
@@ -104,12 +108,20 @@ export const Header: FC = () => {
           >
             AirOne(New UI) {djangoContext.version}
           </Typography>
-
-          <Box>
-						<MenuItem key={'hoge'}>
-							<Typography textAlign="center">hoge</Typography>
-						</MenuItem>
-          </Box>
+          <Typography className={classes.shortcut}>
+            <MenuItem>
+              <Typography textAlign="center">エンティティ一覧</Typography>
+            </MenuItem>
+            <MenuItem>
+              <Typography textAlign="center">高度な検索</Typography>
+            </MenuItem>
+            <MenuItem>
+              <Typography textAlign="center">ユーザ管理</Typography>
+            </MenuItem>
+            <MenuItem>
+              <Typography textAlign="center">グループ管理</Typography>
+            </MenuItem>
+          </Typography>
 
           <Box className={classes.menu}>
             <IconButton
@@ -142,10 +154,7 @@ export const Header: FC = () => {
               style={{ color: grey[50] }}
             >
               {!recentJobs.loading && (
-                <Badge
-                  badgeContent={recentJobs.value.length}
-                  color="secondary"
-                >
+                <Badge badgeContent={recentJobs.value.length} color="secondary">
                   <FormatListBulletedIcon />
                 </Badge>
               )}

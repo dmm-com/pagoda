@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import { Theme } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
@@ -86,10 +85,7 @@ export const AppRouter: FC = () => {
         <Route path={searchPath()} component={AdvancedSearchResults} />
         <Route path={newUserPath()} component={EditUser} />
         <Route path={importUsersPath()} component={ImportUser} />
-        <Route
-          path={passwordPath(":userId")}
-          component={EditUserPassword}
-        />
+        <Route path={passwordPath(":userId")} component={EditUserPassword} />
         <Route path={userPath(":userId")} component={EditUser} />
         <Route path={usersPath()} component={User} />
         <Route path="/" component={Dashboard} />
