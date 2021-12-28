@@ -29,7 +29,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   root: {
     flexGrow: 1,
   },
-  toolbar: {
+  centeritem: {
     paddingLeft: "10%",
     paddingRight: "10%",
   },
@@ -94,107 +94,111 @@ export const Header: FC = () => {
 
   return (
     <Box className={classes.root}>
-      <AppBar position="static">
-        <Box className={classes.toolbar}>
-          <Toolbar>
-            <Typography
-              variant="h6"
-              className={classes.title}
-              component={Link}
-              to={topPath()}
+      <AppBar position="static" className={classes.centeritem}>
+        <Toolbar>
+          <Typography
+            variant="h6"
+            className={classes.title}
+            component={Link}
+            to={topPath()}
+          >
+            AirOne(New UI) {djangoContext.version}
+          </Typography>
+
+          <Box>
+						<MenuItem key={'hoge'}>
+							<Typography textAlign="center">hoge</Typography>
+						</MenuItem>
+          </Box>
+
+          <Box className={classes.menu}>
+            <IconButton
+              aria-controls="user-menu"
+              aria-haspopup="true"
+              onClick={(e) => setUserAnchorEl(e.currentTarget)}
+              style={{ color: grey[50] }}
             >
-              AirOne(New UI) {djangoContext.version}
-            </Typography>
+              <AccountBox />
+            </IconButton>
+            <Menu
+              id="user-menu"
+              anchorEl={userAnchorEl}
+              open={Boolean(userAnchorEl)}
+              onClose={() => setUserAnchorEl(null)}
+              keepMounted
+            >
+              <MenuItem>
+                <Link to={userPath(djangoContext.user.id)}>ユーザ設定</Link>
+              </MenuItem>
+              <MenuItem>
+                <a href="/auth/logout/">ログアウト</a>
+              </MenuItem>
+            </Menu>
 
-            <Box className={classes.menu}>
-              <IconButton
-                aria-controls="user-menu"
-                aria-haspopup="true"
-                onClick={(e) => setUserAnchorEl(e.currentTarget)}
-                style={{ color: grey[50] }}
-              >
-                <AccountBox />
-              </IconButton>
-              <Menu
-                id="user-menu"
-                anchorEl={userAnchorEl}
-                open={Boolean(userAnchorEl)}
-                onClose={() => setUserAnchorEl(null)}
-                keepMounted
-              >
-                <MenuItem>
-                  <Link to={userPath(djangoContext.user.id)}>ユーザ設定</Link>
-                </MenuItem>
-                <MenuItem>
-                  <a href="/auth/logout/">ログアウト</a>
-                </MenuItem>
-              </Menu>
-
-              <IconButton
-                aria-controls="job-menu"
-                aria-haspopup="true"
-                onClick={(e) => setJobAnchorEl(e.currentTarget)}
-                style={{ color: grey[50] }}
-              >
-                {!recentJobs.loading && (
-                  <Badge
-                    badgeContent={recentJobs.value.length}
-                    color="secondary"
-                  >
-                    <FormatListBulletedIcon />
-                  </Badge>
-                )}
-              </IconButton>
-              <Menu
-                id="job-menu"
-                anchorEl={jobAnchorEl}
-                open={Boolean(jobAnchorEl)}
-                onClose={() => setJobAnchorEl(null)}
-                keepMounted
-              >
-                {!recentJobs.loading && recentJobs.value.length > 0 ? (
-                  recentJobs.value.map((recentJob) => (
-                    <MenuItem key={recentJob.id}>
-                      <Typography component={Link} to={jobsPath()}>
-                        {recentJob.target.name}
-                      </Typography>
-                    </MenuItem>
-                  ))
-                ) : (
-                  <MenuItem>
-                    <Typography>実行タスクなし</Typography>
+            <IconButton
+              aria-controls="job-menu"
+              aria-haspopup="true"
+              onClick={(e) => setJobAnchorEl(e.currentTarget)}
+              style={{ color: grey[50] }}
+            >
+              {!recentJobs.loading && (
+                <Badge
+                  badgeContent={recentJobs.value.length}
+                  color="secondary"
+                >
+                  <FormatListBulletedIcon />
+                </Badge>
+              )}
+            </IconButton>
+            <Menu
+              id="job-menu"
+              anchorEl={jobAnchorEl}
+              open={Boolean(jobAnchorEl)}
+              onClose={() => setJobAnchorEl(null)}
+              keepMounted
+            >
+              {!recentJobs.loading && recentJobs.value.length > 0 ? (
+                recentJobs.value.map((recentJob) => (
+                  <MenuItem key={recentJob.id}>
+                    <Typography component={Link} to={jobsPath()}>
+                      {recentJob.target.name}
+                    </Typography>
                   </MenuItem>
-                )}
-                <Divider light />
+                ))
+              ) : (
                 <MenuItem>
-                  <Typography component={Link} to={jobsPath()}>
-                    ジョブ一覧
-                  </Typography>
+                  <Typography>実行タスクなし</Typography>
                 </MenuItem>
-              </Menu>
-            </Box>
+              )}
+              <Divider light />
+              <MenuItem>
+                <Typography component={Link} to={jobsPath()}>
+                  ジョブ一覧
+                </Typography>
+              </MenuItem>
+            </Menu>
+          </Box>
 
-            <Box className={classes.search}>
-              <TextField
-                InputProps={{
-                  classes: { input: classes.searchTextFieldInput },
-                }}
-                variant="outlined"
-                size="small"
-                placeholder="Search…"
-                onChange={(e) => setEntryQuery(e.target.value)}
-                onKeyPress={handleSearchQuery}
-              />
-              <Button
-                variant="contained"
-                component={Link}
-                to={`${searchPath()}?entry_name=${entryQuery}`}
-              >
-                検索
-              </Button>
-            </Box>
-          </Toolbar>
-        </Box>
+          <Box className={classes.search}>
+            <TextField
+              InputProps={{
+                classes: { input: classes.searchTextFieldInput },
+              }}
+              variant="outlined"
+              size="small"
+              placeholder="Search…"
+              onChange={(e) => setEntryQuery(e.target.value)}
+              onKeyPress={handleSearchQuery}
+            />
+            <Button
+              variant="contained"
+              component={Link}
+              to={`${searchPath()}?entry_name=${entryQuery}`}
+            >
+              検索
+            </Button>
+          </Box>
+        </Toolbar>
       </AppBar>
     </Box>
   );
