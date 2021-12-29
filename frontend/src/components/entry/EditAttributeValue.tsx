@@ -54,7 +54,7 @@ const ElemString: FC<
         <Grid item>
           <Button
             variant="outlined"
-            onClick={(e) => handleClickDeleteListItem(attrName, index)}
+            onClick={() => handleClickDeleteListItem(attrName, index)}
           >
             del
           </Button>
@@ -143,7 +143,7 @@ const ElemObject: FC<
         <Grid item>
           <Button
             variant="outlined"
-            onClick={(e) => handleClickDeleteListItem(attrName, index)}
+            onClick={() => handleClickDeleteListItem(attrName, index)}
           >
             del
           </Button>
@@ -259,7 +259,7 @@ const ElemGroup: FC<
         <Grid item>
           <Button
             variant="outlined"
-            onClick={(e) => handleClickDeleteListItem(attrName, index)}
+            onClick={() => handleClickDeleteListItem(attrName, index)}
           >
             del
           </Button>

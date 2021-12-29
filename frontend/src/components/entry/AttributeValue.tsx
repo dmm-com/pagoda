@@ -37,14 +37,13 @@ const ElemGroup: FC<{ attrValue: { name: string } }> = ({ attrValue }) => {
 };
 
 interface Props {
-  attrName: string;
   attrInfo: {
     type: number;
     value: any;
   };
 }
 
-export const AttributeValue: FC<Props> = ({ attrName, attrInfo }) => {
+export const AttributeValue: FC<Props> = ({ attrInfo }) => {
   const djangoContext = DjangoContext.getInstance();
 
   switch (attrInfo.type) {

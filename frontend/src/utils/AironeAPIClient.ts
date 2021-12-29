@@ -246,7 +246,8 @@ export function copyEntry(entryId: number, entries: string): Promise<Response> {
   });
 }
 
-export function getEntryHistory(entryId: number): Promise<object> {
+// FIXME unimplemented
+export function getEntryHistory({}: number): Promise<object> {
   return new Promise((resolve) => {
     resolve([
       {

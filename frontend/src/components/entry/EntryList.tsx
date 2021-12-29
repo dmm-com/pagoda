@@ -88,12 +88,12 @@ export const EntryList: FC<Props> = ({ entries, restoreMode }) => {
                 className={classes.button}
                 startIcon={<RestoreIcon />}
                 dialogTitle="本当に復旧しますか？"
-                onClickYes={(e) => handleRestore(entry.id)}
+                onClickYes={() => handleRestore(entry.id)}
               >
                 Restore
               </ConfirmableButton>
             ) : (
-              <DeleteButton handleDelete={(e) => handleDelete(entry.id)}>
+              <DeleteButton handleDelete={() => handleDelete(entry.id)}>
                 削除
               </DeleteButton>
             )}
