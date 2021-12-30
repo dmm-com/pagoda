@@ -5,6 +5,7 @@ import { useAsync } from "react-use";
 
 import { groupsPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { Loading } from "../components/common/Loading";
 import { GroupForm } from "../components/group/GroupForm";
 import { getGroup, getUsers } from "../utils/AironeAPIClient";
 
@@ -34,7 +35,9 @@ export const EditGroup: FC = () => {
         <Typography color="textPrimary">グループ編集</Typography>
       </AironeBreadcrumbs>
 
-      {!users.loading && !group.loading && (
+      {users.loading || group.loading ? (
+        <Loading />
+      ) : (
         <GroupForm users={users.value} group={group.value} />
       )}
     </Box>
