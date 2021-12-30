@@ -21,7 +21,16 @@ import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { jobsPath, searchPath, topPath, userPath } from "../Routes";
+import {
+  jobsPath,
+  searchPath,
+  topPath,
+  userPath,
+  usersPath,
+  groupsPath,
+  entitiesPath,
+  advancedSearchPath,
+} from "../Routes";
 import { getRecentJobs } from "../utils/AironeAPIClient";
 import { DjangoContext } from "../utils/DjangoContext";
 
@@ -39,10 +48,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   title: {
     //flexGrow: 1,
     color: "white",
-  },
-  shortcut: {
-    flexGrow: 1,
-    flexDirection: "row",
   },
 
   search: {
@@ -101,37 +106,34 @@ export const Header: FC = () => {
       <AppBar position="static" className={classes.centeritem}>
         <Toolbar>
           {/* FIX ME. I want to remove this style coding in component */}
-          <Box sx={{ alignItems: 'flex-end', display: 'flex'}}>
-              <Typography
-                variant="h6"
-                className={classes.title}
-                component={Link}
-                to={topPath()}
-              >
-                AirOne(New UI)
-              </Typography>
-              <Typography>
-                {djangoContext.version}
-              </Typography>
+          <Box sx={{ alignItems: "flex-end", display: "flex" }}>
+            <Button
+              // variant="h6"
+              className={classes.title}
+              href={topPath()}
+            >
+              AirOne
+            </Button>
+            <Typography>{djangoContext.version}</Typography>
           </Box>
 
-					<Box className={classes.menu}>
-            {/* FIX ME!!! */}
-						<Menu open={open} className={classes.shortcut}>
-							<MenuItem>
-								<Typography textAlign="center">エンティティ一覧</Typography>
-							</MenuItem>
-							<MenuItem>
-								<Typography textAlign="center">高度な検索</Typography>
-							</MenuItem>
-							<MenuItem>
-								<Typography textAlign="center">ユーザ管理</Typography>
-							</MenuItem>
-							<MenuItem>
-								<Typography textAlign="center">グループ管理</Typography>
-							</MenuItem>
-						</Menu>
-					</Box>
+          <Box
+            className={classes.menu}
+            sx={{ flexGrow: 1, display: "flex", color: "white" }}
+          >
+            <Button color="inherit" href={entitiesPath()}>
+              エンティティ一覧
+            </Button>
+            <Button color="inherit" href={advancedSearchPath()}>
+              高度な検索
+            </Button>
+            <Button sx={{ color: "white" }} href={usersPath()}>
+              ユーザ管理
+            </Button>
+            <Button sx={{ color: "white" }} href={groupsPath()}>
+              グループ管理
+            </Button>
+          </Box>
 
           <Box className={classes.menu}>
             <IconButton
