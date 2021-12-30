@@ -24,7 +24,6 @@ import { useAsync } from "react-use";
 import {
   jobsPath,
   searchPath,
-  topPath,
   userPath,
   usersPath,
   groupsPath,
@@ -110,16 +109,14 @@ export const Header: FC = () => {
             <Typography
               // make margin with title and version description
               sx={{ mr: "10px" }}
-              variant='h5'
-              color='inherit'
+              variant="h5"
+              color="inherit"
               className={classes.title}
             >
               AirOne
             </Typography>
 
-            <Typography>
-               {djangoContext.version}
-            </Typography>
+            <Typography>{djangoContext.version}</Typography>
           </Box>
 
           <Box
