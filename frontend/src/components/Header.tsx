@@ -106,15 +106,20 @@ export const Header: FC = () => {
       <AppBar position="static" className={classes.centeritem}>
         <Toolbar>
           {/* FIX ME. I want to remove this style coding in component */}
-          <Box sx={{ alignItems: "flex-end", display: "flex" }}>
-            <Button
-              // variant="h6"
+          <Box sx={{ alignItems: "flex-end", display: "flex", color: "white" }}>
+            <Typography
+              // make margin with title and version description
+              sx={{ mr: "10px" }}
+              variant='h5'
+              color='inherit'
               className={classes.title}
-              href={topPath()}
             >
               AirOne
-            </Button>
-            <Typography>{djangoContext.version}</Typography>
+            </Typography>
+
+            <Typography>
+               {djangoContext.version}
+            </Typography>
           </Box>
 
           <Box
