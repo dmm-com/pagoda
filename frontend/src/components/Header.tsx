@@ -34,9 +34,6 @@ import { getRecentJobs } from "../utils/AironeAPIClient";
 import { DjangoContext } from "../utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  root: {
-    //flexGrow: 1,
-  },
   centeritem: {
     paddingLeft: "10%",
     paddingRight: "10%",
@@ -45,10 +42,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
     margin: theme.spacing(0, 1),
   },
   title: {
-    //flexGrow: 1,
     color: "white",
   },
-
+  version_description: {
+    color: "#FFFFFF8A",
+  },
   search: {
     display: "flex",
     borderRadius: theme.shape.borderRadius,
@@ -101,7 +99,7 @@ export const Header: FC = () => {
   };
 
   return (
-    <Box className={classes.root}>
+    <Box>
       <AppBar position="static" className={classes.centeritem}>
         <Toolbar>
           {/* FIX ME. I want to remove this style coding in component */}
@@ -116,7 +114,14 @@ export const Header: FC = () => {
               AirOne
             </Typography>
 
-            <Typography>{djangoContext.version}</Typography>
+            <Typography
+              className={classes.version_description}
+              ml={"20px"}
+              mr={"30px"}
+              fontSize={"16px"}
+            >
+              {djangoContext.version}
+            </Typography>
           </Box>
 
           <Box
