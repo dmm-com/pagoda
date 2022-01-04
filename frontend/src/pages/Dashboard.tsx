@@ -1,15 +1,19 @@
-import { Box, Typography } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import { Box, InputAdornment, Typography } from "@mui/material";
 import { alpha, TextField, Theme } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
+import { useHistory } from "react-router-dom";
 
+import { searchPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     display: "flex",
     width: "100%",
-    justifyContent: "center",
+    flexDirection: "column",
+    alignItems: "center",
   },
   search: {
     display: "flex",
@@ -19,10 +23,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
       backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
     margin: theme.spacing(0, 1),
-    [theme.breakpoints.up("sm")]: {
-      width: "auto",
-    },
-    width: "600px",
   },
   searchTextFieldInput: {
     background: "#0000000B",
@@ -34,6 +34,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 export const Dashboard: FC = () => {
   const classes = useStyles();
+  const history = useHistory();
+
+  const [entryQuery, setEntryQuery] = useState("");
+
+  const handleSearchQuery = (event) => {
+    if (event.key === "Enter") {
+      history.push(`${searchPath()}?entry_name=${entryQuery}`);
+    }
+  };
 
   return (
     <Box>
@@ -42,11 +51,15 @@ export const Dashboard: FC = () => {
       </AironeBreadcrumbs>
 
       <Box className={classes.container}>
-        <Box className={classes.search} mt="200px">
+        <Box className={classes.search} mt="200px" width="600px">
           <TextField
-            //InputProps={{
-            //  classes: { input: classes.searchTextFieldInput },
-            //}}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
             variant="outlined"
             size="small"
             placeholder="Search"
@@ -54,7 +67,13 @@ export const Dashboard: FC = () => {
               background: "#0000000B",
             }}
             fullWidth={true}
+            onChange={(e) => setEntryQuery(e.target.value)}
+            onKeyPress={handleSearchQuery}
           />
+        </Box>
+
+        <Box mt="100px">
+          <Typography>hoge</Typography>
         </Box>
       </Box>
     </Box>

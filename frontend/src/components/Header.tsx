@@ -10,7 +10,6 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  TextField,
   Theme,
   Toolbar,
   Typography,
@@ -18,12 +17,11 @@ import {
 import { grey } from "@mui/material/colors";
 import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import {
   jobsPath,
-  searchPath,
   userPath,
   usersPath,
   groupsPath,
@@ -68,7 +66,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 export const Header: FC = () => {
   const classes = useStyles();
-  const history = useHistory();
 
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
   const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();
@@ -80,14 +77,6 @@ export const Header: FC = () => {
       .then((data) => data.json())
       .then((data) => data["result"]);
   });
-
-  const [entryQuery, setEntryQuery] = useState("");
-
-  const handleSearchQuery = (event) => {
-    if (event.key === "Enter") {
-      history.push(`${searchPath()}?entry_name=${entryQuery}`);
-    }
-  };
 
   return (
     <Box>
@@ -196,26 +185,6 @@ export const Header: FC = () => {
                 </Typography>
               </MenuItem>
             </Menu>
-          </Box>
-
-          <Box className={classes.search}>
-            <TextField
-              InputProps={{
-                classes: { input: classes.searchTextFieldInput },
-              }}
-              variant="outlined"
-              size="small"
-              placeholder="Search…"
-              onChange={(e) => setEntryQuery(e.target.value)}
-              onKeyPress={handleSearchQuery}
-            />
-            <Button
-              variant="contained"
-              component={Link}
-              to={`${searchPath()}?entry_name=${entryQuery}`}
-            >
-              検索
-            </Button>
           </Box>
         </Toolbar>
       </AppBar>
