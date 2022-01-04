@@ -4,7 +4,6 @@ import re
 from datetime import datetime
 
 from django.db import models
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission
 
 from user.models import User
@@ -53,16 +52,6 @@ class ACLBase(models.Model):
 
     def get_status(self, val):
         return self.status & val
-
-    def save(self, *args, **kwargs):
-        super(ACLBase, self).save(*args, **kwargs)
-
-        # create Permission sets for this object at once
-        content_type = ContentType.objects.get_for_model(self)
-        for acltype in ACLType.availables():
-            codename = '%s.%s' % (self.id, acltype.id)
-            if not Permission.objects.filter(codename=codename).exists():
-                Permission(name=acltype.name, codename=codename, content_type=content_type).save()
 
     def delete(self, *args, **kwargs):
         self.is_active = False
