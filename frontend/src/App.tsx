@@ -7,7 +7,19 @@ import { AppRouter } from "./AppRouter";
 import { ErrorHandler } from "./ErrorHandler";
 
 const App: FC = () => {
-  const theme = createTheme();
+  const theme = createTheme({
+    palette: {
+      primary: {
+        main: "#607D8B",
+      },
+      secondary: {
+        main: "#90CAF9",
+      },
+      background: {
+        default: "#607D8B",
+      },
+    },
+  });
   return (
     <ThemeProvider theme={theme}>
       <ErrorHandler>
