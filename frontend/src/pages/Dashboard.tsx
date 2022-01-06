@@ -3,10 +3,14 @@ import { Box, InputAdornment, Typography } from "@mui/material";
 import { alpha, TextField, Theme } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
+import { useAsync } from "react-use";
 
-import { searchPath } from "../Routes";
+import { entityEntriesPath, searchPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { Loading } from "../components/common/Loading";
+import { getEntities } from "../utils/AironeAPIClient";
+import { EntityStatus } from "../utils/Constants";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -37,6 +41,12 @@ export const Dashboard: FC = () => {
   const history = useHistory();
 
   const [entryQuery, setEntryQuery] = useState("");
+
+  const entities = useAsync(async () => {
+    const resp = await getEntities();
+    const data = await resp.json();
+    return data.entities.filter((e) => e.status & EntityStatus.TOP_LEVEL);
+  });
 
   const handleSearchQuery = (event) => {
     if (event.key === "Enter") {
@@ -72,29 +82,28 @@ export const Dashboard: FC = () => {
           />
         </Box>
 
-        <Box
-          mt="100px"
-          width="600px"
-          display="flex"
-          flexWrap="wrap"
-          gap="25px 40px"
-        >
-          <Typography flexGrow={1}>Server</Typography>
-          <Typography flexGrow={1}>VM</Typography>
-          <Typography flexGrow={1}>Network</Typography>
-          <Typography flexGrow={1}>aaaaaaaaaaaaaaaaaaaaaa</Typography>
-          <Typography flexGrow={1}>bbb</Typography>
-          <Typography flexGrow={1}>Server</Typography>
-          <Typography flexGrow={1}>VM</Typography>
-          <Typography flexGrow={1}>Network</Typography>
-          <Typography flexGrow={1}>aaaaaaaaaaaaaaaaaaaaaa</Typography>
-          <Typography flexGrow={1}>bbb</Typography>
-          <Typography flexGrow={1}>Server</Typography>
-          <Typography flexGrow={1}>VM</Typography>
-          <Typography flexGrow={1}>Network</Typography>
-          <Typography flexGrow={1}>aaaaaaaaaaaaaaaaaaaaaa</Typography>
-          <Typography flexGrow={1}>bbb</Typography>
-        </Box>
+        {entities.loading ? (
+          <Loading />
+        ) : (
+          <Box
+            mt="100px"
+            width="600px"
+            display="flex"
+            flexWrap="wrap"
+            gap="25px 40px"
+          >
+            {entities.value.map((entity) => (
+              <Typography
+                color="primary"
+                component={Link}
+                to={entityEntriesPath(entity.id)}
+                style={{ textDecoration: "none" }}
+              >
+                {entity.name}
+              </Typography>
+            ))}
+          </Box>
+        )}
       </Box>
     </Box>
   );
