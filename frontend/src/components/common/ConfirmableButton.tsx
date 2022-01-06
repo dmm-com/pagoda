@@ -1,17 +1,18 @@
-import { Button, Dialog, DialogActions, DialogTitle } from "@mui/material";
-import PropTypes from "prop-types";
-import React, { FC, ReactNode } from "react";
+import {
+  Button,
+  ButtonProps,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+} from "@mui/material";
+import React, { ElementType, FC, SyntheticEvent } from "react";
 
-type Props = {
-  variant?: any;
-  color?: any;
-  className?: string;
-  startIcon?: ReactNode;
-  component?: any;
+interface Props extends ButtonProps {
+  component?: ElementType;
   to?: string;
   dialogTitle: string;
-  onClickYes: (e: any) => void;
-};
+  onClickYes: (e: SyntheticEvent) => void;
+}
 
 export const ConfirmableButton: FC<Props> = ({
   variant,
@@ -34,7 +35,7 @@ export const ConfirmableButton: FC<Props> = ({
     setOpen(false);
   };
 
-  const handleConfirmed = (event) => {
+  const handleConfirmed = (event: SyntheticEvent) => {
     setOpen(false);
     onClickYes(event);
   };
@@ -70,9 +71,4 @@ export const ConfirmableButton: FC<Props> = ({
       </Dialog>
     </span>
   );
-};
-
-ConfirmableButton.propTypes = {
-  dialogTitle: PropTypes.string.isRequired,
-  onClickYes: PropTypes.func.isRequired,
 };

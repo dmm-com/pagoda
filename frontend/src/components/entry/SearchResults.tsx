@@ -96,10 +96,7 @@ export const SearchResults: FC<Props> = ({
           {attrNames.map((attrName) => (
             <TableCell key={attrName}>
               {result.attrs[attrName] && (
-                <AttributeValue
-                  attrName={attrName}
-                  attrInfo={result.attrs[attrName]}
-                />
+                <AttributeValue attrInfo={result.attrs[attrName]} />
               )}
             </TableCell>
           ))}

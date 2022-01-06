@@ -10,7 +10,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface Props {
-  importFunc: (formData: FormData) => Promise<any>;
+  importFunc: (formData: FormData) => Promise<Response>;
   redirectPath: string;
 }
 

@@ -15,10 +15,7 @@ export const EntryAttributes: FC<Props> = ({ attributes }) => {
           <TableRow key={attrname}>
             <TableCell>{attrname}</TableCell>
             <TableCell>
-              <AttributeValue
-                attrName={attrname}
-                attrInfo={attributes[attrname]}
-              />
+              <AttributeValue attrInfo={attributes[attrname]} />
             </TableCell>
           </TableRow>
         ))}

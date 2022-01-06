@@ -20,6 +20,23 @@ import { useHistory } from "react-router-dom";
 
 import { updateACL } from "../../utils/AironeAPIClient";
 
+interface ACL {
+  name: string;
+  objtype: string;
+  is_public: boolean;
+  default_permission: number;
+  acltypes: {
+    id: number;
+    name: string;
+  }[];
+  members: {
+    id: number;
+    name: string;
+    type: number;
+    current_permission: number;
+  }[];
+}
+
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
@@ -28,7 +45,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface Props {
   objectId: number;
-  acl: any;
+  acl: ACL;
 }
 
 export const ACLForm: FC<Props> = ({ objectId, acl }) => {

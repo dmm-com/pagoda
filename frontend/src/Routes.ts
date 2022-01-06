@@ -1,9 +1,11 @@
 const basePath = "/new-ui/";
 
+export const loginPath = () => "/auth/login/";
 export const topPath = () => basePath;
 export const advancedSearchPath = () => basePath + "advanced_search";
 export const jobsPath = () => basePath + "jobs";
-export const aclPath = (entityId: string) => basePath + `acl/${entityId}`;
+export const aclPath = (entityId: number | string) =>
+  basePath + `acl/${entityId}`;
 export const searchPath = () => basePath + "search";
 
 // entris

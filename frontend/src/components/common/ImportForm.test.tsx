@@ -13,7 +13,7 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(
       <ImportForm
-        importFunc={() => Promise.resolve()}
+        importFunc={() => Promise.resolve(new Response())}
         redirectPath={"/path/to/redirect"}
       />,
       { wrapper: TestWrapper }

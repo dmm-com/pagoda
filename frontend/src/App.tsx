@@ -12,6 +12,9 @@ const App: FC = () => {
       primary: {
         main: "#607D8B",
       },
+      secondary: {
+        main: "#90CAF9",
+      },
       background: {
         default: "#607D8B",
       },

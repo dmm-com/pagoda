@@ -8,7 +8,6 @@ import {
   Typography,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import PropTypes from "prop-types";
 import React, { FC, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -78,8 +77,4 @@ export const ErrorHandler: FC = ({ children }) => {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>{children}</ErrorBoundary>
   );
-};
-
-ErrorHandler.propTypes = {
-  children: PropTypes.any.isRequired,
 };

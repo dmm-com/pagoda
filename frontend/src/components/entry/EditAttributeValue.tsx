@@ -1,6 +1,3 @@
-// @ts-nocheck
-// FIXME typing it more strictly
-
 import {
   Button,
   Box,
@@ -14,19 +11,30 @@ import {
   Radio,
   RadioGroup,
 } from "@mui/material";
-import PropTypes from "prop-types";
-import React from "react";
+import React, { FC } from "react";
 
 import { DjangoContext } from "../../utils/DjangoContext";
 
-function ElemString({
+interface CommonProps {
+  attrName: string;
+  attrType: string;
+  index?: number;
+  handleChange: (e: any, attrName: string, valueInfo: any) => void;
+}
+
+const ElemString: FC<
+  CommonProps & {
+    attrValue: string;
+    handleClickDeleteListItem: (attrName: string, index?: number) => void;
+  }
+> = ({
   attrName,
   attrValue,
   attrType,
   index,
   handleChange,
   handleClickDeleteListItem,
-}) {
+}) => {
   return (
     <Grid container>
       <Grid item>
@@ -46,7 +54,7 @@ function ElemString({
         <Grid item>
           <Button
             variant="outlined"
-            onClick={(e) => handleClickDeleteListItem(e, attrName, index)}
+            onClick={() => handleClickDeleteListItem(attrName, index)}
           >
             del
           </Button>
@@ -54,9 +62,14 @@ function ElemString({
       )}
     </Grid>
   );
-}
+};
 
-function ElemBool({ attrName, attrValue, attrType, handleChange }) {
+const ElemBool: FC<CommonProps & { attrValue: boolean }> = ({
+  attrName,
+  attrValue,
+  attrType,
+  handleChange,
+}) => {
   return (
     <Checkbox
       checked={attrValue}
@@ -69,9 +82,21 @@ function ElemBool({ attrName, attrValue, attrType, handleChange }) {
       }
     />
   );
-}
+};
 
-function ElemObject({
+const ElemObject: FC<
+  CommonProps & {
+    attrId: number;
+    attrValue: any;
+    handleNarrowDownEntries: (
+      e: any,
+      attrId: number,
+      attrName: string,
+      attrType: string
+    ) => void;
+    handleClickDeleteListItem: (attrName: string, index?: number) => void;
+  }
+> = ({
   attrId,
   attrName,
   attrValue,
@@ -80,33 +105,30 @@ function ElemObject({
   handleChange,
   handleNarrowDownEntries,
   handleClickDeleteListItem,
-}) {
+}) => {
   return (
     <Grid container>
       <Grid item>
         <Card variant="outlined">
           <RadioGroup aria-label="object" name="radio-buttons-group">
-            {attrValue.map((value) => {
-              return (
-                <FormControlLabel
-                  key={value.id}
-                  control={<Radio checked={value.checked} />}
-                  label={value.name}
-                  onChange={(e) =>
-                    handleChange(e, attrName, {
-                      type: attrType,
-                      index: index,
-                      id: value.id,
-                      name: value.name,
-                      checked: e.target.checked,
-                    })
-                  }
-                />
-              );
-            })}
+            {attrValue.map((value) => (
+              <FormControlLabel
+                key={value.id}
+                control={<Radio checked={value.checked} />}
+                label={value.name}
+                onChange={(e, checked) =>
+                  handleChange(e, attrName, {
+                    type: attrType,
+                    index: index,
+                    id: value.id,
+                    name: value.name,
+                    checked: checked,
+                  })
+                }
+              />
+            ))}
           </RadioGroup>
           <Input
-            text="text"
             placeholder="エントリ名で絞り込む"
             onChange={(e) => {
               handleNarrowDownEntries(e, attrId, attrName, attrType);
@@ -121,7 +143,7 @@ function ElemObject({
         <Grid item>
           <Button
             variant="outlined"
-            onClick={(e) => handleClickDeleteListItem(e, attrName, index)}
+            onClick={() => handleClickDeleteListItem(attrName, index)}
           >
             del
           </Button>
@@ -129,9 +151,21 @@ function ElemObject({
       )}
     </Grid>
   );
-}
+};
 
-function ElemNamedObject({
+const ElemNamedObject: FC<
+  CommonProps & {
+    attrId: number;
+    attrValue: any;
+    handleNarrowDownEntries: (
+      e: any,
+      attrId: number,
+      attrName: string,
+      attrType: string
+    ) => void;
+    handleClickDeleteListItem: (attrName: string, index?: number) => void;
+  }
+> = ({
   attrId,
   attrName,
   attrValue,
@@ -140,7 +174,7 @@ function ElemNamedObject({
   handleChange,
   handleNarrowDownEntries,
   handleClickDeleteListItem,
-}) {
+}) => {
   const key = Object.keys(attrValue)[0];
   return (
     <>
@@ -167,9 +201,19 @@ function ElemNamedObject({
       />
     </>
   );
-}
+};
 
-function ElemGroup({
+const ElemGroup: FC<
+  CommonProps & {
+    attrValue: any;
+    handleNarrowDownGroups: (
+      e: any,
+      attrName: string,
+      attrType: string
+    ) => void;
+    handleClickDeleteListItem?: (attrName: string, index?: number) => void;
+  }
+> = ({
   attrName,
   attrValue,
   attrType,
@@ -177,35 +221,30 @@ function ElemGroup({
   handleChange,
   handleNarrowDownGroups,
   handleClickDeleteListItem,
-}) {
-  //  return <a href={groupsPath()}>{attrValue.name}</a>;
+}) => {
   return (
     <Grid container>
       <Grid item>
         <Card variant="outlined">
           <RadioGroup aria-label="group" name="radio-buttons-group">
-            {attrValue.map((value) => {
-              return (
-                <FormControlLabel
-                  key={value.id}
-                  control={<Radio checked={value.checked} />}
-                  label={value.name}
-                  onChange={(e) =>
-                    handleChange(e, attrName, {
-                      type: attrType,
-                      index: index,
-                      id: value.id,
-                      name: value.name,
-                      checked: e.target.checked,
-                    })
-                  }
-                />
-              );
-            })}
+            {attrValue.map((value) => (
+              <FormControlLabel
+                key={value.id}
+                control={<Radio checked={value.checked} />}
+                label={value.name}
+                onChange={(e, checked) =>
+                  handleChange(e, attrName, {
+                    type: attrType,
+                    index: index,
+                    id: value.id,
+                    name: value.name,
+                    checked: checked,
+                  })
+                }
+              />
+            ))}
           </RadioGroup>
-
           <Input
-            text="text"
             placeholder="グループ名で絞り込む"
             onChange={(e) => {
               handleNarrowDownGroups(e, attrName, attrType);
@@ -220,7 +259,7 @@ function ElemGroup({
         <Grid item>
           <Button
             variant="outlined"
-            onClick={(e) => handleClickDeleteListItem(e, attrName, index)}
+            onClick={() => handleClickDeleteListItem(attrName, index)}
           >
             del
           </Button>
@@ -228,16 +267,30 @@ function ElemGroup({
       )}
     </Grid>
   );
+};
+
+interface Props {
+  attrName: string;
+  attrInfo: any;
+  handleChangeAttribute: (e: any, attrName: string, valueInfo: any) => void;
+  handleNarrowDownEntries: (
+    e: any,
+    attrId: number,
+    attrName: string,
+    attrType: string
+  ) => void;
+  handleNarrowDownGroups: (e: any, attrName: string, attrType: string) => void;
+  handleClickDeleteListItem: (attrName: string, index?: number) => void;
 }
 
-export function EditAttributeValue({
+export const EditAttributeValue: FC<Props> = ({
   attrName,
   attrInfo,
   handleChangeAttribute,
   handleNarrowDownEntries,
   handleNarrowDownGroups,
   handleClickDeleteListItem,
-}) {
+}) => {
   const djangoContext = DjangoContext.getInstance();
 
   const handleClickAddListItem = (e, value) => {
@@ -309,22 +362,20 @@ export function EditAttributeValue({
             add
           </Button>
           <List>
-            {attrInfo.value.map((info, n) => {
-              return (
-                <ListItem key={n}>
-                  <ElemObject
-                    attrId={attrInfo.id}
-                    attrName={attrName}
-                    attrValue={info}
-                    attrType={attrInfo.type}
-                    index={n}
-                    handleChange={handleChangeAttribute}
-                    handleNarrowDownEntries={handleNarrowDownEntries}
-                    handleClickDeleteListItem={handleClickDeleteListItem}
-                  />
-                </ListItem>
-              );
-            })}
+            {attrInfo.value.map((info, n) => (
+              <ListItem key={n}>
+                <ElemObject
+                  attrId={attrInfo.id}
+                  attrName={attrName}
+                  attrValue={info}
+                  attrType={attrInfo.type}
+                  index={n}
+                  handleChange={handleChangeAttribute}
+                  handleNarrowDownEntries={handleNarrowDownEntries}
+                  handleClickDeleteListItem={handleClickDeleteListItem}
+                />
+              </ListItem>
+            ))}
           </List>
         </Box>
       );
@@ -340,20 +391,18 @@ export function EditAttributeValue({
             add
           </Button>
           <List>
-            {attrInfo.value.map((info, n) => {
-              return (
-                <ListItem key={n}>
-                  <ElemString
-                    attrName={attrName}
-                    attrValue={info}
-                    attrType={attrInfo.type}
-                    index={n}
-                    handleChange={handleChangeAttribute}
-                    handleClickDeleteListItem={handleClickDeleteListItem}
-                  />
-                </ListItem>
-              );
-            })}
+            {attrInfo.value.map((info, n) => (
+              <ListItem key={n}>
+                <ElemString
+                  attrName={attrName}
+                  attrValue={info}
+                  attrType={attrInfo.type}
+                  index={n}
+                  handleChange={handleChangeAttribute}
+                  handleClickDeleteListItem={handleClickDeleteListItem}
+                />
+              </ListItem>
+            ))}
           </List>
         </Box>
       );
@@ -369,22 +418,20 @@ export function EditAttributeValue({
             add
           </Button>
           <List>
-            {attrInfo.value.map((info, n) => {
-              return (
-                <ListItem key={n}>
-                  <ElemNamedObject
-                    attrId={attrInfo.id}
-                    attrName={attrName}
-                    attrValue={info}
-                    attrType={attrInfo.type}
-                    index={n}
-                    handleChange={handleChangeAttribute}
-                    handleNarrowDownEntries={handleNarrowDownEntries}
-                    handleClickDeleteListItem={handleClickDeleteListItem}
-                  />
-                </ListItem>
-              );
-            })}
+            {attrInfo.value.map((info, n) => (
+              <ListItem key={n}>
+                <ElemNamedObject
+                  attrId={attrInfo.id}
+                  attrName={attrName}
+                  attrValue={info}
+                  attrType={attrInfo.type}
+                  index={n}
+                  handleChange={handleChangeAttribute}
+                  handleNarrowDownEntries={handleNarrowDownEntries}
+                  handleClickDeleteListItem={handleClickDeleteListItem}
+                />
+              </ListItem>
+            ))}
           </List>
         </Box>
       );
@@ -400,21 +447,19 @@ export function EditAttributeValue({
             add
           </Button>
           <List>
-            {attrInfo.value.map((info, n) => {
-              return (
-                <ListItem key={n}>
-                  <ElemGroup
-                    attrName={attrName}
-                    attrValue={info}
-                    attrType={attrInfo.type}
-                    index={n}
-                    handleChange={handleChangeAttribute}
-                    handleNarrowDownGroups={handleNarrowDownGroups}
-                    handleClickDeleteListItem={handleClickDeleteListItem}
-                  />
-                </ListItem>
-              );
-            })}
+            {attrInfo.value.map((info, n) => (
+              <ListItem key={n}>
+                <ElemGroup
+                  attrName={attrName}
+                  attrValue={info}
+                  attrType={attrInfo.type}
+                  index={n}
+                  handleChange={handleChangeAttribute}
+                  handleNarrowDownGroups={handleNarrowDownGroups}
+                  handleClickDeleteListItem={handleClickDeleteListItem}
+                />
+              </ListItem>
+            ))}
           </List>
         </Box>
       );
@@ -430,9 +475,4 @@ export function EditAttributeValue({
         />
       );
   }
-}
-
-EditAttributeValue.propTypes = {
-  attrName: PropTypes.string.isRequired,
-  attrInfo: PropTypes.object.isRequired,
 };

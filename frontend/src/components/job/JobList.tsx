@@ -16,6 +16,18 @@ import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
+interface Job {
+  id: number;
+  operation: string;
+  status: number;
+  passed_time: string;
+  created_at: string;
+  note: string;
+  target?: {
+    name: string;
+  };
+}
+
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
@@ -26,7 +38,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface Props {
-  jobs: any[];
+  jobs: Job[];
 }
 
 export const JobList: FC<Props> = ({ jobs }) => {

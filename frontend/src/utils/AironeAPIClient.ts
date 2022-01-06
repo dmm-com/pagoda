@@ -7,6 +7,26 @@ function getCsrfToken(): string {
   return Cookies.get("csrftoken");
 }
 
+export function postLogin(formData: FormData): Promise<Response> {
+  return fetch(`/auth/login/?next=${formData.get("next")}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: formData,
+    redirect: "manual",
+  });
+}
+
+export function postLogout(): Promise<Response> {
+  return fetch("/auth/logout/", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+  });
+}
+
 export function getEntity(entityId: number): Promise<Response> {
   return fetch(`/entity/api/v2/entities/${entityId}`);
 }
@@ -246,7 +266,8 @@ export function copyEntry(entryId: number, entries: string): Promise<Response> {
   });
 }
 
-export function getEntryHistory(entryId: number): Promise<object> {
+// FIXME unimplemented
+export function getEntryHistory({}: number): Promise<object> {
   return new Promise((resolve) => {
     resolve([
       {

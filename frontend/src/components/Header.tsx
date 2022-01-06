@@ -27,8 +27,9 @@ import {
   groupsPath,
   entitiesPath,
   advancedSearchPath,
+  loginPath,
 } from "../Routes";
-import { getRecentJobs } from "../utils/AironeAPIClient";
+import { getRecentJobs, postLogout } from "../utils/AironeAPIClient";
 import { DjangoContext } from "../utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -77,6 +78,12 @@ export const Header: FC = () => {
       .then((data) => data.json())
       .then((data) => data["result"]);
   });
+
+  const handleLogout = () => {
+    postLogout().then(() => {
+      window.location.href = `${loginPath()}?next=${window.location.pathname}`;
+    });
+  };
 
   return (
     <Box>
@@ -181,7 +188,9 @@ export const Header: FC = () => {
                 <Link to={userPath(djangoContext.user.id)}>ユーザ設定</Link>
               </MenuItem>
               <MenuItem>
-                <a href="/auth/logout/">ログアウト</a>
+                <Link to="#" onClick={() => handleLogout()}>
+                  ログアウト
+                </Link>
               </MenuItem>
             </Menu>
           </Box>

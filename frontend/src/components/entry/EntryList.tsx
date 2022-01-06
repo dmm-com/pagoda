@@ -41,12 +41,14 @@ export const EntryList: FC<Props> = ({ entries, restoreMode }) => {
     }
   };
 
-  const handleDelete = (event, entryId) => {
-    deleteEntry(entryId).then(() => history.go(0));
+  const handleDelete = async (entryId: number) => {
+    await deleteEntry(entryId);
+    history.go(0);
   };
 
-  const handleRestore = (event, entryId) => {
-    restoreEntry(entryId).then(() => history.go(0));
+  const handleRestore = async (entryId: number) => {
+    await restoreEntry(entryId);
+    history.go(0);
   };
 
   const filteredEntries = entries.filter((e) => {
@@ -86,12 +88,12 @@ export const EntryList: FC<Props> = ({ entries, restoreMode }) => {
                 className={classes.button}
                 startIcon={<RestoreIcon />}
                 dialogTitle="本当に復旧しますか？"
-                onClickYes={(e) => handleRestore(e, entry.id)}
+                onClickYes={() => handleRestore(entry.id)}
               >
                 Restore
               </ConfirmableButton>
             ) : (
-              <DeleteButton handleDelete={(e) => handleDelete(e, entry.id)}>
+              <DeleteButton handleDelete={() => handleDelete(entry.id)}>
                 削除
               </DeleteButton>
             )}

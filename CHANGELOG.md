@@ -3,6 +3,7 @@
 ## In development
 
 ### Added
+* Added to be able to insert custom javascript
 
 ### Changed
 * Updated Django version that fixed security bug (CVE-2021-44420)
@@ -14,6 +15,7 @@
 * Fixed the order of entities when is_all_entities is specified in advanced search (#330)
 * Fixed that cannot be retried after error when narrowing down in advanced search (#332)
 * Fixed an issue with array type attributes when copying entries (#342)
+* Fixed take a long time to create entry (#352)
 
 ### Refactored
 * Refactored referral param in advanced search (#326)
