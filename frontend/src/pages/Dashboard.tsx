@@ -86,18 +86,20 @@ export const Dashboard: FC = () => {
           <Loading />
         ) : (
           <Box
-            mt="100px"
+            mt="80px"
             width="600px"
             display="flex"
             flexWrap="wrap"
             gap="25px 40px"
           >
-            {entities.value.map((entity) => (
+            {entities.value.map((entity, index) => (
               <Typography
+                key={index}
                 color="primary"
                 component={Link}
                 to={entityEntriesPath(entity.id)}
                 style={{ textDecoration: "none" }}
+                flexGrow="1"
               >
                 {entity.name}
               </Typography>
