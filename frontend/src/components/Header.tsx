@@ -1,5 +1,5 @@
-import AccountBox from "@mui/icons-material/AccountBox";
-import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import PersonIcon from "@mui/icons-material/Person";
+import TaskIcon from "@mui/icons-material/Task";
 import {
   alpha,
   AppBar,
@@ -114,38 +114,15 @@ export const Header: FC = () => {
             <Button color="inherit" href={advancedSearchPath()}>
               高度な検索
             </Button>
-            <Button sx={{ color: "white" }} href={usersPath()}>
+            <Button color="inherit" href={usersPath()}>
               ユーザ管理
             </Button>
-            <Button sx={{ color: "white" }} href={groupsPath()}>
+            <Button color="inherit" href={groupsPath()}>
               グループ管理
             </Button>
           </Box>
 
           <Box className={classes.menu}>
-            <IconButton
-              aria-controls="user-menu"
-              aria-haspopup="true"
-              onClick={(e) => setUserAnchorEl(e.currentTarget)}
-              style={{ color: grey[50] }}
-            >
-              <AccountBox />
-            </IconButton>
-            <Menu
-              id="user-menu"
-              anchorEl={userAnchorEl}
-              open={Boolean(userAnchorEl)}
-              onClose={() => setUserAnchorEl(null)}
-              keepMounted
-            >
-              <MenuItem>
-                <Link to={userPath(djangoContext.user.id)}>ユーザ設定</Link>
-              </MenuItem>
-              <MenuItem>
-                <a href="/auth/logout/">ログアウト</a>
-              </MenuItem>
-            </Menu>
-
             <IconButton
               aria-controls="job-menu"
               aria-haspopup="true"
@@ -154,7 +131,7 @@ export const Header: FC = () => {
             >
               {!recentJobs.loading && (
                 <Badge badgeContent={recentJobs.value.length} color="secondary">
-                  <FormatListBulletedIcon />
+                  <TaskIcon />
                 </Badge>
               )}
             </IconButton>
@@ -183,6 +160,28 @@ export const Header: FC = () => {
                 <Typography component={Link} to={jobsPath()}>
                   ジョブ一覧
                 </Typography>
+              </MenuItem>
+            </Menu>
+            <IconButton
+              aria-controls="user-menu"
+              aria-haspopup="true"
+              onClick={(e) => setUserAnchorEl(e.currentTarget)}
+              style={{ color: grey[50] }}
+            >
+              <PersonIcon />
+            </IconButton>
+            <Menu
+              id="user-menu"
+              anchorEl={userAnchorEl}
+              open={Boolean(userAnchorEl)}
+              onClose={() => setUserAnchorEl(null)}
+              keepMounted
+            >
+              <MenuItem>
+                <Link to={userPath(djangoContext.user.id)}>ユーザ設定</Link>
+              </MenuItem>
+              <MenuItem>
+                <a href="/auth/logout/">ログアウト</a>
               </MenuItem>
             </Menu>
           </Box>
