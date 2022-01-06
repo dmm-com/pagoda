@@ -72,8 +72,28 @@ export const Dashboard: FC = () => {
           />
         </Box>
 
-        <Box mt="100px">
-          <Typography>hoge</Typography>
+        <Box
+          mt="100px"
+          width="600px"
+          display="flex"
+          flexWrap="wrap"
+          gap="25px 40px"
+        >
+          <Typography flexGrow={1}>Server</Typography>
+          <Typography flexGrow={1}>VM</Typography>
+          <Typography flexGrow={1}>Network</Typography>
+          <Typography flexGrow={1}>aaaaaaaaaaaaaaaaaaaaaa</Typography>
+          <Typography flexGrow={1}>bbb</Typography>
+          <Typography flexGrow={1}>Server</Typography>
+          <Typography flexGrow={1}>VM</Typography>
+          <Typography flexGrow={1}>Network</Typography>
+          <Typography flexGrow={1}>aaaaaaaaaaaaaaaaaaaaaa</Typography>
+          <Typography flexGrow={1}>bbb</Typography>
+          <Typography flexGrow={1}>Server</Typography>
+          <Typography flexGrow={1}>VM</Typography>
+          <Typography flexGrow={1}>Network</Typography>
+          <Typography flexGrow={1}>aaaaaaaaaaaaaaaaaaaaaa</Typography>
+          <Typography flexGrow={1}>bbb</Typography>
         </Box>
       </Box>
     </Box>
