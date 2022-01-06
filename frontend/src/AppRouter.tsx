@@ -1,4 +1,5 @@
-import { Grid } from "@mui/material";
+import { Theme } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
@@ -27,7 +28,6 @@ import {
   loginPath,
 } from "./Routes";
 import { Header } from "./components/Header";
-import { LeftMenu } from "./components/LeftMenu";
 import { ACL } from "./pages/ACL";
 import { AdvancedSearch } from "./pages/AdvancedSearch";
 import { AdvancedSearchResults } from "./pages/AdvancedSearchResults";
@@ -50,58 +50,53 @@ import { Login } from "./pages/Login";
 import { ShowEntry } from "./pages/ShowEntry";
 import { User } from "./pages/User";
 
+const useStyles = makeStyles<Theme>((theme) => ({
+  headerPadding: {
+    backgroundColor: theme.palette.background.default,
+  },
+}));
+
 export const AppRouter: FC = () => {
+  // TODO remove it
+  const classes = useStyles();
+
   return (
     <Router>
       <Switch>
         <Route path={loginPath()} component={Login} />
         <Route path="/">
-          <Grid container>
-            <Grid item xs={12}>
-              <Header />
-            </Grid>
-
-            <Grid item xs={2}>
-              <LeftMenu />
-            </Grid>
-
-            <Grid item xs={10}>
-              <Switch>
-                <Route path={advancedSearchPath()} component={AdvancedSearch} />
-                <Route path={newEntryPath(":entityId")} component={EditEntry} />
-                <Route path={showEntryPath(":entryId")} component={ShowEntry} />
-                <Route path={importEntitiesPath()} component={ImportEntry} />
-                <Route
-                  path={entityEntriesPath(":entityId")}
-                  component={Entry}
-                />
-                <Route
-                  path={entityHistoryPath(":entityId")}
-                  component={EntityHistory}
-                />
-                <Route path={newEntityPath()} component={EditEntity} />
-                <Route path={importEntitiesPath()} component={ImportEntity} />
-                <Route path={entityPath(":entityId")} component={EditEntity} />
-                <Route path={entitiesPath()} component={Entity} />
-                <Route path={newGroupPath()} component={EditGroup} />
-                <Route path={importGroupsPath()} component={ImportGroup} />
-                <Route path={groupPath(":groupId")} component={EditGroup} />
-                <Route path={groupsPath()} component={Group} />
-                <Route path={jobsPath()} component={Job} />
-                <Route path={aclPath(":entityId")} component={ACL} />
-                <Route path={searchPath()} component={AdvancedSearchResults} />
-                <Route path={newUserPath()} component={EditUser} />
-                <Route path={importUsersPath()} component={ImportUser} />
-                <Route
-                  path={passwordPath(":userId")}
-                  component={EditUserPassword}
-                />
-                <Route path={userPath(":userId")} component={EditUser} />
-                <Route path={usersPath()} component={User} />
-                <Route path="/" component={Dashboard} />
-              </Switch>
-            </Grid>
-          </Grid>
+          <Header />
+          <Switch>
+            <Route path={advancedSearchPath()} component={AdvancedSearch} />
+            <Route path={newEntryPath(":entityId")} component={EditEntry} />
+            <Route path={showEntryPath(":entryId")} component={ShowEntry} />
+            <Route path={importEntitiesPath()} component={ImportEntry} />
+            <Route path={entityEntriesPath(":entityId")} component={Entry} />
+            <Route
+              path={entityHistoryPath(":entityId")}
+              component={EntityHistory}
+            />
+            <Route path={newEntityPath()} component={EditEntity} />
+            <Route path={importEntitiesPath()} component={ImportEntity} />
+            <Route path={entityPath(":entityId")} component={EditEntity} />
+            <Route path={entitiesPath()} component={Entity} />
+            <Route path={newGroupPath()} component={EditGroup} />
+            <Route path={importGroupsPath()} component={ImportGroup} />
+            <Route path={groupPath(":groupId")} component={EditGroup} />
+            <Route path={groupsPath()} component={Group} />
+            <Route path={jobsPath()} component={Job} />
+            <Route path={aclPath(":entityId")} component={ACL} />
+            <Route path={searchPath()} component={AdvancedSearchResults} />
+            <Route path={newUserPath()} component={EditUser} />
+            <Route path={importUsersPath()} component={ImportUser} />
+            <Route
+              path={passwordPath(":userId")}
+              component={EditUserPassword}
+            />
+            <Route path={userPath(":userId")} component={EditUser} />
+            <Route path={usersPath()} component={User} />
+            <Route path="/" component={Dashboard} />
+          </Switch>
         </Route>
       </Switch>
     </Router>
