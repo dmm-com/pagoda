@@ -71,10 +71,7 @@ export const AppRouter: FC = () => {
             <Route path={newEntryPath(":entityId")} component={EditEntry} />
             <Route path={showEntryPath(":entryId")} component={ShowEntry} />
             <Route path={importEntitiesPath()} component={ImportEntry} />
-            <Route
-              path={entityEntriesPath(":entityId")}
-              component={Entry}
-            />
+            <Route path={entityEntriesPath(":entityId")} component={Entry} />
             <Route
               path={entityHistoryPath(":entityId")}
               component={EntityHistory}
