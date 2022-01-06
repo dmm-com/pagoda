@@ -7,6 +7,26 @@ function getCsrfToken(): string {
   return Cookies.get("csrftoken");
 }
 
+export function postLogin(formData: FormData): Promise<Response> {
+  return fetch(`/auth/login/?next=${formData.get("next")}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: formData,
+    redirect: "manual",
+  });
+}
+
+export function postLogout(): Promise<Response> {
+  return fetch("/auth/logout/", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+  });
+}
+
 export function getEntity(entityId: number): Promise<Response> {
   return fetch(`/entity/api/v2/entities/${entityId}`);
 }

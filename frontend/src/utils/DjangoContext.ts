@@ -10,6 +10,7 @@ class User {
 
 // A JavaScript representation for Django context
 export class DjangoContext {
+  loginNext: string;
   version: string;
   attrTypeValue: any;
   user: User | undefined;
@@ -17,6 +18,7 @@ export class DjangoContext {
   private static _instance: DjangoContext | undefined;
 
   constructor(context) {
+    this.loginNext = context.next;
     this.version = context.version;
     this.user = context.user ? new User(context.user) : undefined;
 

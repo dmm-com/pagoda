@@ -21,8 +21,8 @@ import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { jobsPath, searchPath, topPath, userPath } from "../Routes";
-import { getRecentJobs } from "../utils/AironeAPIClient";
+import { jobsPath, searchPath, topPath, userPath, loginPath } from "../Routes";
+import { getRecentJobs, postLogout } from "../utils/AironeAPIClient";
 import { DjangoContext } from "../utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -88,6 +88,12 @@ export const Header: FC = () => {
     }
   };
 
+  const handleLogout = () => {
+    postLogout().then(() => {
+      window.location.href = `${loginPath()}?next=${window.location.pathname}`;
+    });
+  };
+
   return (
     <Box className={classes.root}>
       <AppBar position="static">
@@ -121,7 +127,9 @@ export const Header: FC = () => {
                 <Link to={userPath(djangoContext.user.id)}>ユーザ設定</Link>
               </MenuItem>
               <MenuItem>
-                <a href="/auth/logout/">ログアウト</a>
+                <Link to="#" onClick={() => handleLogout()}>
+                  ログアウト
+                </Link>
               </MenuItem>
             </Menu>
 

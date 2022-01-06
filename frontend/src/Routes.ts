@@ -1,5 +1,6 @@
 const basePath = "/new-ui/";
 
+export const loginPath = () => "/auth/login/";
 export const topPath = () => basePath;
 export const advancedSearchPath = () => basePath + "advanced_search";
 export const jobsPath = () => basePath + "jobs";
