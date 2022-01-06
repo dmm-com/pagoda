@@ -6,9 +6,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Theme,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -22,12 +20,6 @@ import {
 import { DjangoContext } from "../../utils/DjangoContext";
 
 import { EditAttributeValue } from "./EditAttributeValue";
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-}));
 
 interface Props {
   entityId: number;
@@ -43,7 +35,6 @@ export const EntryForm: FC<Props> = ({
   initAttributes = {},
 }) => {
   const djangoContext = DjangoContext.getInstance();
-  const classes = useStyles();
   const history = useHistory();
 
   /* FIXME attach checked flag to entry-like types
@@ -368,9 +359,9 @@ export const EntryForm: FC<Props> = ({
     }
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async () => {
     const updatedAttr = Object.entries(attributes).map(
-      ([attrName, attrValue]: any) => {
+      ([{}, attrValue]: any) => {
         switch (attrValue.type) {
           case djangoContext.attrTypeValue.string:
           case djangoContext.attrTypeValue.text:
