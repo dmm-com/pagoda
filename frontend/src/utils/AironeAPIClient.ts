@@ -120,7 +120,7 @@ export function getACL(objectId: number): Promise<Response> {
 export function updateACL(
   objectId: number,
   name: string,
-  objectType: string,
+  objectType: number,
   isPublic: boolean,
   defaultPermission: number,
   acl: object

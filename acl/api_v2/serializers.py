@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypedDict
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -30,7 +30,7 @@ class ACLSerializer(serializers.ModelSerializer):
         else:
             return None
 
-    def get_acltypes(self, obj: ACLBase) -> List[Dict[str, Any]]:
+    def get_acltypes(self, obj: ACLBase) -> List[TypedDict('ACLType', {'id': int, 'name': str})]:
         return [{'id': x.id, 'name': x.label} for x in ACLType.all()]
 
     def get_members(self, obj: ACLBase) -> List[Dict[str, Any]]:

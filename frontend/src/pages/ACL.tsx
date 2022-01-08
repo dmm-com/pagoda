@@ -4,16 +4,15 @@ import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { topPath } from "../Routes";
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { ACLForm } from "../components/common/ACLForm";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { getACL } from "../utils/AironeAPIClient";
 
 export const ACL: FC = () => {
   const { entityId } = useParams<{ entityId: number }>();
 
-  const acl: any = useAsync(async () => {
-    const resp = await getACL(entityId);
-    return await resp.json();
+  const acl = useAsync(async () => {
+    return await aironeApiClientV2.getAcl(entityId);
   });
 
   return (
