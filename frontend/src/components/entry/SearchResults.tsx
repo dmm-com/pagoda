@@ -8,7 +8,7 @@ import { AttributeValue } from "./AttributeValue";
 
 interface Props {
   results: {
-    attrs: any;
+    attrs: Map<string, { type: number; value: any }>;
     entry: {
       name: string;
     };
