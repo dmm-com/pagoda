@@ -7,6 +7,10 @@
 
 ### Changed
 * Updated Django version that fixed security bug (CVE-2021-44420)
+* Droped Python 3.6 support
+* Upgrade celery version from v4.4.7 to v5.2.2
+* Upgrade kombu version from v4.6.11 to v5.2.2
+* Upgrade flower version from v0.9.7 to v1.0.0
 
 ### Fixed
 * Fixed an issue where advanced search narrow down was slow (#321)
