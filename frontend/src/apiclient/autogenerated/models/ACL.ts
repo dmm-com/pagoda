@@ -13,13 +13,6 @@
  */
 
 import { exists, mapValues } from "../runtime";
-import {
-  ACLAcltypes,
-  ACLAcltypesFromJSON,
-  ACLAcltypesFromJSONTyped,
-  ACLAcltypesToJSON,
-} from "./ACLAcltypes";
-
 /**
  *
  * @export
@@ -64,10 +57,10 @@ export interface ACL {
   readonly parent: any | null;
   /**
    *
-   * @type {Array<ACLAcltypes>}
+   * @type {Array<{ [key: string]: any; }>}
    * @memberof ACL
    */
-  readonly acltypes: Array<ACLAcltypes>;
+  readonly acltypes: Array<{ [key: string]: any }>;
   /**
    *
    * @type {Array<{ [key: string]: any; }>}
@@ -99,7 +92,7 @@ export function ACLFromJSONTyped(json: any, ignoreDiscriminator: boolean): ACL {
       : json["default_permission"],
     objtype: !exists(json, "objtype") ? undefined : json["objtype"],
     parent: json["parent"],
-    acltypes: (json["acltypes"] as Array<any>).map(ACLAcltypesFromJSON),
+    acltypes: json["acltypes"],
     members: json["members"],
     acl: json["acl"],
   };

@@ -6,7 +6,6 @@ apis/WebhookApi.ts
 apis/index.ts
 index.ts
 models/ACL.ts
-models/ACLAcltypes.ts
 models/GetEntry.ts
 models/Group.ts
 models/index.ts
