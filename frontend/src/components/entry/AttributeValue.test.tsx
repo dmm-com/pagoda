@@ -6,20 +6,8 @@ import { shallow } from "enzyme";
 import React from "react";
 
 import { AttributeValue } from "./AttributeValue";
+import { DjangoContext } from "../../utils/DjangoContext";
 
-const attrTypeValue = {
-  string: 2,
-  object: 1,
-  named_object: 2049,
-  array_object: 1025,
-  array_string: 1026,
-  array_named_object: 3073,
-  array_group: 1040,
-  text: 4,
-  boolean: 8,
-  group: 16,
-  date: 32,
-};
 
 beforeAll(() => {
   Object.defineProperty(window, "django_context", {
@@ -35,12 +23,13 @@ beforeAll(() => {
 });
 
 it("show string type AttributeValue", () => {
+  const djangoContext = DjangoContext.getInstance();
   const attrValue = "hoge";
   const wrapper = shallow(
     <AttributeValue
       attrInfo={{
         value: attrValue,
-        type: attrTypeValue.string,
+        type: djangoContext.attrTypeValue.string,
       }}
     />
   );
@@ -50,12 +39,13 @@ it("show string type AttributeValue", () => {
 });
 
 it("show object type AttributeValue", () => {
+  const djangoContext = DjangoContext.getInstance();
   const attrValue = { id: 100, name: "hoge" };
   const wrapper = shallow(
     <AttributeValue
       attrInfo={{
         value: attrValue,
-        type: attrTypeValue.object,
+        type: djangoContext.attrTypeValue.object,
       }}
     />
   );
