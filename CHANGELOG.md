@@ -19,6 +19,7 @@
 
 ### Refactored
 * Refactored referral param in advanced search (#326)
+* Refactored the process of check permission
 
 ## v3.4.1
 
