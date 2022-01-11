@@ -5,9 +5,9 @@
 import { shallow } from "enzyme";
 import React from "react";
 
-import { AttributeValue } from "./AttributeValue";
 import { DjangoContext } from "../../utils/DjangoContext";
 
+import { AttributeValue } from "./AttributeValue";
 
 beforeAll(() => {
   Object.defineProperty(window, "django_context", {
