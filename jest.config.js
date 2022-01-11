@@ -9,4 +9,7 @@ module.exports = {
   "transform": {
     "^.+\\.(ts|tsx)$": "ts-jest"
   },
+  "setupFilesAfterEnv": [
+    "<rootDir>/frontend/src/setupTests.ts"
+  ],
 }
