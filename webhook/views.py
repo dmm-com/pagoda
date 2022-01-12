@@ -1,18 +1,20 @@
 from airone.lib.acl import ACLType
-from airone.lib.http import check_permission
+from airone.lib.http import get_object_with_check_permission
 from airone.lib.http import http_get
 from airone.lib.http import render
 from airone.lib.profile import airone_profile
 
 from entity.models import Entity
+from user.models import User
 
 
 @airone_profile
 @http_get
-@check_permission(Entity, ACLType.Full)
 def list_webhook(request, entity_id):
-    # entity of specifying id
-    entity = Entity.objects.get(id=entity_id)
+    user = User.objects.get(id=request.user.id)
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Full)
+    if error:
+        return error
 
     return render(request, 'list_webhooks.html', {
         'entity': entity,

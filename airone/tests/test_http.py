@@ -1,6 +1,10 @@
 import unittest
 
-from airone.lib.http import http_get
+from airone.lib.http import http_get, get_object_with_check_permission
+from airone.lib.test import AironeViewTest
+from airone.lib.acl import ACLType
+from entry.models import Entry
+
 from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory
 
@@ -35,3 +39,37 @@ class AirOneHTTPTest(unittest.TestCase):
             self.assertEqual(resp.status_code, 303)
             # Use assertIn because dict doesn't keep the key order if it's less than python 3.6
             self.assertIn(resp.url, i['resp_url'])
+
+
+class ViewTest(AironeViewTest):
+    def setUp(self):
+        self.user = self.guest_login()
+
+        self.entity = self.create_entity(self.user, 'Entity', [{'name': 'attr'}])
+        self.entityattr = self.entity.attrs.get(name='attr')
+        self.entry = self.add_entry(self.user, 'Entry', self.entity, {'attr': 'hoge'})
+        self.attr = self.entry.attrs.get(schema=self.entityattr)
+
+    def test_get_object_with_check_permission(self):
+        for obj in [self.entity, self.entityattr, self.entry, self.attr]:
+            target_obj, error = get_object_with_check_permission(
+                self.user, obj.__class__, obj.id, ACLType.Full)
+            self.assertEqual(target_obj, obj)
+            self.assertIsNone(error)
+
+    def test_get_object_with_check_permission_with_invalid_param(self):
+        target_obj, error = get_object_with_check_permission(
+            self.user, Entry, self.entity.id, ACLType.Full)
+        self.assertIsNone(target_obj)
+        self.assertEqual(error.content, b'Failed to get entity of specified id')
+        self.assertEqual(error.status_code, 400)
+
+    def test_get_object_with_check_permission_without_permission(self):
+        self.entry.is_public = False
+        self.entry.save()
+
+        target_obj, error = get_object_with_check_permission(
+            self.user, Entry, self.entry.id, ACLType.Full)
+        self.assertIsNone(target_obj)
+        self.assertEqual(error.content, b'You don\'t have permission to access this object')
+        self.assertEqual(error.status_code, 400)
