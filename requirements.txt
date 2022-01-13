@@ -9,7 +9,7 @@ pyyaml==5.4
 kombu==5.2.2
 python-memcached==1.59
 djangorestframework==3.11.2
-django-filter==1.1.0
+django-filter==2.4.0
 elasticsearch==6.2.0
 mysqlclient==2.0.3
 natsort==5.3.3
