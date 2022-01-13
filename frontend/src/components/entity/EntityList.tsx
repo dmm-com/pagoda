@@ -1,10 +1,15 @@
+import AddIcon from "@mui/icons-material/Add";
 import GroupIcon from "@mui/icons-material/Group";
 import HistoryIcon from "@mui/icons-material/History";
+import SearchIcon from "@mui/icons-material/Search";
 import {
+  Box,
   Button,
-  Input,
+  Fab,
+  InputAdornment,
   TableCell,
   TableRow,
+  TextField,
   Theme,
   Typography,
 } from "@mui/material";
@@ -55,67 +60,84 @@ export const EntityList: FC<Props> = ({ entities }) => {
   });
 
   return (
-    <PaginatedTable
-      rows={filteredEntities}
-      tableHeadRow={
-        <TableRow>
-          <TableCell>
-            <span className={classes.entityName}>エンティティ名</span>
-            <Input
-              inputProps={{
-                "data-testid": "entityName",
-              }}
-              className={classes.entityName}
-              placeholder="絞り込む"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-            />
-          </TableCell>
-          <TableCell>
-            <Typography>備考</Typography>
-          </TableCell>
-          <TableCell align="right" />
-        </TableRow>
-      }
-      tableBodyRowGenerator={(entity) => (
-        <TableRow key={entity.id} data-testid="entityTableRow">
-          <TableCell>
-            <Typography component={Link} to={entityEntriesPath(entity.id)}>
-              {entity.name}
-            </Typography>
-          </TableCell>
-          <TableCell>
-            <Typography>{entity.note}</Typography>
-          </TableCell>
-          <TableCell align="right">
-            <EditButton to={entityPath(entity.id)}>エンティティ編集</EditButton>
-            <Button
-              variant="contained"
-              color="primary"
-              className={classes.button}
-              startIcon={<HistoryIcon />}
-              component={Link}
-              to={entityHistoryPath(entity.id)}
-            >
-              変更履歴
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              className={classes.button}
-              startIcon={<GroupIcon />}
-              component={Link}
-              to={aclPath(entity.id)}
-            >
-              ACL
-            </Button>
-            <DeleteButton handleDelete={(e) => handleDelete(e, entity.id)}>
-              削除
-            </DeleteButton>
-          </TableCell>
-        </TableRow>
-      )}
-      rowsPerPageOptions={[100, 250, 1000]}
-    />
+    <Box>
+      <Box display="flex">
+        <Box className={classes.search} my="4px" width="600px">
+          <TextField
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            variant="outlined"
+            size="small"
+            placeholder="Search"
+            sx={{
+              background: "#0000000B",
+            }}
+            fullWidth={true}
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+          />
+        </Box>
+        <Fab color="secondary" aria-label="add" variant="extended">
+          <AddIcon />
+          新規作成
+        </Fab>
+      </Box>
+      <PaginatedTable
+        rows={filteredEntities}
+        tableHeadRow={
+          <TableRow>
+            <TableCell></TableCell>
+            <TableCell />
+            <TableCell>新規作成</TableCell>
+          </TableRow>
+        }
+        tableBodyRowGenerator={(entity) => (
+          <TableRow key={entity.id} data-testid="entityTableRow">
+            <TableCell>
+              <Typography component={Link} to={entityEntriesPath(entity.id)}>
+                {entity.name}
+              </Typography>
+            </TableCell>
+            <TableCell>
+              <Typography>{entity.note}</Typography>
+            </TableCell>
+            <TableCell align="right">
+              <EditButton to={entityPath(entity.id)}>
+                エンティティ編集
+              </EditButton>
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.button}
+                startIcon={<HistoryIcon />}
+                component={Link}
+                to={entityHistoryPath(entity.id)}
+              >
+                変更履歴
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.button}
+                startIcon={<GroupIcon />}
+                component={Link}
+                to={aclPath(entity.id)}
+              >
+                ACL
+              </Button>
+              <DeleteButton handleDelete={(e) => handleDelete(e, entity.id)}>
+                削除
+              </DeleteButton>
+            </TableCell>
+          </TableRow>
+        )}
+        rowsPerPageOptions={[100, 250, 1000]}
+      />
+    </Box>
   );
 };
