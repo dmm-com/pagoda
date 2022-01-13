@@ -1,22 +1,23 @@
-import { Box, Button, Theme, Typography } from "@mui/material";
+import { Box, TextField, Button, Theme, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { importEntitiesPath, newEntityPath, topPath } from "../Routes";
+import { topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { CreateButton } from "../components/common/CreateButton";
 import { Loading } from "../components/common/Loading";
 import { EntityList } from "../components/entity/EntityList";
-import {
-  downloadExportedEntities,
-  getEntities,
-} from "../utils/AironeAPIClient";
+import { getEntities } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
+  },
+  contextBox: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
 }));
 
@@ -38,6 +39,18 @@ export const Entity: FC = () => {
         <Typography color="textPrimary">エンティティ一覧</Typography>
       </AironeBreadcrumbs>
 
+      <Box className={classes.contextBox}>
+        <Box mt="50px" width="600px">
+          <Typography variant="h2">エンティティ一覧</Typography>
+        </Box>
+
+        <Box className={classes.operationBox}>
+          <TextField />
+          <Button>新規作成</Button>
+        </Box>
+      </Box>
+
+      {/*
       <Box className="row">
         <Box className="col">
           <Box className="float-left">
@@ -63,6 +76,7 @@ export const Entity: FC = () => {
           <Box className="float-right" />
         </Box>
       </Box>
+      */}
 
       {entities.loading ? (
         <Loading />
