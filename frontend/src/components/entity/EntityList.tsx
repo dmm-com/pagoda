@@ -5,6 +5,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
+  Card,
+  CardContent,
   Fab,
   InputAdornment,
   TableCell,
@@ -61,8 +63,8 @@ export const EntityList: FC<Props> = ({ entities }) => {
 
   return (
     <Box>
-      <Box display="flex">
-        <Box className={classes.search} my="4px" width="600px">
+      <Box display="flex" justifyContent="center">
+        <Box className={classes.search} my="4px" mr="300px" width="600px">
           <TextField
             InputProps={{
               startAdornment: (
@@ -87,6 +89,17 @@ export const EntityList: FC<Props> = ({ entities }) => {
           新規作成
         </Fab>
       </Box>
+      <Card>
+        <CardContent>
+          <Typography>test</Typography>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent>
+          <Typography>test2</Typography>
+        </CardContent>
+      </Card>
+
       <PaginatedTable
         rows={filteredEntities}
         tableHeadRow={

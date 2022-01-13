@@ -1,4 +1,4 @@
-import { Box, TextField, Button, Theme, Typography } from "@mui/material";
+import { Box, Theme, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
@@ -40,13 +40,8 @@ export const Entity: FC = () => {
       </AironeBreadcrumbs>
 
       <Box className={classes.contextBox}>
-        <Box mt="50px" width="600px">
+        <Box my="50px">
           <Typography variant="h2">エンティティ一覧</Typography>
-        </Box>
-
-        <Box className={classes.operationBox}>
-          <TextField />
-          <Button>新規作成</Button>
         </Box>
       </Box>
 
