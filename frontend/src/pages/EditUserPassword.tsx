@@ -5,6 +5,7 @@ import { useAsync } from "react-use";
 
 import { topPath, usersPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { Loading } from "../components/common/Loading";
 import { UserPasswordForm } from "../components/user/UserPasswordForm";
 import { getUser } from "../utils/AironeAPIClient";
 
@@ -28,7 +29,9 @@ export const EditUserPassword: FC = () => {
         <Typography color="textPrimary">パスワード編集</Typography>
       </AironeBreadcrumbs>
 
-      {!user.loading && (
+      {user.loading ? (
+        <Loading />
+      ) : (
         <UserPasswordForm
           user={user.value}
           asSuperuser={(window as any).django_context.user.is_superuser}

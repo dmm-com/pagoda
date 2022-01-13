@@ -13,6 +13,7 @@ import { useAsync } from "react-use";
 
 import { entitiesPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { Loading } from "../components/common/Loading";
 import { getEntityHistory } from "../utils/AironeAPIClient";
 
 const Operations = {
@@ -68,59 +69,64 @@ export const EntityHistory: FC = () => {
         </TableHead>
 
         <TableBody>
-          {!history.loading &&
-            history.value.map((column, index) => (
-              <TableRow key={index}>
-                <TableCell>{column.user.username}</TableCell>
-                <TableCell>
-                  {(() => {
-                    switch (column.operation) {
-                      case TargetOperation.ADD_ENTITY:
-                        return <Typography>作成</Typography>;
-                      case TargetOperation.MOD_ENTITY:
-                        return <Typography>変更</Typography>;
-                      case TargetOperation.DEL_ENTITY:
-                        return <Typography>削除</Typography>;
-                      default:
-                        return (
-                          <Typography>
-                            {column.operation} ({TargetOperation.ADD_ENTITY})
-                          </Typography>
-                        );
-                    }
-                  })()}
-                </TableCell>
-                <TableCell>
-                  <Table>
-                    <TableBody>
-                      {column.details.map((detail, index) => (
-                        <TableRow key={index}>
-                          <TableCell>
-                            {(() => {
-                              switch (detail.operation) {
-                                case TargetOperation.MOD_ENTITY:
-                                  return <Typography>変更</Typography>;
-                                case TargetOperation.ADD_ATTR:
-                                  return <Typography>属性追加</Typography>;
-                                case TargetOperation.MOD_ATTR:
-                                  return <Typography>属性変更</Typography>;
-                                case TargetOperation.DEL_ATTR:
-                                  return <Typography>属性削除</Typography>;
-                                default:
-                                  return <Typography />;
-                              }
-                            })()}
-                          </TableCell>
-                          <TableCell>{detail.target_obj.name}</TableCell>
-                          <TableCell>{detail.text}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableCell>
-                <TableCell>{column.time}</TableCell>
-              </TableRow>
-            ))}
+          {history.loading ? (
+            <Loading />
+          ) : (
+            <>
+              {history.value.map((column, index) => (
+                <TableRow key={index}>
+                  <TableCell>{column.user.username}</TableCell>
+                  <TableCell>
+                    {(() => {
+                      switch (column.operation) {
+                        case TargetOperation.ADD_ENTITY:
+                          return <Typography>作成</Typography>;
+                        case TargetOperation.MOD_ENTITY:
+                          return <Typography>変更</Typography>;
+                        case TargetOperation.DEL_ENTITY:
+                          return <Typography>削除</Typography>;
+                        default:
+                          return (
+                            <Typography>
+                              {column.operation} ({TargetOperation.ADD_ENTITY})
+                            </Typography>
+                          );
+                      }
+                    })()}
+                  </TableCell>
+                  <TableCell>
+                    <Table>
+                      <TableBody>
+                        {column.details.map((detail, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              {(() => {
+                                switch (detail.operation) {
+                                  case TargetOperation.MOD_ENTITY:
+                                    return <Typography>変更</Typography>;
+                                  case TargetOperation.ADD_ATTR:
+                                    return <Typography>属性追加</Typography>;
+                                  case TargetOperation.MOD_ATTR:
+                                    return <Typography>属性変更</Typography>;
+                                  case TargetOperation.DEL_ATTR:
+                                    return <Typography>属性削除</Typography>;
+                                  default:
+                                    return <Typography />;
+                                }
+                              })()}
+                            </TableCell>
+                            <TableCell>{detail.target_obj.name}</TableCell>
+                            <TableCell>{detail.text}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableCell>
+                  <TableCell>{column.time}</TableCell>
+                </TableRow>
+              ))}
+            </>
+          )}
         </TableBody>
       </Table>
     </Box>

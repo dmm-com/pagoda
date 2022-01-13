@@ -38,10 +38,10 @@ interface Props {
     username: string;
     email: string;
     is_superuser: boolean;
-    token: string;
-    token_lifetime: number;
-    token_created: string;
-    token_expire: string;
+    token?: string;
+    token_lifetime?: number;
+    token_created?: string;
+    token_expire?: string;
   };
 }
 
@@ -53,7 +53,9 @@ export const UserForm: FC<Props> = ({ user }) => {
   const [username, setUsername] = useState(user?.username ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [password, setPassword] = useState(isCreateMode ? "" : undefined);
-  const [isSuperuser, setIsSuperuser] = useState(user?.is_superuser ?? false);
+  const [isSuperuser, setIsSuperuser] = useState<boolean>(
+    user?.is_superuser ?? false
+  );
   const [tokenLifetime, setTokenLifetime] = useState(user?.token_lifetime);
 
   const djangoContext = DjangoContext.getInstance();
