@@ -20,6 +20,12 @@ urlpatterns = [
     url(r'^job/', include(('job.urls', 'job'))),
     url(r'^auth/login/', auth_views.LoginView.as_view(
         redirect_authenticated_user=True,
+        extra_context={
+            'title': settings.AIRONE['TITLE'],
+            'subtitle': settings.AIRONE['SUBTITLE'],
+            'note_desc': settings.AIRONE['NOTE_DESC'],
+            'note_link': settings.AIRONE['NOTE_LINK'],
+        }
     ), name='login'),
     url(r'^auth/logout/', auth_view.logout, name='logout'),
     url(r'^webhook/', include(('webhook.urls', 'webhook'))),
