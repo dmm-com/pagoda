@@ -56,7 +56,7 @@ class ACLSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs: Dict[str, Any]):
         user = User.objects.get(id=self.context['request'].user.id)
-        if not user.may_permitted(self.instance.id, ACLType.Full, **{
+        if not user.may_permitted(self.instance, ACLType.Full, **{
             'is_public': attrs['is_public'],
             'default_permission': attrs['default_permission'],
             'acl_settings': attrs['acl']
