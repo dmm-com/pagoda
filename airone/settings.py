@@ -29,6 +29,7 @@ CELERY_BROKER_HEARTBEAT = 0
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# INTERNAL_IPS = ['127.0.0.1']
 
 ALLOWED_HOSTS = ['*']
 
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'custom_view.background',
     'drf_spectacular',
+    # "debug_toolbar",
 ]
 
 MIDDLEWARE = [
@@ -69,6 +71,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'airone.lib.db.AirOneReplicationMiddleware',
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'airone.urls'

@@ -6,6 +6,7 @@ import { useAsync } from "react-use";
 
 import { topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { Loading } from "../components/common/Loading";
 import { JobList } from "../components/job/JobList";
 import { getJobs } from "../utils/AironeAPIClient";
 
@@ -50,7 +51,7 @@ export const Job: FC = () => {
         </Box>
       </Box>
 
-      {!jobs.loading && <JobList jobs={jobs.value} />}
+      {jobs.loading ? <Loading /> : <JobList jobs={jobs.value} />}
     </Box>
   );
 };

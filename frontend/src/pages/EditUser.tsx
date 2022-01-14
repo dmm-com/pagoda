@@ -5,6 +5,7 @@ import { useAsync } from "react-use";
 
 import { topPath, usersPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { Loading } from "../components/common/Loading";
 import { UserForm } from "../components/user/UserForm";
 import { getUser } from "../utils/AironeAPIClient";
 
@@ -30,7 +31,7 @@ export const EditUser: FC = () => {
         <Typography color="textPrimary">ユーザ編集</Typography>
       </AironeBreadcrumbs>
 
-      {!user.loading && <UserForm user={user.value} />}
+      {user.loading ? <Loading /> : <UserForm user={user.value} />}
     </Box>
   );
 };

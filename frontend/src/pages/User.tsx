@@ -7,6 +7,7 @@ import { useAsync } from "react-use";
 import { importUsersPath, newUserPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { CreateButton } from "../components/common/CreateButton";
+import { Loading } from "../components/common/Loading";
 import { UserList } from "../components/user/UserList";
 import { downloadExportedUsers, getUsers } from "../utils/AironeAPIClient";
 
@@ -63,7 +64,7 @@ export const User: FC = () => {
         </Box>
       </Box>
 
-      {!users.loading && <UserList users={users.value} />}
+      {users.loading ? <Loading /> : <UserList users={users.value} />}
     </Box>
   );
 };

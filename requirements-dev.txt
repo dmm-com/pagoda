@@ -3,10 +3,10 @@ django-import-export==2.5.0
 django==3.2.10
 mock==2.0.0
 coverage>=4.4.1
-celery==4.4.7
-flower==0.9.7
+celery==5.2.2
+flower==1.0.0
 pyyaml==5.4
-kombu==4.6.11
+kombu==5.2.2
 python-memcached==1.59
 djangorestframework==3.11.2
 django-filter==1.1.0
@@ -24,3 +24,4 @@ types-requests
 requests-html==0.10.0
 drf_spectacular==0.17.3
 django-replicated==2.7
+django-debug-toolbar==3.2.4

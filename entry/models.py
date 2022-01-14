@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from datetime import datetime, date
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.core.cache import cache
 from django.conf import settings
 
@@ -1083,7 +1083,18 @@ class Entry(ACLBase):
     def get_available_attrs(self, user, permission=ACLType.Readable):
         # To avoid unnecessary DB access for caching referral entries
         ret_attrs = []
-        for entity_attr in self.schema.attrs.filter(is_active=True).order_by('index'):
+        attrv_prefetch = Prefetch(
+            'values',
+            queryset=AttributeValue.objects.filter(is_latest=True).select_related(
+                'referral').prefetch_related('data_array__referral'),
+            to_attr='attrv_list')
+        attr_prefetch = Prefetch(
+            'attribute_set',
+            queryset=Attribute.objects.filter(parent_entry=self, is_active=True).prefetch_related(
+                attrv_prefetch),
+            to_attr="attr_list")
+        for entity_attr in self.schema.attrs.filter(is_active=True).prefetch_related(
+                attr_prefetch).order_by('index'):
             attrinfo = {}
             attrinfo['id'] = ''
             attrinfo['entity_attr_id'] = entity_attr.id
@@ -1095,7 +1106,7 @@ class Entry(ACLBase):
             attrinfo['last_value'] = AttrDefaultValue[entity_attr.type]
 
             # check that attribute exists
-            attr = self.attrs.filter(is_active=True, schema=entity_attr).first()
+            attr = entity_attr.attr_list[0] if entity_attr.attr_list else None
             if not attr:
                 attrinfo['is_readble'] = user.has_permission(entity_attr, permission)
                 ret_attrs.append(attrinfo)
@@ -1109,64 +1120,62 @@ class Entry(ACLBase):
                 continue
 
             # set last-value of current attributes
-            if attr.values.exists():
-                last_value = attr.get_latest_value(is_readonly=True)
-                if last_value is None:
-                    ret_attrs.append(attrinfo)
-                    continue
+            last_value = attr.attrv_list[0] if attr.attrv_list else None
+            if last_value is None:
+                ret_attrs.append(attrinfo)
+                continue
 
-                if last_value.data_type == AttrTypeStr or last_value.data_type == AttrTypeText:
-                    attrinfo['last_value'] = last_value.value
+            if last_value.data_type == AttrTypeStr or last_value.data_type == AttrTypeText:
+                attrinfo['last_value'] = last_value.value
 
-                elif last_value.data_type == AttrTypeObj:
-                    if last_value.referral and last_value.referral.is_active:
-                        attrinfo['last_value'] = last_value.referral
-                    else:
-                        attrinfo['last_value'] = None
+            elif last_value.data_type == AttrTypeObj:
+                if last_value.referral and last_value.referral.is_active:
+                    attrinfo['last_value'] = last_value.referral
+                else:
+                    attrinfo['last_value'] = None
 
-                elif last_value.data_type == AttrTypeArrStr:
-                    # this dict-key 'last_value' is uniformed with all array types
-                    attrinfo['last_value'] = [x.value for x in last_value.data_array.all()]
+            elif last_value.data_type == AttrTypeArrStr:
+                # this dict-key 'last_value' is uniformed with all array types
+                attrinfo['last_value'] = [x.value for x in last_value.data_array.all()]
 
-                elif last_value.data_type == AttrTypeArrObj:
-                    attrinfo['last_value'] = [x.referral for x in last_value.data_array.all()
-                                              if x.referral and x.referral.is_active]
+            elif last_value.data_type == AttrTypeArrObj:
+                attrinfo['last_value'] = [x.referral for x in last_value.data_array.all()
+                                          if x.referral and x.referral.is_active]
 
-                elif last_value.data_type == AttrTypeValue['boolean']:
-                    attrinfo['last_value'] = last_value.boolean
+            elif last_value.data_type == AttrTypeValue['boolean']:
+                attrinfo['last_value'] = last_value.boolean
 
-                elif last_value.data_type == AttrTypeValue['date']:
-                    attrinfo['last_value'] = last_value.date
+            elif last_value.data_type == AttrTypeValue['date']:
+                attrinfo['last_value'] = last_value.date
 
-                elif last_value.data_type == AttrTypeValue['named_object']:
-                    attrinfo['last_value'] = {'value': last_value.value}
+            elif last_value.data_type == AttrTypeValue['named_object']:
+                attrinfo['last_value'] = {'value': last_value.value}
 
-                    if last_value.referral and last_value.referral.is_active:
-                        attrinfo['last_value']['id'] = last_value.referral.id
-                        attrinfo['last_value']['name'] = last_value.referral.name
+                if last_value.referral and last_value.referral.is_active:
+                    attrinfo['last_value']['id'] = last_value.referral.id
+                    attrinfo['last_value']['name'] = last_value.referral.name
 
-                elif last_value.data_type == AttrTypeValue['array_named_object']:
-                    values = [x.value for x in last_value.data_array.all()]
-                    referrals = [x.referral for x in last_value.data_array.all()]
+            elif last_value.data_type == AttrTypeValue['array_named_object']:
+                values = [x.value for x in last_value.data_array.all()]
+                referrals = [x.referral for x in last_value.data_array.all()]
 
-                    attrinfo['last_value'] = sorted([{
-                        'value': v,
-                        'id': r.id if r and r.is_active else None,
-                        'name': r.name if r and r.is_active else None,
-                    } for (v, r) in zip(values, referrals)], key=lambda x: x['value'])
+                attrinfo['last_value'] = sorted([{
+                    'value': v,
+                    'id': r.id if r and r.is_active else None,
+                    'name': r.name if r and r.is_active else None,
+                } for (v, r) in zip(values, referrals)], key=lambda x: x['value'])
 
-                elif last_value.data_type == AttrTypeValue['group'] and last_value.value:
-                    group = Group.objects.filter(id=last_value.value)
-                    if group:
-                        attrinfo['last_value'] = group.first()
+            elif last_value.data_type == AttrTypeValue['group'] and last_value.value:
+                attrinfo['last_value'] = Group.objects.filter(
+                    id=last_value.value, is_active=True).first()
 
-                elif last_value.data_type == AttrTypeValue['array_group']:
-                    attrinfo['last_value'] = [
-                        x for x in [
-                            Group.objects.filter(id=v.value, is_active=True).first()
-                            for v in last_value.data_array.all()
-                        ] if x
-                    ]
+            elif last_value.data_type == AttrTypeValue['array_group']:
+                attrinfo['last_value'] = [
+                    x for x in [
+                        Group.objects.filter(id=v.value, is_active=True).first()
+                        for v in last_value.data_array.all()
+                    ] if x
+                ]
 
             ret_attrs.append(attrinfo)
 
