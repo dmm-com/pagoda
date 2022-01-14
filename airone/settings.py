@@ -183,8 +183,8 @@ AIRONE = {
     'AUTO_COMPLEMENT_USER': 'auto_complementer',
     'EXTENSIONS': [],
     'TITLE': 'AirOne',
-    'SUBTITLE': '仮想マシンや機材を検索することが出来る情報管理システム。',
-    'NOTE_DESC': 'ユーザネーム、パスワードがわからない',
+    'SUBTITLE': 'SubTitle, Please change it',
+    'NOTE_DESC': 'Description, Please change it',
     'NOTE_LINK': '',
 }
 
