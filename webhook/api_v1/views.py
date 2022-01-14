@@ -4,7 +4,7 @@ import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 
 from airone.lib.acl import ACLType
-from airone.lib.http import check_permission
+from airone.lib.http import get_object_with_check_permission
 from airone.lib.http import http_post
 from airone.lib.profile import airone_profile
 
@@ -13,6 +13,7 @@ from django.core.validators import URLValidator
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from entity.models import Entity
+from user.models import User
 
 from webhook.models import Webhook
 
@@ -26,10 +27,13 @@ urllib3.disable_warnings(InsecureRequestWarning)
     {'name': 'is_enabled', 'type': bool},
     {'name': 'request_headers', 'type': list},
 ])
-@check_permission(Entity, ACLType.Full)
 def set_webhook(request, entity_id, recv_data):
-    entity = Entity.objects.filter(id=entity_id, is_active=True).first()
-    if not entity:
+    user = User.objects.get(id=request.user.id)
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Full)
+    if error:
+        return error
+
+    if not entity.is_active:
         return JsonResponse({'msg': 'There is no entity for setting'}, status=400)
 
     # check specified parameters are valid
