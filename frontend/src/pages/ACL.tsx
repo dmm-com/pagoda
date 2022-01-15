@@ -7,6 +7,7 @@ import { topPath } from "../Routes";
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { ACLForm } from "../components/common/ACLForm";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
+import { Loading } from "../components/common/Loading";
 
 export const ACL: FC = () => {
   const { entityId } = useParams<{ entityId: number }>();
@@ -24,7 +25,9 @@ export const ACL: FC = () => {
         <Typography color="textPrimary">ACL</Typography>
       </AironeBreadcrumbs>
 
-      {!acl.loading && (
+      {acl.loading ? (
+        <Loading />
+      ) : (
         <>
           <Typography>{acl.value.name} の ACL 設定</Typography>
           <ACLForm objectId={entityId} acl={acl.value} />

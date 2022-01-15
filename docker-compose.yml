@@ -1,7 +1,7 @@
 version: '2.0'
 services:
   mysql:
-    image: mysql:5.7
+    image: mysql:5.7.34
     container_name: mysql
     hostname: mysql
     command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
@@ -14,7 +14,7 @@ services:
       - mysql:/var/lib/mysql
 
   elasticsearch:
-    image: elasticsearch:6.8.16
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.16
     container_name: elasticsearch
     hostname: elasticsearch
     environment:
@@ -27,7 +27,7 @@ services:
       - 9200:9200
 
   rabbitmq:
-    image: rabbitmq:3.8-management-alpine
+    image: rabbitmq:3.8.19-management
     container_name: rabbitmq
     hostname: rabbitmq
     ports:
@@ -37,7 +37,7 @@ services:
       name: rabbitmq1
 
   memcached:
-    image: memcached:1.6.9-alpine
+    image: bitnami/memcached:1.6.9
     container_name: memcached
     hostname: memcached
     ports:

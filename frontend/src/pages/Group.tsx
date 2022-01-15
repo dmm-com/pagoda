@@ -8,6 +8,7 @@ import { importGroupsPath, newGroupPath, topPath } from "../Routes";
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { CreateButton } from "../components/common/CreateButton";
+import { Loading } from "../components/common/Loading";
 import { GroupList } from "../components/group/GroupList";
 import { downloadExportedGroups } from "../utils/AironeAPIClient";
 
@@ -62,7 +63,7 @@ export const Group: FC = () => {
         </Box>
       </Box>
 
-      {!groups.loading && <GroupList groups={groups.value} />}
+      {groups.loading ? <Loading /> : <GroupList groups={groups.value} />}
     </Box>
   );
 };
