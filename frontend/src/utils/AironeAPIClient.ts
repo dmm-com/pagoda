@@ -60,10 +60,6 @@ export function getEntityAttrs(entityIds: number[]): Promise<Response> {
   return fetch(`/api/v1/entity/attrs/${entityIds.join(",")}`);
 }
 
-export function getEntry(entryId: number): Promise<Response> {
-  return fetch(`/entry/api/v2/${entryId}`);
-}
-
 export function getEntries(
   entityId: number,
   isActive = true
@@ -109,34 +105,6 @@ export function searchEntries(
       entry_name: entryName,
       attrinfo: attrInfo,
       entry_limit: entryLimit,
-    }),
-  });
-}
-
-export function getACL(objectId: number): Promise<Response> {
-  return fetch(`/acl/api/v2/acls/${objectId}`);
-}
-
-export function updateACL(
-  objectId: number,
-  name: string,
-  objectType: number,
-  isPublic: boolean,
-  defaultPermission: number,
-  acl: object
-): Promise<Response> {
-  return fetch(`/acl/api/v2/acls/${objectId}`, {
-    method: "PUT",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-      "Content-Type": "application/json;charset=utf-8",
-    },
-    body: JSON.stringify({
-      name: name,
-      objtype: objectType,
-      is_public: isPublic,
-      default_permission: defaultPermission,
-      acl: acl,
     }),
   });
 }
@@ -421,15 +389,6 @@ export function updateUserPasswordAsSuperuser(
       chk_passwd: checkPassword,
     }),
   });
-}
-
-// FIXME implement internal API then call it
-export function getGroups(): Promise<Response> {
-  return fetch("/group/api/v2/groups");
-}
-
-export function getGroup(groupId: number): Promise<Response> {
-  return fetch(`/group/api/v2/groups/${groupId}`);
 }
 
 // NOTE it calls non-API endpoint

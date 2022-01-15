@@ -1,5 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from "./ACL";
-export * from "./GetEntry";
+export * from "./Entry";
 export * from "./Group";

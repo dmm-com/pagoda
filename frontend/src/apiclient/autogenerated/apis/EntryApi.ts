@@ -13,7 +13,7 @@
  */
 
 import * as runtime from "../runtime";
-import { GetEntry, GetEntryFromJSON, GetEntryToJSON } from "../models";
+import { Entry, EntryFromJSON, EntryToJSON } from "../models";
 
 export interface EntryApiV2RetrieveRequest {
   id: number;
@@ -28,7 +28,7 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2RetrieveRaw(
     requestParameters: EntryApiV2RetrieveRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<GetEntry>> {
+  ): Promise<runtime.ApiResponse<Entry>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
         "id",
@@ -63,7 +63,7 @@ export class EntryApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      GetEntryFromJSON(jsonValue)
+      EntryFromJSON(jsonValue)
     );
   }
 
@@ -72,7 +72,7 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2Retrieve(
     requestParameters: EntryApiV2RetrieveRequest,
     initOverrides?: RequestInit
-  ): Promise<GetEntry> {
+  ): Promise<Entry> {
     const response = await this.entryApiV2RetrieveRaw(
       requestParameters,
       initOverrides

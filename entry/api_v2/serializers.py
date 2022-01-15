@@ -2,9 +2,10 @@ from airone.lib.types import AttrTypeValue
 from entry.models import Entry
 from group.models import Group
 from rest_framework import serializers
+from typing import Any, Dict
 
 
-class GetEntrySerializer(serializers.ModelSerializer):
+class EntrySerializer(serializers.ModelSerializer):
     schema = serializers.SerializerMethodField()
     attrs = serializers.SerializerMethodField()
 
@@ -12,13 +13,13 @@ class GetEntrySerializer(serializers.ModelSerializer):
         model = Entry
         fields = ('id', 'name', 'schema', 'attrs')
 
-    def get_schema(self, entry):
+    def get_schema(self, entry) -> Dict[str, Any]:
         return {
                 'id': entry.schema.id,
                 'name': entry.schema.name,
         }
 
-    def get_attrs(self, obj):
+    def get_attrs(self, obj) -> Dict[str, Any]:
         def get_attr_value(attr):
             attrv = attr.get_latest_value(is_readonly=True)
 

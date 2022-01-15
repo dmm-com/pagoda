@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Any, Dict
 from rest_framework import serializers
 
 from group.models import Group
@@ -12,7 +12,7 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ['id', 'name', 'members']
 
-    def get_members(self, obj: Group) -> Dict:
+    def get_members(self, obj: Group) -> Dict[str, Any]:
         users = User.objects.filter(groups__name=obj.name, is_active=True).order_by('username')
         return [{
             "id": u.id,

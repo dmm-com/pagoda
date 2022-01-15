@@ -4,9 +4,10 @@ import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { groupsPath, topPath } from "../Routes";
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { GroupForm } from "../components/group/GroupForm";
-import { getGroup, getUsers } from "../utils/AironeAPIClient";
+import { getUsers } from "../utils/AironeAPIClient";
 
 export const EditGroup: FC = () => {
   const { groupId } = useParams<{ groupId: number }>();
@@ -16,10 +17,9 @@ export const EditGroup: FC = () => {
     return await resp.json();
   });
   const group = useAsync(async () => {
-    if (groupId !== undefined) {
-      const resp = await getGroup(groupId);
-      return await resp.json();
-    }
+    return groupId != undefined
+      ? await aironeApiClientV2.getGroup(groupId)
+      : undefined;
   });
 
   return (
