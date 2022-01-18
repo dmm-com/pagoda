@@ -1,13 +1,17 @@
 import AddIcon from "@mui/icons-material/Add";
 import GroupIcon from "@mui/icons-material/Group";
 import HistoryIcon from "@mui/icons-material/History";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
   Card,
   CardContent,
+  CardHeader,
   Fab,
+  Grid,
+  IconButton,
   InputAdornment,
   TableCell,
   TableRow,
@@ -36,6 +40,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   entityName: {
     margin: theme.spacing(1),
+  },
+  entityNote: {
+    color: theme.palette.text.secondary,
   },
 }));
 
@@ -89,16 +96,27 @@ export const EntityList: FC<Props> = ({ entities }) => {
           新規作成
         </Fab>
       </Box>
-      <Card>
-        <CardContent>
-          <Typography>test</Typography>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent>
-          <Typography>test2</Typography>
-        </CardContent>
-      </Card>
+      <Grid container spacing={2}>
+        {filteredEntities.map((entity) => (
+          <Grid item xs={4}>
+            <Card>
+              <CardHeader
+                title={entity.name}
+                action={
+                  <IconButton>
+                    <MoreVertIcon />
+                  </IconButton>
+                }
+              />
+              <CardContent>
+                <Typography className={classes.entityNote}>
+                  {entity.note}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
 
       <PaginatedTable
         rows={filteredEntities}
