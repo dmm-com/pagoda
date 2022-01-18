@@ -36,7 +36,9 @@ export const Entity: FC = () => {
 
       <Container maxWidth="lg">
         <Box my="50px">
-          <Typography variant="h2" align='center'>エンティティ一覧</Typography>
+          <Typography variant="h2" align="center">
+            エンティティ一覧
+          </Typography>
         </Box>
 
         {entities.loading ? (

@@ -7,6 +7,7 @@ import {
   Box,
   Button,
   Card,
+  CardActionArea,
   CardContent,
   CardHeader,
   Fab,
@@ -102,11 +103,22 @@ export const EntityList: FC<Props> = ({ entities }) => {
       <Grid container spacing={2}>
         {filteredEntities.map((entity) => (
           <Grid item xs={4}>
-            <Card>
+            <Card sx={{ height: "100%" }}>
               <CardHeader
-                title={entity.name}
+                title={
+                  <CardActionArea
+                    component={Link}
+                    to={entityEntriesPath(entity.id)}
+                  >
+                    {entity.name}
+                  </CardActionArea>
+                }
                 action={
-                  <IconButton>
+                  <IconButton
+                    onClick={(e) => {
+                      alert("hoge");
+                    }}
+                  >
                     <MoreVertIcon />
                   </IconButton>
                 }
