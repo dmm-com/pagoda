@@ -70,8 +70,9 @@ export const EntityList: FC<Props> = ({ entities }) => {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="center">
-        <Box className={classes.search} my="4px" mr="300px" width="600px">
+      {/* This box shows search box and create button */}
+      <Box display="flex" justifyContent="space-between" mb={8}>
+        <Box className={classes.search} width={500}>
           <TextField
             InputProps={{
               startAdornment: (
@@ -96,6 +97,8 @@ export const EntityList: FC<Props> = ({ entities }) => {
           新規作成
         </Fab>
       </Box>
+
+      {/* This box shows each entity Cards */}
       <Grid container spacing={2}>
         {filteredEntities.map((entity) => (
           <Grid item xs={4}>
@@ -118,6 +121,7 @@ export const EntityList: FC<Props> = ({ entities }) => {
         ))}
       </Grid>
 
+      {/* This box shows each entity cards */}
       <PaginatedTable
         rows={filteredEntities}
         tableHeadRow={
