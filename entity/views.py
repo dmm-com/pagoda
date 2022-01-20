@@ -16,7 +16,7 @@ from job.models import Job
 
 from airone.lib.types import AttrTypes, AttrTypeValue
 from airone.lib.http import http_get, http_post
-from airone.lib.http import check_permission
+from airone.lib.http import get_object_with_check_permission
 from airone.lib.http import render
 from airone.lib.http import get_download_response
 from airone.lib.acl import get_permitted_objects
@@ -77,15 +77,11 @@ def create(request):
 
 @airone_profile
 @http_get
-@check_permission(Entity, ACLType.Writable)
 def edit(request, entity_id):
     user = User.objects.get(id=request.user.id)
-
-    if not Entity.objects.filter(id=entity_id).exists():
-        return HttpResponse('Failed to get entity of specified id', status=400)
-
-    # entity to be editted is given by url
-    entity = Entity.objects.get(id=entity_id)
+    entity, error = get_object_with_check_permission(user, Entity, entity_id,  ACLType.Writable)
+    if error:
+        return error
 
     # when an entity in referral attribute is deleted
     # user should be able to select new entity or keep it unchanged
@@ -127,12 +123,11 @@ def edit(request, entity_id):
         )}
     ]}
 ])
-@check_permission(Entity, ACLType.Writable)
 def do_edit(request, entity_id, recv_data):
     user = User.objects.get(id=request.user.id)
-
-    if not Entity.objects.filter(id=entity_id).exists():
-        return HttpResponse('Failed to get entity of specified id', status=400)
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Writable)
+    if error:
+        return error
 
     # validation checks
     for attr in recv_data['attrs']:
@@ -145,8 +140,6 @@ def do_edit(request, entity_id, recv_data):
 
         if any([not Entity.objects.filter(id=x).exists() for x in attr['ref_ids']]):
             return HttpResponse('Specified referral is invalid', status=400)
-
-    entity = Entity.objects.get(id=entity_id)
 
     # prevent to show edit page under the processing
     if entity.get_status(Entity.STATUS_EDITING):
@@ -284,15 +277,11 @@ def export(request):
 
 @airone_profile
 @http_post([])
-@check_permission(Entity, ACLType.Full)
 def do_delete(request, entity_id, recv_data):
     user = User.objects.get(id=request.user.id)
-    ret = {}
-
-    if not Entity.objects.filter(id=entity_id).exists():
-        return HttpResponse('Failed to get entity of specified id', status=400)
-
-    entity = Entity.objects.get(id=entity_id)
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Full)
+    if error:
+        return error
 
     if not entity.is_active:
         return HttpResponse('Target entity is now under processing', status=400)
@@ -306,6 +295,7 @@ def do_delete(request, entity_id, recv_data):
         if resp:
             return resp
 
+    ret = {}
     # save deleting target name before do it
     ret['name'] = entity.name
 

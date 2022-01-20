@@ -3,7 +3,7 @@ from django.http.response import JsonResponse
 
 from airone.lib.acl import ACLType, ACLObjType
 from airone.lib.http import http_get, http_post, render
-from airone.lib.http import check_permission
+from airone.lib.http import get_object_with_check_permission
 from airone.lib.profile import airone_profile
 from airone.lib.log import Logger
 
@@ -16,12 +16,12 @@ from .models import ACLBase
 
 @airone_profile
 @http_get
-@check_permission(ACLBase, ACLType.Full)
 def index(request, obj_id):
-    if not ACLBase.objects.filter(id=obj_id).exists():
-        return HttpResponse('Failed to find target object to set ACL', status=400)
-
-    target_obj = ACLBase.objects.get(id=obj_id).get_subclass_object()
+    user = User.objects.get(id=request.user.id)
+    aclbase_obj, error = get_object_with_check_permission(user, ACLBase, obj_id, ACLType.Full)
+    if error:
+        return error
+    target_obj = aclbase_obj.get_subclass_object()
 
     # get ACLTypeID of target_obj if a permission is set
     def get_current_permission(member):

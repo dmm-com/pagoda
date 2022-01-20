@@ -11,8 +11,7 @@ from django.utils.encoding import smart_str
 
 from entity import models as entity_models
 from entry import models as entry_models
-from acl.models import ACLBase
-from user.models import User, History
+from user.models import History
 from job.models import Job, JobOperation
 
 from airone.lib.types import AttrTypes, AttrTypeValue
@@ -38,28 +37,16 @@ def http_get(func):
     return wrapper
 
 
-def check_permission(model, permission_level):
-    def _decorator(func):
-        def permission_checker(*args, **kwargs):
-            # the arguments length is assured by the Django URL dispatcher
-            (request, object_id) = args
+def get_object_with_check_permission(user, model, object_id, permission_level):
+    target_obj = model.objects.filter(id=object_id).first()
+    if not target_obj:
+        return (None, HttpResponse('Failed to get entity of specified id', status=400))
 
-            if not model.objects.filter(id=object_id).exists():
-                return HttpResponse('Failed to get entity of specified id', status=400)
+    # only requests that have correct permission are executed
+    if not user.has_permission(target_obj, permission_level):
+        return (None, HttpResponse('You don\'t have permission to access this object', status=400))
 
-            user = User.objects.get(id=request.user.id)
-            target_obj = model.objects.get(id=object_id)
-            if not isinstance(target_obj, ACLBase):
-                return HttpResponse('[InternalError] "%s" has no permisison' % target_obj,
-                                    status=500)
-
-            if user.has_permission(target_obj, permission_level):
-                # only requests that have correct permission are executed
-                return func(*args, **kwargs)
-
-            return HttpResponse('You don\'t have permission to access this object', status=400)
-        return permission_checker
-    return _decorator
+    return (target_obj, None)
 
 
 def check_superuser(func):

@@ -7,7 +7,6 @@ import custom_view
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.db.models import Q
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -15,7 +14,7 @@ from urllib.parse import urlencode
 from datetime import datetime
 
 from airone.lib.elasticsearch import prepend_escape_character
-from airone.lib.http import http_get, http_post, check_permission, render
+from airone.lib.http import http_get, http_post, get_object_with_check_permission, render
 from airone.lib.http import http_file_upload
 from airone.lib.http import HttpResponseSeeOther
 from airone.lib.types import AttrTypeValue
@@ -95,15 +94,15 @@ def _validate_input(recv_data, obj):
 
 @airone_profile
 @http_get
-@check_permission(Entity, ACLType.Readable)
 def index(request, entity_id):
+    user = User.objects.get(id=request.user.id)
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Readable)
+    if error:
+        return error
+
     page = request.GET.get('page', 1)
     keyword = request.GET.get('keyword', None)
 
-    if not Entity.objects.filter(id=entity_id).exists():
-        return HttpResponse('Failed to get entity of specified id', status=400)
-
-    entity = Entity.objects.get(id=entity_id)
     if custom_view.is_custom("list_entry_without_context", entity.name):
         # show custom view without context
         resp = custom_view.call_custom("list_entry_without_context", entity.name, request, entity)
@@ -141,14 +140,12 @@ def index(request, entity_id):
 
 @airone_profile
 @http_get
-@check_permission(Entity, ACLType.Writable)
 def create(request, entity_id):
     user = User.objects.get(id=request.user.id)
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Writable)
+    if error:
+        return error
 
-    if not Entity.objects.filter(id=entity_id).exists():
-        return HttpResponse('Failed to get entity of specified id', status=400)
-
-    entity = Entity.objects.get(id=entity_id)
     if custom_view.is_custom("create_entry_without_context", entity.name):
         # show custom view
         return custom_view.call_custom("create_entry_without_context", entity.name, request, user,
@@ -184,11 +181,12 @@ def create(request, entity_id):
         {'name': 'value', 'type': list},
     ]}
 ])
-@check_permission(Entity, ACLType.Writable)
 def do_create(request, entity_id, recv_data):
     # get objects to be referred in the following processing
     user = User.objects.get(id=request.user.id)
-    entity = Entity.objects.get(id=entity_id)
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Writable)
+    if error:
+        return error
 
     # checks that a same name entry corresponding to the entity is existed, or not.
     if Entry.objects.filter(schema=entity_id, name=recv_data['entry_name']).exists():
@@ -224,14 +222,11 @@ def do_create(request, entity_id, recv_data):
 
 @airone_profile
 @http_get
-@check_permission(Entry, ACLType.Writable)
 def edit(request, entry_id):
     user = User.objects.get(id=request.user.id)
-
-    if not Entry.objects.filter(id=entry_id).exists():
-        return HttpResponse('Failed to get an Entry object of specified id', status=400)
-
-    entry = Entry.objects.get(id=entry_id)
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Writable)
+    if error:
+        return error
 
     # prevent to show edit page under the creating processing
     if entry.get_status(Entry.STATUS_CREATING):
@@ -267,10 +262,11 @@ def edit(request, entry_id):
         {'name': 'value', 'type': list},
     ]},
 ])
-@check_permission(Entry, ACLType.Writable)
 def do_edit(request, entry_id, recv_data):
     user = User.objects.get(id=request.user.id)
-    entry = Entry.objects.get(id=entry_id)
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Writable)
+    if error:
+        return error
 
     # checks that a same name entry corresponding to the entity is existed.
     query = Q(schema=entry.schema, name=recv_data['entry_name']) & ~Q(id=entry.id)
@@ -322,15 +318,11 @@ def do_edit(request, entry_id, recv_data):
 
 @airone_profile
 @http_get
-@check_permission(Entry, ACLType.Readable)
 def show(request, entry_id):
     user = User.objects.get(id=request.user.id)
-
-    try:
-        entry = Entry.objects.extra(
-            where=['status & %d = 0' % Entry.STATUS_CREATING]).get(id=entry_id)
-    except ObjectDoesNotExist:
-        return HttpResponse('Failed to get an Entry object of specified id', status=400)
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Readable)
+    if error:
+        return error
 
     if entry.get_status(Entry.STATUS_CREATING):
         return HttpResponse('Target entry is now under processing', status=400)
@@ -354,15 +346,11 @@ def show(request, entry_id):
 
 @airone_profile
 @http_get
-@check_permission(Entry, ACLType.Readable)
 def history(request, entry_id):
     user = User.objects.get(id=request.user.id)
-
-    try:
-        entry = Entry.objects.extra(
-            where=['status & %d = 0' % Entry.STATUS_CREATING]).get(id=entry_id)
-    except ObjectDoesNotExist:
-        return HttpResponse('Failed to get an Entry object of specified id', status=400)
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Readable)
+    if error:
+        return error
 
     if entry.get_status(Entry.STATUS_CREATING):
         return HttpResponse('Target entry is now under processing', status=400)
@@ -381,13 +369,11 @@ def history(request, entry_id):
 
 @airone_profile
 @http_get
-@check_permission(Entry, ACLType.Readable)
 def refer(request, entry_id):
-    try:
-        entry = Entry.objects.extra(
-            where=['status & %d = 0' % Entry.STATUS_CREATING]).get(id=entry_id)
-    except ObjectDoesNotExist:
-        return HttpResponse('Failed to get an Entry object of specified id', status=400)
+    user = User.objects.get(id=request.user.id)
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Readable)
+    if error:
+        return error
 
     if entry.get_status(Entry.STATUS_CREATING):
         return HttpResponse('Target entry is now under processing', status=400)
@@ -495,16 +481,11 @@ def do_import_data(request, entity_id, context):
 
 @airone_profile
 @http_post([])  # check only that request is POST, id will be given by url
-@check_permission(Entry, ACLType.Full)
 def do_delete(request, entry_id, recv_data):
     user = User.objects.get(id=request.user.id)
-    ret = {}
-
-    if not Entry.objects.filter(id=entry_id).exists():
-        return HttpResponse('Failed to get an Entry object of specified id', status=400)
-
-    # update name of Entry object
-    entry = Entry.objects.filter(id=entry_id).get()
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Full)
+    if error:
+        return error
 
     if custom_view.is_custom("do_delete_entry", entry.schema.name):
         # do_delete custom view
@@ -519,6 +500,7 @@ def do_delete(request, entry_id, recv_data):
     entry.is_active = False
     entry.save(update_fields=['is_active'])
 
+    ret = {}
     # save deleting Entry name before do it
     ret['name'] = entry.name
 
@@ -547,14 +529,11 @@ def do_delete(request, entry_id, recv_data):
 
 @airone_profile
 @http_get
-@check_permission(Entry, ACLType.Writable)
 def copy(request, entry_id):
     user = User.objects.get(id=request.user.id)
-
-    if not Entry.objects.filter(id=entry_id).exists():
-        return HttpResponse('Failed to get an Entry object of specified id', status=400)
-
-    entry = Entry.objects.get(id=entry_id)
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Writable)
+    if error:
+        return error
 
     # prevent to show edit page under the creating processing
     if entry.get_status(Entry.STATUS_CREATING) or entry.get_status(Entry.STATUS_EDITING):
@@ -580,19 +559,17 @@ def copy(request, entry_id):
 @http_post([
     {'name': 'entries', 'type': str},
 ])
-@check_permission(Entry, ACLType.Writable)
 def do_copy(request, entry_id, recv_data):
     user = User.objects.get(id=request.user.id)
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Writable)
+    if error:
+        return error
 
     # validation check
     if 'entries' not in recv_data:
         return HttpResponse('Malformed data is specified (%s)' % recv_data, status=400)
 
-    if not Entry.objects.filter(id=entry_id).exists():
-        return HttpResponse('Failed to get an Entry object of specified id', status=400)
-
     ret = []
-    entry = Entry.objects.get(id=entry_id)
     for new_name in [x for x in recv_data['entries'].split('\n') if x]:
         if Entry.objects.filter(schema=entry.schema, name=new_name).exists():
             ret.append({
@@ -642,14 +619,14 @@ def do_copy(request, entry_id, recv_data):
 
 @airone_profile
 @http_get
-@check_permission(Entity, ACLType.Full)
 def restore(request, entity_id):
+    user = User.objects.get(id=request.user.id)
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Full)
+    if error:
+        return error
+
     page = request.GET.get('page', 1)
     keyword = request.GET.get('keyword', None)
-
-    entity = Entity.objects.filter(id=entity_id, is_active=True).first()
-    if not entity:
-        return HttpResponse('Failed to get entity of specified id', status=400)
 
     # get all deleted entries that correspond to the entity, the specififcation of
     # 'status=0' is necessary to prevent getting entries that were under processing.
@@ -678,11 +655,13 @@ def restore(request, entity_id):
 
 @airone_profile
 @http_post([])
-@check_permission(Entry, ACLType.Full)
 def do_restore(request, entry_id, recv_data):
     user = User.objects.get(id=request.user.id)
-    entry = Entry.objects.filter(id=entry_id, is_active=False).first()
-    if not entry:
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Full)
+    if error:
+        return error
+
+    if entry.is_active:
         return JsonResponse(
             data={'msg': 'Failed to get entry from specified parameter'}, status=400)
 
