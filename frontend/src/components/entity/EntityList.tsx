@@ -60,36 +60,51 @@ interface Props {
 interface EntityControlProps {
   entityId: number;
   anchorElem: HTMLButtonElement | null;
+  handleClose: (entityId: number) => void;
 }
 
-const EntityControlMenu: FC<EntityControlProps> = ({ entityId, anchorElem }) => {
+// TODO consider to separate a composite component handling anchor and menu events
+const EntityControlMenu: FC<EntityControlProps> = ({
+  entityId,
+  anchorElem,
+  handleClose,
+}) => {
+  const handleDelete = (event, entityId) => {
+    console.log("handleDelete: ", entityId);
+    deleteEntity(entityId).then(() => history.go(0));
+  };
+
   return (
     <Menu
       id={`entityControlMenu-${entityId}`}
       open={Boolean(anchorElem)}
-      anchorEl={anchorElem} >
-      <MenuItem>
+      onClose={() => handleClose(entityId)}
+      anchorEl={anchorElem}
+    >
+      <MenuItem component={Link} to={entityPath(entityId)}>
         <Typography>編集</Typography>
       </MenuItem>
-      <MenuItem>
+      <MenuItem onClick={(e) => handleDelete(e, entityId)}>
         <Typography>削除</Typography>
       </MenuItem>
-      <MenuItem>
+      <MenuItem component={Link} to={aclPath(entityId)}>
         <Typography>ACL 設定</Typography>
       </MenuItem>
-      <MenuItem>
+      <MenuItem component={Link} to={entityHistoryPath(entityId)}>
         <Typography>変更履歴</Typography>
       </MenuItem>
     </Menu>
   );
-}
+};
 
 export const EntityList: FC<Props> = ({ entities }) => {
   const classes = useStyles();
   const history = useHistory();
 
   const [keyword, setKeyword] = useState("");
-  const [entityAnchorEls, setEntityAnchorEls] = useState<{[key:number]: HTMLButtonElement}|null>({});
+  const [entityAnchorEls, setEntityAnchorEls] = useState<{
+    [key: number]: HTMLButtonElement;
+  } | null>({});
 
   const handleDelete = (event, entityId) => {
     deleteEntity(entityId).then(() => history.go(0));
@@ -145,17 +160,26 @@ export const EntityList: FC<Props> = ({ entities }) => {
                 }
                 action={
                   <>
-                  <IconButton
-                    onClick={(e) => {
-                      setEntityAnchorEls({...entityAnchorEls,
-                                          [entity.id]: e.currentTarget});
-                    }}
-                  >
-                    <MoreVertIcon />
-                  </IconButton>
-                  <EntityControlMenu
-                    entityId={entity.id}
-                    anchorElem={entityAnchorEls[entity.id]}/>
+                    <IconButton
+                      onClick={(e) => {
+                        setEntityAnchorEls({
+                          ...entityAnchorEls,
+                          [entity.id]: e.currentTarget,
+                        });
+                      }}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                    <EntityControlMenu
+                      entityId={entity.id}
+                      anchorElem={entityAnchorEls[entity.id]}
+                      handleClose={(entityId: number) =>
+                        setEntityAnchorEls({
+                          ...entityAnchorEls,
+                          [entityId]: null,
+                        })
+                      }
+                    />
                   </>
                 }
               />
