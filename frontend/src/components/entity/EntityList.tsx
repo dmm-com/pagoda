@@ -14,6 +14,8 @@ import {
   Grid,
   IconButton,
   InputAdornment,
+  Menu,
+  MenuItem,
   TableCell,
   TableRow,
   TextField,
@@ -55,11 +57,39 @@ interface Props {
   }[];
 }
 
+interface EntityControlProps {
+  entityId: number;
+  anchorElem: HTMLButtonElement | null;
+}
+
+const EntityControlMenu: FC<EntityControlProps> = ({ entityId, anchorElem }) => {
+  return (
+    <Menu
+      id={`entityControlMenu-${entityId}`}
+      open={Boolean(anchorElem)}
+      anchorEl={anchorElem} >
+      <MenuItem>
+        <Typography>編集</Typography>
+      </MenuItem>
+      <MenuItem>
+        <Typography>削除</Typography>
+      </MenuItem>
+      <MenuItem>
+        <Typography>ACL 設定</Typography>
+      </MenuItem>
+      <MenuItem>
+        <Typography>変更履歴</Typography>
+      </MenuItem>
+    </Menu>
+  );
+}
+
 export const EntityList: FC<Props> = ({ entities }) => {
   const classes = useStyles();
   const history = useHistory();
 
   const [keyword, setKeyword] = useState("");
+  const [entityAnchorEls, setEntityAnchorEls] = useState<{[key:number]: HTMLButtonElement}|null>({});
 
   const handleDelete = (event, entityId) => {
     deleteEntity(entityId).then(() => history.go(0));
@@ -102,7 +132,7 @@ export const EntityList: FC<Props> = ({ entities }) => {
       {/* This box shows each entity Cards */}
       <Grid container spacing={2}>
         {filteredEntities.map((entity) => (
-          <Grid item xs={4}>
+          <Grid item xs={4} key={entity.id}>
             <Card sx={{ height: "100%" }}>
               <CardHeader
                 title={
@@ -114,13 +144,19 @@ export const EntityList: FC<Props> = ({ entities }) => {
                   </CardActionArea>
                 }
                 action={
+                  <>
                   <IconButton
                     onClick={(e) => {
-                      alert("hoge");
+                      setEntityAnchorEls({...entityAnchorEls,
+                                          [entity.id]: e.currentTarget});
                     }}
                   >
                     <MoreVertIcon />
                   </IconButton>
+                  <EntityControlMenu
+                    entityId={entity.id}
+                    anchorElem={entityAnchorEls[entity.id]}/>
+                  </>
                 }
               />
               <CardContent>
