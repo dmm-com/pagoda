@@ -3,3 +3,5 @@ export const EntityStatus = {
   CREATING: 1 << 1,
   EDITING: 1 << 2,
 };
+
+export const EntityPaginationRowCount = 3;

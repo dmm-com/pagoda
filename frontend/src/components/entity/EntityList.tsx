@@ -1,11 +1,8 @@
 import AddIcon from "@mui/icons-material/Add";
-import GroupIcon from "@mui/icons-material/Group";
-import HistoryIcon from "@mui/icons-material/History";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
-  Button,
   Card,
   CardActionArea,
   CardContent,
@@ -16,8 +13,8 @@ import {
   InputAdornment,
   Menu,
   MenuItem,
-  TableCell,
-  TableRow,
+  Pagination,
+  Stack,
   TextField,
   Theme,
   Typography,
@@ -33,9 +30,7 @@ import {
   entityPath,
 } from "../../Routes";
 import { deleteEntity } from "../../utils/AironeAPIClient";
-import { DeleteButton } from "../common/DeleteButton";
-import { EditButton } from "../common/EditButton";
-import { PaginatedTable } from "../common/PaginatedTable";
+import { EntityPaginationRowCount } from "../../utils/Constants";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -102,6 +97,10 @@ export const EntityList: FC<Props> = ({ entities }) => {
   const history = useHistory();
 
   const [keyword, setKeyword] = useState("");
+  const [page, setPage] = React.useState(1);
+  const handleChange = (event, value) => {
+    setPage(value);
+  };
   const [entityAnchorEls, setEntityAnchorEls] = useState<{
     [key: number]: HTMLButtonElement;
   } | null>({});
@@ -110,9 +109,13 @@ export const EntityList: FC<Props> = ({ entities }) => {
     deleteEntity(entityId).then(() => history.go(0));
   };
 
-  const filteredEntities = entities.filter((entity) => {
-    return entity.name.indexOf(keyword) !== -1;
-  });
+  const filteredEntities = entities
+    .filter((entity) => {
+      return entity.name.indexOf(keyword) !== -1;
+    })
+    .slice(0, 3);
+
+  const totalPageCount = Math.ceil(entities.length / EntityPaginationRowCount);
 
   return (
     <Box>
@@ -192,59 +195,16 @@ export const EntityList: FC<Props> = ({ entities }) => {
           </Grid>
         ))}
       </Grid>
-
-      {/* This box shows each entity cards */}
-      <PaginatedTable
-        rows={filteredEntities}
-        tableHeadRow={
-          <TableRow>
-            <TableCell></TableCell>
-            <TableCell />
-            <TableCell>新規作成</TableCell>
-          </TableRow>
-        }
-        tableBodyRowGenerator={(entity) => (
-          <TableRow key={entity.id} data-testid="entityTableRow">
-            <TableCell>
-              <Typography component={Link} to={entityEntriesPath(entity.id)}>
-                {entity.name}
-              </Typography>
-            </TableCell>
-            <TableCell>
-              <Typography>{entity.note}</Typography>
-            </TableCell>
-            <TableCell align="right">
-              <EditButton to={entityPath(entity.id)}>
-                エンティティ編集
-              </EditButton>
-              <Button
-                variant="contained"
-                color="primary"
-                className={classes.button}
-                startIcon={<HistoryIcon />}
-                component={Link}
-                to={entityHistoryPath(entity.id)}
-              >
-                変更履歴
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                className={classes.button}
-                startIcon={<GroupIcon />}
-                component={Link}
-                to={aclPath(entity.id)}
-              >
-                ACL
-              </Button>
-              <DeleteButton handleDelete={(e) => handleDelete(e, entity.id)}>
-                削除
-              </DeleteButton>
-            </TableCell>
-          </TableRow>
-        )}
-        rowsPerPageOptions={[100, 250, 1000]}
-      />
+      <Box display="flex" justifyContent="center" mt="30px">
+        <Stack spacing={2}>
+          <Pagination
+            count={totalPageCount}
+            page={page}
+            onChange={handleChange}
+            color="primary"
+          />
+        </Stack>
+      </Box>
     </Box>
   );
 };
