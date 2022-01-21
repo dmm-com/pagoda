@@ -185,6 +185,10 @@ AIRONE = {
     'FILE_STORE_PATH': '/tmp/airone_app',
     'AUTO_COMPLEMENT_USER': 'auto_complementer',
     'EXTENSIONS': [],
+    'TITLE': 'AirOne',
+    'SUBTITLE': 'SubTitle, Please change it',
+    'NOTE_DESC': 'Description, Please change it',
+    'NOTE_LINK': '',
 }
 
 # load extension settings individually
