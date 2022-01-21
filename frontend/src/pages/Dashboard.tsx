@@ -50,7 +50,7 @@ export const Dashboard: FC = () => {
 
   const handleSearchQuery = (event) => {
     if (event.key === "Enter") {
-      history.push(`${searchPath()}?entry_name=${entryQuery}`);
+      history.push(`${searchPath()}?query=${entryQuery}`);
     }
   };
 
