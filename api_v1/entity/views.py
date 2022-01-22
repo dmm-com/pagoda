@@ -3,18 +3,12 @@ from functools import reduce
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.authentication import BasicAuthentication
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated
 
 from airone.lib.profile import airone_profile
-from api_v1.auth import AironeTokenAuth
 from entity.models import Entity, EntityAttr
 
 
 class EntityAttrsAPI(APIView):
-    authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
     @airone_profile
     def get(self, request, entity_ids, format=None):
@@ -38,4 +32,4 @@ class EntityAttrsAPI(APIView):
         else:
             attrs = get_attrs_of_all_entities()
 
-        return Response({'result': sorted(attrs)}, content_type='application/json; charset=UTF-8')
+        return Response({'result': sorted(attrs)})

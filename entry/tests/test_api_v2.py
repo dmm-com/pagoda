@@ -1,6 +1,7 @@
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 
+from entry.models import Entry
 from group.models import Group
 
 
@@ -94,3 +95,210 @@ class ViewTest(AironeViewTest):
                              {'bar': {'id': ref_entry.id, 'name': ref_entry.name}}],
                           'id': entry.attrs.get(schema__name='names').id,
                           'schema_id': entry.attrs.get(schema__name='names').schema.id})
+
+    def test_serach_entry(self):
+        user = self.guest_login()
+
+        ref_entity = self.create_entity(user, 'ref_entity')
+        ref_entry4 = self.add_entry(user, 'hoge4', ref_entity)
+        ref_entry5 = self.add_entry(user, 'hoge5', ref_entity)
+        ref_entry6 = self.add_entry(user, 'hoge6', ref_entity)
+        ref_entry7 = self.add_entry(user, 'hoge7', ref_entity)
+
+        entity = self.create_entity(**{
+            'user': user,
+            'name': 'test-entity',
+            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        })
+        self.add_entry(user, 'entry1', entity, values={
+            'val': 'hoge1',
+        })
+        self.add_entry(user, 'entry2', entity, values={
+            'vals': ['hoge2', 'fuga2'],
+        })
+        self.add_entry(user, 'entry3', entity, values={
+            'text': 'hoge3',
+        })
+        self.add_entry(user, 'entry4', entity, values={
+            'ref': ref_entry4.id,
+        })
+        self.add_entry(user, 'entry5', entity, values={
+            'refs': [ref_entry5.id],
+        })
+        self.add_entry(user, 'entry6', entity, values={
+            'name': {'name': 'index6', 'id': ref_entry6.id},
+        })
+        self.add_entry(user, 'entry7', entity, values={
+            'names': [{'name': 'index7', 'id': ref_entry7.id}]
+        })
+
+        # test value attribute
+        for x in range(1, 3):
+            resp = self.client.get('/entry/api/v2/search?query=hoge%s' % x)
+            self.assertEqual(resp.status_code, 200)
+            resp_data = resp.json()
+            self.assertEqual(len(resp_data), 1)
+            entry = Entry.objects.get(name='entry%s' % x)
+            self.assertEqual(resp_data[0]['id'], entry.id)
+            self.assertEqual(resp_data[0]['name'], entry.name)
+
+        # test object attribute
+        for x in range(4, 4):
+            resp = self.client.get('/entry/api/v2/search?query=hoge%s' % x)
+            self.assertEqual(resp.status_code, 200)
+            resp_data = resp.json()
+            self.assertEqual(len(resp_data), 2)
+            ref_entry = Entry.objects.get(name='hoge%s' % x)
+            entry = Entry.objects.get(name='entry%s' % x)
+            self.assertEqual(resp_data[0]['id'], ref_entry.id)
+            self.assertEqual(resp_data[0]['name'], ref_entry.name)
+            self.assertEqual(resp_data[1]['id'], entry.id)
+            self.assertEqual(resp_data[1]['name'], entry.name)
+
+        # test named_object attribute
+        for x in range(6, 2):
+            resp = self.client.get('/entry/api/v2/search?query=index%s' % x)
+            self.assertEqual(resp.status_code, 200)
+            resp_data = resp.json()
+            self.assertEqual(len(resp_data), 1)
+            entry = Entry.objects.get(name='entry%s' % x)
+            self.assertEqual(resp_data[0]['id'], entry.id)
+            self.assertEqual(resp_data[0]['name'], entry.name)
+
+    def test_serach_entry_with_regexp(self):
+        user = self.guest_login()
+
+        ref_entity = self.create_entity(user, 'ref_entity')
+        ref_entry = self.add_entry(user, 'ref_entry', ref_entity)
+        entity = self.create_entity(**{
+            'user': user,
+            'name': 'test-entity',
+            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        })
+        entry = self.add_entry(user, 'entry', entity, values={
+            'val': 'hoge',
+            'ref': ref_entry.id,
+        })
+
+        resp = self.client.get('/entry/api/v2/search?query=Og')
+        self.assertEqual(resp.status_code, 200)
+        resp_data = resp.json()
+        self.assertEqual(len(resp_data), 1)
+        self.assertEqual(resp_data[0]['id'], entry.id)
+        self.assertEqual(resp_data[0]['name'], entry.name)
+
+        resp = self.client.get('/entry/api/v2/search?query=F_e')
+        self.assertEqual(resp.status_code, 200)
+        resp_data = resp.json()
+        self.assertEqual(len(resp_data), 2)
+        self.assertEqual(resp_data[0]['id'], ref_entry.id)
+        self.assertEqual(resp_data[0]['name'], ref_entry.name)
+        self.assertEqual(resp_data[1]['id'], entry.id)
+        self.assertEqual(resp_data[1]['name'], entry.name)
+
+    def test_serach_entry_multi_match(self):
+        user = self.guest_login()
+
+        entity = self.create_entity(**{
+            'user': user,
+            'name': 'test-entity',
+            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        })
+        entry = self.add_entry(user, 'hoge', entity, values={
+            'val': 'hoge',
+        })
+
+        resp = self.client.get('/entry/api/v2/search?query=hoge')
+        self.assertEqual(resp.status_code, 200)
+        resp_data = resp.json()
+        self.assertEqual(len(resp_data), 1)
+        self.assertEqual(resp_data[0]['id'], entry.id)
+        self.assertEqual(resp_data[0]['name'], entry.name)
+
+    def test_serach_entry_order_by(self):
+        user = self.guest_login()
+
+        entity = self.create_entity(**{
+            'user': user,
+            'name': 'test-entity',
+            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        })
+        self.add_entry(user, 'z_hoge', entity)
+        self.add_entry(user, 'a_hoge', entity)
+        self.add_entry(user, 'a_entry', entity, values={
+            'val': 'z_hoge',
+        })
+        self.add_entry(user, 'z_entry', entity, values={
+            'val': 'a_hoge',
+        })
+
+        # Entry name match has high priority
+        resp = self.client.get('/entry/api/v2/search?query=hoge')
+        self.assertEqual(resp.status_code, 200)
+        resp_data = resp.json()
+        self.assertEqual(len(resp_data), 4)
+        for i, entry_name in enumerate(['a_hoge', 'z_hoge', 'a_entry', 'z_entry']):
+            entry = Entry.objects.get(name=entry_name)
+            self.assertEqual(resp_data[i]['id'], entry.id)
+            self.assertEqual(resp_data[i]['name'], entry.name)
+
+    def test_serach_entry_deleted_entry(self):
+        user = self.guest_login()
+
+        ref_entity = self.create_entity(user, 'ref_entity')
+        ref_entry = self.add_entry(user, 'ref_entry', ref_entity)
+        entity = self.create_entity(**{
+            'user': user,
+            'name': 'test-entity',
+            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        })
+        entry1 = self.add_entry(user, 'entry1', entity, values={
+            'val': 'hoge1',
+            'ref': ref_entry.id,
+        })
+        entry1.delete()
+
+        self.add_entry(user, 'entry2', entity, values={
+            'ref': ref_entry.id,
+        })
+        ref_entry.delete()
+
+        for query in ['entry1', 'hoge', 'ref_entry']:
+            resp = self.client.get('/entry/api/v2/search?query=%s' % query)
+            self.assertEqual(resp.status_code, 200)
+            resp_data = resp.json()
+            self.assertEqual(len(resp_data), 0)
+
+    def test_serach_entry_update_attrv(self):
+        user = self.guest_login()
+
+        ref_entity = self.create_entity(user, 'ref_entity')
+        ref_entry1 = self.add_entry(user, 'ref_entry1', ref_entity)
+        ref_entry2 = self.add_entry(user, 'ref_entry2', ref_entity)
+        entity = self.create_entity(**{
+            'user': user,
+            'name': 'test-entity',
+            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        })
+        entry = self.add_entry(user, 'entry', entity, values={
+            'val': 'hoge',
+            'vals': ['hoge'],
+            'ref': ref_entry1.id,
+            'refs': [ref_entry1.id],
+        })
+        entry.attrs.get(name='val').add_value(user, 'fuga')
+        entry.attrs.get(name='vals').add_value(user, ['fuga'])
+        entry.attrs.get(name='ref').add_value(user, ref_entry2.id)
+        entry.attrs.get(name='refs').add_value(user, [ref_entry2.id])
+
+        resp = self.client.get('/entry/api/v2/search?query=hoge')
+        self.assertEqual(resp.status_code, 200)
+        resp_data = resp.json()
+        self.assertEqual(len(resp_data), 0)
+
+        resp = self.client.get('/entry/api/v2/search?query=ref_entry1')
+        self.assertEqual(resp.status_code, 200)
+        resp_data = resp.json()
+        self.assertEqual(len(resp_data), 1)
+        self.assertEqual(resp_data[0]['id'], ref_entry1.id)
+        self.assertEqual(resp_data[0]['name'], ref_entry1.name)

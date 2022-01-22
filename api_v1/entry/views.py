@@ -1,6 +1,5 @@
 import pytz
 
-from api_v1.auth import AironeTokenAuth
 from airone.lib.acl import ACLType
 from airone.lib.profile import airone_profile
 from django.conf import settings
@@ -9,9 +8,6 @@ from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.authentication import BasicAuthentication
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated
 
 from entity.models import Entity
 from entry.models import Entry
@@ -23,8 +19,6 @@ from user.models import User
 
 
 class EntrySearchAPI(APIView):
-    authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
     @airone_profile
     def post(self, request, format=None):
@@ -89,12 +83,10 @@ class EntrySearchAPI(APIView):
                                     hint_referral,
                                     is_output_all)
 
-        return Response({'result': resp}, content_type='application/json; charset=UTF-8')
+        return Response({'result': resp})
 
 
 class EntryReferredAPI(APIView):
-    authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
     @airone_profile
     def get(self, request):
@@ -126,12 +118,10 @@ class EntryReferredAPI(APIView):
                 } for x in entry.get_referred_objects(entity_name=param_target_entity)]
             })
 
-        return Response({'result': ret_data}, content_type='application/json; charset=UTF-8')
+        return Response({'result': ret_data})
 
 
 class UpdateHistory(APIView):
-    authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
     @airone_profile
     def get(self, request):

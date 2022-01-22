@@ -59,10 +59,10 @@ export const Login: FC = () => {
         bgcolor="white"
       >
         <Typography variant="h1" fontWeight={400}>
-          AirOne
+          {djangoContext.title}
         </Typography>
         <Typography variant="subtitle2" mt={2}>
-          仮想マシンや各機材を検索することができる情報管理システム。
+          {djangoContext.subTitle}
         </Typography>
         <Box width={500} height={50} mt={2}>
           {isAlert ? (
@@ -117,7 +117,13 @@ export const Login: FC = () => {
             value={djangoContext.loginNext}
           />
           {/* TODO change href url*/}
-          <Link color="secondary" ml="auto" href="#">
+          <Link
+            color="secondary"
+            ml="auto"
+            href={djangoContext.noteLink}
+            target="_blank"
+            rel="noopener pnoreferrer"
+          >
             <InfoIcon
               sx={{
                 fontSize: "14px",
@@ -125,7 +131,7 @@ export const Login: FC = () => {
               }}
             />
             <Typography fontSize="12px" ml={1} display="inline">
-              ユーザーネーム、パスワードが分からない
+              {djangoContext.noteDesc}
             </Typography>
           </Link>
           <Button

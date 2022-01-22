@@ -12,6 +12,10 @@ class User {
 export class DjangoContext {
   loginNext: string;
   version: string;
+  title: string;
+  subTitle: string;
+  noteDesc: string;
+  noteLink: string;
   attrTypeValue: any;
   user: User | undefined;
 
@@ -19,6 +23,10 @@ export class DjangoContext {
 
   constructor(context) {
     this.loginNext = context.next;
+    this.title = context.title;
+    this.subTitle = context.subtitle;
+    this.noteDesc = context.note_desc;
+    this.noteLink = context.note_link;
     this.version = context.version;
     this.user = context.user ? new User(context.user) : undefined;
 
