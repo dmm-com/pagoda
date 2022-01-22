@@ -349,6 +349,12 @@ $ npm install
 $ npm run watch
 ```
 
+If you have any change on API V2, you need to run this command before you build:
+
+```
+$ npm run generate:client
+```
+
 You can also auto-format .js files with [prettier](https://prettier.io/):
 
 ```
@@ -359,4 +365,8 @@ To execute test written in [Jest](https://jestjs.io/):
 
 ```
 $ npm run test
+```
+```
+(If you have any change on a page component)
+$ npm run test:update
 ```
