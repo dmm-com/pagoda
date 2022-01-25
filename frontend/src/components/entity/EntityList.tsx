@@ -133,7 +133,7 @@ export const EntityList: FC<Props> = ({ entities }) => {
             }}
             variant="outlined"
             size="small"
-            placeholder="Search"
+            placeholder="エンティティ名で絞り込む"
             sx={{
               background: "#0000000B",
             }}
