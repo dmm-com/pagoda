@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import {
   aclPath,
   advancedSearchPath,
+  advancedSearchResultPath,
   entitiesPath,
   entityEntriesPath,
   entityHistoryPath,
@@ -47,6 +48,7 @@ import { ImportGroup } from "./pages/ImportGroup";
 import { ImportUser } from "./pages/ImportUser";
 import { Job } from "./pages/Job";
 import { Login } from "./pages/Login";
+import { Search } from "./pages/Search";
 import { ShowEntry } from "./pages/ShowEntry";
 import { User } from "./pages/User";
 
@@ -68,6 +70,10 @@ export const AppRouter: FC = () => {
           <Header />
           <Switch>
             <Route path={advancedSearchPath()} component={AdvancedSearch} />
+            <Route
+              path={advancedSearchResultPath()}
+              component={AdvancedSearchResults}
+            />
             <Route path={newEntryPath(":entityId")} component={EditEntry} />
             <Route path={showEntryPath(":entryId")} component={ShowEntry} />
             <Route path={importEntitiesPath()} component={ImportEntry} />
@@ -86,7 +92,7 @@ export const AppRouter: FC = () => {
             <Route path={groupsPath()} component={Group} />
             <Route path={jobsPath()} component={Job} />
             <Route path={aclPath(":entityId")} component={ACL} />
-            <Route path={searchPath()} component={AdvancedSearchResults} />
+            <Route path={searchPath()} component={Search} />
             <Route path={newUserPath()} component={EditUser} />
             <Route path={importUsersPath()} component={ImportUser} />
             <Route

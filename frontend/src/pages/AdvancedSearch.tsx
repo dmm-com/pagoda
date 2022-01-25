@@ -19,7 +19,7 @@ import React, { FC, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { searchPath, topPath } from "../Routes";
+import { advancedSearchResultPath, topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
 import { getEntities, getEntityAttrs } from "../utils/AironeAPIClient";
@@ -247,7 +247,7 @@ export const AdvancedSearch: FC = () => {
           <Button
             variant="contained"
             component={Link}
-            to={`${searchPath()}?${searchParams}`}
+            to={`${advancedSearchResultPath()}?${searchParams}`}
           >
             検索
           </Button>

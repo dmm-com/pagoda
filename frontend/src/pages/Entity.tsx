@@ -34,8 +34,8 @@ export const Entity: FC = () => {
         <Typography color="textPrimary">エンティティ一覧</Typography>
       </AironeBreadcrumbs>
 
-      <Container maxWidth="lg">
-        <Box my="50px">
+      <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
+        <Box mb="64px">
           <Typography variant="h2" align="center">
             エンティティ一覧
           </Typography>

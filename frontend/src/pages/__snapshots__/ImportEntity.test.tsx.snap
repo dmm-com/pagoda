@@ -8,56 +8,64 @@ Object {
       <div
         class="MuiBox-root css-0"
       >
-        <nav
-          aria-label="breadcrumb"
-          class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root makeStyles-breadcrumbs-1 css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+        <div
+          class="makeStyles-wrapper-1 MuiBox-root css-0"
         >
-          <ol
-            class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+          <div
+            class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
           >
-            <li
-              class="MuiBreadcrumbs-li"
+            <nav
+              aria-label="breadcrumb"
+              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
             >
-              <a
-                class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                href="/new-ui/"
+              <ol
+                class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
               >
-                Top
-              </a>
-            </li>
-            <li
-              aria-hidden="true"
-              class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-            >
-              /
-            </li>
-            <li
-              class="MuiBreadcrumbs-li"
-            >
-              <a
-                class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                href="/new-ui/entities"
-              >
-                エンティティ一覧
-              </a>
-            </li>
-            <li
-              aria-hidden="true"
-              class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-            >
-              /
-            </li>
-            <li
-              class="MuiBreadcrumbs-li"
-            >
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-              >
-                インポート
-              </p>
-            </li>
-          </ol>
-        </nav>
+                <li
+                  class="MuiBreadcrumbs-li"
+                >
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/new-ui/"
+                  >
+                    Top
+                  </a>
+                </li>
+                <li
+                  aria-hidden="true"
+                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                >
+                  /
+                </li>
+                <li
+                  class="MuiBreadcrumbs-li"
+                >
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/new-ui/entities"
+                  >
+                    エンティティ一覧
+                  </a>
+                </li>
+                <li
+                  aria-hidden="true"
+                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                >
+                  /
+                </li>
+                <li
+                  class="MuiBreadcrumbs-li"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  >
+                    インポート
+                  </p>
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
         <div
           class="MuiBox-root css-0"
         >
@@ -99,56 +107,64 @@ Object {
     <div
       class="MuiBox-root css-0"
     >
-      <nav
-        aria-label="breadcrumb"
-        class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root makeStyles-breadcrumbs-1 css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+      <div
+        class="makeStyles-wrapper-1 MuiBox-root css-0"
       >
-        <ol
-          class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+        <div
+          class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
         >
-          <li
-            class="MuiBreadcrumbs-li"
+          <nav
+            aria-label="breadcrumb"
+            class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
           >
-            <a
-              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-              href="/new-ui/"
+            <ol
+              class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
             >
-              Top
-            </a>
-          </li>
-          <li
-            aria-hidden="true"
-            class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-          >
-            /
-          </li>
-          <li
-            class="MuiBreadcrumbs-li"
-          >
-            <a
-              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-              href="/new-ui/entities"
-            >
-              エンティティ一覧
-            </a>
-          </li>
-          <li
-            aria-hidden="true"
-            class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-          >
-            /
-          </li>
-          <li
-            class="MuiBreadcrumbs-li"
-          >
-            <p
-              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-            >
-              インポート
-            </p>
-          </li>
-        </ol>
-      </nav>
+              <li
+                class="MuiBreadcrumbs-li"
+              >
+                <a
+                  class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  href="/new-ui/"
+                >
+                  Top
+                </a>
+              </li>
+              <li
+                aria-hidden="true"
+                class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+              >
+                /
+              </li>
+              <li
+                class="MuiBreadcrumbs-li"
+              >
+                <a
+                  class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  href="/new-ui/entities"
+                >
+                  エンティティ一覧
+                </a>
+              </li>
+              <li
+                aria-hidden="true"
+                class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+              >
+                /
+              </li>
+              <li
+                class="MuiBreadcrumbs-li"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                >
+                  インポート
+                </p>
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </div>
       <div
         class="MuiBox-root css-0"
       >
