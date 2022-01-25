@@ -23,6 +23,9 @@
 
 ### Refactored
 * Refactored referral param in advanced search (#326)
+* Refactored the process of check permission
+* Refactored the process of get_available_attrs in Entry
+* Refactored drf response format and default settings
 
 ## v3.4.1
 

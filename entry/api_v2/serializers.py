@@ -92,3 +92,9 @@ class GetEntrySerializer(serializers.ModelSerializer):
                     'schema_id': x.schema.id,
                 }
                 for x in obj.attrs.filter(is_active=True)}
+
+
+class GetEntrySimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Entry
+        fields = ('id', 'name')

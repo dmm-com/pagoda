@@ -88,9 +88,6 @@ class AironeTestCase(TestCase):
         entry.complement_attrs(user)
 
         for (attrname, value) in values.items():
-            print('[onix/add_entry(10)] attrname: %s' % attrname)
-            print('[onix/add_entry(10)] value: %s' % value)
-
             attr = entry.attrs.get(schema__name=attrname)
             attr.add_value(user, value)
 
