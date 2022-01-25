@@ -31,7 +31,7 @@ import {
   newEntityPath,
 } from "../../Routes";
 import { deleteEntity } from "../../utils/AironeAPIClient";
-import { EntityPaginationRowCount } from "../../utils/Constants";
+import { EntityList as ConstEntityList } from "../../utils/Constants";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -42,6 +42,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   entityNote: {
     color: theme.palette.text.secondary,
+    display: "-webkit-box",
+    overflow: "hidden",
+    "-webkit-box-orient": "vertical",
+    "-webkit-line-clamp": 2,
   },
 }));
 
@@ -110,12 +114,12 @@ export const EntityList: FC<Props> = ({ entities }) => {
   });
 
   const displayedEntities = filteredEntities.slice(
-    (page - 1) * EntityPaginationRowCount,
-    page * EntityPaginationRowCount
+    (page - 1) * ConstEntityList.MAX_ROW_COUNT,
+    page * ConstEntityList.MAX_ROW_COUNT
   );
 
   const totalPageCount = Math.ceil(
-    filteredEntities.length / EntityPaginationRowCount
+    filteredEntities.length / ConstEntityList.MAX_ROW_COUNT
   );
 
   return (
@@ -139,7 +143,13 @@ export const EntityList: FC<Props> = ({ entities }) => {
             }}
             fullWidth={true}
             value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            onChange={(e) => {
+              setKeyword(e.target.value);
+
+              /* Reset page number to prevent vanishing entities from display
+               * when user move other page */
+              setPage(1);
+            }}
           />
         </Box>
         <Fab
@@ -160,12 +170,18 @@ export const EntityList: FC<Props> = ({ entities }) => {
           <Grid item xs={4} key={entity.id}>
             <Card sx={{ height: "100%" }}>
               <CardHeader
+                sx={{
+                  p: "0px",
+                  mt: "24px",
+                  mx: "16px",
+                  mb: "16px",
+                }}
                 title={
                   <CardActionArea
                     component={Link}
                     to={entityEntriesPath(entity.id)}
                   >
-                    {entity.name}
+                    <Typography variant="h6">{entity.name}</Typography>
                   </CardActionArea>
                 }
                 action={
@@ -193,7 +209,15 @@ export const EntityList: FC<Props> = ({ entities }) => {
                   </>
                 }
               />
-              <CardContent>
+              <CardContent
+                sx={{
+                  p: "0px",
+                  mt: "0px",
+                  mx: "16px",
+                  mb: "0px",
+                  lineHeight: 2,
+                }}
+              >
                 <Typography className={classes.entityNote}>
                   {entity.note}
                 </Typography>

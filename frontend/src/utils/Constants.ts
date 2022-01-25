@@ -4,4 +4,6 @@ export const EntityStatus = {
   EDITING: 1 << 2,
 };
 
-export const EntityPaginationRowCount = 30;
+export const EntityList = {
+  MAX_ROW_COUNT: 9,
+};
