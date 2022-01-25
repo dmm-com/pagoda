@@ -21,13 +21,14 @@ import {
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import {
   aclPath,
   entityEntriesPath,
   entityHistoryPath,
   entityPath,
+  newEntityPath,
 } from "../../Routes";
 import { deleteEntity } from "../../utils/AironeAPIClient";
 import { EntityPaginationRowCount } from "../../utils/Constants";
@@ -94,7 +95,6 @@ const EntityControlMenu: FC<EntityControlProps> = ({
 
 export const EntityList: FC<Props> = ({ entities }) => {
   const classes = useStyles();
-  const history = useHistory();
 
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = React.useState(1);
@@ -105,17 +105,18 @@ export const EntityList: FC<Props> = ({ entities }) => {
     [key: number]: HTMLButtonElement;
   } | null>({});
 
-  const handleDelete = (event, entityId) => {
-    deleteEntity(entityId).then(() => history.go(0));
-  };
+  const filteredEntities = entities.filter((entity) => {
+    return entity.name.indexOf(keyword) !== -1;
+  });
 
-  const filteredEntities = entities
-    .filter((entity) => {
-      return entity.name.indexOf(keyword) !== -1;
-    })
-    .slice(0, 3);
+  const displayedEntities = filteredEntities.slice(
+    (page - 1) * EntityPaginationRowCount,
+    page * EntityPaginationRowCount
+  );
 
-  const totalPageCount = Math.ceil(entities.length / EntityPaginationRowCount);
+  const totalPageCount = Math.ceil(
+    filteredEntities.length / EntityPaginationRowCount
+  );
 
   return (
     <Box>
@@ -141,7 +142,13 @@ export const EntityList: FC<Props> = ({ entities }) => {
             onChange={(e) => setKeyword(e.target.value)}
           />
         </Box>
-        <Fab color="secondary" aria-label="add" variant="extended">
+        <Fab
+          color="secondary"
+          aria-label="add"
+          variant="extended"
+          component={Link}
+          to={newEntityPath()}
+        >
           <AddIcon />
           新規作成
         </Fab>
@@ -149,7 +156,7 @@ export const EntityList: FC<Props> = ({ entities }) => {
 
       {/* This box shows each entity Cards */}
       <Grid container spacing={2}>
-        {filteredEntities.map((entity) => (
+        {displayedEntities.map((entity) => (
           <Grid item xs={4} key={entity.id}>
             <Card sx={{ height: "100%" }}>
               <CardHeader
