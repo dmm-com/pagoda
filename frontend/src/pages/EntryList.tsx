@@ -1,14 +1,29 @@
-import { Box, Container, Theme, Typography } from "@mui/material";
+import AppsIcon from "@mui/icons-material/Apps";
+import {
+  Box,
+  Container,
+  IconButton,
+  Menu,
+  MenuItem,
+  Theme,
+  Typography,
+} from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entitiesPath, topPath } from "../Routes";
+import {
+  aclPath,
+  entitiesPath,
+  entityPath,
+  importEntriesPath,
+  topPath,
+} from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
 import { EntryList as Entry } from "../components/entry/EntryList";
-import { getEntries, getEntity } from "../utils/AironeAPIClient";
+import { getEntries, getEntity, exportEntries } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -19,9 +34,60 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+interface EntityControlProps {
+  entityId: number;
+  anchorElem: HTMLButtonElement | null;
+  handleClose: () => void;
+}
+
+// TODO consider to separate a composite component handling anchor and menu events
+const EntityControlMenu: FC<EntityControlProps> = ({
+  entityId,
+  anchorElem,
+  handleClose,
+}) => {
+  return (
+    <Menu
+      id={`entityControlMenu-${entityId}`}
+      open={Boolean(anchorElem)}
+      onClose={() => handleClose()}
+      anchorEl={anchorElem}
+    >
+      <MenuItem component={Link} to={entityPath(entityId)}>
+        <Typography>編集</Typography>
+      </MenuItem>
+      <MenuItem component={Link} to={aclPath(entityId)}>
+        <Typography>ACL</Typography>
+      </MenuItem>
+      {/* FIXME have a message after triggering an event */}
+      <MenuItem
+        onClick={async () => {
+          await exportEntries(entityId, "YAML");
+        }}
+      >
+        <Typography>エクスポート(YAML)</Typography>
+      </MenuItem>
+      <MenuItem
+        onClick={async () => {
+          await exportEntries(entityId, "CSV");
+        }}
+      >
+        <Typography>エクスポート(CSV)</Typography>
+      </MenuItem>
+      {/* FIXME something wrong on the next page??? */}
+      <MenuItem component={Link} to={importEntriesPath(entityId)}>
+        <Typography>インポート</Typography>
+      </MenuItem>
+    </Menu>
+  );
+};
+
 export const EntryList: FC = () => {
   const classes = useStyles();
   const { entityId } = useParams<{ entityId: number }>();
+
+  const [entityAnchorEl, setEntityAnchorEl] =
+    useState<HTMLButtonElement | null>();
 
   const entity = useAsync(async () => {
     const resp = await getEntity(entityId);
@@ -49,10 +115,32 @@ export const EntryList: FC = () => {
       </AironeBreadcrumbs>
 
       <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
-        <Box mb="64px">
-          <Typography variant="h2" align="center">
-            エントリ一覧
-          </Typography>
+        <Box mb="64px" display="flex">
+          <Box width="50px" />
+          <Box flexGrow="1">
+            {!entity.loading && (
+              <Typography variant="h2" align="center">
+                {entity.value.name}
+              </Typography>
+            )}
+            <Typography variant="h4" align="center">
+              エントリ一覧
+            </Typography>
+          </Box>
+          <Box width="50px">
+            <IconButton
+              onClick={(e) => {
+                setEntityAnchorEl(e.currentTarget);
+              }}
+            >
+              <AppsIcon />
+            </IconButton>
+            <EntityControlMenu
+              entityId={entityId}
+              anchorElem={entityAnchorEl}
+              handleClose={() => setEntityAnchorEl(null)}
+            />
+          </Box>
         </Box>
 
         {entries.loading ? (
