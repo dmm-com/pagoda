@@ -40,7 +40,7 @@ import { EditUser } from "./pages/EditUser";
 import { EditUserPassword } from "./pages/EditUserPassword";
 import { Entity } from "./pages/Entity";
 import { EntityHistory } from "./pages/EntityHistory";
-import { Entry } from "./pages/Entry";
+import { EntryList } from "./pages/EntryList";
 import { Group } from "./pages/Group";
 import { ImportEntity } from "./pages/ImportEntity";
 import { ImportEntry } from "./pages/ImportEntry";
@@ -77,7 +77,10 @@ export const AppRouter: FC = () => {
             <Route path={newEntryPath(":entityId")} component={EditEntry} />
             <Route path={showEntryPath(":entryId")} component={ShowEntry} />
             <Route path={importEntitiesPath()} component={ImportEntry} />
-            <Route path={entityEntriesPath(":entityId")} component={Entry} />
+            <Route
+              path={entityEntriesPath(":entityId")}
+              component={EntryList}
+            />
             <Route
               path={entityHistoryPath(":entityId")}
               component={EntityHistory}

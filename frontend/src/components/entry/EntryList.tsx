@@ -1,10 +1,22 @@
+import AddIcon from "@mui/icons-material/Add";
 import RestoreIcon from "@mui/icons-material/Restore";
-import { Input, TableCell, TableRow, Theme, Typography } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import {
+  Box,
+  Fab,
+  Input,
+  InputAdornment,
+  TableCell,
+  TableRow,
+  TextField,
+  Theme,
+  Typography,
+} from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
-import { showEntryPath } from "../../Routes";
+import { newEntityPath, showEntryPath } from "../../Routes";
 import { deleteEntry, restoreEntry } from "../../utils/AironeAPIClient";
 import { ConfirmableButton } from "../common/ConfirmableButton";
 import { DeleteButton } from "../common/DeleteButton";
@@ -56,51 +68,92 @@ export const EntryList: FC<Props> = ({ entries, restoreMode }) => {
   });
 
   return (
-    <PaginatedTable
-      rows={filteredEntries}
-      tableHeadRow={
-        <TableRow>
-          <TableCell>
-            <span className={classes.entryName}>エントリ名</span>
-            <Input
-              className={classes.entryName}
-              value={keyword}
-              placeholder="絞り込む"
-              onChange={(e) => setKeyword(e.target.value)}
-              onKeyPress={handleKeyPressKeyword}
-            />
-          </TableCell>
-          <TableCell align="right" />
-        </TableRow>
-      }
-      tableBodyRowGenerator={(entry) => (
-        <TableRow key={entry.id}>
-          <TableCell>
-            <Typography component={Link} to={showEntryPath(entry.id)}>
-              {entry.name}
-            </Typography>
-          </TableCell>
-          <TableCell align="right">
-            {restoreMode ? (
-              <ConfirmableButton
-                variant="contained"
-                color="primary"
-                className={classes.button}
-                startIcon={<RestoreIcon />}
-                dialogTitle="本当に復旧しますか？"
-                onClickYes={() => handleRestore(entry.id)}
-              >
-                Restore
-              </ConfirmableButton>
-            ) : (
-              <DeleteButton handleDelete={() => handleDelete(entry.id)}>
-                削除
-              </DeleteButton>
-            )}
-          </TableCell>
-        </TableRow>
-      )}
-      rowsPerPageOptions={[100, 250, 1000]}
-    />
+    <Box>
+      {/* This box shows search box and create button */}
+      <Box display="flex" justifyContent="space-between" mb={8}>
+        <Box className={classes.search} width={500}>
+          <TextField
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            variant="outlined"
+            size="small"
+            placeholder="エンティティ名で絞り込む"
+            sx={{
+              background: "#0000000B",
+            }}
+            fullWidth={true}
+            value={keyword}
+            onChange={(e) => {
+              setKeyword(e.target.value);
+
+              /* Reset page number to prevent vanishing entities from display
+               * when user move other page */
+              //setPage(1);
+            }}
+          />
+        </Box>
+        <Fab
+          color="secondary"
+          aria-label="add"
+          variant="extended"
+          component={Link}
+          to={newEntityPath()}
+        >
+          <AddIcon />
+          新規作成
+        </Fab>
+      </Box>
+      <PaginatedTable
+        rows={filteredEntries}
+        tableHeadRow={
+          <TableRow>
+            <TableCell>
+              <span className={classes.entryName}>エントリ名</span>
+              <Input
+                className={classes.entryName}
+                value={keyword}
+                placeholder="絞り込む"
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyPress={handleKeyPressKeyword}
+              />
+            </TableCell>
+            <TableCell align="right" />
+          </TableRow>
+        }
+        tableBodyRowGenerator={(entry) => (
+          <TableRow key={entry.id}>
+            <TableCell>
+              <Typography component={Link} to={showEntryPath(entry.id)}>
+                {entry.name}
+              </Typography>
+            </TableCell>
+            <TableCell align="right">
+              {restoreMode ? (
+                <ConfirmableButton
+                  variant="contained"
+                  color="primary"
+                  className={classes.button}
+                  startIcon={<RestoreIcon />}
+                  dialogTitle="本当に復旧しますか？"
+                  onClickYes={() => handleRestore(entry.id)}
+                >
+                  Restore
+                </ConfirmableButton>
+              ) : (
+                <DeleteButton handleDelete={() => handleDelete(entry.id)}>
+                  削除
+                </DeleteButton>
+              )}
+            </TableCell>
+          </TableRow>
+        )}
+        rowsPerPageOptions={[100, 250, 1000]}
+      />
+    </Box>
   );
 };
