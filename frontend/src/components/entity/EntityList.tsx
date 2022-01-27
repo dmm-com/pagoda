@@ -227,7 +227,7 @@ export const EntityList: FC<Props> = ({ entities }) => {
           </Grid>
         ))}
       </Grid>
-      <Box display="flex" justifyContent="center" mt="30px">
+      <Box display="flex" justifyContent="center" my="30px">
         <Stack spacing={2}>
           <Pagination
             count={totalPageCount}

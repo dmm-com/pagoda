@@ -28,6 +28,9 @@ const App: FC = () => {
         xl: 1536,
       },
     },
+    typography: {
+      fontFamily: "Noto Sans JP",
+    },
   });
   return (
     <ThemeProvider theme={theme}>
