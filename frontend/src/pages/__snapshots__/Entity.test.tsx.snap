@@ -155,7 +155,7 @@ Object {
                   class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-zwt9xa-MuiPaper-root-MuiCard-root"
                 >
                   <div
-                    class="MuiCardHeader-root css-185gdzj-MuiCardHeader-root"
+                    class="MuiCardHeader-root css-1woct9j-MuiCardHeader-root"
                   >
                     <div
                       class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
@@ -168,7 +168,11 @@ Object {
                           href="/new-ui/entities/1/entries"
                           tabindex="0"
                         >
-                          aaa
+                          <h6
+                            class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+                          >
+                            aaa
+                          </h6>
                           <span
                             class="MuiCardActionArea-focusHighlight css-1v2exvi-MuiCardActionArea-focusHighlight"
                           />
@@ -204,7 +208,7 @@ Object {
                     </div>
                   </div>
                   <div
-                    class="MuiCardContent-root css-46bh2p-MuiCardContent-root"
+                    class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                   >
                     <p
                       class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-7 css-ahj2mt-MuiTypography-root"
@@ -219,7 +223,7 @@ Object {
                   class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-zwt9xa-MuiPaper-root-MuiCard-root"
                 >
                   <div
-                    class="MuiCardHeader-root css-185gdzj-MuiCardHeader-root"
+                    class="MuiCardHeader-root css-1woct9j-MuiCardHeader-root"
                   >
                     <div
                       class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
@@ -232,7 +236,11 @@ Object {
                           href="/new-ui/entities/2/entries"
                           tabindex="0"
                         >
-                          aaaaa
+                          <h6
+                            class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+                          >
+                            aaaaa
+                          </h6>
                           <span
                             class="MuiCardActionArea-focusHighlight css-1v2exvi-MuiCardActionArea-focusHighlight"
                           />
@@ -268,7 +276,7 @@ Object {
                     </div>
                   </div>
                   <div
-                    class="MuiCardContent-root css-46bh2p-MuiCardContent-root"
+                    class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                   >
                     <p
                       class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-7 css-ahj2mt-MuiTypography-root"
@@ -283,7 +291,7 @@ Object {
                   class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-zwt9xa-MuiPaper-root-MuiCard-root"
                 >
                   <div
-                    class="MuiCardHeader-root css-185gdzj-MuiCardHeader-root"
+                    class="MuiCardHeader-root css-1woct9j-MuiCardHeader-root"
                   >
                     <div
                       class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
@@ -296,7 +304,11 @@ Object {
                           href="/new-ui/entities/3/entries"
                           tabindex="0"
                         >
-                          bbbbb
+                          <h6
+                            class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+                          >
+                            bbbbb
+                          </h6>
                           <span
                             class="MuiCardActionArea-focusHighlight css-1v2exvi-MuiCardActionArea-focusHighlight"
                           />
@@ -332,7 +344,7 @@ Object {
                     </div>
                   </div>
                   <div
-                    class="MuiCardContent-root css-46bh2p-MuiCardContent-root"
+                    class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                   >
                     <p
                       class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-7 css-ahj2mt-MuiTypography-root"
@@ -570,7 +582,7 @@ Object {
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-zwt9xa-MuiPaper-root-MuiCard-root"
               >
                 <div
-                  class="MuiCardHeader-root css-185gdzj-MuiCardHeader-root"
+                  class="MuiCardHeader-root css-1woct9j-MuiCardHeader-root"
                 >
                   <div
                     class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
@@ -583,7 +595,11 @@ Object {
                         href="/new-ui/entities/1/entries"
                         tabindex="0"
                       >
-                        aaa
+                        <h6
+                          class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+                        >
+                          aaa
+                        </h6>
                         <span
                           class="MuiCardActionArea-focusHighlight css-1v2exvi-MuiCardActionArea-focusHighlight"
                         />
@@ -619,7 +635,7 @@ Object {
                   </div>
                 </div>
                 <div
-                  class="MuiCardContent-root css-46bh2p-MuiCardContent-root"
+                  class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                 >
                   <p
                     class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-7 css-ahj2mt-MuiTypography-root"
@@ -634,7 +650,7 @@ Object {
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-zwt9xa-MuiPaper-root-MuiCard-root"
               >
                 <div
-                  class="MuiCardHeader-root css-185gdzj-MuiCardHeader-root"
+                  class="MuiCardHeader-root css-1woct9j-MuiCardHeader-root"
                 >
                   <div
                     class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
@@ -647,7 +663,11 @@ Object {
                         href="/new-ui/entities/2/entries"
                         tabindex="0"
                       >
-                        aaaaa
+                        <h6
+                          class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+                        >
+                          aaaaa
+                        </h6>
                         <span
                           class="MuiCardActionArea-focusHighlight css-1v2exvi-MuiCardActionArea-focusHighlight"
                         />
@@ -683,7 +703,7 @@ Object {
                   </div>
                 </div>
                 <div
-                  class="MuiCardContent-root css-46bh2p-MuiCardContent-root"
+                  class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                 >
                   <p
                     class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-7 css-ahj2mt-MuiTypography-root"
@@ -698,7 +718,7 @@ Object {
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-zwt9xa-MuiPaper-root-MuiCard-root"
               >
                 <div
-                  class="MuiCardHeader-root css-185gdzj-MuiCardHeader-root"
+                  class="MuiCardHeader-root css-1woct9j-MuiCardHeader-root"
                 >
                   <div
                     class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
@@ -711,7 +731,11 @@ Object {
                         href="/new-ui/entities/3/entries"
                         tabindex="0"
                       >
-                        bbbbb
+                        <h6
+                          class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+                        >
+                          bbbbb
+                        </h6>
                         <span
                           class="MuiCardActionArea-focusHighlight css-1v2exvi-MuiCardActionArea-focusHighlight"
                         />
@@ -747,7 +771,7 @@ Object {
                   </div>
                 </div>
                 <div
-                  class="MuiCardContent-root css-46bh2p-MuiCardContent-root"
+                  class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                 >
                   <p
                     class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-7 css-ahj2mt-MuiTypography-root"

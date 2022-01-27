@@ -360,3 +360,8 @@ To execute test written in [Jest](https://jestjs.io/):
 ```
 $ npm run test
 ```
+
+To re-build snapshots along with current implementaion, you should do following.
+```
+$ npm run test:update
+```

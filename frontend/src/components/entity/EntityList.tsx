@@ -110,7 +110,8 @@ export const EntityList: FC<Props> = ({ entities }) => {
   } | null>({});
 
   const filteredEntities = entities.filter((entity) => {
-    return entity.name.indexOf(keyword) !== -1;
+    // Search keyword is case insensitive (doesn't matter Lower/Upper cases)
+    return entity.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
   });
 
   const displayedEntities = filteredEntities.slice(

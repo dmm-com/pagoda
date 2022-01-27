@@ -5,5 +5,5 @@ export const EntityStatus = {
 };
 
 export const EntityList = {
-  MAX_ROW_COUNT: 9,
+  MAX_ROW_COUNT: 30,
 };
