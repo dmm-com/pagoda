@@ -1120,7 +1120,7 @@ class Entry(ACLBase):
                 continue
 
             # set last-value of current attributes
-            last_value = attr.attrv_list[0] if attr.attrv_list else None
+            last_value = attr.attrv_list[-1] if attr.attrv_list else None
             if last_value is None:
                 ret_attrs.append(attrinfo)
                 continue
@@ -1644,4 +1644,4 @@ class Entry(ACLBase):
             parent_attr__name=attr_name,
             parent_attr__schema__is_active=True,
             parent_attr__parent_entry=self
-        ).first()
+        ).last()
