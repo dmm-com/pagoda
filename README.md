@@ -366,7 +366,9 @@ To execute test written in [Jest](https://jestjs.io/):
 ```
 $ npm run test
 ```
+
+If you have any change on a page component, please re-build snapshots along with current implementaion as below.
+
 ```
-(If you have any change on a page component)
 $ npm run test:update
 ```

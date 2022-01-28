@@ -1,10 +1,13 @@
 <html>
+  <head>
+    <!-- custom script head -->
+    {% include 'custom_view/custom_script_head.html' %}
+  </head>
   <body>
+    <!-- custom script body -->
+    {% include 'custom_view/custom_script_body.html' %}
     <h2>Logged out</h2>
     <p>You have been successfully logged out.</p>
     <p><a href="{% url 'login' %}">Log in</a> again.</p>
-
-    <!-- custom script -->
-    {% include 'custom_view/custom_script.html' %}
   </body>
 </html>

@@ -19,6 +19,18 @@ const App: FC = () => {
         default: "#607D8B",
       },
     },
+    breakpoints: {
+      values: {
+        xs: 0,
+        sm: 600,
+        md: 900,
+        lg: 1064,
+        xl: 1536,
+      },
+    },
+    typography: {
+      fontFamily: "Noto Sans JP",
+    },
   });
   return (
     <ThemeProvider theme={theme}>

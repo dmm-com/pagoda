@@ -10,7 +10,6 @@ import { entityEntriesPath, searchPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
 import { getEntities } from "../utils/AironeAPIClient";
-import { EntityStatus } from "../utils/Constants";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -35,6 +34,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
     },
   },
 }));
+
+const EntityStatus = {
+  TOP_LEVEL: 1 << 0,
+  CREATING: 1 << 1,
+  EDITING: 1 << 2,
+};
 
 export const Dashboard: FC = () => {
   const classes = useStyles();

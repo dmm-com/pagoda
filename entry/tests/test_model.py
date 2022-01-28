@@ -1047,6 +1047,23 @@ class ModelTest(AironeTestCase):
         results = self._entry.get_available_attrs(self._user)
         self.assertEqual(results[0]['last_value'], 'hoge')
 
+    def test_get_available_attrs_with_multi_attribute_value(self):
+        self._entity.attrs.add(self._attr.schema)
+        self._entry.attrs.add(self._attr)
+
+        attr = self._entry.attrs.filter(schema=self._attr.schema, is_active=True).first()
+        attr.add_value(self._user, 'hoge')
+        attr.add_value(self._user, 'fuga')
+
+        results = self._entry.get_available_attrs(self._user)
+        self.assertEqual(results[0]['last_value'], 'fuga')
+
+        # AttributeValue with is_latest set to True is duplicated(rare case)
+        attr.values.all().update(is_latest=True)
+
+        results = self._entry.get_available_attrs(self._user)
+        self.assertEqual(results[0]['last_value'], 'fuga')
+
     def test_set_attrvalue_to_entry_attr_without_availabe_value(self):
         user = User.objects.create(username='hoge')
 
@@ -3336,6 +3353,14 @@ class ModelTest(AironeTestCase):
         self.assertEqual(entry.get_attrv('attr').value, 'hoge')
         self.assertIsNone(entry.get_attrv('attr-deleted'))
         self.assertIsNone(entry.get_attrv('invalid-attribute-name'))
+
+        # update AttributeValue
+        entry.attrs.get(schema__name='attr').add_value(user, 'fuga')
+        self.assertEqual(entry.get_attrv('attr').value, 'fuga')
+
+        # AttributeValue with is_latest set to True is duplicated(rare case)
+        entry.attrs.get(schema__name='attr').values.all().update(is_latest=True)
+        self.assertEqual(entry.get_attrv('attr').value, 'fuga')
 
     def test_inherit_individual_attribute_permissions_when_it_is_complemented(self):
         [user1, user2] = [User.objects.create(username=x) for x in ['u1', 'u2']]

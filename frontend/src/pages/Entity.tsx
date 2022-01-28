@@ -1,18 +1,14 @@
-import { Box, Button, Theme, Typography } from "@mui/material";
+import { Box, Theme, Typography, Container } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { importEntitiesPath, newEntityPath, topPath } from "../Routes";
+import { topPath } from "../Routes";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { CreateButton } from "../components/common/CreateButton";
 import { Loading } from "../components/common/Loading";
 import { EntityList } from "../components/entity/EntityList";
-import {
-  downloadExportedEntities,
-  getEntities,
-} from "../utils/AironeAPIClient";
+import { getEntities } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -38,37 +34,19 @@ export const Entity: FC = () => {
         <Typography color="textPrimary">エンティティ一覧</Typography>
       </AironeBreadcrumbs>
 
-      <Box className="row">
-        <Box className="col">
-          <Box className="float-left">
-            <CreateButton to={newEntityPath()}>エンティティ作成</CreateButton>
-            <Button
-              className={classes.button}
-              variant="outlined"
-              color="secondary"
-              onClick={() => downloadExportedEntities("entity.yaml")}
-            >
-              エクスポート
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              className={classes.button}
-              component={Link}
-              to={importEntitiesPath()}
-            >
-              インポート
-            </Button>
-          </Box>
-          <Box className="float-right" />
+      <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
+        <Box mb="64px">
+          <Typography variant="h2" align="center">
+            エンティティ一覧
+          </Typography>
         </Box>
-      </Box>
 
-      {entities.loading ? (
-        <Loading />
-      ) : (
-        <EntityList entities={entities.value} />
-      )}
+        {entities.loading ? (
+          <Loading />
+        ) : (
+          <EntityList entities={entities.value} />
+        )}
+      </Container>
     </Box>
   );
 };

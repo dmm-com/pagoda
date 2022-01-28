@@ -3,3 +3,7 @@ export const EntityStatus = {
   CREATING: 1 << 1,
   EDITING: 1 << 2,
 };
+
+export const EntityList = {
+  MAX_ROW_COUNT: 30,
+};
