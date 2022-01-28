@@ -48,12 +48,11 @@ test("should match snapshot", async () => {
       },
     });
   jest
-    .spyOn(require("../utils/AironeAPIClient"), "getGroup")
-    .mockResolvedValue({
-      json() {
-        return Promise.resolve(group);
-      },
-    });
+    .spyOn(
+      require("../apiclient/AironeApiClientV2").aironeApiClientV2,
+      "getGroup"
+    )
+    .mockResolvedValue(Promise.resolve(group));
   /* eslint-enable */
 
   // wait async calls and get rendered fragment

@@ -4,19 +4,18 @@ import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { EntryForm } from "../components/entry/EntryForm";
-import { getEntry } from "../utils/AironeAPIClient";
 
 export const EditEntry: FC = () => {
   const { entityId, entryId } =
     useParams<{ entityId: number; entryId: number }>();
 
-  const entry: any = useAsync(async () => {
-    if (entryId !== undefined) {
-      return await getEntry(entryId);
-    }
-    return {};
+  const entry = useAsync(async () => {
+    return entryId != undefined
+      ? await aironeApiClientV2.getEntry(entryId)
+      : undefined;
   });
 
   return (
@@ -37,9 +36,9 @@ export const EditEntry: FC = () => {
       {!entry.loading && (
         <EntryForm
           entityId={Number(entityId)}
-          entryId={entry.value.id}
-          initName={entry.value.name}
-          initAttributes={entry.value.attributes}
+          entryId={entry.value?.id}
+          initName={entry.value?.name}
+          initAttributes={entry.value?.attrs}
         />
       )}
     </Box>

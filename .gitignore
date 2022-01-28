@@ -108,6 +108,9 @@ ENV/
 # mkdocs documentation
 /site
 
+# Django Rest Framework
+spec.yaml
+
 # End of https://www.gitignore.io/api/django,python
 
 # Created by https://www.gitignore.io/api/vim,emacs
