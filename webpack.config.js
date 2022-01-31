@@ -1,4 +1,6 @@
 const path = require('path');
+const webpack = require('webpack');
+const fs = require('fs');
 
 module.exports = {
   entry: {
@@ -11,6 +13,13 @@ module.exports = {
   resolve: {
     extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
   },
+  plugins: fs.existsSync('./frontend/src/customview/pages') ?
+    fs.readdirSync('./frontend/src/customview/pages').map(file => {
+      return new webpack.NormalModuleReplacementPlugin(
+        new RegExp('frontend/src/pages/' + file),
+        '../customview\/pages\/' + file
+      )
+    }) : [],
   module: {
     rules: [
       {
