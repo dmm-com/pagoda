@@ -3,6 +3,14 @@
 ## In development
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## v3.5.0
+
+### Added
 * Added to be able to insert custom javascript
 
 ### Changed
@@ -11,6 +19,7 @@
 * Upgrade celery version from v4.4.7 to v5.2.2
 * Upgrade kombu version from v4.6.11 to v5.2.2
 * Upgrade flower version from v0.9.7 to v1.0.0
+* Upgrade django-filter version from v1.1.0 to v2.4.0
 
 ### Fixed
 * Fixed an issue where advanced search narrow down was slow (#321)
