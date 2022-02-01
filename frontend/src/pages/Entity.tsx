@@ -16,6 +16,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+export const NetworkEntity: FC = () => {
+  return <p>network</p>;
+};
+
 export const Entity: FC = () => {
   const classes = useStyles();
 
