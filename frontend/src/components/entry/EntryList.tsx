@@ -16,7 +16,7 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
-import { newEntityPath, showEntryPath } from "../../Routes";
+import { newEntryPath, showEntryPath } from "../../Routes";
 import { deleteEntry, restoreEntry } from "../../utils/AironeAPIClient";
 import { ConfirmableButton } from "../common/ConfirmableButton";
 import { DeleteButton } from "../common/DeleteButton";
@@ -40,7 +40,7 @@ interface Props {
   restoreMode: boolean;
 }
 
-export const EntryList: FC<Props> = ({ entries, restoreMode }) => {
+export const EntryList: FC<Props> = ({ entityId, entries, restoreMode }) => {
   const classes = useStyles();
   const history = useHistory();
 
@@ -82,7 +82,7 @@ export const EntryList: FC<Props> = ({ entries, restoreMode }) => {
             }}
             variant="outlined"
             size="small"
-            placeholder="エンティティ名で絞り込む"
+            placeholder="エントリを絞り込む"
             sx={{
               background: "#0000000B",
             }}
@@ -102,10 +102,10 @@ export const EntryList: FC<Props> = ({ entries, restoreMode }) => {
           aria-label="add"
           variant="extended"
           component={Link}
-          to={newEntityPath()}
+          to={newEntryPath(entityId)}
         >
           <AddIcon />
-          新規作成
+          新規エントリを作成
         </Fab>
       </Box>
       <PaginatedTable

@@ -2,6 +2,7 @@ import AppsIcon from "@mui/icons-material/Apps";
 import {
   Box,
   Container,
+  Divider,
   IconButton,
   Menu,
   MenuItem,
@@ -115,7 +116,7 @@ export const EntryList: FC = () => {
       </AironeBreadcrumbs>
 
       <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
-        <Box mb="64px" display="flex">
+        <Box display="flex">
           <Box width="50px" />
           <Box flexGrow="1">
             {!entity.loading && (
@@ -142,6 +143,14 @@ export const EntryList: FC = () => {
             />
           </Box>
         </Box>
+
+        <Divider
+          sx={{
+            my: "64px",
+            height: "1px",
+            backgroundColor: "rgba(0, 0, 0, 0.12)",
+          }}
+        />
 
         {entries.loading ? (
           <Loading />
