@@ -1,22 +1,19 @@
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import RestoreIcon from "@mui/icons-material/Restore";
 import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Card,
   CardActionArea,
-  CardContent,
   CardHeader,
   Fab,
   Grid,
   IconButton,
-  Input,
   InputAdornment,
   Menu,
   MenuItem,
-  TableCell,
-  TableRow,
+  Pagination,
+  Stack,
   TextField,
   Theme,
   Typography,
@@ -25,15 +22,9 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
-import {
-  aclPath,
-  newEntryPath,
-  showEntryPath,
-} from "../../Routes";
+import { aclPath, newEntryPath, showEntryPath } from "../../Routes";
 import { deleteEntry, restoreEntry } from "../../utils/AironeAPIClient";
-import { ConfirmableButton } from "../common/ConfirmableButton";
-import { DeleteButton } from "../common/DeleteButton";
-import { PaginatedTable } from "../common/PaginatedTable";
+import { EntryList as ConstEntryList } from "../../utils/Constants";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -67,8 +58,7 @@ const EntryControlMenu: FC<EntryControlProps> = ({
   const history = useHistory();
 
   const handleDelete = async (event, entryId) => {
-    await deleteEntry(entryId),
-    history.go(0);
+    await deleteEntry(entryId), history.go(0);
   };
 
   return (
@@ -81,11 +71,12 @@ const EntryControlMenu: FC<EntryControlProps> = ({
       <MenuItem component={Link} to={showEntryPath(entryId)}>
         <Typography>編集</Typography>
       </MenuItem>
-      {/* This is a temporary configuration until
-          Entry's edit page will be divided from showing Page */}
+      {/* have a confirmable component */}
       <MenuItem onClick={(e) => handleDelete(e, entryId)}>
         <Typography>削除</Typography>
       </MenuItem>
+      {/* This is a temporary configuration until
+          Entry's edit page will be divided from showing Page */}
       <MenuItem component={Link} to={aclPath(entryId)}>
         <Typography>ACL 設定</Typography>
       </MenuItem>
@@ -103,12 +94,10 @@ export const EntryList: FC<Props> = ({ entityId, entries, restoreMode }) => {
   const history = useHistory();
 
   const [keyword, setKeyword] = useState("");
-  const [filterKeyword, setFilterKeyword] = useState("");
+  const [page, setPage] = React.useState(1);
 
-  const handleKeyPressKeyword = (event) => {
-    if (event.key === "Enter") {
-      setFilterKeyword(keyword);
-    }
+  const handleChange = (event, value) => {
+    setPage(value);
   };
 
   const handleDelete = async (entryId: number) => {
@@ -122,8 +111,17 @@ export const EntryList: FC<Props> = ({ entityId, entries, restoreMode }) => {
   };
 
   const filteredEntries = entries.filter((e) => {
-    return e.name.indexOf(filterKeyword) !== -1;
+    return e.name.indexOf(keyword) !== -1;
   });
+
+  const displayedEntries = filteredEntries.slice(
+    (page - 1) * ConstEntryList.MAX_ROW_COUNT,
+    page * ConstEntryList.MAX_ROW_COUNT
+  );
+
+  const totalPageCount = Math.ceil(
+    filteredEntries.length / ConstEntryList.MAX_ROW_COUNT
+  );
 
   const [entryAnchorEls, setEntryAnchorEls] = useState<{
     [key: number]: HTMLButtonElement;
@@ -155,7 +153,7 @@ export const EntryList: FC<Props> = ({ entityId, entries, restoreMode }) => {
 
               /* Reset page number to prevent vanishing entities from display
                * when user move other page */
-              //setPage(1);
+              setPage(1);
             }}
           />
         </Box>
@@ -173,7 +171,7 @@ export const EntryList: FC<Props> = ({ entityId, entries, restoreMode }) => {
 
       {/* This box shows each entry Cards */}
       <Grid container spacing={2}>
-        {filteredEntries.map((entry) => {
+        {displayedEntries.map((entry) => {
           return (
             <Grid item xs={4} key={entry.id}>
               <Card sx={{ height: "100%" }}>
@@ -220,8 +218,18 @@ export const EntryList: FC<Props> = ({ entityId, entries, restoreMode }) => {
               </Card>
             </Grid>
           );
-        })};
+        })}
       </Grid>
+      <Box display="flex" justifyContent="center" my="30px">
+        <Stack spacing={2}>
+          <Pagination
+            count={totalPageCount}
+            page={page}
+            onChange={handleChange}
+            color="primary"
+          />
+        </Stack>
+      </Box>
     </Box>
   );
 };

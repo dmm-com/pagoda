@@ -7,3 +7,7 @@ export const EntityStatus = {
 export const EntityList = {
   MAX_ROW_COUNT: 30,
 };
+
+export const EntryList = {
+  MAX_ROW_COUNT: 3,
+};
