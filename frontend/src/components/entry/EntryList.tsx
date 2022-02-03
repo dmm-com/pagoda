@@ -1,11 +1,20 @@
 import AddIcon from "@mui/icons-material/Add";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import RestoreIcon from "@mui/icons-material/Restore";
 import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
+  Card,
+  CardActionArea,
+  CardContent,
+  CardHeader,
   Fab,
+  Grid,
+  IconButton,
   Input,
   InputAdornment,
+  Menu,
+  MenuItem,
   TableCell,
   TableRow,
   TextField,
@@ -16,7 +25,11 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
-import { newEntryPath, showEntryPath } from "../../Routes";
+import {
+  aclPath,
+  newEntryPath,
+  showEntryPath,
+} from "../../Routes";
 import { deleteEntry, restoreEntry } from "../../utils/AironeAPIClient";
 import { ConfirmableButton } from "../common/ConfirmableButton";
 import { DeleteButton } from "../common/DeleteButton";
@@ -39,6 +52,51 @@ interface Props {
   }[];
   restoreMode: boolean;
 }
+
+interface EntryControlProps {
+  entryId: number;
+  anchorElem: HTMLButtonElement | null;
+  handleClose: (entryId: number) => void;
+}
+
+const EntryControlMenu: FC<EntryControlProps> = ({
+  entryId,
+  anchorElem,
+  handleClose,
+}) => {
+  const history = useHistory();
+
+  const handleDelete = async (event, entryId) => {
+    await deleteEntry(entryId),
+    history.go(0);
+  };
+
+  return (
+    <Menu
+      id={`entityControlMenu-${entryId}`}
+      open={Boolean(anchorElem)}
+      onClose={() => handleClose(entryId)}
+      anchorEl={anchorElem}
+    >
+      <MenuItem component={Link} to={showEntryPath(entryId)}>
+        <Typography>編集</Typography>
+      </MenuItem>
+      {/* This is a temporary configuration until
+          Entry's edit page will be divided from showing Page */}
+      <MenuItem onClick={(e) => handleDelete(e, entryId)}>
+        <Typography>削除</Typography>
+      </MenuItem>
+      <MenuItem component={Link} to={aclPath(entryId)}>
+        <Typography>ACL 設定</Typography>
+      </MenuItem>
+      {/* This is a temporary configuration until
+          Entry's history page will be divided from showing Page */}
+      <MenuItem component={Link} to={showEntryPath(entryId)}>
+        <Typography>変更履歴</Typography>
+      </MenuItem>
+    </Menu>
+  );
+};
 
 export const EntryList: FC<Props> = ({ entityId, entries, restoreMode }) => {
   const classes = useStyles();
@@ -66,6 +124,10 @@ export const EntryList: FC<Props> = ({ entityId, entries, restoreMode }) => {
   const filteredEntries = entries.filter((e) => {
     return e.name.indexOf(filterKeyword) !== -1;
   });
+
+  const [entryAnchorEls, setEntryAnchorEls] = useState<{
+    [key: number]: HTMLButtonElement;
+  } | null>({});
 
   return (
     <Box>
@@ -108,52 +170,58 @@ export const EntryList: FC<Props> = ({ entityId, entries, restoreMode }) => {
           新規エントリを作成
         </Fab>
       </Box>
-      <PaginatedTable
-        rows={filteredEntries}
-        tableHeadRow={
-          <TableRow>
-            <TableCell>
-              <span className={classes.entryName}>エントリ名</span>
-              <Input
-                className={classes.entryName}
-                value={keyword}
-                placeholder="絞り込む"
-                onChange={(e) => setKeyword(e.target.value)}
-                onKeyPress={handleKeyPressKeyword}
-              />
-            </TableCell>
-            <TableCell align="right" />
-          </TableRow>
-        }
-        tableBodyRowGenerator={(entry) => (
-          <TableRow key={entry.id}>
-            <TableCell>
-              <Typography component={Link} to={showEntryPath(entry.id)}>
-                {entry.name}
-              </Typography>
-            </TableCell>
-            <TableCell align="right">
-              {restoreMode ? (
-                <ConfirmableButton
-                  variant="contained"
-                  color="primary"
-                  className={classes.button}
-                  startIcon={<RestoreIcon />}
-                  dialogTitle="本当に復旧しますか？"
-                  onClickYes={() => handleRestore(entry.id)}
-                >
-                  Restore
-                </ConfirmableButton>
-              ) : (
-                <DeleteButton handleDelete={() => handleDelete(entry.id)}>
-                  削除
-                </DeleteButton>
-              )}
-            </TableCell>
-          </TableRow>
-        )}
-        rowsPerPageOptions={[100, 250, 1000]}
-      />
+
+      {/* This box shows each entry Cards */}
+      <Grid container spacing={2}>
+        {filteredEntries.map((entry) => {
+          return (
+            <Grid item xs={4} key={entry.id}>
+              <Card sx={{ height: "100%" }}>
+                <CardHeader
+                  sx={{
+                    p: "0px",
+                    mt: "24px",
+                    mx: "16px",
+                    mb: "16px",
+                  }}
+                  title={
+                    <CardActionArea
+                      component={Link}
+                      to={showEntryPath(entry.id)}
+                    >
+                      <Typography variant="h6">{entry.name}</Typography>
+                    </CardActionArea>
+                  }
+                  action={
+                    <>
+                      <IconButton
+                        onClick={(e) => {
+                          setEntryAnchorEls({
+                            ...entryAnchorEls,
+                            [entry.id]: e.currentTarget,
+                          });
+                        }}
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                      <EntryControlMenu
+                        entryId={entry.id}
+                        anchorElem={entryAnchorEls[entry.id]}
+                        handleClose={(entryId: number) =>
+                          setEntryAnchorEls({
+                            ...entryAnchorEls,
+                            [entryId]: null,
+                          })
+                        }
+                      />
+                    </>
+                  }
+                />
+              </Card>
+            </Grid>
+          );
+        })};
+      </Grid>
     </Box>
   );
 };
