@@ -9,7 +9,7 @@ Object {
         class="container-fluid MuiBox-root css-0"
       >
         <div
-          class="makeStyles-wrapper-2 MuiBox-root css-0"
+          class="makeStyles-wrapper-1 MuiBox-root css-0"
         >
           <div
             class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
@@ -211,7 +211,7 @@ Object {
                     class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                   >
                     <p
-                      class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-7 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-6 css-ahj2mt-MuiTypography-root"
                     />
                   </div>
                 </div>
@@ -279,7 +279,7 @@ Object {
                     class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                   >
                     <p
-                      class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-7 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-6 css-ahj2mt-MuiTypography-root"
                     />
                   </div>
                 </div>
@@ -347,7 +347,7 @@ Object {
                     class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                   >
                     <p
-                      class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-7 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-6 css-ahj2mt-MuiTypography-root"
                     />
                   </div>
                 </div>
@@ -436,7 +436,7 @@ Object {
       class="container-fluid MuiBox-root css-0"
     >
       <div
-        class="makeStyles-wrapper-2 MuiBox-root css-0"
+        class="makeStyles-wrapper-1 MuiBox-root css-0"
       >
         <div
           class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
@@ -638,7 +638,7 @@ Object {
                   class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-7 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-6 css-ahj2mt-MuiTypography-root"
                   />
                 </div>
               </div>
@@ -706,7 +706,7 @@ Object {
                   class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-7 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-6 css-ahj2mt-MuiTypography-root"
                   />
                 </div>
               </div>
@@ -774,7 +774,7 @@ Object {
                   class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-7 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-6 css-ahj2mt-MuiTypography-root"
                   />
                 </div>
               </div>
