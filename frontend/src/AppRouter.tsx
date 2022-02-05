@@ -50,7 +50,14 @@ import { Search } from "./pages/Search";
 import { ShowEntry } from "./pages/ShowEntry";
 import { User } from "./pages/User";
 
-export const AppRouter: FC = () => {
+interface Props {
+  customRoutes?: {
+    path: string;
+    component: FC;
+  }[];
+}
+
+export const AppRouter: FC<Props> = ({ customRoutes }) => {
   return (
     <Router>
       <Switch>
@@ -58,6 +65,11 @@ export const AppRouter: FC = () => {
         <Route path="/">
           <Header />
           <Switch>
+            {customRoutes &&
+              customRoutes.map((r) => (
+                <Route key={r.path} path={r.path} component={r.component} />
+              ))}
+
             <Route path={advancedSearchPath()} component={AdvancedSearch} />
             <Route
               path={advancedSearchResultPath()}

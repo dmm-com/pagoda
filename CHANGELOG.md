@@ -5,6 +5,7 @@
 ### Added
 
 ### Changed
+* Set entry-id for each entry columns in the list entry page
 
 ### Fixed
 
