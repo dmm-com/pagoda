@@ -1,5 +1,3 @@
-import { Theme } from "@mui/material";
-import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
@@ -52,16 +50,7 @@ import { Search } from "./pages/Search";
 import { ShowEntry } from "./pages/ShowEntry";
 import { User } from "./pages/User";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  headerPadding: {
-    backgroundColor: theme.palette.background.default,
-  },
-}));
-
 export const AppRouter: FC = () => {
-  // TODO remove it
-  const classes = useStyles();
-
   return (
     <Router>
       <Switch>
