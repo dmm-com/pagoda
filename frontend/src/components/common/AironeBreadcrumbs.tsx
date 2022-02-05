@@ -7,7 +7,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   wrapper: {
     paddingLeft: "10%",
     paddingRight: "10%",
-    width: "100%",
+    width: "80%",
   },
 }));
 
