@@ -8,6 +8,8 @@
 * Set entry-id for each entry columns in the list entry page
 
 ### Fixed
+* Fixed problems that changing values for group won't be shown correctly
+  in the changing entry's attribute page
 
 ## v3.5.0
 
