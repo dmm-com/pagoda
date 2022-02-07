@@ -57,6 +57,7 @@ var attr_type = {
   'array_entry': {{ attr_type.array_entry }},
   'array_string': {{ attr_type.array_string }},
   'array_named_entry': {{ attr_type.array_named_entry }},
+  'array_group': {{ attr_type.array_group }},
 };
 function show_old_history(e) {
   MessageBox.clear();
@@ -101,8 +102,11 @@ function make_element_value_text(a_type, attrv) {
   if (a_type == attr_type.entry) {
     return `<a href='/entry/show/${ attrv.value.id }/'>${ attrv.value.name }</a>`;
 
-  } else if (a_type == attr_type.string || a_type == attr_type.textarea) {
+  } else if (a_type == attr_type.string) {
     return `<span class='url_conv'>${ attrv.value }</span>`;
+
+  } else if (a_type == attr_type.textarea) {
+    return `<span class='url_conv textarea'>${ attrv.value }</span>`;
 
   } else if (a_type == attr_type.boolean) {
     if(attrv.value) {
@@ -117,13 +121,14 @@ function make_element_value_text(a_type, attrv) {
       ref_value = `<a href='/entry/show/${ attrv.value.referral.id }/'>${ attrv.value.referral.name }</a>`;
     }
 
-    return `<div class ='row'>` +
-             `<div class ='col-3'>${ attrv.value.value }</div>` +
-             `<div class ='col-9'>${ ref_value }</div>` +
+    return `<div class='row'>` +
+             `<div class='col-3 attrv_name'>${ attrv.value.value }</div>` +
+             `<div class='col-9 attrv_referral'>${ ref_value }</div>` +
            `</div>`;
 
   } else if (a_type == attr_type.group) {
-    return `<a href='/group/edit/${ attrv.value.id }'>{{ attrv.value.name }}</a>`;
+    console.log("[onix-test(group)] attrv: ", attrv);
+    return `<a href='/group/edit/${ attrv.value.id }'>${ attrv.value.name }</a>`;
 
   } else if (a_type == attr_type.date) {
     return `<span>${ attrv.value }</span>`;
@@ -155,9 +160,19 @@ function make_element_value_text(a_type, attrv) {
       }
       result += `<li class='list-group-item'>` +
                   `<div class='row'>` +
-                    `<div class='col-3'>${ co_info.value  }</div>` +
-                    `<div class='col-9'>${ ref_value }</div>` +
+                    `<div class='col-3 attrv_name'>${ co_info.value  }</div>` +
+                    `<div class='col-9 attrv_referral'>${ ref_value }</div>` +
                   `</div>` +
+                `</li>`;
+    }
+    result += '</ul>';
+    return result;
+
+  } else if (a_type == attr_type.array_group) {
+    let result = "<ul class='list-group'>";
+    for (let co_info of attrv.value) {
+      result += `<li class='list-group-item'>` +
+                  `<a href='/group'>${ co_info.name }</a>` +
                 `</li>`;
     }
     result += '</ul>';
@@ -166,7 +181,7 @@ function make_element_value_text(a_type, attrv) {
 }
 
 function append_history_item(container, info) {
-  let elem_tr = $(`<tr class='attr_info'>`);
+  let elem_tr = $(`<tr class='attr_info' attr_id="${ info.attr_id }">`);
 
   // set attribute and attribute value id
   elem_tr.append(`<input type='hidden' class='attr_id' value='${ info.attr_id }' />`);
