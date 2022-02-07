@@ -36,16 +36,16 @@
         </thead>
         <tbody>
           {% for group in groups %}
-          <tr>
-            <td><a href="/group/edit/{{ group.id }}">{{ group.name }}</a></td>
-            <td>
+          <tr class='group-{{ group.id }}'>
+            <td class='group_name'><a href="/group/edit/{{ group.id }}">{{ group.name }}</a></td>
+            <td class='group_member'>
               <ul>
                 {% for member in group.members %}
                 <li>{{ member.username }}</li>
                 {% endfor %}
               </ul>
             </td>
-            <td><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/group/do_delete/{{ group.id }}">del</button></td>
+            <td class='group_delete'><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/group/do_delete/{{ group.id }}">del</button></td>
           </tr>
           {% endfor %}
         </tbody>

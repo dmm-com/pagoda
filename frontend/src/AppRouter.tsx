@@ -58,7 +58,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const AppRouter: FC = () => {
+interface Props {
+  customRoutes?: {
+    path: string;
+    component: FC;
+  }[];
+}
+
+export const AppRouter: FC<Props> = ({ customRoutes }) => {
   // TODO remove it
   const classes = useStyles();
 
@@ -69,6 +76,11 @@ export const AppRouter: FC = () => {
         <Route path="/">
           <Header />
           <Switch>
+            {customRoutes &&
+              customRoutes.map((r) => (
+                <Route key={r.path} path={r.path} component={r.component} />
+              ))}
+
             <Route path={advancedSearchPath()} component={AdvancedSearch} />
             <Route
               path={advancedSearchResultPath()}
