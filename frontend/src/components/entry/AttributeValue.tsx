@@ -20,9 +20,6 @@ const ElemObject: FC<{ attrValue: { id: number; name: string } }> = ({
 };
 
 const ElemNamedObject: FC<{ attrValue: any }> = ({ attrValue }) => {
-  console.log(`[onix/ElemNamedObject(00)]`);
-  console.log(attrValue);
-
   const key = Object.keys(attrValue)[0];
   return (
     <Box>

@@ -127,7 +127,6 @@ function make_element_value_text(a_type, attrv) {
            `</div>`;
 
   } else if (a_type == attr_type.group) {
-    console.log("[onix-test(group)] attrv: ", attrv);
     return `<a href='/group/edit/${ attrv.value.id }'>${ attrv.value.name }</a>`;
 
   } else if (a_type == attr_type.date) {
