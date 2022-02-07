@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableRow } from "@mui/material";
 import React, { FC } from "react";
 
-import { AttributeValue } from "./AttributeValue";
+import { AttributeValue } from "components/entry/AttributeValue";
 
 interface Props {
   attributes: any;

@@ -12,11 +12,11 @@ import React, { FC, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { topPath, searchPath, showEntryPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { Loading } from "../components/common/Loading";
-import { PaginatedTable } from "../components/common/PaginatedTable";
-import { getEntrySearch } from "../utils/AironeAPIClient";
+import { topPath, searchPath, showEntryPath } from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Loading } from "components/common/Loading";
+import { PaginatedTable } from "components/common/PaginatedTable";
+import { getEntrySearch } from "utils/AironeAPIClient";
 
 export const Search: FC = () => {
   const location = useLocation();

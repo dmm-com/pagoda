@@ -3,11 +3,11 @@ import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { topPath } from "../Routes";
-import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
-import { ACLForm } from "../components/common/ACLForm";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { Loading } from "../components/common/Loading";
+import { topPath } from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
+import { ACLForm } from "components/common/ACLForm";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Loading } from "components/common/Loading";
 
 export const ACL: FC = () => {
   const { entityId } = useParams<{ entityId: number }>();

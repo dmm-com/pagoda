@@ -3,7 +3,7 @@ import { Theme } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC, ReactElement, SyntheticEvent } from "react";
 
-import { ConfirmableButton } from "./ConfirmableButton";
+import { ConfirmableButton } from "components/common/ConfirmableButton";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {

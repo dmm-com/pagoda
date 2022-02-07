@@ -5,9 +5,8 @@ import { TableCell, TableRow } from "@mui/material";
 import { render } from "@testing-library/react";
 import React from "react";
 
-import { TestWrapper } from "../../utils/TestWrapper";
-
-import { PaginatedTable } from "./PaginatedTable";
+import { PaginatedTable } from "components/common/PaginatedTable";
+import { TestWrapper } from "utils/TestWrapper";
 
 test("should render a component with essential props", function () {
   expect(() =>

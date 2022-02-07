@@ -5,9 +5,8 @@
 import { render, waitFor } from "@testing-library/react";
 import React from "react";
 
-import { TestWrapper } from "../../utils/TestWrapper";
-
-import { WebhookForm } from "./WebhookForm";
+import { WebhookForm } from "components/webhook/WebhookForm";
+import { TestWrapper } from "utils/TestWrapper";
 
 test("should render a component with essential props", async () => {
   /* eslint-disable */

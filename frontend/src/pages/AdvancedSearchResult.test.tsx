@@ -9,9 +9,8 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
-import { TestWrapper } from "../utils/TestWrapper";
-
-import { AdvancedSearchResults } from "./AdvancedSearchResults";
+import { AdvancedSearchResults } from "pages/AdvancedSearchResults";
+import { TestWrapper } from "utils/TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();

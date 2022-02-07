@@ -29,9 +29,9 @@ import {
   entityHistoryPath,
   entityPath,
   newEntityPath,
-} from "../../Routes";
-import { deleteEntity } from "../../utils/AironeAPIClient";
-import { EntityList as ConstEntityList } from "../../utils/Constants";
+} from "Routes";
+import { deleteEntity } from "utils/AironeAPIClient";
+import { EntityList as ConstEntityList } from "utils/Constants";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {

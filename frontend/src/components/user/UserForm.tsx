@@ -15,13 +15,13 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { usersPath } from "../../Routes";
+import { usersPath } from "Routes";
 import {
   createUser,
   refreshAccessToken,
   updateUser,
-} from "../../utils/AironeAPIClient";
-import { DjangoContext } from "../../utils/DjangoContext";
+} from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {

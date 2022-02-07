@@ -3,16 +3,16 @@ import React, { FC, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
-import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
-import { ACLForm } from "../components/common/ACLForm";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { CopyForm } from "../components/entry/CopyForm";
-import { EntryAttributes } from "../components/entry/EntryAttributes";
-import { EntryForm } from "../components/entry/EntryForm";
-import { EntryHistory } from "../components/entry/EntryHistory";
-import { EntryReferral } from "../components/entry/EntryReferral";
-import { getEntryHistory, getReferredEntries } from "../utils/AironeAPIClient";
+import { entitiesPath, entityEntriesPath, topPath } from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
+import { ACLForm } from "components/common/ACLForm";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { CopyForm } from "components/entry/CopyForm";
+import { EntryAttributes } from "components/entry/EntryAttributes";
+import { EntryForm } from "components/entry/EntryForm";
+import { EntryHistory } from "components/entry/EntryHistory";
+import { EntryReferral } from "components/entry/EntryReferral";
+import { getEntryHistory, getReferredEntries } from "utils/AironeAPIClient";
 
 export const ShowEntry: FC = () => {
   const { entryId } = useParams<{ entityId: number }>();

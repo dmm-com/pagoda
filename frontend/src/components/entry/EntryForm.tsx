@@ -10,16 +10,15 @@ import {
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { entityEntriesPath } from "../../Routes";
-import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
+import { entityEntriesPath } from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
+import { EditAttributeValue } from "components/entry/EditAttributeValue";
 import {
   createEntry,
   getAttrReferrals,
   updateEntry,
-} from "../../utils/AironeAPIClient";
-import { DjangoContext } from "../../utils/DjangoContext";
-
-import { EditAttributeValue } from "./EditAttributeValue";
+} from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 interface Props {
   entityId: number;

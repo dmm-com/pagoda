@@ -2,8 +2,8 @@ import { Checkbox, Box, List, ListItem } from "@mui/material";
 import * as React from "react";
 import { FC } from "react";
 
-import { groupsPath, showEntryPath } from "../../Routes";
-import { DjangoContext } from "../../utils/DjangoContext";
+import { groupsPath, showEntryPath } from "Routes";
+import { DjangoContext } from "utils/DjangoContext";
 
 const ElemBool: FC<{ attrValue: boolean }> = ({ attrValue }) => {
   return <Checkbox checked={attrValue} disabled />;

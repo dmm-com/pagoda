@@ -5,9 +5,8 @@
 import { render } from "@testing-library/react";
 import React from "react";
 
-import { TestWrapper } from "../../utils/TestWrapper";
-
-import { EntryList } from "./EntryList";
+import { EntryList } from "components/entry/EntryList";
+import { TestWrapper } from "utils/TestWrapper";
 
 test("should render a component with essential props", function () {
   expect(() =>

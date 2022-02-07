@@ -4,13 +4,13 @@ import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { importGroupsPath, newGroupPath, topPath } from "../Routes";
-import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { CreateButton } from "../components/common/CreateButton";
-import { Loading } from "../components/common/Loading";
-import { GroupList } from "../components/group/GroupList";
-import { downloadExportedGroups } from "../utils/AironeAPIClient";
+import { importGroupsPath, newGroupPath, topPath } from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { CreateButton } from "components/common/CreateButton";
+import { Loading } from "components/common/Loading";
+import { GroupList } from "components/group/GroupList";
+import { downloadExportedGroups } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
