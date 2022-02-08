@@ -23,6 +23,8 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { Confirmable } from "../common/Confirmable";
+
 import {
   aclPath,
   entityEntriesPath,
@@ -84,9 +86,15 @@ const EntityControlMenu: FC<EntityControlProps> = ({
       <MenuItem component={Link} to={entityPath(entityId)}>
         <Typography>編集</Typography>
       </MenuItem>
-      <MenuItem onClick={(e) => handleDelete(e, entityId)}>
-        <Typography>削除</Typography>
-      </MenuItem>
+      <Confirmable
+        componentGenerator={(handleOpen) => (
+          <MenuItem onClick={handleOpen}>
+            <Typography>削除</Typography>
+          </MenuItem>
+        )}
+        dialogTitle="本当に削除しますか？"
+        onClickYes={(e) => handleDelete(e, entityId)}
+      />
       <MenuItem component={Link} to={aclPath(entityId)}>
         <Typography>ACL 設定</Typography>
       </MenuItem>

@@ -11,6 +11,7 @@ import {
   entityPath,
   groupPath,
   groupsPath,
+  importEntriesPath,
   importEntitiesPath,
   importGroupsPath,
   importUsersPath,
@@ -25,6 +26,8 @@ import {
   userPath,
   usersPath,
   loginPath,
+  showEntryHistoryPath,
+  entryPath,
 } from "Routes";
 import { Header } from "components/Header";
 import { ACL } from "pages/ACL";
@@ -38,7 +41,7 @@ import { EditUser } from "pages/EditUser";
 import { EditUserPassword } from "pages/EditUserPassword";
 import { Entity } from "pages/Entity";
 import { EntityHistory } from "pages/EntityHistory";
-import { Entry } from "pages/Entry";
+import { EntryList } from "pages/EntryList";
 import { Group } from "pages/Group";
 import { ImportEntity } from "pages/ImportEntity";
 import { ImportEntry } from "pages/ImportEntry";
@@ -48,6 +51,7 @@ import { Job } from "pages/Job";
 import { Login } from "pages/Login";
 import { Search } from "pages/Search";
 import { ShowEntry } from "pages/ShowEntry";
+import { ShowEntryHistory } from "pages/ShowEntryHistory";
 import { User } from "pages/User";
 
 interface Props {
@@ -77,8 +81,19 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             />
             <Route path={newEntryPath(":entityId")} component={EditEntry} />
             <Route path={showEntryPath(":entryId")} component={ShowEntry} />
-            <Route path={importEntitiesPath()} component={ImportEntry} />
-            <Route path={entityEntriesPath(":entityId")} component={Entry} />
+            <Route
+              path={importEntriesPath(":entityId")}
+              component={ImportEntry}
+            />
+            <Route
+              path={showEntryHistoryPath(":entryId")}
+              component={ShowEntryHistory}
+            />
+            <Route path={entryPath(":entryId")} component={EditEntry} />
+            <Route
+              path={entityEntriesPath(":entityId")}
+              component={EntryList}
+            />
             <Route
               path={entityHistoryPath(":entityId")}
               component={EntityHistory}
@@ -92,7 +107,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             <Route path={groupPath(":groupId")} component={EditGroup} />
             <Route path={groupsPath()} component={Group} />
             <Route path={jobsPath()} component={Job} />
-            <Route path={aclPath(":entityId")} component={ACL} />
+            <Route path={aclPath(":objectId")} component={ACL} />
             <Route path={searchPath()} component={Search} />
             <Route path={newUserPath()} component={EditUser} />
             <Route path={importUsersPath()} component={ImportUser} />
