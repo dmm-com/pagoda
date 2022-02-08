@@ -31,6 +31,7 @@ import {
 } from "../../Routes";
 import { deleteEntry, restoreEntry } from "../../utils/AironeAPIClient";
 import { EntryList as ConstEntryList } from "../../utils/Constants";
+import { Confirmable } from "../common/Confirmable";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -77,10 +78,15 @@ const EntryControlMenu: FC<EntryControlProps> = ({
       <MenuItem component={Link} to={entryPath(entryId)}>
         <Typography>編集</Typography>
       </MenuItem>
-      {/* have a confirmable component */}
-      <MenuItem onClick={(e) => handleDelete(e, entryId)}>
-        <Typography>削除</Typography>
-      </MenuItem>
+      <Confirmable
+        componentGenerator={(handleOpen) => (
+          <MenuItem onClick={handleOpen}>
+            <Typography>削除</Typography>
+          </MenuItem>
+        )}
+        dialogTitle="本当に削除しますか？"
+        onClickYes={(e) => handleDelete(e, entryId)}
+      />
       {/* This is a temporary configuration until
           Entry's edit page will be divided from showing Page */}
       <MenuItem component={Link} to={aclPath(entryId)}>
