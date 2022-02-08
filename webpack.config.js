@@ -1,4 +1,5 @@
 const path = require('path');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 module.exports = {
   entry: {
@@ -16,7 +17,10 @@ module.exports = {
       {
         test: /\.tsx?$/,
         exclude: /node_modules/,
-        use: 'ts-loader',
+        loader: 'ts-loader',
+        options: {
+          transpileOnly: true,
+        }
       },
       {
         test: /\.js$/,
@@ -30,9 +34,6 @@ module.exports = {
         }
       }
     ]
-  }
+  },
+  plugins: [new ForkTsCheckerWebpackPlugin()]
 };
-
-if (process.env.NODE_ENV !== 'production') {
-  module.exports.devtool = 'inline-source-map';
-}
