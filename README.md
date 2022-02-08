@@ -372,3 +372,11 @@ If you have any change on a page component, please re-build snapshots along with
 ```
 $ npm run test:update
 ```
+
+To customize UI:
+
+```
+$ cp -pi ./frontend/src/App.tsx ./frontend/src/customview/CustomApp.tsx
+(edit CustomApp.tsx)
+$ npm run build:custom
+```

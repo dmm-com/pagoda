@@ -3,7 +3,7 @@ import { Toolbar } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   wrapper: {
     paddingLeft: "10%",
     paddingRight: "10%",
