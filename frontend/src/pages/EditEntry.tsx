@@ -14,7 +14,8 @@ export const EditEntry: FC = () => {
 
   const entry: any = useAsync(async () => {
     if (entryId !== undefined) {
-      return await getEntry(entryId);
+      const resp = await getEntry(entryId);
+      return await resp.json();
     }
     return {};
   });
@@ -39,7 +40,7 @@ export const EditEntry: FC = () => {
           entityId={Number(entityId)}
           entryId={entry.value.id}
           initName={entry.value.name}
-          initAttributes={entry.value.attributes}
+          initAttributes={entry.value.attrs}
         />
       )}
     </Box>

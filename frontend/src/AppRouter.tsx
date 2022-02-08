@@ -28,6 +28,8 @@ import {
   userPath,
   usersPath,
   loginPath,
+  showEntryHistoryPath,
+  entryPath,
 } from "./Routes";
 import { Header } from "./components/Header";
 import { ACL } from "./pages/ACL";
@@ -51,6 +53,7 @@ import { Job } from "./pages/Job";
 import { Login } from "./pages/Login";
 import { Search } from "./pages/Search";
 import { ShowEntry } from "./pages/ShowEntry";
+import { ShowEntryHistory } from "./pages/ShowEntryHistory";
 import { User } from "./pages/User";
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -82,6 +85,11 @@ export const AppRouter: FC = () => {
               component={ImportEntry}
             />
             <Route
+              path={showEntryHistoryPath(":entryId")}
+              component={ShowEntryHistory}
+            />
+            <Route path={entryPath(":entryId")} component={EditEntry} />
+            <Route
               path={entityEntriesPath(":entityId")}
               component={EntryList}
             />
@@ -98,7 +106,7 @@ export const AppRouter: FC = () => {
             <Route path={groupPath(":groupId")} component={EditGroup} />
             <Route path={groupsPath()} component={Group} />
             <Route path={jobsPath()} component={Job} />
-            <Route path={aclPath(":entityId")} component={ACL} />
+            <Route path={aclPath(":objectId")} component={ACL} />
             <Route path={searchPath()} component={Search} />
             <Route path={newUserPath()} component={EditUser} />
             <Route path={importUsersPath()} component={ImportUser} />

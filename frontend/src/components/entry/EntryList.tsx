@@ -22,7 +22,13 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
-import { aclPath, newEntryPath, showEntryPath } from "../../Routes";
+import {
+  aclPath,
+  entryPath,
+  newEntryPath,
+  showEntryHistoryPath,
+  showEntryPath,
+} from "../../Routes";
 import { deleteEntry, restoreEntry } from "../../utils/AironeAPIClient";
 import { EntryList as ConstEntryList } from "../../utils/Constants";
 
@@ -68,7 +74,7 @@ const EntryControlMenu: FC<EntryControlProps> = ({
       onClose={() => handleClose(entryId)}
       anchorEl={anchorElem}
     >
-      <MenuItem component={Link} to={showEntryPath(entryId)}>
+      <MenuItem component={Link} to={entryPath(entryId)}>
         <Typography>編集</Typography>
       </MenuItem>
       {/* have a confirmable component */}
@@ -82,7 +88,7 @@ const EntryControlMenu: FC<EntryControlProps> = ({
       </MenuItem>
       {/* This is a temporary configuration until
           Entry's history page will be divided from showing Page */}
-      <MenuItem component={Link} to={showEntryPath(entryId)}>
+      <MenuItem component={Link} to={showEntryHistoryPath(entryId)}>
         <Typography>変更履歴</Typography>
       </MenuItem>
     </Menu>

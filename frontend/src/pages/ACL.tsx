@@ -10,10 +10,10 @@ import { Loading } from "../components/common/Loading";
 import { getACL } from "../utils/AironeAPIClient";
 
 export const ACL: FC = () => {
-  const { entityId } = useParams<{ entityId: number }>();
+  const { objectId } = useParams<{ objectId: number }>();
 
   const acl: any = useAsync(async () => {
-    const resp = await getACL(entityId);
+    const resp = await getACL(objectId);
     return await resp.json();
   });
 
@@ -31,7 +31,7 @@ export const ACL: FC = () => {
       ) : (
         <>
           <Typography>{acl.value.name} の ACL 設定</Typography>
-          <ACLForm objectId={entityId} acl={acl.value} />
+          <ACLForm objectId={objectId} acl={acl.value} />
         </>
       )}
     </Box>
