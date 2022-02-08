@@ -122,10 +122,10 @@ export const EntryList: FC<Props> = ({ entityId, entries, restoreMode }) => {
     history.go(0);
   };
 
+  // FIXME paginate and get partial entries on BE V2 API side
   const filteredEntries = entries.filter((e) => {
     return e.name.indexOf(keyword) !== -1;
   });
-
   const displayedEntries = filteredEntries.slice(
     (page - 1) * ConstEntryList.MAX_ROW_COUNT,
     page * ConstEntryList.MAX_ROW_COUNT

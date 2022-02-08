@@ -9,5 +9,5 @@ export const EntityList = {
 };
 
 export const EntryList = {
-  MAX_ROW_COUNT: 3,
+  MAX_ROW_COUNT: 30,
 };
