@@ -1,5 +1,4 @@
-import { Box, Theme, Typography, Container } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { Box, Typography, Container } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -10,15 +9,7 @@ import { Loading } from "../components/common/Loading";
 import { EntityList } from "../components/entity/EntityList";
 import { getEntities } from "../utils/AironeAPIClient";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-}));
-
 export const Entity: FC = () => {
-  const classes = useStyles();
-
   const entities = useAsync(async () => {
     const resp = await getEntities();
     const data = await resp.json();

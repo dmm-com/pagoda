@@ -18,12 +18,14 @@ afterEach(() => {
 });
 
 test("should match snapshot", async () => {
-  // TODO avoid to pass the global variable implicitly
-  (window as any).django_context = {
-    user: {
-      is_superuser: false,
+  Object.defineProperty(window, "django_context", {
+    value: {
+      user: {
+        is_superuser: false,
+      },
     },
-  };
+    writable: false,
+  });
 
   const user = {
     id: 1,
