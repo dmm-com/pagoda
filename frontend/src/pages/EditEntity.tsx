@@ -3,11 +3,11 @@ import React, { FC, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entitiesPath, entityEntriesPath, topPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { EntityForm } from "../components/entity/EntityForm";
-import { WebhookForm } from "../components/webhook/WebhookForm";
-import { getEntities, getEntity } from "../utils/AironeAPIClient";
+import { entitiesPath, entityEntriesPath, topPath } from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { EntityForm } from "components/entity/EntityForm";
+import { WebhookForm } from "components/webhook/WebhookForm";
+import { getEntities, getEntity } from "utils/AironeAPIClient";
 
 export const EditEntity: FC = () => {
   const { entityId } = useParams<{ entityId: number }>();

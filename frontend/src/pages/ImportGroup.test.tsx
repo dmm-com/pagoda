@@ -5,9 +5,8 @@
 import { render } from "@testing-library/react";
 import React from "react";
 
-import { TestWrapper } from "../utils/TestWrapper";
-
-import { ImportGroup } from "./ImportGroup";
+import { ImportGroup } from "pages/ImportGroup";
+import { TestWrapper } from "utils/TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();

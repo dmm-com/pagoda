@@ -14,8 +14,8 @@ import {
 } from "@mui/material";
 import React, { FC } from "react";
 
-import { postLogin } from "../utils/AironeAPIClient";
-import { DjangoContext } from "../utils/DjangoContext";
+import { postLogin } from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 export const Login: FC = () => {
   const djangoContext = DjangoContext.getInstance();

@@ -23,12 +23,8 @@ import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 import { useAsync, useToggle } from "react-use";
 
-import {
-  deleteWebhook,
-  getWebhooks,
-  setWebhook,
-} from "../../utils/AironeAPIClient";
-import { DeleteButton } from "../common/DeleteButton";
+import { DeleteButton } from "components/common/DeleteButton";
+import { deleteWebhook, getWebhooks, setWebhook } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {

@@ -3,9 +3,9 @@ import React from "react";
 import { FC } from "react";
 import ReactDOM from "react-dom";
 
-import { AppRouter } from "./AppRouter";
-import { ErrorHandler } from "./ErrorHandler";
-import { theme } from "./Theme";
+import { AppRouter } from "AppRouter";
+import { ErrorHandler } from "ErrorHandler";
+import { theme } from "Theme";
 
 const App: FC = () => {
   return (

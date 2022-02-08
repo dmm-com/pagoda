@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": "./frontend/src",
     "allowJs": true,
     "target": "es5",
     "jsx": "react",

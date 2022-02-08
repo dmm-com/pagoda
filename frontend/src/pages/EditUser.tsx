@@ -3,11 +3,11 @@ import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { topPath, usersPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { Loading } from "../components/common/Loading";
-import { UserForm } from "../components/user/UserForm";
-import { getUser } from "../utils/AironeAPIClient";
+import { topPath, usersPath } from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Loading } from "components/common/Loading";
+import { UserForm } from "components/user/UserForm";
+import { getUser } from "utils/AironeAPIClient";
 
 export const EditUser: FC = () => {
   const { userId } = useParams<{ userId: number }>();

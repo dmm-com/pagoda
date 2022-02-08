@@ -21,8 +21,8 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
-import { aclPath, entitiesPath } from "../../Routes";
-import { createEntity, updateEntity } from "../../utils/AironeAPIClient";
+import { aclPath, entitiesPath } from "Routes";
+import { createEntity, updateEntity } from "utils/AironeAPIClient";
 
 const BaseAttributeTypes = {
   object: 1 << 0,

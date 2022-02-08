@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import React from "react";
 
-import { AttributeValue } from "./AttributeValue";
+import { AttributeValue } from "components/entry/AttributeValue";
 
 const attrTypeValue = {
   string: 2,

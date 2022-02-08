@@ -15,10 +15,10 @@ import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 import { Link, useHistory } from "react-router-dom";
 
-import { passwordPath, userPath } from "../../Routes";
-import { deleteUser } from "../../utils/AironeAPIClient";
-import { DeleteButton } from "../common/DeleteButton";
-import { EditButton } from "../common/EditButton";
+import { passwordPath, userPath } from "Routes";
+import { DeleteButton } from "components/common/DeleteButton";
+import { EditButton } from "components/common/EditButton";
+import { deleteUser } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {

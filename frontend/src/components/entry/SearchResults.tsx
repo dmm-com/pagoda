@@ -2,9 +2,8 @@ import { Input, TableCell, TableRow, Typography } from "@mui/material";
 import React, { FC, useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
-import { PaginatedTable } from "../common/PaginatedTable";
-
-import { AttributeValue } from "./AttributeValue";
+import { PaginatedTable } from "components/common/PaginatedTable";
+import { AttributeValue } from "components/entry/AttributeValue";
 
 interface Props {
   results: {

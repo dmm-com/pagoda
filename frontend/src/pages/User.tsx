@@ -4,13 +4,13 @@ import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { importUsersPath, newUserPath, topPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { CreateButton } from "../components/common/CreateButton";
-import { Loading } from "../components/common/Loading";
-import { UserList } from "../components/user/UserList";
-import { downloadExportedUsers, getUsers } from "../utils/AironeAPIClient";
-import { DjangoContext } from "../utils/DjangoContext";
+import { importUsersPath, newUserPath, topPath } from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { CreateButton } from "components/common/CreateButton";
+import { Loading } from "components/common/Loading";
+import { UserList } from "components/user/UserList";
+import { downloadExportedUsers, getUsers } from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {

@@ -4,11 +4,11 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
-import { showEntryPath } from "../../Routes";
-import { deleteEntry, restoreEntry } from "../../utils/AironeAPIClient";
-import { ConfirmableButton } from "../common/ConfirmableButton";
-import { DeleteButton } from "../common/DeleteButton";
-import { PaginatedTable } from "../common/PaginatedTable";
+import { showEntryPath } from "Routes";
+import { ConfirmableButton } from "components/common/ConfirmableButton";
+import { DeleteButton } from "components/common/DeleteButton";
+import { PaginatedTable } from "components/common/PaginatedTable";
+import { deleteEntry, restoreEntry } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
