@@ -39,18 +39,18 @@
         </thead>
         <tbody>
           {% for list_user in users %}
-          <tr>
-            <td>{{ list_user.username }}</td>
-            <td>{{ list_user.email }}</td>
-            <td>{{ list_user.date_joined }}</td>
-            <td>
+          <tr class='user-{{ list_user.id }}'>
+            <td class='user_name'>{{ list_user.username }}</td>
+            <td class='user_email'>{{ list_user.email }}</td>
+            <td class='user_joind'>{{ list_user.date_joined|date:"Y/m/d H:i" }}</td>
+            <td class='user_edit'>
               {% if user.is_superuser or list_user.id == user.id%}
                 <a href='/user/edit/{{ list_user.id }}'><button type='button' class='btn btn-info btn-sm'>編集</button></a>
               {% else %}
                 <button type="button" class="btn btn-secondary btn-sm">編集</button>
               {% endif %}
             </td>
-            <td>
+            <td class='user_passwd'>
               {% if user.is_superuser or user.id == list_user.id %}
               <a href='/user/edit_passwd/{{ list_user.id }}'><button type='button' class='btn btn-info btn-sm'>パスワード編集</button></a>
               {% else %}
@@ -58,7 +58,7 @@
               {% endif %}
             </td>
 
-            <td><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/user/do_delete/{{ list_user.id }}">del</button></td>
+            <td class='user_delete'><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/user/do_delete/{{ list_user.id }}">del</button></td>
           </tr>
           {% endfor %}
         </tbody>

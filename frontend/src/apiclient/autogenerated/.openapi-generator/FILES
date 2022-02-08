@@ -1,0 +1,12 @@
+apis/AclApi.ts
+apis/ApiApi.ts
+apis/EntryApi.ts
+apis/GroupApi.ts
+apis/WebhookApi.ts
+apis/index.ts
+index.ts
+models/ACL.ts
+models/Entry.ts
+models/Group.ts
+models/index.ts
+runtime.ts

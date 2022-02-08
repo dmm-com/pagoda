@@ -6,10 +6,10 @@ import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entityEntriesPath, searchPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { Loading } from "../components/common/Loading";
-import { getEntities } from "../utils/AironeAPIClient";
+import { entityEntriesPath, searchPath } from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Loading } from "components/common/Loading";
+import { getEntities } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {

@@ -11,10 +11,10 @@ import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entitiesPath, topPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { Loading } from "../components/common/Loading";
-import { getEntityHistory } from "../utils/AironeAPIClient";
+import { entitiesPath, topPath } from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Loading } from "components/common/Loading";
+import { getEntityHistory } from "utils/AironeAPIClient";
 
 const Operations = {
   ADD: 1 << 0,

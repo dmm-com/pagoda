@@ -2,8 +2,8 @@ import { Checkbox, Box, List, ListItem } from "@mui/material";
 import * as React from "react";
 import { FC } from "react";
 
-import { groupsPath, showEntryPath } from "../../Routes";
-import { DjangoContext } from "../../utils/DjangoContext";
+import { groupsPath, showEntryPath } from "Routes";
+import { DjangoContext } from "utils/DjangoContext";
 
 const ElemBool: FC<{ attrValue: boolean }> = ({ attrValue }) => {
   return <Checkbox checked={attrValue} disabled />;
@@ -20,9 +20,6 @@ const ElemObject: FC<{ attrValue: { id: number; name: string } }> = ({
 };
 
 const ElemNamedObject: FC<{ attrValue: any }> = ({ attrValue }) => {
-  console.log(`[onix/ElemNamedObject(00)]`);
-  console.log(attrValue);
-
   const key = Object.keys(attrValue)[0];
   return (
     <Box>

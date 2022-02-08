@@ -28,10 +28,10 @@ import {
   newEntryPath,
   showEntryHistoryPath,
   showEntryPath,
-} from "../../Routes";
-import { deleteEntry, restoreEntry } from "../../utils/AironeAPIClient";
-import { EntryList as ConstEntryList } from "../../utils/Constants";
-import { Confirmable } from "../common/Confirmable";
+} from "Routes";
+import { Confirmable } from "components/common/Confirmable";
+import { deleteEntry, restoreEntry } from "utils/AironeAPIClient";
+import { EntryList as ConstEntryList } from "utils/Constants";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {

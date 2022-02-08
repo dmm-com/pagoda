@@ -13,11 +13,11 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { usersPath } from "../../Routes";
+import { usersPath } from "Routes";
 import {
   updateUserPassword,
   updateUserPasswordAsSuperuser,
-} from "../../utils/AironeAPIClient";
+} from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {

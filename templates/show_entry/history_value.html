@@ -36,33 +36,33 @@
   <span>{{ attrv.value|date:"Y-m-d" }}</span>
 
 {% elif a_type == attr_type.named_entry %}
-    <div class='row'>
-      <div class='col-3'>
-        {{ attrv.value.value }}
-      </div>
-      <div class='col-9'>
-        <a href='/entry/show/{{ attrv.referral.id }}/'>{{ attrv.referral.name }}</a>
-      </div>
+  <div class='row'>
+    <div class='col-3 attrv_name'>
+      {{ attrv.value.value }}
     </div>
+    <div class='col-9 attrv_referral'>
+      <a href='/entry/show/{{ attrv.value.referral.id }}/'>{{ attrv.value.referral.name }}</a>
+    </div>
+  </div>
 
 {% elif a_type == attr_type.array_named_entry %}
-    <ul class='list-group'>
-    {% for co_attrv in attrv.value %}
-      <li class='list-group-item'>
-        <div class='row'>
-          <div class='col-3'>
-            {{ co_attrv.value }}
-          </div>
-          <div class='col-9'>
-            <a href='/entry/show/{{ co_attrv.referral.id }}/'>{{ co_attrv.referral.name }}</a>
-          </div>
+  <ul class='list-group'>
+  {% for co_attrv in attrv.value %}
+    <li class='list-group-item'>
+      <div class='row'>
+        <div class='col-3 attrv_name'>
+          {{ co_attrv.value }}
         </div>
-      </li>
-    {% endfor %}
-    </ul>
+        <div class='col-9 attrv_referral'>
+          <a href='/entry/show/{{ co_attrv.referral.id }}/'>{{ co_attrv.referral.name }}</a>
+        </div>
+      </div>
+    </li>
+  {% endfor %}
+  </ul>
 
 {% elif a_type == attr_type.group %}
-  <a href='/group/edit/{{ attrv.value.id}}'>{{ attrv.value.name }}</a>
+  <a href='/group/edit/{{ attrv.value.id }}'>{{ attrv.value.name }}</a>
 
 {% elif a_type == attr_type.array_group %}
   <ul class='list-group'>

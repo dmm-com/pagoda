@@ -9,21 +9,22 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
-import { TestWrapper } from "../utils/TestWrapper";
-
-import { User } from "./User";
+import { User } from "pages/User";
+import { TestWrapper } from "utils/TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();
 });
 
 test("should match snapshot", async () => {
-  // TODO avoid to pass the global variable implicitly
-  (window as any).django_context = {
-    user: {
-      is_superuser: false,
+  Object.defineProperty(window, "django_context", {
+    value: {
+      user: {
+        is_superuser: false,
+      },
     },
-  };
+    writable: false,
+  });
 
   const users = [
     {

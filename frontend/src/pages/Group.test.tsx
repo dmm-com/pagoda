@@ -9,9 +9,8 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
-import { TestWrapper } from "../utils/TestWrapper";
-
-import { Group } from "./Group";
+import { Group } from "pages/Group";
+import { TestWrapper } from "utils/TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -51,12 +50,11 @@ test("should match snapshot", async () => {
 
   /* eslint-disable */
   jest
-    .spyOn(require("../utils/AironeAPIClient"), "getGroups")
-    .mockResolvedValue({
-      json() {
-        return Promise.resolve(groups);
-      },
-    });
+    .spyOn(
+      require("../apiclient/AironeApiClientV2").aironeApiClientV2,
+      "getGroups"
+    )
+    .mockResolvedValue(Promise.resolve(groups));
   /* eslint-enable */
 
   // wait async calls and get rendered fragment

@@ -5,11 +5,11 @@ import React, { FC } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { advancedSearchPath, topPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { Loading } from "../components/common/Loading";
-import { SearchResults } from "../components/entry/SearchResults";
-import { searchEntries } from "../utils/AironeAPIClient";
+import { advancedSearchPath, topPath } from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Loading } from "components/common/Loading";
+import { SearchResults } from "components/entry/SearchResults";
+import { searchEntries } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {

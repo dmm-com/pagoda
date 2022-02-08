@@ -1,5 +1,3 @@
-import { Theme } from "@mui/material";
-import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
@@ -30,42 +28,40 @@ import {
   loginPath,
   showEntryHistoryPath,
   entryPath,
-} from "./Routes";
-import { Header } from "./components/Header";
-import { ACL } from "./pages/ACL";
-import { AdvancedSearch } from "./pages/AdvancedSearch";
-import { AdvancedSearchResults } from "./pages/AdvancedSearchResults";
-import { Dashboard } from "./pages/Dashboard";
-import { EditEntity } from "./pages/EditEntity";
-import { EditEntry } from "./pages/EditEntry";
-import { EditGroup } from "./pages/EditGroup";
-import { EditUser } from "./pages/EditUser";
-import { EditUserPassword } from "./pages/EditUserPassword";
-import { Entity } from "./pages/Entity";
-import { EntityHistory } from "./pages/EntityHistory";
-import { EntryList } from "./pages/EntryList";
-import { Group } from "./pages/Group";
-import { ImportEntity } from "./pages/ImportEntity";
-import { ImportEntry } from "./pages/ImportEntry";
-import { ImportGroup } from "./pages/ImportGroup";
-import { ImportUser } from "./pages/ImportUser";
-import { Job } from "./pages/Job";
-import { Login } from "./pages/Login";
-import { Search } from "./pages/Search";
-import { ShowEntry } from "./pages/ShowEntry";
-import { ShowEntryHistory } from "./pages/ShowEntryHistory";
-import { User } from "./pages/User";
+} from "Routes";
+import { Header } from "components/Header";
+import { ACL } from "pages/ACL";
+import { AdvancedSearch } from "pages/AdvancedSearch";
+import { AdvancedSearchResults } from "pages/AdvancedSearchResults";
+import { Dashboard } from "pages/Dashboard";
+import { EditEntity } from "pages/EditEntity";
+import { EditEntry } from "pages/EditEntry";
+import { EditGroup } from "pages/EditGroup";
+import { EditUser } from "pages/EditUser";
+import { EditUserPassword } from "pages/EditUserPassword";
+import { Entity } from "pages/Entity";
+import { EntityHistory } from "pages/EntityHistory";
+import { EntryList } from "pages/EntryList";
+import { Group } from "pages/Group";
+import { ImportEntity } from "pages/ImportEntity";
+import { ImportEntry } from "pages/ImportEntry";
+import { ImportGroup } from "pages/ImportGroup";
+import { ImportUser } from "pages/ImportUser";
+import { Job } from "pages/Job";
+import { Login } from "pages/Login";
+import { Search } from "pages/Search";
+import { ShowEntry } from "pages/ShowEntry";
+import { ShowEntryHistory } from "pages/ShowEntryHistory";
+import { User } from "pages/User";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  headerPadding: {
-    backgroundColor: theme.palette.background.default,
-  },
-}));
+interface Props {
+  customRoutes?: {
+    path: string;
+    component: FC;
+  }[];
+}
 
-export const AppRouter: FC = () => {
-  // TODO remove it
-  const classes = useStyles();
-
+export const AppRouter: FC<Props> = ({ customRoutes }) => {
   return (
     <Router>
       <Switch>
@@ -73,6 +69,11 @@ export const AppRouter: FC = () => {
         <Route path="/">
           <Header />
           <Switch>
+            {customRoutes &&
+              customRoutes.map((r) => (
+                <Route key={r.path} path={r.path} component={r.component} />
+              ))}
+
             <Route path={advancedSearchPath()} component={AdvancedSearch} />
             <Route
               path={advancedSearchResultPath()}

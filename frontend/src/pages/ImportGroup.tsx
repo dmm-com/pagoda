@@ -2,10 +2,10 @@ import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { groupsPath, newGroupPath, topPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { ImportForm } from "../components/common/ImportForm";
-import { importGroups } from "../utils/AironeAPIClient";
+import { groupsPath, newGroupPath, topPath } from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { ImportForm } from "components/common/ImportForm";
+import { importGroups } from "utils/AironeAPIClient";
 
 export const ImportGroup: FC = () => {
   return (

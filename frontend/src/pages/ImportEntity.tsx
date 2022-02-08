@@ -2,10 +2,10 @@ import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { entitiesPath, topPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { ImportForm } from "../components/common/ImportForm";
-import { importEntities } from "../utils/AironeAPIClient";
+import { entitiesPath, topPath } from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { ImportForm } from "components/common/ImportForm";
+import { importEntities } from "utils/AironeAPIClient";
 
 export const ImportEntity: FC = () => {
   return (

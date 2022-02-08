@@ -4,12 +4,13 @@ import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { importUsersPath, newUserPath, topPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { CreateButton } from "../components/common/CreateButton";
-import { Loading } from "../components/common/Loading";
-import { UserList } from "../components/user/UserList";
-import { downloadExportedUsers, getUsers } from "../utils/AironeAPIClient";
+import { importUsersPath, newUserPath, topPath } from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { CreateButton } from "components/common/CreateButton";
+import { Loading } from "components/common/Loading";
+import { UserList } from "components/user/UserList";
+import { downloadExportedUsers, getUsers } from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -19,14 +20,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 export const User: FC = () => {
   const classes = useStyles();
+  const djangoContext = DjangoContext.getInstance();
 
   const users = useAsync(async () => {
     const resp = await getUsers();
     const data = await resp.json();
 
-    return (window as any).django_context.user.is_superuser
+    return djangoContext.user.isSuperuser
       ? data
-      : data.filter((d) => d.id === (window as any).django_context.user.id);
+      : data.filter((d) => d.id === djangoContext.user.id);
   });
 
   return (

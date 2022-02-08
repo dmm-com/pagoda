@@ -28,9 +28,9 @@ import {
   entitiesPath,
   advancedSearchPath,
   loginPath,
-} from "../Routes";
-import { getRecentJobs, postLogout } from "../utils/AironeAPIClient";
-import { DjangoContext } from "../utils/DjangoContext";
+} from "Routes";
+import { getRecentJobs, postLogout } from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   centeritem: {

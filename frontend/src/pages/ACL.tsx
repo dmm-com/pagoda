@@ -3,18 +3,17 @@ import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { topPath } from "../Routes";
-import { ACLForm } from "../components/common/ACLForm";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { Loading } from "../components/common/Loading";
-import { getACL } from "../utils/AironeAPIClient";
+import { topPath } from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
+import { ACLForm } from "components/common/ACLForm";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Loading } from "components/common/Loading";
 
 export const ACL: FC = () => {
   const { objectId } = useParams<{ objectId: number }>();
 
-  const acl: any = useAsync(async () => {
-    const resp = await getACL(objectId);
-    return await resp.json();
+  const acl = useAsync(async () => {
+    return await aironeApiClientV2.getAcl(objectId);
   });
 
   return (

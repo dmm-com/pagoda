@@ -19,13 +19,13 @@ import {
   importEntriesPath,
   newEntryPath,
   topPath,
-} from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { CreateButton } from "../components/common/CreateButton";
-import { EditButton } from "../components/common/EditButton";
-import { Loading } from "../components/common/Loading";
-import { EntryList } from "../components/entry/EntryList";
-import { exportEntries, getEntries, getEntity } from "../utils/AironeAPIClient";
+} from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { CreateButton } from "components/common/CreateButton";
+import { EditButton } from "components/common/EditButton";
+import { Loading } from "components/common/Loading";
+import { EntryList } from "components/entry/EntryList";
+import { exportEntries, getEntries, getEntity } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {

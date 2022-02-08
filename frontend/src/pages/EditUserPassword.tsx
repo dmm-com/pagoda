@@ -3,14 +3,16 @@ import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { topPath, usersPath } from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { Loading } from "../components/common/Loading";
-import { UserPasswordForm } from "../components/user/UserPasswordForm";
-import { getUser } from "../utils/AironeAPIClient";
+import { topPath, usersPath } from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Loading } from "components/common/Loading";
+import { UserPasswordForm } from "components/user/UserPasswordForm";
+import { getUser } from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 export const EditUserPassword: FC = () => {
   const { userId } = useParams<{ userId: number }>();
+  const djangoContext = DjangoContext.getInstance();
 
   const user = useAsync(async () => {
     const resp = await getUser(userId);
@@ -34,7 +36,7 @@ export const EditUserPassword: FC = () => {
       ) : (
         <UserPasswordForm
           user={user.value}
-          asSuperuser={(window as any).django_context.user.is_superuser}
+          asSuperuser={djangoContext.user.isSuperuser}
         />
       )}
     </Box>

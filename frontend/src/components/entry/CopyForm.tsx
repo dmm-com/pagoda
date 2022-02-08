@@ -2,8 +2,8 @@ import { Box, Button } from "@mui/material";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { entityEntriesPath } from "../../Routes";
-import { copyEntry } from "../../utils/AironeAPIClient";
+import { entityEntriesPath } from "Routes";
+import { copyEntry } from "utils/AironeAPIClient";
 
 interface Props {
   entityId: number;

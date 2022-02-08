@@ -12,4 +12,8 @@ module.exports = {
   "setupFilesAfterEnv": [
     "<rootDir>/frontend/src/setupTests.ts"
   ],
+  "moduleDirectories": [
+    "frontend/src",
+    "node_modules"
+  ]
 }

@@ -23,16 +23,17 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { Confirmable } from "../common/Confirmable";
+
 import {
   aclPath,
   entityEntriesPath,
   entityHistoryPath,
   entityPath,
   newEntityPath,
-} from "../../Routes";
-import { deleteEntity } from "../../utils/AironeAPIClient";
-import { EntityList as ConstEntityList } from "../../utils/Constants";
-import { Confirmable } from "../common/Confirmable";
+} from "Routes";
+import { deleteEntity } from "utils/AironeAPIClient";
+import { EntityList as ConstEntityList } from "utils/Constants";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
