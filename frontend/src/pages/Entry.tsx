@@ -25,7 +25,7 @@ import { CreateButton } from "components/common/CreateButton";
 import { EditButton } from "components/common/EditButton";
 import { Loading } from "components/common/Loading";
 import { EntryList } from "components/entry/EntryList";
-import { exportEntries, getEntries, getEntity } from "utils/AironeAPIClient";
+import { exportEntries, getEntity } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -47,14 +47,8 @@ export const Entry: FC = () => {
     return await resp.json();
   });
 
-  const entries = useAsync(async () => {
-    const resp = await getEntries(entityId, true);
-    const data = await resp.json();
-    return data.results;
-  });
-
   const deletedEntries = useAsync(async () => {
-    const resp = await getEntries(entityId, false);
+    const resp = await getEntity(entityId, false);
     const data = await resp.json();
     return data.results;
   });
@@ -132,12 +126,12 @@ export const Entry: FC = () => {
       <Box hidden={tabValue !== 0}>ダッシュボード</Box>
 
       <Box hidden={tabValue !== 1}>
-        {entries.loading ? (
+        {entity.loading ? (
           <Loading />
         ) : (
           <EntryList
             entityId={entityId}
-            entries={entries.value}
+            entries={entity.value.entries}
             restoreMode={false}
           />
         )}
@@ -149,7 +143,7 @@ export const Entry: FC = () => {
         {!deletedEntries.loading && (
           <EntryList
             entityId={entityId}
-            entries={deletedEntries.value}
+            entries={deletedEntries.value.entries}
             restoreMode={true}
           />
         )}

@@ -27,8 +27,12 @@ export function postLogout(): Promise<Response> {
   });
 }
 
-export function getEntity(entityId: number): Promise<Response> {
-  return fetch(`/entity/api/v2/entities/${entityId}`);
+export function getEntity(
+  entityId: number,
+  isActiveEntry = true,
+): Promise<Response> {
+  const isActiveParam = isActiveEntry ? "True" : "False";
+  return fetch(`/entity/api/v2/${entityId}?is_active_entry=${isActiveParam}`);
 }
 
 export function getEntities(): Promise<Response> {
@@ -62,16 +66,6 @@ export function getEntityAttrs(entityIds: number[]): Promise<Response> {
 
 export function getEntrySearch(query: string): Promise<Response> {
   return fetch(`/entry/api/v2/search?query=${query}`);
-}
-
-export function getEntries(
-  entityId: number,
-  isActive = true
-): Promise<Response> {
-  const isActiveParam = isActive ? "True" : "False";
-  return fetch(
-    `/entry/api/v1/get_entries/${entityId}?is_active=${isActiveParam}`
-  );
 }
 
 export function getAttrReferrals(attr_id) {

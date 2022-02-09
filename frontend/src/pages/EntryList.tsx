@@ -20,11 +20,11 @@ import {
   entityPath,
   importEntriesPath,
   topPath,
-} from "../Routes";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { Loading } from "../components/common/Loading";
-import { EntryList as Entry } from "../components/entry/EntryList";
-import { getEntries, getEntity, exportEntries } from "../utils/AironeAPIClient";
+} from "Routes";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Loading } from "components/common/Loading";
+import { EntryList as Entry } from "components/entry/EntryList";
+import { getEntity, exportEntries } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -95,12 +95,6 @@ export const EntryList: FC = () => {
     return await resp.json();
   });
 
-  const entries = useAsync(async () => {
-    const resp = await getEntries(entityId, true);
-    const data = await resp.json();
-    return data.results;
-  });
-
   return (
     <Box>
       <AironeBreadcrumbs>
@@ -152,12 +146,12 @@ export const EntryList: FC = () => {
           }}
         />
 
-        {entries.loading ? (
+        {entity.loading ? (
           <Loading />
         ) : (
           <Entry
             entityId={entityId}
-            entries={entries.value}
+            entries={entity.value.entries}
             restoreMode={false}
           />
         )}

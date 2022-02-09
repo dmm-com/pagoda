@@ -7,6 +7,8 @@ from airone.lib.types import AttrTypeValue
 from django.urls import reverse
 from entity import tasks
 from entity.models import Entity
+from entry.models import Entry
+from entry.settings import CONFIG as ENTRY_CONFIG
 
 from unittest import mock
 
@@ -53,6 +55,34 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name='foo', is_public=True, created_user=user)
 
-        resp = self.client.get('/entity/api/v2/entities/%s' % entity.id)
+        resp = self.client.get('/entity/api/v2/%s' % entity.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()['name'], 'foo')
+
+    def test_get_entries(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name='foo', is_public=True, created_user=user)
+
+        # This creates Entries in the order of e9, e8, e7 ... e1
+        entries = {
+            'e%d' % i: Entry.objects.create(name='e%d' % i, schema=entity, created_user=user)
+            for i in range(9, 0, -1)}
+
+        # Swap and changge configuration to test API returns entries in expected order
+        orig_config = ENTRY_CONFIG.conf['MAX_LIST_ENTRIES']
+        ENTRY_CONFIG.conf['MAX_LIST_ENTRIES'] = 2
+
+        resp = self.client.get('/entity/api/v2/%d' % entity.id)
+        self.assertEqual(resp.status_code, 200)
+
+        # Confirm getting entries are sorted by name and limited by config
+        self.assertEqual([e['name'] for e in resp.json()['entries']], ['e1', 'e2'])
+
+        # Check to get unactive entries
+        entries['e9'].delete()
+        resp = self.client.get('/entity/api/v2/%d?is_active_entry=False' % entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual([e['id'] for e in resp.json()['entries']], [entries['e9'].id])
+
+        # retrieve original configuration
+        ENTRY_CONFIG.conf['MAX_LIST_ENTRIES'] = orig_config

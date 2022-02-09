@@ -6,7 +6,10 @@ from airone.lib.http import http_get
 from django.http.response import JsonResponse, HttpResponse
 
 from entity.models import Entity
+from entity.api_v2.serializers import EntitySerializer
 from user.models import User
+
+from rest_framework import viewsets
 
 
 @airone_profile
@@ -61,3 +64,8 @@ def get_entity(request, entity_id):
         } for x in entity.attrs.filter(is_active=True).order_by('index')
             if user.has_permission(x, ACLType.Writable)],
     })
+
+
+class GetEntity(viewsets.ReadOnlyModelViewSet):
+    queryset = Entity.objects.filter(is_active=True)
+    serializer_class = EntitySerializer
