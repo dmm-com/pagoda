@@ -29,7 +29,7 @@ export function postLogout(): Promise<Response> {
 
 export function getEntity(
   entityId: number,
-  isActiveEntry = true,
+  isActiveEntry = true
 ): Promise<Response> {
   const isActiveParam = isActiveEntry ? "True" : "False";
   return fetch(`/entity/api/v2/${entityId}?is_active_entry=${isActiveParam}`);
