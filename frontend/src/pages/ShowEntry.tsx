@@ -14,6 +14,7 @@ import { EntryHistory } from "components/entry/EntryHistory";
 import { EntryReferral } from "components/entry/EntryReferral";
 import { getEntryHistory, getReferredEntries } from "utils/AironeAPIClient";
 
+// FIXME remove it?
 export const ShowEntry: FC = () => {
   const { entryId } = useParams<{ entityId: number }>();
 
