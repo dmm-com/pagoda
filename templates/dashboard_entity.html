@@ -17,7 +17,7 @@
   <div class="tab-content">
     <div class='row'>
       {% for attr in summarized_data.keys %}
-      <div class='col-sm-6'>
+      <div class='col-sm-6 summarized_content' attr_id='{{ attr.id }}'>
         <center><h5>{{ attr.name }} の統計</h5></center>
         <canvas id='chart-{{ attr.id }}'></canvas>
       </div>
