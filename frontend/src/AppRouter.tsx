@@ -57,7 +57,9 @@ import { User } from "pages/User";
 interface Props {
   customRoutes?: {
     path: string;
-    component: FC;
+    routePath: string;
+    component?: FC;
+    render?: any;
   }[];
 }
 
@@ -71,7 +73,15 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
           <Switch>
             {customRoutes &&
               customRoutes.map((r) => (
-                <Route key={r.path} path={r.path} component={r.component} />
+                <Route key={r.path} path={r.path}>
+                  <Switch>
+                    <Route
+                      path={r.routePath}
+                      component={r.component}
+                      render={r.render}
+                    />
+                  </Switch>
+                </Route>
               ))}
 
             <Route path={advancedSearchPath()} component={AdvancedSearch} />
