@@ -2,7 +2,6 @@ import AppsIcon from "@mui/icons-material/Apps";
 import {
   Box,
   Container,
-  Divider,
   IconButton,
   Menu,
   MenuItem,
@@ -25,6 +24,8 @@ import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
 import { EntryList as Entry } from "../components/entry/EntryList";
 import { getEntries, getEntity, exportEntries } from "../utils/AironeAPIClient";
+
+import { Divider } from "components/common/Divider";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -144,13 +145,7 @@ export const EntryList: FC = () => {
           </Box>
         </Box>
 
-        <Divider
-          sx={{
-            my: "64px",
-            height: "1px",
-            backgroundColor: "rgba(0, 0, 0, 0.12)",
-          }}
-        />
+        <Divider />
 
         {entries.loading ? (
           <Loading />

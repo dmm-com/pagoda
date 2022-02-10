@@ -16,7 +16,7 @@ export const newEntryPath = (entityId: number | string) =>
 export const showEntryPath = (entryId: number | string) =>
   basePath + `entries/${entryId}/show`;
 export const entryDetailsPath = (entryId: number | string) =>
-    basePath + `entries/${entryId}/details`;
+  basePath + `entries/${entryId}/details`;
 export const importEntriesPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries/import`;
 export const entityEntriesPath = (entityId: number | string) =>

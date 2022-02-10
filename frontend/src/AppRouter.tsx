@@ -1,6 +1,8 @@
 import React, { FC } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
+import { EntryDetailsPage } from "./pages/EntryDetailsPage";
+
 import {
   aclPath,
   advancedSearchPath,
@@ -27,7 +29,8 @@ import {
   usersPath,
   loginPath,
   showEntryHistoryPath,
-  entryPath, entryDetailsPath,
+  entryPath,
+  entryDetailsPath,
 } from "Routes";
 import { Header } from "components/Header";
 import { ACL } from "pages/ACL";
@@ -53,7 +56,6 @@ import { Search } from "pages/Search";
 import { ShowEntry } from "pages/ShowEntry";
 import { ShowEntryHistory } from "pages/ShowEntryHistory";
 import { User } from "pages/User";
-import {EntryDetailsPage} from "./pages/EntryDetailsPage";
 
 interface Props {
   customRoutes?: {
@@ -82,7 +84,10 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             />
             <Route path={newEntryPath(":entityId")} component={EditEntry} />
             <Route path={showEntryPath(":entryId")} component={ShowEntry} />
-            <Route path={entryDetailsPath(":entryId")} component={EntryDetailsPage} />
+            <Route
+              path={entryDetailsPath(":entryId")}
+              component={EntryDetailsPage}
+            />
             <Route
               path={importEntriesPath(":entityId")}
               component={ImportEntry}
