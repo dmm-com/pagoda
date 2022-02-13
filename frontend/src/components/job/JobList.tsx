@@ -14,7 +14,10 @@ import {
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
-import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
+
+import { cancelJob, rerunJob } from "../../utils/AironeAPIClient";
+import { Confirmable } from "../common/Confirmable";
 
 interface Job {
   id: number;
@@ -43,6 +46,17 @@ interface Props {
 
 export const JobList: FC<Props> = ({ jobs }) => {
   const classes = useStyles();
+  const history = useHistory();
+
+  const handleRerun = async (jobId: number) => {
+    await rerunJob(jobId);
+    history.go(0);
+  };
+
+  const handleCancel = async (jobId: number) => {
+    await cancelJob(jobId);
+    history.go(0);
+  };
 
   return (
     <TableContainer component={Paper}>
@@ -72,7 +86,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
         </TableHead>
         <TableBody>
           {jobs.map((job) => (
-            <TableRow>
+            <TableRow key={job.id}>
               <TableCell>
                 <Typography>{job.target && job.target.name}</Typography>
               </TableCell>
@@ -98,22 +112,26 @@ export const JobList: FC<Props> = ({ jobs }) => {
                       variant="contained"
                       color="primary"
                       className={classes.button}
-                      component={Link}
-                      to={`/jobs/${job.id}/rerun`}
+                      onClick={() => handleRerun(job.id)}
                     >
                       Re-run
                     </Button>
                   </ListItem>
                   <ListItem>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      className={classes.button}
-                      component={Link}
-                      to={`/jobs/${job.id}/cancel`}
-                    >
-                      Cancel
-                    </Button>
+                    <Confirmable
+                      componentGenerator={(handleOpen) => (
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          className={classes.button}
+                          onClick={handleOpen}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                      dialogTitle="本当にキャンセルしますか？"
+                      onClickYes={() => cancelJob(job.id)}
+                    />
                   </ListItem>
                 </List>
               </TableCell>
