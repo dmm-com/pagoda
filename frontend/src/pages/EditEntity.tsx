@@ -3,30 +3,24 @@ import React, { FC, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { EntityForm } from "components/entity/EntityForm";
 import { WebhookForm } from "components/webhook/WebhookForm";
-import { getEntities, getEntity } from "utils/AironeAPIClient";
 
 export const EditEntity: FC = () => {
   const { entityId } = useParams<{ entityId: number }>();
 
   const entity = useAsync(async () => {
-    if (entityId !== undefined) {
-      const resp = await getEntity(entityId);
-      return await resp.json();
-    }
-    return {};
+    return entityId !== undefined
+      ? await aironeApiClientV2.getEntity(entityId)
+      : undefined;
   });
 
   const referralEntities = useAsync(async () => {
-    if (entityId === undefined) {
-      const resp = await getEntities();
-      const data = await resp.json();
-      return data.entities;
-    }
-    return [];
+    return await aironeApiClientV2.getEntities();
   });
 
   const [tabValue, setTabValue] = useState(0);
@@ -61,13 +55,7 @@ export const EditEntity: FC = () => {
       <Box hidden={tabValue !== 0}>
         {!entity.loading && !referralEntities.loading && (
           <EntityForm
-            entity={{
-              id: entityId,
-              name: entity.value.name,
-              note: entity.value.note,
-              isTopLevel: entity.value.is_toplevel,
-              attributes: entity.value.attributes,
-            }}
+            entity={entity.value}
             referralEntities={referralEntities.value}
           />
         )}

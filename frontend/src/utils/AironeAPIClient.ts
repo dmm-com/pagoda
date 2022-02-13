@@ -27,14 +27,6 @@ export function postLogout(): Promise<Response> {
   });
 }
 
-export function getEntity(entityId: number): Promise<Response> {
-  return fetch(`/entity/api/v2/entities/${entityId}`);
-}
-
-export function getEntities(): Promise<Response> {
-  return fetch("/entity/api/v1/get_entities");
-}
-
 export function getEntityHistory(entityId: number): Promise<Response> {
   return fetch(`/entity/api/v2/history/${entityId}`);
 }
