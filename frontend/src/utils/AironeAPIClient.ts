@@ -469,6 +469,28 @@ export function getRecentJobs(): Promise<Response> {
   return fetch(`/api/v1/job/`);
 }
 
+export function rerunJob(jobId: number): Promise<Response> {
+  return fetch(`/api/v1/job/run/${jobId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+  });
+}
+
+export function cancelJob(jobId: number): Promise<Response> {
+  return fetch(`/api/v1/job/`, {
+    method: "DELETE",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify({
+      job_id: jobId,
+    }),
+  });
+}
+
 export function getWebhooks(entityId: number): Promise<Response> {
   return fetch(`/webhook/api/v2/${entityId}`);
 }

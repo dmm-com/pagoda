@@ -223,30 +223,34 @@ Object {
                     <li
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                     >
-                      <a
+                      <button
                         class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
-                        href="/jobs/1/rerun"
                         tabindex="0"
+                        type="button"
                       >
                         Re-run
                         <span
                           class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                         />
-                      </a>
+                      </button>
                     </li>
                     <li
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                     >
-                      <a
-                        class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                        href="/jobs/1/cancel"
-                        tabindex="0"
+                      <div
+                        class="MuiBox-root css-0"
                       >
-                        Cancel
-                        <span
-                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                        />
-                      </a>
+                        <button
+                          class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          Cancel
+                          <span
+                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                          />
+                        </button>
+                      </div>
                     </li>
                   </ul>
                 </td>
@@ -318,30 +322,34 @@ Object {
                     <li
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                     >
-                      <a
+                      <button
                         class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
-                        href="/jobs/2/rerun"
                         tabindex="0"
+                        type="button"
                       >
                         Re-run
                         <span
                           class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                         />
-                      </a>
+                      </button>
                     </li>
                     <li
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                     >
-                      <a
-                        class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                        href="/jobs/2/cancel"
-                        tabindex="0"
+                      <div
+                        class="MuiBox-root css-0"
                       >
-                        Cancel
-                        <span
-                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                        />
-                      </a>
+                        <button
+                          class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          Cancel
+                          <span
+                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                          />
+                        </button>
+                      </div>
                     </li>
                   </ul>
                 </td>
@@ -571,30 +579,34 @@ Object {
                   <li
                     class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                   >
-                    <a
+                    <button
                       class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
-                      href="/jobs/1/rerun"
                       tabindex="0"
+                      type="button"
                     >
                       Re-run
                       <span
                         class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                       />
-                    </a>
+                    </button>
                   </li>
                   <li
                     class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                   >
-                    <a
-                      class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                      href="/jobs/1/cancel"
-                      tabindex="0"
+                    <div
+                      class="MuiBox-root css-0"
                     >
-                      Cancel
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
-                    </a>
+                      <button
+                        class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        Cancel
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                        />
+                      </button>
+                    </div>
                   </li>
                 </ul>
               </td>
@@ -666,30 +678,34 @@ Object {
                   <li
                     class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                   >
-                    <a
+                    <button
                       class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
-                      href="/jobs/2/rerun"
                       tabindex="0"
+                      type="button"
                     >
                       Re-run
                       <span
                         class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                       />
-                    </a>
+                    </button>
                   </li>
                   <li
                     class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                   >
-                    <a
-                      class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                      href="/jobs/2/cancel"
-                      tabindex="0"
+                    <div
+                      class="MuiBox-root css-0"
                     >
-                      Cancel
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
-                    </a>
+                      <button
+                        class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        Cancel
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                        />
+                      </button>
+                    </div>
                   </li>
                 </ul>
               </td>
