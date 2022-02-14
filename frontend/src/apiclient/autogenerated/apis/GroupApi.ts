@@ -41,6 +41,11 @@ export class GroupApi extends runtime.BaseAPI {
         "Basic " +
         btoa(this.configuration.username + ":" + this.configuration.password);
     }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
     const response = await this.request(
       {
         path: `/group/api/v2/groups`,
@@ -91,6 +96,11 @@ export class GroupApi extends runtime.BaseAPI {
         "Basic " +
         btoa(this.configuration.username + ":" + this.configuration.password);
     }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
     const response = await this.request(
       {
         path: `/group/api/v2/groups/{id}`.replace(

@@ -21,10 +21,11 @@ import {
   importEntriesPath,
   topPath,
 } from "../Routes";
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
 import { EntryList as Entry } from "../components/entry/EntryList";
-import { getEntries, getEntity, exportEntries } from "../utils/AironeAPIClient";
+import { getEntries, exportEntries } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -95,8 +96,7 @@ export const EntryList: FC<EntryListProps> = ({ canCreateEntry = true }) => {
     useState<HTMLButtonElement | null>();
 
   const entity = useAsync(async () => {
-    const resp = await getEntity(entityId);
-    return await resp.json();
+    return await aironeApiClientV2.getEntity(entityId);
   });
 
   const entries = useAsync(async () => {

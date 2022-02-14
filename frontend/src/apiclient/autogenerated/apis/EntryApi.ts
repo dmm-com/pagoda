@@ -13,7 +13,14 @@
  */
 
 import * as runtime from "../runtime";
-import { Entry, EntryFromJSON, EntryToJSON } from "../models";
+import {
+  GetEntry,
+  GetEntryFromJSON,
+  GetEntryToJSON,
+  GetEntrySimple,
+  GetEntrySimpleFromJSON,
+  GetEntrySimpleToJSON,
+} from "../models";
 
 export interface EntryApiV2RetrieveRequest {
   id: number;
@@ -28,7 +35,7 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2RetrieveRaw(
     requestParameters: EntryApiV2RetrieveRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<Entry>> {
+  ): Promise<runtime.ApiResponse<GetEntry>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
         "id",
@@ -49,6 +56,11 @@ export class EntryApi extends runtime.BaseAPI {
         "Basic " +
         btoa(this.configuration.username + ":" + this.configuration.password);
     }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
     const response = await this.request(
       {
         path: `/entry/api/v2/{id}`.replace(
@@ -63,7 +75,7 @@ export class EntryApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      EntryFromJSON(jsonValue)
+      GetEntryFromJSON(jsonValue)
     );
   }
 
@@ -72,11 +84,58 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2Retrieve(
     requestParameters: EntryApiV2RetrieveRequest,
     initOverrides?: RequestInit
-  ): Promise<Entry> {
+  ): Promise<GetEntry> {
     const response = await this.entryApiV2RetrieveRaw(
       requestParameters,
       initOverrides
     );
+    return await response.value();
+  }
+
+  /**
+   */
+  async entryApiV2SearchListRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<Array<GetEntrySimple>>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/search`,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      jsonValue.map(GetEntrySimpleFromJSON)
+    );
+  }
+
+  /**
+   */
+  async entryApiV2SearchList(
+    initOverrides?: RequestInit
+  ): Promise<Array<GetEntrySimple>> {
+    const response = await this.entryApiV2SearchListRaw(initOverrides);
     return await response.value();
   }
 }

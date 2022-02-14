@@ -16,55 +16,41 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface GetEntry
+ * @interface GetEntrySimple
  */
-export interface GetEntry {
+export interface GetEntrySimple {
   /**
    *
    * @type {number}
-   * @memberof GetEntry
+   * @memberof GetEntrySimple
    */
   readonly id: number;
   /**
    *
    * @type {string}
-   * @memberof GetEntry
+   * @memberof GetEntrySimple
    */
   name: string;
-  /**
-   *
-   * @type {{ [key: string]: any; }}
-   * @memberof GetEntry
-   */
-  readonly schema: { [key: string]: any };
-  /**
-   *
-   * @type {{ [key: string]: any; }}
-   * @memberof GetEntry
-   */
-  readonly attrs: { [key: string]: any };
 }
 
-export function GetEntryFromJSON(json: any): GetEntry {
-  return GetEntryFromJSONTyped(json, false);
+export function GetEntrySimpleFromJSON(json: any): GetEntrySimple {
+  return GetEntrySimpleFromJSONTyped(json, false);
 }
 
-export function GetEntryFromJSONTyped(
+export function GetEntrySimpleFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): GetEntry {
+): GetEntrySimple {
   if (json === undefined || json === null) {
     return json;
   }
   return {
     id: json["id"],
     name: json["name"],
-    schema: json["schema"],
-    attrs: json["attrs"],
   };
 }
 
-export function GetEntryToJSON(value?: GetEntry | null): any {
+export function GetEntrySimpleToJSON(value?: GetEntrySimple | null): any {
   if (value === undefined) {
     return undefined;
   }
