@@ -259,7 +259,7 @@ def get_entry_info(request, entry_id):
             'id': entry.schema.id,
             'name': entry.schema.name,
         },
-        'attrs': sorted([dict({'name': x.schema.name, 'index': x.schema.index},
+        'attrs': sorted([dict({'id': x.id, 'name': x.schema.name, 'index': x.schema.index},
                               **x.get_latest_value().get_value(with_metainfo=True))
                          for x in entry.attrs.all() if user.has_permission(x, ACLType.Readable)],
                         key=lambda x: x['index'])

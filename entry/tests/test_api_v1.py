@@ -615,6 +615,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()['id'], entry.id)
 
+        # check context for attributes
+        for attrinfo in resp.json()['attrs']:
+            self.assertEqual(sorted(attrinfo.keys()),
+                             sorted(['id', 'name', 'type', 'index', 'value']))
+
     def test_create_entry_attr(self):
         user = self.guest_login()
 
