@@ -19,10 +19,12 @@ import React, { FC, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+
 import { advancedSearchResultPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
-import { getEntities, getEntityAttrs } from "utils/AironeAPIClient";
+import { getEntityAttrs } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   description: {
@@ -79,9 +81,7 @@ export const AdvancedSearchPage: FC = () => {
   const [attrNameFilter, setAttrNameFilter] = useState("");
 
   const entities = useAsync(async () => {
-    const resp = await getEntities();
-    const data = await resp.json();
-    return data.entities;
+    return await aironeApiClientV2.getEntities();
   });
 
   // TODO should be better to fetch all the values once, then filter it

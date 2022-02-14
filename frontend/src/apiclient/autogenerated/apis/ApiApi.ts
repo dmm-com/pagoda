@@ -28,6 +28,182 @@ export interface ApiV1JobRunCreateRequest {
 export class ApiApi extends runtime.BaseAPI {
   /**
    */
+  async apiV1AdvancedEntryContentsRetrieveRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/api/v1/advanced/entry/contents`,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async apiV1AdvancedEntryContentsRetrieve(
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.apiV1AdvancedEntryContentsRetrieveRaw(initOverrides);
+  }
+
+  /**
+   */
+  async apiV1AdvancedEntryIpaddrDestroyRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/api/v1/advanced/entry/ipaddr`,
+        method: "DELETE",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async apiV1AdvancedEntryIpaddrDestroy(
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.apiV1AdvancedEntryIpaddrDestroyRaw(initOverrides);
+  }
+
+  /**
+   */
+  async apiV1AdvancedEntryIpaddrRetrieveRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/api/v1/advanced/entry/ipaddr`,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async apiV1AdvancedEntryIpaddrRetrieve(
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.apiV1AdvancedEntryIpaddrRetrieveRaw(initOverrides);
+  }
+
+  /**
+   */
+  async apiV1AdvancedEntryIpaddrUpdateRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/api/v1/advanced/entry/ipaddr`,
+        method: "PUT",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async apiV1AdvancedEntryIpaddrUpdate(
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.apiV1AdvancedEntryIpaddrUpdateRaw(initOverrides);
+  }
+
+  /**
+   */
   async apiV1EntityAttrsRetrieveRaw(
     requestParameters: ApiV1EntityAttrsRetrieveRequest,
     initOverrides?: RequestInit

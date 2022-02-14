@@ -21,10 +21,11 @@ import {
   importEntriesPath,
   topPath,
 } from "../Routes";
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
 import { EntryList as Entry } from "../components/entry/EntryList";
-import { getEntries, getEntity, exportEntries } from "../utils/AironeAPIClient";
+import { getEntries, exportEntries } from "../utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -83,7 +84,13 @@ const EntityControlMenu: FC<EntityControlProps> = ({
   );
 };
 
-export const EntryListPage: FC = () => {
+interface EntryListProps {
+  canCreateEntry?: boolean;
+}
+
+export const EntryListPage: FC<EntryListProps> = ({
+  canCreateEntry = true,
+}) => {
   const classes = useStyles();
   const { entityId } = useParams<{ entityId: number }>();
 
@@ -91,8 +98,7 @@ export const EntryListPage: FC = () => {
     useState<HTMLButtonElement | null>();
 
   const entity = useAsync(async () => {
-    const resp = await getEntity(entityId);
-    return await resp.json();
+    return await aironeApiClientV2.getEntity(entityId);
   });
 
   const entries = useAsync(async () => {
@@ -159,6 +165,7 @@ export const EntryListPage: FC = () => {
             entityId={entityId}
             entries={entries.value}
             restoreMode={false}
+            canCreateEntry={canCreateEntry}
           />
         )}
       </Container>

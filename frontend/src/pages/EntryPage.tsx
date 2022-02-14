@@ -12,6 +12,8 @@ import React, { FC, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+
 import {
   aclPath,
   entitiesPath,
@@ -25,7 +27,7 @@ import { CreateButton } from "components/common/CreateButton";
 import { EditButton } from "components/common/EditButton";
 import { Loading } from "components/common/Loading";
 import { EntryList } from "components/entry/EntryList";
-import { exportEntries, getEntries, getEntity } from "utils/AironeAPIClient";
+import { exportEntries, getEntries } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -43,8 +45,7 @@ export const EntryPage: FC = () => {
   const [tabValue, setTabValue] = useState(1);
 
   const entity = useAsync(async () => {
-    const resp = await getEntity(entityId);
-    return await resp.json();
+    return await aironeApiClientV2.getEntity(entityId);
   });
 
   const entries = useAsync(async () => {

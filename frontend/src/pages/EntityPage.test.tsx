@@ -22,29 +22,32 @@ test("should match snapshot", async () => {
       id: 1,
       name: "aaa",
       note: "",
+      isToplevel: false,
+      attrs: [],
     },
     {
       id: 2,
       name: "aaaaa",
       note: "",
+      isToplevel: false,
+      attrs: [],
     },
     {
       id: 3,
       name: "bbbbb",
       note: "",
+      isToplevel: false,
+      attrs: [],
     },
   ];
 
   /* eslint-disable */
   jest
-    .spyOn(require("../utils/AironeAPIClient"), "getEntities")
-    .mockResolvedValue({
-      json() {
-        return Promise.resolve({
-          entities: entities,
-        });
-      },
-    });
+    .spyOn(
+      require("../apiclient/AironeApiClientV2").aironeApiClientV2,
+      "getEntities"
+    )
+    .mockResolvedValue(Promise.resolve(entities));
   /* eslint-enable */
 
   // wait async calls and get rendered fragment

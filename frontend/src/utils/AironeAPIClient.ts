@@ -27,14 +27,6 @@ export function postLogout(): Promise<Response> {
   });
 }
 
-export function getEntity(entityId: number): Promise<Response> {
-  return fetch(`/entity/api/v2/entities/${entityId}`);
-}
-
-export function getEntities(): Promise<Response> {
-  return fetch("/entity/api/v1/get_entities");
-}
-
 export function getEntityHistory(entityId: number): Promise<Response> {
   return fetch(`/entity/api/v2/history/${entityId}`);
 }
@@ -467,6 +459,28 @@ export function getJobs(noLimit = 0): Promise<Response> {
 
 export function getRecentJobs(): Promise<Response> {
   return fetch(`/api/v1/job/`);
+}
+
+export function rerunJob(jobId: number): Promise<Response> {
+  return fetch(`/api/v1/job/run/${jobId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+  });
+}
+
+export function cancelJob(jobId: number): Promise<Response> {
+  return fetch(`/api/v1/job/`, {
+    method: "DELETE",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify({
+      job_id: jobId,
+    }),
+  });
 }
 
 export function getWebhooks(entityId: number): Promise<Response> {

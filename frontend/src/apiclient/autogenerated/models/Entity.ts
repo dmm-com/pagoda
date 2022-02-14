@@ -16,55 +16,69 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface GetEntry
+ * @interface Entity
  */
-export interface GetEntry {
+export interface Entity {
   /**
    *
    * @type {number}
-   * @memberof GetEntry
+   * @memberof Entity
    */
   readonly id: number;
   /**
    *
    * @type {string}
-   * @memberof GetEntry
+   * @memberof Entity
    */
   name: string;
   /**
    *
-   * @type {{ [key: string]: any; }}
-   * @memberof GetEntry
+   * @type {string}
+   * @memberof Entity
    */
-  readonly schema: { [key: string]: any };
+  note: string;
   /**
    *
-   * @type {{ [key: string]: any; }}
-   * @memberof GetEntry
+   * @type {number}
+   * @memberof Entity
    */
-  readonly attrs: { [key: string]: any };
+  status?: number;
+  /**
+   *
+   * @type {boolean}
+   * @memberof Entity
+   */
+  readonly isToplevel: boolean;
+  /**
+   *
+   * @type {Array<{ [key: string]: any; }>}
+   * @memberof Entity
+   */
+  readonly attrs: Array<{ [key: string]: any }>;
 }
 
-export function GetEntryFromJSON(json: any): GetEntry {
-  return GetEntryFromJSONTyped(json, false);
+export function EntityFromJSON(json: any): Entity {
+  return EntityFromJSONTyped(json, false);
 }
 
-export function GetEntryFromJSONTyped(
+export function EntityFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): GetEntry {
+): Entity {
   if (json === undefined || json === null) {
     return json;
   }
   return {
     id: json["id"],
     name: json["name"],
-    schema: json["schema"],
+    note: json["note"],
+    status: !exists(json, "status") ? undefined : json["status"],
+    isToplevel: json["is_toplevel"],
     attrs: json["attrs"],
   };
 }
 
-export function GetEntryToJSON(value?: GetEntry | null): any {
+export function EntityToJSON(value?: Entity | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -73,5 +87,7 @@ export function GetEntryToJSON(value?: GetEntry | null): any {
   }
   return {
     name: value.name,
+    note: value.note,
+    status: value.status,
   };
 }

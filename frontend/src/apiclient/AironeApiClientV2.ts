@@ -4,7 +4,9 @@ import {
   ACL,
   AclApi,
   Configuration,
-  Entry,
+  Entity,
+  EntityApi,
+  GetEntry,
   EntryApi,
   Group,
   GroupApi,
@@ -21,12 +23,14 @@ function getCsrfToken(): string {
  */
 class AironeApiClientV2 {
   private acl: AclApi;
+  private entity: EntityApi;
   private entry: EntryApi;
   private group: GroupApi;
 
   constructor() {
     const config = new Configuration({ basePath: "" });
     this.acl = new AclApi(config);
+    this.entity = new EntityApi(config);
     this.entry = new EntryApi(config);
     this.group = new GroupApi(config);
   }
@@ -68,7 +72,15 @@ class AironeApiClientV2 {
     );
   }
 
-  async getEntry(id: number): Promise<Entry> {
+  async getEntities(): Promise<Entity[]> {
+    return await this.entity.entityApiV2EntitiesList();
+  }
+
+  async getEntity(id: number): Promise<Entity> {
+    return await this.entity.entityApiV2EntitiesRetrieve({ id });
+  }
+
+  async getEntry(id: number): Promise<GetEntry> {
     return await this.entry.entryApiV2Retrieve({ id });
   }
 

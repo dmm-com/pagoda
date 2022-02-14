@@ -6,10 +6,11 @@ import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+
 import { entityEntriesPath, searchPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
-import { getEntities } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -48,9 +49,8 @@ export const DashboardPage: FC = () => {
   const [entryQuery, setEntryQuery] = useState("");
 
   const entities = useAsync(async () => {
-    const resp = await getEntities();
-    const data = await resp.json();
-    return data.entities.filter((e) => e.status & EntityStatus.TOP_LEVEL);
+    const entities = await aironeApiClientV2.getEntities();
+    return entities.filter((e) => e.isToplevel);
   });
 
   const handleSearchQuery = (event) => {
