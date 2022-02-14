@@ -84,7 +84,12 @@ const EntityControlMenu: FC<EntityControlProps> = ({
   );
 };
 
-export const EntryList: FC = () => {
+interface EntryListProps {
+  canCreateEntry?: boolean;
+}
+
+export const EntryList: FC<EntryListProps> = ({ canCreateEntry = true }) => {
+  const classes = useStyles();
   const { entityId } = useParams<{ entityId: number }>();
 
   const [entityAnchorEl, setEntityAnchorEl] =
@@ -158,6 +163,7 @@ export const EntryList: FC = () => {
             entityId={entityId}
             entries={entries.value}
             restoreMode={false}
+            canCreateEntry={canCreateEntry}
           />
         )}
       </Container>
