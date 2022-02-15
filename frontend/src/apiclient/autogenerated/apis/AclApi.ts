@@ -54,6 +54,11 @@ export class AclApi extends runtime.BaseAPI {
         "Basic " +
         btoa(this.configuration.username + ":" + this.configuration.password);
     }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
     const response = await this.request(
       {
         path: `/acl/api/v2/acls/{id}`.replace(
@@ -120,6 +125,11 @@ export class AclApi extends runtime.BaseAPI {
         "Basic " +
         btoa(this.configuration.username + ":" + this.configuration.password);
     }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
     const response = await this.request(
       {
         path: `/acl/api/v2/acls/{id}`.replace(

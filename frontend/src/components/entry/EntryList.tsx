@@ -49,6 +49,7 @@ interface Props {
     name: string;
   }[];
   restoreMode: boolean;
+  canCreateEntry?: boolean;
 }
 
 interface EntryControlProps {
@@ -101,7 +102,12 @@ const EntryControlMenu: FC<EntryControlProps> = ({
   );
 };
 
-export const EntryList: FC<Props> = ({ entityId, entries, restoreMode }) => {
+export const EntryList: FC<Props> = ({
+  entityId,
+  entries,
+  restoreMode,
+  canCreateEntry = true,
+}) => {
   const classes = useStyles();
   const history = useHistory();
 
@@ -170,6 +176,7 @@ export const EntryList: FC<Props> = ({ entityId, entries, restoreMode }) => {
           />
         </Box>
         <Fab
+          disabled={!canCreateEntry}
           color="secondary"
           aria-label="add"
           variant="extended"

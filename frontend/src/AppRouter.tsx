@@ -33,34 +33,36 @@ import {
   entryDetailsPath,
 } from "Routes";
 import { Header } from "components/Header";
-import { ACL } from "pages/ACL";
-import { AdvancedSearch } from "pages/AdvancedSearch";
-import { AdvancedSearchResults } from "pages/AdvancedSearchResults";
-import { Dashboard } from "pages/Dashboard";
-import { EditEntity } from "pages/EditEntity";
-import { EditEntry } from "pages/EditEntry";
-import { EditGroup } from "pages/EditGroup";
-import { EditUser } from "pages/EditUser";
-import { EditUserPassword } from "pages/EditUserPassword";
-import { Entity } from "pages/Entity";
-import { EntityHistory } from "pages/EntityHistory";
-import { EntryList } from "pages/EntryList";
-import { Group } from "pages/Group";
-import { ImportEntity } from "pages/ImportEntity";
-import { ImportEntry } from "pages/ImportEntry";
-import { ImportGroup } from "pages/ImportGroup";
-import { ImportUser } from "pages/ImportUser";
-import { Job } from "pages/Job";
-import { Login } from "pages/Login";
-import { Search } from "pages/Search";
-import { ShowEntry } from "pages/ShowEntry";
-import { ShowEntryHistory } from "pages/ShowEntryHistory";
-import { User } from "pages/User";
+import { ACLPage } from "pages/ACLPage";
+import { AdvancedSearchPage } from "pages/AdvancedSearchPage";
+import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";
+import { DashboardPage } from "pages/DashboardPage";
+import { EditEntityPage } from "pages/EditEntityPage";
+import { EditEntryPage } from "pages/EditEntryPage";
+import { EditGroupPage } from "pages/EditGroupPage";
+import { EditUserPage } from "pages/EditUserPage";
+import { EditUserPasswordPage } from "pages/EditUserPasswordPage";
+import { EntityHistoryPage } from "pages/EntityHistoryPage";
+import { EntityPage } from "pages/EntityPage";
+import { EntryListPage } from "pages/EntryListPage";
+import { GroupPage } from "pages/GroupPage";
+import { ImportEntityPage } from "pages/ImportEntityPage";
+import { ImportEntryPage } from "pages/ImportEntryPage";
+import { ImportGroupPage } from "pages/ImportGroupPage";
+import { ImportUserPage } from "pages/ImportUserPage";
+import { JobPage } from "pages/JobPage";
+import { LoginPage } from "pages/LoginPage";
+import { SearchPage } from "pages/SearchPage";
+import { ShowEntryHistoryPage } from "pages/ShowEntryHistoryPage";
+import { ShowEntryPage } from "pages/ShowEntryPage";
+import { UserPage } from "pages/UserPage";
 
 interface Props {
   customRoutes?: {
     path: string;
-    component: FC;
+    routePath: string;
+    component?: FC;
+    render?: any;
   }[];
 }
 
@@ -68,63 +70,71 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
   return (
     <Router>
       <Switch>
-        <Route path={loginPath()} component={Login} />
+        <Route path={loginPath()} component={LoginPage} />
         <Route path="/">
           <Header />
           <Switch>
             {customRoutes &&
               customRoutes.map((r) => (
-                <Route key={r.path} path={r.path} component={r.component} />
+                <Route key={r.path} path={r.path}>
+                  <Switch>
+                    <Route
+                      path={r.routePath}
+                      component={r.component}
+                      render={r.render}
+                    />
+                  </Switch>
+                </Route>
               ))}
 
-            <Route path={advancedSearchPath()} component={AdvancedSearch} />
+            <Route path={advancedSearchPath()} component={AdvancedSearchPage} />
             <Route
               path={advancedSearchResultPath()}
-              component={AdvancedSearchResults}
+              component={AdvancedSearchResultsPage}
             />
-            <Route path={newEntryPath(":entityId")} component={EditEntry} />
-            <Route path={showEntryPath(":entryId")} component={ShowEntry} />
+            <Route path={newEntryPath(":entityId")} component={EditEntryPage} />
+            <Route path={showEntryPath(":entryId")} component={ShowEntryPage} />
             <Route
               path={entryDetailsPath(":entryId")}
               component={EntryDetailsPage}
             />
             <Route
               path={importEntriesPath(":entityId")}
-              component={ImportEntry}
+              component={ImportEntryPage}
             />
             <Route
               path={showEntryHistoryPath(":entryId")}
-              component={ShowEntryHistory}
+              component={ShowEntryHistoryPage}
             />
-            <Route path={entryPath(":entryId")} component={EditEntry} />
+            <Route path={entryPath(":entryId")} component={EditEntryPage} />
             <Route
               path={entityEntriesPath(":entityId")}
-              component={EntryList}
+              component={EntryListPage}
             />
             <Route
               path={entityHistoryPath(":entityId")}
-              component={EntityHistory}
+              component={EntityHistoryPage}
             />
-            <Route path={newEntityPath()} component={EditEntity} />
-            <Route path={importEntitiesPath()} component={ImportEntity} />
-            <Route path={entityPath(":entityId")} component={EditEntity} />
-            <Route path={entitiesPath()} component={Entity} />
-            <Route path={newGroupPath()} component={EditGroup} />
-            <Route path={importGroupsPath()} component={ImportGroup} />
-            <Route path={groupPath(":groupId")} component={EditGroup} />
-            <Route path={groupsPath()} component={Group} />
-            <Route path={jobsPath()} component={Job} />
-            <Route path={aclPath(":objectId")} component={ACL} />
-            <Route path={searchPath()} component={Search} />
-            <Route path={newUserPath()} component={EditUser} />
-            <Route path={importUsersPath()} component={ImportUser} />
+            <Route path={newEntityPath()} component={EditEntityPage} />
+            <Route path={importEntitiesPath()} component={ImportEntityPage} />
+            <Route path={entityPath(":entityId")} component={EditEntityPage} />
+            <Route path={entitiesPath()} component={EntityPage} />
+            <Route path={newGroupPath()} component={EditGroupPage} />
+            <Route path={importGroupsPath()} component={ImportGroupPage} />
+            <Route path={groupPath(":groupId")} component={EditGroupPage} />
+            <Route path={groupsPath()} component={GroupPage} />
+            <Route path={jobsPath()} component={JobPage} />
+            <Route path={aclPath(":objectId")} component={ACLPage} />
+            <Route path={searchPath()} component={SearchPage} />
+            <Route path={newUserPath()} component={EditUserPage} />
+            <Route path={importUsersPath()} component={ImportUserPage} />
             <Route
               path={passwordPath(":userId")}
-              component={EditUserPassword}
+              component={EditUserPasswordPage}
             />
-            <Route path={userPath(":userId")} component={EditUser} />
-            <Route path={usersPath()} component={User} />
-            <Route path="/" component={Dashboard} />
+            <Route path={userPath(":userId")} component={EditUserPage} />
+            <Route path={usersPath()} component={UserPage} />
+            <Route path="/" component={DashboardPage} />
           </Switch>
         </Route>
       </Switch>

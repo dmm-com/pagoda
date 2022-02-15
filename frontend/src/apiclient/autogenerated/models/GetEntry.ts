@@ -33,16 +33,16 @@ export interface GetEntry {
   name: string;
   /**
    *
-   * @type {string}
+   * @type {{ [key: string]: any; }}
    * @memberof GetEntry
    */
-  readonly schema: string;
+  readonly schema: { [key: string]: any };
   /**
    *
-   * @type {string}
+   * @type {{ [key: string]: any; }}
    * @memberof GetEntry
    */
-  readonly attrs: string;
+  readonly attrs: { [key: string]: any };
 }
 
 export function GetEntryFromJSON(json: any): GetEntry {

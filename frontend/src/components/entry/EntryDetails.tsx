@@ -1,8 +1,8 @@
 import { Grid } from "@mui/material";
 import React, { FC } from "react";
 
-import { EntryAttributes } from "./EntryAttributes";
-import { EntryReferral } from "./EntryReferral";
+import { EntryAttributes } from "components/entry/EntryAttributes";
+import { EntryReferral } from "components/entry/EntryReferral";
 
 interface Props {
   entry: any;
