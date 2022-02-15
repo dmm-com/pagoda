@@ -25,8 +25,6 @@ import { Loading } from "../components/common/Loading";
 import { EntryList as Entry } from "../components/entry/EntryList";
 import { getEntries, getEntity, exportEntries } from "../utils/AironeAPIClient";
 
-import { Divider } from "components/common/Divider";
-
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
@@ -117,7 +115,8 @@ export const EntryList: FC = () => {
       </AironeBreadcrumbs>
 
       <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
-        <Box display="flex">
+        {/* NOTE: This Box component that has CSS tuning should be custom component */}
+        <Box display="flex" sx={{ borderBottom: 1, borderColor: 'gray', mb: "64px", pb: "64px"}}>
           <Box width="50px" />
           <Box flexGrow="1">
             {!entity.loading && (
@@ -144,8 +143,6 @@ export const EntryList: FC = () => {
             />
           </Box>
         </Box>
-
-        <Divider />
 
         {entries.loading ? (
           <Loading />
