@@ -116,7 +116,10 @@ export const EntryList: FC = () => {
 
       <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
         {/* NOTE: This Box component that has CSS tuning should be custom component */}
-        <Box display="flex" sx={{ borderBottom: 1, borderColor: 'gray', mb: "64px", pb: "64px"}}>
+        <Box
+          display="flex"
+          sx={{ borderBottom: 1, borderColor: "gray", mb: "64px", pb: "64px" }}
+        >
           <Box width="50px" />
           <Box flexGrow="1">
             {!entity.loading && (

@@ -16,7 +16,7 @@ export const EntryReferral: FC<Props> = ({ referredEntries }) => {
   return (
     <Box className="row" id="referred_objects">
       <Box className="col">
-        <Typography sx={{ fontSize: '16px' }}>
+        <Typography sx={{ fontSize: "16px" }}>
           関連づけられたエントリ(計{referredEntries.length})
         </Typography>
         <Input id="narrow_down_referral" placeholder="絞り込む" />

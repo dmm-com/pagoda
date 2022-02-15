@@ -3,7 +3,6 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   Box,
   Container,
-  Grid,
   IconButton,
   ListItemIcon,
   ListItemText,
@@ -26,8 +25,7 @@ import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
 import { EntryDetails } from "components/entry/EntryDetails";
-import { EntryReferral } from "components/entry/EntryReferral";
-import { deleteEntry } from "utils/AironeAPIClient";
+import { deleteEntry, getReferredEntries } from "utils/AironeAPIClient";
 
 interface EntryControlProps {
   entryId: number;
@@ -91,6 +89,12 @@ export const EntryDetailsPage: FC = () => {
     return await aironeApiClientV2.getEntry(entryId);
   });
 
+  const referredEntries = useAsync(async () => {
+    const resp = await getReferredEntries(entryId);
+    const data = await resp.json();
+    return data.entries;
+  });
+
   return (
     <Box>
       <AironeBreadcrumbs>
@@ -141,19 +145,13 @@ export const EntryDetailsPage: FC = () => {
             />
           </Box>
         </Box>
-
-        {/* TODO */}
-        <EntryDetails entry={entry.value} />
       </Container>
-
-      <Grid container sx={{ borderTop: 1, borderColor: "gray" }}>
-        <Grid item xs={2.4} sx={{ px: '16px', py: '64px', borderRight: 1, borderColor: "gray", minHeight: 500 }}>
-          <EntryReferral referredEntries={[]} />
-        </Grid>
-        <Grid item xs={9.6}>
-          項目一覧
-        </Grid>
-      </Grid>
+      {!entry.loading && !referredEntries.loading && (
+        <EntryDetails
+          entry={entry.value}
+          referredEntries={referredEntries.value}
+        />
+      )}
     </Box>
   );
 };
