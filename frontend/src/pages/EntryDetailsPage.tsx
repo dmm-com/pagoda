@@ -26,6 +26,7 @@ import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
 import { EntryDetails } from "components/entry/EntryDetails";
+import { EntryReferral } from "components/entry/EntryReferral";
 import { deleteEntry } from "utils/AironeAPIClient";
 
 interface EntryControlProps {
@@ -146,8 +147,8 @@ export const EntryDetailsPage: FC = () => {
       </Container>
 
       <Grid container sx={{ borderTop: 1, borderColor: "gray" }}>
-        <Grid item xs={2.4} sx={{ borderRight: 1, borderColor: "gray", minHeight: 500 }}>
-          関連づけられたエントリ
+        <Grid item xs={2.4} sx={{ px: '16px', py: '64px', borderRight: 1, borderColor: "gray", minHeight: 500 }}>
+          <EntryReferral referredEntries={[]} />
         </Grid>
         <Grid item xs={9.6}>
           項目一覧
