@@ -96,7 +96,7 @@ export const EntryDetailsPage: FC = () => {
   });
 
   return (
-    <Box>
+    <Box display="flex" flexDirection="column" flexGrow="1">
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
@@ -117,7 +117,7 @@ export const EntryDetailsPage: FC = () => {
         )}
       </AironeBreadcrumbs>
 
-      <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
+      <Container maxWidth="lg" sx={{ my: "112px" }}>
         <Box display="flex">
           <Box width="50px" />
           <Box flexGrow="1">

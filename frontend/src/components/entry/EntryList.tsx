@@ -27,7 +27,7 @@ import {
   entryPath,
   newEntryPath,
   showEntryHistoryPath,
-  showEntryPath,
+  entryDetailsPath,
 } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { deleteEntry, restoreEntry } from "utils/AironeAPIClient";
@@ -204,7 +204,7 @@ export const EntryList: FC<Props> = ({
                   title={
                     <CardActionArea
                       component={Link}
-                      to={showEntryPath(entry.id)}
+                      to={entryDetailsPath(entry.id)}
                     >
                       <Typography variant="h6">{entry.name}</Typography>
                     </CardActionArea>
