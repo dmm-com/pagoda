@@ -103,8 +103,7 @@ export const EntryListPage: FC<EntryListProps> = ({
 
   const entries = useAsync(async () => {
     const resp = await getEntries(entityId, true);
-    const data = await resp.json();
-    return data.results;
+    return await resp.json();
   });
 
   return (

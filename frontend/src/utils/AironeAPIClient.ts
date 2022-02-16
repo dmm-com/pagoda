@@ -61,9 +61,7 @@ export function getEntries(
   isActive = true
 ): Promise<Response> {
   const isActiveParam = isActive ? "True" : "False";
-  return fetch(
-    `/entry/api/v2/entries/${entityId}?is_active=${isActiveParam}`
-  );
+  return fetch(`/entry/api/v2/entries/${entityId}?is_active=${isActiveParam}`);
 }
 
 export function getAttrReferrals(attr_id) {
