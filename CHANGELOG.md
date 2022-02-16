@@ -10,6 +10,7 @@
 ### Fixed
 * Fixed problems that changing values for group won't be shown correctly
   in the changing entry's attribute page
+* Fixed problem to return attribute information that has already been deleted
 
 ## v3.5.0
 
