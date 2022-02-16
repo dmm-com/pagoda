@@ -302,3 +302,23 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp_data), 1)
         self.assertEqual(resp_data[0]['id'], ref_entry1.id)
         self.assertEqual(resp_data[0]['name'], ref_entry1.name)
+
+    def test_entry_after_entity_attr_was_deleted(self):
+        user = self.guest_login()
+
+        # create Entities, Entries and Group for using this test case
+        entity = self.create_entity(**{
+            'user': user,
+            'name': 'test-entity',
+            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        })
+        entry = self.add_entry(user, 'Entry', entity)
+
+        # delete EntityAttr, then check it won't be returned in response
+        entity.attrs.get(name='val', is_active=True).delete()
+
+        resp = self.client.get('/entry/api/v2/%d' % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(sorted(resp.json()['attrs'].keys()),
+                         sorted(['ref', 'name', 'bool', 'date', 'group', 'groups', 'text', 'vals',
+                                 'refs', 'names']))
