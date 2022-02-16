@@ -92,7 +92,7 @@ class GetEntrySerializer(serializers.ModelSerializer):
                     'value': get_attr_value(x),
                     'schema_id': x.schema.id,
                 }
-                for x in obj.attrs.filter(is_active=True)}
+                for x in obj.attrs.filter(is_active=True, schema__is_active=True)}
 
 
 class GetEntrySimpleSerializer(serializers.ModelSerializer):
