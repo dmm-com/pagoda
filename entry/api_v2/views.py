@@ -6,8 +6,17 @@ from entry.models import AttributeValue, Entry
 
 
 class entryAPI(viewsets.ReadOnlyModelViewSet):
-    queryset = Entry.objects.filter(is_active=True)
     serializer_class = GetEntrySerializer
+    ordering_fields = ['name']
+
+    def get_queryset(self):
+        is_active = self.request.GET.get('is_active', 'true').lower() == 'true'
+
+        if 'entity_id' in self.kwargs:
+            return Entry.objects.filter(is_active=is_active,
+                                        schema__id=self.kwargs['entity_id'])
+        else:
+            return Entry.objects.filter(is_active=is_active)
 
 
 class searchAPI(viewsets.ReadOnlyModelViewSet):

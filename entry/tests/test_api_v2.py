@@ -302,3 +302,34 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp_data), 1)
         self.assertEqual(resp_data[0]['id'], ref_entry1.id)
         self.assertEqual(resp_data[0]['name'], ref_entry1.name)
+
+    def test_get_entries_of_specific_entity(self):
+        user = self.guest_login()
+
+        # Create Entities and Entries for using this test-case
+        entities = [self.create_entity(user, 'E-%d' % x) for x in range(2)]
+        for index in range(3):
+            self.add_entry(user, 'e-%d' % index, entities[0])
+
+        # Create an Entry that is related with another Entity "E-1"
+        self.add_entry(user, 'spare-entry', entities[0])
+
+        # This expects to return only Entries that is related with Entity "E-0"
+        resp = self.client.get('/entry/api/v2/entries/%d' % entities[0].id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(sorted([x['name'] for x in resp.json()['results']]),
+                         sorted(['e-0', 'e-1', 'e-2']))
+
+    def test_get_deleted_entries_of_specific_entity(self):
+        user = self.guest_login()
+
+        # Create an Entity and Entry, then delete it
+        entity = self.create_entity(user, 'Entity')
+        entry = self.add_entry(user, 'deleted-entry', entity)
+        entry.delete()
+
+        # Check this respond deleted entry
+        resp = self.client.get('/entry/api/v2/entries/%d?is_active=False' % entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()['count'], 1)
+        self.assertIn('deleted-entry', resp.json()['results'][0]['name'])

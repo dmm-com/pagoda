@@ -62,7 +62,7 @@ export function getEntries(
 ): Promise<Response> {
   const isActiveParam = isActive ? "True" : "False";
   return fetch(
-    `/entry/api/v1/get_entries/${entityId}?is_active=${isActiveParam}`
+    `/entry/api/v2/entries/${entityId}?is_active=${isActiveParam}`
   );
 }
 
