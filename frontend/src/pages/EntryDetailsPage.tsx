@@ -1,13 +1,16 @@
 import AppsIcon from "@mui/icons-material/Apps";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   Box,
+  Chip,
   Container,
   IconButton,
   ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
+  Stack,
   Typography,
 } from "@mui/material";
 import React, { FC, useState } from "react";
@@ -146,6 +149,10 @@ export const EntryDetailsPage: FC = () => {
           </Box>
         </Box>
       </Container>
+      <Stack direction="row" spacing={1}>
+        <Chip icon={<ArrowDropDownIcon />} label="With Icon" />
+      </Stack>
+
       {!entry.loading && !referredEntries.loading && (
         <EntryDetails
           entry={entry.value}

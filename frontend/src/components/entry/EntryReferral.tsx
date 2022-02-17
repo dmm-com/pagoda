@@ -23,13 +23,13 @@ interface Props {
 export const EntryReferral: FC<Props> = ({ referredEntries }) => {
   const [keyword, setKeyword] = useState("");
   const matchedEntries = referredEntries.filter((e) =>
-    e.name.toLowerCase().includes(keyword.toLowerCase());
+    e.name.toLowerCase().includes(keyword.toLowerCase())
   );
 
   return (
-    <Box className="row" id="referred_objects">
-      <Box className="col">
-        <Typography sx={{ fontSize: "16px" }}>
+    <Box>
+      <Box px="16px">
+        <Typography sx={{ fontSize: "16px", fontWeight: "Medium", pb: "16px" }}>
           関連づけられたエントリ(計{matchedEntries.length})
         </Typography>
         <SearchBox
@@ -39,21 +39,16 @@ export const EntryReferral: FC<Props> = ({ referredEntries }) => {
             setKeyword(e.target.value);
           }}
         />
-        <Box className="list-group" id="referral_entries">
-          <List>
-            {matchedEntries.map((entry) => (
-              <ListItem key={entry.id} disablePadding>
-                <ListItemButton
-                  component={Link}
-                  to={entryDetailsPath(entry.id)}
-                >
-                  <ListItemText>{entry.name}</ListItemText>
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        </Box>
       </Box>
+      <List sx={{ py: "32px" }}>
+        {matchedEntries.map((entry) => (
+          <ListItem key={entry.id} divider={true} disablePadding>
+            <ListItemButton component={Link} to={entryDetailsPath(entry.id)}>
+              <ListItemText sx={{ px: "16px" }}>{entry.name}</ListItemText>
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
     </Box>
   );
 };

@@ -21,7 +21,6 @@ export const EntryDetails: FC<Props> = ({ entry, referredEntries }) => {
         item
         xs={1}
         sx={{
-          px: "16px",
           py: "64px",
           borderRight: 1,
           borderColor: "#0000008A",
