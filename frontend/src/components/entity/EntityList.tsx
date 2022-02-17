@@ -1,6 +1,5 @@
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Card,
@@ -10,12 +9,10 @@ import {
   Fab,
   Grid,
   IconButton,
-  InputAdornment,
   Menu,
   MenuItem,
   Pagination,
   Stack,
-  TextField,
   Theme,
   Typography,
 } from "@mui/material";
@@ -33,6 +30,7 @@ import {
   entityPath,
   newEntityPath,
 } from "Routes";
+import { SearchBox } from "components/common/SearchBox";
 import { deleteEntity } from "utils/AironeAPIClient";
 import { EntityList as ConstEntityList } from "utils/Constants";
 
@@ -133,21 +131,8 @@ export const EntityList: FC<Props> = ({ entities }) => {
       {/* This box shows search box and create button */}
       <Box display="flex" justifyContent="space-between" mb={8}>
         <Box className={classes.search} width={500}>
-          <TextField
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            variant="outlined"
-            size="small"
-            placeholder="エンティティ名で絞り込む"
-            sx={{
-              background: "#0000000B",
-            }}
-            fullWidth={true}
+          <SearchBox
+            placeholder="エンティティ名で絞り込む (hoge)"
             value={keyword}
             onChange={(e) => {
               setKeyword(e.target.value);
