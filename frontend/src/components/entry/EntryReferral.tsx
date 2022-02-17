@@ -1,8 +1,16 @@
-import { Box, Input, Typography } from "@mui/material";
-import React, { FC } from "react";
+import {
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+} from "@mui/material";
+import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { showEntryPath } from "Routes";
+import { entryDetailsPath } from "Routes";
+import { SearchBox } from "components/common/SearchBox";
 
 interface Props {
   referredEntries: {
@@ -13,23 +21,37 @@ interface Props {
 }
 
 export const EntryReferral: FC<Props> = ({ referredEntries }) => {
+  const [keyword, setKeyword] = useState("");
+  const matchedEntries = referredEntries.filter((e) =>
+    e.name.toLowerCase().includes(keyword.toLowerCase());
+  );
+
   return (
     <Box className="row" id="referred_objects">
       <Box className="col">
         <Typography sx={{ fontSize: "16px" }}>
-          関連づけられたエントリ(計{referredEntries.length})
+          関連づけられたエントリ(計{matchedEntries.length})
         </Typography>
-        <Input id="narrow_down_referral" placeholder="絞り込む" />
+        <SearchBox
+          placeholder="絞り込む"
+          value={keyword}
+          onChange={(e) => {
+            setKeyword(e.target.value);
+          }}
+        />
         <Box className="list-group" id="referral_entries">
-          {referredEntries.map((entry) => (
-            <Typography
-              key={entry.id}
-              component={Link}
-              to={showEntryPath(entry.id)}
-            >
-              {entry.name} ({entry.entity})
-            </Typography>
-          ))}
+          <List>
+            {matchedEntries.map((entry) => (
+              <ListItem key={entry.id} disablePadding>
+                <ListItemButton
+                  component={Link}
+                  to={entryDetailsPath(entry.id)}
+                >
+                  <ListItemText>{entry.name}</ListItemText>
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
         </Box>
       </Box>
     </Box>
