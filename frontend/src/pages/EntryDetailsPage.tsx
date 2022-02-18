@@ -90,13 +90,13 @@ export const EntryDetailsPage: FC = () => {
 
   const entry: any = useAsync(async () => {
     return await aironeApiClientV2.getEntry(entryId);
-  });
+  }, [entryId]);
 
   const referredEntries = useAsync(async () => {
     const resp = await getReferredEntries(entryId);
     const data = await resp.json();
     return data.entries;
-  });
+  }, [entryId]);
 
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">
