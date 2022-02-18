@@ -132,7 +132,7 @@ export const EntityList: FC<Props> = ({ entities }) => {
       <Box display="flex" justifyContent="space-between" mb={8}>
         <Box className={classes.search} width={500}>
           <SearchBox
-            placeholder="エンティティ名で絞り込む (hoge)"
+            placeholder="エンティティ名で絞り込む"
             value={keyword}
             onChange={(e) => {
               setKeyword(e.target.value);
