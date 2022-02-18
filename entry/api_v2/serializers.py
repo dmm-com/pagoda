@@ -15,8 +15,8 @@ class GetEntrySerializer(serializers.ModelSerializer):
 
     def get_schema(self, entry) -> Dict[str, Any]:
         return {
-                'id': entry.schema.id,
-                'name': entry.schema.name,
+            'id': entry.schema.id,
+            'name': entry.schema.name,
         }
 
     def get_attrs(self, obj) -> Dict[str, Any]:
