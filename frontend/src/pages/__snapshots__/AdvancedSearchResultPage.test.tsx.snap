@@ -201,16 +201,36 @@ Object {
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
-                    <a
-                      href="/new-ui/entries/undefined/show"
-                    />
+                    <ul
+                      class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
+                    >
+                      <li
+                        class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                      >
+                        <a
+                          class="MuiBox-root css-0"
+                          href="/new-ui/entries/undefined/details"
+                          sx="[object Object]"
+                        />
+                      </li>
+                    </ul>
                   </td>
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
-                    <a
-                      href="/new-ui/entries/undefined/show"
-                    />
+                    <ul
+                      class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
+                    >
+                      <li
+                        class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                      >
+                        <a
+                          class="MuiBox-root css-0"
+                          href="/new-ui/entries/undefined/details"
+                          sx="[object Object]"
+                        />
+                      </li>
+                    </ul>
                   </td>
                 </tr>
               </tbody>
@@ -515,16 +535,36 @@ Object {
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >
-                  <a
-                    href="/new-ui/entries/undefined/show"
-                  />
+                  <ul
+                    class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
+                  >
+                    <li
+                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                    >
+                      <a
+                        class="MuiBox-root css-0"
+                        href="/new-ui/entries/undefined/details"
+                        sx="[object Object]"
+                      />
+                    </li>
+                  </ul>
                 </td>
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >
-                  <a
-                    href="/new-ui/entries/undefined/show"
-                  />
+                  <ul
+                    class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
+                  >
+                    <li
+                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                    >
+                      <a
+                        class="MuiBox-root css-0"
+                        href="/new-ui/entries/undefined/details"
+                        sx="[object Object]"
+                      />
+                    </li>
+                  </ul>
                 </td>
               </tr>
             </tbody>

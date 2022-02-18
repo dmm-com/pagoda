@@ -6,8 +6,12 @@ import { Link } from "react-router-dom";
 import { groupsPath, entryDetailsPath } from "Routes";
 import { DjangoContext } from "utils/DjangoContext";
 
-const ElemBool: FC<{ attrValue: boolean }> = ({ attrValue }) => {
-  return <Checkbox checked={attrValue} disabled sx={{ p: "0px" }} />;
+const ElemBool: FC<{ attrValue: string | boolean }> = ({ attrValue }) => {
+  const checkd =
+    typeof attrValue === "string"
+      ? attrValue.toLowerCase() === "true"
+      : attrValue;
+  return <Checkbox checked={checkd} disabled sx={{ p: "0px" }} />;
 };
 
 const ElemString: FC<{ attrValue: string }> = ({ attrValue }) => {
@@ -15,7 +19,7 @@ const ElemString: FC<{ attrValue: string }> = ({ attrValue }) => {
     <Box>
       {
         // Separate line breaks with tags
-        attrValue.split("\n").map((line, key) => (
+        attrValue?.split("\n").map((line, key) => (
           <Box key={key}>{line}</Box>
         ))
       }
