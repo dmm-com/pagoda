@@ -19,6 +19,15 @@ import { useHistory } from "react-router-dom";
 import { cancelJob, rerunJob } from "../../utils/AironeAPIClient";
 import { Confirmable } from "../common/Confirmable";
 
+const JOB_STATUS = {
+  PREPARING: 1,
+  DONE: 2,
+  ERROR: 3,
+  TIMEOUT: 4,
+  PROCESSING: 5,
+  CANCELED: 6,
+};
+
 interface Job {
   id: number;
   operation: string;
@@ -107,32 +116,42 @@ export const JobList: FC<Props> = ({ jobs }) => {
               </TableCell>
               <TableCell align="right">
                 <List>
-                  <ListItem>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      className={classes.button}
-                      onClick={() => handleRerun(job.id)}
-                    >
-                      Re-run
-                    </Button>
-                  </ListItem>
-                  <ListItem>
-                    <Confirmable
-                      componentGenerator={(handleOpen) => (
-                        <Button
-                          variant="contained"
-                          color="secondary"
-                          className={classes.button}
-                          onClick={handleOpen}
-                        >
-                          Cancel
-                        </Button>
-                      )}
-                      dialogTitle="本当にキャンセルしますか？"
-                      onClickYes={() => cancelJob(job.id)}
-                    />
-                  </ListItem>
+                  {![
+                    JOB_STATUS.DONE,
+                    JOB_STATUS.PROCESSING,
+                    JOB_STATUS.CANCELED,
+                  ].includes(job.status) && (
+                    <ListItem>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        className={classes.button}
+                        onClick={() => handleRerun(job.id)}
+                      >
+                        Re-run
+                      </Button>
+                    </ListItem>
+                  )}
+                  {![JOB_STATUS.DONE, JOB_STATUS.CANCELED].includes(
+                    job.status
+                  ) && (
+                    <ListItem>
+                      <Confirmable
+                        componentGenerator={(handleOpen) => (
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            className={classes.button}
+                            onClick={handleOpen}
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                        dialogTitle="本当にキャンセルしますか？"
+                        onClickYes={() => handleCancel(job.id)}
+                      />
+                    </ListItem>
+                  )}
                 </List>
               </TableCell>
             </TableRow>
