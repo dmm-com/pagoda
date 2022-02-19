@@ -183,7 +183,7 @@ Object {
                   <p
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                   >
-                    1
+                    処理前
                   </p>
                 </td>
                 <td
@@ -282,7 +282,7 @@ Object {
                   <p
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                   >
-                    2
+                    完了
                   </p>
                 </td>
                 <td
@@ -318,40 +318,7 @@ Object {
                 >
                   <ul
                     class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
-                  >
-                    <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
-                    >
-                      <button
-                        class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
-                        tabindex="0"
-                        type="button"
-                      >
-                        Re-run
-                        <span
-                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                        />
-                      </button>
-                    </li>
-                    <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
-                    >
-                      <div
-                        class="MuiBox-root css-0"
-                      >
-                        <button
-                          class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                          tabindex="0"
-                          type="button"
-                        >
-                          Cancel
-                          <span
-                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                          />
-                        </button>
-                      </div>
-                    </li>
-                  </ul>
+                  />
                 </td>
               </tr>
             </tbody>
@@ -539,7 +506,7 @@ Object {
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                 >
-                  1
+                  処理前
                 </p>
               </td>
               <td
@@ -638,7 +605,7 @@ Object {
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                 >
-                  2
+                  完了
                 </p>
               </td>
               <td
@@ -674,40 +641,7 @@ Object {
               >
                 <ul
                   class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
-                >
-                  <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
-                  >
-                    <button
-                      class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
-                      tabindex="0"
-                      type="button"
-                    >
-                      Re-run
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
-                    </button>
-                  </li>
-                  <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
-                  >
-                    <div
-                      class="MuiBox-root css-0"
-                    >
-                      <button
-                        class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                        tabindex="0"
-                        type="button"
-                      >
-                        Cancel
-                        <span
-                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                        />
-                      </button>
-                    </div>
-                  </li>
-                </ul>
+                />
               </td>
             </tr>
           </tbody>
