@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+import { Loading } from "../components/common/Loading";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -41,7 +42,7 @@ export const EditEntityPage: FC = () => {
         {/* TODO consider loading case */}
         {!entity.loading && (
           <Typography component={Link} to={entityEntriesPath(entityId)}>
-            {entity.value.name}
+            {entity?.value?.name ?? ""}
           </Typography>
         )}
         <Typography color="textPrimary">エンティティ編集</Typography>
@@ -53,7 +54,9 @@ export const EditEntityPage: FC = () => {
       </Tabs>
 
       <Box hidden={tabValue !== 0}>
-        {!entity.loading && !referralEntities.loading && (
+        {entity.loading || referralEntities.loading ? (
+          <Loading />
+        ) : (
           <EntityForm
             entity={entity.value}
             referralEntities={referralEntities.value}
