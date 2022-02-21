@@ -7,17 +7,25 @@ from typing import Any, Dict
 
 class GetEntrySerializer(serializers.ModelSerializer):
     schema = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Entry
+        fields = ('id', 'name', 'schema')
+
+    def get_schema(self, entry) -> Dict[str, Any]:
+        return {
+            'id': entry.schema.id,
+            'name': entry.schema.name,
+        }
+
+
+class GetEntryWithAttrSerializer(GetEntrySerializer):
+    schema = serializers.SerializerMethodField()
     attrs = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
         fields = ('id', 'name', 'schema', 'attrs')
-
-    def get_schema(self, entry) -> Dict[str, Any]:
-        return {
-                'id': entry.schema.id,
-                'name': entry.schema.name,
-        }
 
     def get_attrs(self, obj) -> Dict[str, Any]:
         def get_attr_value(attr):

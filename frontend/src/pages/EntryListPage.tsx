@@ -20,12 +20,12 @@ import {
   entityPath,
   importEntriesPath,
   topPath,
-} from "../Routes";
-import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
-import { Loading } from "../components/common/Loading";
-import { EntryList as Entry } from "../components/entry/EntryList";
-import { getEntries, exportEntries } from "../utils/AironeAPIClient";
+} from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Loading } from "components/common/Loading";
+import { EntryList as Entry } from "components/entry/EntryList";
+import { getEntries, exportEntries } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -103,8 +103,7 @@ export const EntryListPage: FC<EntryListProps> = ({
 
   const entries = useAsync(async () => {
     const resp = await getEntries(entityId, true);
-    const data = await resp.json();
-    return data.results;
+    return await resp.json();
   });
 
   return (

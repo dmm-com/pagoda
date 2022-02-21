@@ -1,13 +1,34 @@
 from rest_framework import viewsets
+from rest_framework.exceptions import NotAcceptable
 from django.db.models import Q
 
-from entry.api_v2.serializers import GetEntrySerializer, GetEntrySimpleSerializer
+from entry.api_v2.serializers import GetEntrySerializer
+from entry.api_v2.serializers import GetEntrySimpleSerializer
+from entry.api_v2.serializers import GetEntryWithAttrSerializer
 from entry.models import AttributeValue, Entry
 
 
 class entryAPI(viewsets.ReadOnlyModelViewSet):
-    queryset = Entry.objects.filter(is_active=True)
     serializer_class = GetEntrySerializer
+    ordering_fields = ['name']
+
+    def get_queryset(self):
+        is_active = self.request.GET.get('is_active', 'true').lower() == 'true'
+
+        if 'entity_id' in self.kwargs:
+            return Entry.objects.filter(is_active=is_active,
+                                        schema__id=self.kwargs['entity_id'])
+        else:
+            return NotAcceptable()
+
+
+class entryWithAttrAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = GetEntryWithAttrSerializer
+    ordering_fields = ['name']
+
+    def get_queryset(self):
+        is_active = self.request.GET.get('is_active', 'true').lower() == 'true'
+        return Entry.objects.filter(is_active=is_active)
 
 
 class searchAPI(viewsets.ReadOnlyModelViewSet):
