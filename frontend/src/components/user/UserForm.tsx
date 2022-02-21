@@ -3,7 +3,6 @@ import {
   Button,
   Checkbox,
   Input,
-  Link,
   Table,
   TableBody,
   TableCell,
@@ -73,8 +72,9 @@ export const UserForm: FC<Props> = ({ user }) => {
     event.preventDefault();
   };
 
-  const handleRefreshAccessToken = () => {
-    refreshAccessToken().then(() => history.go(0));
+  const handleRefreshAccessToken = async () => {
+    await refreshAccessToken();
+    history.go(0);
   };
 
   return (
@@ -163,12 +163,11 @@ export const UserForm: FC<Props> = ({ user }) => {
                     <Typography>AccessToken</Typography>
                   </TableCell>
                   <TableCell>
-                    <Link id="access_token">{user.token}</Link>
+                    <Typography>{user.token}</Typography>
                     <Button
-                      type="button"
-                      id="refresh_token"
-                      className="btn btn-primary btn-sm"
-                      onChange={handleRefreshAccessToken}
+                      variant="contained"
+                      color="secondary"
+                      onClick={handleRefreshAccessToken}
                     >
                       Refresh
                     </Button>

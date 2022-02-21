@@ -339,7 +339,7 @@ export function downloadExportedUsers(filename: string): Promise<void> {
 
 // FIXME implement V2 API
 export function refreshAccessToken(): Promise<Response> {
-  return fetch("/api/v1/user/access_token/", {
+  return fetch("/api/v1/user/access_token", {
     method: "PUT",
     headers: {
       "X-CSRFToken": getCsrfToken(),
