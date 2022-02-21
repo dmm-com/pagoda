@@ -319,6 +319,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(sorted([x['name'] for x in resp.json()]),
                          sorted(['e-0', 'e-1', 'e-2']))
+        self.assertTrue(all([sorted(['id', 'name', 'schema']) == sorted(x.keys())
+                             for x in resp.json()]))
 
     def test_get_deleted_entries_of_specific_entity(self):
         user = self.guest_login()
