@@ -3,19 +3,23 @@ import * as React from "react";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { groupsPath, showEntryPath } from "Routes";
+import { groupsPath, entryDetailsPath } from "Routes";
 import { DjangoContext } from "utils/DjangoContext";
 
-const ElemBool: FC<{ attrValue: boolean }> = ({ attrValue }) => {
-  return <Checkbox checked={attrValue} disabled sx={{ p: "0px" }} />;
+const ElemBool: FC<{ attrValue: string | boolean }> = ({ attrValue }) => {
+  const checkd =
+    typeof attrValue === "string"
+      ? attrValue.toLowerCase() === "true"
+      : attrValue;
+  return <Checkbox checked={checkd} disabled sx={{ p: "0px" }} />;
 };
 
 const ElemString: FC<{ attrValue: string }> = ({ attrValue }) => {
   return (
     <Box>
       {
-        // covert new line to br tag
-        attrValue.split("\n").map((line, key) => (
+        // Separate line breaks with tags
+        attrValue?.split("\n").map((line, key) => (
           <Box key={key}>{line}</Box>
         ))
       }
@@ -27,7 +31,7 @@ const ElemObject: FC<{ attrValue: { id: number; name: string } }> = ({
   attrValue,
 }) => {
   return (
-    <Box component={Link} to={showEntryPath(attrValue.id)}>
+    <Box component={Link} to={entryDetailsPath(attrValue.id)}>
       {attrValue.name}
     </Box>
   );
@@ -38,7 +42,7 @@ const ElemNamedObject: FC<{ attrValue: any }> = ({ attrValue }) => {
   return (
     <Box display="flex">
       <Box>{key}: </Box>
-      <Box component={Link} to={showEntryPath(attrValue[key].id)}>
+      <Box component={Link} to={entryDetailsPath(attrValue[key].id)}>
         {attrValue[key].name}
       </Box>
     </Box>
@@ -67,7 +71,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
     case djangoContext.attrTypeValue.object:
       return (
         <List>
-          <ListItem sx={{ py: "4px" }}>
+          <ListItem>
             <ElemObject attrValue={attrInfo.value} />
           </ListItem>
         </List>
@@ -78,7 +82,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
     case djangoContext.attrTypeValue.date:
       return (
         <List>
-          <ListItem sx={{ py: "4px" }}>
+          <ListItem>
             <ElemString attrValue={attrInfo.value} />
           </ListItem>
         </List>
@@ -87,7 +91,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
     case djangoContext.attrTypeValue.boolean:
       return (
         <List>
-          <ListItem sx={{ py: "4px" }}>
+          <ListItem>
             <ElemBool attrValue={attrInfo.value} />
           </ListItem>
         </List>
@@ -96,7 +100,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
     case djangoContext.attrTypeValue.named_object:
       return (
         <List>
-          <ListItem sx={{ py: "4px" }}>
+          <ListItem>
             <ElemNamedObject attrValue={attrInfo.value} />
           </ListItem>
         </List>
@@ -105,7 +109,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
     case djangoContext.attrTypeValue.group:
       return (
         <List>
-          <ListItem sx={{ py: "4px" }}>
+          <ListItem>
             <ElemGroup attrValue={attrInfo.value} />
           </ListItem>
         </List>
@@ -115,7 +119,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       return (
         <List>
           {attrInfo.value.map((info, n) => (
-            <ListItem key={n} sx={{ py: "4px" }}>
+            <ListItem key={n}>
               <ElemObject attrValue={info} />
             </ListItem>
           ))}
@@ -126,7 +130,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       return (
         <List>
           {attrInfo.value.map((info, n) => (
-            <ListItem key={n} sx={{ py: "4px" }}>
+            <ListItem key={n}>
               <ElemString attrValue={info} />
             </ListItem>
           ))}
@@ -137,7 +141,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       return (
         <List>
           {attrInfo.value.map((info, n) => (
-            <ListItem key={n} sx={{ py: "4px" }}>
+            <ListItem key={n}>
               <ElemNamedObject attrValue={info} />
             </ListItem>
           ))}
@@ -148,7 +152,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       return (
         <List>
           {attrInfo.value.map((info, n) => (
-            <ListItem key={n} sx={{ py: "4px" }}>
+            <ListItem key={n}>
               <ElemGroup attrValue={info} />
             </ListItem>
           ))}

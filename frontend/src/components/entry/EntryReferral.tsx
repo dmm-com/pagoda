@@ -33,7 +33,7 @@ export const EntryReferral: FC<Props> = ({ referredEntries }) => {
           関連づけられたエントリ(計{matchedEntries.length})
         </Typography>
         <SearchBox
-          placeholder="絞り込む"
+          placeholder="エントリを絞り込む"
           value={keyword}
           onChange={(e) => {
             setKeyword(e.target.value);
@@ -42,7 +42,17 @@ export const EntryReferral: FC<Props> = ({ referredEntries }) => {
       </Box>
       <List sx={{ py: "32px" }}>
         {matchedEntries.map((entry) => (
-          <ListItem key={entry.id} divider={true} disablePadding>
+          <ListItem
+            key={entry.id}
+            divider={true}
+            disablePadding
+            sx={{
+              "&:first-of-type": {
+                borderTop: "1px solid",
+                borderTopColor: "divider",
+              },
+            }}
+          >
             <ListItemButton component={Link} to={entryDetailsPath(entry.id)}>
               <ListItemText sx={{ px: "16px" }}>{entry.name}</ListItemText>
             </ListItemButton>

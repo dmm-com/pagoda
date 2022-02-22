@@ -90,13 +90,13 @@ export const EntryDetailsPage: FC = () => {
 
   const entry: any = useAsync(async () => {
     return await aironeApiClientV2.getEntry(entryId);
-  });
+  }, [entryId]);
 
   const referredEntries = useAsync(async () => {
     const resp = await getReferredEntries(entryId);
     const data = await resp.json();
     return data.entries;
-  });
+  }, [entryId]);
 
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">
@@ -120,7 +120,7 @@ export const EntryDetailsPage: FC = () => {
         )}
       </AironeBreadcrumbs>
 
-      <Container maxWidth="lg" sx={{ my: "112px" }}>
+      <Container maxWidth="lg" sx={{ pt: "112px" }}>
         <Box display="flex">
           <Box width="50px" />
           <Box flexGrow="1">
@@ -149,8 +149,28 @@ export const EntryDetailsPage: FC = () => {
           </Box>
         </Box>
       </Container>
-      <Stack direction="row" spacing={1}>
-        <Chip icon={<ArrowDropDownIcon />} label="With Icon" />
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ justifyContent: "center", pt: "16px", pb: "64px" }}
+      >
+        <Chip
+          icon={<ArrowDropDownIcon />}
+          label="項目一覧"
+          clickable={true}
+          variant="outlined"
+          component={Link}
+          to="#attr_list"
+          sx={{
+            flexDirection: "row-reverse",
+            "& span": {
+              pr: "0px",
+            },
+            "& svg": {
+              pr: "8px",
+            },
+          }}
+        />
       </Stack>
 
       {!entry.loading && !referredEntries.loading && (

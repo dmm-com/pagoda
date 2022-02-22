@@ -18,11 +18,12 @@ export const SearchBox: FC<Props> = ({ placeholder, onChange, value }) => {
           </InputAdornment>
         ),
       }}
-      variant="outlined"
-      size="small"
       placeholder={placeholder}
       sx={{
         background: "#0000000B",
+        "& fieldset": {
+          borderColor: "white",
+        },
       }}
       fullWidth={true}
       value={value}
