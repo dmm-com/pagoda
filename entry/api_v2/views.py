@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.exceptions import NotAcceptable
+from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 
 from entry.api_v2.serializers import GetEntrySerializer
@@ -11,6 +12,7 @@ from entry.models import AttributeValue, Entry
 class entryAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = GetEntrySerializer
     ordering_fields = ['name']
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         is_active = self.request.GET.get('is_active', 'true').lower() == 'true'

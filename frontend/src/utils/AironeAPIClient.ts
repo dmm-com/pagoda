@@ -58,10 +58,11 @@ export function getEntrySearch(query: string): Promise<Response> {
 
 export function getEntries(
   entityId: number,
-  isActive = true
+  isActive: boolean = true,
+  pageNumber: number = 1,
 ): Promise<Response> {
   const isActiveParam = isActive ? "True" : "False";
-  return fetch(`/entry/api/v2/entries/${entityId}?is_active=${isActiveParam}`);
+  return fetch(`/entry/api/v2/entries/${entityId}?page=${pageNumber}&is_active=${isActiveParam}`);
 }
 
 export function getAttrReferrals(attr_id) {
