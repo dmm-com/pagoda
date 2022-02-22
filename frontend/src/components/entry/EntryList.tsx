@@ -1,6 +1,5 @@
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Card,
@@ -9,12 +8,10 @@ import {
   Fab,
   Grid,
   IconButton,
-  InputAdornment,
   Menu,
   MenuItem,
   Pagination,
   Stack,
-  TextField,
   Theme,
   Typography,
 } from "@mui/material";
@@ -27,9 +24,10 @@ import {
   entryPath,
   newEntryPath,
   showEntryHistoryPath,
-  showEntryPath,
+  entryDetailsPath,
 } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
+import { SearchBox } from "components/common/SearchBox";
 import { deleteEntry, restoreEntry } from "utils/AironeAPIClient";
 import { EntryList as ConstEntryList } from "utils/Constants";
 
@@ -149,22 +147,9 @@ export const EntryList: FC<Props> = ({
     <Box>
       {/* This box shows search box and create button */}
       <Box display="flex" justifyContent="space-between" mb={8}>
-        <Box className={classes.search} width={500}>
-          <TextField
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            variant="outlined"
-            size="small"
+        <Box width={500}>
+          <SearchBox
             placeholder="エントリを絞り込む"
-            sx={{
-              background: "#0000000B",
-            }}
-            fullWidth={true}
             value={keyword}
             onChange={(e) => {
               setKeyword(e.target.value);
@@ -204,7 +189,7 @@ export const EntryList: FC<Props> = ({
                   title={
                     <CardActionArea
                       component={Link}
-                      to={showEntryPath(entry.id)}
+                      to={entryDetailsPath(entry.id)}
                     >
                       <Typography variant="h6">{entry.name}</Typography>
                     </CardActionArea>

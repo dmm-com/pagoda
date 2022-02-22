@@ -1,8 +1,16 @@
-import { Box, Input, Typography } from "@mui/material";
-import React, { FC } from "react";
+import {
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+} from "@mui/material";
+import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { showEntryPath } from "Routes";
+import { entryDetailsPath } from "Routes";
+import { SearchBox } from "components/common/SearchBox";
 
 interface Props {
   referredEntries: {
@@ -13,25 +21,44 @@ interface Props {
 }
 
 export const EntryReferral: FC<Props> = ({ referredEntries }) => {
+  const [keyword, setKeyword] = useState("");
+  const matchedEntries = referredEntries.filter((e) =>
+    e.name.toLowerCase().includes(keyword.toLowerCase())
+  );
+
   return (
-    <Box className="row" id="referred_objects">
-      <Box className="col">
-        <h5 id="referral_entry_count">
-          (エントリ数：{referredEntries.length})
-        </h5>
-        <Input id="narrow_down_referral" placeholder="絞り込む" />
-        <Box className="list-group" id="referral_entries">
-          {referredEntries.map((entry) => (
-            <Typography
-              key={entry.id}
-              component={Link}
-              to={showEntryPath(entry.id)}
-            >
-              {entry.name} ({entry.entity})
-            </Typography>
-          ))}
-        </Box>
+    <Box>
+      <Box px="16px">
+        <Typography sx={{ fontSize: "16px", fontWeight: "Medium", pb: "16px" }}>
+          関連づけられたエントリ(計{matchedEntries.length})
+        </Typography>
+        <SearchBox
+          placeholder="エントリを絞り込む"
+          value={keyword}
+          onChange={(e) => {
+            setKeyword(e.target.value);
+          }}
+        />
       </Box>
+      <List sx={{ py: "32px" }}>
+        {matchedEntries.map((entry) => (
+          <ListItem
+            key={entry.id}
+            divider={true}
+            disablePadding
+            sx={{
+              "&:first-of-type": {
+                borderTop: "1px solid",
+                borderTopColor: "divider",
+              },
+            }}
+          >
+            <ListItemButton component={Link} to={entryDetailsPath(entry.id)}>
+              <ListItemText sx={{ px: "16px" }}>{entry.name}</ListItemText>
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
     </Box>
   );
 };
