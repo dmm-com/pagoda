@@ -38,8 +38,12 @@ export const EntryAttributes: FC<Props> = ({ attributes }) => {
         <TableBody>
           {Object.keys(attributes).map((attrname) => (
             <StyledTableRow key={attrname}>
-              <TableCell sx={{ width: "400px" }}>{attrname}</TableCell>
-              <TableCell sx={{ width: "750px", p: "0px" }}>
+              <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
+                {attrname}
+              </TableCell>
+              <TableCell
+                sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}
+              >
                 <AttributeValue attrInfo={attributes[attrname]} />
               </TableCell>
             </StyledTableRow>
