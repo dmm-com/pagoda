@@ -15,10 +15,11 @@ import { SearchBox } from "components/common/SearchBox";
 import { getReferredEntries } from "utils/AironeAPIClient";
 
 interface Props {
+  entityId: number;
   entryId: number;
 }
 
-export const EntryReferral: FC<Props> = ({ entryId }) => {
+export const EntryReferral: FC<Props> = ({ entityId, entryId }) => {
   const [keyword, setKeyword] = useState("");
 
   const referredEntries = useAsync(async () => {
@@ -60,7 +61,10 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
               },
             }}
           >
-            <ListItemButton component={Link} to={entryDetailsPath(entry.id)}>
+            <ListItemButton
+              component={Link}
+              to={entryDetailsPath(entityId, entry.id)}
+            >
               <ListItemText sx={{ px: "16px" }}>{entry.name}</ListItemText>
             </ListItemButton>
           </ListItem>

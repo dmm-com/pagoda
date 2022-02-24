@@ -209,7 +209,7 @@ Object {
                       >
                         <a
                           class="MuiBox-root css-0"
-                          href="/new-ui/entries/undefined/details"
+                          href="/new-ui/entities/0/entries/undefined/details"
                           sx="[object Object]"
                         />
                       </li>
@@ -226,7 +226,7 @@ Object {
                       >
                         <a
                           class="MuiBox-root css-0"
-                          href="/new-ui/entries/undefined/details"
+                          href="/new-ui/entities/0/entries/undefined/details"
                           sx="[object Object]"
                         />
                       </li>
@@ -543,7 +543,7 @@ Object {
                     >
                       <a
                         class="MuiBox-root css-0"
-                        href="/new-ui/entries/undefined/details"
+                        href="/new-ui/entities/0/entries/undefined/details"
                         sx="[object Object]"
                       />
                     </li>
@@ -560,7 +560,7 @@ Object {
                     >
                       <a
                         class="MuiBox-root css-0"
-                        href="/new-ui/entries/undefined/details"
+                        href="/new-ui/entities/0/entries/undefined/details"
                         sx="[object Object]"
                       />
                     </li>

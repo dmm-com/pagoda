@@ -238,7 +238,7 @@ Object {
                 >
                   <a
                     class="MuiListItemButton-root MuiListItemButton-gutters MuiButtonBase-root css-cvhtoe-MuiButtonBase-root-MuiListItemButton-root"
-                    href="/new-ui/entries/1/details"
+                    href="/new-ui/entities/undefined/entries/1/details"
                     tabindex="0"
                   >
                     <div
@@ -543,7 +543,7 @@ Object {
               >
                 <a
                   class="MuiListItemButton-root MuiListItemButton-gutters MuiButtonBase-root css-cvhtoe-MuiButtonBase-root-MuiListItemButton-root"
-                  href="/new-ui/entries/1/details"
+                  href="/new-ui/entities/undefined/entries/1/details"
                   tabindex="0"
                 >
                   <div

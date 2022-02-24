@@ -22,6 +22,7 @@ import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
 
 export const EntryDetailsPage: FC = () => {
+  const { entityId } = useParams<{ entityId: number }>();
   const { entryId } = useParams<{ entryId: number }>();
 
   const [entryAnchorEl, setEntryAnchorEl] =
@@ -135,7 +136,7 @@ export const EntryDetailsPage: FC = () => {
             borderColor: "#0000008A",
           }}
         >
-          <EntryReferral entryId={entryId} />
+          <EntryReferral entityId={entityId} entryId={entryId} />
         </Grid>
         <Grid item xs={4}>
           <Box p="32px">

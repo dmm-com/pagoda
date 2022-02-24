@@ -89,7 +89,9 @@ export const ShowEntryPage: FC = () => {
       </Box>
 
       <Box hidden={tabValue !== 2}>
-        {!entry.loading && <EntryReferral entryId={entryId} />}
+        {!entry.loading && (
+          <EntryReferral entityId={entry.value.schema.id} entryId={entryId} />
+        )}
       </Box>
 
       <Box hidden={tabValue !== 3}>

@@ -31,7 +31,8 @@ const ElemObject: FC<{ attrValue: { id: number; name: string } }> = ({
   attrValue,
 }) => {
   return (
-    <Box component={Link} to={entryDetailsPath(attrValue.id)}>
+    // TODO edit entityId
+    <Box component={Link} to={entryDetailsPath(0, attrValue.id)}>
       {attrValue.name}
     </Box>
   );
@@ -42,7 +43,8 @@ const ElemNamedObject: FC<{ attrValue: any }> = ({ attrValue }) => {
   return (
     <Box display="flex">
       <Box>{key}: </Box>
-      <Box component={Link} to={entryDetailsPath(attrValue[key].id)}>
+      // TODO edit entityId
+      <Box component={Link} to={entryDetailsPath(0, attrValue[key].id)}>
         {attrValue[key].name}
       </Box>
     </Box>
