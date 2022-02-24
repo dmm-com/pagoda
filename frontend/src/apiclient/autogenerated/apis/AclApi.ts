@@ -29,6 +29,7 @@ export interface AclApiV2AclsUpdateRequest {
  */
 export class AclApi extends runtime.BaseAPI {
   /**
+   *
    */
   async aclApiV2AclsRetrieveRaw(
     requestParameters: AclApiV2AclsRetrieveRequest,
@@ -78,6 +79,7 @@ export class AclApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async aclApiV2AclsRetrieve(
     requestParameters: AclApiV2AclsRetrieveRequest,
@@ -91,6 +93,7 @@ export class AclApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async aclApiV2AclsUpdateRaw(
     requestParameters: AclApiV2AclsUpdateRequest,
@@ -150,6 +153,7 @@ export class AclApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async aclApiV2AclsUpdate(
     requestParameters: AclApiV2AclsUpdateRequest,

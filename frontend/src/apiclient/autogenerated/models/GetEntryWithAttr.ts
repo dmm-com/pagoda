@@ -16,43 +16,43 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface Entry
+ * @interface GetEntryWithAttr
  */
-export interface Entry {
+export interface GetEntryWithAttr {
   /**
    *
    * @type {number}
-   * @memberof Entry
+   * @memberof GetEntryWithAttr
    */
   readonly id: number;
   /**
    *
    * @type {string}
-   * @memberof Entry
+   * @memberof GetEntryWithAttr
    */
   name: string;
   /**
    *
    * @type {{ [key: string]: any; }}
-   * @memberof Entry
+   * @memberof GetEntryWithAttr
    */
   readonly schema: { [key: string]: any };
   /**
    *
    * @type {{ [key: string]: any; }}
-   * @memberof Entry
+   * @memberof GetEntryWithAttr
    */
   readonly attrs: { [key: string]: any };
 }
 
-export function EntryFromJSON(json: any): Entry {
-  return EntryFromJSONTyped(json, false);
+export function GetEntryWithAttrFromJSON(json: any): GetEntryWithAttr {
+  return GetEntryWithAttrFromJSONTyped(json, false);
 }
 
-export function EntryFromJSONTyped(
+export function GetEntryWithAttrFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): Entry {
+): GetEntryWithAttr {
   if (json === undefined || json === null) {
     return json;
   }
@@ -64,7 +64,7 @@ export function EntryFromJSONTyped(
   };
 }
 
-export function EntryToJSON(value?: Entry | null): any {
+export function GetEntryWithAttrToJSON(value?: GetEntryWithAttr | null): any {
   if (value === undefined) {
     return undefined;
   }

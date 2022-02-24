@@ -13,48 +13,55 @@
  */
 
 import { exists, mapValues } from "../runtime";
-import { Group, GroupFromJSON, GroupFromJSONTyped, GroupToJSON } from "./Group";
+import {
+  GetEntry,
+  GetEntryFromJSON,
+  GetEntryFromJSONTyped,
+  GetEntryToJSON,
+} from "./GetEntry";
 
 /**
  *
  * @export
- * @interface PaginatedGroupList
+ * @interface PaginatedGetEntryList
  */
-export interface PaginatedGroupList {
+export interface PaginatedGetEntryList {
   /**
    *
    * @type {number}
-   * @memberof PaginatedGroupList
+   * @memberof PaginatedGetEntryList
    */
   count?: number;
   /**
    *
    * @type {string}
-   * @memberof PaginatedGroupList
+   * @memberof PaginatedGetEntryList
    */
   next?: string | null;
   /**
    *
    * @type {string}
-   * @memberof PaginatedGroupList
+   * @memberof PaginatedGetEntryList
    */
   previous?: string | null;
   /**
    *
-   * @type {Array<Group>}
-   * @memberof PaginatedGroupList
+   * @type {Array<GetEntry>}
+   * @memberof PaginatedGetEntryList
    */
-  results?: Array<Group>;
+  results?: Array<GetEntry>;
 }
 
-export function PaginatedGroupListFromJSON(json: any): PaginatedGroupList {
-  return PaginatedGroupListFromJSONTyped(json, false);
+export function PaginatedGetEntryListFromJSON(
+  json: any
+): PaginatedGetEntryList {
+  return PaginatedGetEntryListFromJSONTyped(json, false);
 }
 
-export function PaginatedGroupListFromJSONTyped(
+export function PaginatedGetEntryListFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): PaginatedGroupList {
+): PaginatedGetEntryList {
   if (json === undefined || json === null) {
     return json;
   }
@@ -64,12 +71,12 @@ export function PaginatedGroupListFromJSONTyped(
     previous: !exists(json, "previous") ? undefined : json["previous"],
     results: !exists(json, "results")
       ? undefined
-      : (json["results"] as Array<any>).map(GroupFromJSON),
+      : (json["results"] as Array<any>).map(GetEntryFromJSON),
   };
 }
 
-export function PaginatedGroupListToJSON(
-  value?: PaginatedGroupList | null
+export function PaginatedGetEntryListToJSON(
+  value?: PaginatedGetEntryList | null
 ): any {
   if (value === undefined) {
     return undefined;
@@ -84,6 +91,6 @@ export function PaginatedGroupListToJSON(
     results:
       value.results === undefined
         ? undefined
-        : (value.results as Array<any>).map(GroupToJSON),
+        : (value.results as Array<any>).map(GetEntryToJSON),
   };
 }

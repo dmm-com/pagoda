@@ -24,6 +24,7 @@ export interface EntityApiV2EntitiesRetrieveRequest {
  */
 export class EntityApi extends runtime.BaseAPI {
   /**
+   *
    */
   async entityApiV2EntitiesListRaw(
     initOverrides?: RequestInit
@@ -62,6 +63,7 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2EntitiesList(
     initOverrides?: RequestInit
@@ -71,6 +73,7 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2EntitiesRetrieveRaw(
     requestParameters: EntityApiV2EntitiesRetrieveRequest,
@@ -120,6 +123,7 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2EntitiesRetrieve(
     requestParameters: EntityApiV2EntitiesRetrieveRequest,

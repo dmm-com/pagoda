@@ -15,7 +15,7 @@ class entryAPI(viewsets.ReadOnlyModelViewSet):
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
-        is_active = self.request.GET.get('is_active', 'true').lower() == 'true'
+        is_active = self.request.query_params.get('is_active', 'true').lower() == 'true'
 
         if 'entity_id' in self.kwargs:
             return Entry.objects.filter(is_active=is_active,
@@ -29,7 +29,7 @@ class entryWithAttrAPI(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ['name']
 
     def get_queryset(self):
-        is_active = self.request.GET.get('is_active', 'true').lower() == 'true'
+        is_active = self.request.query_params.get('is_active', 'true').lower() == 'true'
         return Entry.objects.filter(is_active=is_active)
 
 

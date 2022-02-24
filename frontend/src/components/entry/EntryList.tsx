@@ -30,9 +30,10 @@ import {
   showEntryHistoryPath,
   showEntryPath,
 } from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
-import { getEntries, deleteEntry, restoreEntry } from "utils/AironeAPIClient";
+import { deleteEntry, restoreEntry } from "utils/AironeAPIClient";
 import { EntryList as ConstEntryList } from "utils/Constants";
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -112,8 +113,8 @@ export const EntryList: FC<Props> = ({
   const [page, setPage] = React.useState(1);
 
   const entries = useAsync(async () => {
-    const resp = await getEntries(entityId, true, page);
-    return await resp.json();
+    //const resp = await getEntries(entityId, true, page);
+    return await aironeApiClientV2.getEntries(entityId, page);
   }, [page]);
 
   const handleChange = (event, value) => {
