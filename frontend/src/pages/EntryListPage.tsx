@@ -158,7 +158,6 @@ export const EntryListPage: FC<EntryListProps> = ({
           <Entry
             entityId={entityId}
             entries={entries.value}
-            restoreMode={false}
             canCreateEntry={canCreateEntry}
           />
         )}

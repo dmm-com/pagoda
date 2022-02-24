@@ -10,7 +10,7 @@ import { TestWrapper } from "utils/TestWrapper";
 
 test("should render a component with essential props", function () {
   expect(() =>
-    render(<EntryList entityId={"0"} entries={[]} restoreMode={false} />, {
+    render(<EntryList entityId={"0"} entries={[]} />, {
       wrapper: TestWrapper,
     })
   ).not.toThrow();

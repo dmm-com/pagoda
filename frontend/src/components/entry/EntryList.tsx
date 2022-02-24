@@ -8,37 +8,17 @@ import {
   Fab,
   Grid,
   IconButton,
-  Menu,
-  MenuItem,
   Pagination,
   Stack,
-  Theme,
   Typography,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
-import {
-  aclPath,
-  entryPath,
-  newEntryPath,
-  showEntryHistoryPath,
-  entryDetailsPath,
-} from "Routes";
-import { Confirmable } from "components/common/Confirmable";
+import { newEntryPath, entryDetailsPath } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
-import { deleteEntry, restoreEntry } from "utils/AironeAPIClient";
+import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryList as ConstEntryList } from "utils/Constants";
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-  entryName: {
-    margin: theme.spacing(1),
-  },
-}));
 
 interface Props {
   entityId: string;
@@ -46,67 +26,14 @@ interface Props {
     id: number;
     name: string;
   }[];
-  restoreMode: boolean;
   canCreateEntry?: boolean;
 }
-
-interface EntryControlProps {
-  entryId: number;
-  anchorElem: HTMLButtonElement | null;
-  handleClose: (entryId: number) => void;
-}
-
-const EntryControlMenu: FC<EntryControlProps> = ({
-  entryId,
-  anchorElem,
-  handleClose,
-}) => {
-  const history = useHistory();
-
-  const handleDelete = async (event, entryId) => {
-    await deleteEntry(entryId), history.go(0);
-  };
-
-  return (
-    <Menu
-      id={`entityControlMenu-${entryId}`}
-      open={Boolean(anchorElem)}
-      onClose={() => handleClose(entryId)}
-      anchorEl={anchorElem}
-    >
-      <MenuItem component={Link} to={entryPath(entryId)}>
-        <Typography>編集</Typography>
-      </MenuItem>
-      <Confirmable
-        componentGenerator={(handleOpen) => (
-          <MenuItem onClick={handleOpen}>
-            <Typography>削除</Typography>
-          </MenuItem>
-        )}
-        dialogTitle="本当に削除しますか？"
-        onClickYes={(e) => handleDelete(e, entryId)}
-      />
-      {/* This is a temporary configuration until
-          Entry's edit page will be divided from showing Page */}
-      <MenuItem component={Link} to={aclPath(entryId)}>
-        <Typography>ACL 設定</Typography>
-      </MenuItem>
-      {/* This is a temporary configuration until
-          Entry's history page will be divided from showing Page */}
-      <MenuItem component={Link} to={showEntryHistoryPath(entryId)}>
-        <Typography>変更履歴</Typography>
-      </MenuItem>
-    </Menu>
-  );
-};
 
 export const EntryList: FC<Props> = ({
   entityId,
   entries,
-  restoreMode,
   canCreateEntry = true,
 }) => {
-  const classes = useStyles();
   const history = useHistory();
 
   const [keyword, setKeyword] = useState("");
@@ -114,16 +41,6 @@ export const EntryList: FC<Props> = ({
 
   const handleChange = (event, value) => {
     setPage(value);
-  };
-
-  const handleDelete = async (entryId: number) => {
-    await deleteEntry(entryId);
-    history.go(0);
-  };
-
-  const handleRestore = async (entryId: number) => {
-    await restoreEntry(entryId);
-    history.go(0);
   };
 
   // FIXME paginate and get partial entries on BE V2 API side
