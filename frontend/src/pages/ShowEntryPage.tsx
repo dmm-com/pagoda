@@ -89,9 +89,7 @@ export const ShowEntryPage: FC = () => {
       </Box>
 
       <Box hidden={tabValue !== 2}>
-        {!entry.loading && !referredEntries.loading && (
-          <EntryReferral referredEntries={referredEntries.value} />
-        )}
+        {!entry.loading && <EntryReferral entryId={entryId} />}
       </Box>
 
       <Box hidden={tabValue !== 3}>

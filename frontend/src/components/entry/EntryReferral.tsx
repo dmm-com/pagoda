@@ -8,23 +8,30 @@ import {
 } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAsync } from "react-use";
 
 import { entryDetailsPath } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
+import { getReferredEntries } from "utils/AironeAPIClient";
 
 interface Props {
-  referredEntries: {
-    id: number;
-    name: string;
-    entity: string;
-  }[];
+  entryId: number;
 }
 
-export const EntryReferral: FC<Props> = ({ referredEntries }) => {
+export const EntryReferral: FC<Props> = ({ entryId }) => {
   const [keyword, setKeyword] = useState("");
-  const matchedEntries = referredEntries.filter((e) =>
-    e.name.toLowerCase().includes(keyword.toLowerCase())
-  );
+
+  const referredEntries = useAsync(async () => {
+    const resp = await getReferredEntries(entryId);
+    const data = await resp.json();
+    return data.entries;
+  }, [entryId]);
+
+  const matchedEntries = referredEntries.loading
+    ? []
+    : referredEntries.value.filter((e) =>
+        e.name.toLowerCase().includes(keyword.toLowerCase())
+      );
 
   return (
     <Box>
