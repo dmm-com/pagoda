@@ -1,86 +1,23 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   Box,
   Chip,
   Container,
   IconButton,
-  ListItemIcon,
-  ListItemText,
-  Menu,
-  MenuItem,
   Stack,
   Typography,
 } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link, useParams, useHistory } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import {
-  aclPath,
-  entitiesPath,
-  entityEntriesPath,
-  entryPath,
-  topPath,
-} from "Routes";
+import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { Confirmable } from "components/common/Confirmable";
+import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryDetails } from "components/entry/EntryDetails";
-import { deleteEntry, getReferredEntries } from "utils/AironeAPIClient";
-
-interface EntryControlProps {
-  entryId: number;
-  anchorElem: HTMLButtonElement | null;
-  handleClose: (entryId: number) => void;
-}
-
-const EntryControlMenu: FC<EntryControlProps> = ({
-  entryId,
-  anchorElem,
-  handleClose,
-}) => {
-  const history = useHistory();
-
-  const handleDelete = async (event, entryId) => {
-    await deleteEntry(entryId);
-    history.go(0);
-  };
-
-  return (
-    <Menu
-      id={`entityControlMenu-${entryId}`}
-      open={Boolean(anchorElem)}
-      onClose={() => handleClose(entryId)}
-      anchorEl={anchorElem}
-    >
-      <Box sx={{ width: 150 }}>
-        <MenuItem component={Link} to={entryPath(entryId)}>
-          <Typography>編集</Typography>
-        </MenuItem>
-        <MenuItem>
-          <Typography>コピー</Typography>
-        </MenuItem>
-        <MenuItem component={Link} to={aclPath(entryId)}>
-          <Typography>ACL 設定</Typography>
-        </MenuItem>
-        <Confirmable
-          componentGenerator={(handleOpen) => (
-            <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>
-              <ListItemText>削除</ListItemText>
-              <ListItemIcon>
-                <DeleteOutlineIcon />
-              </ListItemIcon>
-            </MenuItem>
-          )}
-          dialogTitle="本当に削除しますか？"
-          onClickYes={(e) => handleDelete(e, entryId)}
-        />
-      </Box>
-    </Menu>
-  );
-};
+import { getReferredEntries } from "utils/AironeAPIClient";
 
 export const EntryDetailsPage: FC = () => {
   const { entryId } = useParams<{ entryId: number }>();
