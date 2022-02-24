@@ -4,20 +4,22 @@ import {
   Box,
   Chip,
   Container,
+  Grid,
   IconButton,
   Stack,
   Typography,
 } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useAsync } from "react-use";
+import { useAsync, useLocation } from "react-use";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Loading } from "components/common/Loading";
+import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
-import { EntryDetails } from "components/entry/EntryDetails";
-import { getReferredEntries } from "utils/AironeAPIClient";
+import { EntryReferral } from "components/entry/EntryReferral";
 
 export const EntryDetailsPage: FC = () => {
   const { entryId } = useParams<{ entryId: number }>();
@@ -25,14 +27,22 @@ export const EntryDetailsPage: FC = () => {
   const [entryAnchorEl, setEntryAnchorEl] =
     useState<HTMLButtonElement | null>();
 
+  const location = useLocation();
+
+  const refAttrList = React.createRef<HTMLSpanElement>();
+
+  React.useEffect(() => {
+    switch (location.hash) {
+      case "#attr_list":
+        refAttrList.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+    }
+  }, [location.hash]);
+
   const entry: any = useAsync(async () => {
     return await aironeApiClientV2.getEntry(entryId);
-  }, [entryId]);
-
-  const referredEntries = useAsync(async () => {
-    const resp = await getReferredEntries(entryId);
-    const data = await resp.json();
-    return data.entries;
   }, [entryId]);
 
   return (
@@ -110,12 +120,42 @@ export const EntryDetailsPage: FC = () => {
         />
       </Stack>
 
-      {!entry.loading && !referredEntries.loading && (
-        <EntryDetails
-          entry={entry.value}
-          referredEntries={referredEntries.value}
-        />
-      )}
+      <Grid
+        container
+        flexGrow="1"
+        columns={6}
+        sx={{ borderTop: 1, borderColor: "#0000008A" }}
+      >
+        <Grid
+          item
+          xs={1}
+          sx={{
+            py: "64px",
+            borderRight: 1,
+            borderColor: "#0000008A",
+          }}
+        >
+          <EntryReferral entryId={entryId} />
+        </Grid>
+        <Grid item xs={4}>
+          <Box p="32px">
+            <Typography
+              p="32px"
+              fontSize="32px"
+              align="center"
+              ref={refAttrList}
+            >
+              項目一覧
+            </Typography>
+            {entry.loading ? (
+              <Loading />
+            ) : (
+              <EntryAttributes attributes={entry.value.attrs} />
+            )}
+          </Box>
+        </Grid>
+        <Grid item xs={1} />
+      </Grid>
     </Box>
   );
 };

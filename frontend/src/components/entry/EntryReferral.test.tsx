@@ -9,18 +9,35 @@ import { BrowserRouter } from "react-router-dom";
 import { EntryReferral } from "components/entry/EntryReferral";
 import { TestWrapper } from "utils/TestWrapper";
 
-test("should render a component with essential props", function () {
-  const referredEntries = [
-    {
-      id: 1,
-      name: "name",
-      entity: "entity",
-    },
-  ];
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
+test("should render a component with essential props", async () => {
+  const entryId = 1;
+
+  const referredEntries = {
+    entries: [
+      {
+        id: 1,
+        name: "name",
+        entity: "entity",
+      },
+    ],
+  };
+
+  jest
+    .spyOn(require("utils/AironeAPIClient"), "getReferredEntries")
+    .mockResolvedValue({
+      json() {
+        return Promise.resolve(referredEntries);
+      },
+    });
+
   expect(() =>
     render(
       <BrowserRouter>
-        <EntryReferral referredEntries={referredEntries} />
+        <EntryReferral entryId={entryId} />
       </BrowserRouter>,
       { wrapper: TestWrapper }
     )
