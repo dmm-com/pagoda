@@ -95,7 +95,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             <Route path={newEntryPath(":entityId")} component={EditEntryPage} />
             <Route path={showEntryPath(":entryId")} component={ShowEntryPage} />
             <Route
-              path={entryDetailsPath(":entryId")}
+              path={entryDetailsPath(":entityId", ":entryId")}
               component={EntryDetailsPage}
             />
             <Route

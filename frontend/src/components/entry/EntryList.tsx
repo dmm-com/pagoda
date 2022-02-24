@@ -106,7 +106,7 @@ export const EntryList: FC<Props> = ({
                   title={
                     <CardActionArea
                       component={Link}
-                      to={entryDetailsPath(entry.id)}
+                      to={entryDetailsPath(entityId, entry.id)}
                     >
                       <Typography variant="h6">{entry.name}</Typography>
                     </CardActionArea>

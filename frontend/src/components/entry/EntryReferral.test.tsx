@@ -14,6 +14,7 @@ afterEach(() => {
 });
 
 test("should render a component with essential props", async () => {
+  const entityId = 2;
   const entryId = 1;
 
   const referredEntries = {
@@ -37,7 +38,7 @@ test("should render a component with essential props", async () => {
   expect(() =>
     render(
       <BrowserRouter>
-        <EntryReferral entryId={entryId} />
+        <EntryReferral entityId={entityId} entryId={entryId} />
       </BrowserRouter>,
       { wrapper: TestWrapper }
     )
