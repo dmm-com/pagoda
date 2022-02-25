@@ -2,7 +2,6 @@ import AppsIcon from "@mui/icons-material/Apps";
 import {
   Box,
   Container,
-  Divider,
   IconButton,
   Menu,
   MenuItem,
@@ -115,7 +114,11 @@ export const EntryListPage: FC<EntryListProps> = ({
       </AironeBreadcrumbs>
 
       <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
-        <Box display="flex">
+        {/* NOTE: This Box component that has CSS tuning should be custom component */}
+        <Box
+          display="flex"
+          sx={{ borderBottom: 1, borderColor: "gray", mb: "64px", pb: "64px" }}
+        >
           <Box width="50px" />
           <Box flexGrow="1">
             {!entity.loading && (
@@ -142,14 +145,6 @@ export const EntryListPage: FC<EntryListProps> = ({
             />
           </Box>
         </Box>
-
-        <Divider
-          sx={{
-            my: "64px",
-            height: "1px",
-            backgroundColor: "rgba(0, 0, 0, 0.12)",
-          }}
-        />
 
         {/* This describes all Entries in the rest of this page*/}
         <EntryList

@@ -46,7 +46,6 @@ it("show string type AttributeValue", () => {
   );
 
   expect(wrapper.find("ElemString").length).toEqual(1);
-  expect(wrapper.props()).toEqual({ attrValue: attrValue });
 });
 
 it("show object type AttributeValue", () => {
@@ -61,5 +60,4 @@ it("show object type AttributeValue", () => {
   );
 
   expect(wrapper.find("ElemObject").length).toEqual(1);
-  expect(wrapper.props()).toEqual({ attrValue: attrValue });
 });

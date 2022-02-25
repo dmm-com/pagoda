@@ -136,7 +136,7 @@ export const EntryPage: FC = () => {
         {entries.loading ? (
           <Loading />
         ) : (
-          <EntryList entityId={entityId} restoreMode={false} />
+          <EntryList entityId={entityId} entries={entries.value} />
         )}
       </Box>
 
@@ -144,7 +144,7 @@ export const EntryPage: FC = () => {
 
       <Box hidden={tabValue !== 3}>
         {!deletedEntries.loading && (
-          <EntryList entityId={entityId} restoreMode={true} />
+          <EntryList entityId={entityId} entries={deletedEntries.value} />
         )}
       </Box>
     </Box>
