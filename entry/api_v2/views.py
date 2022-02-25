@@ -1,6 +1,6 @@
-from rest_framework import viewsets
-from rest_framework.exceptions import NotAcceptable
+from rest_framework import viewsets, filters
 from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 
 from entry.api_v2.serializers import GetEntrySerializer
@@ -10,18 +10,15 @@ from entry.models import AttributeValue, Entry
 
 
 class entryAPI(viewsets.ReadOnlyModelViewSet):
+    queryset = Entry.objects.all()
     serializer_class = GetEntrySerializer
-    ordering_fields = ['name']
     pagination_class = PageNumberPagination
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['is_active']
+    ordering_fields = ['name']
 
     def get_queryset(self):
-        is_active = self.request.query_params.get('is_active', 'true').lower() == 'true'
-
-        if 'entity_id' in self.kwargs:
-            return Entry.objects.filter(is_active=is_active,
-                                        schema__id=self.kwargs['entity_id'])
-        else:
-            return NotAcceptable()
+        return self.queryset.filter(schema__id=self.kwargs.get('entity_id'))
 
 
 class entryWithAttrAPI(viewsets.ReadOnlyModelViewSet):

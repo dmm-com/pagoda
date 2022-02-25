@@ -27,6 +27,8 @@ import {
 
 export interface EntryApiV2EntriesListRequest {
   entityId: number;
+  isActive?: boolean;
+  ordering?: string;
   page?: number;
 }
 
@@ -56,6 +58,14 @@ export class EntryApi extends runtime.BaseAPI {
     }
 
     const queryParameters: any = {};
+
+    if (requestParameters.isActive !== undefined) {
+      queryParameters["is_active"] = requestParameters.isActive;
+    }
+
+    if (requestParameters.ordering !== undefined) {
+      queryParameters["ordering"] = requestParameters.ordering;
+    }
 
     if (requestParameters.page !== undefined) {
       queryParameters["page"] = requestParameters.page;
