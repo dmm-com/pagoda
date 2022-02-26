@@ -257,7 +257,15 @@ export function exportEntries(
   entityId: number,
   format: string
 ): Promise<Response> {
-  return fetch(`/entry/export/${entityId}?format=${format}`);
+  return fetch(`/entry/export/${entityId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      format: format,
+    }),
+  });
 }
 
 // FIXME implement internal API then call it
