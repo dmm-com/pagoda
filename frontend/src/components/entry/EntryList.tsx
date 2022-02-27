@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { newEntryPath, entryDetailsPath } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
@@ -34,8 +34,6 @@ export const EntryList: FC<Props> = ({
   entries,
   canCreateEntry = true,
 }) => {
-  const history = useHistory();
-
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = React.useState(1);
 

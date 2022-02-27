@@ -5,10 +5,8 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Theme,
   Typography,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -25,15 +23,6 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { EntryList as Entry } from "components/entry/EntryList";
 import { getEntries, exportEntries } from "utils/AironeAPIClient";
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-  entryName: {
-    margin: theme.spacing(1),
-  },
-}));
 
 interface EntityControlProps {
   entityId: number;
@@ -90,7 +79,6 @@ interface EntryListProps {
 export const EntryListPage: FC<EntryListProps> = ({
   canCreateEntry = true,
 }) => {
-  const classes = useStyles();
   const { entityId } = useParams<{ entityId: number }>();
 
   const [entityAnchorEl, setEntityAnchorEl] =

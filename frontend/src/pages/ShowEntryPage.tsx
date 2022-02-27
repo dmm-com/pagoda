@@ -12,7 +12,7 @@ import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryForm } from "components/entry/EntryForm";
 import { EntryHistory } from "components/entry/EntryHistory";
 import { EntryReferral } from "components/entry/EntryReferral";
-import { getEntryHistory, getReferredEntries } from "utils/AironeAPIClient";
+import { getEntryHistory } from "utils/AironeAPIClient";
 
 export const ShowEntryPage: FC = () => {
   const { entryId } = useParams<{ entityId: number }>();
@@ -26,12 +26,6 @@ export const ShowEntryPage: FC = () => {
 
   const entryHistory: any = useAsync(async () => {
     return await getEntryHistory(entryId);
-  });
-
-  const referredEntries = useAsync(async () => {
-    const resp = await getReferredEntries(entryId);
-    const data = await resp.json();
-    return data.entries;
   });
 
   const acl = useAsync(async () => {
