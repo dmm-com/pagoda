@@ -16,37 +16,43 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface GetEntry
+ * @interface GetEntryWithAttr
  */
-export interface GetEntry {
+export interface GetEntryWithAttr {
   /**
    *
    * @type {number}
-   * @memberof GetEntry
+   * @memberof GetEntryWithAttr
    */
   readonly id: number;
   /**
    *
    * @type {string}
-   * @memberof GetEntry
+   * @memberof GetEntryWithAttr
    */
   name: string;
   /**
    *
    * @type {{ [key: string]: any; }}
-   * @memberof GetEntry
+   * @memberof GetEntryWithAttr
    */
   readonly schema: { [key: string]: any };
+  /**
+   *
+   * @type {{ [key: string]: any; }}
+   * @memberof GetEntryWithAttr
+   */
+  readonly attrs: { [key: string]: any };
 }
 
-export function GetEntryFromJSON(json: any): GetEntry {
-  return GetEntryFromJSONTyped(json, false);
+export function GetEntryWithAttrFromJSON(json: any): GetEntryWithAttr {
+  return GetEntryWithAttrFromJSONTyped(json, false);
 }
 
-export function GetEntryFromJSONTyped(
+export function GetEntryWithAttrFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): GetEntry {
+): GetEntryWithAttr {
   if (json === undefined || json === null) {
     return json;
   }
@@ -54,10 +60,11 @@ export function GetEntryFromJSONTyped(
     id: json["id"],
     name: json["name"],
     schema: json["schema"],
+    attrs: json["attrs"],
   };
 }
 
-export function GetEntryToJSON(value?: GetEntry | null): any {
+export function GetEntryWithAttrToJSON(value?: GetEntryWithAttr | null): any {
   if (value === undefined) {
     return undefined;
   }

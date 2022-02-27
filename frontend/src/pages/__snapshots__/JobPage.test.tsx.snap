@@ -201,9 +201,7 @@ Object {
                 >
                   <p
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                  >
-                    2022-01-01 00:00:00
-                  </p>
+                  />
                 </td>
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeMedium css-177gid-MuiTableCell-root"
@@ -211,7 +209,7 @@ Object {
                   <p
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                   >
-                    note
+                    text
                   </p>
                 </td>
                 <td
@@ -310,7 +308,7 @@ Object {
                   <p
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                   >
-                    note
+                    text
                   </p>
                 </td>
                 <td
@@ -524,9 +522,7 @@ Object {
               >
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                >
-                  2022-01-01 00:00:00
-                </p>
+                />
               </td>
               <td
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-alignRight MuiTableCell-sizeMedium css-177gid-MuiTableCell-root"
@@ -534,7 +530,7 @@ Object {
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                 >
-                  note
+                  text
                 </p>
               </td>
               <td
@@ -633,7 +629,7 @@ Object {
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                 >
-                  note
+                  text
                 </p>
               </td>
               <td

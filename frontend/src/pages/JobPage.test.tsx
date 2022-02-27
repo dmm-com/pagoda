@@ -17,14 +17,14 @@ afterEach(() => {
 });
 
 test("should match snapshot", async () => {
-  const groups = [
+  const jobs = [
     {
       id: 1,
       operation: 1,
       status: 1,
-      passed_time: "2022-01-01 00:00:00",
-      created_at: "2022-01-01 00:00:00",
-      note: "note",
+      passedTime: "2022-01-01 00:00:00",
+      createdCt: "2022-01-01 00:00:00",
+      text: "text",
       target: {
         name: "target1",
       },
@@ -33,9 +33,9 @@ test("should match snapshot", async () => {
       id: 2,
       operation: 2,
       status: 2,
-      passed_time: "2022-01-01 00:00:00",
-      created_at: "2022-01-01 00:00:00",
-      note: "note",
+      passedTime: "2022-01-01 00:00:00",
+      createdAt: "2022-01-01 00:00:00",
+      text: "text",
       target: {
         name: "target2",
       },
@@ -43,11 +43,9 @@ test("should match snapshot", async () => {
   ];
 
   /* eslint-disable */
-  jest.spyOn(require("../utils/AironeAPIClient"), "getJobs").mockResolvedValue({
-    json() {
-      return Promise.resolve(groups);
-    },
-  });
+  jest
+    .spyOn(require("apiclient/AironeApiClientV2").aironeApiClientV2, "getJobs")
+    .mockResolvedValue(Promise.resolve(jobs));
   /* eslint-enable */
 
   // wait async calls and get rendered fragment

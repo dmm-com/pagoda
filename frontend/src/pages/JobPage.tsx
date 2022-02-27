@@ -4,11 +4,12 @@ import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+
 import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { JobList } from "components/job/JobList";
-import { getJobs } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -23,8 +24,7 @@ export const JobPage: FC = () => {
   const classes = useStyles();
 
   const jobs = useAsync(async () => {
-    const resp = await getJobs();
-    return await resp.json();
+    return aironeApiClientV2.getJobs();
   }, []);
 
   return (

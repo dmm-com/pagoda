@@ -20,7 +20,14 @@ import {
   GetEntrySimple,
   GetEntrySimpleFromJSON,
   GetEntrySimpleToJSON,
+  GetEntryWithAttr,
+  GetEntryWithAttrFromJSON,
+  GetEntryWithAttrToJSON,
 } from "../models";
+
+export interface EntryApiV2EntriesListRequest {
+  entityId: string;
+}
 
 export interface EntryApiV2RetrieveRequest {
   id: number;
@@ -32,10 +39,75 @@ export interface EntryApiV2RetrieveRequest {
 export class EntryApi extends runtime.BaseAPI {
   /**
    */
+  async entryApiV2EntriesListRaw(
+    requestParameters: EntryApiV2EntriesListRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<Array<GetEntry>>> {
+    if (
+      requestParameters.entityId === null ||
+      requestParameters.entityId === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "entityId",
+        "Required parameter requestParameters.entityId was null or undefined when calling entryApiV2EntriesList."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/entries/{entity_id}`.replace(
+          `{${"entity_id"}}`,
+          encodeURIComponent(String(requestParameters.entityId))
+        ),
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      jsonValue.map(GetEntryFromJSON)
+    );
+  }
+
+  /**
+   */
+  async entryApiV2EntriesList(
+    requestParameters: EntryApiV2EntriesListRequest,
+    initOverrides?: RequestInit
+  ): Promise<Array<GetEntry>> {
+    const response = await this.entryApiV2EntriesListRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
   async entryApiV2RetrieveRaw(
     requestParameters: EntryApiV2RetrieveRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<GetEntry>> {
+  ): Promise<runtime.ApiResponse<GetEntryWithAttr>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
         "id",
@@ -75,7 +147,7 @@ export class EntryApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      GetEntryFromJSON(jsonValue)
+      GetEntryWithAttrFromJSON(jsonValue)
     );
   }
 
@@ -84,7 +156,7 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2Retrieve(
     requestParameters: EntryApiV2RetrieveRequest,
     initOverrides?: RequestInit
-  ): Promise<GetEntry> {
+  ): Promise<GetEntryWithAttr> {
     const response = await this.entryApiV2RetrieveRaw(
       requestParameters,
       initOverrides

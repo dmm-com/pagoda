@@ -451,10 +451,6 @@ export function importGroups(formData: FormData): Promise<Response> {
   });
 }
 
-export function getJobs(noLimit = 0): Promise<Response> {
-  return fetch(`/job/api/v2/jobs?nolimit=${noLimit}`);
-}
-
 export function getRecentJobs(): Promise<Response> {
   return fetch(`/api/v1/job/`);
 }

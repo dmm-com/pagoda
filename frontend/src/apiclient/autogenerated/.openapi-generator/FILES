@@ -3,6 +3,7 @@ apis/ApiApi.ts
 apis/EntityApi.ts
 apis/EntryApi.ts
 apis/GroupApi.ts
+apis/JobApi.ts
 apis/WebhookApi.ts
 apis/index.ts
 index.ts
@@ -10,6 +11,9 @@ models/ACL.ts
 models/Entity.ts
 models/GetEntry.ts
 models/GetEntrySimple.ts
+models/GetEntryWithAttr.ts
 models/Group.ts
+models/Job.ts
+models/PaginatedJobList.ts
 models/index.ts
 runtime.ts
