@@ -1,6 +1,7 @@
 import React, { FC } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
+import { CopyEntryPage } from "./pages/CopyEntryPage";
 import { EntryDetailsPage } from "./pages/EntryDetailsPage";
 
 import {
@@ -31,6 +32,7 @@ import {
   showEntryHistoryPath,
   entryPath,
   entryDetailsPath,
+  copyEntryPath,
 } from "Routes";
 import { Header } from "components/Header";
 import { ACLPage } from "pages/ACLPage";
@@ -94,6 +96,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             />
             <Route path={newEntryPath(":entityId")} component={EditEntryPage} />
             <Route path={showEntryPath(":entryId")} component={ShowEntryPage} />
+            <Route path={copyEntryPath(":entryId")} component={CopyEntryPage} />
             <Route
               path={entryDetailsPath(":entityId", ":entryId")}
               component={EntryDetailsPage}
