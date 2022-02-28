@@ -5,6 +5,7 @@
 import { render } from "@testing-library/react";
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
+import { AironeAPIClient } from "utils";
 
 import { EntryReferral } from "components/entry/EntryReferral";
 import { TestWrapper } from "utils/TestWrapper";
@@ -27,13 +28,12 @@ test("should render a component with essential props", async () => {
     ],
   };
 
-  jest
-    .spyOn(require("utils/AironeAPIClient"), "getReferredEntries")
-    .mockResolvedValue({
-      json() {
-        return Promise.resolve(referredEntries);
-      },
-    });
+  // tslint:disable-next-line:no-var-requires
+  jest.spyOn(AironeAPIClient, "getReferredEntries").mockResolvedValue({
+    json() {
+      return Promise.resolve(referredEntries);
+    },
+  });
 
   expect(() =>
     render(

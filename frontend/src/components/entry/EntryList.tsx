@@ -16,19 +16,13 @@ import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import {
-  entryPath,
-  newEntryPath,
-  showEntryPath,
-} from "Routes";
+import { newEntryPath, showEntryPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
-import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
-import { deleteEntry, restoreEntry } from "utils/AironeAPIClient";
 import { EntryList as ConstEntryList } from "utils/Constants";
 
 interface Props {
-  restoreMode: boolean,
+  restoreMode: boolean;
   entityId: number;
   entries: {
     id: number;

@@ -8,7 +8,9 @@ import {
   screen,
 } from "@testing-library/react";
 import React from "react";
+import { AironeAPIClient } from "utils";
 
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { EntryDetailsPage } from "pages/EntryDetailsPage";
 import { TestWrapper } from "utils/TestWrapper";
 
@@ -37,16 +39,14 @@ test("should match snapshot", async () => {
     ],
   };
 
-  jest
-    .spyOn(require("utils/AironeAPIClient"), "getReferredEntries")
-    .mockResolvedValue({
-      json() {
-        return Promise.resolve(referredEntries);
-      },
-    });
+  jest.spyOn(AironeAPIClient, "getReferredEntries").mockResolvedValue({
+    json() {
+      return Promise.resolve(referredEntries);
+    },
+  });
 
   jest
-    .spyOn(require("apiclient/AironeApiClientV2").aironeApiClientV2, "getEntry")
+    .spyOn(aironeApiClientV2, "getGroups")
     .mockResolvedValue(Promise.resolve(entry));
 
   // wait async calls and get rendered fragment
