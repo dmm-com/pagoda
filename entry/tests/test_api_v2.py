@@ -379,10 +379,11 @@ class ViewTest(AironeViewTest):
         # This expects to return only Entries that is related with Entity "E-0"
         resp = self.client.get('/entry/api/v2/entries/%d' % entities[0].id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(sorted([x['name'] for x in resp.json()]),
+        print('[onix-test] %s' % str(resp.json()))
+        self.assertEqual(sorted([x['name'] for x in resp.json()['results']]),
                          sorted(['e-0', 'e-1', 'e-2']))
         self.assertTrue(all([sorted(['id', 'name', 'schema']) == sorted(x.keys())
-                             for x in resp.json()]))
+                             for x in resp.json()['results']]))
 
     def test_get_deleted_entries_of_specific_entity(self):
         user = self.guest_login()
@@ -395,8 +396,8 @@ class ViewTest(AironeViewTest):
         # Check this respond deleted entry
         resp = self.client.get('/entry/api/v2/entries/%d?is_active=False' % entity.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()), 1)
-        self.assertIn('deleted-entry', resp.json()[0]['name'])
+        self.assertEqual(len(resp.json()['results']), 1)
+        self.assertIn('deleted-entry', resp.json()['results'][0]['name'])
 
     def test_entry_after_entity_attr_was_deleted(self):
         user = self.guest_login()
