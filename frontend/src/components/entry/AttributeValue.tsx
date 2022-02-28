@@ -27,24 +27,40 @@ const ElemString: FC<{ attrValue: string }> = ({ attrValue }) => {
   );
 };
 
-const ElemObject: FC<{ attrValue: { id: number; name: string } }> = ({
-  attrValue,
-}) => {
+const ElemObject: FC<{
+  attrValue: {
+    id: number;
+    name: string;
+    schema?: { id: number; name: string };
+  };
+}> = ({ attrValue }) => {
   return (
-    // TODO edit entityId
-    <Box component={Link} to={entryDetailsPath(0, attrValue.id)}>
+    <Box
+      component={Link}
+      to={entryDetailsPath(attrValue.schema?.id ?? 0, attrValue.id)}
+    >
       {attrValue.name}
     </Box>
   );
 };
 
-const ElemNamedObject: FC<{ attrValue: any }> = ({ attrValue }) => {
+const ElemNamedObject: FC<{
+  attrValue: {
+    [key: string]: {
+      id: number;
+      name: string;
+      schema?: { id: number; name: string };
+    };
+  };
+}> = ({ attrValue }) => {
   const key = Object.keys(attrValue)[0];
   return (
     <Box display="flex">
       <Box>{key}: </Box>
-      // TODO edit entityId
-      <Box component={Link} to={entryDetailsPath(0, attrValue[key].id)}>
+      <Box
+        component={Link}
+        to={entryDetailsPath(attrValue[key].schema?.id ?? 0, attrValue[key].id)}
+      >
         {attrValue[key].name}
       </Box>
     </Box>

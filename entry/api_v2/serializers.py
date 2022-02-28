@@ -41,8 +41,12 @@ class GetEntryWithAttrSerializer(GetEntrySerializer):
                 elif attr.schema.type & AttrTypeValue['named']:
                     return [{
                         x.value: {
-                          'id': x.referral.id if x.referral else None,
-                          'name': x.referral.name if x.referral else '',
+                            'id': x.referral.id if x.referral else None,
+                            'name': x.referral.name if x.referral else '',
+                            'schema': {
+                                'id': x.referral.entry.schema.id,
+                                'name': x.referral.entry.schema.name,
+                            } if x.referral else {}
                         },
                     } for x in attrv.data_array.all()]
 
@@ -50,6 +54,10 @@ class GetEntryWithAttrSerializer(GetEntrySerializer):
                     return [{
                         'id': x.referral.id if x.referral else None,
                         'name': x.referral.name if x.referral else '',
+                        'schema': {
+                            'id': x.referral.entry.schema.id,
+                            'name': x.referral.entry.schema.name,
+                        } if x.referral else {}
                     } for x in attrv.data_array.all()]
 
                 elif attr.schema.type & AttrTypeValue['group']:
@@ -68,6 +76,10 @@ class GetEntryWithAttrSerializer(GetEntrySerializer):
                     attrv.value: {
                         'id': attrv.referral.id if attrv.referral else None,
                         'name': attrv.referral.name if attrv.referral else '',
+                        'schema': {
+                            'id': attrv.referral.entry.schema.id,
+                            'name': attrv.referral.entry.schema.name,
+                        } if attrv.referral else {}
                     }
                 }
 
@@ -75,6 +87,10 @@ class GetEntryWithAttrSerializer(GetEntrySerializer):
                 return {
                     'id': attrv.referral.id if attrv.referral else None,
                     'name': attrv.referral.name if attrv.referral else '',
+                    'schema': {
+                        'id': attrv.referral.entry.schema.id,
+                        'name': attrv.referral.entry.schema.name,
+                    } if attrv.referral else {}
                 }
 
             elif attr.schema.type & AttrTypeValue['boolean']:
