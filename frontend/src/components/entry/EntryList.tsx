@@ -1,5 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Card,
@@ -8,10 +9,14 @@ import {
   Fab,
   Grid,
   IconButton,
+  InputAdornment,
   Pagination,
   Stack,
+  TextField,
+  Theme,
   Typography,
 } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -19,31 +24,30 @@ import { useAsync } from "react-use";
 import { newEntryPath, showEntryPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
+import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryList as ConstEntryList } from "utils/Constants";
+
+const useStyles = makeStyles<Theme>((theme) => ({}));
 
 interface Props {
   restoreMode: boolean;
   entityId: number;
-  entries: {
-    id: number;
-    name: string;
-  }[];
   canCreateEntry?: boolean;
 }
 
 export const EntryList: FC<Props> = ({
   entityId,
-  entries,
+  restoreMode,
   canCreateEntry = true,
 }) => {
+  const classes = useStyles();
   const history = useHistory();
 
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = React.useState(1);
 
   const entries = useAsync(async () => {
-    //const resp = await getEntries(entityId, true, page);
-    return await aironeApiClientV2.getEntries(entityId, page);
+    return await aironeApiClientV2.getEntries(entityId, true, page);
   }, [page]);
 
   const handleChange = (event, value) => {

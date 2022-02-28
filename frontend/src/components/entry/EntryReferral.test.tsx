@@ -5,9 +5,9 @@
 import { render } from "@testing-library/react";
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
-import { AironeAPIClient } from "utils";
 
 import { EntryReferral } from "components/entry/EntryReferral";
+import * as AironeAPIClient from "utils/AironeAPIClient";
 import { TestWrapper } from "utils/TestWrapper";
 
 afterEach(() => {
