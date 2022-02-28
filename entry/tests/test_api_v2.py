@@ -44,57 +44,119 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp_data['schema'],
                          {'id': entry.schema.id, 'name': entry.schema.name})
 
-        self.assertEqual(resp_data['attrs']['val'],
-                         {'type': AttrTypeValue['string'], 'value': 'hoge',
-                          'id': entry.attrs.get(schema__name='val').id,
-                          'schema_id': entry.attrs.get(schema__name='val').schema.id})
-        self.assertEqual(resp_data['attrs']['ref'],
-                         {'type': AttrTypeValue['object'], 'value': {
-                             'id': ref_entry.id, 'name': ref_entry.name},
-                          'id': entry.attrs.get(schema__name='ref').id,
-                          'schema_id': entry.attrs.get(schema__name='ref').schema.id})
-        self.assertEqual(resp_data['attrs']['name'],
-                         {'type': AttrTypeValue['named_object'], 'value': {
-                             'hoge': {'id': ref_entry.id, 'name': ref_entry.name}},
-                          'id': entry.attrs.get(schema__name='name').id,
-                          'schema_id': entry.attrs.get(schema__name='name').schema.id})
-        self.assertEqual(resp_data['attrs']['bool'],
-                         {'type': AttrTypeValue['boolean'], 'value': False,
-                          'id': entry.attrs.get(schema__name='bool').id,
-                          'schema_id': entry.attrs.get(schema__name='bool').schema.id})
-        self.assertEqual(resp_data['attrs']['date'],
-                         {'type': AttrTypeValue['date'], 'value': '2018-12-31',
-                          'id': entry.attrs.get(schema__name='date').id,
-                          'schema_id': entry.attrs.get(schema__name='date').schema.id})
-        self.assertEqual(resp_data['attrs']['group'],
-                         {'type': AttrTypeValue['group'], 'value': {
-                             'id': group.id, 'name': group.name},
-                          'id': entry.attrs.get(schema__name='group').id,
-                          'schema_id': entry.attrs.get(schema__name='group').schema.id})
-        self.assertEqual(resp_data['attrs']['groups'],
-                         {'type': AttrTypeValue['array_group'], 'value': [{
-                             'id': group.id, 'name': group.name}],
-                          'id': entry.attrs.get(schema__name='groups').id,
-                          'schema_id': entry.attrs.get(schema__name='groups').schema.id})
-        self.assertEqual(resp_data['attrs']['text'],
-                         {'type': AttrTypeValue['text'], 'value': 'fuga',
-                          'id': entry.attrs.get(schema__name='text').id,
-                          'schema_id': entry.attrs.get(schema__name='text').schema.id})
-        self.assertEqual(resp_data['attrs']['vals'],
-                         {'type': AttrTypeValue['array_string'], 'value': ['foo', 'bar'],
-                          'id': entry.attrs.get(schema__name='vals').id,
-                          'schema_id': entry.attrs.get(schema__name='vals').schema.id})
-        self.assertEqual(resp_data['attrs']['refs'],
-                         {'type': AttrTypeValue['array_object'], 'value': [{
-                             'id': ref_entry.id, 'name': ref_entry.name}],
-                          'id': entry.attrs.get(schema__name='refs').id,
-                          'schema_id': entry.attrs.get(schema__name='refs').schema.id})
-        self.assertEqual(resp_data['attrs']['names'],
-                         {'type': AttrTypeValue['array_named_object'], 'value': [
-                             {'foo': {'id': ref_entry.id, 'name': ref_entry.name}},
-                             {'bar': {'id': ref_entry.id, 'name': ref_entry.name}}],
-                          'id': entry.attrs.get(schema__name='names').id,
-                          'schema_id': entry.attrs.get(schema__name='names').schema.id})
+        self.assertEqual(resp_data['attrs']['val'], {
+            'type': AttrTypeValue['string'],
+            'value': 'hoge',
+            'id': entry.attrs.get(schema__name='val').id,
+            'schema_id': entry.attrs.get(schema__name='val').schema.id,
+        })
+        self.assertEqual(resp_data['attrs']['ref'], {
+            'type': AttrTypeValue['object'],
+            'value': {
+                'id': ref_entry.id,
+                'name': ref_entry.name,
+                'schema': {
+                    'id': ref_entry.schema.id,
+                    'name': ref_entry.schema.name,
+                },
+            },
+            'id': entry.attrs.get(schema__name='ref').id,
+            'schema_id': entry.attrs.get(schema__name='ref').schema.id,
+        })
+        self.assertEqual(resp_data['attrs']['name'], {
+            'type': AttrTypeValue['named_object'],
+            'value': {
+                'hoge': {
+                    'id': ref_entry.id,
+                    'name': ref_entry.name,
+                    'schema': {
+                        'id': ref_entry.schema.id,
+                        'name': ref_entry.schema.name,
+                    },
+                },
+            },
+            'id': entry.attrs.get(schema__name='name').id,
+            'schema_id': entry.attrs.get(schema__name='name').schema.id,
+        })
+        self.assertEqual(resp_data['attrs']['bool'], {
+            'type': AttrTypeValue['boolean'],
+            'value': False,
+            'id': entry.attrs.get(schema__name='bool').id,
+            'schema_id': entry.attrs.get(schema__name='bool').schema.id,
+        })
+        self.assertEqual(resp_data['attrs']['date'], {
+            'type': AttrTypeValue['date'],
+            'value': '2018-12-31',
+            'id': entry.attrs.get(schema__name='date').id,
+            'schema_id': entry.attrs.get(schema__name='date').schema.id,
+        })
+        self.assertEqual(resp_data['attrs']['group'], {
+            'type': AttrTypeValue['group'],
+            'value': {
+                'id': group.id,
+                'name': group.name,
+            },
+            'id': entry.attrs.get(schema__name='group').id,
+            'schema_id': entry.attrs.get(schema__name='group').schema.id,
+        })
+        self.assertEqual(resp_data['attrs']['groups'], {
+            'type': AttrTypeValue['array_group'],
+            'value': [{
+                'id': group.id,
+                'name': group.name,
+            }],
+            'id': entry.attrs.get(schema__name='groups').id,
+            'schema_id': entry.attrs.get(schema__name='groups').schema.id,
+        })
+        self.assertEqual(resp_data['attrs']['text'], {
+            'type': AttrTypeValue['text'],
+            'value': 'fuga',
+            'id': entry.attrs.get(schema__name='text').id,
+            'schema_id': entry.attrs.get(schema__name='text').schema.id,
+        })
+        self.assertEqual(resp_data['attrs']['vals'], {
+            'type': AttrTypeValue['array_string'],
+            'value': ['foo', 'bar'],
+            'id': entry.attrs.get(schema__name='vals').id,
+            'schema_id': entry.attrs.get(schema__name='vals').schema.id,
+        })
+        self.assertEqual(resp_data['attrs']['refs'], {
+            'type': AttrTypeValue['array_object'],
+            'value': [{
+                'id': ref_entry.id,
+                'name': ref_entry.name,
+                'schema': {
+                    'id': ref_entry.schema.id,
+                    'name': ref_entry.schema.name,
+                },
+            }],
+            'id': entry.attrs.get(schema__name='refs').id,
+            'schema_id': entry.attrs.get(schema__name='refs').schema.id,
+        })
+        self.assertEqual(resp_data['attrs']['names'], {
+            'type': AttrTypeValue['array_named_object'],
+            'value': [{
+                'foo': {
+                    'id': ref_entry.id,
+                    'name': ref_entry.name,
+                    'schema': {
+                        'id': ref_entry.schema.id,
+                        'name': ref_entry.schema.name,
+                    },
+                },
+            }, {
+                'bar': {
+                    'id': ref_entry.id,
+                    'name': ref_entry.name,
+                    'schema': {
+                        'id': ref_entry.schema.id,
+                        'name': ref_entry.schema.name,
+                    },
+                },
+            }],
+            'id': entry.attrs.get(schema__name='names').id,
+            'schema_id': entry.attrs.get(schema__name='names').schema.id,
+        })
 
     def test_serach_entry(self):
         user = self.guest_login()
