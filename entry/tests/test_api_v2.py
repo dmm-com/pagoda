@@ -379,7 +379,6 @@ class ViewTest(AironeViewTest):
         # This expects to return only Entries that is related with Entity "E-0"
         resp = self.client.get('/entry/api/v2/entries/%d' % entities[0].id)
         self.assertEqual(resp.status_code, 200)
-        print('[onix-test] %s' % str(resp.json()))
         self.assertEqual(sorted([x['name'] for x in resp.json()['results']]),
                          sorted(['e-0', 'e-1', 'e-2']))
         self.assertTrue(all([sorted(['id', 'name', 'schema']) == sorted(x.keys())
