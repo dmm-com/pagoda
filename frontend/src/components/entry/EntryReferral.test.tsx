@@ -7,7 +7,6 @@ import React from "react";
 import { BrowserRouter } from "react-router-dom";
 
 import { EntryReferral } from "components/entry/EntryReferral";
-import * as AironeAPIClient from "utils/AironeAPIClient";
 import { TestWrapper } from "utils/TestWrapper";
 
 afterEach(() => {
@@ -28,12 +27,15 @@ test("should render a component with essential props", async () => {
     ],
   };
 
-  // tslint:disable-next-line:no-var-requires
-  jest.spyOn(AironeAPIClient, "getReferredEntries").mockResolvedValue({
-    json() {
-      return Promise.resolve(referredEntries);
-    },
-  });
+  /* eslint-disable */
+  jest
+    .spyOn(require("../../utils/AironeAPIClient"), "getReferredEntries")
+    .mockResolvedValue({
+      json() {
+        return Promise.resolve(referredEntries);
+      },
+    });
+  /* eslint-enable */
 
   expect(() =>
     render(
@@ -43,4 +45,6 @@ test("should render a component with essential props", async () => {
       { wrapper: TestWrapper }
     )
   ).not.toThrow();
+
+  jest.clearAllMocks();
 });

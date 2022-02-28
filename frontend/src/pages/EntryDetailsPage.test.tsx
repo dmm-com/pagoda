@@ -37,6 +37,20 @@ test("should match snapshot", async () => {
     ],
   };
 
+  /* eslint-disable */
+  jest
+    .spyOn(require("utils/AironeAPIClient"), "getReferredEntries")
+    .mockResolvedValue({
+      json() {
+        return Promise.resolve(referredEntries);
+      },
+    });
+
+  jest
+    .spyOn(require("apiclient/AironeApiClientV2").aironeApiClientV2, "getEntry")
+    .mockResolvedValue(Promise.resolve(entry));
+  /* eslint-enable */
+
   // wait async calls and get rendered fragment
   const result = render(<EntryDetailsPage />, {
     wrapper: TestWrapper,
@@ -44,4 +58,6 @@ test("should match snapshot", async () => {
   await waitForElementToBeRemoved(screen.getByTestId("loading"));
 
   expect(result).toMatchSnapshot();
+
+  jest.clearAllMocks();
 });
