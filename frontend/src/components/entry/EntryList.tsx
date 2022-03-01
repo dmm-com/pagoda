@@ -42,7 +42,6 @@ export const EntryList: FC<Props> = ({
 }) => {
   const classes = useStyles();
   const history = useHistory();
-
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = React.useState(1);
 
@@ -57,7 +56,7 @@ export const EntryList: FC<Props> = ({
   // FIXME paginate and get partial entries on BE V2 API side
   /*
   const filteredEntries = entries.filter((e) => {
-    return e.name.indexOf(keyword) !== -1;
+    return e.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
   });
   const displayedEntries = filteredEntries.slice(
     (page - 1) * ConstEntryList.MAX_ROW_COUNT,
