@@ -23,7 +23,6 @@ export interface WebhookApiV2RetrieveRequest {
  */
 export class WebhookApi extends runtime.BaseAPI {
   /**
-   *
    */
   async webhookApiV2RetrieveRaw(
     requestParameters: WebhookApiV2RetrieveRequest,
@@ -74,7 +73,6 @@ export class WebhookApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async webhookApiV2Retrieve(
     requestParameters: WebhookApiV2RetrieveRequest,

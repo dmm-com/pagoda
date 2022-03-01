@@ -98,13 +98,16 @@ class AironeApiClientV2 {
   async getEntries(
     entityId: number,
     isActive = true,
-    pageNumber = 1
+    pageNumber = 1,
+    keyword: string
   ): Promise<PaginatedGetEntryList> {
     //return await this.entry.entryApiV2EntriesList(entityId, isActive, pageNumber);
     // ToDo: This method must pass "isActive" parameter by manupirating DRF API's declaration.
     return await this.entry.entryApiV2EntriesList({
       entityId,
       page: pageNumber,
+      isActive: isActive,
+      search: keyword,
     });
   }
 }

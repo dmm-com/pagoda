@@ -27,7 +27,6 @@ export interface ApiV1JobRunCreateRequest {
  */
 export class ApiApi extends runtime.BaseAPI {
   /**
-   *
    */
   async apiV1EntityAttrsRetrieveRaw(
     requestParameters: ApiV1EntityAttrsRetrieveRequest,
@@ -78,7 +77,6 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1EntityAttrsRetrieve(
     requestParameters: ApiV1EntityAttrsRetrieveRequest,
@@ -88,7 +86,6 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1EntryCreateRaw(
     initOverrides?: RequestInit
@@ -125,14 +122,12 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1EntryCreate(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1EntryCreateRaw(initOverrides);
   }
 
   /**
-   *
    */
   async apiV1EntryDestroyRaw(
     initOverrides?: RequestInit
@@ -169,14 +164,12 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1EntryDestroy(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1EntryDestroyRaw(initOverrides);
   }
 
   /**
-   *
    */
   async apiV1EntryReferralRetrieveRaw(
     initOverrides?: RequestInit
@@ -213,14 +206,12 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1EntryReferralRetrieve(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1EntryReferralRetrieveRaw(initOverrides);
   }
 
   /**
-   *
    */
   async apiV1EntryRetrieveRaw(
     initOverrides?: RequestInit
@@ -257,14 +248,12 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1EntryRetrieve(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1EntryRetrieveRaw(initOverrides);
   }
 
   /**
-   *
    */
   async apiV1EntrySearchCreateRaw(
     initOverrides?: RequestInit
@@ -301,14 +290,12 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1EntrySearchCreate(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1EntrySearchCreateRaw(initOverrides);
   }
 
   /**
-   *
    */
   async apiV1EntryUpdateHistoryRetrieveRaw(
     initOverrides?: RequestInit
@@ -345,7 +332,6 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1EntryUpdateHistoryRetrieve(
     initOverrides?: RequestInit
@@ -354,7 +340,6 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1JobDestroyRaw(
     initOverrides?: RequestInit
@@ -391,14 +376,12 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1JobDestroy(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1JobDestroyRaw(initOverrides);
   }
 
   /**
-   *
    */
   async apiV1JobRetrieveRaw(
     initOverrides?: RequestInit
@@ -435,14 +418,12 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1JobRetrieve(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1JobRetrieveRaw(initOverrides);
   }
 
   /**
-   *
    */
   async apiV1JobRunCreateRaw(
     requestParameters: ApiV1JobRunCreateRequest,
@@ -493,7 +474,6 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1JobRunCreate(
     requestParameters: ApiV1JobRunCreateRequest,
@@ -503,7 +483,6 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1JobSearchRetrieveRaw(
     initOverrides?: RequestInit
@@ -540,14 +519,12 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1JobSearchRetrieve(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1JobSearchRetrieveRaw(initOverrides);
   }
 
   /**
-   *
    */
   async apiV1UserAccessTokenRetrieveRaw(
     initOverrides?: RequestInit
@@ -584,7 +561,6 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1UserAccessTokenRetrieve(
     initOverrides?: RequestInit
@@ -593,7 +569,6 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1UserAccessTokenUpdateRaw(
     initOverrides?: RequestInit
@@ -630,7 +605,6 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async apiV1UserAccessTokenUpdate(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1UserAccessTokenUpdateRaw(initOverrides);
