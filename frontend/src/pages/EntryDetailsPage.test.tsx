@@ -37,6 +37,7 @@ test("should match snapshot", async () => {
     ],
   };
 
+  /* eslint-disable */
   jest
     .spyOn(require("utils/AironeAPIClient"), "getReferredEntries")
     .mockResolvedValue({
@@ -48,6 +49,7 @@ test("should match snapshot", async () => {
   jest
     .spyOn(require("apiclient/AironeApiClientV2").aironeApiClientV2, "getEntry")
     .mockResolvedValue(Promise.resolve(entry));
+  /* eslint-enable */
 
   // wait async calls and get rendered fragment
   const result = render(<EntryDetailsPage />, {

@@ -165,7 +165,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
                           </Button>
                         )}
                         dialogTitle="本当にキャンセルしますか？"
-                        onClickYes={() => cancelJob(job.id)}
+                        onClickYes={() => handleCancel(job.id)}
                       />
                     </ListItem>
                   )}
