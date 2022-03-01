@@ -24,7 +24,6 @@ export interface GroupApiV2GroupsRetrieveRequest {
  */
 export class GroupApi extends runtime.BaseAPI {
   /**
-   *
    */
   async groupApiV2GroupsListRaw(
     initOverrides?: RequestInit
@@ -63,7 +62,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsList(
     initOverrides?: RequestInit
@@ -73,7 +71,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsRetrieveRaw(
     requestParameters: GroupApiV2GroupsRetrieveRequest,
@@ -123,7 +120,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsRetrieve(
     requestParameters: GroupApiV2GroupsRetrieveRequest,

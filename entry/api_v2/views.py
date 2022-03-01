@@ -13,9 +13,10 @@ class entryAPI(viewsets.ReadOnlyModelViewSet):
     queryset = Entry.objects.all()
     serializer_class = GetEntrySerializer
     pagination_class = PageNumberPagination
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     filterset_fields = ['is_active']
     ordering_fields = ['name']
+    search_fields = ['name']
 
     def get_queryset(self):
         return self.queryset.filter(schema__id=self.kwargs.get('entity_id'))

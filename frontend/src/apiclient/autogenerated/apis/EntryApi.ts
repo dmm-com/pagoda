@@ -30,6 +30,7 @@ export interface EntryApiV2EntriesListRequest {
   isActive?: boolean;
   ordering?: string;
   page?: number;
+  search?: string;
 }
 
 export interface EntryApiV2RetrieveRequest {
@@ -41,7 +42,6 @@ export interface EntryApiV2RetrieveRequest {
  */
 export class EntryApi extends runtime.BaseAPI {
   /**
-   *
    */
   async entryApiV2EntriesListRaw(
     requestParameters: EntryApiV2EntriesListRequest,
@@ -69,6 +69,10 @@ export class EntryApi extends runtime.BaseAPI {
 
     if (requestParameters.page !== undefined) {
       queryParameters["page"] = requestParameters.page;
+    }
+
+    if (requestParameters.search !== undefined) {
+      queryParameters["search"] = requestParameters.search;
     }
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -106,7 +110,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2EntriesList(
     requestParameters: EntryApiV2EntriesListRequest,
@@ -120,7 +123,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2RetrieveRaw(
     requestParameters: EntryApiV2RetrieveRequest,
@@ -170,7 +172,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2Retrieve(
     requestParameters: EntryApiV2RetrieveRequest,
@@ -184,7 +185,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2SearchListRaw(
     initOverrides?: RequestInit
@@ -223,7 +223,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2SearchList(
     initOverrides?: RequestInit
