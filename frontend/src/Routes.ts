@@ -15,6 +15,8 @@ export const newEntryPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries/new`;
 export const showEntryPath = (entryId: number | string) =>
   basePath + `entries/${entryId}/show`;
+export const copyEntryPath = (entryId: number | string) =>
+  basePath + `entries/${entryId}/copy`;
 export const entryDetailsPath = (
   entityId: number | string,
   entryId: number | string

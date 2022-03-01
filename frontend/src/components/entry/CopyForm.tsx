@@ -2,7 +2,7 @@ import { Box, Button } from "@mui/material";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { entityEntriesPath } from "Routes";
+import { entryDetailsPath } from "Routes";
 import { copyEntry } from "utils/AironeAPIClient";
 
 interface Props {
@@ -13,31 +13,27 @@ interface Props {
 export const CopyForm: FC<Props> = ({ entityId, entryId }) => {
   const history = useHistory();
 
-  const [entries, setEntries] = useState("");
+  const [entries, setEntries] = useState<string>("");
 
-  const handleSubmit = async (event) => {
+  const handleCopy = async () => {
     await copyEntry(entryId, entries);
-    history.push(entityEntriesPath(entityId));
-
-    event.preventDefault();
+    history.replace(entryDetailsPath(entityId, entryId));
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Box className="row">
-        <Box className="col">
-          <Box className="float-left">
-            入力した各行毎に同じ属性値を持つ別エントリを作成
-          </Box>
-          <Box className="float-right">
-            <Button type="submit" variant="contained">
+    <Box>
+      <Box>
+        <Box>
+          <Box>入力した各行毎に同じ属性値を持つ別エントリを作成</Box>
+          <Box>
+            <Button type="submit" variant="contained" onClick={handleCopy}>
               コピー
             </Button>
           </Box>
         </Box>
       </Box>
-      <Box className="row">
-        <Box className="col-5">
+      <Box>
+        <Box>
           <textarea
             cols={40}
             rows={10}
@@ -46,6 +42,6 @@ export const CopyForm: FC<Props> = ({ entityId, entryId }) => {
           />
         </Box>
       </Box>
-    </form>
+    </Box>
   );
 };

@@ -10,7 +10,12 @@ import {
 import React, { FC } from "react";
 import { Link, useHistory } from "react-router-dom";
 
-import { entryPath, aclPath, showEntryHistoryPath } from "Routes";
+import {
+  entryPath,
+  aclPath,
+  showEntryHistoryPath,
+  copyEntryPath,
+} from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { deleteEntry } from "utils/AironeAPIClient";
 
@@ -51,8 +56,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
         <MenuItem component={Link} to={entryPath(entryId)}>
           <Typography>編集</Typography>
         </MenuItem>
-        {/*TODO link to copy entry page */}
-        <MenuItem>
+        <MenuItem component={Link} to={copyEntryPath(entryId)}>
           <Typography>コピー</Typography>
         </MenuItem>
         <MenuItem component={Link} to={aclPath(entryId)}>
