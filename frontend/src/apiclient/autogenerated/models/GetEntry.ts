@@ -37,12 +37,6 @@ export interface GetEntry {
    * @memberof GetEntry
    */
   readonly schema: { [key: string]: any };
-  /**
-   *
-   * @type {{ [key: string]: any; }}
-   * @memberof GetEntry
-   */
-  readonly attrs: { [key: string]: any };
 }
 
 export function GetEntryFromJSON(json: any): GetEntry {
@@ -60,7 +54,6 @@ export function GetEntryFromJSONTyped(
     id: json["id"],
     name: json["name"],
     schema: json["schema"],
-    attrs: json["attrs"],
   };
 }
 

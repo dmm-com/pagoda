@@ -29,7 +29,7 @@ test("should render a component with essential props", async () => {
 
   /* eslint-disable */
   jest
-    .spyOn(require("utils/AironeAPIClient"), "getReferredEntries")
+    .spyOn(require("../../utils/AironeAPIClient"), "getReferredEntries")
     .mockResolvedValue({
       json() {
         return Promise.resolve(referredEntries);
@@ -45,4 +45,6 @@ test("should render a component with essential props", async () => {
       { wrapper: TestWrapper }
     )
   ).not.toThrow();
+
+  jest.clearAllMocks();
 });

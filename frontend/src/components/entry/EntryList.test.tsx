@@ -8,9 +8,27 @@ import React from "react";
 import { EntryList } from "components/entry/EntryList";
 import { TestWrapper } from "utils/TestWrapper";
 
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
 test("should render a component with essential props", function () {
+  /* eslint-disable */
+  jest
+    .spyOn(
+      require("apiclient/AironeApiClientV2").aironeApiClientV2,
+      "getEntries"
+    )
+    .mockResolvedValue(
+      Promise.resolve({
+        count: 0,
+        results: [],
+      })
+    );
+  /* eslint-enable */
+
   expect(() =>
-    render(<EntryList entityId={"0"} entries={[]} />, {
+    render(<EntryList entityId={0} restoreMode={false} />, {
       wrapper: TestWrapper,
     })
   ).not.toThrow();

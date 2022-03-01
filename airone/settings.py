@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'custom_view.background',
     'drf_spectacular',
+    'django_filters',
     # "debug_toolbar",
 ]
 
@@ -307,5 +308,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         "rest_framework.permissions.IsAuthenticated",
-    ]
+    ],
+    'PAGE_SIZE': 30,
 }

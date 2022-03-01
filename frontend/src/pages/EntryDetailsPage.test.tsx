@@ -58,4 +58,6 @@ test("should match snapshot", async () => {
   await waitForElementToBeRemoved(screen.getByTestId("loading"));
 
   expect(result).toMatchSnapshot();
+
+  jest.clearAllMocks();
 });

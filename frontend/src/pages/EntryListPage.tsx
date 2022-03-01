@@ -20,9 +20,8 @@ import {
 } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { Loading } from "components/common/Loading";
-import { EntryList as Entry } from "components/entry/EntryList";
-import { getEntries, exportEntries } from "utils/AironeAPIClient";
+import { EntryList } from "components/entry/EntryList";
+import { exportEntries } from "utils/AironeAPIClient";
 
 interface EntityControlProps {
   entityId: number;
@@ -88,11 +87,6 @@ export const EntryListPage: FC<EntryListProps> = ({
     return await aironeApiClientV2.getEntity(entityId);
   });
 
-  const entries = useAsync(async () => {
-    const resp = await getEntries(entityId, true);
-    return await resp.json();
-  });
-
   return (
     <Box>
       <AironeBreadcrumbs>
@@ -140,15 +134,12 @@ export const EntryListPage: FC<EntryListProps> = ({
           </Box>
         </Box>
 
-        {entries.loading ? (
-          <Loading />
-        ) : (
-          <Entry
-            entityId={entityId}
-            entries={entries.value}
-            canCreateEntry={canCreateEntry}
-          />
-        )}
+        {/* This describes all Entries in the rest of this page*/}
+        <EntryList
+          entityId={entityId}
+          restoreMode={false}
+          canCreateEntry={canCreateEntry}
+        />
       </Container>
     </Box>
   );
