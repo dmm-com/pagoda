@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^new-ui/', include(('dashboard.urls_for_new_ui', 'dashboard_for_new_ui'))),
     url(r'^entry/', include(('entry.urls', 'entry'))),
     url(r'^api/v1/', include(api_v1_urlpatterns)),
+    url(r'^api/v2/', include(('api_v2.urls', 'api_v2'))),
     url(r'^job/', include(('job.urls', 'job'))),
     url(r'^auth/login/', auth_views.LoginView.as_view(
         redirect_authenticated_user=True,
