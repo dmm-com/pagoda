@@ -135,11 +135,7 @@ export const EntryListPage: FC<EntryListProps> = ({
         </Box>
 
         {/* This describes all Entries in the rest of this page*/}
-        <EntryList
-          entityId={entityId}
-          restoreMode={false}
-          canCreateEntry={canCreateEntry}
-        />
+        <EntryList entityId={entityId} canCreateEntry={canCreateEntry} />
       </Container>
     </Box>
   );
