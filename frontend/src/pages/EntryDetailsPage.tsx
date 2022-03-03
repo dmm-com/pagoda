@@ -11,7 +11,8 @@ import {
 } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useAsync, useLocation } from "react-use";
+import { Element, scroller } from "react-scroll";
+import { useAsync } from "react-use";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -28,21 +29,7 @@ export const EntryDetailsPage: FC = () => {
   const [entryAnchorEl, setEntryAnchorEl] =
     useState<HTMLButtonElement | null>();
 
-  const location = useLocation();
-
-  const refAttrList = React.createRef<HTMLSpanElement>();
-
-  React.useEffect(() => {
-    switch (location.hash) {
-      case "#attr_list":
-        refAttrList.current.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-    }
-  }, [location.hash]);
-
-  const entry: any = useAsync(async () => {
+  const entry = useAsync(async () => {
     return await aironeApiClientV2.getEntry(entryId);
   }, [entryId]);
 
@@ -107,8 +94,7 @@ export const EntryDetailsPage: FC = () => {
           label="項目一覧"
           clickable={true}
           variant="outlined"
-          component={Link}
-          to="#attr_list"
+          onClick={() => scroller.scrollTo("attr_list", { smooth: true })}
           sx={{
             flexDirection: "row-reverse",
             "& span": {
@@ -140,12 +126,8 @@ export const EntryDetailsPage: FC = () => {
         </Grid>
         <Grid item xs={4}>
           <Box p="32px">
-            <Typography
-              p="32px"
-              fontSize="32px"
-              align="center"
-              ref={refAttrList}
-            >
+            <Element name="attr_list" />
+            <Typography p="32px" fontSize="32px" align="center">
               項目一覧
             </Typography>
             {entry.loading ? (
