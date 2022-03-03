@@ -16,12 +16,13 @@ from entry.settings import CONFIG
 
 class ESS(Elasticsearch):
     MAX_TERM_SIZE = 32766
+    _INDEX = settings.ES_CONFIG['INDEX']
 
     def __init__(self, index=None, *args, **kwargs):
         self.additional_config = False
 
         if not index:
-            self._index = settings.ES_CONFIG['INDEX']
+            self._index = self._INDEX
 
         if ('timeout' not in kwargs) and (settings.ES_CONFIG['TIMEOUT'] is not None):
             kwargs['timeout'] = settings.ES_CONFIG['TIMEOUT']
