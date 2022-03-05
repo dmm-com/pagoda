@@ -121,6 +121,9 @@ class EntryAPI(APIView):
                     {'result': 'Parameter any of "entry", "entry_id" or "entity" is mandatory'},
                     status=status.HTTP_400_BAD_REQUEST)
 
+        if param_entry_id and not param_entry_id.isdigit():
+            return Response({'result': 'Parameter "entry_id" is numerically'},
+                            status=status.HTTP_400_BAD_REQUEST)
         if not param_offset.isdigit():
             return Response({'result': 'Parameter "offset" is numerically'},
                             status=status.HTTP_400_BAD_REQUEST)
