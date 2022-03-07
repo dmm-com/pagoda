@@ -134,9 +134,9 @@ Object {
         <div
           class="css-1p01se3-MuiStack-root"
         >
-          <a
+          <div
             class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-1n5jo98-MuiButtonBase-root-MuiChip-root"
-            href="/#attr_list"
+            role="button"
             tabindex="0"
           >
             <svg
@@ -158,7 +158,7 @@ Object {
             <span
               class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
-          </a>
+          </div>
         </div>
         <div
           class="MuiGrid-root MuiGrid-container css-3g06bi-MuiGrid-root"
@@ -264,6 +264,9 @@ Object {
             <div
               class="MuiBox-root css-1wcaknn"
             >
+              <div
+                name="attr_list"
+              />
               <p
                 class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-lr5qxb-MuiTypography-root"
               >
@@ -439,9 +442,9 @@ Object {
       <div
         class="css-1p01se3-MuiStack-root"
       >
-        <a
+        <div
           class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-1n5jo98-MuiButtonBase-root-MuiChip-root"
-          href="/#attr_list"
+          role="button"
           tabindex="0"
         >
           <svg
@@ -463,7 +466,7 @@ Object {
           <span
             class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
           />
-        </a>
+        </div>
       </div>
       <div
         class="MuiGrid-root MuiGrid-container css-3g06bi-MuiGrid-root"
@@ -569,6 +572,9 @@ Object {
           <div
             class="MuiBox-root css-1wcaknn"
           >
+            <div
+              name="attr_list"
+            />
             <p
               class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-lr5qxb-MuiTypography-root"
             >
