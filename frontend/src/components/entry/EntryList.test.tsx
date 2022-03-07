@@ -28,7 +28,7 @@ test("should render a component with essential props", function () {
   /* eslint-enable */
 
   expect(() =>
-    render(<EntryList entityId={0} restoreMode={false} />, {
+    render(<EntryList entityId={0} />, {
       wrapper: TestWrapper,
     })
   ).not.toThrow();

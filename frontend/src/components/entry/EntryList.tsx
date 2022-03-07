@@ -1,6 +1,5 @@
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Card,
@@ -9,38 +8,27 @@ import {
   Fab,
   Grid,
   IconButton,
-  InputAdornment,
   Pagination,
   Stack,
-  TextField,
-  Theme,
   Typography,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { newEntryPath, showEntryPath } from "Routes";
+import { newEntryPath, entryDetailsPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
+import { SearchBox } from "components/common/SearchBox";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryList as ConstEntryList } from "utils/Constants";
 
-const useStyles = makeStyles<Theme>((theme) => ({}));
-
 interface Props {
-  restoreMode: boolean;
   entityId: number;
   canCreateEntry?: boolean;
 }
 
-export const EntryList: FC<Props> = ({
-  entityId,
-  restoreMode,
-  canCreateEntry = true,
-}) => {
-  const classes = useStyles();
+export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = React.useState(1);
 
@@ -64,26 +52,12 @@ export const EntryList: FC<Props> = ({
     <Box>
       {/* This box shows search box and create button */}
       <Box display="flex" justifyContent="space-between" mb={8}>
-        <Box className={classes.search} width={500}>
-          <TextField
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            variant="outlined"
-            size="small"
+        <Box width={500}>
+          <SearchBox
             placeholder="エントリを絞り込む"
-            sx={{
-              background: "#0000000B",
-            }}
-            fullWidth={true}
             value={keyword}
             onChange={(e) => {
               setKeyword(e.target.value);
-
               /* Reset page number to prevent vanishing entities from display
                * when user move other page */
               setPage(1);
@@ -122,7 +96,7 @@ export const EntryList: FC<Props> = ({
                     title={
                       <CardActionArea
                         component={Link}
-                        to={showEntryPath(entry.id)}
+                        to={entryDetailsPath(entityId, entry.id)}
                       >
                         <Typography variant="h6">{entry.name}</Typography>
                       </CardActionArea>

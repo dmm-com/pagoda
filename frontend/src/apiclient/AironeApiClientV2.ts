@@ -108,6 +108,7 @@ class AironeApiClientV2 {
       page: pageNumber,
       isActive: isActive,
       search: keyword,
+      ordering: "name",
     });
   }
 }
