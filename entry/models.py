@@ -543,9 +543,11 @@ class Attribute(ACLBase):
 
         return cloned_attr
 
-    def unset_latest_flag(self):
-        AttributeValue.objects.filter(parent_attr=self,
-                                      is_latest=True).update(is_latest=False)
+    def unset_latest_flag(self, exclude_id=None):
+        exclude = Q()
+        if exclude_id:
+            exclude = Q(id=exclude_id)
+        self.values.filter(is_latest=True).exclude(exclude).update(is_latest=False)
 
     def _validate_value(self, value):
         def _is_group_object(val):
@@ -673,10 +675,6 @@ class Attribute(ACLBase):
             raise TypeError('[%s] "%s" is not acceptable [attr_type:%d]' % (
                 self.schema.name, str(value), self.schema.type))
 
-        # Clear the flag that means target AttrValues are latet from the Values
-        # that are already created.
-        self.unset_latest_flag()
-
         # Initialize AttrValue as None, because this may not created
         # according to the specified parameters.
         attr_value = AttributeValue.create(user, self)
@@ -721,6 +719,10 @@ class Attribute(ACLBase):
 
         # append new AttributeValue
         self.values.add(attr_value)
+
+        # Clear the flag that means target AttrValues are latet from the Values
+        # that are already created.
+        self.unset_latest_flag(exclude_id=attr_value.id)
 
         return attr_value
 

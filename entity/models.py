@@ -38,11 +38,6 @@ class EntityAttr(ACLBase):
         # This means that all specified parameters are same with current object's ones.
         return False
 
-    def unset_latest_flag(self):
-        from entry.models import AttributeValue
-        AttributeValue.objects.filter(parent_attr__schema=self,
-                                      is_latest=True).update(is_latest=False)
-
 
 class Entity(ACLBase):
     STATUS_TOP_LEVEL = 1 << 0

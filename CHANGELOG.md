@@ -12,6 +12,7 @@
   in the changing entry's attribute page
 * Fixed problem to return attribute information that has already been
   deleted (#400)
+* Fixed problem that none of AttributeValue have is_latest is True (#441)
 
 ## v3.5.0
 
