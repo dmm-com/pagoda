@@ -58,10 +58,9 @@ class AttrValueResource(AironeModelResource):
                   instance.get_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)))):
 
                 # clear is_latest flag of old attrs and set it to new one.
-                attr.unset_latest_flag()
                 instance.is_latest = True
-
                 attr.values.add(instance)
+                attr.unset_latest_flag(exclude_id=instance.id)
 
             # the case of leaf AttributeValue
             elif (attr.schema.type & AttrTypeValue['array'] and

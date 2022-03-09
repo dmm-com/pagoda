@@ -708,9 +708,6 @@ def revert_attrv(request, recv_data):
 
     latest_value = attr.get_latest_value()
     if latest_value.get_value() != attrv.get_value():
-        # clear all exsts latest flag
-        attr.unset_latest_flag()
-
         # copy specified AttributeValue
         new_attrv = AttributeValue.objects.create(**{
             'value': attrv.value,
@@ -740,6 +737,9 @@ def revert_attrv(request, recv_data):
 
         # append cloned value to Attribute
         attr.values.add(new_attrv)
+
+        # clear all exsts latest flag
+        attr.unset_latest_flag(exclude_id=new_attrv.id)
 
         # register update to the Elasticsearch
         attr.parent_entry.register_es()
