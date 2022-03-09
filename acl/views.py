@@ -69,7 +69,8 @@ def index(request, obj_id):
          'checker': lambda x: x['member_type'] == 'user' or x['member_type'] == 'group'},
         {'name': 'member_id', 'type': str,
          'checker': lambda x: any(
-             [k.objects.filter(id=x['member_id']).exists() for k in [User, Group]]
+             [User.objects.filter(id=x['member_id']).exists(),
+              Group.objects.filter(id=x['member_id']).exists()]
           )},
         {'name': 'value', 'type': (str, type(None)),
          'checker': lambda x: [y for y in ACLType.all() if int(x['value']) == y]},

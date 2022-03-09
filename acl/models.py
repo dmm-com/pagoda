@@ -36,7 +36,7 @@ class ACLBase(models.Model):
     created_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     is_active = models.BooleanField(default=True)
     status = models.IntegerField(default=0)
-    default_permission = models.IntegerField(default=ACLType.Nothing.id)
+    default_permission = models.IntegerField(default=ACLType.Nothing().id)
     updated_time = models.DateTimeField(auto_now=True)
 
     # This fields describes the sub-class of this object
