@@ -12,7 +12,10 @@
   in the changing entry's attribute page
 * Fixed problem to return attribute information that has already been
   deleted (#400)
+* Fixed exception error in /entry/do_edit/ (#443)
+  Contributed by @hinashi
 * Fixed problem that none of AttributeValue have is_latest is True (#441)
+  Contributed by @hinashi
 
 ## v3.5.0
 

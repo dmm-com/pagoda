@@ -544,10 +544,19 @@ class ViewTest(AironeViewTest):
         self.assertEqual(AttributeValue.objects.count(), 0)
 
     def test_post_edit_with_invalid_param(self):
-        self.admin_login()
+        user = self.admin_login()
 
         params = {'attrs': [{'entity_attr_id': '', 'id': '0', 'value': [], 'referral_key': []}]}
         resp = self.client.post(reverse('entry:do_edit', args=[0]),
+                                json.dumps(params), 'application/json')
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(AttributeValue.objects.count(), 0)
+
+        entry = Entry.objects.create(name='entry', schema=self._entity, created_user=user)
+        params = {'entry_name': 'changed_name',
+                  'attrs': [{'entity_attr_id': '', 'id': '', 'value': [], 'referral_key': []}]}
+        resp = self.client.post(reverse('entry:do_edit', args=[entry.id]),
                                 json.dumps(params), 'application/json')
 
         self.assertEqual(resp.status_code, 400)

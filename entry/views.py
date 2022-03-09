@@ -52,7 +52,7 @@ def _validate_input(recv_data, obj):
 
             if attr:
                 attr = attr.schema
-            else:
+            elif attr_data['entity_attr_id']:
                 attr = obj.schema.attrs.filter(id=attr_data['entity_attr_id']).first()
 
         if isinstance(obj, Entity):
