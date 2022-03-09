@@ -6,20 +6,7 @@ import { shallow } from "enzyme";
 import React from "react";
 
 import { AttributeValue } from "components/entry/AttributeValue";
-
-const attrTypeValue = {
-  string: 2,
-  object: 1,
-  named_object: 2049,
-  array_object: 1025,
-  array_string: 1026,
-  array_named_object: 3073,
-  array_group: 1040,
-  text: 4,
-  boolean: 8,
-  group: 16,
-  date: 32,
-};
+import { DjangoContext } from "utils/DjangoContext";
 
 beforeAll(() => {
   Object.defineProperty(window, "django_context", {
@@ -34,30 +21,117 @@ beforeAll(() => {
   });
 });
 
-it("show string type AttributeValue", () => {
-  const attrValue = "hoge";
-  const wrapper = shallow(
-    <AttributeValue
-      attrInfo={{
-        value: attrValue,
-        type: attrTypeValue.string,
-      }}
-    />
-  );
+const attributes = [
+  {
+    value: "hoge",
+    type: "string",
+    elem: "ElemString",
+  },
+  {
+    value: "fuga",
+    type: "text",
+    elem: "ElemString",
+  },
+  {
+    value: "2022-01-01",
+    type: "date",
+    elem: "ElemString",
+  },
+  {
+    value: true,
+    type: "boolean",
+    elem: "ElemBool",
+  },
+  {
+    value: "true",
+    type: "boolean",
+    elem: "ElemBool",
+  },
+  {
+    value: { id: 100, name: "hoge" },
+    type: "object",
+    elem: "ElemObject",
+  },
+  {
+    value: { foo: { id: 100, name: "hoge" } },
+    type: "named_object",
+    elem: "ElemNamedObject",
+  },
+  {
+    value: { id: 100, name: "hoge" },
+    type: "group",
+    elem: "ElemGroup",
+  },
+];
 
-  expect(wrapper.find("ElemString").length).toEqual(1);
+const arrayAttributes = [
+  {
+    value: ["hoge", "fuga"],
+    type: "array_string",
+    elem: "ElemString",
+  },
+  {
+    value: [
+      { id: 100, name: "hoge" },
+      { id: 200, name: "fuge" },
+    ],
+    type: "array_object",
+    elem: "ElemObject",
+  },
+  {
+    value: [
+      { foo: { id: 100, name: "hoge" } },
+      { bar: { id: 200, name: "fuga" } },
+    ],
+    type: "array_named_object",
+    elem: "ElemNamedObject",
+  },
+  {
+    value: [
+      { id: 100, name: "hoge" },
+      { id: 200, name: "fuge" },
+    ],
+    type: "array_group",
+    elem: "ElemGroup",
+  },
+];
+
+attributes.forEach((attribute) => {
+  it("show AttributeValue", () => {
+    const djangoContext = DjangoContext.getInstance();
+    const wrapper = shallow(
+      <AttributeValue
+        attrInfo={{
+          value: attribute.value,
+          type: djangoContext.attrTypeValue[attribute.type],
+        }}
+      />
+    );
+
+    expect(wrapper.find(attribute.elem).length).toEqual(1);
+    expect(wrapper.find(attribute.elem).props()).toEqual({
+      attrValue: attribute.value,
+    });
+  });
 });
 
-it("show object type AttributeValue", () => {
-  const attrValue = { id: 100, name: "hoge" };
-  const wrapper = shallow(
-    <AttributeValue
-      attrInfo={{
-        value: attrValue,
-        type: attrTypeValue.object,
-      }}
-    />
-  );
+arrayAttributes.forEach((arrayAttributes) => {
+  it("show AttributeValue", () => {
+    const djangoContext = DjangoContext.getInstance();
+    const wrapper = shallow(
+      <AttributeValue
+        attrInfo={{
+          value: arrayAttributes.value,
+          type: djangoContext.attrTypeValue[arrayAttributes.type],
+        }}
+      />
+    );
 
-  expect(wrapper.find("ElemObject").length).toEqual(1);
+    expect(wrapper.find(arrayAttributes.elem).length).toEqual(2);
+    wrapper.find(arrayAttributes.elem).forEach((arrayAttributesElem, i) => {
+      expect(arrayAttributesElem.props()).toEqual({
+        attrValue: arrayAttributes.value[i],
+      });
+    });
+  });
 });
