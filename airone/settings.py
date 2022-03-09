@@ -3,6 +3,7 @@ import logging
 import subprocess
 import errno
 import importlib
+from typing import Any, Dict
 
 from airone.lib.log import Logger
 from django_replicated import settings
@@ -179,7 +180,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 LOGIN_REDIRECT_URL = '/dashboard/'
 
 # global settins for AirOne
-AIRONE = {
+AIRONE: Dict[str, Any] = {
     'ENABLE_PROFILE': True,
     'CONCURRENCY': 1,
     'VERSION': 'unknown',
@@ -252,7 +253,7 @@ AUTH_CONFIG = {
     }
 }
 
-LOGGING = {
+LOGGING: Dict[str, Any] = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {

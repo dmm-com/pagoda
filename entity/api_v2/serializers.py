@@ -31,4 +31,4 @@ class EntitySerializer(serializers.ModelSerializer):
                 'name': r.name,
             } for r in x.referral.all()],
         } for x in obj.attrs.filter(is_active=True).order_by('index')
-            if user.has_permission(x, ACLType.Writable)],
+            if user.has_permission(x, ACLType.Writable)]
