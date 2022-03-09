@@ -109,6 +109,9 @@ attributes.forEach((attribute) => {
     );
 
     expect(wrapper.find(attribute.elem).length).toEqual(1);
+    expect(wrapper.find(attribute.elem).props()).toEqual({
+      attrValue: attribute.value,
+    });
   });
 });
 
@@ -125,5 +128,10 @@ arrayAttributes.forEach((arrayAttributes) => {
     );
 
     expect(wrapper.find(arrayAttributes.elem).length).toEqual(2);
+    wrapper.find(arrayAttributes.elem).forEach((arrayAttributesElem, i) => {
+      expect(arrayAttributesElem.props()).toEqual({
+        attrValue: arrayAttributes.value[i],
+      });
+    });
   });
 });
