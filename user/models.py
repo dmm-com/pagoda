@@ -33,13 +33,12 @@ class User(DjangoUser):
 
     def _user_has_permission(self, target_obj, permission_level):
         return any([permission_level.id <= x.get_aclid()
-                   for x in self.permissions.all()
-                   if target_obj.id == x.get_objid()])
+                   for x in self.permissions.filter(codename__startswith=(str(target_obj.id)+'.'))])
 
     def _group_has_permission(self, target_obj, permission_level, groups):
         return any(sum([[permission_level.id <= x.get_aclid()
-                   for x in g.permissions.all()
-                   if target_obj.id == x.get_objid()] for g in groups], []))
+                   for x in g.permissions.filter(codename__startswith=(str(target_obj.id)+'.'))]
+                   for g in groups], []))
 
     def is_permitted(self, target_obj, permission_level, groups=[]):
         if not groups:
@@ -100,8 +99,7 @@ class User(DjangoUser):
         # doesn't permit, access to the children's objects are also not permitted.
         if ((isinstance(target_obj, import_module('entry.models').Entry) or
              isinstance(target_obj, import_module('entry.models').Attribute)) and
-            (not self.is_permitted(target_obj, permission_level) and
-             not self.has_permission(target_obj.schema, permission_level))):
+                not self.has_permission(target_obj.schema, permission_level)):
             return False
 
         # A bypass processing to rapidly return.

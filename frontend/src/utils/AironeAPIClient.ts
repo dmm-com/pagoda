@@ -27,14 +27,6 @@ export function postLogout(): Promise<Response> {
   });
 }
 
-export function getEntity(entityId: number): Promise<Response> {
-  return fetch(`/entity/api/v2/entities/${entityId}`);
-}
-
-export function getEntities(): Promise<Response> {
-  return fetch("/entity/api/v1/get_entities");
-}
-
 export function getEntityHistory(entityId: number): Promise<Response> {
   return fetch(`/entity/api/v2/history/${entityId}`);
 }
@@ -60,17 +52,18 @@ export function getEntityAttrs(entityIds: number[]): Promise<Response> {
   return fetch(`/api/v1/entity/attrs/${entityIds.join(",")}`);
 }
 
-export function getEntry(entryId: number): Promise<Response> {
-  return fetch(`/entry/api/v2/${entryId}`);
+export function getEntrySearch(query: string): Promise<Response> {
+  return fetch(`/entry/api/v2/search?query=${query}`);
 }
 
 export function getEntries(
   entityId: number,
-  isActive = true
+  isActive = true,
+  pageNumber = 1
 ): Promise<Response> {
   const isActiveParam = isActive ? "True" : "False";
   return fetch(
-    `/entry/api/v1/get_entries/${entityId}?is_active=${isActiveParam}`
+    `/entry/api/v2/entries/${entityId}?page=${pageNumber}&is_active=${isActiveParam}`
   );
 }
 
@@ -109,34 +102,6 @@ export function searchEntries(
       entry_name: entryName,
       attrinfo: attrInfo,
       entry_limit: entryLimit,
-    }),
-  });
-}
-
-export function getACL(objectId: number): Promise<Response> {
-  return fetch(`/acl/api/v2/acls/${objectId}`);
-}
-
-export function updateACL(
-  objectId: number,
-  name: string,
-  objectType: string,
-  isPublic: boolean,
-  defaultPermission: number,
-  acl: object
-): Promise<Response> {
-  return fetch(`/acl/api/v2/acls/${objectId}`, {
-    method: "PUT",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-      "Content-Type": "application/json;charset=utf-8",
-    },
-    body: JSON.stringify({
-      name: name,
-      objtype: objectType,
-      is_public: isPublic,
-      default_permission: defaultPermission,
-      acl: acl,
     }),
   });
 }
@@ -295,7 +260,15 @@ export function exportEntries(
   entityId: number,
   format: string
 ): Promise<Response> {
-  return fetch(`/entry/export/${entityId}?format=${format}`);
+  return fetch(`/entry/export/${entityId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({
+      format: format,
+    }),
+  });
 }
 
 // FIXME implement internal API then call it
@@ -375,7 +348,7 @@ export function downloadExportedUsers(filename: string): Promise<void> {
 
 // FIXME implement V2 API
 export function refreshAccessToken(): Promise<Response> {
-  return fetch("/api/v1/user/access_token/", {
+  return fetch("/api/v1/user/access_token", {
     method: "PUT",
     headers: {
       "X-CSRFToken": getCsrfToken(),
@@ -421,15 +394,6 @@ export function updateUserPasswordAsSuperuser(
       chk_passwd: checkPassword,
     }),
   });
-}
-
-// FIXME implement internal API then call it
-export function getGroups(): Promise<Response> {
-  return fetch("/group/api/v2/groups");
-}
-
-export function getGroup(groupId: number): Promise<Response> {
-  return fetch(`/group/api/v2/groups/${groupId}`);
 }
 
 // NOTE it calls non-API endpoint
@@ -504,6 +468,28 @@ export function getJobs(noLimit = 0): Promise<Response> {
 
 export function getRecentJobs(): Promise<Response> {
   return fetch(`/api/v1/job/`);
+}
+
+export function rerunJob(jobId: number): Promise<Response> {
+  return fetch(`/api/v1/job/run/${jobId}`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+  });
+}
+
+export function cancelJob(jobId: number): Promise<Response> {
+  return fetch(`/api/v1/job/`, {
+    method: "DELETE",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify({
+      job_id: jobId,
+    }),
+  });
 }
 
 export function getWebhooks(entityId: number): Promise<Response> {

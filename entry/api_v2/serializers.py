@@ -2,9 +2,24 @@ from airone.lib.types import AttrTypeValue
 from entry.models import Entry
 from group.models import Group
 from rest_framework import serializers
+from typing import Any, Dict
 
 
 class GetEntrySerializer(serializers.ModelSerializer):
+    schema = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Entry
+        fields = ('id', 'name', 'schema')
+
+    def get_schema(self, entry) -> Dict[str, Any]:
+        return {
+            'id': entry.schema.id,
+            'name': entry.schema.name,
+        }
+
+
+class GetEntryWithAttrSerializer(GetEntrySerializer):
     schema = serializers.SerializerMethodField()
     attrs = serializers.SerializerMethodField()
 
@@ -12,13 +27,7 @@ class GetEntrySerializer(serializers.ModelSerializer):
         model = Entry
         fields = ('id', 'name', 'schema', 'attrs')
 
-    def get_schema(self, entry):
-        return {
-                'id': entry.schema.id,
-                'name': entry.schema.name,
-        }
-
-    def get_attrs(self, obj):
+    def get_attrs(self, obj) -> Dict[str, Any]:
         def get_attr_value(attr):
             attrv = attr.get_latest_value(is_readonly=True)
 
@@ -32,8 +41,12 @@ class GetEntrySerializer(serializers.ModelSerializer):
                 elif attr.schema.type & AttrTypeValue['named']:
                     return [{
                         x.value: {
-                          'id': x.referral.id if x.referral else None,
-                          'name': x.referral.name if x.referral else '',
+                            'id': x.referral.id if x.referral else None,
+                            'name': x.referral.name if x.referral else '',
+                            'schema': {
+                                'id': x.referral.entry.schema.id,
+                                'name': x.referral.entry.schema.name,
+                            } if x.referral else {}
                         },
                     } for x in attrv.data_array.all()]
 
@@ -41,6 +54,10 @@ class GetEntrySerializer(serializers.ModelSerializer):
                     return [{
                         'id': x.referral.id if x.referral else None,
                         'name': x.referral.name if x.referral else '',
+                        'schema': {
+                            'id': x.referral.entry.schema.id,
+                            'name': x.referral.entry.schema.name,
+                        } if x.referral else {}
                     } for x in attrv.data_array.all()]
 
                 elif attr.schema.type & AttrTypeValue['group']:
@@ -59,6 +76,10 @@ class GetEntrySerializer(serializers.ModelSerializer):
                     attrv.value: {
                         'id': attrv.referral.id if attrv.referral else None,
                         'name': attrv.referral.name if attrv.referral else '',
+                        'schema': {
+                            'id': attrv.referral.entry.schema.id,
+                            'name': attrv.referral.entry.schema.name,
+                        } if attrv.referral else {}
                     }
                 }
 
@@ -66,6 +87,10 @@ class GetEntrySerializer(serializers.ModelSerializer):
                 return {
                     'id': attrv.referral.id if attrv.referral else None,
                     'name': attrv.referral.name if attrv.referral else '',
+                    'schema': {
+                        'id': attrv.referral.entry.schema.id,
+                        'name': attrv.referral.entry.schema.name,
+                    } if attrv.referral else {}
                 }
 
             elif attr.schema.type & AttrTypeValue['boolean']:
@@ -91,4 +116,10 @@ class GetEntrySerializer(serializers.ModelSerializer):
                     'value': get_attr_value(x),
                     'schema_id': x.schema.id,
                 }
-                for x in obj.attrs.filter(is_active=True)}
+                for x in obj.attrs.filter(is_active=True, schema__is_active=True)}
+
+
+class GetEntrySimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Entry
+        fields = ('id', 'name')

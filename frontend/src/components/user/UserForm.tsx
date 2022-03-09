@@ -3,7 +3,6 @@ import {
   Button,
   Checkbox,
   Input,
-  Link,
   Table,
   TableBody,
   TableCell,
@@ -15,13 +14,13 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { usersPath } from "../../Routes";
+import { usersPath } from "Routes";
 import {
   createUser,
   refreshAccessToken,
   updateUser,
-} from "../../utils/AironeAPIClient";
-import { DjangoContext } from "../../utils/DjangoContext";
+} from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -38,10 +37,10 @@ interface Props {
     username: string;
     email: string;
     is_superuser: boolean;
-    token: string;
-    token_lifetime: number;
-    token_created: string;
-    token_expire: string;
+    token?: string;
+    token_lifetime?: number;
+    token_created?: string;
+    token_expire?: string;
   };
 }
 
@@ -53,7 +52,9 @@ export const UserForm: FC<Props> = ({ user }) => {
   const [username, setUsername] = useState(user?.username ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [password, setPassword] = useState(isCreateMode ? "" : undefined);
-  const [isSuperuser, setIsSuperuser] = useState(user?.is_superuser ?? false);
+  const [isSuperuser, setIsSuperuser] = useState<boolean>(
+    user?.is_superuser ?? false
+  );
   const [tokenLifetime, setTokenLifetime] = useState(user?.token_lifetime);
 
   const djangoContext = DjangoContext.getInstance();
@@ -71,8 +72,9 @@ export const UserForm: FC<Props> = ({ user }) => {
     event.preventDefault();
   };
 
-  const handleRefreshAccessToken = () => {
-    refreshAccessToken().then(() => history.go(0));
+  const handleRefreshAccessToken = async () => {
+    await refreshAccessToken();
+    history.go(0);
   };
 
   return (
@@ -161,12 +163,11 @@ export const UserForm: FC<Props> = ({ user }) => {
                     <Typography>AccessToken</Typography>
                   </TableCell>
                   <TableCell>
-                    <Link id="access_token">{user.token}</Link>
+                    <Typography>{user.token}</Typography>
                     <Button
-                      type="button"
-                      id="refresh_token"
-                      className="btn btn-primary btn-sm"
-                      onChange={handleRefreshAccessToken}
+                      variant="contained"
+                      color="secondary"
+                      onClick={handleRefreshAccessToken}
                     >
                       Refresh
                     </Button>

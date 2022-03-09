@@ -3,6 +3,8 @@ const basePath = "/new-ui/";
 export const loginPath = () => "/auth/login/";
 export const topPath = () => basePath;
 export const advancedSearchPath = () => basePath + "advanced_search";
+export const advancedSearchResultPath = () =>
+  basePath + "advanced_search_result";
 export const jobsPath = () => basePath + "jobs";
 export const aclPath = (entityId: number | string) =>
   basePath + `acl/${entityId}`;
@@ -13,10 +15,20 @@ export const newEntryPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries/new`;
 export const showEntryPath = (entryId: number | string) =>
   basePath + `entries/${entryId}/show`;
+export const copyEntryPath = (entryId: number | string) =>
+  basePath + `entries/${entryId}/copy`;
+export const entryDetailsPath = (
+  entityId: number | string,
+  entryId: number | string
+) => basePath + `entities/${entityId}/entries/${entryId}/details`;
 export const importEntriesPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries/import`;
 export const entityEntriesPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries`;
+export const showEntryHistoryPath = (entryId: number | string) =>
+  basePath + `entries/${entryId}/history`;
+export const entryPath = (entryId: number | string) =>
+  basePath + `entries/${entryId}`;
 
 // entities
 export const entityHistoryPath = (entityId: number | string) =>

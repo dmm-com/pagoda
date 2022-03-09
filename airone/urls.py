@@ -17,12 +17,20 @@ urlpatterns = [
     url(r'^new-ui/', include(('dashboard.urls_for_new_ui', 'dashboard_for_new_ui'))),
     url(r'^entry/', include(('entry.urls', 'entry'))),
     url(r'^api/v1/', include(api_v1_urlpatterns)),
+    url(r'^api/v2/', include(('api_v2.urls', 'api_v2'))),
     url(r'^job/', include(('job.urls', 'job'))),
     url(r'^auth/login/', auth_views.LoginView.as_view(
         redirect_authenticated_user=True,
+        extra_context={
+            'title': settings.AIRONE['TITLE'],
+            'subtitle': settings.AIRONE['SUBTITLE'],
+            'note_desc': settings.AIRONE['NOTE_DESC'],
+            'note_link': settings.AIRONE['NOTE_LINK'],
+        }
     ), name='login'),
     url(r'^auth/logout/', auth_view.logout, name='logout'),
     url(r'^webhook/', include(('webhook.urls', 'webhook'))),
+    # url(r'^__debug__/', include('debug_toolbar.urls')),
 ]
 
 for extension in settings.AIRONE['EXTENSIONS']:

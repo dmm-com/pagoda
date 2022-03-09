@@ -1,6 +1,12 @@
 <html>
   {% if '/new-ui/' not in next %}
+  <head>
+    <!-- custom script head -->
+    {% include 'custom_view/custom_script_head.html' %}
+  </head>
   <body>
+    <!-- custom script body -->
+    {% include 'custom_view/custom_script_body.html' %}
     <h2>Login</h2>
     <form method="post">
       {% csrf_token %}
@@ -11,21 +17,27 @@
       {% endif %}
     </form>
     <p>If you forget your password, you can <a href="{% url 'user:password_reset' %}">Reset Password</a>.</p>
-    <!-- custom script -->
-    {% include 'custom_view/custom_script.html' %}
   </body>
   {% else %}
   <head>
+    <!-- custom script head -->
+    {% include 'custom_view/custom_script_head.html' %}
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
     <link rel="shortcut icon" href="/static/favicon.ico" />
     <title>AirOne(NewUI)</title>
   </head>
   <body style="margin: 0px">
+    <!-- custom script body -->
+    {% include 'custom_view/custom_script_body.html' %}
     <div id="app" class="columns"><!-- React --></div>
     <script type="text/javascript">
       window.django_context = {
           next: "{{next}}",
+          title: "{{title}}",
+          subtitle: "{{subtitle}}",
+          note_desc: "{{note_desc}}",
+          note_link: "{{note_link}}",
       };
     </script>
     <script src="/static/js/new-ui.js"></script>

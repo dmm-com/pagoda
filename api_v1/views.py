@@ -5,11 +5,7 @@ from copy import deepcopy
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.authentication import BasicAuthentication
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated
 
-from api_v1.auth import AironeTokenAuth
 from airone.lib.acl import ACLType
 from airone.lib.profile import airone_profile
 from entity.models import Entity
@@ -23,8 +19,6 @@ from django.db.models import Q
 
 
 class EntryAPI(APIView):
-    authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
     @airone_profile
     def post(self, request, format=None):
@@ -127,6 +121,9 @@ class EntryAPI(APIView):
                     {'result': 'Parameter any of "entry", "entry_id" or "entity" is mandatory'},
                     status=status.HTTP_400_BAD_REQUEST)
 
+        if param_entry_id and not param_entry_id.isdigit():
+            return Response({'result': 'Parameter "entry_id" is numerically'},
+                            status=status.HTTP_400_BAD_REQUEST)
         if not param_offset.isdigit():
             return Response({'result': 'Parameter "offset" is numerically'},
                             status=status.HTTP_400_BAD_REQUEST)

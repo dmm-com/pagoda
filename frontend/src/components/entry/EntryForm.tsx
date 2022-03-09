@@ -10,16 +10,15 @@ import {
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { entityEntriesPath } from "../../Routes";
+import { entityEntriesPath } from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
+import { EditAttributeValue } from "components/entry/EditAttributeValue";
 import {
   createEntry,
   getAttrReferrals,
-  getGroups,
   updateEntry,
-} from "../../utils/AironeAPIClient";
-import { DjangoContext } from "../../utils/DjangoContext";
-
-import { EditAttributeValue } from "./EditAttributeValue";
+} from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 interface Props {
   entityId: number;
@@ -255,8 +254,7 @@ export const EntryForm: FC<Props> = ({
     attrName: string,
     attrType: string
   ) => {
-    const resp = await getGroups();
-    const refs = await resp.json();
+    const refs = await aironeApiClientV2.getGroups();
     const userInputValue = e.target.value;
 
     function _getUpdatedValues(currentValue) {

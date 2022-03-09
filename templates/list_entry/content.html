@@ -18,7 +18,7 @@
       <tbody id='entry_container'>
         {% for entry in page_obj %}
 
-        <tr>
+        <tr entry_id="{{ entry.id }}">
           {% if entry.status|bitwise_and:STATUS_ENTRY.CREATING %}
             <td>{{ entry.name }} [作成中]</td>
           {% elif entry.status|bitwise_and:STATUS_ENTRY.EDITING %}

@@ -516,6 +516,10 @@ class APITest(AironeViewTest):
         resp = self.client.get('/api/v1/entry')
         self.assertEqual(resp.status_code, 400)
 
+        # send request with invalid entry_id
+        resp = self.client.get('/api/v1/entry', {'entry_id': 'not digit'})
+        self.assertEqual(resp.status_code, 400)
+
         # send request with invalid name of Entity
         resp = self.client.get('/api/v1/entry', {'entity': 'foo', 'entry': 'bar'})
         self.assertEqual(resp.status_code, 404)

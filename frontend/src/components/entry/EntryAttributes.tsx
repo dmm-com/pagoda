@@ -1,25 +1,55 @@
-import { Table, TableBody, TableCell, TableRow } from "@mui/material";
+import {
+  Table,
+  TableContainer,
+  TableHead,
+  TableBody,
+  TableCell,
+  TableRow,
+  Paper,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
-import { AttributeValue } from "./AttributeValue";
+import { AttributeValue } from "components/entry/AttributeValue";
 
 interface Props {
   attributes: any;
 }
 
+const StyledTableRow = styled(TableRow)(() => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: "#607D8B0A",
+  },
+  "&:last-child td, &:last-child th": {
+    border: 0,
+  },
+}));
+
 export const EntryAttributes: FC<Props> = ({ attributes }) => {
   return (
-    <Table>
-      <TableBody>
-        {Object.keys(attributes).map((attrname) => (
-          <TableRow key={attrname}>
-            <TableCell>{attrname}</TableCell>
-            <TableCell>
-              <AttributeValue attrInfo={attributes[attrname]} />
-            </TableCell>
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead sx={{ backgroundColor: "primary.dark" }}>
+          <TableRow>
+            <TableCell sx={{ color: "primary.contrastText" }}>項目</TableCell>
+            <TableCell sx={{ color: "primary.contrastText" }}>内容</TableCell>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHead>
+        <TableBody>
+          {Object.keys(attributes).map((attrname) => (
+            <StyledTableRow key={attrname}>
+              <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
+                {attrname}
+              </TableCell>
+              <TableCell
+                sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}
+              >
+                <AttributeValue attrInfo={attributes[attrname]} />
+              </TableCell>
+            </StyledTableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };

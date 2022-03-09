@@ -28,9 +28,9 @@ import {
   entitiesPath,
   advancedSearchPath,
   loginPath,
-} from "../Routes";
-import { getRecentJobs, postLogout } from "../utils/AironeAPIClient";
-import { DjangoContext } from "../utils/DjangoContext";
+} from "Routes";
+import { getRecentJobs, postLogout } from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   centeritem: {
@@ -74,9 +74,9 @@ export const Header: FC = () => {
   const djangoContext = DjangoContext.getInstance();
 
   const recentJobs = useAsync(async () => {
-    return getRecentJobs()
-      .then((data) => data.json())
-      .then((data) => data["result"]);
+    const resp = await getRecentJobs();
+    const data = await resp.json();
+    return data["result"];
   });
 
   const handleLogout = () => {

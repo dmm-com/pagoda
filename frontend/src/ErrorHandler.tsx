@@ -11,7 +11,7 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
-import { topPath } from "./Routes";
+import { topPath } from "Routes";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   errorDescription: {

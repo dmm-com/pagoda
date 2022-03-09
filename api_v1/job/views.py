@@ -4,21 +4,15 @@ from django.db.models import Q
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.authentication import BasicAuthentication
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated
 
 from job.models import Job, JobOperation
 from job.settings import CONFIG as JOB_CONFIG
 from user.models import User
 
 from airone.lib.profile import airone_profile
-from api_v1.auth import AironeTokenAuth
 
 
 class JobAPI(APIView):
-    authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
     @airone_profile
     def get(self, request, format=None):
@@ -63,7 +57,7 @@ class JobAPI(APIView):
         return Response({
             'result': jobs,
             'constant': constant,
-        }, content_type='application/json; charset=UTF-8')
+        })
 
     @airone_profile
     def delete(self, request, format=None):
@@ -93,8 +87,6 @@ class JobAPI(APIView):
 
 
 class SpecificJobAPI(APIView):
-    authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
     @airone_profile
     def post(self, request, job_id, format=None):
@@ -121,8 +113,6 @@ class SpecificJobAPI(APIView):
 
 
 class SearchJob(APIView):
-    authentication_classes = (AironeTokenAuth, BasicAuthentication, SessionAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
     @airone_profile
     def get(self, request):
@@ -148,5 +138,4 @@ class SearchJob(APIView):
             return Response('There is no job that is matched specified condition',
                             status=status.HTTP_404_NOT_FOUND)
 
-        return Response({'result': [x.to_json() for x in jobs]},
-                        content_type='application/json; charset=UTF-8')
+        return Response({'result': [x.to_json() for x in jobs]})

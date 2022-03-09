@@ -1,5 +1,4 @@
 import json
-from airone.lib.elasticsearch import ESS
 
 from group.models import Group
 from django.urls import reverse
@@ -135,7 +134,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.json()['redirect_url'], '/entry/edit/%s' % entry.id)
         self.assertEqual(user.permissions.last(), attr.writable)
         self.assertFalse(Attribute.objects.get(id=attr.id).is_public)
-        search_result = ESS().search(body={'query': {'term': {'name': entry.name}}})
+        search_result = self._es.search(body={'query': {'term': {'name': entry.name}}})
         self.assertFalse(search_result['hits']['hits'][0]['_source']['attr'][0]['is_readble'])
 
     def test_post_acl_set_entry(self):
@@ -149,7 +148,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.json()['redirect_url'], '/entry/show/%s' % entry.id)
         self.assertEqual(user.permissions.last(), entry.writable)
         self.assertFalse(Entry.objects.get(id=entry.id).is_public)
-        search_result = ESS().search(body={'query': {'term': {'name': entry.name}}})
+        search_result = self._es.search(body={'query': {'term': {'name': entry.name}}})
         self.assertFalse(search_result['hits']['hits'][0]['_source']['is_readble'])
 
     def test_post_acl_set_nothing(self):

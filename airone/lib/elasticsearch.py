@@ -20,6 +20,7 @@ class ESS(Elasticsearch):
     def __init__(self, index=None, *args, **kwargs):
         self.additional_config = False
 
+        self._index = index
         if not index:
             self._index = settings.ES_CONFIG['INDEX']
 

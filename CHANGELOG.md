@@ -3,10 +3,28 @@
 ## In development
 
 ### Added
+
+### Changed
+* Set entry-id for each entry columns in the list entry page
+
+### Fixed
+* Fixed problems that changing values for group won't be shown correctly
+  in the changing entry's attribute page
+* Fixed problem to return attribute information that has already been
+  deleted (#400)
+
+## v3.5.0
+
+### Added
 * Added to be able to insert custom javascript
 
 ### Changed
 * Updated Django version that fixed security bug (CVE-2021-44420)
+* Droped Python 3.6 support
+* Upgrade celery version from v4.4.7 to v5.2.2
+* Upgrade kombu version from v4.6.11 to v5.2.2
+* Upgrade flower version from v0.9.7 to v1.0.0
+* Upgrade django-filter version from v1.1.0 to v2.4.0
 
 ### Fixed
 * Fixed an issue where advanced search narrow down was slow (#321)
@@ -19,6 +37,9 @@
 
 ### Refactored
 * Refactored referral param in advanced search (#326)
+* Refactored the process of check permission
+* Refactored the process of get_available_attrs in Entry
+* Refactored drf response format and default settings
 
 ## v3.4.1
 

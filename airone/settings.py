@@ -29,6 +29,7 @@ CELERY_BROKER_HEARTBEAT = 0
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# INTERNAL_IPS = ['127.0.0.1']
 
 ALLOWED_HOSTS = ['*']
 
@@ -57,6 +58,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'custom_view.background',
     'drf_spectacular',
+    'django_filters',
+    # "debug_toolbar",
 ]
 
 MIDDLEWARE = [
@@ -69,6 +72,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'airone.lib.db.AirOneReplicationMiddleware',
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'airone.urls'
@@ -182,6 +186,10 @@ AIRONE = {
     'FILE_STORE_PATH': '/tmp/airone_app',
     'AUTO_COMPLEMENT_USER': 'auto_complementer',
     'EXTENSIONS': [],
+    'TITLE': 'AirOne',
+    'SUBTITLE': 'SubTitle, Please change it',
+    'NOTE_DESC': 'Description, Please change it',
+    'NOTE_LINK': '',
 }
 
 # load extension settings individually
@@ -293,4 +301,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "api_v1.auth.AironeTokenAuth",
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    'PAGE_SIZE': 30,
 }

@@ -132,8 +132,8 @@ function reconstruct_modal_body_for_job(job) {
   // clear old context
   elem_container.empty();
 
-  elem_container.append(`<tr><td>Deleted by:</td><td>${ job.user }</td></tr>`);
-  elem_container.append(`<tr><td>Deleted at:</td><td>${ job.updated_at }</td></tr>`);
+  elem_container.append(`<tr class="deleting_user"><td class='label'>Deleted by:</td><td class='value'>${ job.user }</td></tr>`);
+  elem_container.append(`<tr class="deleting_time"><td class='label'>Deleted at:</td><td class='value'>${ job.updated_at }</td></tr>`);
 }
 
 function reconstruct_modal_body_for_entry(data) {
@@ -143,10 +143,10 @@ function reconstruct_modal_body_for_entry(data) {
   elem_container.empty();
 
   for(let attr of data.attrs) {
-    let elem_tr = $('<tr/>');
-    let elem_td = $('<td/>');
+    let elem_tr = $(`<tr attr_id="${ attr.id }"/>`);
+    let elem_td = $(`<td class="attr_value"/>`);
 
-    elem_tr.append($(`<td>${ attr.name }</td>`));
+    elem_tr.append($(`<td class="attr_label">${ attr.name }</td>`));
 
     if(attr.type == {{ attr_type.string }}) {
       elem_td.append($(`<span class='url_conv'>${ attr.value }</span>`));

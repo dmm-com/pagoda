@@ -1,5 +1,14 @@
+const path = require('path');
+
 module.exports = {
   plugins: ['import', 'unused-imports', 'react', '@typescript-eslint'],
+  settings: {
+    'import/resolver': {
+      webpack: {
+        config: path.resolve('webpack.config.js')
+      },
+    },
+  },
   rules: {
     'react/jsx-uses-react': 'error',
     'react/jsx-uses-vars': 'error',

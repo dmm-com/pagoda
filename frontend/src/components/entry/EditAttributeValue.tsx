@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import React, { FC } from "react";
 
-import { DjangoContext } from "../../utils/DjangoContext";
+import { DjangoContext } from "utils/DjangoContext";
 
 interface CommonProps {
   attrName: string;

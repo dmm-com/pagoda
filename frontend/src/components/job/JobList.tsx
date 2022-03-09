@@ -14,7 +14,19 @@ import {
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
-import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
+
+import { cancelJob, rerunJob } from "../../utils/AironeAPIClient";
+import { Confirmable } from "../common/Confirmable";
+
+const JOB_STATUS = {
+  PREPARING: 1,
+  DONE: 2,
+  ERROR: 3,
+  TIMEOUT: 4,
+  PROCESSING: 5,
+  CANCELED: 6,
+};
 
 interface Job {
   id: number;
@@ -43,6 +55,17 @@ interface Props {
 
 export const JobList: FC<Props> = ({ jobs }) => {
   const classes = useStyles();
+  const history = useHistory();
+
+  const handleRerun = async (jobId: number) => {
+    await rerunJob(jobId);
+    history.go(0);
+  };
+
+  const handleCancel = async (jobId: number) => {
+    await cancelJob(jobId);
+    history.go(0);
+  };
 
   return (
     <TableContainer component={Paper}>
@@ -72,7 +95,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
         </TableHead>
         <TableBody>
           {jobs.map((job) => (
-            <TableRow>
+            <TableRow key={job.id}>
               <TableCell>
                 <Typography>{job.target && job.target.name}</Typography>
               </TableCell>
@@ -80,7 +103,24 @@ export const JobList: FC<Props> = ({ jobs }) => {
                 <Typography>{job.operation}</Typography>
               </TableCell>
               <TableCell>
-                <Typography>{job.status}</Typography>
+                {(() => {
+                  switch (job.status) {
+                    case JOB_STATUS.PREPARING:
+                      return <Typography>処理前</Typography>;
+                    case JOB_STATUS.DONE:
+                      return <Typography>完了</Typography>;
+                    case JOB_STATUS.ERROR:
+                      return <Typography>エラー</Typography>;
+                    case JOB_STATUS.TIMEOUT:
+                      return <Typography>完了</Typography>;
+                    case JOB_STATUS.PROCESSING:
+                      return <Typography>処理中</Typography>;
+                    case JOB_STATUS.CANCELED:
+                      return <Typography>キャンセル</Typography>;
+                    default:
+                      return <Typography>不明</Typography>;
+                  }
+                })()}
               </TableCell>
               <TableCell>
                 <Typography>{job.passed_time} s</Typography>
@@ -93,28 +133,42 @@ export const JobList: FC<Props> = ({ jobs }) => {
               </TableCell>
               <TableCell align="right">
                 <List>
-                  <ListItem>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      className={classes.button}
-                      component={Link}
-                      to={`/jobs/${job.id}/rerun`}
-                    >
-                      Re-run
-                    </Button>
-                  </ListItem>
-                  <ListItem>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      className={classes.button}
-                      component={Link}
-                      to={`/jobs/${job.id}/cancel`}
-                    >
-                      Cancel
-                    </Button>
-                  </ListItem>
+                  {![
+                    JOB_STATUS.DONE,
+                    JOB_STATUS.PROCESSING,
+                    JOB_STATUS.CANCELED,
+                  ].includes(job.status) && (
+                    <ListItem>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        className={classes.button}
+                        onClick={() => handleRerun(job.id)}
+                      >
+                        Re-run
+                      </Button>
+                    </ListItem>
+                  )}
+                  {![JOB_STATUS.DONE, JOB_STATUS.CANCELED].includes(
+                    job.status
+                  ) && (
+                    <ListItem>
+                      <Confirmable
+                        componentGenerator={(handleOpen) => (
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            className={classes.button}
+                            onClick={handleOpen}
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                        dialogTitle="本当にキャンセルしますか？"
+                        onClickYes={() => handleCancel(job.id)}
+                      />
+                    </ListItem>
+                  )}
                 </List>
               </TableCell>
             </TableRow>
