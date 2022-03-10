@@ -158,6 +158,45 @@ class ViewTest(AironeViewTest):
             'schema_id': entry.attrs.get(schema__name='names').schema.id,
         })
 
+    def test_get_entry_without_permission(self):
+        user = self.guest_login()
+
+        entity = self.create_entity(**{
+            'user': user,
+            'name': 'test-entity',
+            'is_public': False,
+        })
+        entry = self.add_entry(user, 'test-entry', entity)
+
+        resp = self.client.get('/entry/api/v2/%d' % entry.id)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_get_entry_with_invalid_param(self):
+        self.guest_login()
+
+        for param in ['hoge', 9999]:
+            resp = self.client.get('/entry/api/v2/%s' % param)
+            self.assertEqual(resp.status_code, 404)
+
+    def test_get_entries_without_permission(self):
+        user = self.guest_login()
+
+        entity = self.create_entity(**{
+            'user': user,
+            'name': 'test-entity',
+            'is_public': False,
+        })
+
+        resp = self.client.get('/entry/api/v2/entries/%d' % entity.id)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_get_entries_with_invalid_param(self):
+        self.guest_login()
+
+        for param in ['hoge', 9999]:
+            resp = self.client.get('/entry/api/v2/entries/%s' % param)
+            self.assertEqual(resp.status_code, 404)
+
     def test_serach_entry(self):
         user = self.guest_login()
 
