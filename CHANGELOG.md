@@ -16,6 +16,8 @@
   Contributed by @hinashi
 * Fixed problem that none of AttributeValue have is_latest is True (#441)
   Contributed by @hinashi
+* Fixed that can be retrieved without permission in Entry API v2
+  Contributed by @hinashi
 
 ## v3.5.0
 
