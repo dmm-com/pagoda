@@ -1,5 +1,7 @@
-from airone.lib.types import AttrTypeValue
-from entry.models import Entry
+from django.db.models import Prefetch
+
+from airone.lib.types import AttrTypeValue, AttrDefaultValue
+from entry.models import Entry, Attribute
 from group.models import Group
 from rest_framework import serializers
 from typing import Any, Dict
@@ -27,8 +29,8 @@ class GetEntryWithAttrSerializer(GetEntrySerializer):
         model = Entry
         fields = ('id', 'name', 'schema', 'attrs')
 
-    def get_attrs(self, obj) -> Dict[str, Any]:
-        def get_attr_value(attr):
+    def get_attrs(self, obj: Entry) -> Dict[str, Any]:
+        def get_attr_value(attr: Attribute):
             attrv = attr.get_latest_value(is_readonly=True)
 
             if not attrv:
@@ -109,14 +111,25 @@ class GetEntryWithAttrSerializer(GetEntrySerializer):
             else:
                 return ''
 
-        return {
-                x.schema.name: {
-                    'id': x.id,
-                    'type': x.schema.type,
-                    'value': get_attr_value(x),
-                    'schema_id': x.schema.id,
-                }
-                for x in obj.attrs.filter(is_active=True, schema__is_active=True)}
+        attr_prefetch = Prefetch(
+            'attribute_set',
+            queryset=Attribute.objects.filter(parent_entry=obj, is_active=True),
+            to_attr="attr_list")
+        entity_attrs = obj.schema.attrs.filter(is_active=True).prefetch_related(
+            attr_prefetch).order_by('index')
+
+        attrinfo = {}
+        for entity_attr in entity_attrs:
+            attr = entity_attr.attr_list[0] if entity_attr.attr_list else None
+            value = get_attr_value(attr) if attr else AttrDefaultValue[entity_attr.type]
+            attrinfo[entity_attr.name] = {
+                'id': attr.id if attr else None,
+                'type': entity_attr.type,
+                'value': value,
+                'schema_id': entity_attr.id,
+            }
+
+        return attrinfo
 
 
 class GetEntrySimpleSerializer(serializers.ModelSerializer):

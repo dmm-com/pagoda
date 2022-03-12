@@ -1,5 +1,5 @@
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrTypeValue, AttrTypeStr
 
 from entry.models import Entry
 from group.models import Group
@@ -17,7 +17,8 @@ class ViewTest(AironeViewTest):
         entity = self.create_entity(**{
             'user': user,
             'name': 'test-entity',
-            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY + [
+                {'name': 'optional', type: AttrTypeValue['string']}]
         })
         entry = self.add_entry(user, 'Entry', entity, values={
             'val': 'hoge',
@@ -156,6 +157,12 @@ class ViewTest(AironeViewTest):
             }],
             'id': entry.attrs.get(schema__name='names').id,
             'schema_id': entry.attrs.get(schema__name='names').schema.id,
+        })
+        self.assertEqual(resp_data['attrs']['optional'], {
+            'type': AttrTypeValue['string'],
+            'value': AttrTypeStr.DEFAULT_VALUE,
+            'id': None,
+            'schema_id': entry.attrs.get(schema__name='optional').schema.id,
         })
 
     def test_serach_entry(self):
