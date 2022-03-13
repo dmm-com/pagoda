@@ -1190,7 +1190,15 @@ class Entry(ACLBase):
                 not user.has_permission(self, ACLType.Readable)):
             return None
 
-        attrs = [x for x in self.attrs.filter(is_active=True, schema__is_active=True)
+        attr_prefetch = Prefetch(
+            'attribute_set',
+            queryset=Attribute.objects.filter(parent_entry=self, is_active=True,
+                                              schema__is_active=True),
+            to_attr="attr_list")
+        sorted_attrs = [x.attr_list[0] for x in self.schema.attrs.filter(
+            is_active=True).prefetch_related(attr_prefetch).order_by('index') if x.attr_list]
+
+        attrs = [x for x in sorted_attrs
                  if (user.has_permission(x.schema, ACLType.Readable) and
                      user.has_permission(x, ACLType.Readable))]
 
