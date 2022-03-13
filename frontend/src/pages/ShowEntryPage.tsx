@@ -20,7 +20,7 @@ export const ShowEntryPage: FC = () => {
   const [tabValue, setTabValue] = useState(0);
 
   // TODO get an entry only if show/edit pages
-  const entry: any = useAsync(async () => {
+  const entry = useAsync(async () => {
     return await aironeApiClientV2.getEntry(entryId);
   });
 

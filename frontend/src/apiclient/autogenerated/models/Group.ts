@@ -33,10 +33,10 @@ export interface Group {
   name: string;
   /**
    *
-   * @type {{ [key: string]: any; }}
+   * @type {Array<{ [key: string]: any; }>}
    * @memberof Group
    */
-  readonly members: { [key: string]: any };
+  readonly members: Array<{ [key: string]: any }>;
 }
 
 export function GroupFromJSON(json: any): Group {

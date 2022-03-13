@@ -4,7 +4,15 @@ from airone.lib.types import AttrTypeValue, AttrDefaultValue
 from entry.models import Entry, Attribute
 from group.models import Group
 from rest_framework import serializers
-from typing import Any, Dict
+from typing import Any, Dict, TypedDict, Optional, List
+
+
+class EntryAttributeType(TypedDict):
+    id: Optional[int]
+    type: int
+    value: Any
+    schema_id: int
+    schema_name: str
 
 
 class GetEntrySerializer(serializers.ModelSerializer):
@@ -29,7 +37,7 @@ class GetEntryWithAttrSerializer(GetEntrySerializer):
         model = Entry
         fields = ('id', 'name', 'schema', 'attrs')
 
-    def get_attrs(self, obj: Entry) -> Dict[str, Any]:
+    def get_attrs(self, obj: Entry) -> List[EntryAttributeType]:
         def get_attr_value(attr: Attribute):
             attrv = attr.get_latest_value(is_readonly=True)
 
@@ -118,16 +126,17 @@ class GetEntryWithAttrSerializer(GetEntrySerializer):
         entity_attrs = obj.schema.attrs.filter(is_active=True).prefetch_related(
             attr_prefetch).order_by('index')
 
-        attrinfo = {}
+        attrinfo: List[EntryAttributeType] = []
         for entity_attr in entity_attrs:
             attr = entity_attr.attr_list[0] if entity_attr.attr_list else None
             value = get_attr_value(attr) if attr else AttrDefaultValue[entity_attr.type]
-            attrinfo[entity_attr.name] = {
+            attrinfo.append({
                 'id': attr.id if attr else None,
                 'type': entity_attr.type,
                 'value': value,
                 'schema_id': entity_attr.id,
-            }
+                'schema_name': entity_attr.name,
+            })
 
         return attrinfo
 

@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import {
+  GetEntryWithAttrAttrs,
+  GetEntryWithAttrAttrsFromJSON,
+  GetEntryWithAttrAttrsFromJSONTyped,
+  GetEntryWithAttrAttrsToJSON,
+} from "./GetEntryWithAttrAttrs";
+
 /**
  *
  * @export
@@ -39,10 +46,10 @@ export interface GetEntryWithAttr {
   readonly schema: { [key: string]: any };
   /**
    *
-   * @type {{ [key: string]: any; }}
+   * @type {Array<GetEntryWithAttrAttrs>}
    * @memberof GetEntryWithAttr
    */
-  readonly attrs: { [key: string]: any };
+  readonly attrs: Array<GetEntryWithAttrAttrs>;
 }
 
 export function GetEntryWithAttrFromJSON(json: any): GetEntryWithAttr {
@@ -60,7 +67,7 @@ export function GetEntryWithAttrFromJSONTyped(
     id: json["id"],
     name: json["name"],
     schema: json["schema"],
-    attrs: json["attrs"],
+    attrs: (json["attrs"] as Array<any>).map(GetEntryWithAttrAttrsFromJSON),
   };
 }
 

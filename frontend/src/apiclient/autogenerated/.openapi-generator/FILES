@@ -11,6 +11,7 @@ models/Entity.ts
 models/GetEntry.ts
 models/GetEntrySimple.ts
 models/GetEntryWithAttr.ts
+models/GetEntryWithAttrAttrs.ts
 models/Group.ts
 models/PaginatedGetEntryList.ts
 models/index.ts
