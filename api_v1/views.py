@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from airone.lib.acl import ACLType
-from airone.lib.profile import airone_profile
 from entity.models import Entity
 from entry.models import Entry
 from job.models import Job
@@ -20,7 +19,6 @@ from django.db.models import Q
 
 class EntryAPI(APIView):
 
-    @airone_profile
     def post(self, request, format=None):
         user = User.objects.get(id=request.user.id)
         sel = PostEntrySerializer(data=request.data)
@@ -107,7 +105,6 @@ class EntryAPI(APIView):
 
         return Response(dict({'result': entry.id}, **resp_data))
 
-    @airone_profile
     def get(self, request, *args, **kwargs):
         user = User.objects.filter(id=request.user.id).first()
 
@@ -157,7 +154,6 @@ class EntryAPI(APIView):
 
         return Response([x for x in retinfo if x])
 
-    @airone_profile
     def delete(self, request, *args, **kwargs):
         # checks mandatory parameters are specified
         if not all([x in request.data for x in ['entity', 'entry']]):

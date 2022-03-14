@@ -6,13 +6,11 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 
-from airone.lib.profile import airone_profile
 from user.models import User as AironeUser
 
 
 class AccessTokenAPI(APIView):
 
-    @airone_profile
     def get(self, request, format=None):
         # Getting user by "models.objects.get" is safe, because the "IsAuthenticated" which
         # is specified in the permission_classes parameter guarantees that "request.user" is
@@ -22,7 +20,6 @@ class AccessTokenAPI(APIView):
             {'results': str(AironeUser.objects.get(id=request.user.id, is_active=True).token)}
         )
 
-    @airone_profile
     @method_decorator(csrf_protect)
     def put(self, request, format=None):
         """

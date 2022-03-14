@@ -6,7 +6,6 @@ from urllib3.exceptions import InsecureRequestWarning
 from airone.lib.acl import ACLType
 from airone.lib.http import get_object_with_check_permission
 from airone.lib.http import http_post
-from airone.lib.profile import airone_profile
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
@@ -20,7 +19,6 @@ from webhook.models import Webhook
 urllib3.disable_warnings(InsecureRequestWarning)
 
 
-@airone_profile
 @http_post([
     {'name': 'label', 'type': str},
     {'name': 'webhook_url', 'type': str},
@@ -86,7 +84,6 @@ def set_webhook(request, entity_id, recv_data):
 
 
 # FIXME specify HTTP method
-@airone_profile
 def del_webhook(request, webhook_id):
     webhook = Webhook.objects.filter(id=webhook_id).first()
     if not webhook:

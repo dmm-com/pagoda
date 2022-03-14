@@ -6,6 +6,8 @@
 
 ### Changed
 * Set entry-id for each entry columns in the list entry page
+* Changed the logging method from airone profile to logging middleware
+  Contributed by @hinashi
 
 ### Fixed
 * Fixed problems that changing values for group won't be shown correctly

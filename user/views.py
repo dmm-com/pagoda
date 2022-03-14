@@ -12,14 +12,12 @@ from airone.lib.http import HttpResponseSeeOther
 from airone.lib.http import http_get, http_post
 from airone.lib.http import render
 from airone.lib.http import check_superuser
-from airone.lib.profile import airone_profile
 from airone.auth.ldap import LDAPBackend
 from user.forms import UsernameBasedPasswordResetForm
 
 from .models import User
 
 
-@airone_profile
 @http_get
 def index(request):
     if not request.user.is_authenticated:
@@ -36,13 +34,11 @@ def index(request):
     return render(request, 'list_user.html', context)
 
 
-@airone_profile
 @http_get
 def create(request):
     return render(request, 'create_user.html')
 
 
-@airone_profile
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: (
             x['name'] and not User.objects.filter(username=x['name']).exists()
@@ -69,7 +65,6 @@ def do_create(request, recv_data):
     return JsonResponse({})
 
 
-@airone_profile
 @http_get
 def edit(request, user_id):
     current_user = User.objects.get(id=request.user.id)
@@ -96,7 +91,6 @@ def edit(request, user_id):
     return render(request, 'edit_user.html', context)
 
 
-@airone_profile
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: x['name']},
     {'name': 'email', 'type': str, 'checker': lambda x: x['email']},
@@ -146,7 +140,6 @@ def do_edit(request, user_id, recv_data):
     return JsonResponse({})
 
 
-@airone_profile
 @http_get
 def edit_passwd(request, user_id):
     user_grade = ''
@@ -171,7 +164,6 @@ def edit_passwd(request, user_id):
     return render(request, 'edit_passwd.html', context)
 
 
-@airone_profile
 @http_post([
     {'name': 'old_passwd', 'type': str, 'checker': lambda x: x['old_passwd']},
     {'name': 'new_passwd', 'type': str, 'checker': lambda x: x['new_passwd']},
@@ -206,7 +198,6 @@ def do_edit_passwd(request, user_id, recv_data):
     return JsonResponse({})
 
 
-@airone_profile
 @http_post([
     {'name': 'new_passwd', 'type': str, 'checker': lambda x: x['new_passwd']},
     {'name': 'chk_passwd', 'type': str, 'checker': lambda x: x['chk_passwd']},
@@ -229,7 +220,6 @@ def do_su_edit_passwd(request, user_id, recv_data):
     return JsonResponse({})
 
 
-@airone_profile
 @http_post([])
 @check_superuser
 def do_delete(request, user_id, recv_data):
@@ -249,7 +239,6 @@ def do_delete(request, user_id, recv_data):
     return JsonResponse(ret)
 
 
-@airone_profile
 @http_post([
     {'name': 'ldap_password', 'type': str}
 ])

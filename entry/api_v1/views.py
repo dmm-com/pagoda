@@ -8,7 +8,6 @@ from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.http import http_get, http_post
 from airone.lib.types import AttrTypeValue
-from airone.lib.profile import airone_profile
 from airone.lib.elasticsearch import prepend_escape_character
 from datetime import datetime, date
 
@@ -21,7 +20,6 @@ from user.models import User
 from natsort import natsorted
 
 
-@airone_profile
 @http_get
 def get_referrals(request, entry_id):
     """
@@ -207,7 +205,6 @@ def get_attr_referrals(request, attr_id):
         {'results': natsorted(results, key=lambda x: x['name'])[0:CONFIG.MAX_LIST_REFERRALS]})
 
 
-@airone_profile
 @http_get
 def get_entry_history(request, entry_id):
     params = {'index': None, 'count': None}

@@ -21,12 +21,10 @@ from airone.lib.http import render
 from airone.lib.http import get_download_response
 from airone.lib.acl import get_permitted_objects
 from airone.lib.acl import ACLType
-from airone.lib.profile import airone_profile
 
 from .settings import CONFIG
 
 
-@airone_profile
 @http_get
 def index(request):
     param_page_index = request.GET.get('page')
@@ -62,7 +60,6 @@ def index(request):
     return render(request, 'list_entities.html', context)
 
 
-@airone_profile
 @http_get
 def create(request):
     user = User.objects.get(id=request.user.id)
@@ -75,7 +72,6 @@ def create(request):
     return render(request, 'create_entity.html', context)
 
 
-@airone_profile
 @http_get
 def edit(request, entity_id):
     user = User.objects.get(id=request.user.id)
@@ -104,7 +100,6 @@ def edit(request, entity_id):
     return render(request, 'edit_entity.html', context)
 
 
-@airone_profile
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: x['name']},
     {'name': 'note', 'type': str},
@@ -172,7 +167,6 @@ def do_edit(request, entity_id, recv_data):
     })
 
 
-@airone_profile
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: (
         x['name'] and not Entity.objects.filter(name=x['name']).exists()
@@ -237,7 +231,6 @@ def do_create(request, recv_data):
     })
 
 
-@airone_profile
 @http_get
 def export(request):
     user = User.objects.get(id=request.user.id)
@@ -275,7 +268,6 @@ def export(request):
     return get_download_response(output, 'entity.yaml')
 
 
-@airone_profile
 @http_post([])
 def do_delete(request, entity_id, recv_data):
     user = User.objects.get(id=request.user.id)
@@ -310,7 +302,6 @@ def do_delete(request, entity_id, recv_data):
     return JsonResponse(ret)
 
 
-@airone_profile
 @http_get
 def history(request, entity_id):
     if not Entity.objects.filter(id=entity_id).exists():
@@ -327,7 +318,6 @@ def history(request, entity_id):
     return render(request, 'history_entity.html', context)
 
 
-@airone_profile
 @http_get
 def dashboard(request, entity_id):
     if not Entity.objects.filter(id=entity_id).exists():
@@ -398,7 +388,6 @@ def dashboard(request, entity_id):
     return render(request, 'dashboard_entity.html', context)
 
 
-@airone_profile
 @http_get
 def conf_dashboard(request, entity_id):
     if not Entity.objects.filter(id=entity_id).exists():
@@ -416,7 +405,6 @@ def conf_dashboard(request, entity_id):
     return render(request, 'conf_dashboard_entity.html', context)
 
 
-@airone_profile
 @http_post([
     {'name': 'attrs', 'type': list,
      'checker': lambda x: all([EntityAttr.objects.filter(id=v).exists() for v in x['attrs']])}

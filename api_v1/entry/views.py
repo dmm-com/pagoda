@@ -1,7 +1,6 @@
 import pytz
 
 from airone.lib.acl import ACLType
-from airone.lib.profile import airone_profile
 from django.conf import settings
 from django.db.models import Q
 
@@ -20,7 +19,6 @@ from user.models import User
 
 class EntrySearchAPI(APIView):
 
-    @airone_profile
     def post(self, request, format=None):
         user = User.objects.get(id=request.user.id)
 
@@ -88,7 +86,6 @@ class EntrySearchAPI(APIView):
 
 class EntryReferredAPI(APIView):
 
-    @airone_profile
     def get(self, request):
         # set each request parameters to description variables
         param_entity = request.query_params.get('entity')
@@ -123,7 +120,6 @@ class EntryReferredAPI(APIView):
 
 class UpdateHistory(APIView):
 
-    @airone_profile
     def get(self, request):
         # validate whether mandatory parameters are specified
         p_attr = request.GET.get('attribute')
