@@ -11,12 +11,10 @@ from airone.lib.http import http_get, http_post, http_file_upload
 from airone.lib.http import render
 from airone.lib.http import get_download_response
 from airone.lib.http import check_superuser
-from airone.lib.profile import airone_profile
 
 from user.models import User
 
 
-@airone_profile
 @http_get
 def index(request):
     context = {}
@@ -29,7 +27,6 @@ def index(request):
     return render(request, 'list_group.html', context)
 
 
-@airone_profile
 @http_get
 @check_superuser
 def edit(request, group_id):
@@ -64,7 +61,6 @@ def edit(request, group_id):
     return render(request, 'edit_group.html', context)
 
 
-@airone_profile
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: x['name']},
     {'name': 'users', 'type': list, 'checker': lambda x: (
@@ -104,7 +100,6 @@ def do_edit(request, group_id, recv_data):
     })
 
 
-@airone_profile
 @http_get
 @check_superuser
 def create(request):
@@ -130,7 +125,6 @@ def create(request):
     return render(request, 'edit_group.html', context)
 
 
-@airone_profile
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: (
         x['name'] and not Group.objects.filter(name=x['name']).exists()
@@ -152,7 +146,6 @@ def do_create(request, recv_data):
     })
 
 
-@airone_profile
 @http_post()
 @check_superuser
 def do_delete(request, group_id, recv_data):
@@ -172,7 +165,6 @@ def do_delete(request, group_id, recv_data):
     return JsonResponse(ret)
 
 
-@airone_profile
 @http_get
 def export(request):
     user = User.objects.get(id=request.user.id)
@@ -203,13 +195,11 @@ def export(request):
     return get_download_response(output, 'user_group.yaml')
 
 
-@airone_profile
 @http_get
 def import_user_and_group(request):
     return render(request, 'import_user_and_group.html', {})
 
 
-@airone_profile
 @http_file_upload
 @check_superuser
 def do_import_user_and_group(request, context):

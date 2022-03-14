@@ -4,7 +4,6 @@ from django.db.models import Q
 
 # libraries of AirOne
 from airone.lib.http import http_get
-from airone.lib.profile import airone_profile
 
 # related models in AirOne
 from job.models import Job, JobOperation
@@ -14,7 +13,6 @@ from user.models import User
 from job.settings import CONFIG
 
 
-@airone_profile
 @http_get
 def list_jobs(request):
     user = User.objects.get(id=request.user.id)

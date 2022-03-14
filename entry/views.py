@@ -19,7 +19,6 @@ from airone.lib.http import http_file_upload
 from airone.lib.http import HttpResponseSeeOther
 from airone.lib.types import AttrTypeValue
 from airone.lib.acl import ACLType
-from airone.lib.profile import airone_profile
 
 from entity.models import Entity
 from entry.models import Entry, Attribute, AttributeValue
@@ -92,7 +91,6 @@ def _validate_input(recv_data, obj):
                 return HttpResponse('Incorrect data format in date', status=400)
 
 
-@airone_profile
 @http_get
 def index(request, entity_id):
     user = User.objects.get(id=request.user.id)
@@ -138,7 +136,6 @@ def index(request, entity_id):
         return render(request, 'list_entry.html', context)
 
 
-@airone_profile
 @http_get
 def create(request, entity_id):
     user = User.objects.get(id=request.user.id)
@@ -173,7 +170,6 @@ def create(request, entity_id):
         return render(request, 'create_entry.html', context)
 
 
-@airone_profile
 @http_post([
     {'name': 'entry_name', 'type': str, 'checker': lambda x: x['entry_name']},
     {'name': 'attrs', 'type': list, 'meta': [
@@ -220,7 +216,6 @@ def do_create(request, entity_id, recv_data):
     })
 
 
-@airone_profile
 @http_get
 def edit(request, entry_id):
     user = User.objects.get(id=request.user.id)
@@ -251,7 +246,6 @@ def edit(request, entry_id):
         return render(request, 'edit_entry.html', context)
 
 
-@airone_profile
 @http_post([
     {'name': 'entry_name', 'type': str, 'checker': lambda x: (
         x['entry_name']
@@ -316,7 +310,6 @@ def do_edit(request, entry_id, recv_data):
     })
 
 
-@airone_profile
 @http_get
 def show(request, entry_id):
     user = User.objects.get(id=request.user.id)
@@ -344,7 +337,6 @@ def show(request, entry_id):
         return render(request, 'show_entry.html', context)
 
 
-@airone_profile
 @http_get
 def history(request, entry_id):
     user = User.objects.get(id=request.user.id)
@@ -367,7 +359,6 @@ def history(request, entry_id):
     return render(request, 'show_entry_history.html', context)
 
 
-@airone_profile
 @http_get
 def refer(request, entry_id):
     user = User.objects.get(id=request.user.id)
@@ -392,7 +383,6 @@ def refer(request, entry_id):
     return render(request, 'show_entry_refer.html', context)
 
 
-@airone_profile
 @http_post([])
 def export(request, entity_id, recv_data):
     user = User.objects.get(id=request.user.id)
@@ -432,7 +422,6 @@ def export(request, entity_id, recv_data):
     })
 
 
-@airone_profile
 @http_get
 def import_data(request, entity_id):
     if not Entity.objects.filter(id=entity_id, is_active=True).exists():
@@ -441,7 +430,6 @@ def import_data(request, entity_id):
     return render(request, 'import_entry.html', {'entity': Entity.objects.get(id=entity_id)})
 
 
-@airone_profile
 @http_file_upload
 def do_import_data(request, entity_id, context):
     user = User.objects.get(id=request.user.id)
@@ -479,7 +467,6 @@ def do_import_data(request, entity_id, context):
     return HttpResponseSeeOther('/entry/%s/' % entity_id)
 
 
-@airone_profile
 @http_post([])  # check only that request is POST, id will be given by url
 def do_delete(request, entry_id, recv_data):
     user = User.objects.get(id=request.user.id)
@@ -527,7 +514,6 @@ def do_delete(request, entry_id, recv_data):
     return JsonResponse(ret)
 
 
-@airone_profile
 @http_get
 def copy(request, entry_id):
     user = User.objects.get(id=request.user.id)
@@ -555,7 +541,6 @@ def copy(request, entry_id):
     return render(request, 'copy_entry.html', context)
 
 
-@airone_profile
 @http_post([
     {'name': 'entries', 'type': str},
 ])
@@ -617,7 +602,6 @@ def do_copy(request, entry_id, recv_data):
     return JsonResponse({'results': ret})
 
 
-@airone_profile
 @http_get
 def restore(request, entity_id):
     user = User.objects.get(id=request.user.id)
@@ -653,7 +637,6 @@ def restore(request, entity_id):
     })
 
 
-@airone_profile
 @http_post([])
 def do_restore(request, entry_id, recv_data):
     user = User.objects.get(id=request.user.id)
@@ -682,7 +665,6 @@ def do_restore(request, entry_id, recv_data):
     return HttpResponse('Success to queue a request to restore an entry')
 
 
-@airone_profile
 @http_post([
     {'type': str, 'name': 'attr_id'},
     {'type': str, 'name': 'attrv_id'}

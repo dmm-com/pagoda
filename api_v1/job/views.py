@@ -9,12 +9,9 @@ from job.models import Job, JobOperation
 from job.settings import CONFIG as JOB_CONFIG
 from user.models import User
 
-from airone.lib.profile import airone_profile
-
 
 class JobAPI(APIView):
 
-    @airone_profile
     def get(self, request, format=None):
         """
         This returns only jobs that are created by the user who sends this request.
@@ -59,7 +56,6 @@ class JobAPI(APIView):
             'constant': constant,
         })
 
-    @airone_profile
     def delete(self, request, format=None):
         """
         This cancels a specified Job.
@@ -88,7 +84,6 @@ class JobAPI(APIView):
 
 class SpecificJobAPI(APIView):
 
-    @airone_profile
     def post(self, request, job_id, format=None):
         job = Job.objects.filter(id=job_id).first()
         if not job:
@@ -114,7 +109,6 @@ class SpecificJobAPI(APIView):
 
 class SearchJob(APIView):
 
-    @airone_profile
     def get(self, request):
         """
         This returns jobs that are matched to the specified conditions in spite of who makes.

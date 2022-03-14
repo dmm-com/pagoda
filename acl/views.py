@@ -4,7 +4,6 @@ from django.http.response import JsonResponse
 from airone.lib.acl import ACLType, ACLObjType
 from airone.lib.http import http_get, http_post, render
 from airone.lib.http import get_object_with_check_permission
-from airone.lib.profile import airone_profile
 from airone.lib.log import Logger
 
 from entity.models import Entity, EntityAttr
@@ -14,7 +13,6 @@ from user.models import User
 from .models import ACLBase
 
 
-@airone_profile
 @http_get
 def index(request, obj_id):
     user = User.objects.get(id=request.user.id)
@@ -58,7 +56,6 @@ def index(request, obj_id):
     return render(request, 'edit_acl.html', context)
 
 
-@airone_profile
 @http_post([
     {'name': 'object_id', 'type': str,
      'checker': lambda x: ACLBase.objects.filter(id=x['object_id']).exists()},

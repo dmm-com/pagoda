@@ -2,7 +2,6 @@ from rest_framework import viewsets
 
 from entity.api_v2.serializers import EntitySerializer
 from user.models import History
-from airone.lib.profile import airone_profile
 from airone.lib.http import http_get
 
 from django.http.response import JsonResponse, HttpResponse
@@ -10,7 +9,6 @@ from django.http.response import JsonResponse, HttpResponse
 from entity.models import Entity
 
 
-@airone_profile
 @http_get
 def history(request, entity_id):
     if not Entity.objects.filter(id=entity_id).exists():

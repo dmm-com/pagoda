@@ -1,5 +1,3 @@
-import re
-
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 
@@ -24,25 +22,16 @@ class APITest(AironeViewTest):
                                                            parent_entity=entity))
 
         # swap original configuration not to make a negative influence on other tests
-        self._orig_profile_setting = settings.AIRONE['ENABLE_PROFILE']
-        settings.AIRONE['ENABLE_PROFILE'] = True
-
-    def tearDown(self):
-        # retrieve original configuration
-        settings.AIRONE['ENABLE_PROFILE'] = self._orig_profile_setting
+        settings.MIDDLEWARE = [
+            x for x in settings.MIDDLEWARE if x != 'airone.lib.log.LoggingRequestMiddleware'
+        ]
 
     def test_get_entity_attrs_with_invalid_entity_id(self):
         resp = self.client.get('/api/v1/entity/attrs/9999')
         self.assertEqual(resp.status_code, 400)
 
     def test_get_all_entity_attrs(self):
-        with self.assertLogs('airone', level='INFO') as log:
-            resp = self.client.get('/api/v1/entity/attrs/,')
-
-            # check output log format is expected
-            self.assertEqual(len(log.output), 1)
-            self.assertTrue(re.match('.*\(user-id: \d+\) GET /api/v1/entity/attrs/,$',  # noqa: W605
-                            log.output[0]))
+        resp = self.client.get('/api/v1/entity/attrs/,')
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()['result'], sorted(['foo', 'bar', 'hoge', 'fuga']))

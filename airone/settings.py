@@ -64,6 +64,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'airone.lib.log.LoggingRequestMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -181,7 +182,6 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 
 # global settins for AirOne
 AIRONE: Dict[str, Any] = {
-    'ENABLE_PROFILE': True,
     'CONCURRENCY': 1,
     'VERSION': 'unknown',
     'FILE_STORE_PATH': '/tmp/airone_app',

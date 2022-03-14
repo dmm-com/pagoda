@@ -103,8 +103,9 @@ class AironeViewTest(AironeTestCase):
 
         self.client = Client()
 
-        if hasattr(settings, 'AIRONE') and 'ENABLE_PROFILE' in settings.AIRONE:
-            settings.AIRONE['ENABLE_PROFILE'] = False
+        settings.MIDDLEWARE = [
+            x for x in settings.MIDDLEWARE if x != 'airone.lib.log.LoggingRequestMiddleware'
+        ]
 
     def _do_login(self, uname, is_superuser=False):
         # create test user to authenticate

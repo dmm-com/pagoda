@@ -6,7 +6,6 @@ from airone.lib.http import render
 from airone.lib.http import http_get, http_post
 from airone.lib.http import http_file_upload
 from airone.lib.http import HttpResponseSeeOther
-from airone.lib.profile import airone_profile
 from airone.lib.log import Logger
 
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -32,7 +31,6 @@ IMPORT_INFOS = [
 ]
 
 
-@airone_profile
 def index(request):
     context = {}
     if request.user.is_authenticated and User.objects.filter(id=request.user.id).exists():
@@ -56,13 +54,11 @@ def index(request):
     return render(request, 'dashboard_user_top.html', context)
 
 
-@airone_profile
 @http_get
 def import_data(request):
     return render(request, 'import.html', {})
 
 
-@airone_profile
 @http_file_upload
 def do_import_data(request, context):
     user = User.objects.get(id=request.user.id)
@@ -103,7 +99,6 @@ def _search_by_keyword(query, entity_name, per_page, page_num):
     return (search_result['ret_count'], search_result['ret_values'])
 
 
-@airone_profile
 @http_get
 def search(request):
     user = User.objects.get(id=request.user.id)
@@ -153,7 +148,6 @@ def search(request):
         })
 
 
-@airone_profile
 @http_get
 def advanced_search(request):
     entities = [x for x in Entity.objects.filter(is_active=True).order_by('name')
@@ -165,7 +159,6 @@ def advanced_search(request):
 
 
 @http_get
-@airone_profile
 def advanced_search_result(request):
     user = User.objects.get(id=request.user.id)
 
@@ -252,7 +245,6 @@ def advanced_search_result(request):
     })
 
 
-@airone_profile
 @http_post([
     {'name': 'entities', 'type': list, 'checker': lambda x: all(
         [(isinstance(y, str) and y.isnumeric()) or isinstance(y, int) and

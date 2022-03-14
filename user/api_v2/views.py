@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from airone.lib.profile import airone_profile
 from airone.lib.http import http_get
 
 from django.http.response import JsonResponse, HttpResponse
@@ -8,7 +7,6 @@ from django.http.response import JsonResponse, HttpResponse
 from user.models import User
 
 
-@airone_profile
 @http_get
 def get_user(request, user_id):
     current_user = User.objects.get(id=request.user.id)
@@ -29,7 +27,6 @@ def get_user(request, user_id):
     })
 
 
-@airone_profile
 @http_get
 def list_users(request):
     users = User.objects.filter(is_active=True)

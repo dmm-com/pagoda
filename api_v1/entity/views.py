@@ -4,13 +4,11 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from airone.lib.profile import airone_profile
 from entity.models import Entity, EntityAttr
 
 
 class EntityAttrsAPI(APIView):
 
-    @airone_profile
     def get(self, request, entity_ids, format=None):
         entities = [Entity.objects.filter(id=x, is_active=True).first()
                     for x in entity_ids.split(',') if x]

@@ -1,6 +1,7 @@
 import json
 from datetime import timedelta
 
+from django.conf import settings
 from django.test import TestCase, Client
 from django.urls import reverse
 from unittest.mock import patch
@@ -15,6 +16,10 @@ class ViewTest(TestCase):
         self._client = Client()
         self.guest = self._create_user('guest', 'guest@example.com')
         self.admin = self._create_user('admin', 'admin@example.com', True)
+
+        settings.MIDDLEWARE = [
+            x for x in settings.MIDDLEWARE if x != 'airone.lib.log.LoggingRequestMiddleware'
+        ]
 
     def _create_user(self, name, email='email', is_superuser=False,
                      authenticate_type=User.AUTH_TYPE_LOCAL):
