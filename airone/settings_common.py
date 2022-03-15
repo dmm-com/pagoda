@@ -58,6 +58,7 @@ class Common(Configuration):
         'rest_framework',
         'rest_framework.authtoken',
         'custom_view.background',
+        'custom_view',
         'drf_spectacular',
         'django_filters',
         # "debug_toolbar",
