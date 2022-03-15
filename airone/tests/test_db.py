@@ -1,10 +1,10 @@
 import time
+import django
 from django.utils.http import parse_http_date
 
 from airone.lib.test import AironeViewTest
-from airone import settings
 
-COOKIE_NAME = settings.REPLICATED_FORCE_MASTER_COOKIE_NAME
+COOKIE_NAME = django.conf.settings.REPLICATED_FORCE_MASTER_COOKIE_NAME
 
 
 class ViewTest(AironeViewTest):
@@ -37,8 +37,9 @@ class ViewTest(AironeViewTest):
 
         # GET after expired cookies: use slave
         with self.assertLogs('django_replicated.router', level='DEBUG') as log:
-            self.assertTrue(parse_http_date(self.client.cookies[COOKIE_NAME]['expires']) <
-                            (time.time() + settings.REPLICATED_FORCE_MASTER_COOKIE_MAX_AGE))
+            self.assertTrue(
+                parse_http_date(self.client.cookies[COOKIE_NAME]['expires']) <
+                (time.time() + django.conf.settings.REPLICATED_FORCE_MASTER_COOKIE_MAX_AGE))
             # Delete expired cookies
             del self.client.cookies[COOKIE_NAME]
             response = self.client.get('/dashboard/')

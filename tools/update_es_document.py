@@ -1,4 +1,5 @@
 import django
+import configurations
 import os
 import sys
 from optparse import OptionParser
@@ -8,9 +9,10 @@ sys.path.append("./")
 
 # prepare to load the data models of AirOne
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "airone.settings")
+os.environ.setdefault('DJANGO_CONFIGURATION', 'Dev')
 
 # load AirOne application
-django.setup()
+configurations.setup()
 
 from airone.lib.elasticsearch import ESS # NOQA
 from entry.models import Entry # NOQA
