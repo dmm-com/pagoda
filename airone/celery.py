@@ -1,10 +1,14 @@
 import os
+import configurations
 from celery import Celery
 from celery.signals import task_failure
 from django.core.mail import mail_admins
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'airone.settings')
+os.environ.setdefault('DJANGO_CONFIGURATION', 'Dev')
+
+configurations.setup()
 
 app = Celery('airone')
 
