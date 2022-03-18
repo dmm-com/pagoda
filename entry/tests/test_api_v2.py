@@ -1,5 +1,6 @@
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrTypeValue, AttrTypeStr
+from entity.models import EntityAttr
 
 from entry.models import Entry
 from group.models import Group
@@ -17,7 +18,7 @@ class ViewTest(AironeViewTest):
         entity = self.create_entity(**{
             'user': user,
             'name': 'test-entity',
-            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
         })
         entry = self.add_entry(user, 'Entry', entity, values={
             'val': 'hoge',
@@ -34,6 +35,15 @@ class ViewTest(AironeViewTest):
                 {'name': 'foo', 'id': ref_entry.id},
                 {'name': 'bar', 'id': ref_entry.id}],
         })
+        # add an optional attribute after creating entry
+        optional_attr = EntityAttr.objects.create(**{
+            'name': 'opt',
+            'type': AttrTypeValue['string'],
+            'is_mandatory': False,
+            'parent_entity': entity,
+            'created_user': user,
+        })
+        entity.attrs.add(optional_attr)
 
         resp = self.client.get('/entry/api/v2/%d' % entry.id)
         self.assertEqual(resp.status_code, 200)
@@ -44,13 +54,14 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp_data['schema'],
                          {'id': entry.schema.id, 'name': entry.schema.name})
 
-        self.assertEqual(resp_data['attrs']['val'], {
+        self.assertEqual(next(filter(lambda x: x['schema_name'] == 'val', resp_data['attrs'])), {
             'type': AttrTypeValue['string'],
             'value': 'hoge',
             'id': entry.attrs.get(schema__name='val').id,
             'schema_id': entry.attrs.get(schema__name='val').schema.id,
+            'schema_name': 'val',
         })
-        self.assertEqual(resp_data['attrs']['ref'], {
+        self.assertEqual(next(filter(lambda x: x['schema_name'] == 'ref', resp_data['attrs'])), {
             'type': AttrTypeValue['object'],
             'value': {
                 'id': ref_entry.id,
@@ -62,8 +73,9 @@ class ViewTest(AironeViewTest):
             },
             'id': entry.attrs.get(schema__name='ref').id,
             'schema_id': entry.attrs.get(schema__name='ref').schema.id,
+            'schema_name': 'ref',
         })
-        self.assertEqual(resp_data['attrs']['name'], {
+        self.assertEqual(next(filter(lambda x: x['schema_name'] == 'name', resp_data['attrs'])), {
             'type': AttrTypeValue['named_object'],
             'value': {
                 'hoge': {
@@ -77,20 +89,23 @@ class ViewTest(AironeViewTest):
             },
             'id': entry.attrs.get(schema__name='name').id,
             'schema_id': entry.attrs.get(schema__name='name').schema.id,
+            'schema_name': 'name',
         })
-        self.assertEqual(resp_data['attrs']['bool'], {
+        self.assertEqual(next(filter(lambda x: x['schema_name'] == 'bool', resp_data['attrs'])), {
             'type': AttrTypeValue['boolean'],
             'value': False,
             'id': entry.attrs.get(schema__name='bool').id,
             'schema_id': entry.attrs.get(schema__name='bool').schema.id,
+            'schema_name': 'bool',
         })
-        self.assertEqual(resp_data['attrs']['date'], {
+        self.assertEqual(next(filter(lambda x: x['schema_name'] == 'date', resp_data['attrs'])), {
             'type': AttrTypeValue['date'],
             'value': '2018-12-31',
             'id': entry.attrs.get(schema__name='date').id,
             'schema_id': entry.attrs.get(schema__name='date').schema.id,
+            'schema_name': 'date',
         })
-        self.assertEqual(resp_data['attrs']['group'], {
+        self.assertEqual(next(filter(lambda x: x['schema_name'] == 'group', resp_data['attrs'])), {
             'type': AttrTypeValue['group'],
             'value': {
                 'id': group.id,
@@ -98,8 +113,9 @@ class ViewTest(AironeViewTest):
             },
             'id': entry.attrs.get(schema__name='group').id,
             'schema_id': entry.attrs.get(schema__name='group').schema.id,
+            'schema_name': 'group',
         })
-        self.assertEqual(resp_data['attrs']['groups'], {
+        self.assertEqual(next(filter(lambda x: x['schema_name'] == 'groups', resp_data['attrs'])), {
             'type': AttrTypeValue['array_group'],
             'value': [{
                 'id': group.id,
@@ -107,20 +123,23 @@ class ViewTest(AironeViewTest):
             }],
             'id': entry.attrs.get(schema__name='groups').id,
             'schema_id': entry.attrs.get(schema__name='groups').schema.id,
+            'schema_name': 'groups',
         })
-        self.assertEqual(resp_data['attrs']['text'], {
+        self.assertEqual(next(filter(lambda x: x['schema_name'] == 'text', resp_data['attrs'])), {
             'type': AttrTypeValue['text'],
             'value': 'fuga',
             'id': entry.attrs.get(schema__name='text').id,
             'schema_id': entry.attrs.get(schema__name='text').schema.id,
+            'schema_name': 'text',
         })
-        self.assertEqual(resp_data['attrs']['vals'], {
+        self.assertEqual(next(filter(lambda x: x['schema_name'] == 'vals', resp_data['attrs'])), {
             'type': AttrTypeValue['array_string'],
             'value': ['foo', 'bar'],
             'id': entry.attrs.get(schema__name='vals').id,
             'schema_id': entry.attrs.get(schema__name='vals').schema.id,
+            'schema_name': 'vals',
         })
-        self.assertEqual(resp_data['attrs']['refs'], {
+        self.assertEqual(next(filter(lambda x: x['schema_name'] == 'refs', resp_data['attrs'])), {
             'type': AttrTypeValue['array_object'],
             'value': [{
                 'id': ref_entry.id,
@@ -132,8 +151,9 @@ class ViewTest(AironeViewTest):
             }],
             'id': entry.attrs.get(schema__name='refs').id,
             'schema_id': entry.attrs.get(schema__name='refs').schema.id,
+            'schema_name': 'refs',
         })
-        self.assertEqual(resp_data['attrs']['names'], {
+        self.assertEqual(next(filter(lambda x: x['schema_name'] == 'names', resp_data['attrs'])), {
             'type': AttrTypeValue['array_named_object'],
             'value': [{
                 'foo': {
@@ -156,6 +176,14 @@ class ViewTest(AironeViewTest):
             }],
             'id': entry.attrs.get(schema__name='names').id,
             'schema_id': entry.attrs.get(schema__name='names').schema.id,
+            'schema_name': 'names',
+        })
+        self.assertEqual(next(filter(lambda x: x['schema_name'] == 'opt', resp_data['attrs'])), {
+            'type': AttrTypeValue['string'],
+            'value': AttrTypeStr.DEFAULT_VALUE,
+            'id': None,
+            'schema_id': entity.attrs.get(name='opt').id,
+            'schema_name': 'opt',
         })
 
     def test_get_entry_without_permission(self):
@@ -453,6 +481,6 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get('/entry/api/v2/%d' % entry.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(sorted(resp.json()['attrs'].keys()),
+        self.assertEqual(sorted([attr['schema_name'] for attr in resp.json()['attrs']]),
                          sorted(['ref', 'name', 'bool', 'date', 'group', 'groups', 'text', 'vals',
                                  'refs', 'names']))
