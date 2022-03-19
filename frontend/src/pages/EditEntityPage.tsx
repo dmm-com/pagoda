@@ -30,6 +30,10 @@ export const EditEntityPage: FC = () => {
     setTabValue(newValue);
   };
 
+  if (entity.loading || referralEntities.loading) {
+    return <Loading />;
+  }
+
   return (
     <Box>
       <AironeBreadcrumbs>
@@ -39,38 +43,37 @@ export const EditEntityPage: FC = () => {
         <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
-        {/* TODO consider loading case */}
-        {!entity.loading && (
+        {entityId && (
           <Typography component={Link} to={entityEntriesPath(entityId)}>
             {entity?.value?.name ?? ""}
           </Typography>
         )}
-        <Typography color="textPrimary">エンティティ編集</Typography>
+        <Typography color="textPrimary">
+          {entityId ? "エンティティ編集" : "新規エンティティの作成"}
+        </Typography>
       </AironeBreadcrumbs>
 
-      <Tabs value={tabValue} onChange={handleTabChange}>
-        <Tab label="編集" />
-        <Tab label="設定" />
-      </Tabs>
+      <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
+        <Tabs value={tabValue} onChange={handleTabChange}>
+          <Tab label="編集" />
+          <Tab label="設定" />
+        </Tabs>
 
-      <Box hidden={tabValue !== 0}>
-        {entity.loading || referralEntities.loading ? (
-          <Loading />
-        ) : (
+        <Box hidden={tabValue !== 0}>
           <EntityForm
             entity={entity.value}
             referralEntities={referralEntities.value}
           />
-        )}
-      </Box>
-      <Box hidden={tabValue !== 1}>
-        {entityId !== undefined ? (
-          <WebhookForm entityId={entityId} />
-        ) : (
-          <Typography>
-            未作成のエンティティはWebhookを設定できません。まずエンティティを作成してください。
-          </Typography>
-        )}
+        </Box>
+        <Box hidden={tabValue !== 1}>
+          {entityId !== undefined ? (
+            <WebhookForm entityId={entityId} />
+          ) : (
+            <Typography>
+              未作成のエンティティはWebhookを設定できません。まずエンティティを作成してください。
+            </Typography>
+          )}
+        </Box>
       </Box>
     </Box>
   );

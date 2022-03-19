@@ -9,5 +9,7 @@ import { EntityForm } from "components/entity/EntityForm";
 import { TestWrapper } from "utils/TestWrapper";
 
 test("should render a component with essential props", function () {
-  expect(() => render(<EntityForm />, { wrapper: TestWrapper })).not.toThrow();
+  expect(() =>
+    render(<EntityForm referralEntities={[]} />, { wrapper: TestWrapper })
+  ).not.toThrow();
 });
