@@ -114,6 +114,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
                           <MoreVertIcon />
                         </IconButton>
                         <EntryControlMenu
+                          entityId={entityId}
                           entryId={entry.id}
                           anchorElem={entryAnchorEls[entry.id]}
                           handleClose={(entryId: number) =>

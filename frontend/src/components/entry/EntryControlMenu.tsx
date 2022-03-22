@@ -20,12 +20,14 @@ import { Confirmable } from "components/common/Confirmable";
 import { deleteEntry } from "utils/AironeAPIClient";
 
 interface EntryControlProps {
+  entityId: number;
   entryId: number;
   anchorElem: HTMLButtonElement | null;
   handleClose: (entryId: number) => void;
 }
 
 export const EntryControlMenu: FC<EntryControlProps> = ({
+  entityId,
   entryId,
   anchorElem,
   handleClose,
@@ -56,7 +58,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
         <MenuItem component={Link} to={entryPath(entryId)}>
           <Typography>編集</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={copyEntryPath(entryId)}>
+        <MenuItem component={Link} to={copyEntryPath(entityId, entryId)}>
           <Typography>コピー</Typography>
         </MenuItem>
         <MenuItem component={Link} to={aclPath(entryId)}>
