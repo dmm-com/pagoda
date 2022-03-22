@@ -3,6 +3,8 @@
 ## In development
 
 ### Added
+* Added add and remove attributes depending on entity in get entry api v2
+  Contributed by @hinashi
 
 ### Changed
 * Set entry-id for each entry columns in the list entry page
