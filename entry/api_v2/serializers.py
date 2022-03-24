@@ -1,10 +1,12 @@
-from django.db.models import Prefetch
+from typing import Any, Dict, TypedDict, Optional, List
 
+from django.db.models import Prefetch
+from rest_framework import serializers
+
+import custom_view
 from airone.lib.types import AttrTypeValue, AttrDefaultValue
 from entry.models import Entry, Attribute
 from group.models import Group
-from rest_framework import serializers
-from typing import Any, Dict, TypedDict, Optional, List
 
 
 class EntryAttributeType(TypedDict):
@@ -137,6 +139,10 @@ class GetEntryWithAttrSerializer(GetEntrySerializer):
                 'schema_id': entity_attr.id,
                 'schema_name': entity_attr.name,
             })
+
+        # add and remove attributes depending on entity
+        if custom_view.is_custom("get_entry_attr", obj.schema.name):
+            attrinfo = custom_view.call_custom("get_entry_attr", obj.schema.name, obj, attrinfo)
 
         return attrinfo
 

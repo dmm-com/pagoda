@@ -58,7 +58,7 @@ class entryWithAttrAPI(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         is_active = self.request.query_params.get('is_active', 'true').lower() == 'true'
-        return Entry.objects.filter(is_active=is_active)
+        return Entry.objects.filter(is_active=is_active).select_related('schema')
 
 
 class searchAPI(viewsets.ReadOnlyModelViewSet):
