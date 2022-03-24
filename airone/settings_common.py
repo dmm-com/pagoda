@@ -248,7 +248,7 @@ class Common(Configuration):
 
     LOGGING: Dict[str, Any] = {
         'version': 1,
-        'disable_existing_loggers': False,
+        'disable_existing_loggers': True,
         'formatters': {
             'all': {
                 'format': '\t'.join([
@@ -280,11 +280,6 @@ class Common(Configuration):
                 'level': 'INFO',
                 'propagate': False,
             },
-            'django.server': {
-                'handlers': ['file', 'console'],
-                'level': 'INFO',
-                'propagate': False,
-            }
         }
     }
     # If log dir is not exists create it.
