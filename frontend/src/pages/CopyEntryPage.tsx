@@ -3,17 +3,16 @@ import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
-import { Loading } from "../components/common/Loading";
-import { CopyForm } from "../components/entry/CopyForm";
-
 import {
   entitiesPath,
   entityEntriesPath,
   entryDetailsPath,
   topPath,
 } from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Loading } from "components/common/Loading";
+import { CopyForm } from "components/entry/CopyForm";
 
 export const CopyEntryPage: FC = () => {
   const { entryId } = useParams<{ entryId: number }>();

@@ -15,6 +15,7 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(
       <EntryControlMenu
+        entityId={0}
         entryId={0}
         anchorElem={anchorElem}
         handleClose={handleClose}
