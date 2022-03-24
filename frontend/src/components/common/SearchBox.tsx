@@ -13,7 +13,7 @@ export const SearchBox: FC<Props> = ({
   placeholder,
   onChange,
   value,
-  onKeyPress=undefined,
+  onKeyPress = undefined,
 }) => {
   return (
     <TextField
