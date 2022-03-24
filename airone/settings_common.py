@@ -25,7 +25,6 @@ class Common(Configuration):
     #: Only add pickle to this list if your broker is secured
     #: from unwanted access (see userguide/security.html)
     CELERY_ACCEPT_CONTENT = ['json']
-    CELERY_RESULT_BACKEND = 'rpc://'
     CELERY_TASK_SERIALIZER = 'json'
     CELERY_BROKER_HEARTBEAT = 0
 
