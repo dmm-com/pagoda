@@ -101,12 +101,15 @@ def edit(request, entity_id):
 
 
 @http_post([
-    {'name': 'name', 'type': str, 'checker': lambda x: x['name']},
+    {'name': 'name', 'type': str, 'checker': lambda x: (
+            x['name'] and len(x['name']) <= Entity._meta.get_field('name').max_length
+    )},
     {'name': 'note', 'type': str},
     {'name': 'is_toplevel', 'type': bool},
     {'name': 'attrs', 'type': list, 'meta': [
         {'name': 'name', 'type': str, 'checker': lambda x: (
-            x['name'] and not re.match(r'^\s*$', x['name'])
+            x['name'] and not re.match(r'^\s*$', x['name']) and
+            len(x['name']) <= EntityAttr._meta.get_field('name').max_length
         )},
         {'name': 'type', 'type': str, 'checker': lambda x: (
             any([y == int(x['type']) for y in AttrTypes])
@@ -169,13 +172,15 @@ def do_edit(request, entity_id, recv_data):
 
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: (
-        x['name'] and not Entity.objects.filter(name=x['name']).exists()
+        x['name'] and not Entity.objects.filter(name=x['name']).exists() and
+        len(x['name']) <= Entity._meta.get_field('name').max_length
     )},
     {'name': 'note', 'type': str},
     {'name': 'is_toplevel', 'type': bool},
     {'name': 'attrs', 'type': list, 'meta': [
         {'name': 'name', 'type': str, 'checker': lambda x: (
-            x['name'] and not re.match(r'^\s*$', x['name'])
+            x['name'] and not re.match(r'^\s*$', x['name']) and
+            len(x['name']) <= EntityAttr._meta.get_field('name').max_length
         )},
         {'name': 'type', 'type': str, 'checker': lambda x: (
             any([y == int(x['type']) for y in AttrTypes])
