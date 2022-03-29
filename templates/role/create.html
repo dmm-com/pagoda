@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}{{ current_group_name }} - Edit Group{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP(tmp01)</a></li>
+    <li class="breadcrumb-item"><a href="/role">ロール管理</a></li>
+    <li class="breadcrumb-item">ロールの編集</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<form id="edit-form" name="edit-form" url='{{ submit_ref }}' method='post'>
+  {% csrf_token %}
+  <div class="form-row">
+    <div class="form-group col-md-11">
+      <input type="text" name="name" class="form-control" id="group-name" value="{{ current_group_name }}" placeholder="ロール名" />
+    </div>
+    <div class="form-group col-md-1">
+      {% if 'create' in submit_ref %}
+        <button type="submit" class="btn btn-primary">作成</button>
+      {% else %}
+        <button type="submit" class="btn btn-primary">更新</button>
+      {% endif %}
+    </div>
+  </div>
+
+  {% include "role/select_user_groups.html" with collapse_id="collapseUserGroups" collapse_title="登録ユーザ / グループ" is_open=True %}
+
+  {% include "role/select_user_groups.html" with collapse_id="collapseAdminUserGroups" collapse_title="管理登録ユーザ / グループ" %}
+
+</form>
+</div>
+
+{% endblock %}
+
+{% block head %}
+<style type="text/css"><!--
+  {% include 'role/create.css' %}
+--></style>
+{% endblock %}
+
+{% block script %}
+<script>
+$('#edit-form').submit(function(){
+  const sending_params = {
+    users: [],
+    groups: [],
+    admin_users: [],
+    admin_groups: [],
+  };
+
+  // get selected user/groups
+  $('#collapseUserGroups input:checked').each(function(i, elem) {
+    if ($(elem).attr('obj_type') == 'user') {
+      sending_params.users.push($(elem).val());
+    } else {
+      sending_params.groups.push($(elem).val());
+    }
+    console.log(`[onix/collapseUserGroups(00)] (${ $(elem).attr('obj_type') }): `, $(elem).val());
+  });
+  $('#collapseAdminUserGroups input:checked').each(function(i, elem) {
+    if ($(elem).attr('obj_type') == 'user') {
+      sending_params.admin_users.push($(elem).val());
+    } else {
+      sending_params.admin_groups.push($(elem).val());
+    }
+  });
+
+  HttpPost($(this), sending_params
+  ).done(function(data) {
+    MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, data.msg);
+
+    location.href = '/group/';
+  }).fail(function(data) {
+    console.log(`[onix/sending_request(E0)] `, data);
+  });
+
+  return false;
+});
+
+$('.collapse').on('show.bs.collapse', function(e) {
+  console.log('[onix/show.bs.collapse(00)] ', e);
+
+  // close other collapse
+  $('.collapse').collapse('hide');
+});
+
+$('input.filter').on('keypress', function(ev) {
+  if ((ev.which && ev.which === 13) || (ev.keyCode && ev.keyCode === 13)) {
+    return false;
+  }
+
+  console.log(`[onix/filter] (${ ev.keyCode }) `, $(ev.target).val());
+});
+
+</script>
+{% endblock %}
