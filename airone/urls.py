@@ -32,6 +32,7 @@ urlpatterns = [
     ), name='login'),
     url(r'^auth/logout/', auth_view.logout, name='logout'),
     url(r'^webhook/', include(('webhook.urls', 'webhook'))),
+    url(r'^role/', include(('role.urls', 'role'))),
     # url(r'^__debug__/', include('debug_toolbar.urls')),
 ]
 
