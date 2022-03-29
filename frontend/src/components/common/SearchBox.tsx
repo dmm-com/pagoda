@@ -5,10 +5,16 @@ import React, { FC } from "react";
 interface Props {
   placeholder: string;
   onChange: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>;
+  onKeyPress?: (e: any) => void;
   value: string;
 }
 
-export const SearchBox: FC<Props> = ({ placeholder, onChange, value }) => {
+export const SearchBox: FC<Props> = ({
+  placeholder,
+  onChange,
+  value,
+  onKeyPress = undefined,
+}) => {
   return (
     <TextField
       InputProps={{
@@ -28,6 +34,7 @@ export const SearchBox: FC<Props> = ({ placeholder, onChange, value }) => {
       fullWidth={true}
       value={value}
       onChange={onChange}
+      onKeyPress={onKeyPress}
     />
   );
 };

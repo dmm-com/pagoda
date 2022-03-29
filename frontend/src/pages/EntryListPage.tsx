@@ -1,83 +1,21 @@
 import AppsIcon from "@mui/icons-material/Apps";
-import {
-  Box,
-  Container,
-  IconButton,
-  Menu,
-  MenuItem,
-  Typography,
-} from "@mui/material";
+import { Box, Container, IconButton, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import {
-  aclPath,
-  entitiesPath,
-  entityPath,
-  importEntriesPath,
-  topPath,
-} from "Routes";
+import { EntityControlMenu } from "../components/entity/EntityControlMenu";
+
+import { entitiesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { EntryList } from "components/entry/EntryList";
-import { exportEntries } from "utils/AironeAPIClient";
 
-interface EntityControlProps {
-  entityId: number;
-  anchorElem: HTMLButtonElement | null;
-  handleClose: () => void;
-}
-
-// TODO consider to separate a composite component handling anchor and menu events
-const EntityControlMenu: FC<EntityControlProps> = ({
-  entityId,
-  anchorElem,
-  handleClose,
-}) => {
-  return (
-    <Menu
-      id={`entityControlMenu-${entityId}`}
-      open={Boolean(anchorElem)}
-      onClose={() => handleClose()}
-      anchorEl={anchorElem}
-    >
-      <MenuItem component={Link} to={entityPath(entityId)}>
-        <Typography>編集</Typography>
-      </MenuItem>
-      <MenuItem component={Link} to={aclPath(entityId)}>
-        <Typography>ACL</Typography>
-      </MenuItem>
-      {/* FIXME have a message after triggering an event */}
-      <MenuItem
-        onClick={async () => {
-          await exportEntries(entityId, "YAML");
-        }}
-      >
-        <Typography>エクスポート(YAML)</Typography>
-      </MenuItem>
-      <MenuItem
-        onClick={async () => {
-          await exportEntries(entityId, "CSV");
-        }}
-      >
-        <Typography>エクスポート(CSV)</Typography>
-      </MenuItem>
-      {/* FIXME something wrong on the next page??? */}
-      <MenuItem component={Link} to={importEntriesPath(entityId)}>
-        <Typography>インポート</Typography>
-      </MenuItem>
-    </Menu>
-  );
-};
-
-interface EntryListProps {
+interface Props {
   canCreateEntry?: boolean;
 }
 
-export const EntryListPage: FC<EntryListProps> = ({
-  canCreateEntry = true,
-}) => {
+export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
   const { entityId } = useParams<{ entityId: number }>();
 
   const [entityAnchorEl, setEntityAnchorEl] =
