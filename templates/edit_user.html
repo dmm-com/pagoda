@@ -189,6 +189,11 @@ $("#refresh_token").on('click', function() {
   // clear warning message which is shown previously
   $('#modal_input_warning').text('');
 
+  if ($('#ldap_user_password').val() === '') {
+    $('#modal_input_warning').text('Please enter password.');
+    return
+  }
+
   $.ajax({
     type: 'POST',
     url: "/user/change_ldap_auth",
