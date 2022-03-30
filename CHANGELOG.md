@@ -7,6 +7,12 @@
   Contributed by @hinashi
 
 ### Changed
+
+### Fixed
+
+## v3.6.0
+
+### Changed
 * Set entry-id for each entry columns in the list entry page
 * Changed the logging method from airone profile to logging middleware
   Contributed by @hinashi
