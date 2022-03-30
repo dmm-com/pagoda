@@ -30,6 +30,8 @@
   Contributed by @hinashi
 * Fixed that can be retrieved without permission in Entry API v2
   Contributed by @hinashi
+* Fixed request even if the password is empty on change ldap auth (#465)
+  Contributed by @hinashi
 
 ## v3.5.0
 
