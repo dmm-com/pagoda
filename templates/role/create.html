@@ -4,7 +4,7 @@
 {% block nav_sub_header %}
 <div class="conatiner-fluid">
   <ul class="breadcrumb airone-breadcrumb">
-    <li class="breadcrumb-item"><a href="/">TOP(tmp01)</a></li>
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
     <li class="breadcrumb-item"><a href="/role">ロール管理</a></li>
     <li class="breadcrumb-item">ロールの編集</li>
   </ul>
@@ -45,36 +45,24 @@
 
 {% block script %}
 <script>
+const USERS = ({{ users|safe }}).map((x) => {return {...x, type: "user", is_selected: false}});
+const GROUPS = ({{ groups|safe }}).map((x) => {return {...x, type: "group", is_selected: false}});
+const ADMIN_USERS = ({{ users|safe }}).map((x) => {return {...x, type: "user", is_selected: false}});
+const ADMIN_GROUPS = ({{ groups|safe }}).map((x) => {return {...x, type: "group", is_selected: false}});
+
 $('#edit-form').submit(function(){
   const sending_params = {
-    users: [],
-    groups: [],
-    admin_users: [],
-    admin_groups: [],
+    users: USERS.filter(x => x.is_checked),
+    groups: GROUPS.filter(x => x.is_checked),
+    admin_users: ADMIN_USERS.filter(x => x.is_checked),
+    admin_groups: ADMIN_GROUPS.filter(x => x.is_checked),
   };
-
-  // get selected user/groups
-  $('#collapseUserGroups input:checked').each(function(i, elem) {
-    if ($(elem).attr('obj_type') == 'user') {
-      sending_params.users.push($(elem).val());
-    } else {
-      sending_params.groups.push($(elem).val());
-    }
-    console.log(`[onix/collapseUserGroups(00)] (${ $(elem).attr('obj_type') }): `, $(elem).val());
-  });
-  $('#collapseAdminUserGroups input:checked').each(function(i, elem) {
-    if ($(elem).attr('obj_type') == 'user') {
-      sending_params.admin_users.push($(elem).val());
-    } else {
-      sending_params.admin_groups.push($(elem).val());
-    }
-  });
 
   HttpPost($(this), sending_params
   ).done(function(data) {
     MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, data.msg);
 
-    location.href = '/group/';
+    location.href = '/role';
   }).fail(function(data) {
     console.log(`[onix/sending_request(E0)] `, data);
   });
@@ -83,18 +71,110 @@ $('#edit-form').submit(function(){
 });
 
 $('.collapse').on('show.bs.collapse', function(e) {
-  console.log('[onix/show.bs.collapse(00)] ', e);
-
   // close other collapse
   $('.collapse').collapse('hide');
 });
 
-$('input.filter').on('keypress', function(ev) {
+function handle_filter_list_values(ev, userList, groupList) {
+  // clear current contents before showing filtered ones
+  const elem_tbody = $(ev.target).parents('.config_role_members').find('tbody');
+  elem_tbody.empty();
+
+  const inputValue = $(ev.target).val();
+  if (inputValue !== "") {
+    const rowValues = Array();
+
+    // filter listing users and groups result associated with specified keyword
+    userList.concat(groupList).some(function(obj) {
+      if (rowValues.length >= 30) {
+        return true;
+      }
+      if (obj.name.indexOf(inputValue) != -1) {
+        rowValues.push(obj);
+      }
+    });
+
+    // add filtered contents at the user/group list
+    rowValues.forEach((x) => {
+      elem_tbody.append(generate_user_group_content(x));
+    });
+
+    // register event handler when checkbox is changed
+    register_checkbox_event_handler();
+
+  } else {
+    initialize_user_group_table();
+  }
+
   if ((ev.which && ev.which === 13) || (ev.keyCode && ev.keyCode === 13)) {
     return false;
   }
+}
 
-  console.log(`[onix/filter] (${ ev.keyCode }) `, $(ev.target).val());
+$('#collapseUserGroups input.filter').on('keypress', (e) => {
+  return handle_filter_list_values(e, USERS, GROUPS);
+});
+$('#collapseAdminUserGroups input.filter').on('keypress', (e) => {
+  return handle_filter_list_values(e, ADMIN_USERS, ADMIN_GROUPS);
+});
+
+function register_checkbox_event_handler() {
+
+  function _do_register_handler(collapseId, userList, groupList) {
+    $(`#${ collapseId } input[type="checkbox"]`).on('change', function(e) {
+      const obj_id = $(e.target).val();
+      const obj_type = $(e.target).attr('obj_type');
+
+      const target_list = obj_type == 'user' ? userList : groupList;
+
+      target_list.some((obj) => {
+        if (obj.id == obj_id) {
+          obj.is_checked = $(e.target).is(":checked");
+          return true;
+        }
+      });
+    });
+  }
+
+  _do_register_handler('collapseUserGroups', USERS, GROUPS);
+  _do_register_handler('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
+}
+
+function generate_user_group_content(obj) {
+  if (obj.is_checked) {
+    return `<tr>` +
+        `<td><input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }" checked/></td>` +
+        `<td> ${ obj.name } </td>` +
+        `<td> ${ obj.type } </td>` +
+      `</tr>`;
+  } else {
+    return `<tr>` +
+        `<td><input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }"/></td>` +
+        `<td> ${ obj.name } </td>` +
+        `<td> ${ obj.type } </td>` +
+      `</tr>`;
+  }
+}
+
+function initialize_user_group_table() {
+  function _do_initialize_table(collapseId, userList, groupList) {
+    userList.slice(0, 10).forEach((user) => {
+      $(`#${ collapseId } tbody`).append(generate_user_group_content(user));
+    });
+
+    groupList.slice(0, 10).forEach((group) => {
+      $(`#${ collapseId } tbody`).append(generate_user_group_content(group));
+    });
+  }
+  _do_initialize_table('collapseUserGroups', USERS, GROUPS);
+  _do_initialize_table('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
+
+  register_checkbox_event_handler();
+}
+
+$(document).ready(function() {
+  // initialize user/group list tables
+  initialize_user_group_table();
 });
 
 </script>

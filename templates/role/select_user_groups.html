@@ -24,23 +24,7 @@
         <th scope='col'>名前</th>
         <th scope='col'>タイプ</th>
       </thead>
-      <tbody>
-        {% for user in users %}
-        <tr>
-          <td><input type="checkbox" value="{{ user.id }}" obj_type="user"/></td>
-          <td>{{ user.username }}</td>
-          <td>ユーザ</td>
-        </tr>
-        {% endfor %}
-
-        {% for group in groups %}
-        <tr>
-          <td><input type="checkbox" value="{{ group.id }}" obj_type="group"/></td>
-          <td>{{ group.name }}</td>
-          <td>グループ</td>
-        </tr>
-        {% endfor %}
-      </tbody>
+      <tbody />
     </table>
 
   </div>
