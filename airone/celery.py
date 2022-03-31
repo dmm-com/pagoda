@@ -4,6 +4,8 @@ from celery import Celery
 from celery.signals import task_failure
 from django.core.mail import mail_admins
 
+from airone.lib.log import Logger
+
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'airone.settings')
 os.environ.setdefault('DJANGO_CONFIGURATION', 'Dev')
@@ -40,4 +42,6 @@ full traceback:
 {einfo}
 """.format(**kwargs)
 
+    # Logger for DEBUG because email is not sent in dev environment
+    Logger.error(message)
     mail_admins(subject, message)
