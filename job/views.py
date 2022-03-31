@@ -11,7 +11,6 @@ from airone.lib.http import http_get, render
 
 # related models in AirOne
 from job.models import Job, JobOperation
-from user.models import User
 
 # configuration of this app
 from .settings import CONFIG
@@ -19,8 +18,6 @@ from .settings import CONFIG
 
 @http_get
 def index(request):
-    user = User.objects.get(id=request.user.id)
-
     limitation = CONFIG.MAX_LIST_VIEW
     if request.GET.get('nolimit', None):
         limitation = None
@@ -30,7 +27,7 @@ def index(request):
         JobOperation.EXPORT_SEARCH_RESULT.value,
     ]
 
-    query = Q(Q(user=user), ~Q(operation__in=Job.HIDDEN_OPERATIONS))
+    query = Q(Q(user=request.user), ~Q(operation__in=Job.HIDDEN_OPERATIONS))
     context = {
         'jobs': [{
             'id': x.id,
@@ -55,13 +52,11 @@ def index(request):
 
 @http_get
 def download(request, job_id):
-    user = User.objects.get(id=request.user.id)
-
     job = Job.objects.filter(id=job_id).first()
     if not job:
         return HttpResponse("Invalid Job-ID is specified", status=400)
 
-    if job.user.id != user.id:
+    if job.user.id != request.user.id:
         return HttpResponse("Target Job is executed by other people", status=400)
 
     export_operations = [

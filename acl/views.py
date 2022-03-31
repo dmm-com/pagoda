@@ -3,7 +3,7 @@ from django.http.response import JsonResponse
 
 from airone.lib.acl import ACLType, ACLObjType
 from airone.lib.http import http_get, http_post, render
-from airone.lib.http import get_object_with_check_permission
+from airone.lib.http import get_obj_with_check_perm
 from airone.lib.log import Logger
 
 from entity.models import Entity, EntityAttr
@@ -15,8 +15,7 @@ from .models import ACLBase
 
 @http_get
 def index(request, obj_id):
-    user = User.objects.get(id=request.user.id)
-    aclbase_obj, error = get_object_with_check_permission(user, ACLBase, obj_id, ACLType.Full)
+    aclbase_obj, error = get_obj_with_check_perm(request.user, ACLBase, obj_id, ACLType.Full)
     if error:
         return error
     target_obj = aclbase_obj.get_subclass_object()
@@ -77,15 +76,15 @@ def index(request, obj_id):
     )},
 ])
 def set(request, recv_data):
-    user = User.objects.get(id=request.user.id)
     acl_obj = getattr(_get_acl_model(recv_data['object_type']),
                       'objects').get(id=recv_data['object_id'])
 
-    if not user.has_permission(acl_obj, ACLType.Full):
+    if not request.user.has_permission(acl_obj, ACLType.Full):
         return HttpResponse(
-            "User(%s) doesn't have permission to change this ACL" % user.username, status=400)
+            "User(%s) doesn't have permission to change this ACL" % request.user.username,
+            status=400)
 
-    if not user.may_permitted(acl_obj, ACLType.Full, **{
+    if not request.user.may_permitted(acl_obj, ACLType.Full, **{
             'is_public': True if 'is_public' in recv_data else False,
             'default_permission': int(recv_data['default_permission']),
             'acl_settings': recv_data['acl']}):

@@ -7,7 +7,6 @@ from rest_framework.response import Response
 
 from job.models import Job, JobOperation
 from job.settings import CONFIG as JOB_CONFIG
-from user.models import User
 
 
 class JobAPI(APIView):
@@ -16,8 +15,6 @@ class JobAPI(APIView):
         """
         This returns only jobs that are created by the user who sends this request.
         """
-
-        user = User.objects.get(id=request.user.id)
         time_threashold = (datetime.now(timezone.utc) -
                            timedelta(seconds=JOB_CONFIG.RECENT_SECONDS))
 
@@ -44,7 +41,7 @@ class JobAPI(APIView):
         }
 
         query = Q(
-            Q(user=user, created_at__gte=time_threashold),
+            Q(user=request.user, created_at__gte=time_threashold),
             ~Q(operation__in=Job.HIDDEN_OPERATIONS)
         )
         jobs = [

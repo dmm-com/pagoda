@@ -14,7 +14,7 @@ from urllib.parse import urlencode
 from datetime import datetime
 
 from airone.lib.elasticsearch import prepend_escape_character
-from airone.lib.http import http_get, http_post, get_object_with_check_permission, render
+from airone.lib.http import http_get, http_post, get_obj_with_check_perm, render
 from airone.lib.http import http_file_upload
 from airone.lib.http import HttpResponseSeeOther
 from airone.lib.types import AttrTypeValue
@@ -23,7 +23,6 @@ from airone.lib.acl import ACLType
 from entity.models import Entity
 from entry.models import Entry, Attribute, AttributeValue
 from job.models import Job, JobOperation
-from user.models import User
 from group.models import Group
 from .settings import CONFIG
 
@@ -93,8 +92,7 @@ def _validate_input(recv_data, obj):
 
 @http_get
 def index(request, entity_id):
-    user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Readable)
+    entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Readable)
     if error:
         return error
 
@@ -138,15 +136,14 @@ def index(request, entity_id):
 
 @http_get
 def create(request, entity_id):
-    user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Writable)
+    entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
     if error:
         return error
 
     if custom_view.is_custom("create_entry_without_context", entity.name):
         # show custom view
-        return custom_view.call_custom("create_entry_without_context", entity.name, request, user,
-                                       entity)
+        return custom_view.call_custom(
+            "create_entry_without_context", entity.name, request, request.user, entity)
 
     context = {
         'entity': entity,
@@ -159,13 +156,14 @@ def create(request, entity_id):
             'type': x.type,
             'name': x.name,
             'is_mandatory': x.is_mandatory,
-            'is_readble': True if user.has_permission(x, ACLType.Writable) else False
+            'is_readble': True if request.user.has_permission(x, ACLType.Writable) else False
         } for x in entity.attrs.filter(is_active=True).order_by('index')]
     }
 
     if custom_view.is_custom("create_entry", entity.name):
         # show custom view
-        return custom_view.call_custom("create_entry", entity.name, request, user, entity, context)
+        return custom_view.call_custom(
+            "create_entry", entity.name, request, request.user, entity, context)
     else:
         return render(request, 'create_entry.html', context)
 
@@ -179,8 +177,7 @@ def create(request, entity_id):
 ])
 def do_create(request, entity_id, recv_data):
     # get objects to be referred in the following processing
-    user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Writable)
+    entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
     if error:
         return error
 
@@ -196,18 +193,18 @@ def do_create(request, entity_id, recv_data):
     if custom_view.is_custom("do_create_entry", entity.name):
         # resp is HttpReponse instance or its subclass (e.g. JsonResponse)
         resp = custom_view.call_custom(
-            "do_create_entry", entity.name, request, recv_data, user, entity)
+            "do_create_entry", entity.name, request, recv_data, request.user, entity)
         if resp:
             return resp
 
     # Create a new Entry object
     entry = Entry.objects.create(name=recv_data['entry_name'],
-                                 created_user=user,
+                                 created_user=request.user,
                                  schema=entity,
                                  status=Entry.STATUS_CREATING)
 
     # Create a new job to create entry and run it
-    job_create_entry = Job.new_create(user, entry, params=recv_data)
+    job_create_entry = Job.new_create(request.user, entry, params=recv_data)
     job_create_entry.run()
 
     return JsonResponse({
@@ -218,8 +215,7 @@ def do_create(request, entity_id, recv_data):
 
 @http_get
 def edit(request, entry_id):
-    user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Writable)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error:
         return error
 
@@ -233,15 +229,15 @@ def edit(request, entry_id):
     context = {
         'entry': entry,
         'groups': Group.objects.filter(is_active=True),
-        'attributes': entry.get_available_attrs(user, ACLType.Writable),
+        'attributes': entry.get_available_attrs(request.user, ACLType.Writable),
         'form_url': '/entry/do_edit/%s' % entry.id,
         'redirect_url': '/entry/show/%s' % entry.id,
     }
 
     if custom_view.is_custom("edit_entry", entry.schema.name):
         # show custom view
-        return custom_view.call_custom("edit_entry", entry.schema.name, request, user, entry,
-                                       context)
+        return custom_view.call_custom(
+            "edit_entry", entry.schema.name, request, request.user, entry, context)
     else:
         return render(request, 'edit_entry.html', context)
 
@@ -257,8 +253,7 @@ def edit(request, entry_id):
     ]},
 ])
 def do_edit(request, entry_id, recv_data):
-    user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Writable)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error:
         return error
 
@@ -278,7 +273,7 @@ def do_edit(request, entry_id, recv_data):
     if custom_view.is_custom("do_edit_entry", entry.schema.name):
         # resp is HttpReponse instance or its subclass (e.g. JsonResponse)
         resp = custom_view.call_custom(
-            "do_edit_entry", entry.schema.name, request, recv_data, user, entry
+            "do_edit_entry", entry.schema.name, request, recv_data, request.user, entry
         )
         if resp:
             return resp
@@ -287,7 +282,7 @@ def do_edit(request, entry_id, recv_data):
     # refers this entry also be updated by creating REGISTERED_REFERRALS task.
     job_register_referrals = None
     if entry.name != recv_data['entry_name']:
-        job_register_referrals = Job.new_register_referrals(user, entry)
+        job_register_referrals = Job.new_register_referrals(request.user, entry)
 
     entry.name = recv_data['entry_name']
     entry.save(update_fields=['name'])
@@ -296,7 +291,7 @@ def do_edit(request, entry_id, recv_data):
     entry.set_status(Entry.STATUS_EDITING)
 
     # Create new jobs to edit entry and notify it to registered webhook endpoint if it's necessary
-    job_edit_entry = Job.new_edit(user, entry, params=recv_data)
+    job_edit_entry = Job.new_edit(request.user, entry, params=recv_data)
     job_edit_entry.run()
 
     # running job of re-register referrals because of chaning entry's name
@@ -312,8 +307,7 @@ def do_edit(request, entry_id, recv_data):
 
 @http_get
 def show(request, entry_id):
-    user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Readable)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Readable)
     if error:
         return error
 
@@ -325,13 +319,13 @@ def show(request, entry_id):
 
     context = {
         'entry': entry,
-        'attributes': entry.get_available_attrs(user),
+        'attributes': entry.get_available_attrs(request.user),
     }
 
     if custom_view.is_custom("show_entry", entry.schema.name):
         # show custom view
-        return custom_view.call_custom("show_entry", entry.schema.name, request, user, entry,
-                                       context)
+        return custom_view.call_custom(
+            "show_entry", entry.schema.name, request, request.user, entry, context)
     else:
         # show ordinal view
         return render(request, 'show_entry.html', context)
@@ -339,8 +333,7 @@ def show(request, entry_id):
 
 @http_get
 def history(request, entry_id):
-    user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Readable)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Readable)
     if error:
         return error
 
@@ -352,7 +345,7 @@ def history(request, entry_id):
 
     context = {
         'entry': entry,
-        'value_history': entry.get_value_history(user),
+        'value_history': entry.get_value_history(request.user),
         'history_count': CONFIG.MAX_HISTORY_COUNT,
     }
 
@@ -361,8 +354,7 @@ def history(request, entry_id):
 
 @http_get
 def refer(request, entry_id):
-    user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Readable)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Readable)
     if error:
         return error
 
@@ -385,8 +377,6 @@ def refer(request, entry_id):
 
 @http_post([])
 def export(request, entity_id, recv_data):
-    user = User.objects.get(id=request.user.id)
-
     job_params = {
         'export_format': 'yaml',
         'target_id': entity_id,
@@ -401,15 +391,15 @@ def export(request, entity_id, recv_data):
     # check whether same job is sent
     job_status_not_finished = [Job.STATUS['PREPARING'], Job.STATUS['PROCESSING']]
     if Job.get_job_with_params(
-            user, job_params).filter(status__in=job_status_not_finished).exists():
+            request.user, job_params).filter(status__in=job_status_not_finished).exists():
         return HttpResponse('Same export processing is under execution', status=400)
 
     entity = Entity.objects.get(id=entity_id)
-    if not user.has_permission(entity, ACLType.Readable):
+    if not request.user.has_permission(entity, ACLType.Readable):
         return HttpResponse('Permission denied to export "%s"' % entity.name, status=400)
 
     # create a job to export search result and run it
-    job = Job.new_export(user, **{
+    job = Job.new_export(request.user, **{
         'text': 'entry_%s.%s' % (entity.name, job_params['export_format']),
         'target': entity,
         'params': job_params,
@@ -432,7 +422,6 @@ def import_data(request, entity_id):
 
 @http_file_upload
 def do_import_data(request, entity_id, context):
-    user = User.objects.get(id=request.user.id)
     entity = Entity.objects.filter(id=entity_id, is_active=True).first()
     if not entity:
         return HttpResponse("Couldn't parse uploaded file", status=400)
@@ -453,7 +442,7 @@ def do_import_data(request, entity_id, context):
 
     if custom_view.is_custom("import_entry", entity.name):
         # import custom view
-        resp = custom_view.call_custom("import_entry", entity.name, user, entity, data)
+        resp = custom_view.call_custom("import_entry", entity.name, request.user, entity, data)
 
         # If custom_view returns available response this returns it to user,
         # or continues default processing.
@@ -461,7 +450,7 @@ def do_import_data(request, entity_id, context):
             return resp
 
     # create job to import data to create or update entries and run it
-    job = Job.new_import(user, entity, text='Preparing to import data', params=data)
+    job = Job.new_import(request.user, entity, text='Preparing to import data', params=data)
     job.run()
 
     return HttpResponseSeeOther('/entry/%s/' % entity_id)
@@ -469,14 +458,14 @@ def do_import_data(request, entity_id, context):
 
 @http_post([])  # check only that request is POST, id will be given by url
 def do_delete(request, entry_id, recv_data):
-    user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Full)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Full)
     if error:
         return error
 
     if custom_view.is_custom("do_delete_entry", entry.schema.name):
         # do_delete custom view
-        resp = custom_view.call_custom("do_delete_entry", entry.schema.name, request, user, entry)
+        resp = custom_view.call_custom(
+            "do_delete_entry", entry.schema.name, request, request.user, entry)
 
         # If custom_view returns available response this returns it to user,
         # or continues default processing.
@@ -492,11 +481,11 @@ def do_delete(request, entry_id, recv_data):
     ret['name'] = entry.name
 
     # register operation History for deleting entry
-    user.seth_entry_del(entry)
+    request.user.seth_entry_del(entry)
 
     # Create a new job to delete entry and run it
-    job_delete_entry = Job.new_delete(user, entry)
-    job_notify_event = Job.new_notify_delete_entry(user, entry)
+    job_delete_entry = Job.new_delete(request.user, entry)
+    job_notify_event = Job.new_notify_delete_entry(request.user, entry)
 
     # This prioritizes notifying job rather than deleting entry
     if job_delete_entry.dependent_job:
@@ -516,8 +505,7 @@ def do_delete(request, entry_id, recv_data):
 
 @http_get
 def copy(request, entry_id):
-    user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Writable)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error:
         return error
 
@@ -535,8 +523,8 @@ def copy(request, entry_id):
     }
 
     if custom_view.is_custom("copy_entry", entry.schema.name):
-        return custom_view.call_custom("copy_entry", entry.schema.name, request, user, entry,
-                                       context)
+        return custom_view.call_custom(
+            "copy_entry", entry.schema.name, request, request.user, entry, context)
 
     return render(request, 'copy_entry.html', context)
 
@@ -545,8 +533,7 @@ def copy(request, entry_id):
     {'name': 'entries', 'type': str},
 ])
 def do_copy(request, entry_id, recv_data):
-    user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Writable)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error:
         return error
 
@@ -565,7 +552,8 @@ def do_copy(request, entry_id, recv_data):
 
         if custom_view.is_custom("do_copy_entry", entry.schema.name):
             (is_continue, status, msg) = custom_view.call_custom(
-                "do_copy_entry", entry.schema.name, request, entry, recv_data, user, new_name)
+                "do_copy_entry", entry.schema.name, request, entry, recv_data, request.user,
+                new_name)
             if not is_continue:
                 ret.append({
                     'status': 'success' if status else 'fail',
@@ -591,7 +579,7 @@ def do_copy(request, entry_id, recv_data):
             continue
 
         # make a new job to copy entry and run it
-        job = Job.new_copy(user, entry, text=new_name, params=params)
+        job = Job.new_copy(request.user, entry, text=new_name, params=params)
         job.run()
 
         ret.append({
@@ -604,8 +592,7 @@ def do_copy(request, entry_id, recv_data):
 
 @http_get
 def restore(request, entity_id):
-    user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Full)
+    entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Full)
     if error:
         return error
 
@@ -639,8 +626,7 @@ def restore(request, entity_id):
 
 @http_post([])
 def do_restore(request, entry_id, recv_data):
-    user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Full)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Full)
     if error:
         return error
 
@@ -659,7 +645,7 @@ def do_restore(request, entry_id, recv_data):
     entry.set_status(Entry.STATUS_CREATING)
 
     # Create a new job to restore deleted entry and run it
-    job = Job.new_restore(user, entry)
+    job = Job.new_restore(request.user, entry)
     job.run()
 
     return HttpResponse('Success to queue a request to restore an entry')
@@ -670,13 +656,11 @@ def do_restore(request, entry_id, recv_data):
     {'type': str, 'name': 'attrv_id'}
 ])
 def revert_attrv(request, recv_data):
-    user = User.objects.get(id=request.user.id)
-
     attr = Attribute.objects.filter(id=recv_data['attr_id']).first()
     if not attr:
         return HttpResponse('Specified Attribute-id is invalid', status=400)
 
-    if not user.has_permission(attr, ACLType.Writable):
+    if not request.user.has_permission(attr, ACLType.Writable):
         return HttpResponse("You don't have permission to update this Attribute", status=400)
 
     attrv = AttributeValue.objects.filter(id=recv_data['attrv_id']).first()
@@ -698,7 +682,7 @@ def revert_attrv(request, recv_data):
             'boolean': attrv.boolean,
             'date': attrv.date,
             'data_type': attrv.data_type,
-            'created_user': user,
+            'created_user': request.user,
             'parent_attr': attr,
             'is_latest': True,
         })
@@ -707,7 +691,7 @@ def revert_attrv(request, recv_data):
         new_attrv.data_array.add(*[AttributeValue.objects.create(**{
                 'value': v.value,
                 'referral': v.referral,
-                'created_user': user,
+                'created_user': request.user,
                 'parent_attr': attr,
                 'status': v.status,
                 'boolean': v.boolean,
@@ -729,8 +713,8 @@ def revert_attrv(request, recv_data):
         # call custom-view if it exists
         if custom_view.is_custom("revert_attrv", attr.parent_entry.schema.name):
             return custom_view.call_custom(*[
-                "revert_attrv", attr.parent_entry.schema.name, request, user, attr, latest_value,
-                new_attrv
+                "revert_attrv", attr.parent_entry.schema.name, request, request.user, attr,
+                latest_value, new_attrv
             ])
 
     return HttpResponse('Succeed in updating Attribute "%s"' % attr.schema.name)

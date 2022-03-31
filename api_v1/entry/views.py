@@ -1,4 +1,5 @@
 import pytz
+from datetime import datetime
 
 from airone.lib.acl import ACLType
 from django.conf import settings
@@ -12,16 +13,10 @@ from entity.models import Entity
 from entry.models import Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
 
-from datetime import datetime
-
-from user.models import User
-
 
 class EntrySearchAPI(APIView):
 
     def post(self, request, format=None):
-        user = User.objects.get(id=request.user.id)
-
         hint_entities = request.data.get('entities')
         hint_entry_name = request.data.get('entry_name', '')
         hint_attrs = request.data.get('attrinfo')
@@ -70,10 +65,10 @@ class EntrySearchAPI(APIView):
                 else:
                     entity = Entity.objects.filter(name=hint_entity, is_active=True).first()
 
-            if entity and user.has_permission(entity, ACLType.Readable):
+            if entity and request.user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
 
-        resp = Entry.search_entries(user,
+        resp = Entry.search_entries(request.user,
                                     hint_entity_ids,
                                     hint_attrs,
                                     entry_limit,

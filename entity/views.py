@@ -10,13 +10,13 @@ from django.db.models import Q
 
 from .models import Entity
 from .models import EntityAttr
-from user.models import User, History
+from user.models import History
 from entry.models import Entry, AttributeValue
 from job.models import Job
 
 from airone.lib.types import AttrTypes, AttrTypeValue
 from airone.lib.http import http_get, http_post
-from airone.lib.http import get_object_with_check_permission
+from airone.lib.http import get_obj_with_check_perm
 from airone.lib.http import render
 from airone.lib.http import get_download_response
 from airone.lib.acl import get_permitted_objects
@@ -62,11 +62,9 @@ def index(request):
 
 @http_get
 def create(request):
-    user = User.objects.get(id=request.user.id)
-
     context = {
         'entities': [x for x in Entity.objects.filter(is_active=True)
-                     if user.has_permission(x, ACLType.Readable)],
+                     if request.user.has_permission(x, ACLType.Readable)],
         'attr_types': AttrTypes
     }
     return render(request, 'create_entity.html', context)
@@ -74,8 +72,7 @@ def create(request):
 
 @http_get
 def edit(request, entity_id):
-    user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(user, Entity, entity_id,  ACLType.Writable)
+    entity, error = get_obj_with_check_perm(request.user, Entity, entity_id,  ACLType.Writable)
     if error:
         return error
 
@@ -95,7 +92,7 @@ def edit(request, entity_id):
             'is_delete_in_chain': x.is_delete_in_chain,
             'referrals': x.referral.all()
         } for x in entity.attrs.filter(is_active=True).order_by('index')
-            if user.has_permission(x, ACLType.Writable)],
+            if request.user.has_permission(x, ACLType.Writable)],
     }
     return render(request, 'edit_entity.html', context)
 
@@ -119,8 +116,7 @@ def edit(request, entity_id):
     ]}
 ])
 def do_edit(request, entity_id, recv_data):
-    user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Writable)
+    entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
     if error:
         return error
 
@@ -156,7 +152,7 @@ def do_edit(request, entity_id, recv_data):
     entity.set_status(Entity.STATUS_EDITING)
 
     # Create a new job to edit entity and run it
-    job = Job.new_edit_entity(user, entity, params=recv_data)
+    job = Job.new_edit_entity(request.user, entity, params=recv_data)
     job.run()
 
     new_name = recv_data['name']
@@ -200,9 +196,6 @@ def do_create(request, recv_data):
         if any([not Entity.objects.filter(id=x).exists() for x in attr['ref_ids']]):
             return HttpResponse('Specified referral is invalid', status=400)
 
-    # get user object that current access
-    user = User.objects.get(id=request.user.id)
-
     if custom_view.is_custom('create_entity'):
         resp = custom_view.call_custom('create_entity', None, recv_data['name'], recv_data['attrs'])
         if resp:
@@ -211,7 +204,7 @@ def do_create(request, recv_data):
     # create EntityAttr objects
     entity = Entity(name=recv_data['name'],
                     note=recv_data['note'],
-                    created_user=user,
+                    created_user=request.user,
                     status=Entity.STATUS_CREATING)
 
     # set status parameters
@@ -221,7 +214,7 @@ def do_create(request, recv_data):
     entity.save()
 
     # Create a new job to edit entity and run it
-    job = Job.new_create_entity(user, entity, params=recv_data)
+    job = Job.new_create_entity(request.user, entity, params=recv_data)
     job.run()
 
     return JsonResponse({
@@ -233,8 +226,6 @@ def do_create(request, recv_data):
 
 @http_get
 def export(request):
-    user = User.objects.get(id=request.user.id)
-
     output = io.StringIO()
 
     data = {
@@ -242,7 +233,7 @@ def export(request):
         "EntityAttr": []
     }
 
-    entities = get_permitted_objects(user, Entity, ACLType.Readable)
+    entities = get_permitted_objects(request.user, Entity, ACLType.Readable)
     for entity in entities:
         data["Entity"].append({
             "created_user": entity.created_user.username,
@@ -252,7 +243,7 @@ def export(request):
             "status": entity.status,
         })
 
-    attrs = get_permitted_objects(user, EntityAttr, ACLType.Readable)
+    attrs = get_permitted_objects(request.user, EntityAttr, ACLType.Readable)
     for attr in attrs:
         data["EntityAttr"].append({
             "created_user": attr.created_user.username,
@@ -270,8 +261,7 @@ def export(request):
 
 @http_post([])
 def do_delete(request, entity_id, recv_data):
-    user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Full)
+    entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Full)
     if error:
         return error
 
@@ -296,7 +286,7 @@ def do_delete(request, entity_id, recv_data):
     entity.save(update_fields=['is_active'])
 
     # Create a new job to delete entry and run it
-    job = Job.new_delete_entity(user, entity)
+    job = Job.new_delete_entity(request.user, entity)
     job.run()
 
     return JsonResponse(ret)
