@@ -6,7 +6,6 @@ from rest_framework import HTTP_HEADER_ENCODING
 from rest_framework.authtoken.models import Token
 
 from user.models import User
-from django.contrib.auth.models import User as DjangoUser
 
 
 class APITest(AironeViewTest):
@@ -38,7 +37,7 @@ class APITest(AironeViewTest):
     def test_refresh_token_using_token(self):
         # This processing doesn't login but just only create an User 'guest'
         user = User.objects.create(username='guest')
-        token = Token.objects.create(user=DjangoUser.objects.get(id=user.id))
+        token = Token.objects.create(user=user)
 
         resp = self.client.get('/api/v1/user/access_token', **{
             'HTTP_AUTHORIZATION': 'Token %s' % str(token),

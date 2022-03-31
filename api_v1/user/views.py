@@ -1,6 +1,5 @@
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
-from django.contrib.auth.models import User as DjangoUser
 
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -26,8 +25,7 @@ class AccessTokenAPI(APIView):
         This refresh access_token to another one
         """
 
-        user = DjangoUser.objects.get(id=request.user.id)
-        token, created = Token.objects.get_or_create(user=user)
+        token, created = Token.objects.get_or_create(user=request.user)
 
         # If the token is not created, this returns it.
         if created:
@@ -35,4 +33,4 @@ class AccessTokenAPI(APIView):
 
         # This recreates another Token when it has been already existed.
         token.delete()
-        return Response({'results': str(Token.objects.create(user=user))})
+        return Response({'results': str(Token.objects.create(user=request.user))})
