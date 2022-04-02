@@ -4,10 +4,9 @@ import {
   Box,
   Button,
   Checkbox,
+  Chip,
   IconButton,
   Input,
-  List,
-  ListItemText,
   MenuItem,
   Select,
   Table,
@@ -117,9 +116,20 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
   const [name, setName] = useState(entity?.name ?? "");
   const [note, setNote] = useState(entity?.note ?? "");
   const [isTopLevel, setIsTopLevel] = useState(entity?.isToplevel ?? false);
-  const [attributes, setAttributes] = useState(entity?.attrs ?? []);
+  const [attributes, setAttributes] = useState<{ [key: string]: any }[]>(
+    entity?.attrs.map((attr) => {
+      return { ...attr, refIds: attr.referrals.map((r) => r.id) };
+    }) ?? []
+  );
+  const [referralFilters, setReferralFilters] = useState<{
+    [attrId: number]: string;
+  }>({});
 
-  const handleChangeAttributeValue = (index, key, value) => {
+  const handleChangeAttributeValue = (
+    index: number,
+    key: string,
+    value: any
+  ) => {
     attributes[index][key] = value;
     setAttributes([...attributes]);
   };
@@ -132,28 +142,35 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
         type: AttributeTypes.string.type,
         is_mandatory: false,
         is_delete_in_chain: false,
+        refIds: [],
       },
     ]);
   };
 
-  const handleDeleteAttribute = (event, index) => {
-    attributes.splice(index, 1);
+  const handleDeleteAttribute = (index: number) => {
+    attributes[index] = {
+      ...attributes[index],
+      deleted: true,
+    };
     setAttributes([...attributes]);
   };
 
   const handleSubmit = async () => {
     // Adjusted attributes for the API
-    const attrs = attributes.map((attr, index) => {
-      return {
-        id: attr.id,
-        name: attr.name,
-        type: String(attr.type),
-        row_index: String(index),
-        is_mandatory: attr.is_mandatory,
-        is_delete_in_chain: attr.is_delete_in_chain,
-        ref_ids: attr.referrals.map((r) => r.id),
-      };
-    });
+    const attrs = attributes
+      .filter((attr) => attr.id != null)
+      .map((attr, index) => {
+        return {
+          id: attr.id,
+          name: attr.name,
+          type: String(attr.type),
+          row_index: String(index),
+          is_mandatory: attr.is_mandatory,
+          is_delete_in_chain: attr.is_delete_in_chain,
+          ref_ids: attr.refIds,
+          deleted: attr.deleted,
+        };
+      });
 
     if (createMode) {
       await createEntity(name, note, isTopLevel, attrs);
@@ -162,6 +179,10 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
       await updateEntity(entity.id, name, note, isTopLevel, attrs);
       history.replace(entitiesPath());
     }
+  };
+
+  const handleCancel = () => {
+    history.replace(entitiesPath());
   };
 
   const attributeTypeMenuItems = useMemo(() => {
@@ -180,18 +201,6 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
             <Typography variant="h2" align="center">
               {createMode ? "新規エンティティの作成" : `${entity.name}の編集`}
             </Typography>
-          </Box>
-
-          <Box className="float-right">
-            <Button
-              className={classes.button}
-              type="submit"
-              variant="contained"
-              color="secondary"
-              onClick={handleSubmit}
-            >
-              保存
-            </Button>
           </Box>
 
           <Box my="32px">
@@ -262,122 +271,166 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {attributes.map((attr, index) => (
-                <StyledTableRow key={index}>
-                  <TableCell>
-                    <Input
-                      type="text"
-                      value={attr.name}
-                      placeholder="属性名"
-                      sx={{ width: "100%" }}
-                      onChange={(e) =>
-                        handleChangeAttributeValue(
-                          index,
-                          "name",
-                          e.target.value
-                        )
-                      }
-                    />
-                  </TableCell>
+              {attributes
+                .filter((attr) => attr.deleted !== true)
+                .map((attr, index) => (
+                  <StyledTableRow key={index}>
+                    <TableCell>
+                      <Input
+                        type="text"
+                        value={attr.name}
+                        placeholder="属性名"
+                        sx={{ width: "100%" }}
+                        onChange={(e) =>
+                          handleChangeAttributeValue(
+                            index,
+                            "name",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </TableCell>
 
-                  <TableCell>
-                    <Box>
-                      <Box minWidth={100} marginX={1}>
-                        <Select
-                          fullWidth={true}
-                          value={attr.type}
-                          disabled={!createMode}
-                          onChange={(e) =>
-                            handleChangeAttributeValue(
-                              index,
-                              "type",
-                              e.target.value
-                            )
-                          }
-                        >
-                          {attributeTypeMenuItems}
-                        </Select>
-                      </Box>
-                      <Box minWidth={100} marginX={1}>
-                        {createMode &&
-                          (attr.type & BaseAttributeTypes.object) > 0 && (
-                            <>
-                              <Typography>参照エントリ: </Typography>
-                              {/* TODO multiple */}
-                              <Select fullWidth={true}>
-                                {referralEntities.map((e) => (
+                    <TableCell>
+                      <Box>
+                        <Box minWidth={100} marginX={1}>
+                          <Select
+                            fullWidth={true}
+                            value={attr.type}
+                            disabled={attr.id != null}
+                            onChange={(e) =>
+                              handleChangeAttributeValue(
+                                index,
+                                "type",
+                                e.target.value
+                              )
+                            }
+                          >
+                            {attributeTypeMenuItems}
+                          </Select>
+                        </Box>
+                        {(attr.type & BaseAttributeTypes.object) > 0 && (
+                          <Box minWidth={100} marginX={1}>
+                            <Typography>エンティティを選択</Typography>
+                            <Select
+                              multiple
+                              value={attr.refIds}
+                              renderValue={(selectedIds: number[]) => (
+                                <>
+                                  {referralEntities
+                                    .filter((r) => selectedIds.includes(r.id))
+                                    .map((r) => (
+                                      <Chip
+                                        key={r.id}
+                                        label={r.name}
+                                        onDelete={() => {
+                                          handleChangeAttributeValue(
+                                            index,
+                                            "refIds",
+                                            attr.refIds.filter(
+                                              (id) => id !== r.id
+                                            )
+                                          );
+                                        }}
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                      />
+                                    ))}
+                                </>
+                              )}
+                              onChange={(e) => {
+                                handleChangeAttributeValue(
+                                  index,
+                                  "refIds",
+                                  e.target.value
+                                );
+                              }}
+                              MenuProps={{ style: { maxHeight: 500 } }}
+                            >
+                              <Box mx={2} my={1}>
+                                <Input
+                                  type="text"
+                                  placeholder="絞り込み"
+                                  value={referralFilters[attr.id] ?? ""}
+                                  onChange={(e) =>
+                                    setReferralFilters({
+                                      ...referralFilters,
+                                      [attr.id]: e.target.value,
+                                    })
+                                  }
+                                  onKeyDown={(e) => e.stopPropagation()}
+                                />
+                              </Box>
+                              {referralEntities
+                                .filter((e) => !attr.refIds.includes(e.id))
+                                .filter((e) => {
+                                  const keyword =
+                                    referralFilters[attr.id] ?? "";
+                                  return keyword.length > 0
+                                    ? e.name.indexOf(keyword) !== -1
+                                    : true;
+                                })
+                                .map((e) => (
                                   <MenuItem key={e.id} value={e.id}>
                                     {e.name}
                                   </MenuItem>
                                 ))}
-                              </Select>
-                            </>
-                          )}
-                        {!createMode && attr.referrals.length > 0 && (
-                          <>
-                            <Typography>参照エントリ: </Typography>
-                            <List>
-                              {attr.referrals.map((r) => (
-                                <ListItemText key={r.id}>{r.name}</ListItemText>
-                              ))}
-                            </List>
-                          </>
+                            </Select>
+                          </Box>
                         )}
                       </Box>
-                    </Box>
-                  </TableCell>
+                    </TableCell>
 
-                  <TableCell>
-                    <Checkbox
-                      checked={attr.is_mandatory}
-                      onChange={(e) =>
-                        handleChangeAttributeValue(
-                          index,
-                          "is_mandatory",
-                          e.target.checked
-                        )
-                      }
-                    />
-                  </TableCell>
+                    <TableCell>
+                      <Checkbox
+                        checked={attr.is_mandatory}
+                        onChange={(e) =>
+                          handleChangeAttributeValue(
+                            index,
+                            "is_mandatory",
+                            e.target.checked
+                          )
+                        }
+                      />
+                    </TableCell>
 
-                  <TableCell>
-                    <Checkbox
-                      checked={attr.is_delete_in_chain}
-                      onChange={(e) =>
-                        handleChangeAttributeValue(
-                          index,
-                          "is_delete_in_chain",
-                          e.target.checked
-                        )
-                      }
-                    />
-                  </TableCell>
+                    <TableCell>
+                      <Checkbox
+                        checked={attr.is_delete_in_chain}
+                        onChange={(e) =>
+                          handleChangeAttributeValue(
+                            index,
+                            "is_delete_in_chain",
+                            e.target.checked
+                          )
+                        }
+                      />
+                    </TableCell>
 
-                  <TableCell>
-                    <IconButton
-                      className={classes.button}
-                      onClick={(e) => handleDeleteAttribute(e, index)}
-                    >
-                      <DeleteOutlineIcon />
-                    </IconButton>
-                  </TableCell>
-
-                  <TableCell>
-                    <Box sx={{ flexDirection: "row" }}>
-                      <Button
-                        variant="contained"
-                        color="primary"
+                    <TableCell>
+                      <IconButton
                         className={classes.button}
-                        startIcon={<GroupIcon />}
-                        component={Link}
-                        to={aclPath(attr.id)}
+                        onClick={(e) => handleDeleteAttribute(index)}
                       >
-                        ACL
-                      </Button>
-                    </Box>
-                  </TableCell>
-                </StyledTableRow>
-              ))}
+                        <DeleteOutlineIcon />
+                      </IconButton>
+                    </TableCell>
+
+                    <TableCell>
+                      {attr.id != null && (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          className={classes.button}
+                          startIcon={<GroupIcon />}
+                          component={Link}
+                          to={aclPath(attr.id)}
+                        >
+                          ACL
+                        </Button>
+                      )}
+                    </TableCell>
+                  </StyledTableRow>
+                ))}
             </TableBody>
           </Table>
         </Box>
@@ -392,6 +445,19 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
         >
           属性追加
         </Button>
+      </Box>
+
+      <Box display="flex" justifyContent="center" my="32px">
+        <Box mx="16px">
+          <Button variant="contained" color="secondary" onClick={handleSubmit}>
+            保存
+          </Button>
+        </Box>
+        <Box mx="16px">
+          <Button variant="outlined" color="primary" onClick={handleCancel}>
+            キャンセル
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
