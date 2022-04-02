@@ -240,7 +240,7 @@ def do_delete(request, user_id, recv_data):
 
 
 @http_post([
-    {'name': 'ldap_password', 'type': str}
+    {'name': 'ldap_password', 'type': str, 'checker': lambda x: x['ldap_password']}
 ])
 def change_ldap_auth(request, recv_data):
     user = User.objects.get(id=request.user.id)

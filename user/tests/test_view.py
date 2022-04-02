@@ -660,6 +660,7 @@ class ViewTest(TestCase):
             {'ldap_password': {'invalid_value_type': 'value'}},
             {'ldap_password': [1, 2, 3, 4]},
             {'ldap_password': 1234},
+            {'ldap_password': ''},
         ]
         for _param in invalid_parameters:
             resp = self.client.post(reverse('user:change_ldap_auth'),

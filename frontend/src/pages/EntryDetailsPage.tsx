@@ -77,6 +77,7 @@ export const EntryDetailsPage: FC = () => {
               <AppsIcon />
             </IconButton>
             <EntryControlMenu
+              entityId={entityId}
               entryId={entryId}
               anchorElem={entryAnchorEl}
               handleClose={() => setEntryAnchorEl(null)}

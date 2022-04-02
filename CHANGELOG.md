@@ -3,6 +3,14 @@
 ## In development
 
 ### Added
+* Added add and remove attributes depending on entity in get entry api v2
+  Contributed by @hinashi
+
+### Changed
+
+### Fixed
+
+## v3.6.0
 
 ### Changed
 * Set entry-id for each entry columns in the list entry page
@@ -21,6 +29,8 @@
 * Fixed problem that none of AttributeValue have is_latest is True (#441)
   Contributed by @hinashi
 * Fixed that can be retrieved without permission in Entry API v2
+  Contributed by @hinashi
+* Fixed request even if the password is empty on change ldap auth (#465)
   Contributed by @hinashi
 
 ## v3.5.0

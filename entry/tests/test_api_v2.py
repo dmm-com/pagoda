@@ -1,7 +1,8 @@
+from unittest import mock
+
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue, AttrTypeStr
 from entity.models import EntityAttr
-
 from entry.models import Entry
 from group.models import Group
 
@@ -224,6 +225,48 @@ class ViewTest(AironeViewTest):
         for param in ['hoge', 9999]:
             resp = self.client.get('/entry/api/v2/entries/%s' % param)
             self.assertEqual(resp.status_code, 404)
+
+    @mock.patch('custom_view.is_custom', mock.Mock(return_value=True))
+    @mock.patch('custom_view.call_custom')
+    def test_get_entry_with_customview(self, mock_call_custom):
+        user = self.guest_login()
+
+        entity = self.create_entity(**{
+            'user': user,
+            'name': 'test-entity',
+            'attrs': self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+        })
+        entry = self.add_entry(user, 'test-entry', entity)
+
+        def side_effect(handler_name, entity_name, entry, entry_attrs):
+            self.assertEqual(handler_name, 'get_entry_attr')
+            self.assertEqual(entity_name, 'test-entity')
+            self.assertEqual(entry.name, 'test-entry')
+            self.assertEqual(len(entry_attrs), len(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY))
+
+            # add attribute
+            entry_attrs.append({
+                'id': 0,
+                'type': AttrTypeValue['string'],
+                'value': 'hoge',
+                'schema_id': 0,
+                'schema_name': 'fuga',
+            })
+
+            return entry_attrs
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.get('/entry/api/v2/%s' % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()['attrs']),
+                         len(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY) + 1)
+        self.assertEqual(resp.json()['attrs'][-1], {
+            'id': 0,
+            'type': AttrTypeValue['string'],
+            'value': 'hoge',
+            'schema_id': 0,
+            'schema_name': 'fuga',
+        })
 
     def test_serach_entry(self):
         user = self.guest_login()

@@ -25,7 +25,6 @@ class Common(Configuration):
     #: Only add pickle to this list if your broker is secured
     #: from unwanted access (see userguide/security.html)
     CELERY_ACCEPT_CONTENT = ['json']
-    CELERY_RESULT_BACKEND = 'rpc://'
     CELERY_TASK_SERIALIZER = 'json'
     CELERY_BROKER_HEARTBEAT = 0
 
@@ -249,7 +248,7 @@ class Common(Configuration):
 
     LOGGING: Dict[str, Any] = {
         'version': 1,
-        'disable_existing_loggers': False,
+        'disable_existing_loggers': True,
         'formatters': {
             'all': {
                 'format': '\t'.join([
@@ -281,11 +280,6 @@ class Common(Configuration):
                 'level': 'INFO',
                 'propagate': False,
             },
-            'django.server': {
-                'handlers': ['file', 'console'],
-                'level': 'INFO',
-                'propagate': False,
-            }
         }
     }
     # If log dir is not exists create it.
