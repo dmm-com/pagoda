@@ -17,7 +17,8 @@
   {% csrf_token %}
   <div class="form-row">
     <div class="form-group col-md-11">
-      <input type="text" name="name" class="form-control" id="group-name" value="{{ current_group_name }}" placeholder="ロール名" />
+      <input type="text" name="name" class="form-control" id="role_name"
+       value="{{ name }}" placeholder="ロール名"/>
     </div>
     <div class="form-group col-md-1">
       {% if 'create' in submit_ref %}
@@ -45,18 +46,43 @@
 
 {% block script %}
 <script>
-const USERS = ({{ users|safe }}).map((x) => {return {...x, type: "user", is_selected: false}});
-const GROUPS = ({{ groups|safe }}).map((x) => {return {...x, type: "group", is_selected: false}});
-const ADMIN_USERS = ({{ users|safe }}).map((x) => {return {...x, type: "user", is_selected: false}});
-const ADMIN_GROUPS = ({{ groups|safe }}).map((x) => {return {...x, type: "group", is_selected: false}});
+
+function convert_dict_to_list(dict_obj) {
+  // attach is_checked attribute if it's not existed
+  Object.keys(dict_obj).forEach(k => dict_obj[k].is_checked = dict_obj[k].is_checked ? true : false);
+
+  // convert dict object to list
+  return Object.keys(dict_obj).map(((k) => {
+    return {
+      id: Number(k),
+      ...dict_obj[k],
+    };
+  }));
+
+}
+
+
+const USERS = convert_dict_to_list({{ user_info|safe }});
+const GROUPS = convert_dict_to_list({{ group_info|safe }});
+const ADMIN_USERS = convert_dict_to_list({{ admin_user_info|safe }});
+const ADMIN_GROUPS = convert_dict_to_list({{ admin_group_info|safe }});
+
+
+// update 'is_selected' fields when current users and groups are specified
 
 $('#edit-form').submit(function(){
+  MessageBox.clear();
+
   const sending_params = {
     users: USERS.filter(x => x.is_checked),
     groups: GROUPS.filter(x => x.is_checked),
     admin_users: ADMIN_USERS.filter(x => x.is_checked),
     admin_groups: ADMIN_GROUPS.filter(x => x.is_checked),
   };
+
+  console.log('[onix/submit(00)] USERS: ', USERS);
+  console.log('[onix/submit(00)] ADMIN_USERS: ', ADMIN_USERS);
+  console.log('[onix/submit(10)] sending_params: ', sending_params);
 
   HttpPost($(this), sending_params
   ).done(function(data) {
@@ -65,6 +91,8 @@ $('#edit-form').submit(function(){
     location.href = '/role';
   }).fail(function(data) {
     console.log(`[onix/sending_request(E0)] `, data);
+    console.log(`[onix/sending_request(E0)] `, data.responseText);
+    MessageBox.error(data.responseText);
   });
 
   return false;
@@ -119,6 +147,7 @@ $('#collapseAdminUserGroups input.filter').on('keypress', (e) => {
 });
 
 function register_checkbox_event_handler() {
+  console.log('[onix/register_checkbox_event_handler(00)]');
 
   function _do_register_handler(collapseId, userList, groupList) {
     $(`#${ collapseId } input[type="checkbox"]`).on('change', function(e) {
@@ -133,6 +162,7 @@ function register_checkbox_event_handler() {
           return true;
         }
       });
+      console.log('[onix/handle_change_checking(99)] userList: ', userList);
     });
   }
 

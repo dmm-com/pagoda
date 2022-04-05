@@ -18,12 +18,56 @@
     <div class="col">
       <div class="float-left">
         <button name="button_new" type="button" class="btn btn-primary" onclick="location.href='/role/create'">新規作成</button>
-        <button name="button_export" type="button" class="btn btn-secondary" onclick="location.href='/role/export/'">エクスポート</button>
-        <button name="button_import" type="button" class="btn btn-secondary" onclick="location.href='/role/import/'">インポート</button>
+        <button name="button_delete" type="button" class="btn btn-danger" onclick="location.href='/role/delete'">削除</button>
       </div>
     </div>
   </div>
 
+  <table class='table table-sm'>
+    <thead>
+      <th scope='col'></th>
+      <th scope='col'>名前</th>
+      <th scope='col'>登録ユーザ・グループ</th>
+      <th scope='col'>管理ユーザ・グループ</th>
+    <thead>
+    <tbody>
+      {% for role in roles %}
+      <tr>
+        <td><input type="checkbox" value="{{ role.id }}"/></td>
+
+        <!-- Role name -->
+        <td><a href='/role/edit/{{ role.id }}'>{{ role.name }}</a></td>
+
+        <!-- Registered Users and Groups -->
+        <td>
+          <ul class="list-group list-group-flush">
+            {% for user in role.users %}
+            <li>(user) {{ user.username }}</li>
+            {% endfor %}
+            {% for group in role.groups %}
+            <li>(group) {{ group.name }}</li>
+            {% endfor %}
+          </ul>
+        </td>
+
+        <!-- Administrative Users and Groups -->
+        <td>
+          <ul class="list-group list-group-flush">
+            {% for user in role.admin_users %}
+            <li>(user) {{ user.username }}</li>
+            {% endfor %}
+            {% for group in role.admin_groups %}
+            <li>(group) {{ group.name }}</li>
+            {% endfor %}
+          </ul>
+        </td>
+
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!--
   <div class="row">
     <div class="col">
       <table class="table table-bordered">
@@ -52,6 +96,7 @@
       </table>
     </div>
   </div>
+  -->
 </div>
 {% endblock %}
 
