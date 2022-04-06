@@ -80,18 +80,12 @@ $('#edit-form').submit(function(){
     admin_groups: ADMIN_GROUPS.filter(x => x.is_checked),
   };
 
-  console.log('[onix/submit(00)] USERS: ', USERS);
-  console.log('[onix/submit(00)] ADMIN_USERS: ', ADMIN_USERS);
-  console.log('[onix/submit(10)] sending_params: ', sending_params);
-
   HttpPost($(this), sending_params
   ).done(function(data) {
     MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, data.msg);
 
     location.href = '/role';
   }).fail(function(data) {
-    console.log(`[onix/sending_request(E0)] `, data);
-    console.log(`[onix/sending_request(E0)] `, data.responseText);
     MessageBox.error(data.responseText);
   });
 
@@ -147,7 +141,6 @@ $('#collapseAdminUserGroups input.filter').on('keypress', (e) => {
 });
 
 function register_checkbox_event_handler() {
-  console.log('[onix/register_checkbox_event_handler(00)]');
 
   function _do_register_handler(collapseId, userList, groupList) {
     $(`#${ collapseId } input[type="checkbox"]`).on('change', function(e) {
@@ -162,7 +155,6 @@ function register_checkbox_event_handler() {
           return true;
         }
       });
-      console.log('[onix/handle_change_checking(99)] userList: ', userList);
     });
   }
 

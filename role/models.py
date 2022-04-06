@@ -25,6 +25,9 @@ class Role(DjangoGroup):
 
     def permit_to_edit(self, user):
         """check wether specified User has permission to edit this Role"""
+        if user.is_superuser:
+            return True
+
         if user.id in [u.id for u in self.administrative_users.filter(is_active=True)]:
             return True
 

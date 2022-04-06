@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 
 from . import views
 
@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'^do_create/$', views.do_create, name='do_create'),
     url(r'^edit/(\d+)/$', views.edit, name='edit'),
     url(r'^do_edit/(\d+)/$', views.do_edit, name='do_edit'),
+    url(r'^api/v1/', include(('role.api_v1.urls', 'role.api_v1'))),
 ]

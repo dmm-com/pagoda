@@ -1,20 +1,9 @@
-from airone.lib.test import AironeTestCase
+from .base import RoleTestBase
 
 from role.models import Role
-from user.models import User
-from group.models import Group
 
 
-class ModelTest(AironeTestCase):
-    def setUp(self):
-        super(ModelTest, self).setUp()
-
-        # create Users and Groups for using this test
-        self.users = {n: User.objects.create(username=n, email='%s@example.com' % n)
-                      for n in ['userA', 'userB']}
-        self.groups = {n: Group.objects.create(name=n) for n in ['groupA', 'groupB']}
-
-        self.role = Role.objects.create(name='test_role')
+class ModelTest(RoleTestBase):
 
     def test_is_belonged_to_registered_by_user(self):
         # set userA belongs to groupA as groups member
@@ -55,3 +44,13 @@ class ModelTest(AironeTestCase):
 
         self.assertTrue(self.role.permit_to_edit(self.users['userA']))
         self.assertFalse(self.role.permit_to_edit(self.users['userB']))
+
+    def test_permit_to_edit_by_super_user(self):
+        super_user = self.admin_login()
+
+        # Suser-user has permission to edit any role without registering
+        # administrative Users and Groups.
+        self.assertFalse(self.role.administrative_users.filter(id=super_user.id).exists())
+        self.assertFalse(bool(set([g.id for g in super_user.groups.all()]) &
+                              set([g.id for g in self.role.administrative_groups.all()])))
+        self.assertTrue(self.role.permit_to_edit(super_user))

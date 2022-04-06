@@ -18,7 +18,7 @@
     <div class="col">
       <div class="float-left">
         <button name="button_new" type="button" class="btn btn-primary" onclick="location.href='/role/create'">新規作成</button>
-        <button name="button_delete" type="button" class="btn btn-danger" onclick="location.href='/role/delete'">削除</button>
+        <button id="delete_role" type="button" class="btn btn-danger">削除</button>
       </div>
     </div>
   </div>
@@ -33,7 +33,10 @@
     <tbody>
       {% for role in roles %}
       <tr>
-        <td><input type="checkbox" value="{{ role.id }}"/></td>
+        <td>
+          <input class="role_select" type="checkbox"
+                 role_id="{{ role.id }}" role_name="{{ role.name }}" />
+        </td>
 
         <!-- Role name -->
         <td><a href='/role/edit/{{ role.id }}'>{{ role.name }}</a></td>
@@ -102,6 +105,31 @@
 
 {% block script %}
 <script>
+$('#delete_role').on('click', function(e) {
+  if(window.confirm('Are you all right to delete selected Role?')) {
+    $('.role_select:checked').each((i, elem) => {
+      const role_id = $(elem).attr('role_id');
+      const role_name = $(elem).attr('role_name');
+
+      $.ajax({
+        type: 'DELETE',
+        url: `/role/api/v1/${ role_id }/`,
+      }).done(function(resp) {
+        MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS,
+                                        `Succeeded in deleting Role(${ role_name })`);
+      }).fail(function(resp) {
+        MessageBox.setNextOnLoadMessage(MessageBox.ERROR, resp.responseText);
+      });
+    });
+
+    // Refresh page after completing to reiceve responses,
+    // which are correspond of all deleting requests
+    $(document).ajaxComplete(function(event, request, settings) {
+      location.href = '/role/';
+    });
+  }
+});
+
 $(document).ready(function() {
   $('.del-item').on('click', confirm_delete_table_item);
 });

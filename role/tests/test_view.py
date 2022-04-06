@@ -1,19 +1,10 @@
 import json
 
-from airone.lib.test import AironeViewTest
+from .base import RoleTestBase
 from role.models import Role
-from user.models import User
-from group.models import Group
 
 
-class ViewTest(AironeViewTest):
-    def setUp(self):
-        super(ViewTest, self).setUp()
-
-        # create Users and Groups for using this test
-        self._users = {n: User.objects.create(username=n, email='%s@example.com' % n)
-                       for n in ['userA', 'userB']}
-        self._groups = {n: Group.objects.create(name=n) for n in ['groupA', 'groupB']}
+class ModelTest(RoleTestBase):
 
     def test_get_create(self):
         user = self.guest_login()
@@ -26,10 +17,10 @@ class ViewTest(AironeViewTest):
 
         params = {
             'name': 'Creating Role',
-            'users': [{'id': self._users['userA'].id}],
-            'groups': [{'id': self._groups['groupA'].id}],
-            'admin_users': [{'id': self._users['userB'].id}],
-            'admin_groups': [{'id': self._groups['groupB'].id}],
+            'users': [{'id': self.users['userA'].id}],
+            'groups': [{'id': self.groups['groupA'].id}],
+            'admin_users': [{'id': self.users['userB'].id}],
+            'admin_groups': [{'id': self.groups['groupB'].id}],
         }
         resp = self.client.post('/role/do_create/', json.dumps(params), 'application/json')
         self.assertEqual(resp.status_code, 200)
@@ -71,18 +62,18 @@ class ViewTest(AironeViewTest):
         role.administrative_users.add(user)
 
         # register userA and groupA as initialized users and groups
-        role.users.add(self._users['userA'])
-        role.groups.add(self._groups['groupA'])
-        role.administrative_users.add(self._users['userA'])
-        role.administrative_groups.add(self._groups['groupA'])
+        role.users.add(self.users['userA'])
+        role.groups.add(self.groups['groupA'])
+        role.administrative_users.add(self.users['userA'])
+        role.administrative_groups.add(self.groups['groupA'])
 
         # send a request to reigster userB and groupB as members of the "Role"
         params = {
             'name': 'Edited Role',
-            'users': [{'id': self._users['userB'].id}],
-            'groups': [{'id': self._groups['groupB'].id}],
-            'admin_users': [{'id': self._users['userB'].id}],
-            'admin_groups': [{'id': self._groups['groupB'].id}],
+            'users': [{'id': self.users['userB'].id}],
+            'groups': [{'id': self.groups['groupB'].id}],
+            'admin_users': [{'id': self.users['userB'].id}],
+            'admin_groups': [{'id': self.groups['groupB'].id}],
         }
         resp = self.client.post('/role/do_edit/%d/' % role.id,
                                 json.dumps(params), 'application/json')

@@ -154,3 +154,18 @@ def do_edit(request, role_id, recv_data):
     return JsonResponse({
         'msg': 'Succeeded in creating new Role "%s"' % recv_data['name']
     })
+
+@http_post([
+    {'name': 'target_roles', 'type': list},
+])
+def do_delete(request, role_id, recv_data):
+    user = request.user
+    role = Role.objects.filter(id=role_id, is_active=True).first()
+    if not role:
+        return HttpResponse('Specified Role(id:%d) does not exist' % role_id, status=400)
+
+    print('[onix/do_delete(10)] recv_data.target_roles: ', str(recv_data['target_roles']))
+
+    return JsonResponse({
+        'msg': 'Succeeded in deleting specified Roles'
+    })
