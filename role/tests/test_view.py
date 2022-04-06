@@ -7,13 +7,13 @@ from role.models import Role
 class ModelTest(RoleTestBase):
 
     def test_get_create(self):
-        user = self.guest_login()
+        self.guest_login()
 
         resp = self.client.get('/role/create/')
         self.assertEqual(resp.status_code, 200)
 
     def test_post_create(self):
-        user = self.guest_login()
+        self.guest_login()
 
         params = {
             'name': 'Creating Role',
@@ -46,7 +46,7 @@ class ModelTest(RoleTestBase):
         self.assertEqual(resp.status_code, 200)
 
     def test_get_edit_without_permission(self):
-        user = self.guest_login()
+        self.guest_login()
         role = Role.objects.create(name='Role')
 
         resp = self.client.get('/role/edit/%d/' % role.id)

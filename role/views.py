@@ -1,24 +1,19 @@
-import json
-
-from airone.lib.http import HttpResponseSeeOther
-from airone.lib.http import http_get, http_post, http_file_upload
+from airone.lib.http import http_get, http_post
 from airone.lib.http import render
-from airone.lib.http import get_download_response
-from airone.lib.http import check_superuser
 from django.http import HttpResponse
 from django.http.response import JsonResponse
-from django.shortcuts import redirect
 
 from group.models import Group
 from user.models import User
 from role.models import Role
-from role.settings import CONFIG
 
 
 def set_role_members(role, recv_data):
-    for (model, member, key) in [(User, 'users', 'users'), (Group, 'groups', 'groups'),
-                         (User, 'administrative_users', 'admin_users'),
-                         (Group, 'administrative_groups', 'admin_groups')]:
+    for (model, member, key) in [
+            (User, 'users', 'users'),
+            (Group, 'groups', 'groups'),
+            (User, 'administrative_users', 'admin_users'),
+            (Group, 'administrative_groups', 'admin_groups')]:
         for obj in recv_data[key]:
             instance = model.objects.filter(id=obj['id'], is_active=True).first()
             if instance:
@@ -153,19 +148,4 @@ def do_edit(request, role_id, recv_data):
 
     return JsonResponse({
         'msg': 'Succeeded in creating new Role "%s"' % recv_data['name']
-    })
-
-@http_post([
-    {'name': 'target_roles', 'type': list},
-])
-def do_delete(request, role_id, recv_data):
-    user = request.user
-    role = Role.objects.filter(id=role_id, is_active=True).first()
-    if not role:
-        return HttpResponse('Specified Role(id:%d) does not exist' % role_id, status=400)
-
-    print('[onix/do_delete(10)] recv_data.target_roles: ', str(recv_data['target_roles']))
-
-    return JsonResponse({
-        'msg': 'Succeeded in deleting specified Roles'
     })

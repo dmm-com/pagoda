@@ -1,7 +1,5 @@
 from .base import RoleTestBase
 
-from role.models import Role
-
 
 class ModelTest(RoleTestBase):
     def test_delete_invalid_role(self):
