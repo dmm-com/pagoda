@@ -35,6 +35,34 @@ class ModelTest(RoleTestBase):
         self.assertEqual([x.name for x in role.groups.all()], ['groupA'])
         self.assertEqual([x.name for x in role.administrative_groups.all()], ['groupB'])
 
+    def test_fail_to_create_with_empty_name(self):
+        self.guest_login()
+
+        params = {
+            'name': '',
+            'users': [{'id': self.users['userA'].id}],
+            'groups': [{'id': self.groups['groupA'].id}],
+            'admin_users': [{'id': self.users['userB'].id}],
+            'admin_groups': [{'id': self.groups['groupB'].id}],
+        }
+        resp = self.client.post('/role/do_create/',
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+
+    def test_fail_to_edit_with_empty_name(self):
+        self.guest_login()
+
+        params = {
+            'name': '',
+            'users': [{'id': self.users['userA'].id}],
+            'groups': [{'id': self.groups['groupA'].id}],
+            'admin_users': [{'id': self.users['userB'].id}],
+            'admin_groups': [{'id': self.groups['groupB'].id}],
+        }
+        resp = self.client.post('/role/do_edit/%d/' % self.role.id,
+                                json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+
     def test_get_edit(self):
         user = self.guest_login()
         role = Role.objects.create(name='Role')

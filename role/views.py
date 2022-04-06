@@ -62,7 +62,7 @@ def create(request):
 
 
 @http_post([
-    {'name': 'name', 'type': str},
+    {'name': 'name', 'type': str, 'checker': lambda x: x['name']},
     {'name': 'users', 'type': list, 'meta': [{'name': 'id', 'type': int}]},
     {'name': 'groups', 'type': list, 'meta': [{'name': 'id', 'type': int}]},
     {'name': 'admin_users', 'type': list, 'meta': [{'name': 'id', 'type': int}]},
@@ -115,7 +115,7 @@ def edit(request, role_id):
 
 
 @http_post([
-    {'name': 'name', 'type': str},
+    {'name': 'name', 'type': str, 'checker': lambda x: x['name']},
     {'name': 'users', 'type': list, 'meta': [{'name': 'id', 'type': int}]},
     {'name': 'groups', 'type': list, 'meta': [{'name': 'id', 'type': int}]},
     {'name': 'admin_users', 'type': list, 'meta': [{'name': 'id', 'type': int}]},

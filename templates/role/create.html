@@ -19,6 +19,7 @@
     <div class="form-group col-md-11">
       <input type="text" name="name" class="form-control" id="role_name"
        value="{{ name }}" placeholder="ロール名"/>
+      <div class='invalid-feedback role_name'></div>
     </div>
     <div class="form-group col-md-1">
       {% if 'create' in submit_ref %}
@@ -73,6 +74,18 @@ const ADMIN_GROUPS = convert_dict_to_list({{ admin_group_info|safe }});
 $('#edit-form').submit(function(){
   MessageBox.clear();
 
+  // clear warning of input form
+  $('#role_name').removeClass('is-invalid');
+
+  const role_name = $('#role_name').val();
+  if (! role_name) {
+    // set warning of invalid role_name
+    $('#role_name').addClass('is-invalid');
+    MessageBox.error("You have to specify role name");
+
+    return false;
+  }
+
   const sending_params = {
     users: USERS.filter(x => x.is_checked),
     groups: GROUPS.filter(x => x.is_checked),
@@ -86,6 +99,9 @@ $('#edit-form').submit(function(){
 
     location.href = '/role';
   }).fail(function(data) {
+    if (data.responseText == "Duplicate named role has already been registered") {
+      $('#role_name').addClass('is-invalid');
+    }
     MessageBox.error(data.responseText);
   });
 
