@@ -204,6 +204,9 @@ function generate_user_group_content(obj) {
 
 function initialize_user_group_table() {
   function _do_initialize_table(collapseId, userList, groupList) {
+    // clear table context at first
+    $(`#${ collapseId } tbody`).empty();
+
     userList.slice(0, 10).forEach((user) => {
       $(`#${ collapseId } tbody`).append(generate_user_group_content(user));
     });
