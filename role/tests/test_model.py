@@ -27,35 +27,35 @@ class ModelTest(RoleTestBase):
         self.assertTrue(self.role.is_belonged_to(self.users['userA']))
         self.assertFalse(self.role.is_belonged_to(self.users['userB']))
 
-    def test_permit_to_edit_registered_by_user(self):
-        # set userA belongs to groupA as administrative_groups member
+    def test_is_editable_registered_by_user(self):
+        # set userA belongs to groupA as admin_groups member
         self.users['userA'].groups.add(self.groups['groupA'])
 
-        # set userA belongs to test Role as administrative_users member
-        self.role.administrative_users.add(self.users['userA'])
+        # set userA belongs to test Role as admin_users member
+        self.role.admin_users.add(self.users['userA'])
 
-        self.assertTrue(self.role.permit_to_edit(self.users['userA']))
-        self.assertFalse(self.role.permit_to_edit(self.users['userB']))
+        self.assertTrue(self.role.is_editable(self.users['userA']))
+        self.assertFalse(self.role.is_editable(self.users['userB']))
 
-    def test_permit_to_edit_registered_by_group(self):
-        # set userA belongs to groupA as administrative_groups member
+    def test_is_editable_registered_by_group(self):
+        # set userA belongs to groupA as admin_groups member
         self.users['userA'].groups.add(self.groups['groupA'])
 
-        # set groupA belongs to test Role as users member as administrative_groups member
-        self.role.administrative_groups.add(self.groups['groupA'])
+        # set groupA belongs to test Role as users member as admin_groups member
+        self.role.admin_groups.add(self.groups['groupA'])
 
-        self.assertTrue(self.role.permit_to_edit(self.users['userA']))
-        self.assertFalse(self.role.permit_to_edit(self.users['userB']))
+        self.assertTrue(self.role.is_editable(self.users['userA']))
+        self.assertFalse(self.role.is_editable(self.users['userB']))
 
-    def test_permit_to_edit_by_super_user(self):
+    def test_is_editable_by_super_user(self):
         super_user = self.admin_login()
 
         # Suser-user has permission to edit any role without registering
         # administrative Users and Groups.
-        self.assertFalse(self.role.administrative_users.filter(id=super_user.id).exists())
+        self.assertFalse(self.role.admin_users.filter(id=super_user.id).exists())
         self.assertFalse(bool(set([g.id for g in super_user.groups.all()]) &
-                              set([g.id for g in self.role.administrative_groups.all()])))
-        self.assertTrue(self.role.permit_to_edit(super_user))
+                              set([g.id for g in self.role.admin_groups.all()])))
+        self.assertTrue(self.role.is_editable(super_user))
 
     def test_to_create_role_that_has_same_name_with_group(self):
         role = Role.objects.create(name='groupA')

@@ -4,7 +4,7 @@ from .base import RoleTestBase
 from role.models import Role
 
 
-class ModelTest(RoleTestBase):
+class ViewTest(RoleTestBase):
 
     def test_get_create(self):
         self.guest_login()
@@ -13,7 +13,10 @@ class ModelTest(RoleTestBase):
         self.assertEqual(resp.status_code, 200)
 
     def test_post_create(self):
-        self.guest_login()
+        login_user = self.guest_login()
+
+        # It's necessary to set login-user as a group member of admin_group
+        login_user.groups.add(self.groups['groupB'])
 
         params = {
             'name': 'Creating Role',
@@ -31,9 +34,9 @@ class ModelTest(RoleTestBase):
         # check new Role instance was created
         role = Role.objects.get(name='Creating Role', is_active=True)
         self.assertEqual([x.username for x in role.users.all()], ['userA'])
-        self.assertEqual([x.username for x in role.administrative_users.all()], ['userB'])
+        self.assertEqual([x.username for x in role.admin_users.all()], ['userB'])
         self.assertEqual([x.name for x in role.groups.all()], ['groupA'])
-        self.assertEqual([x.name for x in role.administrative_groups.all()], ['groupB'])
+        self.assertEqual([x.name for x in role.admin_groups.all()], ['groupB'])
 
     def test_fail_to_create_with_empty_name(self):
         self.guest_login()
@@ -68,7 +71,7 @@ class ModelTest(RoleTestBase):
         role = Role.objects.create(name='Role')
 
         # set test user as an administrative one
-        role.administrative_users.add(user)
+        role.admin_users.add(user)
 
         resp = self.client.get('/role/edit/%d/' % role.id)
         self.assertEqual(resp.status_code, 200)
@@ -87,13 +90,16 @@ class ModelTest(RoleTestBase):
         role = Role.objects.create(name='Role')
 
         # set test user as an administrative one
-        role.administrative_users.add(user)
+        role.admin_users.add(user)
 
         # register userA and groupA as initialized users and groups
         role.users.add(self.users['userA'])
         role.groups.add(self.groups['groupA'])
-        role.administrative_users.add(self.users['userA'])
-        role.administrative_groups.add(self.groups['groupA'])
+        role.admin_users.add(self.users['userA'])
+        role.admin_groups.add(self.groups['groupA'])
+
+        # It's necessary to set login-user as a group member of admin_group
+        user.groups.add(self.groups['groupB'])
 
         # send a request to reigster userB and groupB as members of the "Role"
         params = {
@@ -111,6 +117,21 @@ class ModelTest(RoleTestBase):
         role.refresh_from_db()
         self.assertEqual(role.name, 'Edited Role')
         self.assertEqual([x.username for x in role.users.all()], ['userB'])
-        self.assertEqual([x.username for x in role.administrative_users.all()], ['userB'])
+        self.assertEqual([x.username for x in role.admin_users.all()], ['userB'])
         self.assertEqual([x.name for x in role.groups.all()], ['groupB'])
-        self.assertEqual([x.name for x in role.administrative_groups.all()], ['groupB'])
+        self.assertEqual([x.name for x in role.admin_groups.all()], ['groupB'])
+
+    def test_role_without_admin_member(self):
+        self.guest_login()
+
+        params = {
+            'name': 'Creating Role to be fail',
+            'users': [{'id': self.users['userA'].id}],
+            'groups': [{'id': self.groups['groupA'].id}],
+            'admin_users': [{'id': self.users['userB'].id}],
+            'admin_groups': [{'id': self.groups['groupB'].id}],
+        }
+        resp = self.client.post('/role/do_create/', json.dumps(params), 'application/json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode('utf-8'),
+                         "You can't edit this role. Please set administrative members")

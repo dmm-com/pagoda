@@ -21,7 +21,7 @@ class ModelTest(RoleTestBase):
         login_user = self.guest_login()
 
         # set login user as an administrative user of test Role to be deleted
-        self.role.administrative_users.add(login_user)
+        self.role.admin_users.add(login_user)
 
         resp = self.client.delete('/role/api/v1/%d/' % self.role.id)
         self.assertEqual(resp.status_code, 204)

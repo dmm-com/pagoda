@@ -12,12 +12,21 @@ def set_role_members(role, recv_data):
     for (model, member, key) in [
             (User, 'users', 'users'),
             (Group, 'groups', 'groups'),
-            (User, 'administrative_users', 'admin_users'),
-            (Group, 'administrative_groups', 'admin_groups')]:
+            (User, 'admin_users', 'admin_users'),
+            (Group, 'admin_groups', 'admin_groups')]:
         for obj in recv_data[key]:
             instance = model.objects.filter(id=obj['id'], is_active=True).first()
             if instance:
                 getattr(role, member).add(instance)
+
+
+def is_role_editable(role, recv_data):
+    admin_users = [User.objects.get(id=u['id']) for u in recv_data['admin_users']
+                   if User.objects.filter(id=u['id'], is_active=True).exists()]
+    admin_groups = [Group.objects.get(id=g['id']) for g in recv_data['admin_groups']
+                    if Group.objects.filter(id=g['id']).exists()]
+
+    return Role.editable(role, admin_users, admin_groups)
 
 
 def initialize_role_context():
@@ -45,8 +54,8 @@ def index(request):
         'name': x.name,
         'users': x.users.all().order_by('username'),
         'groups': x.groups.all().order_by('name'),
-        'admin_users': x.administrative_users.all().order_by('username'),
-        'admin_groups': x.administrative_groups.all().order_by('name'),
+        'admin_users': x.admin_users.all().order_by('username'),
+        'admin_groups': x.admin_groups.all().order_by('name'),
     } for x in Role.objects.filter(is_active=True)]
 
     return render(request, 'role/list.html', context)
@@ -72,6 +81,13 @@ def do_create(request, recv_data):
     if Role.objects.filter(name=recv_data['name'], is_active=True).exists():
         return HttpResponse('Duplicate named role has already been registered',
                             status=400)
+
+    # This checks whether specified parameter might make this role not to be able to
+    # delete this role by this user.
+    if not is_role_editable(request.user, recv_data):
+        return HttpResponse("You can't edit this role. Please set administrative members",
+                            status=400)
+
     role = Role.objects.create(name=recv_data['name'])
 
     # set users and groups, which include administrative ones, to role instance
@@ -89,7 +105,7 @@ def edit(request, role_id):
     if not role:
         return HttpResponse('Specified Role(id:%d) does not exist' % role_id, status=400)
 
-    if not role.permit_to_edit(user):
+    if not role.is_editable(user):
         return HttpResponse('You do not have permission to change this role', status=400)
 
     # get user and group members that are selectable as role members
@@ -101,9 +117,9 @@ def edit(request, role_id):
     for (key, nameattr, model) in [('user_info', 'username', role.users),
                                    ('group_info', 'name', role.groups),
                                    ('admin_user_info', 'username',
-                                    role.administrative_users),
+                                    role.admin_users),
                                    ('admin_group_info', 'name',
-                                    role.administrative_groups)]:
+                                    role.admin_groups)]:
 
         for instance in model.filter(is_active=True):
             context[key][instance.id].update({
@@ -132,11 +148,17 @@ def do_edit(request, role_id, recv_data):
         return HttpResponse('Other duplicate named role has already been registered',
                             status=400)
 
-    if not role.permit_to_edit(user):
+    if not role.is_editable(user):
         return HttpResponse('You do not have permission to change this role', status=400)
 
+    # This checks whether specified parameter might make this role not to be able to
+    # delete this role by this user.
+    if not is_role_editable(user, recv_data):
+        return HttpResponse("You can't edit this role. Please set administrative members",
+                            status=400)
+
     # clear registered members (users, groups and administrative ones) to that role
-    for key in ['users', 'groups', 'administrative_users', 'administrative_groups']:
+    for key in ['users', 'groups', 'admin_users', 'admin_groups']:
         getattr(role, key).clear()
 
     # set users and groups, which include administrative ones, to role instance

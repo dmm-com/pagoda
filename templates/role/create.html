@@ -76,6 +76,7 @@ $('#edit-form').submit(function(){
 
   // clear warning of input form
   $('#role_name').removeClass('is-invalid');
+  $('.collapse_title').removeClass('text-danger');
 
   const role_name = $('#role_name').val();
   if (! role_name) {
@@ -101,6 +102,13 @@ $('#edit-form').submit(function(){
   }).fail(function(data) {
     if (data.responseText == "Duplicate named role has already been registered") {
       $('#role_name').addClass('is-invalid');
+    }
+    if (data.responseText == "You can't edit this role. Please set administrative members") {
+      // open collapse of setting administrative members
+      $('.collapse_title.collapseAdminUserGroups').addClass('text-danger');
+      $('.collapse').collapse('hide');
+      $('#collapseAdminUserGroups').collapse('show');
+
     }
     MessageBox.error(data.responseText);
   });
