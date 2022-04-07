@@ -1,10 +1,12 @@
 from django.db import models
 from group.models import Group
 from user.models import User
-from django.contrib.auth.models import Group as DjangoGroup
+from django.contrib.auth.models import Permission
 
 
-class Role(DjangoGroup):
+class Role(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+    permissions = models.ManyToManyField(Permission, blank=True)
     is_active = models.BooleanField(default=True)
 
     users = models.ManyToManyField(User, related_name='role')
@@ -36,3 +38,7 @@ class Role(DjangoGroup):
             return True
 
         return False
+
+    def is_permitted(self, target_obj, permission_level):
+        return any([permission_level.id <= x.get_aclid()
+                   for x in self.permissions.filter(codename__startswith=(str(target_obj.id)+'.'))])

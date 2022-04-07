@@ -1,5 +1,9 @@
 from .base import RoleTestBase
 
+from airone.lib.acl import ACLType
+from entity.models import Entity
+from role.models import Role
+
 
 class ModelTest(RoleTestBase):
 
@@ -52,3 +56,20 @@ class ModelTest(RoleTestBase):
         self.assertFalse(bool(set([g.id for g in super_user.groups.all()]) &
                               set([g.id for g in self.role.administrative_groups.all()])))
         self.assertTrue(self.role.permit_to_edit(super_user))
+
+    def test_to_create_role_that_has_same_name_with_group(self):
+        role = Role.objects.create(name='groupA')
+        self.assertEqual(role.name, self.groups['groupA'].name)
+
+    def test_set_permission(self):
+        # create ACLBase object to set ACL
+        user = self.users['userA']
+        entity = Entity.objects.create(name='Entity', created_user=user, is_public=False)
+
+        # set permission for created Entity
+        self.role.permissions.add(entity.writable)
+
+        # check permission check processing would be worked well
+        self.assertTrue(self.role.is_permitted(entity, ACLType.Readable))
+        self.assertTrue(self.role.is_permitted(entity, ACLType.Writable))
+        self.assertFalse(self.role.is_permitted(entity, ACLType.Full))
