@@ -14,7 +14,7 @@ class RoleAPI(APIView):
                             status=status.HTTP_404_NOT_FOUND)
 
         user = request.user
-        if not role.permit_to_edit(user):
+        if not role.is_editable(user):
             return Response("Permission error to delete the Role(%s)" % role.name,
                             status=status.HTTP_401_UNAUTHORIZED)
 
