@@ -6,7 +6,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import { styled } from "@mui/material/styles";
 import * as React from "react";
-import { FC } from "react";
+import { useEffect } from "react";
 
 const Root = styled("div")(
   ({ theme }) => `
@@ -16,12 +16,6 @@ const Root = styled("div")(
   font-size: 14px;
 `
 );
-
-const Label = styled("label")`
-  padding: 0 0 4px;
-  line-height: 1.5;
-  display: block;
-`;
 
 const InputWrapper = styled("div")(
   ({ theme }) => `
@@ -159,49 +153,54 @@ const Listbox = styled("ul")(
 `
 );
 
-interface Props {
-  options: any[];
-  optionLabel: string;
-  handleSelectedItems?: (items: any[], ...rest: any[]) => void;
-  restParamsForSelectedItemsHandler?: any[];
+interface Props<T> {
+  options: T[];
+  getOptionLabel: (option: T) => string;
+  defaultValue?: T[];
+  handleChangeSelectedValue: (value: T[]) => void;
 }
 
-export const CustomizedHook: FC<Props> = ({
+export const CustomizedHook = <T,>({
   options,
-  optionLabel,
-  handleSelectedItems,
-  restParamsForSelectedItemsHandler,
-}) => {
+  getOptionLabel,
+  defaultValue,
+  handleChangeSelectedValue,
+}: Props<T>) => {
   const {
     getRootProps,
-    getInputLabelProps,
     getInputProps,
     getTagProps,
     getListboxProps,
     getOptionProps,
     groupedOptions,
     value,
+    dirty,
     focused,
     setAnchorEl,
   } = useAutocomplete({
-    id: "customized-hook-demo",
     multiple: true,
     options: options,
-    getOptionLabel: (x) => x[optionLabel],
+    defaultValue: defaultValue,
+    getOptionLabel: getOptionLabel,
   });
 
-  // call event handler to notify selected items
-  if (handleSelectedItems !== undefined) {
-    handleSelectedItems(value, ...restParamsForSelectedItemsHandler);
-  }
+  useEffect(() => {
+    if (value[0] instanceof String) {
+      throw Error(`unsupported value: ${value}`);
+    }
+
+    if (dirty) {
+      handleChangeSelectedValue(value as T[]);
+    }
+  }, [dirty, value]);
 
   return (
     <Root>
       <div {...getRootProps()}>
         <InputWrapper ref={setAnchorEl} className={focused ? "focused" : ""}>
-          {value.map((option: FilmOptionType, index: number) => (
+          {value.map((option: T, index: number) => (
             <StyledTag
-              label={option[optionLabel]}
+              label={getOptionLabel(option)}
               {...getTagProps({ index })}
             />
           ))}
@@ -212,7 +211,7 @@ export const CustomizedHook: FC<Props> = ({
         <Listbox {...getListboxProps()}>
           {groupedOptions.map((option, index) => (
             <li {...getOptionProps({ option, index })}>
-              <span>{option[optionLabel]}</span>
+              <span>{getOptionLabel(option)}</span>
               <CheckIcon fontSize="small" />
             </li>
           ))}
@@ -221,8 +220,3 @@ export const CustomizedHook: FC<Props> = ({
     </Root>
   );
 };
-
-interface FilmOptionType {
-  title: string;
-  year: number;
-}

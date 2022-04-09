@@ -121,20 +121,12 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
       return { ...attr, refIds: attr.referrals.map((r) => r.id) };
     }) ?? []
   );
-  const [referralFilters, setReferralFilters] = useState<{
-    [attrId: number]: string;
-  }>({});
 
   const handleChangeAttributeValue = (
     index: number,
     key: string,
     value: any
   ) => {
-    console.log("[onix/handleChangeAttributeValue] index: ", index);
-    console.log("[onix/handleChangeAttributeValue] key: ", key);
-    console.log("[onix/handleChangeAttributeValue] value: ", value);
-    console.log("[onix/handleChangeAttributeValue] attributes: ", attributes);
-
     attributes[index][key] = value;
     setAttributes([...attributes]);
   };
@@ -163,7 +155,8 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
   const handleSubmit = async () => {
     // Adjusted attributes for the API
     const attrs = attributes
-      .filter((attr) => attr.id != null)
+      // FIXME filter unnecessary attrs
+      // .filter((attr) => attr.id != null)
       .map((attr, index) => {
         return {
           id: attr.id,
@@ -198,14 +191,6 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
     ));
   }, []);
 
-  console.log("[onix/referralEntities] ", referralEntities);
-
-  const handleSelectedItems = (items, index, key) => {
-    console.log("[onix/handleSelectedItems] items: ", items);
-    console.log("[onix/handleSelectedItems] index: ", index);
-    console.log("[onix/handleSelectedItems] key: ", key);
-  };
-
   return (
     <Box>
       <Box>
@@ -215,12 +200,6 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
               {createMode ? "新規エンティティの作成" : `${entity.name}の編集`}
             </Typography>
           </Box>
-
-          {/* XXX for test
-          <CustomizedHook options={referralEntities}
-                          optionLabel={'name'}
-                          handleSelectedItems={handleSelectedItems}/>
-                     */}
 
           <Box my="32px">
             <Typography variant="h4" align="center">
@@ -334,79 +313,18 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
 
                             <CustomizedHook
                               options={referralEntities}
-                              optionLabel={"name"}
-                              handleSelectedItems={handleSelectedItems}
-                              restParamsForSelectedItemsHandler={[
-                                index,
-                                "refIds",
-                              ]}
-                            />
-
-                            {/*
-                            <Select
-                              multiple
-                              value={attr.refIds}
-                              renderValue={(selectedIds: number[]) => (
-                                <>
-                                  {referralEntities
-                                    .filter((r) => selectedIds.includes(r.id))
-                                    .map((r) => (
-                                      <Chip
-                                        key={r.id}
-                                        label={r.name}
-                                        onDelete={() => {
-                                          handleChangeAttributeValue(
-                                            index,
-                                            "refIds",
-                                            attr.refIds.filter(
-                                              (id) => id !== r.id
-                                            )
-                                          );
-                                        }}
-                                        onMouseDown={(e) => e.stopPropagation()}
-                                      />
-                                    ))}
-                                </>
+                              getOptionLabel={(option: Entity) => option.name}
+                              defaultValue={referralEntities.filter((e) =>
+                                attr.refIds.includes(e.id)
                               )}
-                              onChange={(e) => {
+                              handleChangeSelectedValue={(value: Entity[]) => {
                                 handleChangeAttributeValue(
                                   index,
                                   "refIds",
-                                  e.target.value
+                                  value.map((i) => i.id)
                                 );
                               }}
-                              MenuProps={{ style: { maxHeight: 500 } }}
-                            >
-                              <Box mx={2} my={1}>
-                                <Input
-                                  type="text"
-                                  placeholder="絞り込み"
-                                  value={referralFilters[attr.id] ?? ""}
-                                  onChange={(e) =>
-                                    setReferralFilters({
-                                      ...referralFilters,
-                                      [attr.id]: e.target.value,
-                                    })
-                                  }
-                                  onKeyDown={(e) => e.stopPropagation()}
-                                />
-                              </Box>
-                              {referralEntities
-                                .filter((e) => !attr.refIds.includes(e.id))
-                                .filter((e) => {
-                                  const keyword =
-                                    referralFilters[attr.id] ?? "";
-                                  return keyword.length > 0
-                                    ? e.name.indexOf(keyword) !== -1
-                                    : true;
-                                })
-                                .map((e) => (
-                                  <MenuItem key={e.id} value={e.id}>
-                                    {e.name}
-                                  </MenuItem>
-                                ))}
-                            </Select>
-                            */}
+                            />
                           </Box>
                         )}
                       </Box>
