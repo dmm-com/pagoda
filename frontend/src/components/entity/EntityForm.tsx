@@ -155,8 +155,7 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
   const handleSubmit = async () => {
     // Adjusted attributes for the API
     const attrs = attributes
-      // FIXME filter unnecessary attrs
-      // .filter((attr) => attr.id != null)
+      .filter((attr) => attr.id != null || !attr.deleted)
       .map((attr, index) => {
         return {
           id: attr.id,
@@ -269,118 +268,122 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {attributes
-                .filter((attr) => attr.deleted !== true)
-                .map((attr, index) => (
-                  <StyledTableRow key={index}>
-                    <TableCell>
-                      <Input
-                        type="text"
-                        value={attr.name}
-                        placeholder="属性名"
-                        sx={{ width: "100%" }}
-                        onChange={(e) =>
-                          handleChangeAttributeValue(
-                            index,
-                            "name",
-                            e.target.value
-                          )
-                        }
-                      />
-                    </TableCell>
+              {attributes.map((attr, index) => (
+                <>
+                  {attr.deleted !== true && (
+                    <StyledTableRow key={index}>
+                      <TableCell>
+                        <Input
+                          type="text"
+                          value={attr.name}
+                          placeholder="属性名"
+                          sx={{ width: "100%" }}
+                          onChange={(e) =>
+                            handleChangeAttributeValue(
+                              index,
+                              "name",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </TableCell>
 
-                    <TableCell>
-                      <Box>
-                        <Box minWidth={100} marginX={1}>
-                          <Select
-                            fullWidth={true}
-                            value={attr.type}
-                            disabled={attr.id != null}
-                            onChange={(e) =>
-                              handleChangeAttributeValue(
-                                index,
-                                "type",
-                                e.target.value
-                              )
-                            }
-                          >
-                            {attributeTypeMenuItems}
-                          </Select>
-                        </Box>
-                        {(attr.type & BaseAttributeTypes.object) > 0 && (
+                      <TableCell>
+                        <Box>
                           <Box minWidth={100} marginX={1}>
-                            <Typography>エンティティを選択</Typography>
-
-                            <CustomizedHook
-                              options={referralEntities}
-                              getOptionLabel={(option: Entity) => option.name}
-                              defaultValue={referralEntities.filter((e) =>
-                                attr.refIds.includes(e.id)
-                              )}
-                              handleChangeSelectedValue={(value: Entity[]) => {
+                            <Select
+                              fullWidth={true}
+                              value={attr.type}
+                              disabled={attr.id != null}
+                              onChange={(e) =>
                                 handleChangeAttributeValue(
                                   index,
-                                  "refIds",
-                                  value.map((i) => i.id)
-                                );
-                              }}
-                            />
+                                  "type",
+                                  e.target.value
+                                )
+                              }
+                            >
+                              {attributeTypeMenuItems}
+                            </Select>
                           </Box>
-                        )}
-                      </Box>
-                    </TableCell>
+                          {(attr.type & BaseAttributeTypes.object) > 0 && (
+                            <Box minWidth={100} marginX={1}>
+                              <Typography>エンティティを選択</Typography>
 
-                    <TableCell>
-                      <Checkbox
-                        checked={attr.is_mandatory}
-                        onChange={(e) =>
-                          handleChangeAttributeValue(
-                            index,
-                            "is_mandatory",
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </TableCell>
+                              <CustomizedHook
+                                options={referralEntities}
+                                getOptionLabel={(option: Entity) => option.name}
+                                defaultValue={referralEntities.filter((e) =>
+                                  attr.refIds.includes(e.id)
+                                )}
+                                handleChangeSelectedValue={(
+                                  value: Entity[]
+                                ) => {
+                                  handleChangeAttributeValue(
+                                    index,
+                                    "refIds",
+                                    value.map((i) => i.id)
+                                  );
+                                }}
+                              />
+                            </Box>
+                          )}
+                        </Box>
+                      </TableCell>
 
-                    <TableCell>
-                      <Checkbox
-                        checked={attr.is_delete_in_chain}
-                        onChange={(e) =>
-                          handleChangeAttributeValue(
-                            index,
-                            "is_delete_in_chain",
-                            e.target.checked
-                          )
-                        }
-                      />
-                    </TableCell>
+                      <TableCell>
+                        <Checkbox
+                          checked={attr.is_mandatory}
+                          onChange={(e) =>
+                            handleChangeAttributeValue(
+                              index,
+                              "is_mandatory",
+                              e.target.checked
+                            )
+                          }
+                        />
+                      </TableCell>
 
-                    <TableCell>
-                      <IconButton
-                        className={classes.button}
-                        onClick={(e) => handleDeleteAttribute(index)}
-                      >
-                        <DeleteOutlineIcon />
-                      </IconButton>
-                    </TableCell>
+                      <TableCell>
+                        <Checkbox
+                          checked={attr.is_delete_in_chain}
+                          onChange={(e) =>
+                            handleChangeAttributeValue(
+                              index,
+                              "is_delete_in_chain",
+                              e.target.checked
+                            )
+                          }
+                        />
+                      </TableCell>
 
-                    <TableCell>
-                      {attr.id != null && (
-                        <Button
-                          variant="contained"
-                          color="primary"
+                      <TableCell>
+                        <IconButton
                           className={classes.button}
-                          startIcon={<GroupIcon />}
-                          component={Link}
-                          to={aclPath(attr.id)}
+                          onClick={(e) => handleDeleteAttribute(index)}
                         >
-                          ACL
-                        </Button>
-                      )}
-                    </TableCell>
-                  </StyledTableRow>
-                ))}
+                          <DeleteOutlineIcon />
+                        </IconButton>
+                      </TableCell>
+
+                      <TableCell>
+                        {attr.id != null && (
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            className={classes.button}
+                            startIcon={<GroupIcon />}
+                            component={Link}
+                            to={aclPath(attr.id)}
+                          >
+                            ACL
+                          </Button>
+                        )}
+                      </TableCell>
+                    </StyledTableRow>
+                  )}
+                </>
+              ))}
             </TableBody>
           </Table>
         </Box>
