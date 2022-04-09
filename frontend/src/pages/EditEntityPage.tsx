@@ -5,6 +5,7 @@ import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { Loading } from "../components/common/Loading";
+import { getWebhooks } from "../utils/AironeAPIClient";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -24,13 +25,18 @@ export const EditEntityPage: FC = () => {
     return await aironeApiClientV2.getEntities();
   });
 
+  const webhooks = useAsync(async () => {
+    const resp = await getWebhooks(entityId);
+    return await resp.json();
+  });
+
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  if (entity.loading || referralEntities.loading) {
+  if (entity.loading || referralEntities.loading || webhooks.loading) {
     return <Loading />;
   }
 
@@ -67,7 +73,7 @@ export const EditEntityPage: FC = () => {
         </Box>
         <Box hidden={tabValue !== 1}>
           {entityId !== undefined ? (
-            <WebhookForm entityId={entityId} />
+            <WebhookForm entityId={entityId} webhooks={webhooks.value} />
           ) : (
             <Typography>
               未作成のエンティティはWebhookを設定できません。まずエンティティを作成してください。

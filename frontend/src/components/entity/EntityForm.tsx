@@ -47,10 +47,10 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
 
     if (createMode) {
       await createEntity(name, note, isTopLevel, attrs);
-      history.replace(entitiesPath());
+      history.go(0);
     } else {
       await updateEntity(entity.id, name, note, isTopLevel, attrs);
-      history.replace(entitiesPath());
+      history.go(0);
     }
   };
 
