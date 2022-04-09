@@ -133,197 +133,205 @@ Object {
                     </h2>
                   </div>
                   <div
-                    class="MuiBox-root css-zitybv"
+                    class="MuiBox-root css-0"
                   >
-                    <h4
-                      class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
+                    <div
+                      class="MuiBox-root css-zitybv"
                     >
-                      基本情報
-                    </h4>
-                  </div>
-                  <table
-                    class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
-                  >
-                    <thead
-                      class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+                      <h4
+                        class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
+                      >
+                        基本情報
+                      </h4>
+                    </div>
+                    <table
+                      class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
                     >
-                      <tr
-                        class="MuiTableRow-root MuiTableRow-head css-sabv7l-MuiTableRow-root"
+                      <thead
+                        class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
                       >
-                        <th
-                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                          scope="col"
+                        <tr
+                          class="MuiTableRow-root MuiTableRow-head css-sabv7l-MuiTableRow-root"
                         >
-                          項目
-                        </th>
-                        <th
-                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                          scope="col"
-                        >
-                          内容
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody
-                      class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-                    >
-                      <tr
-                        class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
-                      >
-                        <td
-                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                        >
-                          エンティティ名
-                        </td>
-                        <td
-                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                        >
-                          <div
-                            class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-ueb0lb-MuiInputBase-root-MuiInput-root"
+                          <th
+                            class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                            scope="col"
                           >
-                            <input
-                              class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                              placeholder="エンティティ名"
-                              type="text"
-                              value=""
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                      <tr
-                        class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
-                      >
-                        <td
-                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                        >
-                          備考
-                        </td>
-                        <td
-                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                        >
-                          <div
-                            class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-ueb0lb-MuiInputBase-root-MuiInput-root"
+                            項目
+                          </th>
+                          <th
+                            class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                            scope="col"
                           >
-                            <input
-                              class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                              placeholder="備考"
-                              type="text"
-                              value=""
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                      <tr
-                        class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                            内容
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody
+                        class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
                       >
-                        <td
-                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                        <tr
+                          class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
                         >
-                          サイドバーに表示
-                        </td>
-                        <td
-                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                        >
-                          <span
-                            class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                          <td
+                            class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                           >
-                            <input
-                              class="PrivateSwitchBase-input css-1m9pwf3"
-                              data-indeterminate="false"
-                              type="checkbox"
-                            />
-                            <svg
-                              aria-hidden="true"
-                              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                              data-testid="CheckBoxOutlineBlankIcon"
-                              focusable="false"
-                              viewBox="0 0 24 24"
+                            エンティティ名
+                          </td>
+                          <td
+                            class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                          >
+                            <div
+                              class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-ueb0lb-MuiInputBase-root-MuiInput-root"
                             >
-                              <path
-                                d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                              <input
+                                class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                                placeholder="エンティティ名"
+                                type="text"
+                                value=""
                               />
-                            </svg>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr
+                          class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                        >
+                          <td
+                            class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                          >
+                            備考
+                          </td>
+                          <td
+                            class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                          >
+                            <div
+                              class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-ueb0lb-MuiInputBase-root-MuiInput-root"
+                            >
+                              <input
+                                class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                                placeholder="備考"
+                                type="text"
+                                value=""
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                        <tr
+                          class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                        >
+                          <td
+                            class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                          >
+                            サイドバーに表示
+                          </td>
+                          <td
+                            class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                          >
                             <span
-                              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                            />
-                          </span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <div
-                    class="MuiBox-root css-zitybv"
-                  >
-                    <h4
-                      class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
-                    >
-                      属性情報
-                    </h4>
+                              class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                            >
+                              <input
+                                class="PrivateSwitchBase-input css-1m9pwf3"
+                                data-indeterminate="false"
+                                type="checkbox"
+                              />
+                              <svg
+                                aria-hidden="true"
+                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                                data-testid="CheckBoxOutlineBlankIcon"
+                                focusable="false"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                                />
+                              </svg>
+                              <span
+                                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                              />
+                            </span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                  <table
-                    class="MuiTable-root css-rqglhn-MuiTable-root"
+                  <div
+                    class="MuiBox-root css-0"
                   >
-                    <thead
-                      class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+                    <div
+                      class="MuiBox-root css-zitybv"
                     >
-                      <tr
-                        class="MuiTableRow-root MuiTableRow-head css-sabv7l-MuiTableRow-root"
+                      <h4
+                        class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
                       >
-                        <th
-                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                          scope="col"
+                        属性情報
+                      </h4>
+                    </div>
+                    <table
+                      class="MuiTable-root css-rqglhn-MuiTable-root"
+                    >
+                      <thead
+                        class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+                      >
+                        <tr
+                          class="MuiTableRow-root MuiTableRow-head css-sabv7l-MuiTableRow-root"
                         >
-                          属性名
-                        </th>
-                        <th
-                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                          scope="col"
-                        >
-                          型
-                        </th>
-                        <th
-                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                          scope="col"
-                        >
-                          必須
-                        </th>
-                        <th
-                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                          scope="col"
-                        >
-                          関連削除
-                        </th>
-                        <th
-                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                          scope="col"
-                        >
-                          属性の削除
-                        </th>
-                        <th
-                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ygcj2i-MuiTableCell-root"
-                          scope="col"
+                          <th
+                            class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                            scope="col"
+                          >
+                            属性名
+                          </th>
+                          <th
+                            class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                            scope="col"
+                          >
+                            型
+                          </th>
+                          <th
+                            class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                            scope="col"
+                          >
+                            必須
+                          </th>
+                          <th
+                            class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                            scope="col"
+                          >
+                            関連削除
+                          </th>
+                          <th
+                            class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                            scope="col"
+                          >
+                            属性の削除
+                          </th>
+                          <th
+                            class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ygcj2i-MuiTableCell-root"
+                            scope="col"
+                          />
+                        </tr>
+                      </thead>
+                      <tbody
+                        class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+                      />
+                    </table>
+                    <div
+                      class="MuiBox-root css-zitybv"
+                    >
+                      <button
+                        class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root makeStyles-button-4 css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        属性追加
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                         />
-                      </tr>
-                    </thead>
-                    <tbody
-                      class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-                    />
-                  </table>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div
-                class="MuiBox-root css-zitybv"
-              >
-                <button
-                  class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root makeStyles-button-4 css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
-                  tabindex="0"
-                  type="button"
-                >
-                  属性追加
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
-                </button>
               </div>
               <div
                 class="MuiBox-root css-17772hy"
@@ -502,197 +510,205 @@ Object {
                   </h2>
                 </div>
                 <div
-                  class="MuiBox-root css-zitybv"
+                  class="MuiBox-root css-0"
                 >
-                  <h4
-                    class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
+                  <div
+                    class="MuiBox-root css-zitybv"
                   >
-                    基本情報
-                  </h4>
-                </div>
-                <table
-                  class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
-                >
-                  <thead
-                    class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+                    <h4
+                      class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
+                    >
+                      基本情報
+                    </h4>
+                  </div>
+                  <table
+                    class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
                   >
-                    <tr
-                      class="MuiTableRow-root MuiTableRow-head css-sabv7l-MuiTableRow-root"
+                    <thead
+                      class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
                     >
-                      <th
-                        class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                        scope="col"
+                      <tr
+                        class="MuiTableRow-root MuiTableRow-head css-sabv7l-MuiTableRow-root"
                       >
-                        項目
-                      </th>
-                      <th
-                        class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                        scope="col"
-                      >
-                        内容
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody
-                    class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-                  >
-                    <tr
-                      class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
-                    >
-                      <td
-                        class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                      >
-                        エンティティ名
-                      </td>
-                      <td
-                        class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                      >
-                        <div
-                          class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-ueb0lb-MuiInputBase-root-MuiInput-root"
+                        <th
+                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                          scope="col"
                         >
-                          <input
-                            class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                            placeholder="エンティティ名"
-                            type="text"
-                            value=""
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                    <tr
-                      class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
-                    >
-                      <td
-                        class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                      >
-                        備考
-                      </td>
-                      <td
-                        class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                      >
-                        <div
-                          class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-ueb0lb-MuiInputBase-root-MuiInput-root"
+                          項目
+                        </th>
+                        <th
+                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                          scope="col"
                         >
-                          <input
-                            class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                            placeholder="備考"
-                            type="text"
-                            value=""
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                    <tr
-                      class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                          内容
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody
+                      class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
                     >
-                      <td
-                        class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                      <tr
+                        class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
                       >
-                        サイドバーに表示
-                      </td>
-                      <td
-                        class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                      >
-                        <span
-                          class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                        <td
+                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                         >
-                          <input
-                            class="PrivateSwitchBase-input css-1m9pwf3"
-                            data-indeterminate="false"
-                            type="checkbox"
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                            data-testid="CheckBoxOutlineBlankIcon"
-                            focusable="false"
-                            viewBox="0 0 24 24"
+                          エンティティ名
+                        </td>
+                        <td
+                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                        >
+                          <div
+                            class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-ueb0lb-MuiInputBase-root-MuiInput-root"
                           >
-                            <path
-                              d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                            <input
+                              class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                              placeholder="エンティティ名"
+                              type="text"
+                              value=""
                             />
-                          </svg>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr
+                        class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                      >
+                        <td
+                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                        >
+                          備考
+                        </td>
+                        <td
+                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                        >
+                          <div
+                            class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-ueb0lb-MuiInputBase-root-MuiInput-root"
+                          >
+                            <input
+                              class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                              placeholder="備考"
+                              type="text"
+                              value=""
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                      <tr
+                        class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                      >
+                        <td
+                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                        >
+                          サイドバーに表示
+                        </td>
+                        <td
+                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                        >
                           <span
-                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                          />
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <div
-                  class="MuiBox-root css-zitybv"
-                >
-                  <h4
-                    class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
-                  >
-                    属性情報
-                  </h4>
+                            class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                          >
+                            <input
+                              class="PrivateSwitchBase-input css-1m9pwf3"
+                              data-indeterminate="false"
+                              type="checkbox"
+                            />
+                            <svg
+                              aria-hidden="true"
+                              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                              data-testid="CheckBoxOutlineBlankIcon"
+                              focusable="false"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                              />
+                            </svg>
+                            <span
+                              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                            />
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-                <table
-                  class="MuiTable-root css-rqglhn-MuiTable-root"
+                <div
+                  class="MuiBox-root css-0"
                 >
-                  <thead
-                    class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+                  <div
+                    class="MuiBox-root css-zitybv"
                   >
-                    <tr
-                      class="MuiTableRow-root MuiTableRow-head css-sabv7l-MuiTableRow-root"
+                    <h4
+                      class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
                     >
-                      <th
-                        class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                        scope="col"
+                      属性情報
+                    </h4>
+                  </div>
+                  <table
+                    class="MuiTable-root css-rqglhn-MuiTable-root"
+                  >
+                    <thead
+                      class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+                    >
+                      <tr
+                        class="MuiTableRow-root MuiTableRow-head css-sabv7l-MuiTableRow-root"
                       >
-                        属性名
-                      </th>
-                      <th
-                        class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                        scope="col"
-                      >
-                        型
-                      </th>
-                      <th
-                        class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                        scope="col"
-                      >
-                        必須
-                      </th>
-                      <th
-                        class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                        scope="col"
-                      >
-                        関連削除
-                      </th>
-                      <th
-                        class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                        scope="col"
-                      >
-                        属性の削除
-                      </th>
-                      <th
-                        class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ygcj2i-MuiTableCell-root"
-                        scope="col"
+                        <th
+                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                          scope="col"
+                        >
+                          属性名
+                        </th>
+                        <th
+                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                          scope="col"
+                        >
+                          型
+                        </th>
+                        <th
+                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                          scope="col"
+                        >
+                          必須
+                        </th>
+                        <th
+                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                          scope="col"
+                        >
+                          関連削除
+                        </th>
+                        <th
+                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                          scope="col"
+                        >
+                          属性の削除
+                        </th>
+                        <th
+                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ygcj2i-MuiTableCell-root"
+                          scope="col"
+                        />
+                      </tr>
+                    </thead>
+                    <tbody
+                      class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+                    />
+                  </table>
+                  <div
+                    class="MuiBox-root css-zitybv"
+                  >
+                    <button
+                      class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root makeStyles-button-4 css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                      tabindex="0"
+                      type="button"
+                    >
+                      属性追加
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                       />
-                    </tr>
-                  </thead>
-                  <tbody
-                    class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-                  />
-                </table>
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div
-              class="MuiBox-root css-zitybv"
-            >
-              <button
-                class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root makeStyles-button-4 css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
-                tabindex="0"
-                type="button"
-              >
-                属性追加
-                <span
-                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                />
-              </button>
             </div>
             <div
               class="MuiBox-root css-17772hy"

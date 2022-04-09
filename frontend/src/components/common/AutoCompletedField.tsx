@@ -160,7 +160,7 @@ interface Props<T> {
   handleChangeSelectedValue: (value: T[]) => void;
 }
 
-export const CustomizedHook = <T,>({
+export const AutoCompletedField = <T,>({
   options,
   getOptionLabel,
   defaultValue,
