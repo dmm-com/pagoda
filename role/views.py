@@ -72,6 +72,7 @@ def create(request):
 
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: x['name']},
+    {'name': 'description', 'type': str},
     {'name': 'users', 'type': list, 'meta': [{'name': 'id', 'type': int}]},
     {'name': 'groups', 'type': list, 'meta': [{'name': 'id', 'type': int}]},
     {'name': 'admin_users', 'type': list, 'meta': [{'name': 'id', 'type': int}]},
@@ -88,7 +89,11 @@ def do_create(request, recv_data):
         return HttpResponse("You can't edit this role. Please set administrative members",
                             status=400)
 
-    role = Role.objects.create(name=recv_data['name'])
+    # create role instance that has specified name and description parameters
+    role = Role.objects.create(**{
+        'name': recv_data['name'],
+        'description': recv_data['description'] if recv_data['description'] else ''
+    })
 
     # set users and groups, which include administrative ones, to role instance
     set_role_members(role, recv_data)
@@ -114,6 +119,7 @@ def edit(request, role_id):
 
     # update users/groups context to set what users and groups are registered on role
     context['name'] = role.name
+    context['description'] = role.description
     for (key, nameattr, model) in [('user_info', 'username', role.users),
                                    ('group_info', 'name', role.groups),
                                    ('admin_user_info', 'username',
@@ -132,6 +138,7 @@ def edit(request, role_id):
 
 @http_post([
     {'name': 'name', 'type': str, 'checker': lambda x: x['name']},
+    {'name': 'description', 'type': str},
     {'name': 'users', 'type': list, 'meta': [{'name': 'id', 'type': int}]},
     {'name': 'groups', 'type': list, 'meta': [{'name': 'id', 'type': int}]},
     {'name': 'admin_users', 'type': list, 'meta': [{'name': 'id', 'type': int}]},
@@ -164,9 +171,14 @@ def do_edit(request, role_id, recv_data):
     # set users and groups, which include administrative ones, to role instance
     set_role_members(role, recv_data)
 
-    # update role name
-    role.name = recv_data['name']
-    role.save(update_fields=['name'])
+    # update attributes of role instance
+    update_fields = []
+    for key in ['name', 'description']:
+        if getattr(role, key) != recv_data.get(key):
+            setattr(role, key, recv_data.get(key))
+            update_fields.append(key)
+
+    role.save(update_fields=update_fields)
 
     return JsonResponse({
         'msg': 'Succeeded in creating new Role "%s"' % recv_data['name']

@@ -30,6 +30,19 @@
     </div>
   </div>
 
+  <!-- Collapse for role description -->
+  <div class='config_role description'>
+    <div class="toggle">
+      <h6 href='#collapseDescription' class='collapse_title description' data-toggle='collapse' aria-expanded="false">
+        備考
+      </h6>
+    </div>
+
+    <div class='collapse' id='collapseDescription'>
+      <textarea class='form-control' name='description' rows="5">{{ description }}</textarea>
+    </div>
+  </div>
+
   {% include "role/select_user_groups.html" with collapse_id="collapseUserGroups" collapse_title="登録ユーザ / グループ" is_open=True %}
 
   {% include "role/select_user_groups.html" with collapse_id="collapseAdminUserGroups" collapse_title="管理登録ユーザ / グループ" %}
@@ -123,7 +136,7 @@ $('.collapse').on('show.bs.collapse', function(e) {
 
 function handle_filter_list_values(ev, userList, groupList) {
   // clear current contents before showing filtered ones
-  const elem_tbody = $(ev.target).parents('.config_role_members').find('tbody');
+  const elem_tbody = $(ev.target).parents('.config_role.members').find('tbody');
   elem_tbody.empty();
 
   const inputValue = $(ev.target).val();

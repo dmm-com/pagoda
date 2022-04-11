@@ -8,6 +8,7 @@ class Role(models.Model):
     name = models.CharField(max_length=200, unique=True)
     permissions = models.ManyToManyField(Permission, blank=True)
     is_active = models.BooleanField(default=True)
+    description = models.TextField()
 
     users = models.ManyToManyField(User, related_name='role')
     groups = models.ManyToManyField(Group, related_name='role')
