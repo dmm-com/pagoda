@@ -106,7 +106,7 @@ $('#edit-form').submit(function(){
     if (data.responseText == "You can't edit this role. Please set administrative members") {
       // open collapse of setting administrative members
       $('.collapse_title.collapseAdminUserGroups').addClass('text-danger');
-      $('.collapse').collapse('hide');
+      $('#collapseUserGroups').collapse('hide');
       $('#collapseAdminUserGroups').collapse('show');
 
     }
@@ -218,8 +218,10 @@ function initialize_user_group_table(initializeCollapseId) {
   }
   if (initializeCollapseId === 'collapseUserGroups') {
     _do_initialize_table('collapseUserGroups', USERS, GROUPS);
+
   } else if (initializeCollapseId === 'collapseAdminUserGroups') {
     _do_initialize_table('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
+
   } else {
     _do_initialize_table('collapseUserGroups', USERS, GROUPS);
     _do_initialize_table('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
