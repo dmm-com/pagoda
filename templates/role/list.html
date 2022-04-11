@@ -27,6 +27,7 @@
     <thead>
       <th scope='col'></th>
       <th scope='col'>名前</th>
+      <th scope='col'>備考</th>
       <th scope='col'>登録ユーザ・グループ</th>
       <th scope='col'>管理ユーザ・グループ</th>
     <thead>
@@ -40,6 +41,9 @@
 
         <!-- Role name -->
         <td><a href='/role/edit/{{ role.id }}'>{{ role.name }}</a></td>
+
+        <!-- Role description -->
+        <td><span data-toggle="tooltip" data-placement="top" title="{{ role.description }}">{{ role.description|truncatechars:15 }}</span></td>
 
         <!-- Registered Users and Groups -->
         <td>
@@ -132,6 +136,11 @@ $('#delete_role').on('click', function(e) {
 
 $(document).ready(function() {
   $('.del-item').on('click', confirm_delete_table_item);
+
+  // initialize tooltips
+  $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+  })
 });
 </script>
 {% endblock %}

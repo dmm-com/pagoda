@@ -52,6 +52,7 @@ def index(request):
     context['roles'] = [{
         'id': x.id,
         'name': x.name,
+        'description': x.description,
         'users': x.users.all().order_by('username'),
         'groups': x.groups.all().order_by('name'),
         'admin_users': x.admin_users.all().order_by('username'),
