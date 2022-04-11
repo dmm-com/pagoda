@@ -149,7 +149,8 @@ function handle_filter_list_values(ev, userList, groupList) {
     register_checkbox_event_handler();
 
   } else {
-    initialize_user_group_table();
+    const collapseId = $(ev.target).parents('.collapse').attr('id');
+    initialize_user_group_table(collapseId);
   }
 
   if ((ev.which && ev.which === 13) || (ev.keyCode && ev.keyCode === 13)) {
@@ -202,7 +203,7 @@ function generate_user_group_content(obj) {
   }
 }
 
-function initialize_user_group_table() {
+function initialize_user_group_table(initializeCollapseId) {
   function _do_initialize_table(collapseId, userList, groupList) {
     // clear table context at first
     $(`#${ collapseId } tbody`).empty();
@@ -215,8 +216,14 @@ function initialize_user_group_table() {
       $(`#${ collapseId } tbody`).append(generate_user_group_content(group));
     });
   }
-  _do_initialize_table('collapseUserGroups', USERS, GROUPS);
-  _do_initialize_table('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
+  if (initializeCollapseId === 'collapseUserGroups') {
+    _do_initialize_table('collapseUserGroups', USERS, GROUPS);
+  } else if (initializeCollapseId === 'collapseAdminUserGroups') {
+    _do_initialize_table('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
+  } else {
+    _do_initialize_table('collapseUserGroups', USERS, GROUPS);
+    _do_initialize_table('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
+  }
 
   register_checkbox_event_handler();
 }
