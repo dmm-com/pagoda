@@ -17,6 +17,9 @@ class Group(DjangoGroup):
         self.save()
 
     def has_permission(self, target_obj, permission_level):
+        """[NOTE]
+        This function will be obsoleted, then will be alternated by Role feature
+        """
         # A bypass processing to rapidly return.
         # This condition is effective when the public objects are majority.
         if target_obj.is_public:
