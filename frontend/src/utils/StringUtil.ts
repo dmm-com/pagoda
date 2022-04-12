@@ -1,7 +1,10 @@
-import { Full2HalfWidthConstant, Full2HalfWidthSourceRegex } from "utils/Constants";
+import {
+  Full2HalfWidthConstant,
+  Full2HalfWidthSourceRegex,
+} from "utils/Constants";
 
 function toHalfWidth(origin: string): string {
-  return origin.replace(new RegExp(Full2HalfWidthSourceRegex, 'g'), (s) => {
+  return origin.replace(new RegExp(Full2HalfWidthSourceRegex, "g"), (s) => {
     return String.fromCharCode(s.charCodeAt(0) - Full2HalfWidthConstant);
   });
 }
