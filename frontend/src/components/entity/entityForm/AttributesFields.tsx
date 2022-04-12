@@ -189,6 +189,7 @@ export const AttributesFields: FC<Props> = ({
                           e.target.value
                         )
                       }
+                      error={attr.name === ""}
                     />
                   </TableCell>
 

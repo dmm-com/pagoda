@@ -53,6 +53,7 @@ export const BasicFields: FC<Props> = ({
                 placeholder="エンティティ名"
                 sx={{ width: "100%" }}
                 onChange={(e) => setName(e.target.value)}
+                error={name === ""}
               />
             </TableCell>
           </TableRow>
