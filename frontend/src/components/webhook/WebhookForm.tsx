@@ -21,10 +21,10 @@ import {
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
-import { useAsync, useToggle } from "react-use";
+import { useHistory } from "react-router-dom";
 
 import { DeleteButton } from "components/common/DeleteButton";
-import { deleteWebhook, getWebhooks, setWebhook } from "utils/AironeAPIClient";
+import { deleteWebhook, setWebhook } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -46,15 +46,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface Props {
   entityId: number;
+  webhooks: any[];
 }
 
-export const WebhookForm: FC<Props> = ({ entityId }) => {
+export const WebhookForm: FC<Props> = ({ entityId, webhooks }) => {
   const classes = useStyles();
-
-  const [isUpdated, toggleIsUpdated] = useToggle(false);
-  const webhooks = useAsync(async () => {
-    return getWebhooks(entityId).then((resp) => resp.json());
-  }, [isUpdated]);
+  const history = useHistory();
 
   const [open, setOpen] = React.useState(false);
   const [webhook_headers, setWebhookHeaders] = React.useState([]);
@@ -65,7 +62,6 @@ export const WebhookForm: FC<Props> = ({ entityId }) => {
   const [webhookId, setWebhookId] = React.useState(0);
 
   const handleOpenModal = (event, item?: any) => {
-    console.log(item);
     setOpen(true);
     setWebhookURL(item ? item.url : "");
     setWebhookLabel(item ? item.label : "");
@@ -88,7 +84,7 @@ export const WebhookForm: FC<Props> = ({ entityId }) => {
     setOpen(false);
   };
 
-  const handleRegisterWebhook = () => {
+  const handleRegisterWebhook = async () => {
     // This parameter is invalid on purpose
     const request_parameter = {
       id: webhookId > 0 ? webhookId : undefined,
@@ -98,21 +94,19 @@ export const WebhookForm: FC<Props> = ({ entityId }) => {
       is_enabled: is_available,
     };
 
-    setWebhook(entityId, request_parameter).then((resp) => {
-      if (resp.ok) {
-        handleCloseModal();
+    const resp = await setWebhook(entityId, request_parameter);
+    if (resp.ok) {
+      handleCloseModal();
 
-        toggleIsUpdated();
-      } else {
-        setAlertMsg(resp.statusText);
-      }
-    });
+      history.go(0);
+    } else {
+      setAlertMsg(resp.statusText);
+    }
   };
 
-  const handleDeleteWebhook = (e, webhookId) => {
-    deleteWebhook(webhookId).then(() => {
-      toggleIsUpdated();
-    });
+  const handleDeleteWebhook = async (e, webhookId) => {
+    await deleteWebhook(webhookId);
+    history.go(0);
   };
 
   const handleAddHeaderElem = () => {
@@ -158,30 +152,28 @@ export const WebhookForm: FC<Props> = ({ entityId }) => {
         Add Webhook
       </Button>
 
-      {/*This is testing display*/}
       <List>
-        {!webhooks.loading &&
-          webhooks.value.map((item) => (
-            <ListItem
-              key={item.id}
-              button
-              onClick={(e) => handleOpenModal(e, item)}
-            >
-              <ListItemAvatar>
-                <Avatar>
-                  {item.is_verified ? <CheckIcon /> : <CloseIcon />}
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={item.url} secondary={item.label} />
-              <ListItemSecondaryAction>
-                {/* TODO replace it with non-button element */}
-                <DeleteButton
-                  startIcon={<DeleteIcon />}
-                  handleDelete={(e) => handleDeleteWebhook(e, item.id)}
-                />
-              </ListItemSecondaryAction>
-            </ListItem>
-          ))}
+        {webhooks.map((item) => (
+          <ListItem
+            key={item.id}
+            button
+            onClick={(e) => handleOpenModal(e, item)}
+          >
+            <ListItemAvatar>
+              <Avatar>
+                {item.is_verified ? <CheckIcon /> : <CloseIcon />}
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText primary={item.url} secondary={item.label} />
+            <ListItemSecondaryAction>
+              {/* TODO replace it with non-button element */}
+              <DeleteButton
+                startIcon={<DeleteIcon />}
+                handleDelete={(e) => handleDeleteWebhook(e, item.id)}
+              />
+            </ListItemSecondaryAction>
+          </ListItem>
+        ))}
       </List>
 
       <Modal
