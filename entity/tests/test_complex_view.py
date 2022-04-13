@@ -12,6 +12,7 @@ from entity.models import Entity, EntityAttr
 from entry.models import Entry, AttributeValue
 from entry import tasks as entry_tasks
 from entity import tasks as entity_tasks
+from role.models import Role
 
 from unittest.mock import patch
 from unittest.mock import Mock
@@ -176,6 +177,8 @@ class ComplexViewTest(AironeViewTest):
         - The Entry(entry2) whcih is created by the guest user has no Attribute
         """
         user = self.admin_login()
+        role = Role.objects.create(name='TestRole')
+        role.users.add(user)
 
         # create an Entity
         params = {
@@ -193,15 +196,14 @@ class ComplexViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(EntityAttr.objects.count(), 1)
 
-        # set acl of attr
+        # set acl of attr to Role
         entityattr = EntityAttr.objects.get(name='attr')
         params = {
             'object_id': str(entityattr.id),
             'object_type': str(entityattr.objtype),
             'acl': [
                 {
-                    'member_id': str(user.id),
-                    'member_type': 'user',
+                    'role_id': str(role.id),
                     'value': str(ACLType.Full.id)
                 }
             ],
