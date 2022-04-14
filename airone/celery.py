@@ -1,8 +1,10 @@
 import os
+import importlib
 import configurations
 from celery import Celery
 from celery.signals import task_failure
 from django.core.mail import mail_admins
+from django.conf import settings
 
 from airone.lib.log import Logger
 
@@ -11,6 +13,12 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'airone.settings')
 os.environ.setdefault('DJANGO_CONFIGURATION', 'Dev')
 
 configurations.setup()
+
+for extension in settings.AIRONE['EXTENSIONS']:
+    try:
+        importlib.import_module('%s.settings' % extension)
+    except ImportError:
+        Logger.warning('Failed to load settings %s' % extension)
 
 app = Celery('airone')
 
