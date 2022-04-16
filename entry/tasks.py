@@ -321,6 +321,10 @@ def delete_entry(self, job_id):
         entry = Entry.objects.get(id=job.target.id)
         entry.delete()
 
+        user = User.objects.get(id=job.user.id)
+        if custom_view.is_custom("after_delete_entry", entry.schema.name):
+            custom_view.call_custom("after_delete_entry", entry.schema.name, user, entry)
+
         # update job status and save it
         job.update(Job.STATUS['DONE'])
 

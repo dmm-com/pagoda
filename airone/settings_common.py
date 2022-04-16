@@ -46,6 +46,7 @@ class Common(Configuration):
         'entry',
         'job',
         'webhook',
+        'role',
         'django.contrib.admin',
         'django.contrib.auth',
         'django.contrib.contenttypes',

@@ -1,4 +1,3 @@
-import importlib
 from django.conf import settings
 from django.conf.urls import url, include
 from django.contrib.auth import views as auth_views
@@ -7,7 +6,6 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 from api_v1.urls import urlpatterns as api_v1_urlpatterns
 from airone.auth import view as auth_view
-from airone.lib.log import Logger
 
 urlpatterns = [
     url(r'^$', RedirectView.as_view(url='dashboard/')),
@@ -32,14 +30,11 @@ urlpatterns = [
     ), name='login'),
     url(r'^auth/logout/', auth_view.logout, name='logout'),
     url(r'^webhook/', include(('webhook.urls', 'webhook'))),
+    url(r'^role/', include(('role.urls', 'role'))),
     # url(r'^__debug__/', include('debug_toolbar.urls')),
 ]
 
 for extension in settings.AIRONE['EXTENSIONS']:
-    try:
-        importlib.import_module('%s.settings' % extension)
-    except ImportError:
-        Logger.warning('Failed to load settings %s' % extension)
     urlpatterns.append(url(r'^extension/%s' % extension,
                            include(('%s.urls' % extension, extension))))
 
