@@ -81,7 +81,8 @@ export const AdvancedSearchPage: FC = () => {
   const [attrNameFilter, setAttrNameFilter] = useState("");
 
   const entities = useAsync(async () => {
-    return await aironeApiClientV2.getEntities();
+    const entities = await aironeApiClientV2.getEntities();
+    return entities.results;
   });
 
   // TODO should be better to fetch all the values once, then filter it

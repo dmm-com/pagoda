@@ -1,4 +1,7 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets
+from rest_framework.pagination import LimitOffsetPagination
 
 from entity.api_v2.serializers import EntitySerializer
 from user.models import History
@@ -34,6 +37,19 @@ def history(request, entity_id):
     } for h in histories], safe=False)
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter('query', OpenApiTypes.STR, OpenApiParameter.QUERY),
+    ],
+)
 class EntityAPI(viewsets.ReadOnlyModelViewSet):
-    queryset = Entity.objects.filter(is_active=True)
     serializer_class = EntitySerializer
+    pagination_class = LimitOffsetPagination
+
+    def get_queryset(self):
+        query = self.request.query_params.get('query', None)
+
+        if query:
+            return Entity.objects.filter(name__iregex=r'%s' % query, is_active=True).order_by('id')
+        else:
+            return Entity.objects.filter(is_active=True).order_by('id')

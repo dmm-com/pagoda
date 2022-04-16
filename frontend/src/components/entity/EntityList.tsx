@@ -24,7 +24,6 @@ import { EntityControlMenu } from "./EntityControlMenu";
 
 import { entityEntriesPath, newEntityPath } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
-import { EntityList as ConstEntityList } from "utils/Constants";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -44,33 +43,27 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface Props {
   entities: Entity[];
+  page: number;
+  query?: string;
+  maxPage: number;
+  handleChangePage: (page: number) => void;
+  handleChangeQuery: (query: string) => void;
 }
 
-export const EntityList: FC<Props> = ({ entities }) => {
+export const EntityList: FC<Props> = ({
+  entities,
+  page,
+  query,
+  maxPage,
+  handleChangePage,
+  handleChangeQuery,
+}) => {
   const classes = useStyles();
 
-  const [keyword, setKeyword] = useState("");
-  const [page, setPage] = React.useState(1);
-  const handleChange = (event, value) => {
-    setPage(value);
-  };
+  const [keyword, setKeyword] = useState(query ?? "");
   const [entityAnchorEls, setEntityAnchorEls] = useState<{
     [key: number]: HTMLButtonElement;
   } | null>({});
-
-  const filteredEntities = entities.filter((entity) => {
-    // Search keyword is case insensitive (doesn't matter Lower/Upper cases)
-    return entity.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-  });
-
-  const displayedEntities = filteredEntities.slice(
-    (page - 1) * ConstEntityList.MAX_ROW_COUNT,
-    page * ConstEntityList.MAX_ROW_COUNT
-  );
-
-  const totalPageCount = Math.ceil(
-    filteredEntities.length / ConstEntityList.MAX_ROW_COUNT
-  );
 
   return (
     <Box>
@@ -80,12 +73,11 @@ export const EntityList: FC<Props> = ({ entities }) => {
           <SearchBox
             placeholder="エンティティ名で絞り込む"
             value={keyword}
-            onChange={(e) => {
-              setKeyword(e.target.value);
-
-              /* Reset page number to prevent vanishing entities from display
-               * when user move other page */
-              setPage(1);
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                handleChangeQuery(keyword.length > 0 ? keyword : undefined);
+              }
             }}
           />
         </Box>
@@ -103,7 +95,7 @@ export const EntityList: FC<Props> = ({ entities }) => {
 
       {/* This box shows each entity Cards */}
       <Grid container spacing={2}>
-        {displayedEntities.map((entity) => (
+        {entities.map((entity) => (
           <Grid item xs={4} key={entity.id}>
             <Card sx={{ height: "100%" }}>
               <CardHeader
@@ -166,9 +158,9 @@ export const EntityList: FC<Props> = ({ entities }) => {
       <Box display="flex" justifyContent="center" my="30px">
         <Stack spacing={2}>
           <Pagination
-            count={totalPageCount}
+            count={maxPage}
             page={page}
-            onChange={handleChange}
+            onChange={(e, page) => handleChangePage(page)}
             color="primary"
           />
         </Stack>

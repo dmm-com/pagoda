@@ -7,4 +7,5 @@ export * from "./GetEntrySimple";
 export * from "./GetEntryWithAttr";
 export * from "./GetEntryWithAttrAttrs";
 export * from "./Group";
+export * from "./PaginatedEntityList";
 export * from "./PaginatedGetEntryList";

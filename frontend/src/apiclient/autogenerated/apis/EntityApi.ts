@@ -13,10 +13,24 @@
  */
 
 import * as runtime from "../runtime";
-import { Entity, EntityFromJSON, EntityToJSON } from "../models";
+import {
+  Entity,
+  EntityFromJSON,
+  EntityToJSON,
+  PaginatedEntityList,
+  PaginatedEntityListFromJSON,
+  PaginatedEntityListToJSON,
+} from "../models";
+
+export interface EntityApiV2EntitiesListRequest {
+  limit?: number;
+  offset?: number;
+  query?: string;
+}
 
 export interface EntityApiV2EntitiesRetrieveRequest {
   id: number;
+  query?: string;
 }
 
 /**
@@ -26,9 +40,22 @@ export class EntityApi extends runtime.BaseAPI {
   /**
    */
   async entityApiV2EntitiesListRaw(
+    requestParameters: EntityApiV2EntitiesListRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<Array<Entity>>> {
+  ): Promise<runtime.ApiResponse<PaginatedEntityList>> {
     const queryParameters: any = {};
+
+    if (requestParameters.limit !== undefined) {
+      queryParameters["limit"] = requestParameters.limit;
+    }
+
+    if (requestParameters.offset !== undefined) {
+      queryParameters["offset"] = requestParameters.offset;
+    }
+
+    if (requestParameters.query !== undefined) {
+      queryParameters["query"] = requestParameters.query;
+    }
 
     const headerParameters: runtime.HTTPHeaders = {};
 
@@ -57,16 +84,20 @@ export class EntityApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      jsonValue.map(EntityFromJSON)
+      PaginatedEntityListFromJSON(jsonValue)
     );
   }
 
   /**
    */
   async entityApiV2EntitiesList(
+    requestParameters: EntityApiV2EntitiesListRequest = {},
     initOverrides?: RequestInit
-  ): Promise<Array<Entity>> {
-    const response = await this.entityApiV2EntitiesListRaw(initOverrides);
+  ): Promise<PaginatedEntityList> {
+    const response = await this.entityApiV2EntitiesListRaw(
+      requestParameters,
+      initOverrides
+    );
     return await response.value();
   }
 
@@ -84,6 +115,10 @@ export class EntityApi extends runtime.BaseAPI {
     }
 
     const queryParameters: any = {};
+
+    if (requestParameters.query !== undefined) {
+      queryParameters["query"] = requestParameters.query;
+    }
 
     const headerParameters: runtime.HTTPHeaders = {};
 

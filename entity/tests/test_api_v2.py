@@ -56,3 +56,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.get('/entity/api/v2/entities/%s' % entity.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()['name'], 'foo')
+
+        resp = self.client.get('/entity/api/v2/entities')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()['results'][0]['name'], 'foo')
+
+        resp = self.client.get('/entity/api/v2/entities?query=foo')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()['results']), 1)
