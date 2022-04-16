@@ -1,7 +1,9 @@
 import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import { topPath, usersPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -11,7 +13,7 @@ import { getUser } from "utils/AironeAPIClient";
 import { DjangoContext } from "utils/DjangoContext";
 
 export const EditUserPasswordPage: FC = () => {
-  const { userId } = useParams<{ userId: number }>();
+  const { userId } = useTypedParams<{ userId: number }>();
   const djangoContext = DjangoContext.getInstance();
 
   const user = useAsync(async () => {

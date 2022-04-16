@@ -1,7 +1,9 @@
 import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import { topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -10,7 +12,7 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 
 export const ACLPage: FC = () => {
-  const { objectId } = useParams<{ objectId: number }>();
+  const { objectId } = useTypedParams<{ objectId: number }>();
 
   const acl = useAsync(async () => {
     return await aironeApiClientV2.getAcl(objectId);
