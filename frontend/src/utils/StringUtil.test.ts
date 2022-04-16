@@ -1,4 +1,10 @@
-import { fuzzyMatch } from "./StringUtil";
+import { fuzzyMatch, normalizeToMatch } from "./StringUtil";
+
+test("text should includes substring keyword with fuzzy conversions", () => {
+  expect(normalizeToMatch("test")).toBe("test");
+  expect(normalizeToMatch("TEST")).toBe("test");
+  expect(normalizeToMatch("ｔｅｓｔ")).toBe("test");
+});
 
 test("text should includes substring keyword with fuzzy conversions", () => {
   expect(fuzzyMatch("test", "test")).toBe(true);
