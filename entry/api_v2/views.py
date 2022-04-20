@@ -1,64 +1,79 @@
-from rest_framework import viewsets, filters
+# from rest_framework import viewsets, filters
+from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
+# from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
-from django.http import Http404
 
+import custom_view
 from airone.lib.acl import ACLType
-from entry.api_v2.serializers import GetEntrySerializer
 from entry.api_v2.serializers import GetEntrySimpleSerializer
-from entry.api_v2.serializers import GetEntryWithAttrSerializer
+from entry.api_v2.serializers import EntryBaseSerializer, EntryRetrieveSerializer
+from entry.api_v2.serializers import EntryCreateSerializer, EntryUpdateSerializer
 from entry.models import AttributeValue, Entry
-from entity.models import Entity
+from job.models import Job
 from user.models import User
 
 
 class EntryPermission(BasePermission):
-    def has_permission(self, request, view):
-        if view.action == 'list':
-            user = User.objects.get(id=request.user.id)
-            entity = Entity.objects.filter(id=view.kwargs.get('entity_id')).first()
-
-            if not entity:
-                raise Http404
-
-            if not user.has_permission(entity, ACLType.Readable):
-                return False
-
-        return True
-
     def has_object_permission(self, request, view, obj):
         user = User.objects.get(id=request.user.id)
+        permisson = {
+            'retrieve': ACLType.Readable,
+            'update': ACLType.Writable,
+            'destroy': ACLType.Writable,
+        }
 
-        if not user.has_permission(obj, ACLType.Readable):
+        if not user.has_permission(obj, permisson.get(view.action)):
             return False
 
         return True
 
 
-class entryAPI(viewsets.ReadOnlyModelViewSet):
+class EntryAPI(viewsets.ModelViewSet):
     queryset = Entry.objects.all()
-    serializer_class = GetEntrySerializer
     pagination_class = PageNumberPagination
+    permission_classes = [IsAuthenticated & EntryPermission]
+
+    def get_serializer_class(self):
+        serializer = {
+            'retrieve': EntryRetrieveSerializer,
+            'update': EntryUpdateSerializer,
+            'create': EntryCreateSerializer,
+        }
+        return serializer.get(self.action, EntryBaseSerializer)
+
+    def perform_destroy(self, entry: Entry):
+        if not entry.is_active:
+            raise ValidationError("specified entry has already been deleted")
+
+        user = User.objects.get(id=self.request.user.id)
+
+        if custom_view.is_custom("before_delete_entry", entry.schema.name):
+            custom_view.call_custom("before_delete_entry", entry.schema.name, user, entry)
+
+        # register operation History for deleting entry
+        user.seth_entry_del(entry)
+
+        # delete entry
+        entry.delete()
+
+        if custom_view.is_custom("after_delete_entry", entry.schema.name):
+            custom_view.call_custom("after_delete_entry", entry.schema.name, user, entry)
+
+        # Send notification to the webhook URL
+        job_notify = Job.new_notify_delete_entry(user, entry)
+        job_notify.run()
+
+
+'''
     permission_classes = [IsAuthenticated & EntryPermission]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     filterset_fields = ['is_active']
     ordering_fields = ['name']
     search_fields = ['name']
-
-    def get_queryset(self):
-        return self.queryset.filter(schema__id=self.kwargs.get('entity_id'))
-
-
-class entryWithAttrAPI(viewsets.ReadOnlyModelViewSet):
-    serializer_class = GetEntryWithAttrSerializer
-    permission_classes = [IsAuthenticated & EntryPermission]
-    ordering_fields = ['name']
-
-    def get_queryset(self):
-        is_active = self.request.query_params.get('is_active', 'true').lower() == 'true'
-        return Entry.objects.filter(is_active=is_active).select_related('schema')
+'''
 
 
 class searchAPI(viewsets.ReadOnlyModelViewSet):

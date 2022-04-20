@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 
-from entity.api_v2.serializers import EntitySerializer
+from entity.api_v2.serializers import EntityWithAttrSerializer
 from user.models import History
 from airone.lib.http import http_get
 
@@ -36,4 +36,4 @@ def history(request, entity_id):
 
 class EntityAPI(viewsets.ReadOnlyModelViewSet):
     queryset = Entity.objects.filter(is_active=True)
-    serializer_class = EntitySerializer
+    serializer_class = EntityWithAttrSerializer
