@@ -1,5 +1,5 @@
-import { Box, Tab, Tabs, Typography } from "@mui/material";
-import React, { FC, useState } from "react";
+import { Box, Divider, Typography } from "@mui/material";
+import React, { FC } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -10,7 +10,6 @@ import { getWebhooks } from "../utils/AironeAPIClient";
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { EntityForm } from "components/entity/EntityForm";
-import { WebhookForm } from "components/webhook/WebhookForm";
 
 export const EditEntityPage: FC = () => {
   const { entityId } = useParams<{ entityId: number }>();
@@ -34,36 +33,43 @@ export const EditEntityPage: FC = () => {
     }
   });
 
-  const [tabValue, setTabValue] = useState(0);
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
-
   if (entity.loading || referralEntities.loading || webhooks.loading) {
     return <Loading />;
   }
 
   return (
     <Box>
-      <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
-          Top
-        </Typography>
-        <Typography component={Link} to={entitiesPath()}>
-          エンティティ一覧
-        </Typography>
-        {entityId && (
-          <Typography component={Link} to={entityEntriesPath(entityId)}>
-            {entity?.value?.name ?? ""}
+      {/* TODO z-index, position: fixed, margin-top, background-color */}
+      <Box>
+        <AironeBreadcrumbs>
+          <Typography component={Link} to={topPath()}>
+            Top
           </Typography>
-        )}
-        <Typography color="textPrimary">
-          {entityId ? "エンティティ編集" : "新規エンティティの作成"}
-        </Typography>
-      </AironeBreadcrumbs>
+          <Typography component={Link} to={entitiesPath()}>
+            エンティティ一覧
+          </Typography>
+          {entityId && (
+            <Typography component={Link} to={entityEntriesPath(entityId)}>
+              {entity?.value?.name ?? ""}
+            </Typography>
+          )}
+          <Typography color="textPrimary">
+            {entityId ? "エンティティ編集" : "新規エンティティの作成"}
+          </Typography>
+        </AironeBreadcrumbs>
+
+        <Box my="64px">
+          <Typography variant="h2" align="center">
+            {entity?.value != null
+              ? `${entity.value.name}の編集`
+              : "新規エンティティの作成"}
+          </Typography>
+          <Divider sx={{ marginTop: "32px", borderColor: "black" }} />
+        </Box>
+      </Box>
 
       <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
+        {/*
         <Tabs value={tabValue} onChange={handleTabChange}>
           <Tab label="編集" />
           <Tab label="設定" />
@@ -84,6 +90,11 @@ export const EditEntityPage: FC = () => {
             </Typography>
           )}
         </Box>
+        */}
+        <EntityForm
+          entity={entity.value}
+          referralEntities={referralEntities.value}
+        />
       </Box>
     </Box>
   );
