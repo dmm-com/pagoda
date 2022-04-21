@@ -41,8 +41,8 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 interface Props {
-  index: number;
-  currentAttr: { [key: string]: any };
+  index?: number;
+  currentAttr?: { [key: string]: any };
   allAttrs: { [key: string]: any }[];
   referralEntities: Entity[];
   setAttributes: (attributes: { [key: string]: any }[]) => void;
@@ -58,26 +58,22 @@ export const AttributeRow: FC<Props> = ({
   const classes = useStyles();
 
   const handleAppendAttribute = (nextTo) => {
-    setAttributes([
-      ...allAttrs,
-      {
-        name: "",
-        type: AttributeTypes.string.type,
-        is_mandatory: false,
-        is_delete_in_chain: false,
-        refIds: [],
-      },
-    ]);
+    allAttrs.splice(nextTo + 1, 0, {
+      name: "",
+      type: AttributeTypes.string.type,
+      is_mandatory: false,
+      is_delete_in_chain: false,
+      refIds: [],
+    });
+    setAttributes([...allAttrs]);
   };
 
   const handleDeleteAttribute = (index: number) => {
-    if (allAttrs.filter((a) => !a.deleted).length > 1) {
-      allAttrs[index] = {
-        ...allAttrs[index],
-        deleted: true,
-      };
-      setAttributes([...allAttrs]);
-    }
+    allAttrs[index] = {
+      ...allAttrs[index],
+      deleted: true,
+    };
+    setAttributes([...allAttrs]);
   };
 
   const attributeTypeMenuItems = useMemo(() => {
@@ -100,105 +96,124 @@ export const AttributeRow: FC<Props> = ({
   return (
     <StyledTableRow>
       <TableCell>
-        <Input
-          type="text"
-          value={currentAttr.name}
-          placeholder="属性名"
-          sx={{ width: "100%" }}
-          onChange={(e) =>
-            handleChangeAttributeValue(index, "name", e.target.value)
-          }
-          error={currentAttr.name === ""}
-        />
+        {index !== undefined && (
+          <Input
+            type="text"
+            value={currentAttr.name}
+            placeholder="属性名"
+            sx={{ width: "100%" }}
+            onChange={(e) =>
+              handleChangeAttributeValue(index, "name", e.target.value)
+            }
+            error={currentAttr.name === ""}
+          />
+        )}
       </TableCell>
 
       <TableCell>
-        <Box>
-          <Box minWidth={100} marginX={1}>
-            <Select
-              fullWidth={true}
-              value={currentAttr.type}
-              disabled={currentAttr.id != null}
-              onChange={(e) =>
-                handleChangeAttributeValue(index, "type", e.target.value)
-              }
-            >
-              {attributeTypeMenuItems}
-            </Select>
-          </Box>
-          {(currentAttr.type & AttributeTypes.object.type) > 0 && (
+        {index !== undefined && (
+          <Box>
             <Box minWidth={100} marginX={1}>
-              <Typography>エンティティを選択</Typography>
-
-              <AutoCompletedField
-                options={referralEntities}
-                getOptionLabel={(option: Entity) => option.name}
-                defaultValue={referralEntities.filter((e) =>
-                  currentAttr.refIds.includes(e.id)
-                )}
-                handleChangeSelectedValue={(value: Entity[]) => {
-                  handleChangeAttributeValue(
-                    index,
-                    "refIds",
-                    value.map((i) => i.id)
-                  );
-                }}
-              />
+              <Select
+                fullWidth={true}
+                value={currentAttr.type}
+                disabled={currentAttr.id != null}
+                onChange={(e) =>
+                  handleChangeAttributeValue(index, "type", e.target.value)
+                }
+              >
+                {attributeTypeMenuItems}
+              </Select>
             </Box>
-          )}
-        </Box>
+            {(currentAttr.type & AttributeTypes.object.type) > 0 && (
+              <Box minWidth={100} marginX={1}>
+                <Typography>エンティティを選択</Typography>
+
+                <AutoCompletedField
+                  options={referralEntities}
+                  getOptionLabel={(option: Entity) => option.name}
+                  defaultValue={referralEntities.filter((e) =>
+                    currentAttr.refIds.includes(e.id)
+                  )}
+                  handleChangeSelectedValue={(value: Entity[]) => {
+                    handleChangeAttributeValue(
+                      index,
+                      "refIds",
+                      value.map((i) => i.id)
+                    );
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
+        )}
       </TableCell>
 
       <TableCell>
-        <Checkbox
-          checked={currentAttr.is_mandatory}
-          onChange={(e) =>
-            handleChangeAttributeValue(index, "is_mandatory", e.target.checked)
-          }
-        />
+        {index !== undefined && (
+          <Checkbox
+            checked={currentAttr.is_mandatory}
+            onChange={(e) =>
+              handleChangeAttributeValue(
+                index,
+                "is_mandatory",
+                e.target.checked
+              )
+            }
+          />
+        )}
       </TableCell>
 
       <TableCell>
-        <Checkbox
-          checked={currentAttr.is_delete_in_chain}
-          onChange={(e) =>
-            handleChangeAttributeValue(
-              index,
-              "is_delete_in_chain",
-              e.target.checked
-            )
-          }
-        />
+        {index !== undefined && (
+          <Checkbox
+            checked={currentAttr.is_delete_in_chain}
+            onChange={(e) =>
+              handleChangeAttributeValue(
+                index,
+                "is_delete_in_chain",
+                e.target.checked
+              )
+            }
+          />
+        )}
       </TableCell>
 
       <TableCell>
-        <IconButton
-          className={classes.button}
-          onClick={(e) => handleDeleteAttribute(index)}
-        >
-          <DeleteOutlineIcon />
-        </IconButton>
+        {index !== undefined && (
+          <IconButton
+            className={classes.button}
+            onClick={(e) => handleDeleteAttribute(index)}
+          >
+            <DeleteOutlineIcon />
+          </IconButton>
+        )}
       </TableCell>
 
       {/* This is a button to add new Attribute */}
       <TableCell>
-        <IconButton className={classes.button} onClick={handleAppendAttribute}>
+        <IconButton
+          className={classes.button}
+          onClick={() => handleAppendAttribute(index)}
+        >
           <AddIcon />
         </IconButton>
       </TableCell>
 
       <TableCell>
-        <Button
-          variant="contained"
-          color="primary"
-          className={classes.button}
-          startIcon={<GroupIcon />}
-          component={Link}
-          to={aclPath(currentAttr.id)}
-          disabled={currentAttr.id == null}
-        >
-          ACL
-        </Button>
+        {index !== undefined && (
+          <Button
+            variant="contained"
+            color="primary"
+            className={classes.button}
+            startIcon={<GroupIcon />}
+            component={Link}
+            to={aclPath(currentAttr.id)}
+            disabled={currentAttr.id == null}
+          >
+            ACL
+          </Button>
+        )}
       </TableCell>
     </StyledTableRow>
   );
