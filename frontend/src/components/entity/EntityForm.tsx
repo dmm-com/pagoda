@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -89,12 +89,6 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
     <Box>
       <Box>
         <Box>
-          <Box my="64px">
-            <Typography variant="h2" align="center">
-              {createMode ? "新規エンティティの作成" : `${entity.name}の編集`}
-            </Typography>
-          </Box>
-
           <BasicFields
             name={name}
             note={note}
