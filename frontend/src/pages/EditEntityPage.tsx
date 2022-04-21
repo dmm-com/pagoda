@@ -26,8 +26,12 @@ export const EditEntityPage: FC = () => {
   });
 
   const webhooks = useAsync(async () => {
-    const resp = await getWebhooks(entityId);
-    return await resp.json();
+    if (entityId != null) {
+      const resp = await getWebhooks(entityId);
+      return await resp.json();
+    } else {
+      return [];
+    }
   });
 
   const [tabValue, setTabValue] = useState(0);
