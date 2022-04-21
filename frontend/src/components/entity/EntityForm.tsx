@@ -1,4 +1,4 @@
-import { Box, Button } from "@mui/material";
+import { Box } from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -106,6 +106,7 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
         </Box>
       </Box>
 
+      {/*
       <Box display="flex" justifyContent="center" my="32px">
         <Box mx="16px">
           <Button
@@ -123,6 +124,7 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
           </Button>
         </Box>
       </Box>
+      */}
     </Box>
   );
 };

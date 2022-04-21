@@ -86,116 +86,126 @@ export const Header: FC = () => {
   };
 
   return (
-    <Box>
-      <AppBar position="static" className={classes.centeritem}>
-        <Toolbar>
-          {/* FIX ME. I want to remove this style coding in component */}
-          <Box sx={{ alignItems: "flex-end", display: "flex", color: "white" }}>
-            <Typography
-              // make margin with title and version description
-              sx={{ mr: "10px" }}
-              variant="h5"
-              color="inherit"
-              className={classes.title}
+    <>
+      <Box sx={{ position: "fixed", width: "100%", zIndex: 1 }}>
+        <AppBar position="static" className={classes.centeritem}>
+          <Toolbar>
+            {/* FIX ME. I want to remove this style coding in component */}
+            <Box
+              sx={{ alignItems: "flex-end", display: "flex", color: "white" }}
             >
-              AirOne
-            </Typography>
+              <Typography
+                // make margin with title and version description
+                sx={{ mr: "10px" }}
+                variant="h5"
+                color="inherit"
+                className={classes.title}
+              >
+                AirOne
+              </Typography>
 
-            <Typography
-              className={classes.version_description}
-              ml={"20px"}
-              mr={"30px"}
-              fontSize={"16px"}
-            >
-              {djangoContext.version}
-            </Typography>
-          </Box>
+              <Typography
+                className={classes.version_description}
+                ml={"20px"}
+                mr={"30px"}
+                fontSize={"16px"}
+              >
+                {djangoContext.version}
+              </Typography>
+            </Box>
 
-          <Box
-            className={classes.menu}
-            sx={{ flexGrow: 1, display: "flex", color: "white" }}
-          >
-            <Button color="inherit" href={entitiesPath()}>
-              エンティティ一覧
-            </Button>
-            <Button color="inherit" href={advancedSearchPath()}>
-              高度な検索
-            </Button>
-            <Button color="inherit" href={usersPath()}>
-              ユーザ管理
-            </Button>
-            <Button color="inherit" href={groupsPath()}>
-              グループ管理
-            </Button>
-          </Box>
+            <Box
+              className={classes.menu}
+              sx={{ flexGrow: 1, display: "flex", color: "white" }}
+            >
+              <Button color="inherit" href={entitiesPath()}>
+                エンティティ一覧
+              </Button>
+              <Button color="inherit" href={advancedSearchPath()}>
+                高度な検索
+              </Button>
+              <Button color="inherit" href={usersPath()}>
+                ユーザ管理
+              </Button>
+              <Button color="inherit" href={groupsPath()}>
+                グループ管理
+              </Button>
+            </Box>
 
-          <Box className={classes.menu}>
-            <IconButton
-              aria-controls="job-menu"
-              aria-haspopup="true"
-              onClick={(e) => setJobAnchorEl(e.currentTarget)}
-              style={{ color: grey[50] }}
-            >
-              {!recentJobs.loading && (
-                <Badge badgeContent={recentJobs.value.length} color="secondary">
-                  <TaskIcon />
-                </Badge>
-              )}
-            </IconButton>
-            <Menu
-              id="job-menu"
-              anchorEl={jobAnchorEl}
-              open={Boolean(jobAnchorEl)}
-              onClose={() => setJobAnchorEl(null)}
-              keepMounted
-            >
-              {!recentJobs.loading && recentJobs.value.length > 0 ? (
-                recentJobs.value.map((recentJob) => (
-                  <MenuItem key={recentJob.id}>
-                    <Typography component={Link} to={jobsPath()}>
-                      {recentJob.target.name}
-                    </Typography>
+            <Box className={classes.menu}>
+              <IconButton
+                aria-controls="job-menu"
+                aria-haspopup="true"
+                onClick={(e) => setJobAnchorEl(e.currentTarget)}
+                style={{ color: grey[50] }}
+              >
+                {!recentJobs.loading && (
+                  <Badge
+                    badgeContent={recentJobs.value.length}
+                    color="secondary"
+                  >
+                    <TaskIcon />
+                  </Badge>
+                )}
+              </IconButton>
+              <Menu
+                id="job-menu"
+                anchorEl={jobAnchorEl}
+                open={Boolean(jobAnchorEl)}
+                onClose={() => setJobAnchorEl(null)}
+                keepMounted
+              >
+                {!recentJobs.loading && recentJobs.value.length > 0 ? (
+                  recentJobs.value.map((recentJob) => (
+                    <MenuItem key={recentJob.id}>
+                      <Typography component={Link} to={jobsPath()}>
+                        {recentJob.target.name}
+                      </Typography>
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem>
+                    <Typography>実行タスクなし</Typography>
                   </MenuItem>
-                ))
-              ) : (
+                )}
+                <Divider light />
                 <MenuItem>
-                  <Typography>実行タスクなし</Typography>
+                  <Typography component={Link} to={jobsPath()}>
+                    ジョブ一覧
+                  </Typography>
                 </MenuItem>
-              )}
-              <Divider light />
-              <MenuItem>
-                <Typography component={Link} to={jobsPath()}>
-                  ジョブ一覧
-                </Typography>
-              </MenuItem>
-            </Menu>
-            <IconButton
-              aria-controls="user-menu"
-              aria-haspopup="true"
-              onClick={(e) => setUserAnchorEl(e.currentTarget)}
-              style={{ color: grey[50] }}
-            >
-              <PersonIcon />
-            </IconButton>
-            <Menu
-              id="user-menu"
-              anchorEl={userAnchorEl}
-              open={Boolean(userAnchorEl)}
-              onClose={() => setUserAnchorEl(null)}
-              keepMounted
-            >
-              <MenuItem>
-                <Link to={userPath(djangoContext.user.id)}>ユーザ設定</Link>
-              </MenuItem>
-              <MenuItem>
-                <Link to="#" onClick={() => handleLogout()}>
-                  ログアウト
-                </Link>
-              </MenuItem>
-            </Menu>
-          </Box>
-        </Toolbar>
-      </AppBar>
-    </Box>
+              </Menu>
+              <IconButton
+                aria-controls="user-menu"
+                aria-haspopup="true"
+                onClick={(e) => setUserAnchorEl(e.currentTarget)}
+                style={{ color: grey[50] }}
+              >
+                <PersonIcon />
+              </IconButton>
+              <Menu
+                id="user-menu"
+                anchorEl={userAnchorEl}
+                open={Boolean(userAnchorEl)}
+                onClose={() => setUserAnchorEl(null)}
+                keepMounted
+              >
+                <MenuItem>
+                  <Link to={userPath(djangoContext.user.id)}>ユーザ設定</Link>
+                </MenuItem>
+                <MenuItem>
+                  <Link to="#" onClick={() => handleLogout()}>
+                    ログアウト
+                  </Link>
+                </MenuItem>
+              </Menu>
+            </Box>
+          </Toolbar>
+        </AppBar>
+      </Box>
+
+      {/* This component is a virtual component for above fixed component */}
+      <Box sx={{ width: "100%", height: "64px" }} />
+    </>
   );
 };
