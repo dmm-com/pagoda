@@ -9,6 +9,7 @@ import { BasicFields } from "./entityForm/BasicFields";
 
 import { entitiesPath } from "Routes";
 import { createEntity, updateEntity } from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 interface Props {
   entity?: Entity;
@@ -63,7 +64,19 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
     if (name === "") {
       return false;
     }
-    if (attributes.some((attribute) => attribute.name === "")) {
+    if (attributes.some((a) => a.name === "")) {
+      return false;
+    }
+
+    const dc = DjangoContext.getInstance();
+    if (
+      attributes.some(
+        (a) =>
+          (Number(a.type) & Number(dc.attrTypeValue.object)) > 0 &&
+          a.refIds.length === 0
+      )
+    ) {
+      //if (attributes.some((a) => a.refIds === [])) {
       return false;
     }
     return true;

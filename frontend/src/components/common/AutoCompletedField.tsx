@@ -31,6 +31,11 @@ const InputWrapper = styled("div")(
     border-color: ${theme.palette.mode === "dark" ? "#177ddc" : "#40a9ff"};
   }
 
+  &.error {
+    border-color: #ff0000;
+    border-width: 2px;
+  }
+
   &.focused {
     border-color: ${theme.palette.mode === "dark" ? "#177ddc" : "#40a9ff"};
     box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
@@ -189,15 +194,25 @@ export const AutoCompletedField = <T,>({
       throw Error(`unsupported value: ${value}`);
     }
 
-    if (dirty) {
-      handleChangeSelectedValue(value as T[]);
+    handleChangeSelectedValue(value as T[]);
+  }, [value]);
+
+  const getClassName = () => {
+    const classNames = [];
+    if (focused) {
+      classNames.push("focused");
     }
-  }, [dirty, value]);
+    if (value.length === 0) {
+      classNames.push("error");
+    }
+
+    return classNames.join(" ");
+  };
 
   return (
     <Root>
       <div {...getRootProps()}>
-        <InputWrapper ref={setAnchorEl} className={focused ? "focused" : ""}>
+        <InputWrapper ref={setAnchorEl} className={getClassName()}>
           {value.map((option: T, index: number) => (
             <StyledTag
               label={getOptionLabel(option)}
