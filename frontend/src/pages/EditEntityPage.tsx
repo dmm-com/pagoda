@@ -1,10 +1,11 @@
 import { Box, Tab, Tabs, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { Loading } from "../components/common/Loading";
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -12,7 +13,7 @@ import { EntityForm } from "components/entity/EntityForm";
 import { WebhookForm } from "components/webhook/WebhookForm";
 
 export const EditEntityPage: FC = () => {
-  const { entityId } = useParams<{ entityId: number }>();
+  const { entityId } = useTypedParams<{ entityId: number }>();
 
   const entity = useAsync(async () => {
     return entityId !== undefined
