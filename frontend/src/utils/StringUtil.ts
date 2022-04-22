@@ -9,6 +9,10 @@ function toHalfWidth(origin: string): string {
   });
 }
 
+export function normalizeToMatch(keyword: string): string {
+  return toHalfWidth(keyword.toLowerCase());
+}
+
 export function fuzzyMatch(text: string, keyword: string): boolean {
   const normalizedText = toHalfWidth(text.toLowerCase());
   const normalizedKeyword = toHalfWidth(keyword.toLowerCase());

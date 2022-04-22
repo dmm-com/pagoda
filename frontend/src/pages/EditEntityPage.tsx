@@ -21,7 +21,8 @@ export const EditEntityPage: FC = () => {
   });
 
   const referralEntities = useAsync(async () => {
-    return await aironeApiClientV2.getEntities();
+    const entities = await aironeApiClientV2.getEntities();
+    return entities.results;
   });
 
   const [tabValue, setTabValue] = useState(0);
