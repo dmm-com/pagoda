@@ -2,15 +2,14 @@ from airone.lib.test import AironeViewTest
 
 
 class GroupAPITest(AironeViewTest):
-
     def list(self):
         self.admin_login()
 
-        user = self._create_user('fuga')
-        group = self._create_group('hoge')
+        user = self._create_user("fuga")
+        group = self._create_group("hoge")
         user.groups.add(group)
 
-        resp = self.client.get('/group/api/v2/groups')
+        resp = self.client.get("/group/api/v2/groups")
         self.assertEqual(resp.status_code, 200)
         body = resp.json()
         self.assertEqual(len(body), 1)
@@ -21,11 +20,11 @@ class GroupAPITest(AironeViewTest):
     def retrieve(self):
         self.admin_login()
 
-        user = self._create_user('fuga')
-        group = self._create_group('hoge')
+        user = self._create_user("fuga")
+        group = self._create_group("hoge")
         user.groups.add(group)
 
-        resp = self.client.get('/group/api/v2/groups/%s' % group.id)
+        resp = self.client.get("/group/api/v2/groups/%s" % group.id)
         self.assertEqual(resp.status_code, 200)
         body = resp.json()
         self.assertEqual(body.id, group.id)

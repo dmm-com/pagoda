@@ -10,14 +10,17 @@ from user.models import User as AironeUser
 
 
 class AccessTokenAPI(APIView):
-
     def get(self, request, format=None):
         # Getting user by "models.objects.get" is safe, because the "IsAuthenticated" which
         # is specified in the permission_classes parameter guarantees that "request.user" is
         # registered at the Database and authenticated.
         # (c.f. https://www.django-rest-framework.org/api-guide/permissions/#isauthenticated)
         return Response(
-            {'results': str(AironeUser.objects.get(id=request.user.id, is_active=True).token)}
+            {
+                "results": str(
+                    AironeUser.objects.get(id=request.user.id, is_active=True).token
+                )
+            }
         )
 
     @method_decorator(csrf_protect)
@@ -31,8 +34,8 @@ class AccessTokenAPI(APIView):
 
         # If the token is not created, this returns it.
         if created:
-            return Response({'results': str(token)})
+            return Response({"results": str(token)})
 
         # This recreates another Token when it has been already existed.
         token.delete()
-        return Response({'results': str(Token.objects.create(user=user))})
+        return Response({"results": str(Token.objects.create(user=user))})

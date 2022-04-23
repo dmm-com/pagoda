@@ -12,8 +12,8 @@ class ConcurrentExec(object):
         self.concurrency = concurrency
 
         if not concurrency:
-            if 'CONCURRENCY' in settings.AIRONE and settings.AIRONE['CONCURRENCY']:
-                self.concurrency = settings.AIRONE['CONCURRENCY']
+            if "CONCURRENCY" in settings.AIRONE and settings.AIRONE["CONCURRENCY"]:
+                self.concurrency = settings.AIRONE["CONCURRENCY"]
             else:
                 self.concurrency = self.DEFAULT_CONCURRENCY
 
@@ -25,32 +25,34 @@ class ConcurrentExec(object):
 
         # write new-linke
         for data in data_all:
-            proc_info = {'process': None, 'ret': self.MPM.dict()}
+            proc_info = {"process": None, "ret": self.MPM.dict()}
 
             while len(jobs) >= self.concurrency:
                 for pinfo in jobs:
-                    if not pinfo['process'].is_alive():
+                    if not pinfo["process"].is_alive():
                         jobs.remove(pinfo)
                         ret_container = dict(ret_container)
-                        ret_container.update(pinfo['ret'])
+                        ret_container.update(pinfo["ret"])
                         ccount += 1
 
             # reset db connection
             connections.close_all()
 
             if isinstance(data, tuple):
-                args = (proc_info['ret'], lock) + data
+                args = (proc_info["ret"], lock) + data
             else:
-                args = (proc_info['ret'], lock, data)
+                args = (proc_info["ret"], lock, data)
 
-            proc_info['process'] = multiprocessing.Process(target=worker, args=args, kwargs=kwargs)
-            proc_info['process'].start()
+            proc_info["process"] = multiprocessing.Process(
+                target=worker, args=args, kwargs=kwargs
+            )
+            proc_info["process"].start()
             jobs.append(proc_info)
 
         for pinfo in jobs:
-            pinfo['process'].join()
+            pinfo["process"].join()
             ret_container = dict(ret_container)
-            ret_container.update(pinfo['ret'])
+            ret_container.update(pinfo["ret"])
             ccount += 1
 
         return ret_container

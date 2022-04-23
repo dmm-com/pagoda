@@ -10,10 +10,10 @@ class Role(models.Model):
     is_active = models.BooleanField(default=True)
     description = models.TextField()
 
-    users = models.ManyToManyField(User, related_name='role')
-    groups = models.ManyToManyField(Group, related_name='role')
-    admin_users = models.ManyToManyField(User, related_name='admin_role')
-    admin_groups = models.ManyToManyField(Group, related_name='admin_role')
+    users = models.ManyToManyField(User, related_name="role")
+    groups = models.ManyToManyField(Group, related_name="role")
+    admin_users = models.ManyToManyField(User, related_name="admin_role")
+    admin_groups = models.ManyToManyField(Group, related_name="admin_role")
 
     @classmethod
     def editable(kls, user, admin_users, admin_groups):
@@ -25,8 +25,9 @@ class Role(models.Model):
         if user.id in [u.id for u in admin_users]:
             return True
 
-        if bool(set([g.id for g in user.groups.all()]) &
-                set([g.id for g in admin_groups])):
+        if bool(
+            set([g.id for g in user.groups.all()]) & set([g.id for g in admin_groups])
+        ):
             return True
 
         return False
@@ -36,18 +37,28 @@ class Role(models.Model):
         if user.id in [u.id for u in self.users.filter(is_active=True)]:
             return True
 
-        if bool(set([g.id for g in user.groups.all()]) &
-                set([g.id for g in self.groups.all()])):
+        if bool(
+            set([g.id for g in user.groups.all()])
+            & set([g.id for g in self.groups.all()])
+        ):
             return True
 
         return False
 
     def is_editable(self, user):
         """check wether specified User has permission to edit this Role"""
-        return Role.editable(user,
-                             list(self.admin_users.filter(is_active=True)),
-                             list(self.admin_groups.all()))
+        return Role.editable(
+            user,
+            list(self.admin_users.filter(is_active=True)),
+            list(self.admin_groups.all()),
+        )
 
     def is_permitted(self, target_obj, permission_level):
-        return any([permission_level.id <= x.get_aclid()
-                   for x in self.permissions.filter(codename__startswith=(str(target_obj.id)+'.'))])
+        return any(
+            [
+                permission_level.id <= x.get_aclid()
+                for x in self.permissions.filter(
+                    codename__startswith=(str(target_obj.id) + ".")
+                )
+            ]
+        )

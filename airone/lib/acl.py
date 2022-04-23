@@ -1,6 +1,6 @@
 from six import with_metaclass
 
-__all__ = ['ACLType', 'ACLObjType']
+__all__ = ["ACLType", "ACLObjType"]
 
 
 class Iteratable(object):
@@ -9,10 +9,10 @@ class Iteratable(object):
 
 
 class ACLObjType(Iteratable):
-    Entity = (1 << 0)
-    EntityAttr = (1 << 1)
-    Entry = (1 << 2)
-    EntryAttr = (1 << 3)
+    Entity = 1 << 0
+    EntityAttr = 1 << 1
+    Entry = 1 << 2
+    EntryAttr = 1 << 3
 
     def __init__(self):
         self._types = [self.Entity, self.Entry, self.EntityAttr, self.EntryAttr]
@@ -46,14 +46,26 @@ class ACLTypeBase(with_metaclass(MetaACLType)):
 
 
 class ACLType(Iteratable):
-    Nothing = type('ACLTypeNone', (ACLTypeBase,),
-                   {'id': (1 << 0), 'name': 'nothing', 'label': 'Nothing'})
-    Readable = type('ACLTypeReadable', (ACLTypeBase,),
-                    {'id': (1 << 1), 'name': 'readable', 'label': 'Readable'})
-    Writable = type('ACLTypeWritable', (ACLTypeBase,),
-                    {'id': (1 << 2), 'name': 'writable', 'label': 'Writable'})
-    Full = type('ACLTypeFull', (ACLTypeBase,),
-                {'id': (1 << 3), 'name': 'full', 'label': 'Full Controllable'})
+    Nothing = type(
+        "ACLTypeNone",
+        (ACLTypeBase,),
+        {"id": (1 << 0), "name": "nothing", "label": "Nothing"},
+    )
+    Readable = type(
+        "ACLTypeReadable",
+        (ACLTypeBase,),
+        {"id": (1 << 1), "name": "readable", "label": "Readable"},
+    )
+    Writable = type(
+        "ACLTypeWritable",
+        (ACLTypeBase,),
+        {"id": (1 << 2), "name": "writable", "label": "Writable"},
+    )
+    Full = type(
+        "ACLTypeFull",
+        (ACLTypeBase,),
+        {"id": (1 << 3), "name": "full", "label": "Full Controllable"},
+    )
 
     @classmethod
     def all(cls):
@@ -66,5 +78,8 @@ class ACLType(Iteratable):
 
 def get_permitted_objects(user, model, permission_level):
     # This method assumes that model is a subclass of ACLBase
-    return [x for x in model.objects.all()
-            if user.has_permission(x, permission_level) and x.is_active]
+    return [
+        x
+        for x in model.objects.all()
+        if user.has_permission(x, permission_level) and x.is_active
+    ]

@@ -10,36 +10,48 @@ class APITest(AironeViewTest):
         user = self.guest_login()
 
         # Prepared data strcutreus, witch are used in this test.
-        webhook = Webhook.objects.create(**{
-            'label': 'test1',
-            'url': 'http://example.com/api',
-            'is_enabled': True,
-            'is_verified': True,
-            'headers': json.dumps([
-                {'key': 'test-key1', 'value': 'test-value1'},
-            ]),
-        })
-        entity = Entity.objects.create(name='test-entity', created_user=user)
+        webhook = Webhook.objects.create(
+            **{
+                "label": "test1",
+                "url": "http://example.com/api",
+                "is_enabled": True,
+                "is_verified": True,
+                "headers": json.dumps(
+                    [
+                        {"key": "test-key1", "value": "test-value1"},
+                    ]
+                ),
+            }
+        )
+        entity = Entity.objects.create(name="test-entity", created_user=user)
         entity.webhooks.add(webhook)
 
-        resp = self.client.get('/webhook/api/v2/%d' % entity.id)
+        resp = self.client.get("/webhook/api/v2/%d" % entity.id)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), [{
-            'id': webhook.id,
-            'label': 'test1',
-            'url': 'http://example.com/api',
-            'is_enabled': True,
-            'is_verified': True,
-            'headers': [
-                {'key': 'test-key1', 'value': 'test-value1'},
+        self.assertEqual(
+            resp.json(),
+            [
+                {
+                    "id": webhook.id,
+                    "label": "test1",
+                    "url": "http://example.com/api",
+                    "is_enabled": True,
+                    "is_verified": True,
+                    "headers": [
+                        {"key": "test-key1", "value": "test-value1"},
+                    ],
+                }
             ],
-        }])
+        )
 
     def test_get_webhooks_with_invalid_entity_id(self):
         self.guest_login()
-        resp = self.client.get('/webhook/api/v2/9999')
+        resp = self.client.get("/webhook/api/v2/9999")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {
-            'msg': 'There is no entity for setting',
-        })
+        self.assertEqual(
+            resp.json(),
+            {
+                "msg": "There is no entity for setting",
+            },
+        )
