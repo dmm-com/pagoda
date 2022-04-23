@@ -177,6 +177,24 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertIsNone(Entity.objects.first())
 
+        # with duplicated attr names
+        params = {
+            'note': 'fuga',
+            'is_toplevel': False,
+            'attrs': [
+                {'name': 'foo', 'type': str(AttrTypeStr), 'is_delete_in_chain': False,
+                 'is_mandatory': True, 'row_index': '1'},
+                {'name': 'foo', 'type': str(AttrTypeStr), 'is_delete_in_chain': False,
+                 'is_mandatory': False, 'row_index': '2'},
+            ],
+        }
+        resp = self.client.post(reverse('entity:do_create'),
+                                json.dumps(params),
+                                'application/json')
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertIsNone(Entity.objects.first())
+
     def test_create_post_with_invalid_attrs(self):
         self.admin_login()
 
@@ -310,6 +328,23 @@ class ViewTest(AironeViewTest):
                 {'name': 'a' * (EntityAttr._meta.get_field('name').max_length + 1),
                  'type': str(AttrTypeStr), 'is_delete_in_chain': False,
                  'is_mandatory': True, 'row_index': '1'},
+            ],
+        }
+        resp = self.client.post(reverse('entity:do_edit', args=[entity.id]),
+                                json.dumps(params),
+                                'application/json')
+        self.assertEqual(resp.status_code, 400)
+
+        # with duplicated attr names
+        params = {
+            'name': 'hoge',
+            'note': 'fuga',
+            'is_toplevel': False,
+            'attrs': [
+                {'name': 'foo', 'type': str(AttrTypeStr), 'is_delete_in_chain': False,
+                 'is_mandatory': True, 'row_index': '1'},
+                {'name': 'foo', 'type': str(AttrTypeStr), 'is_delete_in_chain': False,
+                 'is_mandatory': True, 'row_index': '2'},
             ],
         }
         resp = self.client.post(reverse('entity:do_edit', args=[entity.id]),
