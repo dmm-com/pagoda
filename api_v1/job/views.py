@@ -17,9 +17,7 @@ class JobAPI(APIView):
         """
 
         user = User.objects.get(id=request.user.id)
-        time_threashold = datetime.now(timezone.utc) - timedelta(
-            seconds=JOB_CONFIG.RECENT_SECONDS
-        )
+        time_threashold = datetime.now(timezone.utc) - timedelta(seconds=JOB_CONFIG.RECENT_SECONDS)
 
         constant = {
             "status": {
@@ -49,9 +47,7 @@ class JobAPI(APIView):
         )
         jobs = [
             x.to_json()
-            for x in Job.objects.filter(query).order_by("-created_at")[
-                : JOB_CONFIG.MAX_LIST_NAV
-            ]
+            for x in Job.objects.filter(query).order_by("-created_at")[: JOB_CONFIG.MAX_LIST_NAV]
         ]
 
         return Response(
@@ -67,9 +63,7 @@ class JobAPI(APIView):
         """
         job_id = request.data.get("job_id", None)
         if not job_id:
-            return Response(
-                "Parameter job_id is required", status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response("Parameter job_id is required", status=status.HTTP_400_BAD_REQUEST)
 
         job = Job.objects.filter(id=job_id).first()
         if not job:
@@ -81,9 +75,7 @@ class JobAPI(APIView):
             return Response("Target job has already been done")
 
         if job.operation not in Job.CANCELABLE_OPERATIONS:
-            return Response(
-                "Target job cannot be canceled", status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response("Target job cannot be canceled", status=status.HTTP_400_BAD_REQUEST)
 
         # update job.status to be canceled
         job.update(Job.STATUS["CANCELED"])
@@ -103,9 +95,7 @@ class SpecificJobAPI(APIView):
         if job.status == Job.STATUS["DONE"]:
             return Response("Target job has already been done")
         elif job.status == Job.STATUS["PROCESSING"]:
-            return Response(
-                "Target job is under processing", status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response("Target job is under processing", status=status.HTTP_400_BAD_REQUEST)
 
         # check job target status
         if not job.target.is_active:

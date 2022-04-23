@@ -48,9 +48,7 @@ def index(request):
         query &= Q(name__icontains=param_keyword)
 
     overall_entities = Entity.objects.filter(query).order_by("name")
-    return_entities = overall_entities[
-        index_start : index_start + CONFIG.MAX_LIST_ENTITIES
-    ]
+    return_entities = overall_entities[index_start : index_start + CONFIG.MAX_LIST_ENTITIES]
 
     context = {
         "entities": return_entities,
@@ -80,9 +78,7 @@ def create(request):
 @http_get
 def edit(request, entity_id):
     user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(
-        user, Entity, entity_id, ACLType.Writable
-    )
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Writable)
     if error:
         return error
 
@@ -116,8 +112,7 @@ def edit(request, entity_id):
             "name": "name",
             "type": str,
             "checker": lambda x: (
-                x["name"]
-                and len(x["name"]) <= Entity._meta.get_field("name").max_length
+                x["name"] and len(x["name"]) <= Entity._meta.get_field("name").max_length
             ),
         },
         {"name": "note", "type": str},
@@ -132,16 +127,13 @@ def edit(request, entity_id):
                     "checker": lambda x: (
                         x["name"]
                         and not re.match(r"^\s*$", x["name"])
-                        and len(x["name"])
-                        <= EntityAttr._meta.get_field("name").max_length
+                        and len(x["name"]) <= EntityAttr._meta.get_field("name").max_length
                     ),
                 },
                 {
                     "name": "type",
                     "type": str,
-                    "checker": lambda x: (
-                        any([y == int(x["type"]) for y in AttrTypes])
-                    ),
+                    "checker": lambda x: (any([y == int(x["type"]) for y in AttrTypes])),
                 },
                 {"name": "is_mandatory", "type": bool},
                 {"name": "is_delete_in_chain", "type": bool},
@@ -156,9 +148,7 @@ def edit(request, entity_id):
 )
 def do_edit(request, entity_id, recv_data):
     user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(
-        user, Entity, entity_id, ACLType.Writable
-    )
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Writable)
     if error:
         return error
 
@@ -231,16 +221,13 @@ def do_edit(request, entity_id, recv_data):
                     "checker": lambda x: (
                         x["name"]
                         and not re.match(r"^\s*$", x["name"])
-                        and len(x["name"])
-                        <= EntityAttr._meta.get_field("name").max_length
+                        and len(x["name"]) <= EntityAttr._meta.get_field("name").max_length
                     ),
                 },
                 {
                     "name": "type",
                     "type": str,
-                    "checker": lambda x: (
-                        any([y == int(x["type"]) for y in AttrTypes])
-                    ),
+                    "checker": lambda x: (any([y == int(x["type"]) for y in AttrTypes])),
                 },
                 {"name": "is_mandatory", "type": bool},
                 {"name": "is_delete_in_chain", "type": bool},
@@ -270,9 +257,7 @@ def do_create(request, recv_data):
     user = User.objects.get(id=request.user.id)
 
     if custom_view.is_custom("create_entity"):
-        resp = custom_view.call_custom(
-            "create_entity", None, recv_data["name"], recv_data["attrs"]
-        )
+        resp = custom_view.call_custom("create_entity", None, recv_data["name"], recv_data["attrs"])
         if resp:
             return resp
 
@@ -346,9 +331,7 @@ def export(request):
 @http_post([])
 def do_delete(request, entity_id, recv_data):
     user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(
-        user, Entity, entity_id, ACLType.Full
-    )
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Full)
     if error:
         return error
 
@@ -391,9 +374,7 @@ def history(request, entity_id):
 
     context = {
         "entity": entity,
-        "history": History.objects.filter(target_obj=entity, is_detail=False).order_by(
-            "-time"
-        ),
+        "history": History.objects.filter(target_obj=entity, is_detail=False).order_by("-time"),
     }
 
     return render(request, "history_entity.html", context)
@@ -409,9 +390,7 @@ def dashboard(request, entity_id):
     total_entry_count = Entry.objects.filter(schema=entity, is_active=True).count()
 
     summarized_data = {}
-    for attr in EntityAttr.objects.filter(
-        parent_entity=entity, is_active=True, is_summarized=True
-    ):
+    for attr in EntityAttr.objects.filter(parent_entity=entity, is_active=True, is_summarized=True):
         summarized_data[attr] = {
             "referral_count": [
                 {
@@ -426,9 +405,7 @@ def dashboard(request, entity_id):
                         }
                     ).count(),
                 }
-                for r in Entry.objects.filter(
-                    schema=attr.referral.first(), is_active=True
-                )
+                for r in Entry.objects.filter(schema=attr.referral.first(), is_active=True)
             ],
         }
 
@@ -458,15 +435,13 @@ def dashboard(request, entity_id):
             rest_counts = sum(
                 [
                     x["count"]
-                    for x in summarized_data[attr]["referral_count"][
-                        CONFIG.DASHBOARD_NUM_ITEMS :
-                    ]
+                    for x in summarized_data[attr]["referral_count"][CONFIG.DASHBOARD_NUM_ITEMS :]
                 ]
             )
 
-            summarized_data[attr]["referral_count"] = summarized_data[attr][
-                "referral_count"
-            ][: CONFIG.DASHBOARD_NUM_ITEMS]
+            summarized_data[attr]["referral_count"] = summarized_data[attr]["referral_count"][
+                : CONFIG.DASHBOARD_NUM_ITEMS
+            ]
             summarized_data[attr]["referral_count"].append(
                 {
                     "referral": "(Others)",

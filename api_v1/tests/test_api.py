@@ -47,9 +47,7 @@ class APITest(AironeViewTest):
         ref_e = []
         for index in range(0, 10):
             ref_e.append(
-                Entry.objects.create(
-                    name="r-%d" % index, schema=ref_entity, created_user=admin
-                )
+                Entry.objects.create(name="r-%d" % index, schema=ref_entity, created_user=admin)
             )
 
         params = self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY.copy()
@@ -87,12 +85,8 @@ class APITest(AironeViewTest):
         ret_data = resp.json()
 
         # confirms that all resp data would be expected one
-        self.assertEqual(
-            sorted(ret_data.keys()), ["is_created", "result", "updated_attrs"]
-        )
-        self.assertEqual(
-            sorted(ret_data["updated_attrs"].keys()), sorted(params["attrs"].keys())
-        )
+        self.assertEqual(sorted(ret_data.keys()), ["is_created", "result", "updated_attrs"])
+        self.assertEqual(sorted(ret_data["updated_attrs"].keys()), sorted(params["attrs"].keys()))
         for (key, value) in params["attrs"].items():
             self.assertEqual(ret_data["updated_attrs"][key], value)
 
@@ -103,9 +97,7 @@ class APITest(AironeViewTest):
         self.assertEqual(new_entry.attrs.count(), len(params["attrs"]))
 
         # checking new_entry is registered to the Elasticsearch
-        res = self._es.get(
-            index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=new_entry.id
-        )
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=new_entry.id)
         self.assertTrue(res["found"])
 
         # checking for attr_val
@@ -157,15 +149,11 @@ class APITest(AironeViewTest):
             },
             {
                 "name": "refs",
-                "check": lambda v: self.assertEqual(
-                    v.data_array.first().referral.id, ref_e[2].id
-                ),
+                "check": lambda v: self.assertEqual(v.data_array.first().referral.id, ref_e[2].id),
             },
             {
                 "name": "refs",
-                "check": lambda v: self.assertEqual(
-                    v.data_array.last().referral.id, ref_e[3].id
-                ),
+                "check": lambda v: self.assertEqual(v.data_array.last().referral.id, ref_e[3].id),
             },
             {
                 "name": "names",
@@ -173,9 +161,7 @@ class APITest(AironeViewTest):
             },
             {
                 "name": "names",
-                "check": lambda v: self.assertEqual(
-                    v.data_array.first().referral.id, ref_e[4].id
-                ),
+                "check": lambda v: self.assertEqual(v.data_array.first().referral.id, ref_e[4].id),
             },
             {
                 "name": "names",
@@ -183,9 +169,7 @@ class APITest(AironeViewTest):
             },
             {
                 "name": "names",
-                "check": lambda v: self.assertEqual(
-                    v.data_array.last().referral.id, ref_e[5].id
-                ),
+                "check": lambda v: self.assertEqual(v.data_array.last().referral.id, ref_e[5].id),
             },
             {
                 "name": "names",
@@ -259,9 +243,7 @@ class APITest(AironeViewTest):
             )
         )
 
-        entry_ref = Entry.objects.create(
-            name="r1", schema=entity_ref, created_user=user
-        )
+        entry_ref = Entry.objects.create(name="r1", schema=entity_ref, created_user=user)
         entries = [
             Entry.objects.create(name="e-%d" % i, schema=entity, created_user=user)
             for i in range(0, 2)
@@ -298,9 +280,7 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(
-            entry.attrs.first().get_latest_value().referral.id, entry_ref.id
-        )
+        self.assertEqual(entry.attrs.first().get_latest_value().referral.id, entry_ref.id)
         self.assertTrue(self._test_data["notify_update_entry_is_called"])
 
     def test_post_entry_with_token(self):
@@ -346,9 +326,7 @@ class APITest(AironeViewTest):
         ref_e = []
         for index in range(0, 10):
             ref_e.append(
-                Entry.objects.create(
-                    name="r-%d" % index, schema=ref_entity, created_user=admin
-                )
+                Entry.objects.create(name="r-%d" % index, schema=ref_entity, created_user=admin)
             )
 
         entity = Entity.objects.create(name="Entity", created_user=admin)
@@ -375,17 +353,13 @@ class APITest(AironeViewTest):
         params = {"name": "invalid-entry", "entity": entity.name, "attrs": {}}
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            Entry.objects.filter(schema=entity, name="invalid-entry").count(), 0
-        )
+        self.assertEqual(Entry.objects.filter(schema=entity, name="invalid-entry").count(), 0)
 
         # send request without all attrs
         params = {"name": "invalid-entry", "entity": entity.name, "attrs": {}}
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            Entry.objects.filter(schema=entity, name="invalid-entry").count(), 0
-        )
+        self.assertEqual(Entry.objects.filter(schema=entity, name="invalid-entry").count(), 0)
 
         # send request only with mandatory attrs
         params = {
@@ -395,9 +369,7 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(
-            Entry.objects.filter(schema=entity, name="valid-entry").count(), 1
-        )
+        self.assertEqual(Entry.objects.filter(schema=entity, name="valid-entry").count(), 1)
 
         # update entry which has been already created.
         #
@@ -426,9 +398,7 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            Entry.objects.filter(schema=entity, name="invalid-entry").count(), 0
-        )
+        self.assertEqual(Entry.objects.filter(schema=entity, name="invalid-entry").count(), 0)
 
         # send request with invalid attr param
         params = {
@@ -441,9 +411,7 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            Entry.objects.filter(schema=entity, name="invalid-entry").count(), 0
-        )
+        self.assertEqual(Entry.objects.filter(schema=entity, name="invalid-entry").count(), 0)
 
         # send request with invalid value (the value 'fuga' is invalid)
         params = {
@@ -456,9 +424,7 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            Entry.objects.filter(schema=entity, name="invalid-entry").count(), 0
-        )
+        self.assertEqual(Entry.objects.filter(schema=entity, name="invalid-entry").count(), 0)
 
         # send request with invalid format value ('ref' required only str type parameter)
         params = {
@@ -471,16 +437,12 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            Entry.objects.filter(schema=entity, name="invalid-entry").count(), 0
-        )
+        self.assertEqual(Entry.objects.filter(schema=entity, name="invalid-entry").count(), 0)
 
     def test_post_entry_without_permissoin(self):
         admin = self.admin_login()
 
-        entity = Entity.objects.create(
-            name="Entity", created_user=admin, is_public=False
-        )
+        entity = Entity.objects.create(name="Entity", created_user=admin, is_public=False)
         attr_params = [
             {"name": "attr1", "type": AttrTypeValue["string"], "is_public": True},
             {"name": "attr2", "type": AttrTypeValue["string"], "is_public": False},
@@ -509,9 +471,7 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.json()["result"], "Permission denied to create(or update) entry"
-        )
+        self.assertEqual(resp.json()["result"], "Permission denied to create(or update) entry")
 
         # Set permisson to create new entry
         guest.permissions.add(entity.writable)
@@ -533,9 +493,7 @@ class APITest(AironeViewTest):
     def test_update_entry(self):
         admin = self.admin_login()
 
-        entity = Entity.objects.create(
-            name="Entity", created_user=admin, is_public=False
-        )
+        entity = Entity.objects.create(name="Entity", created_user=admin, is_public=False)
         entity.attrs.add(
             EntityAttr.objects.create(
                 **{
@@ -597,9 +555,7 @@ class APITest(AironeViewTest):
     def test_refresh_token(self):
         self.admin_login()
 
-        self.client.post(
-            "/api/v1/user/refresh_token", json.dumps({}), "application/json"
-        )
+        self.client.post("/api/v1/user/refresh_token", json.dumps({}), "application/json")
 
     def test_failed_to_get_entry(self):
         # send request without login
@@ -630,9 +586,7 @@ class APITest(AironeViewTest):
 
         test_groups = [Group.objects.create(name=x) for x in ["group1", "group2"]]
         ref_entity = Entity.objects.create(name="RefEntity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="RefEntry", created_user=user, schema=ref_entity
-        )
+        ref_entry = Entry.objects.create(name="RefEntry", created_user=user, schema=ref_entity)
 
         for entity_name in ["hoge", "fuga"]:
             entity = Entity.objects.create(name=entity_name, created_user=user)
@@ -660,9 +614,7 @@ class APITest(AironeViewTest):
                 entity.attrs.add(attr)
 
             for i in range(0, 10):
-                entry = Entry.objects.create(
-                    name="entry-%d" % i, schema=entity, created_user=user
-                )
+                entry = Entry.objects.create(name="entry-%d" % i, schema=entity, created_user=user)
                 entry.complement_attrs(user)
 
                 for (name, info) in attr_info.items():
@@ -680,9 +632,7 @@ class APITest(AironeViewTest):
         EntityAttr.objects.filter(name="str").update(is_public=False)
 
         # set private to Attribute 'ref' in Entry 'entry-1'
-        Attribute.objects.filter(name="ref", parent_entry__name="entry-1").update(
-            is_public=False
-        )
+        Attribute.objects.filter(name="ref", parent_entry__name="entry-1").update(is_public=False)
 
         # the case to specify 'eitnty' and 'entry' parameters
         resp = self.client.get("/api/v1/entry", {"entity": "hoge", "entry": "entry-0"})
@@ -790,9 +740,7 @@ class APITest(AironeViewTest):
         # Send a request with an invalid offset parameter
         offset_params = ["-1", "str"]
         for param in offset_params:
-            resp = self.client.get(
-                "/api/v1/entry", {"entity": "Entity", "offset": param}
-            )
+            resp = self.client.get("/api/v1/entry", {"entity": "Entity", "offset": param})
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(resp.json()["result"], 'Parameter "offset" is numerically')
 
@@ -815,32 +763,24 @@ class APITest(AironeViewTest):
         entry.attrs.first().add_value(user, "hoge")
 
         # Checks that 'is_active' parameter is available
-        resp = self.client.get(
-            "/api/v1/entry", {"entry_id": entry.id, "is_active": True}
-        )
+        resp = self.client.get("/api/v1/entry", {"entry_id": entry.id, "is_active": True})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()), 1)
         self.assertEqual(resp.json()[0]["id"], entry.id)
 
         # Sending a GET request with is_active parameter before deleting entry to check that
         # it returns 404 responce would be returned because there is no inactive entry.
-        resp = self.client.get(
-            "/api/v1/entry", {"entry_id": entry.id, "is_active": False}
-        )
+        resp = self.client.get("/api/v1/entry", {"entry_id": entry.id, "is_active": False})
         self.assertEqual(resp.status_code, 404)
         self.assertEqual(resp.json()["result"], "Failed to find entry")
 
         # After deleting entry, this resend same GET request to check that it would return
         # deleted entry's informations.
         entry.delete()
-        resp = self.client.get(
-            "/api/v1/entry", {"entry_id": entry.id, "is_active": False}
-        )
+        resp = self.client.get("/api/v1/entry", {"entry_id": entry.id, "is_active": False})
         self.assertEqual(resp.status_code, 200)
 
-    @mock.patch(
-        "entry.tasks.delete_entry.delay", mock.Mock(side_effect=tasks.delete_entry)
-    )
+    @mock.patch("entry.tasks.delete_entry.delay", mock.Mock(side_effect=tasks.delete_entry))
     @mock.patch(
         "entry.tasks.notify_delete_entry.delay",
         mock.Mock(side_effect=tasks.notify_delete_entry),
@@ -848,16 +788,12 @@ class APITest(AironeViewTest):
     def test_delete_entry(self):
         # wrapper to send delete request in this test
         def send_request(param):
-            return self.client.delete(
-                "/api/v1/entry", json.dumps(param), "application/json"
-            )
+            return self.client.delete("/api/v1/entry", json.dumps(param), "application/json")
 
         admin = self.admin_login()
 
         entity1 = Entity.objects.create(name="Entity1", created_user=admin)
-        entity2 = Entity.objects.create(
-            name="Entity2", created_user=admin, is_public=False
-        )
+        entity2 = Entity.objects.create(name="Entity2", created_user=admin, is_public=False)
 
         """
         The 'entry1' will be deleted from API request for testing.
@@ -865,12 +801,8 @@ class APITest(AironeViewTest):
         but this is not public one so it couldn't be deleted by the user who doesn't have
         priviledged level.
         """
-        entry11 = Entry.objects.create(
-            name="entry11", schema=entity1, created_user=admin
-        )
-        Entry.objects.create(
-            name="entry12", schema=entity1, created_user=admin, is_public=False
-        )
+        entry11 = Entry.objects.create(name="entry11", schema=entity1, created_user=admin)
+        Entry.objects.create(name="entry12", schema=entity1, created_user=admin, is_public=False)
         Entry.objects.create(name="entry21", schema=entity2, created_user=admin)
 
         # re-login for checking entries permission
@@ -887,16 +819,12 @@ class APITest(AironeViewTest):
         # The case of specifying invalid entity parameter
         resp = send_request({"entity": "hoge", "entry": "fuga"})
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(
-            resp.content.decode("utf-8"), '"Failed to find specified Entity (hoge)"'
-        )
+        self.assertEqual(resp.content.decode("utf-8"), '"Failed to find specified Entity (hoge)"')
 
         # The case of specifying invalid etnry parameter
         resp = send_request({"entity": "Entity1", "entry": "fuga"})
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(
-            resp.content.decode("utf-8"), '"Failed to find specified Entry (fuga)"'
-        )
+        self.assertEqual(resp.content.decode("utf-8"), '"Failed to find specified Entry (fuga)"')
 
         # The case of specifying entry of entity which user doesn't have read permission
         resp = send_request({"entity": "Entity2", "entry": "entry21"})
@@ -929,9 +857,7 @@ class APITest(AironeViewTest):
         )
 
         # Fixed value of datetime.now() for 100-seconds future
-        dt_mock.now = mock.Mock(
-            return_value=datetime.now(tz=pytz.UTC) + timedelta(seconds=100)
-        )
+        dt_mock.now = mock.Mock(return_value=datetime.now(tz=pytz.UTC) + timedelta(seconds=100))
 
         # By default, token_lifetime is set of User.TOKEN_LIFETIME which is more than 100 seconds
         resp = self.client.get(
@@ -1007,13 +933,8 @@ class APITest(AironeViewTest):
         self.assertEqual(ret_data["updated_attrs"], {})
 
     @mock.patch("entry.tasks.notify_create_entry.delay")
-    def test_create_entry_that_has_user_authorized_attribute(
-        self, mock_notify_create_entry
-    ):
-        users = {
-            x: User.objects.create(username=x, is_superuser=False)
-            for x in ["_u1", "_u2"]
-        }
+    def test_create_entry_that_has_user_authorized_attribute(self, mock_notify_create_entry):
+        users = {x: User.objects.create(username=x, is_superuser=False) for x in ["_u1", "_u2"]}
         [Token.objects.create(user=x) for x in users.values()]
 
         # declare notification mock
@@ -1069,12 +990,8 @@ class APITest(AironeViewTest):
         attr = entry.attrs.first()
 
         # Check whether only permitted users and groups has authorization
-        self.assertTrue(
-            all([u.has_permission(entry, ACLType.Full) for u in users.values()])
-        )
-        self.assertTrue(
-            all([u.has_permission(attr, ACLType.Full) for u in users.values()])
-        )
+        self.assertTrue(all([u.has_permission(entry, ACLType.Full) for u in users.values()]))
+        self.assertTrue(all([u.has_permission(attr, ACLType.Full) for u in users.values()]))
         self.assertFalse(
             any(
                 [
@@ -1102,9 +1019,7 @@ class APITest(AironeViewTest):
 
         # check notification event was invoked
         entry = Entry.objects.get(id=resp.json()["result"])
-        job_notify = Job.objects.get(
-            target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value
-        )
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
         self.assertEqual(job_notify.status, Job.STATUS["DONE"])
 
     @mock.patch("entry.tasks.notify_entry_update", mock.Mock(return_value=mock.Mock()))
@@ -1123,9 +1038,7 @@ class APITest(AironeViewTest):
 
         # check notification event was invoked
         entry = Entry.objects.get(id=resp.json()["result"])
-        job_notify = Job.objects.get(
-            target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value
-        )
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
         self.assertEqual(job_notify.status, Job.STATUS["DONE"])
 
     @mock.patch("entry.tasks.notify_entry_update", mock.Mock(return_value=mock.Mock()))
@@ -1149,14 +1062,10 @@ class APITest(AironeViewTest):
 
         # check notification event was invoked
         entry = Entry.objects.get(id=resp.json()["result"])
-        job_notify = Job.objects.get(
-            target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value
-        )
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
         self.assertEqual(job_notify.status, Job.STATUS["DONE"])
 
-    @mock.patch(
-        "entry.tasks.delete_entry.delay", mock.Mock(side_effect=tasks.delete_entry)
-    )
+    @mock.patch("entry.tasks.delete_entry.delay", mock.Mock(side_effect=tasks.delete_entry))
     @mock.patch("entry.tasks.notify_entry_delete", mock.Mock(return_value=mock.Mock()))
     @mock.patch(
         "entry.tasks.notify_delete_entry.delay",
@@ -1179,9 +1088,7 @@ class APITest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        job_notify = Job.objects.get(
-            target=entry, operation=JobOperation.NOTIFY_DELETE_ENTRY.value
-        )
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_DELETE_ENTRY.value)
         self.assertEqual(job_notify.status, Job.STATUS["DONE"])
 
     def test_update_entry_that_has_deleted_attribute(self):

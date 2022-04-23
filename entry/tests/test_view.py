@@ -151,25 +151,17 @@ class ViewTest(AironeViewTest):
     def test_get_index_with_page(self):
         self.admin_login()
 
-        resp = self.client.get(
-            reverse("entry:index", args=[self._entity.id]), {"page": 1}
-        )
+        resp = self.client.get(reverse("entry:index", args=[self._entity.id]), {"page": 1})
         self.assertEqual(resp.status_code, 200)
-        resp = self.client.get(
-            reverse("entry:index", args=[self._entity.id]), {"page": 100}
-        )
+        resp = self.client.get(reverse("entry:index", args=[self._entity.id]), {"page": 100})
         self.assertEqual(resp.status_code, 400)
-        resp = self.client.get(
-            reverse("entry:index", args=[self._entity.id]), {"page": "invalid"}
-        )
+        resp = self.client.get(reverse("entry:index", args=[self._entity.id]), {"page": "invalid"})
         self.assertEqual(resp.status_code, 400)
 
     def test_get_index_with_keyword(self):
         self.admin_login()
 
-        resp = self.client.get(
-            reverse("entry:index", args=[self._entity.id]), {"keyword": "test"}
-        )
+        resp = self.client.get(reverse("entry:index", args=[self._entity.id]), {"keyword": "test"})
         self.assertEqual(resp.status_code, 200)
 
     def test_get_with_inferior_user_permission(self):
@@ -301,17 +293,13 @@ class ViewTest(AironeViewTest):
         self.assertTrue(attrvalue.is_latest)
 
         # checks that created entry is also registered in the Elasticsearch
-        res = self._es.get(
-            index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id
-        )
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
         self.assertTrue(res["found"])
         self.assertEqual(res["_source"]["entity"]["id"], self._entity.id)
         self.assertEqual(res["_source"]["name"], entry.name)
         self.assertEqual(len(res["_source"]["attr"]), entry.attrs.count())
         for attrinfo in res["_source"]["attr"]:
-            attrv = AttributeValue.objects.get(
-                parent_attr__name=attrinfo["name"], is_latest=True
-            )
+            attrv = AttributeValue.objects.get(parent_attr__name=attrinfo["name"], is_latest=True)
             self.assertEqual(attrinfo["value"], attrv.value)
 
         # checks created jobs and its params are as expected
@@ -342,9 +330,7 @@ class ViewTest(AironeViewTest):
         )
         self._entity.attrs.add(new_attr)
         params["entry_name"] = "new_entry"
-        params["attrs"] = [
-            {"id": str(new_attr.id), "value": [{"data": "foo", "index": "0"}]}
-        ]
+        params["attrs"] = [{"id": str(new_attr.id), "value": [{"data": "foo", "index": "0"}]}]
 
         resp = self.client.post(
             reverse("entry:do_create", args=[self._entity.id]),
@@ -364,12 +350,8 @@ class ViewTest(AironeViewTest):
             sorted([x.schema.name for x in entry.attrs.all()]),
         )
 
-        self.assertEqual(
-            [x["last_value"] for x in attr_info if x["name"] == "test"], [""]
-        )
-        self.assertEqual(
-            [x["last_value"] for x in attr_info if x["name"] == "new_attr"], ["foo"]
-        )
+        self.assertEqual([x["last_value"] for x in attr_info if x["name"] == "test"], [""])
+        self.assertEqual([x["last_value"] for x in attr_info if x["name"] == "new_attr"], ["foo"])
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",
@@ -379,9 +361,7 @@ class ViewTest(AironeViewTest):
         self.guest_login()
 
         another_user = User.objects.create(username="hoge")
-        entity = Entity.objects.create(
-            name="hoge", is_public=False, created_user=another_user
-        )
+        entity = Entity.objects.create(name="hoge", is_public=False, created_user=another_user)
         attr_base = EntityAttr.objects.create(
             name="test",
             type=AttrTypeStr,
@@ -511,9 +491,7 @@ class ViewTest(AironeViewTest):
         attr_base.referral.add(self._entity)
         self._entity.attrs.add(attr_base)
 
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
 
         params = {
             "entry_name": "new_entry",
@@ -544,9 +522,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Entry.objects.last().attrs.last().schema.type, AttrTypeObj)
         self.assertEqual(Entry.objects.last().attrs.last().values.count(), 1)
         self.assertEqual(Entry.objects.last().attrs.last().values.last().value, "")
-        self.assertEqual(
-            Entry.objects.last().attrs.last().values.last().referral.id, entry.id
-        )
+        self.assertEqual(Entry.objects.last().attrs.last().values.last().referral.id, entry.id)
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",
@@ -620,12 +596,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         new_entry = Entry.objects.get(name="new_entry")
-        self.assertEqual(
-            new_entry.attrs.get(schema=self._entity_attr).values.count(), 1
-        )
-        self.assertEqual(
-            new_entry.attrs.get(schema=self._entity_attr).values.last().value, "hoge"
-        )
+        self.assertEqual(new_entry.attrs.get(schema=self._entity_attr).values.count(), 1)
+        self.assertEqual(new_entry.attrs.get(schema=self._entity_attr).values.last().value, "hoge")
         # Even if an empty value is specified, an AttributeValue will be create for creating.
         self.assertEqual(new_entry.attrs.get(schema=attr_base).values.count(), 1)
 
@@ -653,9 +625,7 @@ class ViewTest(AironeViewTest):
             attr = self.make_attr(name=attr_name, parent_entry=entry, created_user=user)
 
             for value in ["hoge", "fuga"]:
-                attr_value = AttributeValue(
-                    value=value, created_user=user, parent_attr=attr
-                )
+                attr_value = AttributeValue(value=value, created_user=user, parent_attr=attr)
                 attr_value.save()
 
                 attr.values.add(attr_value)
@@ -681,11 +651,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
     def test_post_edit_without_login(self):
-        params = {
-            "attrs": [
-                {"entity_attr_id": "", "id": "0", "value": [], "referral_key": []}
-            ]
-        }
+        params = {"attrs": [{"entity_attr_id": "", "id": "0", "value": [], "referral_key": []}]}
         resp = self.client.post(
             reverse("entry:do_edit", args=[0]), json.dumps(params), "application/json"
         )
@@ -696,11 +662,7 @@ class ViewTest(AironeViewTest):
     def test_post_edit_with_invalid_param(self):
         user = self.admin_login()
 
-        params = {
-            "attrs": [
-                {"entity_attr_id": "", "id": "0", "value": [], "referral_key": []}
-            ]
-        }
+        params = {"attrs": [{"entity_attr_id": "", "id": "0", "value": [], "referral_key": []}]}
         resp = self.client.post(
             reverse("entry:do_edit", args=[0]), json.dumps(params), "application/json"
         )
@@ -708,14 +670,10 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(AttributeValue.objects.count(), 0)
 
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
         params = {
             "entry_name": "changed_name",
-            "attrs": [
-                {"entity_attr_id": "", "id": "", "value": [], "referral_key": []}
-            ],
+            "attrs": [{"entity_attr_id": "", "id": "", "value": [], "referral_key": []}],
         }
         resp = self.client.post(
             reverse("entry:do_edit", args=[entry.id]),
@@ -729,9 +687,7 @@ class ViewTest(AironeViewTest):
     def test_post_edit_creating_entry(self):
         user = self.admin_login()
 
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
         entry.set_status(Entry.STATUS_CREATING)
 
         params = {"entry_name": "changed-entry"}
@@ -747,9 +703,7 @@ class ViewTest(AironeViewTest):
     def test_get_show_and_edit_creating_entry(self):
         user = self.admin_login()
 
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
         entry.set_status(Entry.STATUS_CREATING)
 
         resp = self.client.get(reverse("entry:show", args=[entry.id]))
@@ -758,9 +712,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse("entry:edit", args=[entry.id]))
         self.assertEqual(resp.status_code, 400)
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     @patch(
         "entry.tasks.notify_update_entry.delay",
         Mock(side_effect=tasks.notify_update_entry),
@@ -830,9 +782,7 @@ class ViewTest(AironeViewTest):
         self.assertTrue(bar_value_last.is_latest)
 
         # checks that we can search updated entry using updated value
-        resp = Entry.search_entries(
-            user, [entity.id], [{"name": "bar", "keyword": "fuga"}]
-        )
+        resp = Entry.search_entries(user, [entity.id], [{"name": "bar", "keyword": "fuga"}])
         self.assertEqual(resp["ret_count"], 1)
         self.assertEqual(resp["ret_values"][0]["entity"]["id"], entity.id)
         self.assertEqual(resp["ret_values"][0]["entry"]["id"], entry.id)
@@ -881,9 +831,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.get(name="foo").get_latest_value().value, "puyo")
         self.assertEqual(entry.attrs.get(name="bar").get_latest_value().value, "fuga")
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_with_optional_params(self):
         user = self.admin_login()
 
@@ -930,23 +878,15 @@ class ViewTest(AironeViewTest):
         )
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(
-            Attribute.objects.get(name="foo").values.filter(is_latest=True).count(), 1
-        )
+        self.assertEqual(Attribute.objects.get(name="foo").values.filter(is_latest=True).count(), 1)
         self.assertEqual(Attribute.objects.get(name="foo").values.last().value, "")
-        self.assertEqual(
-            Attribute.objects.get(name="bar").values.filter(is_latest=True).count(), 1
-        )
+        self.assertEqual(Attribute.objects.get(name="bar").values.filter(is_latest=True).count(), 1)
         self.assertEqual(Attribute.objects.get(name="bar").values.last().value, "fuga")
-        self.assertEqual(
-            Attribute.objects.get(name="baz").values.filter(is_latest=True).count(), 1
-        )
+        self.assertEqual(Attribute.objects.get(name="baz").values.filter(is_latest=True).count(), 1)
         self.assertEqual(Attribute.objects.get(name="baz").values.last().value, "0")
         self.assertEqual(Entry.objects.get(id=entry.id).name, entry.name)
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_with_array_string_value(self):
         user = self.admin_login()
 
@@ -1016,23 +956,14 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(parent_values), parent_values_count + 1)
 
         self.assertEqual(attr.values.count(), parent_values_count + 1)
-        self.assertTrue(
-            attr.values.last().status & AttributeValue.STATUS_DATA_ARRAY_PARENT
-        )
+        self.assertTrue(attr.values.last().status & AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
         self.assertEqual(attr.values.last().data_array.count(), 2)
         self.assertTrue(
-            all(
-                [
-                    x.value in ["hoge", "puyo"]
-                    for x in attr.values.last().data_array.all()
-                ]
-            )
+            all([x.value in ["hoge", "puyo"] for x in attr.values.last().data_array.all()])
         )
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_with_array_object_value(self):
         user = self.admin_login()
 
@@ -1052,8 +983,7 @@ class ViewTest(AironeViewTest):
         entry.complement_attrs(user)
 
         (e1, e2, e3) = [
-            Entry.objects.create(name="E%d" % i, created_user=user, schema=entity)
-            for i in range(3)
+            Entry.objects.create(name="E%d" % i, created_user=user, schema=entity) for i in range(3)
         ]
 
         attr = entry.attrs.first()
@@ -1107,18 +1037,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(leaf_values), 4)
         self.assertEqual(len(parent_values), parent_values_count + 1)
         self.assertEqual(attr.values.count(), parent_values_count + 1)
-        self.assertTrue(
-            attr.values.last().status & AttributeValue.STATUS_DATA_ARRAY_PARENT
-        )
+        self.assertTrue(attr.values.last().status & AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
         self.assertEqual(attr.values.last().data_array.count(), 2)
         self.assertTrue(
-            all(
-                [
-                    x.referral.id in [e2.id, e3.id]
-                    for x in attr.values.last().data_array.all()
-                ]
-            )
+            all([x.referral.id in [e2.id, e3.id] for x in attr.values.last().data_array.all()])
         )
 
     def test_get_detail_with_invalid_param(self):
@@ -1138,9 +1061,7 @@ class ViewTest(AironeViewTest):
             attr = self.make_attr(name=attr_name, created_user=user, parent_entry=entry)
 
             for value in ["hoge", "fuga"]:
-                attr_value = AttributeValue(
-                    value=value, created_user=user, parent_attr=attr
-                )
+                attr_value = AttributeValue(value=value, created_user=user, parent_attr=attr)
                 attr_value.save()
 
                 attr.values.add(attr_value)
@@ -1150,9 +1071,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse("entry:show", args=[entry.id]))
         self.assertEqual(resp.status_code, 200)
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_with_referral(self):
         user = self.admin_login()
 
@@ -1166,9 +1085,7 @@ class ViewTest(AironeViewTest):
         attr_base.referral.add(self._entity)
         self._entity.attrs.add(attr_base)
 
-        entry = Entry.objects.create(
-            name="old_entry", schema=self._entity, created_user=user
-        )
+        entry = Entry.objects.create(name="old_entry", schema=self._entity, created_user=user)
 
         attr = entry.add_attribute_from_base(attr_base, user)
         attr_value = AttributeValue.objects.create(
@@ -1176,9 +1093,7 @@ class ViewTest(AironeViewTest):
         )
         attr.values.add(attr_value)
 
-        new_entry = Entry.objects.create(
-            name="new_entry", schema=self._entity, created_user=user
-        )
+        new_entry = Entry.objects.create(name="new_entry", schema=self._entity, created_user=user)
 
         params = {
             "entry_name": "old_entry",
@@ -1205,9 +1120,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.last().values.last().value, "")
         self.assertEqual(entry.attrs.last().values.last().referral.id, new_entry.id)
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_without_referral_value(self):
         user = self.admin_login()
 
@@ -1221,9 +1134,7 @@ class ViewTest(AironeViewTest):
         attr_base.referral.add(self._entity)
         self._entity.attrs.add(attr_base)
 
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
 
         attr = entry.add_attribute_from_base(attr_base, user)
         attr_value = AttributeValue.objects.create(
@@ -1253,15 +1164,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attr.values.count(), 2)
         self.assertEqual(attr.values.last().value, "")
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_to_no_referral(self):
         user = self.admin_login()
 
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
 
         attr = self.make_attr(
             name="attr", attrtype=AttrTypeObj, created_user=user, parent_entry=entry
@@ -1328,9 +1235,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
             resp.json(),
-            {
-                "result": "Succeed in registering export processing. Please check Job list."
-            },
+            {"result": "Succeed in registering export processing. Please check Job list."},
         )
 
         job = Job.objects.last()
@@ -1400,9 +1305,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
             resp.json(),
-            {
-                "result": "Succeed in registering export processing. Please check Job list."
-            },
+            {"result": "Succeed in registering export processing. Please check Job list."},
         )
 
         job = Job.objects.last()
@@ -1440,9 +1343,7 @@ class ViewTest(AironeViewTest):
             type_name = case[0].__name__  # AttrTypeStr -> 'AttrTypeStr'
             attr_name = type_name + ',"ATTR"'
 
-            test_entity = Entity.objects.create(
-                name="TestEntity_" + type_name, created_user=user
-            )
+            test_entity = Entity.objects.create(name="TestEntity_" + type_name, created_user=user)
 
             test_entity_attr = EntityAttr.objects.create(
                 name=attr_name,
@@ -1474,22 +1375,14 @@ class ViewTest(AironeViewTest):
 
             if case[0].TYPE & AttrTypeValue["array"] == 0:
                 if case[0] == AttrTypeStr:
-                    test_val = AttributeValue.create(
-                        user=user, attr=test_attr, value=case[1]
-                    )
+                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
                 elif case[0] == AttrTypeObj:
-                    test_val = AttributeValue.create(
-                        user=user, attr=test_attr, referral=case[1]
-                    )
+                    test_val = AttributeValue.create(user=user, attr=test_attr, referral=case[1])
                 elif case[0] == AttrTypeText:
-                    test_val = AttributeValue.create(
-                        user=user, attr=test_attr, value=case[1]
-                    )
+                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
                 elif case[0] == AttrTypeNamedObj:
                     [(k, v)] = case[1].items()
-                    test_val = AttributeValue.create(
-                        user=user, attr=test_attr, value=k, referral=v
-                    )
+                    test_val = AttributeValue.create(user=user, attr=test_attr, value=k, referral=v)
             else:
                 test_val = AttributeValue.create(user=user, attr=test_attr)
                 test_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
@@ -1537,12 +1430,8 @@ class ViewTest(AironeViewTest):
     def test_post_delete_entry(self):
         user = self.admin_login()
 
-        entry = Entry.objects.create(
-            name="fuga", schema=self._entity, created_user=user
-        )
-        entry.attrs.add(
-            self.make_attr(name="attr-test", parent_entry=entry, created_user=user)
-        )
+        entry = Entry.objects.create(name="fuga", schema=self._entity, created_user=user)
+        entry.attrs.add(self.make_attr(name="attr-test", parent_entry=entry, created_user=user))
 
         entry_count = Entry.objects.count()
 
@@ -1561,9 +1450,7 @@ class ViewTest(AironeViewTest):
             {
                 "operation": JobOperation.DELETE_ENTRY,
                 "status": Job.STATUS["DONE"],
-                "dependent_job": jobs.get(
-                    operation=JobOperation.NOTIFY_DELETE_ENTRY.value
-                ),
+                "dependent_job": jobs.get(operation=JobOperation.NOTIFY_DELETE_ENTRY.value),
             },
             {
                 "operation": JobOperation.NOTIFY_DELETE_ENTRY,
@@ -1581,9 +1468,7 @@ class ViewTest(AironeViewTest):
 
         entry = Entry.objects.last()
         self.assertFalse(entry.is_active)
-        self.assertFalse(
-            Attribute.objects.get(name__icontains="attr-test_deleted_").is_active
-        )
+        self.assertFalse(Attribute.objects.get(name__icontains="attr-test_deleted_").is_active)
 
         # Checks Elasticsearch also removes document of removed entry
         res = self._es.get(
@@ -1725,9 +1610,7 @@ class ViewTest(AironeViewTest):
         attr_base.referral.add(self._entity)
         entity.attrs.add(attr_base)
 
-        referral = Entry.objects.create(
-            name="entry0", schema=self._entity, created_user=user
-        )
+        referral = Entry.objects.create(name="entry0", schema=self._entity, created_user=user)
 
         params = {
             "entry_name": "entry-test",
@@ -1766,9 +1649,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attr_value.value, "")
         self.assertIsNone(attr_value.referral)
         self.assertEqual(attr_value.data_array.count(), 2)
-        self.assertTrue(
-            all([x.referral.id == referral.id for x in attr_value.data_array.all()])
-        )
+        self.assertTrue(all([x.referral.id == referral.id for x in attr_value.data_array.all()]))
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",
@@ -1837,9 +1718,7 @@ class ViewTest(AironeViewTest):
                 {
                     "id": str(self._entity_attr.id),
                     "type": str(AttrTypeValue["string"]),
-                    "value": [
-                        {"data": "A" * AttributeValue.MAXIMUM_VALUE_SIZE, "index": 0}
-                    ],
+                    "value": [{"data": "A" * AttributeValue.MAXIMUM_VALUE_SIZE, "index": 0}],
                     "referral_key": [],
                 }
             ],
@@ -1861,15 +1740,11 @@ class ViewTest(AironeViewTest):
             AttributeValue.MAXIMUM_VALUE_SIZE,
         )
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_just_limit_of_value(self):
         user = self.admin_login()
 
-        entry = Entry.objects.create(
-            name="entry", created_user=user, schema=self._entity
-        )
+        entry = Entry.objects.create(name="entry", created_user=user, schema=self._entity)
         attr = entry.add_attribute_from_base(self._entity_attr, user)
 
         params = {
@@ -1879,9 +1754,7 @@ class ViewTest(AironeViewTest):
                     "entity_attr_id": "",
                     "id": str(attr.id),
                     "type": str(AttrTypeValue["string"]),
-                    "value": [
-                        {"data": "A" * AttributeValue.MAXIMUM_VALUE_SIZE, "index": 0}
-                    ],
+                    "value": [{"data": "A" * AttributeValue.MAXIMUM_VALUE_SIZE, "index": 0}],
                     "referral_key": [],
                 }
             ],
@@ -1893,12 +1766,8 @@ class ViewTest(AironeViewTest):
         )
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(
-            AttributeValue.objects.filter(parent_attr=attr, is_latest=True).count(), 1
-        )
-        self.assertEqual(
-            len(attr.values.last().value), AttributeValue.MAXIMUM_VALUE_SIZE
-        )
+        self.assertEqual(AttributeValue.objects.filter(parent_attr=attr, is_latest=True).count(), 1)
+        self.assertEqual(len(attr.values.last().value), AttributeValue.MAXIMUM_VALUE_SIZE)
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",
@@ -1930,15 +1799,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(Entry.objects.count(), 0)
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_exceeding_limit_of_value(self):
         user = self.admin_login()
 
-        entry = Entry.objects.create(
-            name="entry", created_user=user, schema=self._entity
-        )
+        entry = Entry.objects.create(name="entry", created_user=user, schema=self._entity)
         attr = entry.add_attribute_from_base(self._entity_attr, user)
 
         params = {
@@ -1974,9 +1839,7 @@ class ViewTest(AironeViewTest):
     def test_try_to_create_duplicate_name_of_entry(self):
         user = self.admin_login()
 
-        entry = Entry.objects.create(
-            name="entry", created_user=user, schema=self._entity
-        )
+        entry = Entry.objects.create(name="entry", created_user=user, schema=self._entity)
         entry.add_attribute_from_base(self._entity_attr, user)
 
         params = {
@@ -2001,14 +1864,10 @@ class ViewTest(AironeViewTest):
     def test_try_to_edit_duplicate_name_of_entry(self):
         user = self.admin_login()
 
-        entry = Entry.objects.create(
-            name="entry", created_user=user, schema=self._entity
-        )
+        entry = Entry.objects.create(name="entry", created_user=user, schema=self._entity)
         entry.add_attribute_from_base(self._entity_attr, user)
 
-        dup_entry = Entry.objects.create(
-            name="dup_entry", created_user=user, schema=self._entity
-        )
+        dup_entry = Entry.objects.create(name="dup_entry", created_user=user, schema=self._entity)
         dup_attr = Attribute.objects.create(
             name=self._entity_attr.name,
             schema=self._entity_attr,
@@ -2172,25 +2031,17 @@ class ViewTest(AironeViewTest):
             },
         ]
         for test_param in test_params:
-            context = entry.get_available_attrs(
-                test_param["user"], test_param["is_readble"]
-            )
+            context = entry.get_available_attrs(test_param["user"], test_param["is_readble"])
             for index, test_param_attr in enumerate(test_param["attrs"]):
                 self.assertEqual(context[index]["name"], test_param_attr["name"])
-                self.assertEqual(
-                    context[index]["is_readble"], test_param_attr["is_readble"]
-                )
-                self.assertEqual(
-                    context[index]["last_value"], test_param_attr["last_value"]
-                )
+                self.assertEqual(context[index]["is_readble"], test_param_attr["is_readble"])
+                self.assertEqual(context[index]["last_value"], test_param_attr["last_value"])
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",
         Mock(side_effect=tasks.create_entry_attrs),
     )
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_create_and_edit_entry_that_has_boolean_attr(self):
         admin = self.admin_login()
 
@@ -2258,9 +2109,7 @@ class ViewTest(AironeViewTest):
     def test_post_create_entry_without_mandatory_param(self):
         user = self.admin_login()
 
-        entity = Entity.objects.create(
-            name="Entity", is_public=False, created_user=user
-        )
+        entity = Entity.objects.create(name="Entity", is_public=False, created_user=user)
         attr_base = EntityAttr.objects.create(
             name="attr",
             type=AttrTypeStr,
@@ -2295,9 +2144,7 @@ class ViewTest(AironeViewTest):
     def test_post_edit_entry_without_mandatory_param(self):
         user = self.admin_login()
 
-        entity = Entity.objects.create(
-            name="Entity", is_public=False, created_user=user
-        )
+        entity = Entity.objects.create(name="Entity", is_public=False, created_user=user)
         attr_base = EntityAttr.objects.create(
             name="attr",
             type=AttrTypeStr,
@@ -2335,9 +2182,7 @@ class ViewTest(AironeViewTest):
         "entry.tasks.create_entry_attrs.delay",
         Mock(side_effect=tasks.create_entry_attrs),
     )
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     @patch("entry.tasks.delete_entry.delay", Mock(side_effect=tasks.delete_entry))
     @patch(
         "entry.tasks.notify_delete_entry.delay",
@@ -2348,15 +2193,9 @@ class ViewTest(AironeViewTest):
 
         ref_entity = Entity.objects.create(name="referred_entity", created_user=user)
 
-        ref_entry1 = Entry.objects.create(
-            name="referred1", schema=ref_entity, created_user=user
-        )
-        ref_entry2 = Entry.objects.create(
-            name="referred2", schema=ref_entity, created_user=user
-        )
-        ref_entry3 = Entry.objects.create(
-            name="referred3", schema=ref_entity, created_user=user
-        )
+        ref_entry1 = Entry.objects.create(name="referred1", schema=ref_entity, created_user=user)
+        ref_entry2 = Entry.objects.create(name="referred2", schema=ref_entity, created_user=user)
+        ref_entry3 = Entry.objects.create(name="referred3", schema=ref_entity, created_user=user)
 
         entity = Entity.objects.create(name="entity", created_user=user)
         entity_attr_ref = EntityAttr.objects.create(
@@ -2633,9 +2472,7 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.get(name="new_entry2")
         self.assertEqual(entry.attrs.get(name="named_ref").values.count(), 1)
         self.assertEqual(entry.attrs.get(name="named_ref").values.last().value, "")
-        self.assertEqual(
-            entry.attrs.get(name="named_ref").values.last().referral.id, ref_entry.id
-        )
+        self.assertEqual(entry.attrs.get(name="named_ref").values.last().referral.id, ref_entry.id)
 
         # try to create only with referral_key
         params = {
@@ -2726,9 +2563,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attrv.data_array.all()[2].value, "fuga")
         self.assertEqual(attrv.data_array.all()[2].referral, None)
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_with_named_ref(self):
         user = self.admin_login()
 
@@ -2806,17 +2641,13 @@ class ViewTest(AironeViewTest):
 
         updated_entry = Entry.objects.get(id=entry.id)
         self.assertEqual(updated_entry.attrs.get(name="named_ref").values.count(), 2)
-        self.assertEqual(
-            updated_entry.attrs.get(name="named_ref").values.last().value, "fuga"
-        )
+        self.assertEqual(updated_entry.attrs.get(name="named_ref").values.last().value, "fuga")
         self.assertEqual(
             updated_entry.attrs.get(name="named_ref").values.last().referral.id,
             ref_entry2.id,
         )
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_with_array_named_ref(self):
         user = self.admin_login()
 
@@ -2867,12 +2698,8 @@ class ViewTest(AironeViewTest):
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="arr_named_ref").id),
                     "type": str(AttrTypeValue["array_named_object"]),
-                    "value": [
-                        {"data": str(r), "index": i} for i, r in enumerate(r_entries)
-                    ],
-                    "referral_key": [
-                        {"data": "key_%d" % i, "index": i} for i in range(0, 3)
-                    ],
+                    "value": [{"data": str(r), "index": i} for i, r in enumerate(r_entries)],
+                    "referral_key": [{"data": "key_%d" % i, "index": i} for i in range(0, 3)],
                 }
             ],
         }
@@ -2902,9 +2729,7 @@ class ViewTest(AironeViewTest):
                         {"data": r_entries[1], "index": 1},
                         {"data": r_entries[2], "index": 2},
                     ],
-                    "referral_key": [
-                        {"data": "hoge_%d" % i, "index": i} for i in range(0, 2)
-                    ],
+                    "referral_key": [{"data": "hoge_%d" % i, "index": i} for i in range(0, 2)],
                 }
             ],
         }
@@ -2977,9 +2802,7 @@ class ViewTest(AironeViewTest):
     def test_get_copy_with_valid_entry(self):
         user = self.admin_login()
 
-        entry = Entry.objects.create(
-            name="entry", created_user=user, schema=self._entity
-        )
+        entry = Entry.objects.create(name="entry", created_user=user, schema=self._entity)
 
         resp = self.client.get(reverse("entry:copy", args=[entry.id]))
         self.assertEqual(resp.status_code, 200)
@@ -2987,9 +2810,7 @@ class ViewTest(AironeViewTest):
     def test_post_copy_without_mandatory_parameter(self):
         user = self.admin_login()
 
-        entry = Entry.objects.create(
-            name="entry", created_user=user, schema=self._entity
-        )
+        entry = Entry.objects.create(name="entry", created_user=user, schema=self._entity)
 
         resp = self.client.post(
             reverse("entry:do_copy", args=[entry.id]),
@@ -3015,9 +2836,7 @@ class ViewTest(AironeViewTest):
     def test_post_copy_with_valid_entry(self):
         user = self.admin_login()
 
-        entry = Entry.objects.create(
-            name="entry", created_user=user, schema=self._entity
-        )
+        entry = Entry.objects.create(name="entry", created_user=user, schema=self._entity)
         entry.complement_attrs(user)
 
         entry_count = Entry.objects.filter(schema=self._entity).count()
@@ -3035,13 +2854,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp["Content-Type"], "application/json")
         self.assertTrue("results" in resp.json())
 
-        self.assertEqual(
-            Entry.objects.filter(schema=self._entity).count(), entry_count + 3
-        )
+        self.assertEqual(Entry.objects.filter(schema=self._entity).count(), entry_count + 3)
         for name in ["foo", "bar", "baz"]:
-            self.assertEqual(
-                Entry.objects.filter(name=name, schema=self._entity).count(), 1
-            )
+            self.assertEqual(Entry.objects.filter(name=name, schema=self._entity).count(), 1)
 
         results = resp.json()["results"]
         self.assertEqual(len(results), 5)
@@ -3053,9 +2868,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(res["_all"]["total"]["segments"]["count"], 3)
 
         # checks jobs were created as expected
-        copy_jobs = Job.objects.filter(
-            user=user, operation=JobOperation.COPY_ENTRY.value
-        )
+        copy_jobs = Job.objects.filter(user=user, operation=JobOperation.COPY_ENTRY.value)
         self.assertEqual(copy_jobs.count(), 3)
         for obj in copy_jobs.all():
             self.assertTrue(any([obj.target.name == x for x in ["foo", "bar", "baz"]]))
@@ -3076,18 +2889,14 @@ class ViewTest(AironeViewTest):
     @patch("entry.tasks.copy_entry.delay", Mock(side_effect=tasks.copy_entry))
     def test_post_copy_after_job_creating(self):
         user = self.admin_login()
-        entry = Entry.objects.create(
-            name="entry", created_user=user, schema=self._entity
-        )
+        entry = Entry.objects.create(name="entry", created_user=user, schema=self._entity)
 
         # creating a job to copy entry
         params = {
             # A job of creating entry 'foo' is already created
             "entries": "foo",
         }
-        job = Job.new_copy(
-            user, entry, text="", params={"new_name": "foo", "post_data": params}
-        )
+        job = Job.new_copy(user, entry, text="", params={"new_name": "foo", "post_data": params})
         resp = self.client.post(
             reverse("entry:do_copy", args=[entry.id]),
             json.dumps(params),
@@ -3154,9 +2963,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attrv.value, str(group.id))
         self.assertEqual(attrv.data_type, AttrTypeValue["group"])
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_with_group_attr(self):
         admin = self.admin_login()
 
@@ -3191,9 +2998,7 @@ class ViewTest(AironeViewTest):
                     "entity_attr_id": "",
                     "id": str(attr.id),
                     "type": str(AttrTypeValue["group"]),
-                    "value": [
-                        {"index": 0, "data": str(Group.objects.get(name="group-0").id)}
-                    ],
+                    "value": [{"index": 0, "data": str(Group.objects.get(name="group-0").id)}],
                 }
             ],
         }
@@ -3214,9 +3019,7 @@ class ViewTest(AironeViewTest):
                     "entity_attr_id": "",
                     "id": str(attr.id),
                     "type": str(AttrTypeValue["group"]),
-                    "value": [
-                        {"index": 0, "data": str(Group.objects.get(name="group-1").id)}
-                    ],
+                    "value": [{"index": 0, "data": str(Group.objects.get(name="group-1").id)}],
                 }
             ],
         }
@@ -3239,9 +3042,7 @@ class ViewTest(AironeViewTest):
 
         # prepare to Entity and Entries which importing data refers to
         ref_entity = Entity.objects.create(name="RefEntity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="ref", created_user=user, schema=ref_entity
-        )
+        ref_entry = Entry.objects.create(name="ref", created_user=user, schema=ref_entity)
         group = Group.objects.create(name="group")
 
         entity = Entity.objects.create(name="Entity", created_user=user)
@@ -3272,16 +3073,12 @@ class ViewTest(AironeViewTest):
         # try to import data which has invalid data structure
         for index in range(6):
             fp = self.open_fixture_file("invalid_import_data%d.yaml" % index)
-            resp = self.client.post(
-                reverse("entry:do_import", args=[entity.id]), {"file": fp}
-            )
+            resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
             self.assertEqual(resp.status_code, 400)
 
         # import data from test file
         fp = self.open_fixture_file("import_data01.yaml")
-        resp = self.client.post(
-            reverse("entry:do_import", args=[entity.id]), {"file": fp}
-        )
+        resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
 
         # check the import is success
         self.assertEqual(resp.status_code, 303)
@@ -3333,9 +3130,7 @@ class ViewTest(AironeViewTest):
             self.assertIsNone(obj.dependent_job)
 
         # checks that created entry was registered to the Elasticsearch
-        res = self._es.get(
-            index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id
-        )
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
         self.assertTrue(res["found"])
 
         # set permission to prohibit update and check the result of job
@@ -3344,17 +3139,14 @@ class ViewTest(AironeViewTest):
 
         # check the import is success but job was failed
         fp = self.open_fixture_file("import_data01.yaml")
-        resp = self.client.post(
-            reverse("entry:do_import", args=[entity.id]), {"file": fp}
-        )
+        resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
 
         self.assertEqual(resp.status_code, 303)
         job = Job.objects.filter(target=entity).last()
         self.assertEqual(job.status, Job.STATUS["ERROR"])
         self.assertEqual(
             job.text,
-            'Permission denied to import. You need Writable permission for "%s"'
-            % entity.name,
+            'Permission denied to import. You need Writable permission for "%s"' % entity.name,
         )
 
     @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
@@ -3392,25 +3184,19 @@ class ViewTest(AironeViewTest):
             entity.attrs.add(attr)
 
         # Change a name of EntityAttr 'str (before changing)' to 'str'
-        entity_attr = EntityAttr.objects.get(
-            name="str (before changing)", parent_entity=entity
-        )
+        entity_attr = EntityAttr.objects.get(name="str (before changing)", parent_entity=entity)
         entity_attr.name = "str"
         entity_attr.save()
 
         # import data from test file
         fp = self.open_fixture_file("import_data01.yaml")
-        resp = self.client.post(
-            reverse("entry:do_import", args=[entity.id]), {"file": fp}
-        )
+        resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
 
         # check the import is success
         self.assertEqual(resp.status_code, 303)
 
         entry = Entry.objects.get(name="Entry", schema=entity)
-        self.assertEqual(
-            entry.attrs.get(schema=entity_attr).get_latest_value().value, "foo"
-        )
+        self.assertEqual(entry.attrs.get(schema=entity_attr).get_latest_value().value, "foo")
 
         # check array_string value is set correctly
         attrv = entry.attrs.get(name="arr1").get_latest_value()
@@ -3422,14 +3208,10 @@ class ViewTest(AironeViewTest):
         res = self._es.indices.stats(index=settings.ES_CONFIG["INDEX"])
         self.assertEqual(res["_all"]["total"]["segments"]["count"], 1)
 
-        res = self._es.get(
-            index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id
-        )
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
         self.assertTrue(res["found"])
 
-    @skip(
-        "When a file which is encodeed by non UTF-8, django-test-client fails encoding"
-    )
+    @skip("When a file which is encodeed by non UTF-8, django-test-client fails encoding")
     def test_import_entry_by_multi_encoded_files(self):
         user = self.admin_login()
 
@@ -3445,9 +3227,7 @@ class ViewTest(AironeViewTest):
 
         for encoding in ["UTF-8", "Shift-JIS", "EUC-JP"]:
             fp = self.open_fixture_file("import_data_%s.yaml" % encoding)
-            resp = self.client.post(
-                reverse("entry:do_import", args=[entity.id]), {"file": fp}
-            )
+            resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
 
             # check the import is success
             self.assertEqual(resp.status_code, 303)
@@ -3458,9 +3238,7 @@ class ViewTest(AironeViewTest):
         "entry.tasks.create_entry_attrs.delay",
         Mock(side_effect=tasks.create_entry_attrs),
     )
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_create_and_edit_entry_that_has_date_attr(self):
         admin = self.admin_login()
 
@@ -3562,9 +3340,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 400)
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_invalid_date_param(self):
         INITIAL_DATE = date.today()
         admin = self.admin_login()
@@ -3655,17 +3431,13 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.count(), 1)
         self.assertIsNone(entry.attrs.last().get_latest_value().date)
 
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_for_each_typed_attributes_repeatedly(self):
         user = self.admin_login()
 
         # prepare to Entity and Entries which importing data refers to
         ref_entity = Entity.objects.create(name="RefEntity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="ref", created_user=user, schema=ref_entity
-        )
+        ref_entry = Entry.objects.create(name="ref", created_user=user, schema=ref_entity)
         group = Group.objects.create(name="group")
 
         entity = Entity.objects.create(name="Entity", created_user=user)
@@ -3778,9 +3550,7 @@ class ViewTest(AironeViewTest):
         # checks that expected values are set for each Attributes
         self.assertEqual(resp.status_code, 200)
         for info in attr_info.values():
-            value = (
-                entry.attrs.get(schema=info["schema"]).get_latest_value().get_value()
-            )
+            value = entry.attrs.get(schema=info["schema"]).get_latest_value().get_value()
 
             if isinstance(value, list):
                 self.assertTrue(any(x in info["expect_value"] for x in value))
@@ -4045,9 +3815,7 @@ class ViewTest(AironeViewTest):
             )
 
             self.assertEqual(resp.status_code, 400)
-            self.assertEqual(
-                resp.content, b"You have to specify value at mandatory parameters"
-            )
+            self.assertEqual(resp.content, b"You have to specify value at mandatory parameters")
             self.assertEqual(Entry.objects.filter(schema=entity).count(), 0)
 
     def test_update_entry_without_backend(self):
@@ -4109,23 +3877,13 @@ class ViewTest(AironeViewTest):
 
         # update status of entry and check each page couldn't be shown
         entry.set_status(Entry.STATUS_EDITING)
-        self.assertEqual(
-            self.client.get(reverse("entry:copy", args=[entry.id])).status_code, 400
-        )
+        self.assertEqual(self.client.get(reverse("entry:copy", args=[entry.id])).status_code, 400)
 
         entry.set_status(Entry.STATUS_CREATING)
-        self.assertEqual(
-            self.client.get(reverse("entry:show", args=[entry.id])).status_code, 400
-        )
-        self.assertEqual(
-            self.client.get(reverse("entry:edit", args=[entry.id])).status_code, 400
-        )
-        self.assertEqual(
-            self.client.get(reverse("entry:copy", args=[entry.id])).status_code, 400
-        )
-        self.assertEqual(
-            self.client.get(reverse("entry:refer", args=[entry.id])).status_code, 400
-        )
+        self.assertEqual(self.client.get(reverse("entry:show", args=[entry.id])).status_code, 400)
+        self.assertEqual(self.client.get(reverse("entry:edit", args=[entry.id])).status_code, 400)
+        self.assertEqual(self.client.get(reverse("entry:copy", args=[entry.id])).status_code, 400)
+        self.assertEqual(self.client.get(reverse("entry:refer", args=[entry.id])).status_code, 400)
         self.assertEqual(
             self.client.get(reverse("entry:history", args=[entry.id])).status_code, 400
         )
@@ -4156,9 +3914,7 @@ class ViewTest(AironeViewTest):
         "entry.tasks.create_entry_attrs.delay",
         Mock(side_effect=tasks.create_entry_attrs),
     )
-    @patch(
-        "entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs)
-    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_create_and_edit_without_type_parameter(self):
         user = self.guest_login()
         entity = Entity.objects.create(name="entity", created_user=user)
@@ -4216,9 +3972,7 @@ class ViewTest(AironeViewTest):
         # to check the view of deleted entries, all entries would be deleted just after creating
         entries = []
         for index in range(3):
-            entry = Entry.objects.create(
-                name="e-%d" % index, schema=entity, created_user=user
-            )
+            entry = Entry.objects.create(name="e-%d" % index, schema=entity, created_user=user)
             entry.delete()
 
             entries.append(entry)
@@ -4240,19 +3994,13 @@ class ViewTest(AironeViewTest):
         self.assertIsNone(resp.context["keyword"])
 
         # If called from the job list, make sure that the search keyword has been entered
-        resp = self.client.get(
-            "/entry/restore/%d/?keyword=%s" % (entity.id, entries[0].name)
-        )
+        resp = self.client.get("/entry/restore/%d/?keyword=%s" % (entity.id, entries[0].name))
         self.assertEqual(resp.context["keyword"], entries[0].name)
 
         # If the page is invalid
-        resp = self.client.get(
-            reverse("entry:restore", args=[entity.id]), {"page": 100}
-        )
+        resp = self.client.get(reverse("entry:restore", args=[entity.id]), {"page": 100})
         self.assertEqual(resp.status_code, 400)
-        resp = self.client.get(
-            reverse("entry:restore", args=[entity.id]), {"page": "invalid"}
-        )
+        resp = self.client.get(reverse("entry:restore", args=[entity.id]), {"page": "invalid"})
         self.assertEqual(resp.status_code, 400)
 
     @patch("entry.tasks.restore_entry.delay", Mock(side_effect=tasks.restore_entry))
@@ -4451,9 +4199,7 @@ class ViewTest(AironeViewTest):
                 self.assertEqual(data["value"], {"name": value.name, "id": value.id})
 
             elif data["type"] == AttrTypeValue["array_object"]:
-                self.assertEqual(
-                    data["value"], [{"name": x.name, "id": x.id} for x in value]
-                )
+                self.assertEqual(data["value"], [{"name": x.name, "id": x.id} for x in value])
 
             elif data["type"] == AttrTypeValue["named_object"]:
                 self.assertEqual(
@@ -4464,10 +4210,7 @@ class ViewTest(AironeViewTest):
             elif data["type"] == AttrTypeValue["array_named_object"]:
                 self.assertEqual(
                     data["value"],
-                    [
-                        {x["name"]: {"name": x["id"].name, "id": x["id"].id}}
-                        for x in value
-                    ],
+                    [{x["name"]: {"name": x["id"].name, "id": x["id"].id}} for x in value],
                 )
 
             else:
@@ -4604,9 +4347,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attr.get_latest_value(), attrv)
 
     @patch("custom_view.is_custom", Mock(return_value=True))
-    @patch(
-        "custom_view.call_custom", Mock(return_value=HttpResponse("test", status=400))
-    )
+    @patch("custom_view.call_custom", Mock(return_value=HttpResponse("test", status=400)))
     def test_call_custom_do_create_entry_return_int(self):
         self.admin_login()
 
@@ -4675,9 +4416,7 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         # Create a test entry
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
         entry.complement_attrs(user)
 
         # Added another Attribute to entry to test to be able to detect this abnormal situation
@@ -4686,9 +4425,7 @@ class ViewTest(AironeViewTest):
         # Send a request to import entry
         with self.assertLogs(logger=Logger, level=logging.ERROR) as cm:
             fp = self.open_fixture_file("import_data02.yaml")
-            self.client.post(
-                reverse("entry:do_import", args=[self._entity.id]), {"file": fp}
-            )
+            self.client.post(reverse("entry:do_import", args=[self._entity.id]), {"file": fp})
             fp.close()
 
         # Check expected log was dispatched
@@ -4701,9 +4438,7 @@ class ViewTest(AironeViewTest):
         )
 
         # Check Job processing was ended successfully
-        job = Job.objects.filter(
-            user=user, operation=JobOperation.IMPORT_ENTRY.value
-        ).last()
+        job = Job.objects.filter(user=user, operation=JobOperation.IMPORT_ENTRY.value).last()
         self.assertEqual(job.status, Job.STATUS["DONE"])
 
     @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
@@ -4717,22 +4452,16 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         # Create a test entry
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
         entry.complement_attrs(user)
 
         # Send a request to import entry
         fp = self.open_fixture_file("import_data02.yaml")
-        self.client.post(
-            reverse("entry:do_import", args=[self._entity.id]), {"file": fp}
-        )
+        self.client.post(reverse("entry:do_import", args=[self._entity.id]), {"file": fp})
         fp.close()
 
         # Check Job processing was failed
-        job = Job.objects.filter(
-            user=user, operation=JobOperation.IMPORT_ENTRY.value
-        ).last()
+        job = Job.objects.filter(user=user, operation=JobOperation.IMPORT_ENTRY.value).last()
         self.assertEqual(job.status, Job.STATUS["ERROR"])
         self.assertEqual(
             job.text,
@@ -4744,9 +4473,7 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         # Create a test entry
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
         entry.complement_attrs(user)
 
         # Add 1 data and update to deleted
@@ -4758,9 +4485,7 @@ class ViewTest(AironeViewTest):
         attr.add_value(user, "test_value2")
 
         fp = self.open_fixture_file("import_data02.yaml")
-        self.client.post(
-            reverse("entry:do_import", args=[self._entity.id]), {"file": fp}
-        )
+        self.client.post(reverse("entry:do_import", args=[self._entity.id]), {"file": fp})
         fp.close()
 
         # checks created jobs and its params are as expected
@@ -4780,9 +4505,7 @@ class ViewTest(AironeViewTest):
 
         # Check attribute value
         self.assertEqual(
-            entry.attrs.get(schema__name="test", is_active=True)
-            .get_latest_value()
-            .value,
+            entry.attrs.get(schema__name="test", is_active=True).get_latest_value().value,
             "fuga",
         )
 
@@ -4856,17 +4579,13 @@ class ViewTest(AironeViewTest):
         self.admin_login()
 
         fp = self.open_fixture_file("import_data03.yaml")
-        resp = self.client.post(
-            reverse("entry:do_import", args=[self._entity.id]), {"file": fp}
-        )
+        resp = self.client.post(reverse("entry:do_import", args=[self._entity.id]), {"file": fp})
         fp.close()
 
         # check the import is success
         self.assertEqual(resp.status_code, 303)
         self.assertEqual(Entry.objects.filter(schema=self._entity).count(), 0)
-        self.assertEqual(
-            Job.objects.last().text, "Now importing... (progress: [    1/    3])"
-        )
+        self.assertEqual(Job.objects.last().text, "Now importing... (progress: [    1/    3])")
 
     @patch(
         "entry.tasks.register_referrals.delay",
@@ -4881,9 +4600,7 @@ class ViewTest(AironeViewTest):
         # Create an entry that refers ref_entry through attribute 'ref'
         user = self.guest_login()
         ref_entity = Entity.objects.create(name="ref_entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="before_change", created_user=user, schema=ref_entity
-        )
+        ref_entry = Entry.objects.create(name="before_change", created_user=user, schema=ref_entity)
 
         entity = Entity.objects.create(name="entity", created_user=user)
         entity_attr = EntityAttr.objects.create(
@@ -4919,9 +4636,7 @@ class ViewTest(AironeViewTest):
         ret = Entry.search_entries(user, [entity.id], [{"name": "ref"}])
         self.assertEqual(ret["ret_count"], 1)
         self.assertEqual(ret["ret_values"][0]["entry"]["name"], "entry")
-        self.assertEqual(
-            ret["ret_values"][0]["attrs"]["ref"]["value"]["name"], "changed_name"
-        )
+        self.assertEqual(ret["ret_values"][0]["attrs"]["ref"]["value"]["name"], "changed_name")
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",
@@ -4971,9 +4686,7 @@ class ViewTest(AironeViewTest):
             self.assertIsNone(obj.dependent_job)
 
         # Rerun creating that entry job (This is core processing of this test)
-        job_create = Job.objects.get(
-            user=user, operation=JobOperation.CREATE_ENTRY.value
-        )
+        job_create = Job.objects.get(user=user, operation=JobOperation.CREATE_ENTRY.value)
         job_create.status = Job.STATUS["PREPARING"]
         job_create.save()
         job_create.run(will_delay=False)

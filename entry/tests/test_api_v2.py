@@ -62,9 +62,7 @@ class ViewTest(AironeViewTest):
         resp_data = resp.json()
         self.assertEqual(resp_data["id"], entry.id)
         self.assertEqual(resp_data["name"], entry.name)
-        self.assertEqual(
-            resp_data["schema"], {"id": entry.schema.id, "name": entry.schema.name}
-        )
+        self.assertEqual(resp_data["schema"], {"id": entry.schema.id, "name": entry.schema.name})
 
         self.assertEqual(
             next(filter(lambda x: x["schema_name"] == "val", resp_data["attrs"])),
@@ -302,9 +300,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(handler_name, "get_entry_attr")
             self.assertEqual(entity_name, "test-entity")
             self.assertEqual(entry.name, "test-entry")
-            self.assertEqual(
-                len(entry_attrs), len(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY)
-            )
+            self.assertEqual(len(entry_attrs), len(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY))
 
             # add attribute
             entry_attrs.append(

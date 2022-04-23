@@ -98,11 +98,7 @@ class ElasticSearchTest(TestCase):
                                                 "query": {
                                                     "bool": {
                                                         "filter": [
-                                                            {
-                                                                "term": {
-                                                                    "attr.name": "a1"
-                                                                }
-                                                            },
+                                                            {"term": {"attr.name": "a1"}},
                                                             {
                                                                 "bool": {
                                                                     "should": [
@@ -237,11 +233,7 @@ class ElasticSearchTest(TestCase):
                                                                         "name": ".*[fF][uU][gG][aA].*"
                                                                     }
                                                                 },
-                                                                {
-                                                                    "regexp": {
-                                                                        "name": ".*1.*"
-                                                                    }
-                                                                },
+                                                                {"regexp": {"name": ".*1.*"}},
                                                             ]
                                                         }
                                                     },
@@ -286,9 +278,7 @@ class ElasticSearchTest(TestCase):
                                                                 ]
                                                             }
                                                         },
-                                                        "inner_hits": {
-                                                            "_source": ["attr.name"]
-                                                        },
+                                                        "inner_hits": {"_source": ["attr.name"]},
                                                     }
                                                 }
                                             }
@@ -300,9 +290,7 @@ class ElasticSearchTest(TestCase):
                     }
                 },
                 "_source": ["name"],
-                "sort": [
-                    {"_score": {"order": "desc"}, "name.keyword": {"order": "asc"}}
-                ],
+                "sort": [{"_score": {"order": "desc"}, "name.keyword": {"order": "asc"}}],
                 "from": 0,
             },
         )
@@ -363,9 +351,7 @@ class ElasticSearchTest(TestCase):
         }
 
         hint_attrs = [{"name": "test_attr", "keyword": "", "is_readble": True}]
-        results = elasticsearch.make_search_results(
-            self._user, res, hint_attrs, 100, False
-        )
+        results = elasticsearch.make_search_results(self._user, res, hint_attrs, 100, False)
 
         self.assertEqual(results["ret_count"], 1)
         self.assertEqual(

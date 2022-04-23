@@ -181,14 +181,10 @@ class AttributeValue(models.Model):
                 value = [x.value for x in self.data_array.all()]
 
             elif self.parent_attr.schema.type & AttrTypeValue["object"]:
-                value = [
-                    _get_object_value(x) for x in self.data_array.all() if x.referral
-                ]
+                value = [_get_object_value(x) for x in self.data_array.all() if x.referral]
 
             elif self.parent_attr.schema.type & AttrTypeValue["group"]:
-                value = [
-                    x for x in [_get_group_value(y) for y in self.data_array.all()] if x
-                ]
+                value = [x for x in [_get_group_value(y) for y in self.data_array.all()] if x]
 
         if with_metainfo:
             value = {"type": self.parent_attr.schema.type, "value": value}
@@ -230,9 +226,7 @@ class AttributeValue(models.Model):
             return _get_group_value(self)
 
         elif self.data_type == AttrTypeValue["array_group"]:
-            return [
-                y for y in [_get_group_value(x) for x in self.data_array.all()] if y
-            ]
+            return [y for y in [_get_group_value(x) for x in self.data_array.all()] if y]
 
         else:
             return self.value
@@ -375,9 +369,7 @@ class Attribute(ACLBase):
             return last_value.boolean != bool(recv_value)
 
         elif self.schema.type == AttrTypeValue["group"]:
-            return last_value.value != AttributeValue.uniform_storable_for_group(
-                recv_value
-            )
+            return last_value.value != AttributeValue.uniform_storable_for_group(recv_value)
 
         elif self.schema.type == AttrTypeValue["date"]:
             return last_value.date != recv_value
@@ -387,9 +379,7 @@ class Attribute(ACLBase):
             if not recv_value:
                 # Value would be changed as empty when there is valid value
                 # in the latest AttributeValue
-                return last_value.value or (
-                    last_value.referral and last_value.referral.is_active
-                )
+                return last_value.value or (last_value.referral and last_value.referral.is_active)
 
             if last_value.value != recv_value["name"]:
                 return True
@@ -476,13 +466,9 @@ class Attribute(ACLBase):
         where_cond = [] + where_extra
 
         if self.schema.type & AttrTypeValue["array"]:
-            where_cond.append(
-                "status & %d > 0" % AttributeValue.STATUS_DATA_ARRAY_PARENT
-            )
+            where_cond.append("status & %d > 0" % AttributeValue.STATUS_DATA_ARRAY_PARENT)
         else:
-            where_cond.append(
-                "status & %d = 0" % AttributeValue.STATUS_DATA_ARRAY_PARENT
-            )
+            where_cond.append("status & %d = 0" % AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
         return self.values.extra(where=where_cond).order_by("created_time")
 
@@ -600,12 +586,7 @@ class Attribute(ACLBase):
 
     def _validate_value(self, value):
         def _is_group_object(val):
-            return (
-                isinstance(val, Group)
-                or isinstance(val, int)
-                or isinstance(val, str)
-                or not val
-            )
+            return isinstance(val, Group) or isinstance(val, int) or isinstance(val, str) or not val
 
         if self.schema.type & AttrTypeValue["array"]:
             if value is None:
@@ -613,11 +594,7 @@ class Attribute(ACLBase):
 
             if self.schema.type & AttrTypeValue["named"]:
                 return all(
-                    [
-                        x
-                        for x in value
-                        if isinstance(x, dict) or isinstance(x, type({}.values()))
-                    ]
+                    [x for x in value if isinstance(x, dict) or isinstance(x, type({}.values()))]
                 )
 
             if self.schema.type & AttrTypeValue["object"]:
@@ -640,10 +617,7 @@ class Attribute(ACLBase):
         if self.schema.type & AttrTypeValue["named"]:
             return isinstance(value, dict)
 
-        if (
-            self.schema.type & AttrTypeValue["string"]
-            or self.schema.type & AttrTypeValue["text"]
-        ):
+        if self.schema.type & AttrTypeValue["string"] or self.schema.type & AttrTypeValue["text"]:
             return True
 
         if self.schema.type & AttrTypeValue["object"]:
@@ -684,10 +658,7 @@ class Attribute(ACLBase):
                 attrv = AttributeValue(**params)
 
             # set attribute value according to the attribute-type
-            if (
-                attr_type == AttrTypeValue["string"]
-                or attr_type == AttrTypeValue["text"]
-            ):
+            if attr_type == AttrTypeValue["string"] or attr_type == AttrTypeValue["text"]:
                 attrv.boolean = boolean
                 attrv.value = str(val)
                 if not attrv.value:
@@ -737,9 +708,7 @@ class Attribute(ACLBase):
                 if "id" not in val or not val["id"]:
                     pass
                 elif isinstance(val["id"], str) or isinstance(val["id"], int):
-                    ref_entry = Entry.objects.filter(
-                        id=val["id"], is_active=True
-                    ).first()
+                    ref_entry = Entry.objects.filter(id=val["id"], is_active=True).first()
                     if ref_entry:
                         attrv.referral = ref_entry
                 elif isinstance(val["id"], Entry):
@@ -797,9 +766,7 @@ class Attribute(ACLBase):
 
                 # set created leaf AttribueValues to the data_array parameter of
                 # parent AttributeValue
-                attr_value.data_array.add(
-                    *AttributeValue.objects.filter(parent_attrv=attr_value)
-                )
+                attr_value.data_array.add(*AttributeValue.objects.filter(parent_attrv=attr_value))
 
         else:
             _set_attrv(self.schema.type, value, attrv=attr_value)
@@ -835,9 +802,7 @@ class Attribute(ACLBase):
 
             elif isinstance(value, str):
                 entryset = [
-                    get_entry(r, value)
-                    for r in self.schema.referral.all()
-                    if is_entry(r, value)
+                    get_entry(r, value) for r in self.schema.referral.all() if is_entry(r, value)
                 ]
 
                 if any(entryset):
@@ -847,10 +812,7 @@ class Attribute(ACLBase):
 
             return ret_value
 
-        if (
-            self.schema.type == AttrTypeValue["string"]
-            or self.schema.type == AttrTypeValue["text"]
-        ):
+        if self.schema.type == AttrTypeValue["string"] or self.schema.type == AttrTypeValue["text"]:
             return value
 
         elif self.schema.type == AttrTypeValue["object"]:
@@ -858,9 +820,7 @@ class Attribute(ACLBase):
                 return value
             elif isinstance(value, str):
                 entryset = [
-                    get_entry(r, value)
-                    for r in self.schema.referral.all()
-                    if is_entry(r, value)
+                    get_entry(r, value) for r in self.schema.referral.all() if is_entry(r, value)
                 ]
 
                 if any(entryset):
@@ -902,11 +862,7 @@ class Attribute(ACLBase):
             elif self.schema.type & AttrTypeValue["object"]:
                 return sum(
                     [
-                        [
-                            get_entry(r, v)
-                            for r in self.schema.referral.all()
-                            if is_entry(r, v)
-                        ]
+                        [get_entry(r, v) for r in self.schema.referral.all() if is_entry(r, v)]
                         for v in value
                     ],
                     [],
@@ -914,11 +870,7 @@ class Attribute(ACLBase):
 
             elif self.schema.type & AttrTypeValue["group"]:
                 return [
-                    x
-                    for x in [
-                        AttributeValue.uniform_storable_for_group(y) for y in value
-                    ]
-                    if x
+                    x for x in [AttributeValue.uniform_storable_for_group(y) for y in value] if x
                 ]
 
         return None
@@ -948,9 +900,7 @@ class Attribute(ACLBase):
                 if not value:
                     return
 
-                updated_data = [
-                    x.value for x in attrv.data_array.all() if x.value != value
-                ]
+                updated_data = [x.value for x in attrv.data_array.all() if x.value != value]
 
             elif self.schema.type & AttrTypeValue["object"]:
                 if referral is None:
@@ -1004,16 +954,12 @@ class Attribute(ACLBase):
 
             elif self.schema.type & AttrTypeValue["object"]:
                 if referral:
-                    updated_data = [x.referral.id for x in attrv.data_array.all()] + [
-                        referral
-                    ]
+                    updated_data = [x.referral.id for x in attrv.data_array.all()] + [referral]
 
             elif self.schema.type & AttrTypeValue["group"]:
                 group_id = AttributeValue.uniform_storable_for_group(value)
                 if group_id:
-                    updated_data = [x.value for x in attrv.data_array.all()] + [
-                        group_id
-                    ]
+                    updated_data = [x.value for x in attrv.data_array.all()] + [group_id]
 
             if updated_data and self.is_updated(updated_data):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
@@ -1039,10 +985,7 @@ class Attribute(ACLBase):
             entry.delete()
 
         # delete referral object that isn't referred from any objects if it's necessary
-        if (
-            self.schema.is_delete_in_chain
-            and self.schema.type & AttrTypeValue["object"]
-        ):
+        if self.schema.is_delete_in_chain and self.schema.type & AttrTypeValue["object"]:
             attrv = self.get_latest_value()
 
             if self.schema.type & AttrTypeValue["array"]:
@@ -1067,10 +1010,7 @@ class Attribute(ACLBase):
             entry.restore()
 
         # restore referral object that isn't referred from any objects if it's necessary
-        if (
-            self.schema.is_delete_in_chain
-            and self.schema.type & AttrTypeValue["object"]
-        ):
+        if self.schema.is_delete_in_chain and self.schema.type & AttrTypeValue["object"]:
             attrv = self.get_latest_value()
 
             if self.schema.type & AttrTypeValue["array"]:
@@ -1113,9 +1053,7 @@ class Entry(ACLBase):
         # invoked and make requests simultaneously. That request may call this method after
         # previous processing is finished.
         # In this case, we have to prevent to create new Attribute object.
-        attr = Attribute.objects.filter(
-            schema=base, parent_entry=self, is_active=True
-        ).first()
+        attr = Attribute.objects.filter(schema=base, parent_entry=self, is_active=True).first()
         if attr:
             self.may_append_attr(attr)
             return
@@ -1144,8 +1082,7 @@ class Entry(ACLBase):
         This returns objects that refer current Entry in the AttributeValue
         """
         ids = AttributeValue.objects.filter(
-            Q(referral=self, is_latest=True)
-            | Q(referral=self, parent_attrv__is_latest=True)
+            Q(referral=self, is_latest=True) | Q(referral=self, parent_attrv__is_latest=True)
         ).values_list("parent_attr__parent_entry", flat=True)
 
         # if entity_name param exists, add schema name to reduce filter execution time
@@ -1172,9 +1109,7 @@ class Entry(ACLBase):
         This removes speicified Attribute object if an Attribute object which refers same
         EntityAttr at schema parameter is registered to prevent saving duplicate one.
         """
-        if self.attrs.filter(
-            Q(schema=attr.schema, is_active=True), ~Q(id=attr.id)
-        ).exists():
+        if self.attrs.filter(Q(schema=attr.schema, is_active=True), ~Q(id=attr.id)).exists():
             # remove attribute from Attribute list of this entry
             self.attrs.remove(attr)
 
@@ -1234,9 +1169,9 @@ class Entry(ACLBase):
         )
         attr_prefetch = Prefetch(
             "attribute_set",
-            queryset=Attribute.objects.filter(
-                parent_entry=self, is_active=True
-            ).prefetch_related(attrv_prefetch),
+            queryset=Attribute.objects.filter(parent_entry=self, is_active=True).prefetch_related(
+                attrv_prefetch
+            ),
             to_attr="attr_list",
         )
         for entity_attr in (
@@ -1274,10 +1209,7 @@ class Entry(ACLBase):
                 ret_attrs.append(attrinfo)
                 continue
 
-            if (
-                last_value.data_type == AttrTypeStr
-                or last_value.data_type == AttrTypeText
-            ):
+            if last_value.data_type == AttrTypeStr or last_value.data_type == AttrTypeText:
                 attrinfo["last_value"] = last_value.value
 
             elif last_value.data_type == AttrTypeObj:
@@ -1348,9 +1280,9 @@ class Entry(ACLBase):
     # NOTE: Type-Read
     def to_dict(self, user, with_metainfo=False):
         # check permissions for each entry, entity and attrs
-        if not user.has_permission(
-            self.schema, ACLType.Readable
-        ) or not user.has_permission(self, ACLType.Readable):
+        if not user.has_permission(self.schema, ACLType.Readable) or not user.has_permission(
+            self, ACLType.Readable
+        ):
             return None
 
         attr_prefetch = Prefetch(
@@ -1392,9 +1324,7 @@ class Entry(ACLBase):
                 returning_attrs.append(
                     {
                         "name": attr.schema.name,
-                        "value": attrv.get_value(
-                            serialize=True, with_metainfo=with_metainfo
-                        ),
+                        "value": attrv.get_value(serialize=True, with_metainfo=with_metainfo),
                     }
                 )
 
@@ -1502,11 +1432,7 @@ class Entry(ACLBase):
                 "value": "",
                 "referral_id": "",
                 "is_readble": True
-                if (
-                    not attr
-                    or attr.is_public
-                    or attr.default_permission >= ACLType.Readable.id
-                )
+                if (not attr or attr.is_public or attr.default_permission >= ACLType.Readable.id)
                 else False,
             }
 
@@ -1558,9 +1484,7 @@ class Entry(ACLBase):
                 container.append(attrinfo)
 
             elif (
-                entity_attr.type & AttrTypeValue["array"]
-                and not is_recursive
-                and attrv is not None
+                entity_attr.type & AttrTypeValue["array"] and not is_recursive and attrv is not None
             ):
                 # Here is the case of parent array, set each child values
                 [
@@ -1733,8 +1657,7 @@ class Entry(ACLBase):
                 hint_attr["is_readble"] = (
                     True
                     if (
-                        hint_entity_attr
-                        and user.has_permission(hint_entity_attr, ACLType.Readable)
+                        hint_entity_attr and user.has_permission(hint_entity_attr, ACLType.Readable)
                     )
                     else False
                 )
@@ -1751,9 +1674,7 @@ class Entry(ACLBase):
             # Check for has permission to EntityAttr, when is_output_all flag
             if is_output_all:
                 for entity_attr in entity.attrs.filter(is_active=True):
-                    if entity_attr.name not in [
-                        x["name"] for x in hint_attrs if "name" in x
-                    ]:
+                    if entity_attr.name not in [x["name"] for x in hint_attrs if "name" in x]:
                         hint_attrs.append(
                             {
                                 "name": entity_attr.name,
@@ -1764,9 +1685,7 @@ class Entry(ACLBase):
                         )
 
             # retrieve data from database on the basis of the result of elasticsearch
-            search_result = make_search_results(
-                user, resp, hint_attrs, limit, hint_referral
-            )
+            search_result = make_search_results(user, resp, hint_attrs, limit, hint_referral)
             results["ret_count"] += search_result["ret_count"]
             results["ret_values"].extend(search_result["ret_values"])
             limit -= search_result["ret_count"]

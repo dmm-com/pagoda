@@ -24,9 +24,7 @@ def get_user(request, user_id):
             "token": str(user.token) if request.user.id == user.id else "",
             "token_lifetime": user.token_lifetime,
             "token_expire": (
-                user.token.created + timedelta(seconds=user.token_lifetime)
-                if user.token
-                else ""
+                user.token.created + timedelta(seconds=user.token_lifetime) if user.token else ""
             ),
         }
     )

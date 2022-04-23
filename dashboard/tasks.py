@@ -18,15 +18,10 @@ def _csv_export(job, values, recv_data, has_referral):
     # write first line of CSV
     if has_referral is not False:
         writer.writerow(
-            ["Name"]
-            + ["Entity"]
-            + [x["name"] for x in recv_data["attrinfo"]]
-            + ["Referral"]
+            ["Name"] + ["Entity"] + [x["name"] for x in recv_data["attrinfo"]] + ["Referral"]
         )
     else:
-        writer.writerow(
-            ["Name"] + ["Entity"] + [x["name"] for x in recv_data["attrinfo"]]
-        )
+        writer.writerow(["Name"] + ["Entity"] + [x["name"] for x in recv_data["attrinfo"]])
 
     for (index, entry_info) in enumerate(values):
         line_data = [entry_info["entry"]["name"]]
@@ -80,10 +75,7 @@ def _csv_export(job, values, recv_data, has_referral):
 
                 line_data.append("\n".join(natsorted(vval)))
 
-            elif (
-                vtype == AttrTypeValue["array_object"]
-                or vtype == AttrTypeValue["array_group"]
-            ):
+            elif vtype == AttrTypeValue["array_object"] or vtype == AttrTypeValue["array_group"]:
 
                 line_data.append("\n".join(natsorted([x["name"] for x in vval])))
 
@@ -98,12 +90,7 @@ def _csv_export(job, values, recv_data, has_referral):
 
         if has_referral is not False:
             line_data.append(
-                str(
-                    [
-                        "%s / %s" % (x["name"], x["schema"])
-                        for x in entry_info["referrals"]
-                    ]
-                )
+                str(["%s / %s" % (x["name"], x["schema"]) for x in entry_info["referrals"]])
             )
 
         writer.writerow(line_data)
@@ -149,9 +136,7 @@ def _yaml_export(job, values, recv_data, has_referral):
                 if "value" not in _adata:
                     continue
 
-                data["attrs"][attrinfo["name"]] = _get_attr_value(
-                    _adata["type"], _adata["value"]
-                )
+                data["attrs"][attrinfo["name"]] = _get_attr_value(_adata["type"], _adata["value"])
 
         if has_referral is not False:
             data["referrals"] = [

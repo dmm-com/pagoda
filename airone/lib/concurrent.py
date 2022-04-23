@@ -43,9 +43,7 @@ class ConcurrentExec(object):
             else:
                 args = (proc_info["ret"], lock, data)
 
-            proc_info["process"] = multiprocessing.Process(
-                target=worker, args=args, kwargs=kwargs
-            )
+            proc_info["process"] = multiprocessing.Process(target=worker, args=args, kwargs=kwargs)
             proc_info["process"].start()
             jobs.append(proc_info)
 

@@ -13,16 +13,10 @@ from user.models import User
 
 class ModelTest(AironeTestCase):
     def setUp(self):
-        self.guest = User.objects.create(
-            username="guest", password="passwd", is_superuser=False
-        )
-        self.admin = User.objects.create(
-            username="admin", password="passwd", is_superuser=True
-        )
+        self.guest = User.objects.create(username="guest", password="passwd", is_superuser=False)
+        self.admin = User.objects.create(username="admin", password="passwd", is_superuser=True)
         self.entity = Entity.objects.create(name="entity", created_user=self.guest)
-        self.entry = Entry.objects.create(
-            name="entry", created_user=self.guest, schema=self.entity
-        )
+        self.entry = Entry.objects.create(name="entry", created_user=self.guest, schema=self.entity)
         self.test_data = None
 
     def tearDown(self):
@@ -170,9 +164,7 @@ class ModelTest(AironeTestCase):
         last_updated_time = job.updated_at
 
         # update status, text and target parameters
-        new_entry = Entry.objects.create(
-            name="newone", created_user=self.guest, schema=self.entity
-        )
+        new_entry = Entry.objects.create(name="newone", created_user=self.guest, schema=self.entity)
         job.update(Job.STATUS["DONE"], "further changed message", new_entry)
         job.refresh_from_db()
 

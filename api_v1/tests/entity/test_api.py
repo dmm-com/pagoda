@@ -27,9 +27,7 @@ class APITest(AironeViewTest):
 
         # swap original configuration not to make a negative influence on other tests
         settings.MIDDLEWARE = [
-            x
-            for x in settings.MIDDLEWARE
-            if x != "airone.lib.log.LoggingRequestMiddleware"
+            x for x in settings.MIDDLEWARE if x != "airone.lib.log.LoggingRequestMiddleware"
         ]
 
     def test_get_entity_attrs_with_invalid_entity_id(self):
@@ -44,9 +42,7 @@ class APITest(AironeViewTest):
 
     def test_get_partial_entity_attrs(self):
         entities = Entity.objects.filter(name__contains="test_entity")
-        resp = self.client.get(
-            "/api/v1/entity/attrs/%s" % ",".join([str(x.id) for x in entities])
-        )
+        resp = self.client.get("/api/v1/entity/attrs/%s" % ",".join([str(x.id) for x in entities]))
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["result"], sorted(["bar", "fuga"]))

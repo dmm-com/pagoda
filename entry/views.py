@@ -67,9 +67,7 @@ def _validate_input(recv_data, obj):
 
         if attr.is_mandatory:
             # This checks whether valid data is passed
-            is_valid = attr_data["value"] and all(
-                [_has_data(x) for x in attr_data["value"]]
-            )
+            is_valid = attr_data["value"] and all([_has_data(x) for x in attr_data["value"]])
 
             # This checks whether valid referral parameter is passed
             if is_valid and attr.type & AttrTypeValue["object"]:
@@ -82,9 +80,7 @@ def _validate_input(recv_data, obj):
                 )
 
             if not is_valid:
-                return HttpResponse(
-                    "You have to specify value at mandatory parameters", status=400
-                )
+                return HttpResponse("You have to specify value at mandatory parameters", status=400)
 
         # Checks specified value exceeds the limit of AttributeValue
         if any(
@@ -110,9 +106,7 @@ def _validate_input(recv_data, obj):
 @http_get
 def index(request, entity_id):
     user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(
-        user, Entity, entity_id, ACLType.Readable
-    )
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Readable)
     if error:
         return error
 
@@ -121,16 +115,12 @@ def index(request, entity_id):
 
     if custom_view.is_custom("list_entry_without_context", entity.name):
         # show custom view without context
-        resp = custom_view.call_custom(
-            "list_entry_without_context", entity.name, request, entity
-        )
+        resp = custom_view.call_custom("list_entry_without_context", entity.name, request, entity)
         if resp:
             return resp
 
     if keyword:
-        name_pattern = prepend_escape_character(
-            CONFIG.ESCAPE_CHARACTERS_ENTRY_LIST, keyword
-        )
+        name_pattern = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS_ENTRY_LIST, keyword)
         entries = Entry.objects.order_by("name").filter(
             schema=entity, is_active=True, name__iregex=name_pattern
         )
@@ -141,13 +131,9 @@ def index(request, entity_id):
     try:
         page_obj = p.page(page)
     except PageNotAnInteger:
-        return HttpResponse(
-            "Invalid page number. It must be unsigned integer", status=400
-        )
+        return HttpResponse("Invalid page number. It must be unsigned integer", status=400)
     except EmptyPage:
-        return HttpResponse(
-            "Invalid page number. The page doesn't have anything", status=400
-        )
+        return HttpResponse("Invalid page number. The page doesn't have anything", status=400)
 
     context = {
         "entity": entity,
@@ -157,9 +143,7 @@ def index(request, entity_id):
 
     if custom_view.is_custom("list_entry", entity.name):
         # list custom view
-        return custom_view.call_custom(
-            "list_entry", entity.name, request, entity, context
-        )
+        return custom_view.call_custom("list_entry", entity.name, request, entity, context)
     else:
         # list ordinal view
         return render(request, "list_entry.html", context)
@@ -168,9 +152,7 @@ def index(request, entity_id):
 @http_get
 def create(request, entity_id):
     user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(
-        user, Entity, entity_id, ACLType.Writable
-    )
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Writable)
     if error:
         return error
 
@@ -192,9 +174,7 @@ def create(request, entity_id):
                 "type": x.type,
                 "name": x.name,
                 "is_mandatory": x.is_mandatory,
-                "is_readble": True
-                if user.has_permission(x, ACLType.Writable)
-                else False,
+                "is_readble": True if user.has_permission(x, ACLType.Writable) else False,
             }
             for x in entity.attrs.filter(is_active=True).order_by("index")
         ],
@@ -202,9 +182,7 @@ def create(request, entity_id):
 
     if custom_view.is_custom("create_entry", entity.name):
         # show custom view
-        return custom_view.call_custom(
-            "create_entry", entity.name, request, user, entity, context
-        )
+        return custom_view.call_custom("create_entry", entity.name, request, user, entity, context)
     else:
         return render(request, "create_entry.html", context)
 
@@ -225,9 +203,7 @@ def create(request, entity_id):
 def do_create(request, entity_id, recv_data):
     # get objects to be referred in the following processing
     user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(
-        user, Entity, entity_id, ACLType.Writable
-    )
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Writable)
     if error:
         return error
 
@@ -271,9 +247,7 @@ def do_create(request, entity_id, recv_data):
 @http_get
 def edit(request, entry_id):
     user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(
-        user, Entry, entry_id, ACLType.Writable
-    )
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Writable)
     if error:
         return error
 
@@ -317,9 +291,7 @@ def edit(request, entry_id):
 )
 def do_edit(request, entry_id, recv_data):
     user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(
-        user, Entry, entry_id, ACLType.Writable
-    )
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Writable)
     if error:
         return error
 
@@ -376,9 +348,7 @@ def do_edit(request, entry_id, recv_data):
 @http_get
 def show(request, entry_id):
     user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(
-        user, Entry, entry_id, ACLType.Readable
-    )
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Readable)
     if error:
         return error
 
@@ -406,9 +376,7 @@ def show(request, entry_id):
 @http_get
 def history(request, entry_id):
     user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(
-        user, Entry, entry_id, ACLType.Readable
-    )
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Readable)
     if error:
         return error
 
@@ -430,9 +398,7 @@ def history(request, entry_id):
 @http_get
 def refer(request, entry_id):
     user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(
-        user, Entry, entry_id, ACLType.Readable
-    )
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Readable)
     if error:
         return error
 
@@ -479,9 +445,7 @@ def export(request, entity_id, recv_data):
 
     entity = Entity.objects.get(id=entity_id)
     if not user.has_permission(entity, ACLType.Readable):
-        return HttpResponse(
-            'Permission denied to export "%s"' % entity.name, status=400
-        )
+        return HttpResponse('Permission denied to export "%s"' % entity.name, status=400)
 
     # create a job to export search result and run it
     job = Job.new_export(
@@ -495,10 +459,7 @@ def export(request, entity_id, recv_data):
     job.run()
 
     return JsonResponse(
-        {
-            "result": "Succeed in registering export processing. "
-            + "Please check Job list."
-        }
+        {"result": "Succeed in registering export processing. " + "Please check Job list."}
     )
 
 
@@ -507,9 +468,7 @@ def import_data(request, entity_id):
     if not Entity.objects.filter(id=entity_id, is_active=True).exists():
         return HttpResponse("Failed to get entity of specified id", status=400)
 
-    return render(
-        request, "import_entry.html", {"entity": Entity.objects.get(id=entity_id)}
-    )
+    return render(request, "import_entry.html", {"entity": Entity.objects.get(id=entity_id)})
 
 
 @http_file_upload
@@ -531,9 +490,7 @@ def do_import_data(request, entity_id, context):
         return HttpResponse("Unknown exception: %s" % e, status=500)
 
     if not Entry.is_importable_data(data):
-        return HttpResponse(
-            "Uploaded file has invalid data structure to import", status=400
-        )
+        return HttpResponse("Uploaded file has invalid data structure to import", status=400)
 
     if custom_view.is_custom("import_entry", entity.name):
         # import custom view
@@ -560,9 +517,7 @@ def do_delete(request, entry_id, recv_data):
 
     if custom_view.is_custom("do_delete_entry", entry.schema.name):
         # do_delete custom view
-        resp = custom_view.call_custom(
-            "do_delete_entry", entry.schema.name, request, user, entry
-        )
+        resp = custom_view.call_custom("do_delete_entry", entry.schema.name, request, user, entry)
 
         # If custom_view returns available response this returns it to user,
         # or continues default processing.
@@ -603,16 +558,12 @@ def do_delete(request, entry_id, recv_data):
 @http_get
 def copy(request, entry_id):
     user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(
-        user, Entry, entry_id, ACLType.Writable
-    )
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Writable)
     if error:
         return error
 
     # prevent to show edit page under the creating processing
-    if entry.get_status(Entry.STATUS_CREATING) or entry.get_status(
-        Entry.STATUS_EDITING
-    ):
+    if entry.get_status(Entry.STATUS_CREATING) or entry.get_status(Entry.STATUS_EDITING):
         return HttpResponse("Target entry is now under processing", status=400)
 
     if not entry.is_active:
@@ -639,9 +590,7 @@ def copy(request, entry_id):
 )
 def do_copy(request, entry_id, recv_data):
     user = User.objects.get(id=request.user.id)
-    entry, error = get_object_with_check_permission(
-        user, Entry, entry_id, ACLType.Writable
-    )
+    entry, error = get_object_with_check_permission(user, Entry, entry_id, ACLType.Writable)
     if error:
         return error
 
@@ -694,8 +643,7 @@ def do_copy(request, entry_id, recv_data):
             ret.append(
                 {
                     "status": "fail",
-                    "msg": "There is another job that targets same name(%s) is existed"
-                    % new_name,
+                    "msg": "There is another job that targets same name(%s) is existed" % new_name,
                 }
             )
             continue
@@ -717,9 +665,7 @@ def do_copy(request, entry_id, recv_data):
 @http_get
 def restore(request, entity_id):
     user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(
-        user, Entity, entity_id, ACLType.Full
-    )
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Full)
     if error:
         return error
 
@@ -729,28 +675,22 @@ def restore(request, entity_id):
     # get all deleted entries that correspond to the entity, the specififcation of
     # 'status=0' is necessary to prevent getting entries that were under processing.
     if keyword:
-        name_pattern = prepend_escape_character(
-            CONFIG.ESCAPE_CHARACTERS_ENTRY_LIST, keyword
-        )
+        name_pattern = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS_ENTRY_LIST, keyword)
         entries = Entry.objects.filter(
             schema=entity, status=0, is_active=False, name__iregex=name_pattern
         ).order_by("-updated_time")
     else:
-        entries = Entry.objects.filter(
-            schema=entity, status=0, is_active=False
-        ).order_by("-updated_time")
+        entries = Entry.objects.filter(schema=entity, status=0, is_active=False).order_by(
+            "-updated_time"
+        )
 
     p = Paginator(entries, CONFIG.MAX_LIST_ENTRIES)
     try:
         page_obj = p.page(page)
     except PageNotAnInteger:
-        return HttpResponse(
-            "Invalid page number. It must be unsigned integer", status=400
-        )
+        return HttpResponse("Invalid page number. It must be unsigned integer", status=400)
     except EmptyPage:
-        return HttpResponse(
-            "Invalid page number. The page doesn't have anything", status=400
-        )
+        return HttpResponse("Invalid page number. The page doesn't have anything", status=400)
 
     return render(
         request,
@@ -805,9 +745,7 @@ def revert_attrv(request, recv_data):
         return HttpResponse("Specified Attribute-id is invalid", status=400)
 
     if not user.has_permission(attr, ACLType.Writable):
-        return HttpResponse(
-            "You don't have permission to update this Attribute", status=400
-        )
+        return HttpResponse("You don't have permission to update this Attribute", status=400)
 
     attrv = AttributeValue.objects.filter(id=recv_data["attrv_id"]).first()
     if not attrv or attrv.parent_attr.id != attr.id:

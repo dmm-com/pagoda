@@ -50,16 +50,9 @@ class UpdateESDocuemntlTest(AironeTestCase):
 
         ret = Entry.search_entries(self.user, [self.entity.id])
         self.assertEqual(ret["ret_count"], 3)
+        self.assertTrue(all([x["entity"]["id"] == self.entity.id for x in ret["ret_values"]]))
         self.assertTrue(
-            all([x["entity"]["id"] == self.entity.id for x in ret["ret_values"]])
-        )
-        self.assertTrue(
-            all(
-                [
-                    x["entry"]["id"] in [y.id for y in self.entries]
-                    for x in ret["ret_values"]
-                ]
-            )
+            all([x["entry"]["id"] in [y.id for y in self.entries] for x in ret["ret_values"]])
         )
 
     def test_update_entry(self):

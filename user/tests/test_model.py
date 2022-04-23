@@ -44,9 +44,7 @@ class ModelTest(TestCase):
 
     def test_set_history(self):
         entity = Entity.objects.create(name="test-entity", created_user=self.user)
-        entry = Entry.objects.create(
-            name="test-attr", created_user=self.user, schema=entity
-        )
+        entry = Entry.objects.create(name="test-attr", created_user=self.user, schema=entity)
 
         self.user.seth_entity_add(entity)
         self.user.seth_entity_mod(entity)
@@ -54,15 +52,9 @@ class ModelTest(TestCase):
         self.user.seth_entry_del(entry)
 
         self.assertEqual(History.objects.count(), 4)
-        self.assertEqual(
-            History.objects.filter(operation=History.ADD_ENTITY).count(), 1
-        )
-        self.assertEqual(
-            History.objects.filter(operation=History.MOD_ENTITY).count(), 1
-        )
-        self.assertEqual(
-            History.objects.filter(operation=History.DEL_ENTITY).count(), 1
-        )
+        self.assertEqual(History.objects.filter(operation=History.ADD_ENTITY).count(), 1)
+        self.assertEqual(History.objects.filter(operation=History.MOD_ENTITY).count(), 1)
+        self.assertEqual(History.objects.filter(operation=History.DEL_ENTITY).count(), 1)
         self.assertEqual(History.objects.filter(operation=History.DEL_ENTRY).count(), 1)
 
     def test_set_history_with_detail(self):
@@ -83,21 +75,15 @@ class ModelTest(TestCase):
         self.assertEqual(History.objects.filter(operation=History.ADD_ATTR).count(), 1)
         self.assertEqual(History.objects.filter(operation=History.MOD_ATTR).count(), 1)
         self.assertEqual(History.objects.filter(operation=History.DEL_ATTR).count(), 1)
-        self.assertEqual(
-            History.objects.filter(operation=History.ADD_ENTITY).count(), 1
-        )
-        self.assertEqual(
-            History.objects.filter(operation=History.MOD_ENTITY).count(), 1
-        )
+        self.assertEqual(History.objects.filter(operation=History.ADD_ENTITY).count(), 1)
+        self.assertEqual(History.objects.filter(operation=History.MOD_ENTITY).count(), 1)
 
         # checks detail histories are registered correctly
         self.assertEqual(history.details.count(), 4)
         self.assertEqual(history.details.filter(operation=History.ADD_ATTR).count(), 1)
         self.assertEqual(history.details.filter(operation=History.MOD_ATTR).count(), 1)
         self.assertEqual(history.details.filter(operation=History.DEL_ATTR).count(), 1)
-        self.assertEqual(
-            history.details.filter(operation=History.MOD_ENTITY).count(), 1
-        )
+        self.assertEqual(history.details.filter(operation=History.MOD_ENTITY).count(), 1)
 
     def test_set_history_of_invalid_type_entry(self):
         class InvalidType(object):

@@ -93,9 +93,7 @@ class ViewTest(AironeViewTest):
 
         # Confirm that the delete job can be obtained
         self.assertEqual(len(resp.context["jobs"]), 1)
-        self.assertEqual(
-            resp.context["jobs"][0]["operation"], JobOperation.DELETE_ENTRY.value
-        )
+        self.assertEqual(resp.context["jobs"][0]["operation"], JobOperation.DELETE_ENTRY.value)
 
         # check respond HTML has expected elements which are specified of CSS selectors
         parser = HTML(html=resp.content.decode("utf-8"))
@@ -194,9 +192,7 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
         resp = self.client.get("/job/download/%d" % job.id)
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode(), "Target Job is executed by other people"
-        )
+        self.assertEqual(resp.content.decode(), "Target Job is executed by other people")
 
     def test_job_download_exported_result(self):
         user = self.guest_login()
@@ -240,6 +236,4 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/job/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.context["jobs"]), 1)
-        self.assertEqual(
-            resp.context["jobs"][0]["operation"], JobOperation.CREATE_ENTRY.value
-        )
+        self.assertEqual(resp.context["jobs"][0]["operation"], JobOperation.CREATE_ENTRY.value)

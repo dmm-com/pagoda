@@ -30,9 +30,7 @@ class ComplexViewTest(AironeViewTest):
         "entry.tasks.edit_entry_attrs.delay",
         Mock(side_effect=entry_tasks.edit_entry_attrs),
     )
-    @patch(
-        "entity.tasks.create_entity.delay", Mock(side_effect=entity_tasks.create_entity)
-    )
+    @patch("entity.tasks.create_entity.delay", Mock(side_effect=entity_tasks.create_entity))
     @patch("entity.tasks.edit_entity.delay", Mock(side_effect=entity_tasks.edit_entity))
     def test_add_attr_after_creating_entry(self):
         """
@@ -62,9 +60,7 @@ class ComplexViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 200)
 
         # get created objects
@@ -147,9 +143,7 @@ class ComplexViewTest(AironeViewTest):
         attr_str = entry.attrs.get(name=attr.name)
         entity_attr_arr_str = entity.attrs.get(name="arr-str")
         entity_attr_arr_obj = entity.attrs.get(name="arr-obj")
-        refer_entry = Entry.objects.create(
-            name="e0", schema=refer_entity, created_user=user
-        )
+        refer_entry = Entry.objects.create(name="e0", schema=refer_entity, created_user=user)
 
         # edit to add values to the new attributes
         params = {
@@ -192,9 +186,7 @@ class ComplexViewTest(AironeViewTest):
             ["hoge", ["foo", "bar"], ["e0"]],
         )
 
-    @patch(
-        "entity.tasks.create_entity.delay", Mock(side_effect=entity_tasks.create_entity)
-    )
+    @patch("entity.tasks.create_entity.delay", Mock(side_effect=entity_tasks.create_entity))
     @patch(
         "entry.tasks.create_entry_attrs.delay",
         Mock(side_effect=entry_tasks.create_entry_attrs),
@@ -229,9 +221,7 @@ class ComplexViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(EntityAttr.objects.count(), 1)
 
@@ -249,9 +239,7 @@ class ComplexViewTest(AironeViewTest):
             ],
             "default_permission": str(ACLType.Nothing.id),
         }
-        resp = self.client.post(
-            reverse("acl:set"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Entity.objects.count(), 1)
         self.assertFalse(EntityAttr.objects.get(name="attr").is_public)
@@ -278,9 +266,7 @@ class ComplexViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Entry.objects.count(), 1)
         entry1 = Entry.objects.get(name="entry1")
-        self.assertEqual(
-            entry1.attrs.first().get_latest_value().get_value(), "attr-value"
-        )
+        self.assertEqual(entry1.attrs.first().get_latest_value().get_value(), "attr-value")
 
         # switch to guest user
         self.guest_login()
@@ -312,9 +298,7 @@ class ComplexViewTest(AironeViewTest):
         user = self.admin_login()
 
         ref_entity = Entity.objects.create(name="ref_entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="ref_entry", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="ref_entry", schema=ref_entity, created_user=user)
 
         entity = Entity.objects.create(name="entity", created_user=user)
         entity.attrs.add(
@@ -334,9 +318,7 @@ class ComplexViewTest(AironeViewTest):
             "parent_attr": entry.attrs.get(name="ref"),
             "referral": ref_entry,
         }
-        entry.attrs.get(name="ref").values.add(
-            AttributeValue.objects.create(**attrv_params)
-        )
+        entry.attrs.get(name="ref").values.add(AttributeValue.objects.create(**attrv_params))
 
         # make referred entry cache
         ref_entries = ref_entry.get_referred_objects()
@@ -376,9 +358,7 @@ class ComplexViewTest(AironeViewTest):
         user = self.admin_login()
 
         ref_entity = Entity.objects.create(name="ref_entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="ref_entry", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="ref_entry", schema=ref_entity, created_user=user)
 
         entity = Entity.objects.create(name="entity", created_user=user)
         entity.attrs.add(
@@ -398,9 +378,7 @@ class ComplexViewTest(AironeViewTest):
             "parent_attr": entry.attrs.get(name="ref"),
             "referral": ref_entry,
         }
-        entry.attrs.get(name="ref").values.add(
-            AttributeValue.objects.create(**attrv_params)
-        )
+        entry.attrs.get(name="ref").values.add(AttributeValue.objects.create(**attrv_params))
 
         # make referred entry cache
         ref_entries = ref_entry.get_referred_objects()

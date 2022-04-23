@@ -18,9 +18,7 @@ class ViewTest(TestCase):
         self.admin = self._create_user("admin", "admin@example.com", True)
 
         settings.MIDDLEWARE = [
-            x
-            for x in settings.MIDDLEWARE
-            if x != "airone.lib.log.LoggingRequestMiddleware"
+            x for x in settings.MIDDLEWARE if x != "airone.lib.log.LoggingRequestMiddleware"
         ]
 
     def _create_user(
@@ -95,9 +93,7 @@ class ViewTest(TestCase):
             "email": "hoge@example.com",
             "passwd": "puyo",
         }
-        resp = self.client.post(
-            reverse("user:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("user:do_create"), json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 401)
         self.assertEqual(User.objects.count(), count)  # user should not be created
 
@@ -110,9 +106,7 @@ class ViewTest(TestCase):
             "email": "hoge@example.com",
             "passwd": "puyo",
         }
-        resp = self.client.post(
-            reverse("user:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("user:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
@@ -129,9 +123,7 @@ class ViewTest(TestCase):
             "email": "hoge@example.com",
             "passwd": "puyo",
         }
-        resp = self.client.post(
-            reverse("user:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("user:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(User.objects.count(), count + 1)  # user should be created
@@ -147,9 +139,7 @@ class ViewTest(TestCase):
             "email": "hoge@example.com",
             "passwd": "puyo",
         }
-        resp = self.client.post(
-            reverse("user:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("user:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(User.objects.count(), count)  # user should not be created
@@ -163,9 +153,7 @@ class ViewTest(TestCase):
             "email": "",
             "passwd": "puyo",
         }
-        resp = self.client.post(
-            reverse("user:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("user:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(User.objects.count(), count)  # user should be created
@@ -180,9 +168,7 @@ class ViewTest(TestCase):
         user = User.objects.get(username="admin")
         resp = self.client.get(reverse("user:edit", args=[user.id]))
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "You don't have permission to access"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "You don't have permission to access")
 
     def test_edit_get_with_admin_login(self):
         self._admin_login()
@@ -199,24 +185,18 @@ class ViewTest(TestCase):
             self.assertEqual(resp.context["user_name"], user.username)
             self.assertEqual(resp.context["user_email"], user.email)
             self.assertEqual(resp.context["user_is_superuser"], user.is_superuser)
-            self.assertEqual(
-                resp.context["token"], user.token if username == "admin" else None
-            )
+            self.assertEqual(resp.context["token"], user.token if username == "admin" else None)
             self.assertEqual(resp.context["token_lifetime"], user.token_lifetime)
             self.assertEqual(
                 resp.context["token_created"],
-                (
-                    user.token.created.strftime("%Y/%m/%d %H:%M:%S")
-                    if username == "admin"
-                    else None
-                ),
+                (user.token.created.strftime("%Y/%m/%d %H:%M:%S") if username == "admin" else None),
             )
             self.assertEqual(
                 resp.context["token_expire"],
                 (
-                    (
-                        user.token.created + timedelta(seconds=user.token_lifetime)
-                    ).strftime("%Y/%m/%d %H:%M:%S")
+                    (user.token.created + timedelta(seconds=user.token_lifetime)).strftime(
+                        "%Y/%m/%d %H:%M:%S"
+                    )
                     if username == "admin"
                     else None
                 ),
@@ -225,9 +205,7 @@ class ViewTest(TestCase):
 
     def test_edit_for_inactive_user(self):
         self._admin_login()
-        user = User.objects.create(
-            username="test", email="test@example.com", is_active=False
-        )
+        user = User.objects.create(username="test", email="test@example.com", is_active=False)
 
         resp = self.client.get(reverse("user:edit", args=[user.id]))
         self.assertEqual(resp.status_code, 404)
@@ -408,9 +386,7 @@ class ViewTest(TestCase):
 
     def test_edit_post_for_inactive_user(self):
         self._admin_login()
-        user = User.objects.create(
-            username="test", email="test@example.com", is_active=False
-        )
+        user = User.objects.create(username="test", email="test@example.com", is_active=False)
 
         params = {
             "name": "hoge",
@@ -455,9 +431,7 @@ class ViewTest(TestCase):
 
     def test_edit_passwd_get_for_inactive_user(self):
         self._admin_login()
-        user = User.objects.create(
-            username="test", email="test@example.com", is_active=False
-        )
+        user = User.objects.create(username="test", email="test@example.com", is_active=False)
 
         resp = self.client.get(reverse("user:edit_passwd", args=[user.id]))
         self.assertEqual(resp.status_code, 404)
@@ -535,9 +509,7 @@ class ViewTest(TestCase):
 
     def test_edit_passwd_for_inactive_user(self):
         self._admin_login()
-        user = User.objects.create(
-            username="test", email="test@example.com", is_active=False
-        )
+        user = User.objects.create(username="test", email="test@example.com", is_active=False)
 
         params = {
             "id": user.id,
@@ -640,9 +612,7 @@ class ViewTest(TestCase):
 
     def test_su_edit_passwd_for_inactive_user(self):
         self._admin_login()
-        user = User.objects.create(
-            username="test", email="test@example.com", is_active=False
-        )
+        user = User.objects.create(username="test", email="test@example.com", is_active=False)
 
         params = {
             "id": user.id,
@@ -690,9 +660,7 @@ class ViewTest(TestCase):
             "email": "hoge@example.com",
             "passwd": "puyo",
         }
-        resp = self.client.post(
-            reverse("user:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("user:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
 
@@ -705,9 +673,7 @@ class ViewTest(TestCase):
             "passwd": "puyo",
             "is_superuser": "on",
         }
-        resp = self.client.post(
-            reverse("user:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("user:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(User.objects.last().is_superuser)
@@ -728,9 +694,7 @@ class ViewTest(TestCase):
 
     def test_delete_post_for_inactive_user(self):
         self._admin_login()
-        user = User.objects.create(
-            username="test", email="test@example.com", is_active=False
-        )
+        user = User.objects.create(username="test", email="test@example.com", is_active=False)
 
         params = {
             "name": "hoge",
@@ -797,9 +761,7 @@ class ViewTest(TestCase):
         resp = view.form_valid(form_with_unknown_user)
         self.assertEqual(resp.status_code, 400)
 
-        form_with_ldap_user = UsernameBasedPasswordResetForm(
-            {"username": user.username}
-        )
+        form_with_ldap_user = UsernameBasedPasswordResetForm({"username": user.username})
         form_with_ldap_user.is_valid()
         resp = view.form_valid(form_with_ldap_user)
         self.assertEqual(resp.status_code, 400)

@@ -52,9 +52,7 @@ class LDAPBackend(object):
         try:
             o = ldap.initialize(CONF_LDAP["SERVER_ADDRESS"])
             o.protocol_version = ldap.VERSION3
-            o.simple_bind_s(
-                who=CONF_LDAP["USER_FILTER"].format(username=username), cred=password
-            )
+            o.simple_bind_s(who=CONF_LDAP["USER_FILTER"].format(username=username), cred=password)
             o.unbind_s()
             return True
         except ldap.INVALID_CREDENTIALS:

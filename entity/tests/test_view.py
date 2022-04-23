@@ -66,9 +66,7 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         # create test entities
-        [foo, _] = [
-            Entity.objects.create(name=x, created_user=user) for x in ["FOO", "BAR"]
-        ]
+        [foo, _] = [Entity.objects.create(name=x, created_user=user) for x in ["FOO", "BAR"]]
 
         # send a request to get entities with keyword parameter and check returned context
         resp = self.client.get("/entity/?keyword=foo")
@@ -94,18 +92,12 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp.context["entities"]), 1)
         self.assertEqual(resp.context["entities"][0].id, entity_public.id)
 
-    @mock.patch(
-        "entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity)
-    )
+    @mock.patch("entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity))
     def test_create_post_without_login(self):
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps({}), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps({}), "application/json")
         self.assertEqual(resp.status_code, 401)
 
-    @mock.patch(
-        "entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity)
-    )
+    @mock.patch("entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity))
     def test_create_post(self):
         self.admin_login()
 
@@ -158,9 +150,7 @@ class ViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 200)
 
@@ -174,9 +164,7 @@ class ViewTest(AironeViewTest):
 
         # tests for operation history is registered correctly
         self.assertEqual(History.objects.count(), 7)
-        self.assertEqual(
-            History.objects.filter(operation=History.ADD_ENTITY).count(), 1
-        )
+        self.assertEqual(History.objects.filter(operation=History.ADD_ENTITY).count(), 1)
         self.assertEqual(History.objects.filter(operation=History.ADD_ATTR).count(), 6)
 
     def test_create_post_without_name_param(self):
@@ -202,9 +190,7 @@ class ViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
         self.assertIsNone(Entity.objects.first())
@@ -231,9 +217,7 @@ class ViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
         self.assertIsNone(Entity.objects.first())
@@ -255,9 +239,7 @@ class ViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
 
@@ -275,9 +257,7 @@ class ViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
         self.assertIsNone(Entity.objects.first())
@@ -297,9 +277,7 @@ class ViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
         self.assertIsNone(Entity.objects.first())
@@ -313,9 +291,7 @@ class ViewTest(AironeViewTest):
             "is_toplevel": False,
             "attrs": "puyo",
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
         self.assertIsNone(Entity.objects.first())
@@ -339,9 +315,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.context["entity"], entity)
 
     def test_post_edit_without_login(self):
-        resp = self.client.post(
-            reverse("entity:do_edit", args=[0]), "{}", "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_edit", args=[0]), "{}", "application/json")
         self.assertEqual(resp.status_code, 401)
 
     def test_post_edit_with_invalid_params(self):
@@ -414,9 +388,7 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
 
-    @mock.patch(
-        "entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity)
-    )
+    @mock.patch("entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity))
     def test_post_edit_with_valid_params(self):
         user = self.admin_login()
 
@@ -461,25 +433,17 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Entity.objects.get(id=entity.id).name, "foo")
         self.assertEqual(Entity.objects.get(id=entity.id).note, "bar")
         self.assertEqual(Entity.objects.get(id=entity.id).attrs.count(), 2)
-        self.assertEqual(
-            Entity.objects.get(id=entity.id).attrs.get(id=attr.id).name, "foo"
-        )
+        self.assertEqual(Entity.objects.get(id=entity.id).attrs.get(id=attr.id).name, "foo")
         self.assertEqual(Entity.objects.get(id=entity.id).attrs.last().name, "bar")
-        self.assertTrue(
-            Entity.objects.get(id=entity.id).status & Entity.STATUS_TOP_LEVEL
-        )
+        self.assertTrue(Entity.objects.get(id=entity.id).status & Entity.STATUS_TOP_LEVEL)
 
         # tests for operation history is registered correctly
         self.assertEqual(History.objects.count(), 5)
-        self.assertEqual(
-            History.objects.filter(operation=History.MOD_ENTITY).count(), 2
-        )
+        self.assertEqual(History.objects.filter(operation=History.MOD_ENTITY).count(), 2)
         self.assertEqual(History.objects.filter(operation=History.ADD_ATTR).count(), 1)
         self.assertEqual(History.objects.filter(operation=History.MOD_ATTR).count(), 2)
 
-    @mock.patch(
-        "entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity)
-    )
+    @mock.patch("entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity))
     def test_post_edit_after_creating_entry(self):
         user = self.admin_login()
 
@@ -563,9 +527,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(EntityAttr.objects.get(id=attr.id).type, AttrTypeStr)
         self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.count(), 0)
 
-    @mock.patch(
-        "entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity)
-    )
+    @mock.patch("entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity))
     def test_post_edit_attribute_referral(self):
         user = self.admin_login()
 
@@ -726,15 +688,11 @@ class ViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
 
-    @mock.patch(
-        "entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity)
-    )
+    @mock.patch("entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity))
     def test_post_create_with_valid_referral_attr(self):
         user = self.admin_login()
 
@@ -764,9 +722,7 @@ class ViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 200)
 
@@ -776,9 +732,7 @@ class ViewTest(AironeViewTest):
         self.assertFalse(any([x.is_mandatory for x in created_entity.attrs.all()]))
         self.assertTrue(all([x.is_delete_in_chain for x in created_entity.attrs.all()]))
 
-    @mock.patch(
-        "entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity)
-    )
+    @mock.patch("entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity))
     def test_post_delete_attribute(self):
         user = self.admin_login()
 
@@ -833,9 +787,7 @@ class ViewTest(AironeViewTest):
 
         # tests for operation history is registered correctly
         self.assertEqual(History.objects.count(), 3)
-        self.assertEqual(
-            History.objects.filter(operation=History.MOD_ENTITY).count(), 2
-        )
+        self.assertEqual(History.objects.filter(operation=History.MOD_ENTITY).count(), 2)
         self.assertEqual(History.objects.filter(operation=History.DEL_ATTR).count(), 1)
 
     def test_export_data(self):
@@ -965,9 +917,7 @@ class ViewTest(AironeViewTest):
         )
 
         # This Entity object won't be exported because this is logically deleted
-        entity1 = Entity.objects.create(
-            name="entity2", created_user=user, is_active=False
-        )
+        entity1 = Entity.objects.create(name="entity2", created_user=user, is_active=False)
 
         resp = self.client.get(reverse("entity:export"))
         self.assertEqual(resp.status_code, 200)
@@ -976,9 +926,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(obj["Entity"]), 1)
         self.assertEqual(obj["Entity"][0]["name"], "entity1")
 
-    @mock.patch(
-        "entity.tasks.delete_entity.delay", mock.Mock(side_effect=tasks.delete_entity)
-    )
+    @mock.patch("entity.tasks.delete_entity.delay", mock.Mock(side_effect=tasks.delete_entity))
     def test_post_delete(self):
         user1 = self.admin_login()
 
@@ -1125,16 +1073,12 @@ class ViewTest(AironeViewTest):
             "is_toplevel": True,
             "attrs": [],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(Entity.objects.filter(name="hoge"))
 
-    @mock.patch(
-        "entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity)
-    )
+    @mock.patch("entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity))
     def test_create_entity_attr_with_multiple_referral(self):
         user = self.admin_login()
 
@@ -1156,9 +1100,7 @@ class ViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 200)
 
@@ -1166,12 +1108,8 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(entity.attrs.count(), 1)
         self.assertEqual(entity.attrs.last().referral.count(), 2)
-        self.assertEqual(
-            entity.attrs.last().referral.filter(id=r_entity1.id).count(), 1
-        )
-        self.assertEqual(
-            entity.attrs.last().referral.filter(id=r_entity2.id).count(), 1
-        )
+        self.assertEqual(entity.attrs.last().referral.filter(id=r_entity1.id).count(), 1)
+        self.assertEqual(entity.attrs.last().referral.filter(id=r_entity2.id).count(), 1)
 
     def test_not_to_be_changed_attribute_type(self):
         user = self.admin_login()
@@ -1237,9 +1175,7 @@ class ViewTest(AironeViewTest):
         attrv = entry.attrs.get(schema=attr2).get_latest_value()
         self.assertEqual(attrv.value, "fuga")
         self.assertEqual(attrv.data_type, AttrTypeValue["string"])
-        self.assertEqual(
-            EntityAttr.objects.get(name=attr2.name).type, AttrTypeValue["string"]
-        )
+        self.assertEqual(EntityAttr.objects.get(name=attr2.name).type, AttrTypeValue["string"])
 
     def test_show_dashboard(self):
         user = self.admin_login()
@@ -1256,9 +1192,7 @@ class ViewTest(AironeViewTest):
         # make entities/entries associated with "entity"
         ref_entity = Entity.objects.create(name="ref_entity", created_user=user)
         ref_entries = [
-            Entry.objects.create(
-                name="ref_entry-%d" % i, schema=ref_entity, created_user=user
-            )
+            Entry.objects.create(name="ref_entry-%d" % i, schema=ref_entity, created_user=user)
             for i in range(0, CONFIG.DASHBOARD_NUM_ITEMS + 3)
         ]
 
@@ -1274,9 +1208,7 @@ class ViewTest(AironeViewTest):
 
         # create entries
         for i in range(0, CONFIG.DASHBOARD_NUM_ITEMS + 2):
-            entry = Entry.objects.create(
-                name="entry-%d" % i, schema=entity, created_user=user
-            )
+            entry = Entry.objects.create(name="entry-%d" % i, schema=entity, created_user=user)
             entry.complement_attrs(user)
 
             if i < CONFIG.DASHBOARD_NUM_ITEMS + 1:
@@ -1294,9 +1226,7 @@ class ViewTest(AironeViewTest):
         # checks that referral information is set correctly
         for (ret_attr, ret_info) in resp.context["summarized_data"].items():
             self.assertEqual(ret_attr.id, attr.id)
-            self.assertEqual(
-                len(ret_info["referral_count"]), CONFIG.DASHBOARD_NUM_ITEMS + 1
-            )
+            self.assertEqual(len(ret_info["referral_count"]), CONFIG.DASHBOARD_NUM_ITEMS + 1)
             self.assertEqual(ret_info["no_referral_count"], 1)
             self.assertEqual(
                 ret_info["no_referral_ratio"],
@@ -1328,19 +1258,12 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         for (ret_attr, ret_info) in resp.context["summarized_data"].items():
-            self.assertEqual(
-                len(ret_info["referral_count"]), CONFIG.DASHBOARD_NUM_ITEMS - 1
-            )
+            self.assertEqual(len(ret_info["referral_count"]), CONFIG.DASHBOARD_NUM_ITEMS - 1)
             self.assertEqual(ret_info["no_referral_count"], 0)
 
             for no_referral in ["ref_entry-%d" % i for i in range(0, 2)]:
                 self.assertFalse(
-                    any(
-                        [
-                            x["referral"] == no_referral
-                            for x in ret_info["referral_count"]
-                        ]
-                    )
+                    any([x["referral"] == no_referral for x in ret_info["referral_count"]])
                 )
 
     def test_show_dashboard_config(self):
@@ -1362,9 +1285,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        attr = EntityAttr.objects.create(
-            name="attr", created_user=user, parent_entity=entity
-        )
+        attr = EntityAttr.objects.create(name="attr", created_user=user, parent_entity=entity)
         entity.attrs.add(attr)
 
         # send post request with parameters which contain an invalid EntityAttr-ID
@@ -1383,9 +1304,7 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        summarized_attr = EntityAttr.objects.get(
-            parent_entity=entity, is_summarized=True
-        )
+        summarized_attr = EntityAttr.objects.get(parent_entity=entity, is_summarized=True)
         self.assertEqual(summarized_attr.id, attr.id)
 
         # send post request to clear summarized flag
@@ -1431,9 +1350,7 @@ class ViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(self._test_data["is_call_custom_called"])

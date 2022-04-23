@@ -69,9 +69,7 @@ class ViewTest(AironeViewTest):
         )
 
     def test_create_post_without_login(self):
-        resp = self.client.post(
-            reverse("group:do_create"), json.dumps({}), "application/json"
-        )
+        resp = self.client.post(reverse("group:do_create"), json.dumps({}), "application/json")
         self.assertEqual(resp.status_code, 401)
 
     def test_create_post(self):
@@ -86,9 +84,7 @@ class ViewTest(AironeViewTest):
             "name": "test-group",
             "users": [user1.id, user2.id],
         }
-        resp = self.client.post(
-            reverse("group:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("group:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
@@ -111,14 +107,10 @@ class ViewTest(AironeViewTest):
             "name": "test-group",
             "users": [],
         }
-        resp = self.client.post(
-            reverse("group:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("group:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            self._get_group_count(), group_count, "group should not be created"
-        )
+        self.assertEqual(self._get_group_count(), group_count, "group should not be created")
 
     def test_create_port_with_invalid_params(self):
         self.admin_login()
@@ -129,14 +121,10 @@ class ViewTest(AironeViewTest):
             "name": "test-group",
             "users": [1999, 2999],
         }
-        resp = self.client.post(
-            reverse("group:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("group:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            self._get_group_count(), group_count, "group should not be created"
-        )
+        self.assertEqual(self._get_group_count(), group_count, "group should not be created")
 
     def test_create_duplicate_name_of_group(self):
         self.admin_login()
@@ -155,13 +143,9 @@ class ViewTest(AironeViewTest):
             "name": duplicated_name,
             "users": [user1.id],
         }
-        resp = self.client.post(
-            reverse("group:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("group:do_create"), json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            self._get_group_count(), group_count, "group should not be created"
-        )
+        self.assertEqual(self._get_group_count(), group_count, "group should not be created")
 
     def test_delete_group(self):
         self.admin_login()
@@ -193,12 +177,8 @@ class ViewTest(AironeViewTest):
             group_count,
             "group should not be decreased because of soft-delete",
         )
-        self.assertEqual(
-            Group.objects.filter(name="group1").count(), 0, "group1 should not exist"
-        )
-        self.assertEqual(
-            Group.objects.filter(name="group2").count(), 1, "group2 should exist"
-        )
+        self.assertEqual(Group.objects.filter(name="group1").count(), 0, "group1 should not exist")
+        self.assertEqual(Group.objects.filter(name="group2").count(), 1, "group2 should exist")
         self.assertEqual(user1.groups.count(), 1, "user1 should have 1 group")
         self.assertEqual(user2.groups.count(), 0, "user2 should have 0 group")
 
@@ -258,9 +238,7 @@ class ViewTest(AironeViewTest):
             "name": "test-group",
             "users": [user.id],
         }
-        resp = self.client.post(
-            reverse("group:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("group:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(Group.objects.filter(name="test-group").count(), 0)

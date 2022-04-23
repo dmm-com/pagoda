@@ -21,9 +21,7 @@ class ViewTest(AironeViewTest):
     def test_list_webhooks_without_permission(self):
         self.guest_login()
         test_user = User.objects.create(username="test-user", is_superuser=False)
-        entity = Entity.objects.create(
-            name="test-entity", created_user=test_user, is_public=False
-        )
+        entity = Entity.objects.create(name="test-entity", created_user=test_user, is_public=False)
 
         resp = self.client.get("/webhook/%s" % entity.id)
         self.assertEqual(resp.status_code, 400)

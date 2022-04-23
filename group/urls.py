@@ -12,7 +12,5 @@ urlpatterns = [
     url(r"^do_delete/(\d+)$", views.do_delete, name="do_delete"),
     url(r"^export/$", views.export, name="export"),
     url(r"^import/$", views.import_user_and_group, name="import_user_and_group"),
-    url(
-        r"^do_import/$", views.do_import_user_and_group, name="do_import_user_and_group"
-    ),
+    url(r"^do_import/$", views.do_import_user_and_group, name="do_import_user_and_group"),
 ]

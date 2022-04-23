@@ -16,18 +16,14 @@ from .models import ACLBase
 @http_get
 def index(request, obj_id):
     user = User.objects.get(id=request.user.id)
-    aclbase_obj, error = get_object_with_check_permission(
-        user, ACLBase, obj_id, ACLType.Full
-    )
+    aclbase_obj, error = get_object_with_check_permission(user, ACLBase, obj_id, ACLType.Full)
     if error:
         return error
     target_obj = aclbase_obj.get_subclass_object()
 
     # get ACLTypeID of target_obj if a permission is set
     def get_current_permission(member):
-        permissions = [
-            x for x in member.permissions.all() if x.get_objid() == target_obj.id
-        ]
+        permissions = [x for x in member.permissions.all() if x.get_objid() == target_obj.id]
         if permissions:
             return permissions[0].get_aclid()
         else:
@@ -85,8 +81,7 @@ def index(request, obj_id):
                 {
                     "name": "member_type",
                     "type": str,
-                    "checker": lambda x: x["member_type"] == "user"
-                    or x["member_type"] == "group",
+                    "checker": lambda x: x["member_type"] == "user" or x["member_type"] == "group",
                 },
                 {
                     "name": "member_id",
@@ -101,18 +96,14 @@ def index(request, obj_id):
                 {
                     "name": "value",
                     "type": (str, type(None)),
-                    "checker": lambda x: [
-                        y for y in ACLType.all() if int(x["value"]) == y
-                    ],
+                    "checker": lambda x: [y for y in ACLType.all() if int(x["value"]) == y],
                 },
             ],
         },
         {
             "name": "default_permission",
             "type": str,
-            "checker": lambda x: any(
-                [y == int(x["default_permission"]) for y in ACLType.all()]
-            ),
+            "checker": lambda x: any([y == int(x["default_permission"]) for y in ACLType.all()]),
         },
     ]
 )

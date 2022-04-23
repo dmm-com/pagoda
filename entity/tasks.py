@@ -39,10 +39,7 @@ def create_entity(self, job_id):
             )
 
             if int(attr["type"]) & AttrTypeValue["object"]:
-                [
-                    attr_base.referral.add(Entity.objects.get(id=x))
-                    for x in attr["ref_ids"]
-                ]
+                [attr_base.referral.add(Entity.objects.get(id=x)) for x in attr["ref_ids"]]
 
             entity.attrs.add(attr_base)
 
@@ -122,10 +119,7 @@ def edit_entity(self, job_id):
                     # the case of an attribute that has referral entry
                     attr_obj.referral.clear()
                     if attr_obj.type & AttrTypeValue["object"]:
-                        [
-                            attr_obj.referral.add(Entity.objects.get(id=x))
-                            for x in attr["ref_ids"]
-                        ]
+                        [attr_obj.referral.add(Entity.objects.get(id=x)) for x in attr["ref_ids"]]
 
                     attr_obj.save()
 
@@ -143,10 +137,7 @@ def edit_entity(self, job_id):
 
                 # append referral objects
                 if int(attr["type"]) & AttrTypeValue["object"]:
-                    [
-                        attr_obj.referral.add(Entity.objects.get(id=x))
-                        for x in attr["ref_ids"]
-                    ]
+                    [attr_obj.referral.add(Entity.objects.get(id=x)) for x in attr["ref_ids"]]
 
                 # add a new attribute on the existed Entries
                 entity.attrs.add(attr_obj)

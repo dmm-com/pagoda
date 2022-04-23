@@ -17,9 +17,7 @@ class ModelTest(TestCase):
         entity = Entity(name="test01", created_user=self._test_user)
         entity.save()
 
-        attr_base = EntityAttr(
-            name="hoge", created_user=self._test_user, parent_entity=entity
-        )
+        attr_base = EntityAttr(name="hoge", created_user=self._test_user, parent_entity=entity)
         attr_base.save()
 
         self.assertEqual(attr_base.name, "hoge")
@@ -38,9 +36,7 @@ class ModelTest(TestCase):
         entity = Entity(name="test01", created_user=self._test_user)
         entity.save()
 
-        attr_base = EntityAttr(
-            name="hoge", created_user=self._test_user, parent_entity=entity
-        )
+        attr_base = EntityAttr(name="hoge", created_user=self._test_user, parent_entity=entity)
         attr_base.save()
 
         self.assertEqual(attr_base.parent_entity, entity)
@@ -134,9 +130,7 @@ class ModelTest(TestCase):
 
     def test_import_without_permission_parameter(self):
         user = User.objects.create(username="another_user")
-        entity = Entity.objects.create(
-            name="origin_name", created_user=user, is_public=False
-        )
+        entity = Entity.objects.create(name="origin_name", created_user=user, is_public=False)
         entity.save()
 
         EntityResource.import_data_from_request(
@@ -157,9 +151,7 @@ class ModelTest(TestCase):
         This checks the attribute type wouldn't be changed by specifying type.
         """
         user = self._test_user
-        entity = Entity.objects.create(
-            name="Entity", created_user=user, is_public=False
-        )
+        entity = Entity.objects.create(name="Entity", created_user=user, is_public=False)
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "attr",
@@ -190,9 +182,7 @@ class ModelTest(TestCase):
         This import EntityAttr without specifying type parameter.
         """
         user = self._test_user
-        entity = Entity.objects.create(
-            name="Entity", created_user=user, is_public=False
-        )
+        entity = Entity.objects.create(name="Entity", created_user=user, is_public=False)
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "attr",
@@ -222,9 +212,7 @@ class ModelTest(TestCase):
         This checks an attribute would be created by importing.
         """
         user = self._test_user
-        entity = Entity.objects.create(
-            name="Entity", created_user=user, is_public=False
-        )
+        entity = Entity.objects.create(name="Entity", created_user=user, is_public=False)
 
         EntityAttrResource.import_data_from_request(
             {
@@ -247,9 +235,7 @@ class ModelTest(TestCase):
         This checks an attribute wouldn't be created by importing because of luck of parameters
         """
         user = self._test_user
-        entity = Entity.objects.create(
-            name="Entity", created_user=user, is_public=False
-        )
+        entity = Entity.objects.create(name="Entity", created_user=user, is_public=False)
 
         # This processing would be failed because 'type' parameter is necessary for creating
         # a new EntityAttr instance by importing processing.
@@ -266,9 +252,7 @@ class ModelTest(TestCase):
         )
 
         # This checks EntityAttr would not be created
-        self.assertFalse(
-            EntityAttr.objects.filter(parent_entity=entity, is_active=True).exists()
-        )
+        self.assertFalse(EntityAttr.objects.filter(parent_entity=entity, is_active=True).exists())
 
     def test_is_update_method(self):
         user = User.objects.create(username="another_user")

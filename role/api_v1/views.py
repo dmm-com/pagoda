@@ -10,9 +10,7 @@ class RoleAPI(APIView):
         try:
             role = Role.objects.get(pk=role_id)
         except Role.DoesNotExist:
-            return Response(
-                "Role not found(id:%s)" % role_id, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response("Role not found(id:%s)" % role_id, status=status.HTTP_404_NOT_FOUND)
 
         user = request.user
         if not role.is_editable(user):

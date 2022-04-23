@@ -28,9 +28,7 @@ class EntryAPI(APIView):
         if not sel.is_valid():
             ret = {
                 "result": "Validation Error",
-                "details": [
-                    "(%s) %s" % (k, ",".join(e)) for k, e in sel._errors.items()
-                ],
+                "details": ["(%s) %s" % (k, ",".join(e)) for k, e in sel._errors.items()],
             }
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
@@ -59,10 +57,7 @@ class EntryAPI(APIView):
                 Q(**entry_condition) & ~Q(id=sel.validated_data["id"])
             ).exists():
                 return Response(
-                    {
-                        "result": '"%s" is duplicate name with other Entry'
-                        % entry_condition["name"]
-                    },
+                    {"result": '"%s" is duplicate name with other Entry' % entry_condition["name"]},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -97,9 +92,7 @@ class EntryAPI(APIView):
                 continue
 
             attr = entry.attrs.get(schema__name=name, is_active=True)
-            if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(
-                value
-            ):
+            if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(value):
                 attr.add_value(user, value)
 
                 # This enables to let user know what attributes are changed in this request
@@ -125,9 +118,7 @@ class EntryAPI(APIView):
         param_offset = request.GET.get("offset", "0")
         if not (param_entry_name or param_entry_id or param_entity):
             return Response(
-                {
-                    "result": 'Parameter any of "entry", "entry_id" or "entity" is mandatory'
-                },
+                {"result": 'Parameter any of "entry", "entry_id" or "entity" is mandatory'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -171,9 +162,7 @@ class EntryAPI(APIView):
             ]
         ]
         if not any(retinfo):
-            return Response(
-                {"result": "Failed to find entry"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"result": "Failed to find entry"}, status=status.HTTP_404_NOT_FOUND)
 
         return Response([x for x in retinfo if x])
 
@@ -204,9 +193,7 @@ class EntryAPI(APIView):
         if not user.has_permission(entry, ACLType.Full) or not user.has_permission(
             entity, ACLType.Readable
         ):
-            return Response(
-                "Permission denied to operate", status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response("Permission denied to operate", status=status.HTTP_400_BAD_REQUEST)
 
         # Delete the specified entry then return its id, if is active
         if entry.is_active:

@@ -22,15 +22,11 @@ class AironeModelResource(ModelResource):
     """
 
     def _is_updated(self, comp1, comp2):
-        return any(
-            [getattr(comp1, x) != getattr(comp2, x) for x in self.COMPARING_KEYS]
-        )
+        return any([getattr(comp1, x) != getattr(comp2, x) for x in self.COMPARING_KEYS])
 
     def validate_update(self, new, old):
         # This cancels update when the value of disallow update key is updated.
-        if not all(
-            [getattr(new, x) == getattr(old, x) for x in self.DISALLOW_UPDATE_KEYS]
-        ):
+        if not all([getattr(new, x) == getattr(old, x) for x in self.DISALLOW_UPDATE_KEYS]):
             return False
         return True
 
@@ -38,10 +34,7 @@ class AironeModelResource(ModelResource):
         # the case of creating new instance
         if not self._meta.model.objects.filter(id=instance.id).exists():
             # Inhibits the spoofing
-            if (
-                isinstance(instance, ACLBase)
-                and instance.created_user != self.request_user
-            ):
+            if isinstance(instance, ACLBase) and instance.created_user != self.request_user:
                 return True
 
         # the case of instance is updated
@@ -82,8 +75,7 @@ class AironeModelResource(ModelResource):
             not data[x] for x in self._IMPORT_INFO["mandatory_values"]
         ):
             raise RuntimeError(
-                "The value of '%s' is needed"
-                % str(self._IMPORT_INFO["mandatory_values"])
+                "The value of '%s' is needed" % str(self._IMPORT_INFO["mandatory_values"])
             )
 
         # check unnecessary parameters are specified, or not

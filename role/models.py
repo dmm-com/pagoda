@@ -25,9 +25,7 @@ class Role(models.Model):
         if user.id in [u.id for u in admin_users]:
             return True
 
-        if bool(
-            set([g.id for g in user.groups.all()]) & set([g.id for g in admin_groups])
-        ):
+        if bool(set([g.id for g in user.groups.all()]) & set([g.id for g in admin_groups])):
             return True
 
         return False
@@ -37,10 +35,7 @@ class Role(models.Model):
         if user.id in [u.id for u in self.users.filter(is_active=True)]:
             return True
 
-        if bool(
-            set([g.id for g in user.groups.all()])
-            & set([g.id for g in self.groups.all()])
-        ):
+        if bool(set([g.id for g in user.groups.all()]) & set([g.id for g in self.groups.all()])):
             return True
 
         return False
@@ -57,8 +52,6 @@ class Role(models.Model):
         return any(
             [
                 permission_level.id <= x.get_aclid()
-                for x in self.permissions.filter(
-                    codename__startswith=(str(target_obj.id) + ".")
-                )
+                for x in self.permissions.filter(codename__startswith=(str(target_obj.id) + "."))
             ]
         )

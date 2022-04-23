@@ -29,9 +29,7 @@ urllib3.disable_warnings(InsecureRequestWarning)
 )
 def set_webhook(request, entity_id, recv_data):
     user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(
-        user, Entity, entity_id, ACLType.Full
-    )
+    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Full)
     if error:
         return error
 
@@ -86,9 +84,7 @@ def set_webhook(request, entity_id, recv_data):
     webhook.is_verified = resp.ok
     webhook.save()
 
-    return JsonResponse(
-        {"webhook_id": webhook.id, "msg": "Succeded in registering Webhook"}
-    )
+    return JsonResponse({"webhook_id": webhook.id, "msg": "Succeded in registering Webhook"})
 
 
 # FIXME specify HTTP method

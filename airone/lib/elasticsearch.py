@@ -43,11 +43,7 @@ class ESS(Elasticsearch):
         if not self.additional_config:
             self.additional_config = True
 
-            body = {
-                "index": {
-                    "max_result_window": settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]
-                }
-            }
+            body = {"index": {"max_result_window": settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]}}
             self.indices.put_settings(index=self._index, body=body)
 
         if "size" not in kwargs:
@@ -214,9 +210,7 @@ def make_query(
     attr_query: Dict = {}
 
     # filter attribute by keywords
-    for hint in [
-        x for x in hint_attrs if "name" in x and "keyword" in x and x["keyword"]
-    ]:
+    for hint in [x for x in hint_attrs if "name" in x and "keyword" in x and x["keyword"]]:
         _parse_or_search(hint, attr_query)
 
     # Build queries along keywords
@@ -228,9 +222,7 @@ def make_query(
     return query
 
 
-def make_query_for_simple(
-    hint_string: str, hint_entity_name: str, offset: int
-) -> Dict[str, str]:
+def make_query_for_simple(hint_string: str, hint_entity_name: str, offset: int) -> Dict[str, str]:
     """Create a search query for Elasticsearch.
 
     Do the following:
@@ -296,9 +288,7 @@ def _get_regex_pattern(keyword: str) -> str:
         end = ""
         escaped = escaped.rstrip("$")
 
-    body = "".join(
-        ["[%s%s]" % (x.lower(), x.upper()) if x.isalpha() else x for x in escaped]
-    )
+    body = "".join(["[%s%s]" % (x.lower(), x.upper()) if x.isalpha() else x for x in escaped])
 
     return begin + body + end
 
@@ -317,9 +307,7 @@ def prepend_escape_character(escape_character_list: List[str], keyword: str) -> 
         str: Returns 'keyword' after conversion.
 
     """
-    return "".join(
-        ["\\" + x if x in escape_character_list else x for x in list(keyword)]
-    )
+    return "".join(["\\" + x if x in escape_character_list else x for x in list(keyword)])
 
 
 def _get_hint_keyword_val(keyword: str) -> str:
@@ -335,10 +323,7 @@ def _get_hint_keyword_val(keyword: str) -> str:
             Otherwise, the input value is returned.
 
     """
-    if (
-        CONFIG.EMPTY_SEARCH_CHARACTER == keyword
-        or CONFIG.EMPTY_SEARCH_CHARACTER_CODE == keyword
-    ):
+    if CONFIG.EMPTY_SEARCH_CHARACTER == keyword or CONFIG.EMPTY_SEARCH_CHARACTER_CODE == keyword:
         return ""
     if "\\" in keyword:
         return " "
@@ -399,11 +384,7 @@ def _make_attr_query_for_simple(hint_string: str) -> Dict[str, str]:
     """
 
     attr_query: Dict = {
-        "bool": {
-            "filter": {
-                "nested": {"path": "attr", "inner_hits": {"_source": ["attr.name"]}}
-            }
-        }
+        "bool": {"filter": {"nested": {"path": "attr", "inner_hits": {"_source": ["attr.name"]}}}}
     }
 
     attr_or_query: Dict = {"bool": {"should": []}}
@@ -412,9 +393,7 @@ def _make_attr_query_for_simple(hint_string: str) -> Dict[str, str]:
             continue
 
         attr_and_query: Dict = {"bool": {"filter": []}}
-        for keyword_divided_and in keyword_divided_or.split(
-            CONFIG.AND_SEARCH_CHARACTER
-        ):
+        for keyword_divided_and in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
             attr_and_query["bool"]["filter"].append(
                 {"regexp": {"attr.value": _get_regex_pattern(keyword_divided_and)}}
             )
@@ -425,9 +404,7 @@ def _make_attr_query_for_simple(hint_string: str) -> Dict[str, str]:
     return attr_query
 
 
-def _parse_or_search(
-    hint: Dict[str, str], attr_query: Dict[str, str]
-) -> Dict[str, str]:
+def _parse_or_search(hint: Dict[str, str], attr_query: Dict[str, str]) -> Dict[str, str]:
     """Performs keyword analysis processing.
 
     The search keyword is separated by OR and passed to the next process.
@@ -558,9 +535,7 @@ def _build_queries_along_keywords(
                     )
 
             else:
-                and_query[keyword_divided_or] = attr_query[
-                    keyword_divided_or + "_" + hint["name"]
-                ]
+                and_query[keyword_divided_or] = attr_query[keyword_divided_or + "_" + hint["name"]]
 
             if CONFIG.OR_SEARCH_CHARACTER in hint["keyword"]:
 
@@ -646,9 +621,7 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
 
         if hint_kyeword_val:
             if "exact_match" not in hint:
-                cond_val.append(
-                    {"regexp": {"attr.value": _get_regex_pattern(hint_kyeword_val)}}
-                )
+                cond_val.append({"regexp": {"attr.value": _get_regex_pattern(hint_kyeword_val)}})
 
             cond_attr.append({"bool": {"should": cond_val}})
 
@@ -800,9 +773,9 @@ def make_search_results(
         if len(hit_infos) >= limit:
             break
 
-        hit_infos[entry] = [
-            x["_source"] for x in res["hits"]["hits"] if int(x["_id"]) == entry.id
-        ][0]
+        hit_infos[entry] = [x["_source"] for x in res["hits"]["hits"] if int(x["_id"]) == entry.id][
+            0
+        ]
 
     for (entry, entry_info) in sorted(hit_infos.items(), key=lambda x: x[0].name):
         ret_info: Dict[str, Any] = {
@@ -849,17 +822,13 @@ def make_search_results(
                     ret_info["attrs"][attrinfo["name"]] = ret_attrinfo
 
             # Check for has permission to EntityAttr
-            if attrinfo["name"] not in [
-                x["name"] for x in hint_attrs if x["is_readble"]
-            ]:
+            if attrinfo["name"] not in [x["name"] for x in hint_attrs if x["is_readble"]]:
                 ret_attrinfo["is_readble"] = False
                 continue
 
             # Check for has permission to Attribute
             if not attrinfo["is_readble"]:
-                attr = entry.attrs.filter(
-                    schema__name=attrinfo["name"], is_active=True
-                ).first()
+                attr = entry.attrs.filter(schema__name=attrinfo["name"], is_active=True).first()
                 if not attr:
                     Logger.warning(
                         "Non exist Attribute (entry:%s, name:%s) is registered in ESS."
@@ -923,15 +892,11 @@ def make_search_results(
 
                 elif attrinfo["type"] & AttrTypeValue["string"]:
                     if "date_value" in attrinfo:
-                        ret_attrinfo["value"].append(
-                            attrinfo["date_value"].split("T")[0]
-                        )
+                        ret_attrinfo["value"].append(attrinfo["date_value"].split("T")[0])
                     else:
                         ret_attrinfo["value"].append(attrinfo["value"])
 
-                elif attrinfo["type"] & (
-                    AttrTypeValue["object"] | AttrTypeValue["group"]
-                ):
+                elif attrinfo["type"] & (AttrTypeValue["object"] | AttrTypeValue["group"]):
                     ret_attrinfo["value"].append(
                         {"id": attrinfo["referral_id"], "name": attrinfo["value"]}
                     )
@@ -968,9 +933,7 @@ def is_date_check(value: str) -> Optional[Tuple[str, datetime]]:
         for delimiter in ["-", "/"]:
             date_format = "%%Y%(del)s%%m%(del)s%%d" % {"del": delimiter}
 
-            if re.match(
-                r"^[<>]?[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter}, value
-            ):
+            if re.match(r"^[<>]?[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter}, value):
 
                 if value[0] in ["<", ">"]:
                     return (

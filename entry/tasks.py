@@ -56,9 +56,7 @@ def _convert_data_value(attr, info):
             recv_value = [x["data"] for x in info["value"] if "data" in x]
 
         if attr.schema.type & AttrTypeValue["named"]:
-            return _merge_referrals_by_index(
-                info["value"], info["referral_key"]
-            ).values()
+            return _merge_referrals_by_index(info["value"], info["referral_key"]).values()
         else:
             return recv_value
 
@@ -67,11 +65,7 @@ def _convert_data_value(attr, info):
 
         if "value" in info and info["value"] and "data" in info["value"][0]:
             recv_value = info["value"][0]["data"]
-        if (
-            "referral_key" in info
-            and info["referral_key"]
-            and "data" in info["referral_key"][0]
-        ):
+        if "referral_key" in info and info["referral_key"] and "data" in info["referral_key"][0]:
             recv_ref_key = info["referral_key"][0]["data"]
 
         if attr.schema.type & AttrTypeValue["named"]:
@@ -138,9 +132,7 @@ def _do_import_entries(job):
 
         entry = Entry.objects.filter(name=entry_data["name"], schema=entity).first()
         if not entry:
-            entry = Entry.objects.create(
-                name=entry_data["name"], schema=entity, created_user=user
-            )
+            entry = Entry.objects.create(name=entry_data["name"], schema=entity, created_user=user)
 
             # create job to notify create event to the WebHook URL
             job_notify = Job.new_notify_create_entry(user, entry)
@@ -176,22 +168,18 @@ def _do_import_entries(job):
                 break
 
             attr = attr_query.last()
-            if not user.has_permission(
-                attr.schema, ACLType.Writable
-            ) or not user.has_permission(attr, ACLType.Writable):
+            if not user.has_permission(attr.schema, ACLType.Writable) or not user.has_permission(
+                attr, ACLType.Writable
+            ):
                 continue
 
             input_value = attr.convert_value_to_register(value)
-            if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(
-                input_value
-            ):
+            if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(input_value):
                 attr.add_value(user, input_value)
 
             # call custom-view processing corresponding to import entry
             if custom_view_handler:
-                custom_view.call_custom(
-                    custom_view_handler, entity.name, user, entry, attr, value
-                )
+                custom_view.call_custom(custom_view_handler, entity.name, user, entry, attr, value)
 
         # register entry to the Elasticsearch
         entry.register_es()
@@ -237,9 +225,7 @@ def create_entry_attrs(self, job_id):
                 return
 
             # make an initial AttributeValue object if the initial value is specified
-            attr_data = [
-                x for x in recv_data["attrs"] if int(x["id"]) == entity_attr.id
-            ]
+            attr_data = [x for x in recv_data["attrs"] if int(x["id"]) == entity_attr.id]
 
             if not attr or not attr_data:
                 continue
@@ -257,9 +243,7 @@ def create_entry_attrs(self, job_id):
                 query.exclude(id=query.first().id).delete()
 
         if custom_view.is_custom("after_create_entry", entry.schema.name):
-            custom_view.call_custom(
-                "after_create_entry", entry.schema.name, recv_data, user, entry
-            )
+            custom_view.call_custom("after_create_entry", entry.schema.name, recv_data, user, entry)
 
         # register entry information to Elasticsearch
         entry.register_es()
@@ -318,9 +302,7 @@ def edit_entry_attrs(self, job_id):
             attr.add_value(user, converted_value)
 
         if custom_view.is_custom("after_edit_entry", entry.schema.name):
-            custom_view.call_custom(
-                "after_edit_entry", entry.schema.name, recv_data, user, entry
-            )
+            custom_view.call_custom("after_edit_entry", entry.schema.name, recv_data, user, entry)
 
         # update entry information to Elasticsearch
         entry.register_es()
@@ -348,9 +330,7 @@ def delete_entry(self, job_id):
 
         user = User.objects.get(id=job.user.id)
         if custom_view.is_custom("after_delete_entry", entry.schema.name):
-            custom_view.call_custom(
-                "after_delete_entry", entry.schema.name, user, entry
-            )
+            custom_view.call_custom("after_delete_entry", entry.schema.name, user, entry)
 
         # update job status and save it
         job.update(Job.STATUS["DONE"])
@@ -371,9 +351,7 @@ def restore_entry(self, job_id):
 
         # calling custom view processing if necessary
         if custom_view.is_custom("after_restore_entry", entry.schema.name):
-            custom_view.call_custom(
-                "after_restore_entry", entry.schema.name, job.user, entry
-            )
+            custom_view.call_custom("after_restore_entry", entry.schema.name, job.user, entry)
 
         # update entry information to Elasticsearch
         entry.register_es()
@@ -394,9 +372,7 @@ def copy_entry(self, job_id):
         src_entry = Entry.objects.get(id=job.target.id)
 
         params = json.loads(job.params)
-        dest_entry = Entry.objects.filter(
-            schema=src_entry.schema, name=params["new_name"]
-        ).first()
+        dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params["new_name"]).first()
         if not dest_entry:
             dest_entry = src_entry.clone(user, name=params["new_name"])
             dest_entry.register_es()
@@ -412,9 +388,7 @@ def copy_entry(self, job_id):
             )
 
         # update job status and save it
-        job.update(
-            Job.STATUS["DONE"], "original entry: %s" % src_entry.name, dest_entry
-        )
+        job.update(Job.STATUS["DONE"], "original entry: %s" % src_entry.name, dest_entry)
 
         # create and run event notification job
         job_notify_event = Job.new_notify_create_entry(user, dest_entry)
@@ -487,8 +461,7 @@ def export_entries(self, job_id):
 
         for data in exported_data:
             writer.writerow(
-                [data["name"]]
-                + [data2str(data["attrs"][x]) for x in attrs if x in data["attrs"]]
+                [data["name"]] + [data2str(data["attrs"][x]) for x in attrs if x in data["attrs"]]
             )
     else:
         output = io.StringIO()

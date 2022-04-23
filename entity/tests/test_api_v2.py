@@ -12,9 +12,7 @@ from unittest import mock
 
 
 class ViewTest(AironeViewTest):
-    @mock.patch(
-        "entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity)
-    )
+    @mock.patch("entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity))
     def test_history(self):
         self.guest_login()
 
@@ -67,9 +65,7 @@ class ViewTest(AironeViewTest):
                 },
             ],
         }
-        resp = self.client.post(
-            reverse("entity:do_create"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 200)
         entity = Entity.objects.first()
 

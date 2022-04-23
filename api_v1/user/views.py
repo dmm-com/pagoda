@@ -16,11 +16,7 @@ class AccessTokenAPI(APIView):
         # registered at the Database and authenticated.
         # (c.f. https://www.django-rest-framework.org/api-guide/permissions/#isauthenticated)
         return Response(
-            {
-                "results": str(
-                    AironeUser.objects.get(id=request.user.id, is_active=True).token
-                )
-            }
+            {"results": str(AironeUser.objects.get(id=request.user.id, is_active=True).token)}
         )
 
     @method_decorator(csrf_protect)

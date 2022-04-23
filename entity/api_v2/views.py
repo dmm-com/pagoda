@@ -19,9 +19,7 @@ def history(request, entity_id):
 
     # entity to be editted is given by url
     entity = Entity.objects.get(id=entity_id)
-    histories = History.objects.filter(target_obj=entity, is_detail=False).order_by(
-        "-time"
-    )
+    histories = History.objects.filter(target_obj=entity, is_detail=False).order_by("-time")
 
     return JsonResponse(
         [
@@ -61,8 +59,6 @@ class EntityAPI(viewsets.ReadOnlyModelViewSet):
         query = self.request.query_params.get("query", None)
 
         if query:
-            return Entity.objects.filter(
-                name__iregex=r"%s" % query, is_active=True
-            ).order_by("id")
+            return Entity.objects.filter(name__iregex=r"%s" % query, is_active=True).order_by("id")
         else:
             return Entity.objects.filter(is_active=True).order_by("id")

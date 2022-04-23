@@ -64,9 +64,7 @@ def do_create(request, recv_data):
     if "is_superuser" in recv_data:
         is_superuser = True
 
-    user = User(
-        username=recv_data["name"], email=recv_data["email"], is_superuser=is_superuser
-    )
+    user = User(username=recv_data["name"], email=recv_data["email"], is_superuser=is_superuser)
 
     # store encrypted password in the database
     user.set_password(recv_data["passwd"])
@@ -92,9 +90,7 @@ def edit(request, user_id):
         "user_is_superuser": user.is_superuser,
         "token": user.token if current_user == user else None,
         "token_lifetime": user.token_lifetime,
-        "token_created": user.token.created.strftime("%Y/%m/%d %H:%M:%S")
-        if user.token
-        else None,
+        "token_created": user.token.created.strftime("%Y/%m/%d %H:%M:%S") if user.token else None,
         "token_expire": (
             (user.token.created + timedelta(seconds=user.token_lifetime)).strftime(
                 "%Y/%m/%d %H:%M:%S"
@@ -160,9 +156,7 @@ def do_edit(request, user_id, recv_data):
         else:
             target_user.is_superuser = False
 
-    target_user.save(
-        update_fields=["username", "email", "is_superuser", "token_lifetime"]
-    )
+    target_user.save(update_fields=["username", "email", "is_superuser", "token_lifetime"])
 
     return JsonResponse({})
 
@@ -175,9 +169,7 @@ def edit_passwd(request, user_id):
     elif int(request.user.id) == int(user_id):
         user_grade = "self"
     else:
-        return HttpResponse(
-            "You don't have permission to access this object", status=400
-        )
+        return HttpResponse("You don't have permission to access this object", status=400)
 
     try:
         user = User.objects.get(id=user_id, is_active=True)
@@ -208,9 +200,7 @@ def do_edit_passwd(request, user_id, recv_data):
 
     # Identification
     if int(request.user.id) != int(user_id):
-        return HttpResponse(
-            "You don't have permission to access this object", status=400
-        )
+        return HttpResponse("You don't have permission to access this object", status=400)
 
     # Whether recv_data matches the old password
     if not user.check_password(recv_data["old_passwd"]):
@@ -274,9 +264,7 @@ def do_delete(request, user_id, recv_data):
     return JsonResponse(ret)
 
 
-@http_post(
-    [{"name": "ldap_password", "type": str, "checker": lambda x: x["ldap_password"]}]
-)
+@http_post([{"name": "ldap_password", "type": str, "checker": lambda x: x["ldap_password"]}])
 def change_ldap_auth(request, recv_data):
     user = User.objects.get(id=request.user.id)
 
@@ -288,9 +276,7 @@ def change_ldap_auth(request, recv_data):
 
         return HttpResponse("Succeeded")
     else:
-        return HttpResponse(
-            "LDAP authentication was Failed of user %s" % user.username, status=400
-        )
+        return HttpResponse("LDAP authentication was Failed of user %s" % user.username, status=400)
 
 
 class PasswordReset(auth_views.PasswordResetView):

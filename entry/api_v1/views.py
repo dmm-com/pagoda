@@ -70,9 +70,7 @@ def get_referrals(request, entry_id):
 )
 def search_entries(request, entity_ids, recv_data):
     cond_link = "or"
-    if "cond_link" in recv_data and any(
-        [x for x in ["and", "or"] if x == recv_data["cond_link"]]
-    ):
+    if "cond_link" in recv_data and any([x for x in ["and", "or"] if x == recv_data["cond_link"]]):
         cond_link = recv_data["cond_link"]
 
     total_entries = []
@@ -80,9 +78,7 @@ def search_entries(request, entity_ids, recv_data):
         if not Entity.objects.filter(id=entity_id).exists():
             return HttpResponse("Failed to get entity(%s)" % entity_id, status=400)
 
-        entries = Entry.objects.order_by("name").filter(
-            schema__id=entity_id, is_active=True
-        )
+        entries = Entry.objects.order_by("name").filter(schema__id=entity_id, is_active=True)
         total_entries += entries.all()
 
     if not total_entries:
@@ -101,12 +97,8 @@ def search_entries(request, entity_ids, recv_data):
 
         for attr in attrs:
             # The case specified condition doesn't match with attribute type
-            if (
-                cond["type"] == "text"
-                and not attr.schema.type & AttrTypeValue["string"]
-            ) or (
-                cond["type"] == "entry"
-                and not attr.schema.type & AttrTypeValue["object"]
+            if (cond["type"] == "text" and not attr.schema.type & AttrTypeValue["string"]) or (
+                cond["type"] == "entry" and not attr.schema.type & AttrTypeValue["object"]
             ):
                 continue
 
@@ -127,13 +119,9 @@ def search_entries(request, entity_ids, recv_data):
     def _is_match_entry(entry):
         attrs = entry.attrs.filter(is_active=True)
         if cond_link == "or":
-            return any(
-                [_is_match_attrs(attrs, cond) for cond in recv_data["cond_params"]]
-            )
+            return any([_is_match_attrs(attrs, cond) for cond in recv_data["cond_params"]])
         else:
-            return all(
-                [_is_match_attrs(attrs, cond) for cond in recv_data["cond_params"]]
-            )
+            return all([_is_match_attrs(attrs, cond) for cond in recv_data["cond_params"]])
 
     ret_entries = [x for x in total_entries if _is_match_entry(x)]
 
@@ -161,9 +149,7 @@ def get_entries(request, entity_ids):
     keyword = request.GET.get("keyword")
     if keyword:
         query_name_regex = Q(
-            name__iregex=prepend_escape_character(
-                CONFIG.ESCAPE_CHARACTERS_ENTRY_LIST, keyword
-            )
+            name__iregex=prepend_escape_character(CONFIG.ESCAPE_CHARACTERS_ENTRY_LIST, keyword)
         )
     else:
         query_name_regex = Q()
@@ -211,9 +197,9 @@ def get_attr_referrals(request, attr_id):
 
         return [
             {"id": x.id, "name": x.name}
-            for x in model.objects.filter(Q(**query_params), query_name).order_by(
-                "name"
-            )[0 : CONFIG.MAX_LIST_REFERRALS]
+            for x in model.objects.filter(Q(**query_params), query_name).order_by("name")[
+                0 : CONFIG.MAX_LIST_REFERRALS
+            ]
         ]
 
     def _get_referral_entries(attr):
@@ -246,11 +232,7 @@ def get_attr_referrals(request, attr_id):
         return HttpResponse("Target Attribute does not referring type", status=400)
 
     return JsonResponse(
-        {
-            "results": natsorted(results, key=lambda x: x["name"])[
-                0 : CONFIG.MAX_LIST_REFERRALS
-            ]
-        }
+        {"results": natsorted(results, key=lambda x: x["name"])[0 : CONFIG.MAX_LIST_REFERRALS]}
     )
 
 
@@ -263,9 +245,7 @@ def get_entry_history(request, entry_id):
         try:
             params[key] = int(request.GET.get(key, 0))
         except ValueError:
-            return HttpResponse(
-                'invaid parameter value "%s" is specified' % key, status=400
-            )
+            return HttpResponse('invaid parameter value "%s" is specified' % key, status=400)
 
     if not all([isinstance(x, int) for x in params.values()]):
         return HttpResponse('parameter "index" and "count" are mandatory', status=400)
@@ -278,17 +258,13 @@ def get_entry_history(request, entry_id):
         if isinstance(obj, ACLBase) or isinstance(obj, Group):
             return {"id": obj.id, "name": obj.name}
         elif isinstance(obj, datetime):
-            return obj.astimezone(timezone("Asia/Tokyo")).strftime(
-                "%b. %d, %Y, %I:%M %p"
-            )
+            return obj.astimezone(timezone("Asia/Tokyo")).strftime("%b. %d, %Y, %I:%M %p")
         elif isinstance(obj, date):
             return str(obj)
 
         raise TypeError("Type %s not serializable" % type(obj))
 
-    history = entry.get_value_history(
-        user, count=params["count"], index=params["index"]
-    )
+    history = entry.get_value_history(user, count=params["count"], index=params["index"])
 
     return JsonResponse(
         {
@@ -305,9 +281,7 @@ def get_entry_info(request, entry_id):
     user = User.objects.get(id=request.user.id)
     entry = Entry.objects.filter(id=entry_id).first()
     if not entry:
-        return HttpResponse(
-            "There is no entry which is specified by entry_id", status=400
-        )
+        return HttpResponse("There is no entry which is specified by entry_id", status=400)
 
     return JsonResponse(
         {
@@ -335,14 +309,10 @@ def get_entry_info(request, entry_id):
 def create_entry_attr(request, entry_id, recv_data):
     user = User.objects.get(id=request.user.id)
     entry = Entry.objects.filter(id=entry_id).first()
-    entity_attr = EntityAttr.objects.filter(
-        id=recv_data["entity_attr_id"], is_active=True
-    ).first()
+    entity_attr = EntityAttr.objects.filter(id=recv_data["entity_attr_id"], is_active=True).first()
 
     if not entry:
-        return HttpResponse(
-            "There is no Entry which is specified by entry_id", status=400
-        )
+        return HttpResponse("There is no Entry which is specified by entry_id", status=400)
 
     if not entity_attr:
         return HttpResponse(

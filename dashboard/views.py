@@ -33,10 +33,7 @@ IMPORT_INFOS = [
 
 def index(request):
     context = {}
-    if (
-        request.user.is_authenticated
-        and User.objects.filter(id=request.user.id).exists()
-    ):
+    if request.user.is_authenticated and User.objects.filter(id=request.user.id).exists():
         history = []
         # Sort by newest attribute update date (id is auto increment)
         for attr_value in (
@@ -131,16 +128,12 @@ def search(request):
     # When an available 'entity' parameter is specified and get an entry information which exactly
     # matches, this returns entry results
     if entity_name:
-        entry = Entry.objects.filter(
-            name=query, schema__name=entity_name, is_active=True
-        ).first()
+        entry = Entry.objects.filter(name=query, schema__name=entity_name, is_active=True).first()
         if entry and user.has_permission(entry, ACLType.Readable):
             return redirect("/entry/show/%s/" % entry.id)
 
     per_page = CONFIG.MAXIMUM_SEARCH_RESULTS
-    (count, entries) = _search_by_keyword(
-        modified_query, entity_name, per_page, page_num
-    )
+    (count, entries) = _search_by_keyword(modified_query, entity_name, per_page, page_num)
 
     if count == 1:
         return redirect("/entry/show/%s/" % entries[0]["id"])
@@ -149,13 +142,9 @@ def search(request):
     try:
         page_obj = p.page(page_num)
     except PageNotAnInteger:
-        return HttpResponse(
-            "Invalid page number. It must be unsigned integer", status=400
-        )
+        return HttpResponse("Invalid page number. It must be unsigned integer", status=400)
     except EmptyPage:
-        return HttpResponse(
-            "Invalid page number. The page doesn't have anything", status=400
-        )
+        return HttpResponse("Invalid page number. The page doesn't have anything", status=400)
 
     else:
         return render(
@@ -224,16 +213,12 @@ def advanced_search_result(request):
 
         for hint_attr in hint_attrs:
             if "name" not in hint_attr:
-                return HttpResponse(
-                    "The name key is required for attrinfo parameter", status=400
-                )
+                return HttpResponse("The name key is required for attrinfo parameter", status=400)
             if not isinstance(hint_attr["name"], str):
                 return HttpResponse("Invalid value for attrinfo parameter", status=400)
             if "keyword" in hint_attr:
                 if not isinstance(hint_attr["keyword"], str):
-                    return HttpResponse(
-                        "Invalid value for attrinfo parameter", status=400
-                    )
+                    return HttpResponse("Invalid value for attrinfo parameter", status=400)
                 if len(hint_attr["keyword"]) > CONFIG_ENTRY.MAX_QUERY_SIZE:
                     return HttpResponse("Sending parameter is too large", status=400)
 
@@ -311,8 +296,7 @@ def advanced_search_result(request):
                     "name": "keyword",
                     "type": str,
                     "omittable": True,
-                    "checker": lambda x: len(x["keyword"])
-                    <= CONFIG_ENTRY.MAX_QUERY_SIZE,
+                    "checker": lambda x: len(x["keyword"]) <= CONFIG_ENTRY.MAX_QUERY_SIZE,
                 },
             ],
         },
@@ -327,8 +311,7 @@ def advanced_search_result(request):
         {
             "name": "export_style",
             "type": str,
-            "checker": lambda x: x["export_style"] == "yaml"
-            or x["export_style"] == "csv",
+            "checker": lambda x: x["export_style"] == "yaml" or x["export_style"] == "csv",
         },
     ]
 )
@@ -337,11 +320,7 @@ def export_search_result(request, recv_data):
 
     # check whether same job is sent
     job_status_not_finished = [Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"]]
-    if (
-        Job.get_job_with_params(user, recv_data)
-        .filter(status__in=job_status_not_finished)
-        .exists()
-    ):
+    if Job.get_job_with_params(user, recv_data).filter(status__in=job_status_not_finished).exists():
         return HttpResponse("Same export processing is under execution", status=400)
 
     # create a job to export search result and run it
@@ -355,8 +334,5 @@ def export_search_result(request, recv_data):
     job.run()
 
     return JsonResponse(
-        {
-            "result": "Succeed in registering export processing. "
-            + "Please check Job list."
-        }
+        {"result": "Succeed in registering export processing. " + "Please check Job list."}
     )

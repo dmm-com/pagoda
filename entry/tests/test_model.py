@@ -69,9 +69,7 @@ class ModelTest(AironeTestCase):
                     "exp_val": {"bar": ref.name},
                 }
             )
-            attrinfo.append(
-                {"name": "arr_obj", "set_val": [ref], "exp_val": [ref.name]}
-            )
+            attrinfo.append({"name": "arr_obj", "set_val": [ref], "exp_val": [ref.name]})
             attrinfo.append(
                 {
                     "name": "arr_name",
@@ -81,9 +79,7 @@ class ModelTest(AironeTestCase):
             )
         if group:
             attrinfo.append({"name": "group", "set_val": group, "exp_val": group.name})
-            attrinfo.append(
-                {"name": "arr_group", "set_val": [group], "exp_val": [group.name]}
-            )
+            attrinfo.append({"name": "arr_group", "set_val": [group], "exp_val": [group.name]})
 
         return attrinfo
 
@@ -139,9 +135,7 @@ class ModelTest(AironeTestCase):
         )
 
     def test_make_attribute_value(self):
-        AttributeValue(
-            value="hoge", created_user=self._user, parent_attr=self._attr
-        ).save()
+        AttributeValue(value="hoge", created_user=self._user, parent_attr=self._attr).save()
 
         self.assertEqual(AttributeValue.objects.count(), 1)
         self.assertEqual(AttributeValue.objects.last().value, "hoge")
@@ -149,9 +143,7 @@ class ModelTest(AironeTestCase):
         self.assertIsNotNone(AttributeValue.objects.last().created_time)
 
     def test_make_attribute(self):
-        value = AttributeValue(
-            value="hoge", created_user=self._user, parent_attr=self._attr
-        )
+        value = AttributeValue(value="hoge", created_user=self._user, parent_attr=self._attr)
         value.save()
 
         self._attr.values.add(value)
@@ -183,9 +175,7 @@ class ModelTest(AironeTestCase):
         user = User.objects.create(username="hoge")
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        attrbase = EntityAttr.objects.create(
-            name="attr", created_user=user, parent_entity=entity
-        )
+        attrbase = EntityAttr.objects.create(name="attr", created_user=user, parent_entity=entity)
 
         # update acl metadata
         attrbase.is_public = False
@@ -200,9 +190,7 @@ class ModelTest(AironeTestCase):
         # checks that acl metadata is not inherited
         self.assertTrue(attr.is_public)
         self.assertEqual(attr.default_permission, ACLType.Nothing.id)
-        self.assertEqual(
-            list(user.permissions.filter(name="writable").all()), [attrbase.writable]
-        )
+        self.assertEqual(list(user.permissions.filter(name="writable").all()), [attrbase.writable])
 
     def test_inherite_attribute_permission_of_group(self):
         user = User.objects.create(username="hoge")
@@ -210,9 +198,7 @@ class ModelTest(AironeTestCase):
         user.groups.add(group)
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        attrbase = EntityAttr.objects.create(
-            name="attr", created_user=user, parent_entity=entity
-        )
+        attrbase = EntityAttr.objects.create(name="attr", created_user=user, parent_entity=entity)
 
         # set a permission to the user
         group.permissions.add(attrbase.writable)
@@ -220,9 +206,7 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.add_attribute_from_base(attrbase, user)
 
-        self.assertEqual(
-            list(group.permissions.filter(name="writable").all()), [attrbase.writable]
-        )
+        self.assertEqual(list(group.permissions.filter(name="writable").all()), [attrbase.writable])
 
     def test_update_attribute_from_base(self):
         user = User.objects.create(username="hoge")
@@ -262,9 +246,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(Attribute.objects.get(id=attr.id).schema, attrbase)
 
     def test_status_update_methods_of_attribute_value(self):
-        value = AttributeValue(
-            value="hoge", created_user=self._user, parent_attr=self._attr
-        )
+        value = AttributeValue(value="hoge", created_user=self._user, parent_attr=self._attr)
         value.save()
 
         self.assertFalse(value.get_status(AttributeValue.STATUS_DATA_ARRAY_PARENT))
@@ -296,21 +278,15 @@ class ModelTest(AironeTestCase):
         self.assertTrue(self._attr.is_updated("puyo"))
 
     def test_attr_helper_of_attribute_with_object_values(self):
-        e1 = Entry.objects.create(
-            name="E1", created_user=self._user, schema=self._entity
-        )
-        e2 = Entry.objects.create(
-            name="E2", created_user=self._user, schema=self._entity
-        )
+        e1 = Entry.objects.create(name="E1", created_user=self._user, schema=self._entity)
+        e2 = Entry.objects.create(name="E2", created_user=self._user, schema=self._entity)
 
         entity = Entity.objects.create(name="e2", created_user=self._user)
         entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
 
         attr = self.make_attr("attr2", attrtype=AttrTypeObj, entity=entity, entry=entry)
         attr.values.add(
-            AttributeValue.objects.create(
-                referral=e1, created_user=self._user, parent_attr=attr
-            )
+            AttributeValue.objects.create(referral=e1, created_user=self._user, parent_attr=attr)
         )
 
         self.assertFalse(attr.is_updated(e1.id))
@@ -324,24 +300,16 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="e2", created_user=self._user)
         entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
 
-        attr = self.make_attr(
-            "attr2", attrtype=AttrTypeArrStr, entity=entity, entry=entry
-        )
-        attr_value = AttributeValue.objects.create(
-            created_user=self._user, parent_attr=attr
-        )
+        attr = self.make_attr("attr2", attrtype=AttrTypeArrStr, entity=entity, entry=entry)
+        attr_value = AttributeValue.objects.create(created_user=self._user, parent_attr=attr)
         attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
         attr_value.data_array.add(
-            AttributeValue.objects.create(
-                value="hoge", created_user=self._user, parent_attr=attr
-            )
+            AttributeValue.objects.create(value="hoge", created_user=self._user, parent_attr=attr)
         )
 
         attr_value.data_array.add(
-            AttributeValue.objects.create(
-                value="fuga", created_user=self._user, parent_attr=attr
-            )
+            AttributeValue.objects.create(value="fuga", created_user=self._user, parent_attr=attr)
         )
 
         attr.values.add(attr_value)
@@ -355,40 +323,24 @@ class ModelTest(AironeTestCase):
         self.assertTrue(attr.is_updated(["hoge", "fuga", "abcd"]))  # add & update
 
     def test_attr_helper_of_attribute_with_array_object_values(self):
-        e1 = Entry.objects.create(
-            name="E1", created_user=self._user, schema=self._entity
-        )
-        e2 = Entry.objects.create(
-            name="E2", created_user=self._user, schema=self._entity
-        )
-        e3 = Entry.objects.create(
-            name="E3", created_user=self._user, schema=self._entity
-        )
-        e4 = Entry.objects.create(
-            name="E4", created_user=self._user, schema=self._entity
-        )
+        e1 = Entry.objects.create(name="E1", created_user=self._user, schema=self._entity)
+        e2 = Entry.objects.create(name="E2", created_user=self._user, schema=self._entity)
+        e3 = Entry.objects.create(name="E3", created_user=self._user, schema=self._entity)
+        e4 = Entry.objects.create(name="E4", created_user=self._user, schema=self._entity)
 
         entity = Entity.objects.create(name="e2", created_user=self._user)
         entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
 
-        attr = self.make_attr(
-            "attr2", attrtype=AttrTypeArrObj, entity=entity, entry=entry
-        )
-        attr_value = AttributeValue.objects.create(
-            created_user=self._user, parent_attr=attr
-        )
+        attr = self.make_attr("attr2", attrtype=AttrTypeArrObj, entity=entity, entry=entry)
+        attr_value = AttributeValue.objects.create(created_user=self._user, parent_attr=attr)
         attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
         attr_value.data_array.add(
-            AttributeValue.objects.create(
-                referral=e1, created_user=self._user, parent_attr=attr
-            )
+            AttributeValue.objects.create(referral=e1, created_user=self._user, parent_attr=attr)
         )
 
         attr_value.data_array.add(
-            AttributeValue.objects.create(
-                referral=e2, created_user=self._user, parent_attr=attr
-            )
+            AttributeValue.objects.create(referral=e2, created_user=self._user, parent_attr=attr)
         )
 
         attr.values.add(attr_value)
@@ -406,9 +358,7 @@ class ModelTest(AironeTestCase):
         self.assertTrue(attr.is_updated([e1, e3]))
 
     def test_attr_helper_of_attribute_with_named_ref(self):
-        ref_entity = Entity.objects.create(
-            name="referred_entity", created_user=self._user
-        )
+        ref_entity = Entity.objects.create(name="referred_entity", created_user=self._user)
         ref_entry1 = Entry.objects.create(
             name="referred_entry1", created_user=self._user, schema=ref_entity
         )
@@ -428,9 +378,7 @@ class ModelTest(AironeTestCase):
 
         entity.attrs.add(attr_base)
 
-        entry = Entry.objects.create(
-            name="entry", created_user=self._user, schema=entity
-        )
+        entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
         entry.complement_attrs(self._user)
 
         attr = entry.attrs.get(name="named_ref")
@@ -457,9 +405,7 @@ class ModelTest(AironeTestCase):
         # If 'AUTO_COMPLEMENT_USER' in settings is unmatch
         settings.AIRONE["AUTO_COMPLEMENT_USER"] = self._org_auto_complement_user + "1"
 
-        ref_entity = Entity.objects.create(
-            name="referred_entity", created_user=self._user
-        )
+        ref_entity = Entity.objects.create(name="referred_entity", created_user=self._user)
         ref_entry = Entry.objects.create(
             name="referred_entry", created_user=self._user, schema=ref_entity
         )
@@ -477,9 +423,7 @@ class ModelTest(AironeTestCase):
         entity.attrs.add(attr_base)
 
         # create an Entry associated to the 'entity'
-        entry = Entry.objects.create(
-            name="entry", created_user=self._user, schema=entity
-        )
+        entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
         entry.complement_attrs(self._user)
 
         attr = entry.attrs.get(name="arr_named_ref")
@@ -519,15 +463,10 @@ class ModelTest(AironeTestCase):
 
         attr.values.add(attrv)
 
-        self.assertTrue(
-            attr.is_updated([{"name": x} for x in ["key_0", "key_1", "key_2"]])
-        )
+        self.assertTrue(attr.is_updated([{"name": x} for x in ["key_0", "key_1", "key_2"]]))
         self.assertTrue(
             attr.is_updated(
-                [
-                    {"id": x["id"], "name": y}
-                    for x, y in zip(r_entries, ["key_0", "key_1"])
-                ]
+                [{"id": x["id"], "name": y} for x, y in zip(r_entries, ["key_0", "key_1"])]
             )
         )
         self.assertTrue(attr.is_updated(r_entries))
@@ -648,9 +587,7 @@ class ModelTest(AironeTestCase):
 
         # this attribute is needed to check not only get referral from normal object attribute,
         # but also from an attribute that refers array referral objects
-        arr_attr = self.make_attr(
-            "attr_arr_ref", attrtype=AttrTypeValue["array_object"]
-        )
+        arr_attr = self.make_attr("attr_arr_ref", attrtype=AttrTypeValue["array_object"])
 
         # make multiple value that refer 'entry' object
         [
@@ -683,9 +620,7 @@ class ModelTest(AironeTestCase):
 
     def test_get_referred_objects_with_entity_param(self):
         for i in range(3, 5):
-            entity = Entity.objects.create(
-                name="Entity" + str(i), created_user=self._user
-            )
+            entity = Entity.objects.create(name="Entity" + str(i), created_user=self._user)
             entry = Entry.objects.create(
                 name="entry" + str(i), created_user=self._user, schema=entity
             )
@@ -741,9 +676,7 @@ class ModelTest(AironeTestCase):
                 }
             )
         )
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=self._user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
         entry.complement_attrs(self._user)
 
         for i in range(10):
@@ -758,9 +691,7 @@ class ModelTest(AironeTestCase):
         # check to skip history value by specifying index parameter
         history = entry.get_value_history(self._user, count=3, index=3)
         self.assertEqual(len(history), 3)
-        self.assertEqual(
-            [x["curr"]["value"] for x in history], ["value-6", "value-5", "value-4"]
-        )
+        self.assertEqual([x["curr"]["value"] for x in history], ["value-6", "value-5", "value-4"])
 
         # check get the oldest value of history value
         history = entry.get_value_history(self._user, count=10, index=9)
@@ -770,9 +701,7 @@ class ModelTest(AironeTestCase):
 
     def test_delete_entry(self):
         entity = Entity.objects.create(name="ReferredEntity", created_user=self._user)
-        entry = Entry.objects.create(
-            name="entry", created_user=self._user, schema=entity
-        )
+        entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
 
         attr = self.make_attr("attr_ref", attrtype=AttrTypeObj)
 
@@ -780,9 +709,7 @@ class ModelTest(AironeTestCase):
 
         # make a self reference value
         attr.values.add(
-            AttributeValue.objects.create(
-                created_user=self._user, parent_attr=attr, referral=entry
-            )
+            AttributeValue.objects.create(created_user=self._user, parent_attr=attr, referral=entry)
         )
 
         # set referral cache
@@ -816,13 +743,9 @@ class ModelTest(AironeTestCase):
     def test_delete_entry_in_chain(self):
         # initilaize referral Entries for checking processing caused
         # by setting 'is_delete_in_chain' flag
-        ref_entity = Entity.objects.create(
-            name="ReferredEntity", created_user=self._user
-        )
+        ref_entity = Entity.objects.create(name="ReferredEntity", created_user=self._user)
         ref_entries = [
-            Entry.objects.create(
-                name="ref-%d" % i, created_user=self._user, schema=ref_entity
-            )
+            Entry.objects.create(name="ref-%d" % i, created_user=self._user, schema=ref_entity)
             for i in range(3)
         ]
 
@@ -874,9 +797,7 @@ class ModelTest(AironeTestCase):
         self.assertTrue(ref_entries[2].is_active)
 
     def test_order_of_array_named_ref_entries(self):
-        ref_entity = Entity.objects.create(
-            name="referred_entity", created_user=self._user
-        )
+        ref_entity = Entity.objects.create(name="referred_entity", created_user=self._user)
         ref_entry = Entry.objects.create(
             name="referred_entry", created_user=self._user, schema=ref_entity
         )
@@ -894,9 +815,7 @@ class ModelTest(AironeTestCase):
         entity.attrs.add(attr_base)
 
         # create an Entry associated to the 'entity'
-        entry = Entry.objects.create(
-            name="entry", created_user=self._user, schema=entity
-        )
+        entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
         entry.complement_attrs(self._user)
 
         attr = entry.attrs.get(name="arr_named_ref")
@@ -958,9 +877,7 @@ class ModelTest(AironeTestCase):
         attrv = AttributeValue.objects.create(value="hoge", **basic_params)
 
         for i in range(0, 10):
-            attrv.data_array.add(
-                AttributeValue.objects.create(value=str(i), **basic_params)
-            )
+            attrv.data_array.add(AttributeValue.objects.create(value=str(i), **basic_params))
 
         clone = attrv.clone(self._user)
 
@@ -1038,9 +955,7 @@ class ModelTest(AironeTestCase):
             )
         )
 
-        entry = Entry.objects.create(
-            name="entry", schema=test_entity, created_user=self._user
-        )
+        entry = Entry.objects.create(name="entry", schema=test_entity, created_user=self._user)
         entry.complement_attrs(self._user)
 
         # register initial AttributeValue for each Attributes
@@ -1104,9 +1019,7 @@ class ModelTest(AironeTestCase):
                 )
             )
 
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=self._user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
         entry.complement_attrs(self._user)
 
         # set Attribute attr2 is not public
@@ -1119,9 +1032,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(cloned_entry.attrs.first().schema.name, "attr1")
 
     def test_clone_entry_with_extra_params(self):
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=self._user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
         entry.complement_attrs(self._user)
 
         clone = entry.clone(self._user, name="cloned_entry")
@@ -1150,9 +1061,7 @@ class ModelTest(AironeTestCase):
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="r0", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="r0", schema=ref_entity, created_user=user)
 
         entity = self.create_entity_with_all_type_attributes(user)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -1178,9 +1087,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(latest_value.referral.id, ref_entry.id)
 
         latest_value = entry.attrs.get(name="arr_obj").get_latest_value()
-        self.assertEqual(
-            [x.referral.id for x in latest_value.data_array.all()], [ref_entry.id]
-        )
+        self.assertEqual([x.referral.id for x in latest_value.data_array.all()], [ref_entry.id])
 
         latest_value = entry.attrs.get(name="arr_name").get_latest_value()
         self.assertEqual(
@@ -1200,9 +1107,7 @@ class ModelTest(AironeTestCase):
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="r0", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="r0", schema=ref_entity, created_user=user)
         aclbase_ref = ACLBase.objects.get(id=ref_entry.id)
 
         entity = self.create_entity_with_all_type_attributes(user)
@@ -1271,9 +1176,7 @@ class ModelTest(AironeTestCase):
 
         self._attr.delete()
 
-        attr = self._entry.attrs.filter(
-            schema=self._attr.schema, is_active=True
-        ).first()
+        attr = self._entry.attrs.filter(schema=self._attr.schema, is_active=True).first()
         attr.add_value(self._user, "hoge")
 
         results = self._entry.get_available_attrs(self._user)
@@ -1283,9 +1186,7 @@ class ModelTest(AironeTestCase):
         self._entity.attrs.add(self._attr.schema)
         self._entry.attrs.add(self._attr)
 
-        attr = self._entry.attrs.filter(
-            schema=self._attr.schema, is_active=True
-        ).first()
+        attr = self._entry.attrs.filter(schema=self._attr.schema, is_active=True).first()
         attr.add_value(self._user, "hoge")
         attr.add_value(self._user, "fuga")
 
@@ -1367,18 +1268,14 @@ class ModelTest(AironeTestCase):
         results = entry.get_available_attrs(self._user)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["last_value"], "")
-        self.assertEqual(
-            AttributeValue.objects.get(id=attrv.id).data_type, AttrTypeValue["string"]
-        )
+        self.assertEqual(AttributeValue.objects.get(id=attrv.id).data_type, AttrTypeValue["string"])
 
     def test_get_deleted_referred_attrs(self):
         user = User.objects.create(username="hoge")
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="ReferredEntity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="ReferredEntry", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="ReferredEntry", schema=ref_entity, created_user=user)
 
         attr_info = {
             "obj": {"type": AttrTypeValue["object"], "value": ref_entry},
@@ -1425,9 +1322,7 @@ class ModelTest(AironeTestCase):
             elif attr["name"] == "arr_name":
                 self.assertEqual([x["value"] for x in attr["last_value"]], ["hoge"])
                 self.assertEqual([x["id"] for x in attr["last_value"]], [ref_entry.id])
-                self.assertEqual(
-                    [x["name"] for x in attr["last_value"]], [ref_entry.name]
-                )
+                self.assertEqual([x["name"] for x in attr["last_value"]], [ref_entry.name])
 
         # delete referral entry, then get available attrs
         ref_entry.delete()
@@ -1583,22 +1478,14 @@ class ModelTest(AironeTestCase):
             expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
             if attr.schema.type & AttrTypeValue["array"]:
                 if attr.schema.type & AttrTypeValue["named"]:
-                    expected_value["value"] = [
-                        {"hoge": {"id": test_ref.id, "name": test_ref.name}}
-                    ]
+                    expected_value["value"] = [{"hoge": {"id": test_ref.id, "name": test_ref.name}}]
                 elif attr.schema.type & AttrTypeValue["object"]:
-                    expected_value["value"] = [
-                        {"id": test_ref.id, "name": test_ref.name}
-                    ]
+                    expected_value["value"] = [{"id": test_ref.id, "name": test_ref.name}]
                 elif attr.schema.type & AttrTypeValue["group"]:
-                    expected_value["value"] = [
-                        {"id": test_grp.id, "name": test_grp.name}
-                    ]
+                    expected_value["value"] = [{"id": test_grp.id, "name": test_grp.name}]
 
             elif attr.schema.type & AttrTypeValue["named"]:
-                expected_value["value"] = {
-                    "bar": {"id": test_ref.id, "name": test_ref.name}
-                }
+                expected_value["value"] = {"bar": {"id": test_ref.id, "name": test_ref.name}}
             elif attr.schema.type & AttrTypeValue["object"]:
                 expected_value["value"] = {"id": test_ref.id, "name": test_ref.name}
             elif attr.schema.type & AttrTypeValue["group"]:
@@ -1614,18 +1501,14 @@ class ModelTest(AironeTestCase):
 
         # test retrieved value by get_value method with serialize parameter is expected
         self.assertEqual(attr_date.get_latest_value().get_value(), date_value)
-        self.assertEqual(
-            attr_date.get_latest_value().get_value(serialize=True), str(date_value)
-        )
+        self.assertEqual(attr_date.get_latest_value().get_value(serialize=True), str(date_value))
 
     def test_get_value_of_attrv_that_refers_deleted_entry(self):
         user = User.objects.create(username="hoge")
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="Ref", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="Ref", schema=ref_entity, created_user=user)
 
         attr_info = {
             "obj": {"type": AttrTypeValue["object"], "value": str(ref_entry.id)},
@@ -1658,10 +1541,7 @@ class ModelTest(AironeTestCase):
 
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
-        [
-            entry.attrs.get(name=x).add_value(user, y["value"])
-            for (x, y) in attr_info.items()
-        ]
+        [entry.attrs.get(name=x).add_value(user, y["value"]) for (x, y) in attr_info.items()]
 
         # delete entry to which all attribute values refer
         ref_entry.delete()
@@ -1673,17 +1553,13 @@ class ModelTest(AironeTestCase):
             "arr_name": [{"bar": None}],
         }
         for name, result in expected_results.items():
-            self.assertEqual(
-                entry.attrs.get(name=name).get_latest_value().get_value(), result
-            )
+            self.assertEqual(entry.attrs.get(name=name).get_latest_value().get_value(), result)
 
     def test_convert_value_to_register(self):
         user = User.objects.create(username="hoge")
 
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="Ref Entry", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="Ref Entry", schema=ref_entity, created_user=user)
 
         entity = self.create_entity_with_all_type_attributes(user, ref_entity)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -1925,9 +1801,7 @@ class ModelTest(AironeTestCase):
             entity.attrs.add(attr)
 
         for index in range(0, 11):
-            entry = Entry.objects.create(
-                name="e-%d" % index, schema=entity, created_user=user
-            )
+            entry = Entry.objects.create(name="e-%d" % index, schema=entity, created_user=user)
             entry.complement_attrs(user)
 
             for attr_name, info in attr_info.items():
@@ -1987,9 +1861,7 @@ class ModelTest(AironeTestCase):
                 elif attrname == "name":
                     key = attrv.value
                     self.assertEqual(attrinfo["value"][key]["id"], attrv.referral.id)
-                    self.assertEqual(
-                        attrinfo["value"][key]["name"], attrv.referral.name
-                    )
+                    self.assertEqual(attrinfo["value"][key]["name"], attrv.referral.name)
 
                 if attrname == "bool":
                     self.assertEqual(attrinfo["value"], str(attrv.boolean))
@@ -2040,29 +1912,21 @@ class ModelTest(AironeTestCase):
         self.assertEqual(len(ret["ret_values"]), 5)
 
         # search entries with keyword
-        ret = Entry.search_entries(
-            user, [entity.id], [{"name": "str", "keyword": "foo-5"}]
-        )
+        ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "foo-5"}])
         self.assertEqual(ret["ret_count"], 1)
         self.assertEqual(ret["ret_values"][0]["entry"]["name"], "e-5")
 
         # search entries with blank values
-        entry = Entry.objects.create(
-            name="entry-blank", schema=entity, created_user=user
-        )
+        entry = Entry.objects.create(name="entry-blank", schema=entity, created_user=user)
         entry.complement_attrs(user)
         entry.register_es()
 
         for attrname in attr_info.keys():
             ret = Entry.search_entries(user, [entity.id], [{"name": attrname}])
-            self.assertEqual(
-                len([x for x in ret["ret_values"] if x["entry"]["id"] == entry.id]), 1
-            )
+            self.assertEqual(len([x for x in ret["ret_values"] if x["entry"]["id"] == entry.id]), 1)
 
         # check functionallity of the 'exact_match' parameter
-        ret = Entry.search_entries(
-            user, [entity.id], [{"name": "str", "keyword": "foo-1"}]
-        )
+        ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "foo-1"}])
         self.assertEqual(ret["ret_count"], 2)
         ret = Entry.search_entries(
             user,
@@ -2083,9 +1947,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(ret["ret_count"], 1)
 
         # check whether keyword would be insensitive case
-        ret = Entry.search_entries(
-            user, [entity.id], [{"name": "str", "keyword": "FOO-10"}]
-        )
+        ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "FOO-10"}])
         self.assertEqual(ret["ret_count"], 1)
         self.assertEqual(ret["ret_values"][0]["entry"]["name"], "e-10")
 
@@ -2112,9 +1974,7 @@ class ModelTest(AironeTestCase):
             for i in range(3)
         ]
         for index in range(10):
-            entry = Entry.objects.create(
-                name="e-%d" % index, schema=entity, created_user=user
-            )
+            entry = Entry.objects.create(name="e-%d" % index, schema=entity, created_user=user)
             entry.complement_attrs(user)
 
             # set referral entry (ref0, ref1) alternately
@@ -2210,9 +2070,7 @@ class ModelTest(AironeTestCase):
             [{"name": "foo", "keyword": "3"}, {"name": "bar", "keyword": ""}],
         )
         self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual(
-            sorted([x["entry"]["name"] for x in ret["ret_values"]]), sorted(["E1-3"])
-        )
+        self.assertEqual(sorted([x["entry"]["name"] for x in ret["ret_values"]]), sorted(["E1-3"]))
 
         # search entries by only attribute name and keyword without entity
         # with exclusive hint attrs and keywords
@@ -2243,13 +2101,9 @@ class ModelTest(AironeTestCase):
         # Initialize entities -- there are 2 entities as below
         # * ReferredEntity - has no attribute
         # * Entity - has an attribute that refers ReferredEntity
-        ref_entity = Entity.objects.create(
-            name="ReferredEntity", created_user=self._user
-        )
+        ref_entity = Entity.objects.create(name="ReferredEntity", created_user=self._user)
         ref_entries = [
-            Entry.objects.create(
-                name="ref-%d" % i, schema=ref_entity, created_user=self._user
-            )
+            Entry.objects.create(name="ref-%d" % i, schema=ref_entity, created_user=self._user)
             for i in range(4)
         ]
 
@@ -2335,17 +2189,11 @@ class ModelTest(AironeTestCase):
             entry.attrs.get(schema=attr).add_value(user, value)
             entry.register_es()
 
-        resp = Entry.search_entries(
-            user, [entity.id], [{"name": attr.name, "keyword": "^10"}]
-        )
+        resp = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "^10"}])
         self.assertEqual(resp["ret_count"], 2)
-        resp = Entry.search_entries(
-            user, [entity.id], [{"name": attr.name, "keyword": "00$"}]
-        )
+        resp = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "00$"}])
         self.assertEqual(resp["ret_count"], 2)
-        resp = Entry.search_entries(
-            user, [entity.id], [{"name": attr.name, "keyword": "^100$"}]
-        )
+        resp = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "^100$"}])
         self.assertEqual(resp["ret_count"], 1)
 
     def test_register_entry_to_elasticsearch(self):
@@ -2358,9 +2206,7 @@ class ModelTest(AironeTestCase):
         ref_entry1 = Entry.objects.create(
             name="referred_entry1", schema=ref_entity, created_user=user
         )
-        Entry.objects.create(
-            name="referred_entry2", schema=ref_entity, created_user=user
-        )
+        Entry.objects.create(name="referred_entry2", schema=ref_entity, created_user=user)
 
         ref_group = Group.objects.create(name="group")
 
@@ -2421,9 +2267,7 @@ class ModelTest(AironeTestCase):
             entity.attrs.add(attr)
 
         for index in range(0, ENTRY_COUNTS):
-            entry = Entry.objects.create(
-                name="e-%d" % index, schema=entity, created_user=user
-            )
+            entry = Entry.objects.create(name="e-%d" % index, schema=entity, created_user=user)
             entry.complement_attrs(user)
 
             for attr_name, info in attr_info.items():
@@ -2438,9 +2282,7 @@ class ModelTest(AironeTestCase):
 
         # checks that all registered entries can be got from Elasticsearch
         for entry in Entry.objects.filter(schema=entity):
-            res = self._es.get(
-                index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id
-            )
+            res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
             self.assertTrue(res["found"])
 
             # This checks whether returned results have all values of attributes
@@ -2489,14 +2331,10 @@ class ModelTest(AironeTestCase):
                     )
 
                 elif k == "arr_obj":
-                    self.assertEqual(
-                        len(value), Entry.objects.filter(schema=ref_entity).count()
-                    )
+                    self.assertEqual(len(value), Entry.objects.filter(schema=ref_entity).count())
                     self.assertEqual(
                         sorted([x["value"] for x in value]),
-                        sorted(
-                            [x.name for x in Entry.objects.filter(schema=ref_entity)]
-                        ),
+                        sorted([x.name for x in Entry.objects.filter(schema=ref_entity)]),
                     )
                     self.assertEqual(
                         sorted([x["referral_id"] for x in value]),
@@ -2504,14 +2342,10 @@ class ModelTest(AironeTestCase):
                     )
 
                 elif k == "arr_name":
-                    self.assertEqual(
-                        len(value), Entry.objects.filter(schema=ref_entity).count()
-                    )
+                    self.assertEqual(len(value), Entry.objects.filter(schema=ref_entity).count())
                     self.assertEqual(
                         sorted([x["value"] for x in value]),
-                        sorted(
-                            [x.name for x in Entry.objects.filter(schema=ref_entity)]
-                        ),
+                        sorted([x.name for x in Entry.objects.filter(schema=ref_entity)]),
                     )
                     self.assertEqual(
                         sorted([x["referral_id"] for x in value]),
@@ -2549,16 +2383,12 @@ class ModelTest(AironeTestCase):
 
         self._attr.delete()
 
-        attr = self._entry.attrs.filter(
-            schema=self._attr.schema, is_active=True
-        ).first()
+        attr = self._entry.attrs.filter(schema=self._attr.schema, is_active=True).first()
         attr.add_value(self._user, "hoge")
 
         self._entry.register_es()
 
-        res = self._es.get(
-            index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=self._entry.id
-        )
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=self._entry.id)
         self.assertEqual(res["_source"]["attr"][0]["value"], "hoge")
 
     def test_unregister_entry_to_elasticsearch(self):
@@ -2607,9 +2437,7 @@ class ModelTest(AironeTestCase):
         entry.register_es()
 
         # checks registered value is corrected
-        res = self._es.get(
-            index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id
-        )
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
         self.assertEqual(res["_source"]["attr"][0]["name"], entity_attr.name)
         self.assertEqual(res["_source"]["attr"][0]["type"], entity_attr.type)
         self.assertEqual(res["_source"]["attr"][0]["value"], "hoge")
@@ -2619,9 +2447,7 @@ class ModelTest(AironeTestCase):
         entry.register_es()
 
         # checks registered value was also updated
-        res = self._es.get(
-            index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id
-        )
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
         self.assertEqual(res["_source"]["attr"][0]["value"], "fuga")
 
     def test_search_entries_from_elasticsearch(self):
@@ -2695,9 +2521,7 @@ class ModelTest(AironeTestCase):
 
         for entity in entities:
             for (name, attrinfo) in entry_info.items():
-                entry = Entry.objects.create(
-                    name=name, schema=entity, created_user=user
-                )
+                entry = Entry.objects.create(name=name, schema=entity, created_user=user)
                 entry.complement_attrs(user)
 
                 for attr in entry.attrs.all():
@@ -2709,9 +2533,7 @@ class ModelTest(AironeTestCase):
         # are not returned.
         resp = Entry.search_entries(user, [entities[0].id], [{"name": "attr-0"}])
         self.assertEqual(resp["ret_count"], 3)
-        self.assertTrue(
-            all([x["entity"]["id"] == entities[0].id for x in resp["ret_values"]])
-        )
+        self.assertTrue(all([x["entity"]["id"] == entities[0].id for x in resp["ret_values"]]))
 
         # checks the value which is non date but date format was registered correctly
         self.assertEqual(
@@ -2728,15 +2550,11 @@ class ModelTest(AironeTestCase):
             user, [entities[0].id], [{"name": "attr-0"}, {"name": "attr-1"}]
         )
         self.assertEqual(resp["ret_count"], 3)
-        resp = Entry.search_entries(
-            user, [entities[0].id, entities[1].id], [{"name": "attr-0"}]
-        )
+        resp = Entry.search_entries(user, [entities[0].id, entities[1].id], [{"name": "attr-0"}])
         self.assertEqual(resp["ret_count"], 6)
 
         # checks results that contain multi-byte values could be got
-        resp = Entry.search_entries(
-            user, [entities[0].id], [{"name": "ほげ", "keyword": "ふが"}]
-        )
+        resp = Entry.search_entries(user, [entities[0].id], [{"name": "ほげ", "keyword": "ふが"}])
         self.assertEqual(resp["ret_count"], 2)
         self.assertEqual(
             sorted([x["entry"]["name"] for x in resp["ret_values"]]),
@@ -2749,9 +2567,7 @@ class ModelTest(AironeTestCase):
         )
         self.assertEqual(resp["ret_count"], 1)
         self.assertEqual(resp["ret_values"][0]["entry"]["name"], "entry1")
-        self.assertEqual(
-            resp["ret_values"][0]["attrs"]["attr-0"]["value"], "2018-01-01"
-        )
+        self.assertEqual(resp["ret_values"][0]["attrs"]["attr-0"]["value"], "2018-01-01")
 
         # search entries with date keyword parameter in date type from Elasticsearch
         for x in ["2018-01-02", "2018/01/02", "2018-1-2", "2018-01-2", "2018-1-02"]:
@@ -2760,9 +2576,7 @@ class ModelTest(AironeTestCase):
             )
             self.assertEqual(resp["ret_count"], 1)
             self.assertEqual(resp["ret_values"][0]["entry"]["name"], "entry1")
-            self.assertEqual(
-                resp["ret_values"][0]["attrs"]["attr-date"]["value"], "2018-01-02"
-            )
+            self.assertEqual(resp["ret_values"][0]["attrs"]["attr-date"]["value"], "2018-01-02")
 
         # search entries with date keyword parameter in string array type from Elasticsearch
         resp = Entry.search_entries(
@@ -2770,14 +2584,10 @@ class ModelTest(AironeTestCase):
         )
         self.assertEqual(resp["ret_count"], 1)
         self.assertEqual(resp["ret_values"][0]["entry"]["name"], "entry2")
-        self.assertEqual(
-            resp["ret_values"][0]["attrs"]["attr-arr"]["value"], ["2018-01-01"]
-        )
+        self.assertEqual(resp["ret_values"][0]["attrs"]["attr-arr"]["value"], ["2018-01-01"])
 
         # search entries with keyword parameter that other entry has same value in untarget attr
-        resp = Entry.search_entries(
-            user, [entities[0].id], [{"name": "attr-0", "keyword": "hoge"}]
-        )
+        resp = Entry.search_entries(user, [entities[0].id], [{"name": "attr-0", "keyword": "hoge"}])
         self.assertEqual(resp["ret_count"], 1)
         self.assertEqual(resp["ret_values"][0]["entry"]["name"], "entry2")
 
@@ -2807,9 +2617,7 @@ class ModelTest(AironeTestCase):
         user = User.objects.create(username="hoge")
 
         ref_entity = Entity.objects.create(name="ref_entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="ref", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)
 
         entity = Entity.objects.create(name="entity", created_user=user)
         for name in ["foo", "bar"]:
@@ -2823,9 +2631,7 @@ class ModelTest(AironeTestCase):
             entity.attrs.add(attr)
 
         for i in range(0, 20):
-            entry = Entry.objects.create(
-                name="e%3d" % i, schema=entity, created_user=user
-            )
+            entry = Entry.objects.create(name="e%3d" % i, schema=entity, created_user=user)
             entry.complement_attrs(user)
 
             if i < 10:
@@ -2835,9 +2641,7 @@ class ModelTest(AironeTestCase):
 
             entry.register_es()
 
-        resp = Entry.search_entries(
-            user, [entity.id], [{"name": "foo", "keyword": "ref"}], limit=5
-        )
+        resp = Entry.search_entries(user, [entity.id], [{"name": "foo", "keyword": "ref"}], limit=5)
         self.assertEqual(resp["ret_count"], 10)
         self.assertEqual(len(resp["ret_values"]), 5)
 
@@ -2863,25 +2667,19 @@ class ModelTest(AironeTestCase):
 
             # create entries for this entity
             for i in range(0, 5):
-                e = Entry.objects.create(
-                    name="entry-%d" % i, created_user=user, schema=entity
-                )
+                e = Entry.objects.create(name="entry-%d" % i, created_user=user, schema=entity)
                 e.register_es()
 
         resp = Entry.search_entries(user, entities, [{"name": "foo"}])
         self.assertEqual(resp["ret_count"], 5)
 
-        resp = Entry.search_entries(
-            user, entities, [{"name": x} for x in ["foo", "hoge"]]
-        )
+        resp = Entry.search_entries(user, entities, [{"name": x} for x in ["foo", "hoge"]])
         self.assertEqual(resp["ret_count"], 10)
 
         resp = Entry.search_entries(user, entities, [{"name": x} for x in ["bar"]])
         self.assertEqual(resp["ret_count"], 10)
         for name in entity_info.keys():
-            self.assertEqual(
-                len([x for x in resp["ret_values"] if x["entity"]["name"] == name]), 5
-            )
+            self.assertEqual(len([x for x in resp["ret_values"] if x["entity"]["name"] == name]), 5)
 
     def test_search_entries_sorted_result(self):
         user = User.objects.create(username="hoge")
@@ -2891,15 +2689,11 @@ class ModelTest(AironeTestCase):
 
         # register AAA5, AAA0, AAA4, AAA1, AAA3, AAA2 in this order
         for i in range(3):
-            e1 = Entry.objects.create(
-                name="AAA%d" % (5 - i), schema=entity, created_user=user
-            )
+            e1 = Entry.objects.create(name="AAA%d" % (5 - i), schema=entity, created_user=user)
             e1.save()
             e1.register_es()
 
-            e2 = Entry.objects.create(
-                name="AAA%d" % i, schema=entity, created_user=user
-            )
+            e2 = Entry.objects.create(name="AAA%d" % i, schema=entity, created_user=user)
             e2.save()
             e2.register_es()
 
@@ -2932,9 +2726,7 @@ class ModelTest(AironeTestCase):
         #   - entry-2  :  2018-02-01
         #   - entry-3  :  2018-03-01
         for month in range(1, 4):
-            entry = Entry.objects.create(
-                name="entry-%d" % month, schema=entity, created_user=user
-            )
+            entry = Entry.objects.create(name="entry-%d" % month, schema=entity, created_user=user)
             entry.complement_attrs(user)
 
             attr = entry.attrs.first()
@@ -2943,17 +2735,13 @@ class ModelTest(AironeTestCase):
             entry.register_es()
 
         # search entry that have AttributeValue exact matches with specified date.
-        ret = Entry.search_entries(
-            user, [entity.id], [{"name": "date", "keyword": "2018/01/01"}]
-        )
+        ret = Entry.search_entries(user, [entity.id], [{"name": "date", "keyword": "2018/01/01"}])
         self.assertEqual(len(ret["ret_values"]), 1)
         self.assertEqual(ret["ret_values"][0]["entry"]["name"], "entry-1")
 
         # The case of using condition 'less thatn',
         # this expects that entry-2 and entry-3 are matched
-        ret = Entry.search_entries(
-            user, [entity.id], [{"name": "date", "keyword": ">2018-01-01"}]
-        )
+        ret = Entry.search_entries(user, [entity.id], [{"name": "date", "keyword": ">2018-01-01"}])
         self.assertEqual(len(ret["ret_values"]), 2)
         self.assertEqual(
             sorted([x["entry"]["name"] for x in ret["ret_values"]]),
@@ -2962,9 +2750,7 @@ class ModelTest(AironeTestCase):
 
         # The case of using condition 'greater thatn',
         # this expects that entry-1 and entry-2 are matched
-        ret = Entry.search_entries(
-            user, [entity.id], [{"name": "date", "keyword": "<2018-03-01"}]
-        )
+        ret = Entry.search_entries(user, [entity.id], [{"name": "date", "keyword": "<2018-03-01"}])
         self.assertEqual(len(ret["ret_values"]), 2)
         self.assertEqual(
             sorted([x["entry"]["name"] for x in ret["ret_values"]]),
@@ -3047,9 +2833,7 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
         entry_refs = [
-            Entry.objects.create(
-                name="ref-%d" % i, schema=entity_ref, created_user=user
-            )
+            Entry.objects.create(name="ref-%d" % i, schema=entity_ref, created_user=user)
             for i in range(2)
         ]
 
@@ -3093,9 +2877,7 @@ class ModelTest(AironeTestCase):
         attrs["arr_str"].add_to_attrv(user, value="bar")
         attrv = attrs["arr_str"].get_latest_value()
         self.assertEqual(attrv.data_array.count(), 2)
-        self.assertEqual(
-            sorted([x.value for x in attrv.data_array.all()]), sorted(["foo", "bar"])
-        )
+        self.assertEqual(sorted([x.value for x in attrv.data_array.all()]), sorted(["foo", "bar"]))
 
         attrs["arr_obj"].add_to_attrv(user, referral=entry_refs[1])
         attrv = attrs["arr_obj"].get_latest_value()
@@ -3105,21 +2887,15 @@ class ModelTest(AironeTestCase):
             sorted(["ref-0", "ref-1"]),
         )
 
-        attrs["arr_name"].add_to_attrv(
-            user, referral=entry_refs[1], value="baz", boolean=True
-        )
+        attrs["arr_name"].add_to_attrv(user, referral=entry_refs[1], value="baz", boolean=True)
         attrv = attrs["arr_name"].get_latest_value()
         self.assertEqual(attrv.data_array.count(), 2)
-        self.assertEqual(
-            sorted([x.value for x in attrv.data_array.all()]), sorted(["foo", "baz"])
-        )
+        self.assertEqual(sorted([x.value for x in attrv.data_array.all()]), sorted(["foo", "baz"]))
         self.assertEqual(
             sorted([x.referral.name for x in attrv.data_array.all()]),
             sorted(["ref-0", "ref-1"]),
         )
-        self.assertEqual(
-            [x.boolean for x in attrv.data_array.filter(value="baz")], [True]
-        )
+        self.assertEqual([x.boolean for x in attrv.data_array.filter(value="baz")], [True])
 
         attrs["arr_group"].add_to_attrv(user, value=test_groups[1])
         self.assertEqual(
@@ -3139,9 +2915,7 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
         entry_refs = [
-            Entry.objects.create(
-                name="ref-%d" % i, schema=entity_ref, created_user=user
-            )
+            Entry.objects.create(name="ref-%d" % i, schema=entity_ref, created_user=user)
             for i in range(2)
         ]
 
@@ -3168,9 +2942,7 @@ class ModelTest(AironeTestCase):
         # test remove_from_attrv with invalid value
         attrs["arr_str"].remove_from_attrv(user, value=None)
         attrv = attrs["arr_str"].get_latest_value()
-        self.assertEqual(
-            sorted([x.value for x in attrv.data_array.all()]), sorted(["foo", "bar"])
-        )
+        self.assertEqual(sorted([x.value for x in attrv.data_array.all()]), sorted(["foo", "bar"]))
 
         attrs["arr_obj"].remove_from_attrv(user, referral=None)
         attrv = attrs["arr_obj"].get_latest_value()
@@ -3181,9 +2953,7 @@ class ModelTest(AironeTestCase):
 
         attrs["arr_name"].remove_from_attrv(user, referral=None)
         attrv = attrs["arr_name"].get_latest_value()
-        self.assertEqual(
-            sorted([x.value for x in attrv.data_array.all()]), sorted(["foo", "bar"])
-        )
+        self.assertEqual(sorted([x.value for x in attrv.data_array.all()]), sorted(["foo", "bar"]))
         self.assertEqual(
             sorted([x.referral.name for x in attrv.data_array.all()]),
             sorted(["ref-0", "ref-1"]),
@@ -3198,9 +2968,7 @@ class ModelTest(AironeTestCase):
         # test remove_from_attrv with valid value
         attrs["arr_str"].remove_from_attrv(user, value="foo")
         attrv = attrs["arr_str"].get_latest_value()
-        self.assertEqual(
-            sorted([x.value for x in attrv.data_array.all()]), sorted(["bar"])
-        )
+        self.assertEqual(sorted([x.value for x in attrv.data_array.all()]), sorted(["bar"]))
 
         attrs["arr_obj"].remove_from_attrv(user, referral=entry_refs[0])
         attrv = attrs["arr_obj"].get_latest_value()
@@ -3210,9 +2978,7 @@ class ModelTest(AironeTestCase):
 
         attrs["arr_name"].remove_from_attrv(user, referral=entry_refs[0])
         attrv = attrs["arr_name"].get_latest_value()
-        self.assertEqual(
-            sorted([x.value for x in attrv.data_array.all()]), sorted(["bar"])
-        )
+        self.assertEqual(sorted([x.value for x in attrv.data_array.all()]), sorted(["bar"]))
         self.assertEqual(
             sorted([x.referral.name for x in attrv.data_array.all()]), sorted(["ref-1"])
         )
@@ -3261,9 +3027,7 @@ class ModelTest(AironeTestCase):
         )
         self._entity.attrs.add(entity_attr)
 
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=self._user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
         entry.complement_attrs(self._user)
 
         # Add and register duplicate Attribute after registers
@@ -3296,13 +3060,9 @@ class ModelTest(AironeTestCase):
     def test_restore_entry_in_chain(self):
         # initilaize referral Entries for checking processing caused
         # by setting 'is_delete_in_chain' flag
-        ref_entity = Entity.objects.create(
-            name="ReferredEntity", created_user=self._user
-        )
+        ref_entity = Entity.objects.create(name="ReferredEntity", created_user=self._user)
         ref_entries = [
-            Entry.objects.create(
-                name="ref-%d" % i, created_user=self._user, schema=ref_entity
-            )
+            Entry.objects.create(name="ref-%d" % i, created_user=self._user, schema=ref_entity)
             for i in range(3)
         ]
 
@@ -3330,9 +3090,7 @@ class ModelTest(AironeTestCase):
             self._entity.attrs.add(attr)
 
         # initialize target entry
-        entry = Entry.objects.create(
-            name="entry", schema=self._entity, created_user=self._user
-        )
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
         entry.complement_attrs(self._user)
 
         for attr_name, info in attr_info.items():
@@ -3344,18 +3102,14 @@ class ModelTest(AironeTestCase):
 
         self.assertFalse(entry.is_active)
         self.assertTrue(entry.name.find("_deleted_") > 0)
-        self.assertFalse(
-            any([Entry.objects.get(id=x.id).is_active for x in ref_entries])
-        )
+        self.assertFalse(any([Entry.objects.get(id=x.id).is_active for x in ref_entries]))
 
         # restore target entry
         entry.restore()
 
         self.assertTrue(entry.is_active)
         self.assertEqual(entry.name.find("_deleted_"), -1)
-        self.assertTrue(
-            all([Entry.objects.get(id=x.id).is_active for x in ref_entries])
-        )
+        self.assertTrue(all([Entry.objects.get(id=x.id).is_active for x in ref_entries]))
 
     def test_to_dict_entry(self):
         user = User.objects.create(username="hoge")
@@ -3363,9 +3117,7 @@ class ModelTest(AironeTestCase):
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="r0", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="r0", schema=ref_entity, created_user=user)
 
         entity = self.create_entity_with_all_type_attributes(user)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -3402,9 +3154,7 @@ class ModelTest(AironeTestCase):
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="r0", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="r0", schema=ref_entity, created_user=user)
 
         entity = self.create_entity_with_all_type_attributes(user)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -3489,9 +3239,7 @@ class ModelTest(AironeTestCase):
         private_entity = Entity.objects.create(
             name="private_entity", created_user=admin_user, is_public=False
         )
-        public_entity = Entity.objects.create(
-            name="public_entity", created_user=admin_user
-        )
+        public_entity = Entity.objects.create(name="public_entity", created_user=admin_user)
 
         attr_info = [
             {"name": "attr1", "is_public": True},
@@ -3519,9 +3267,7 @@ class ModelTest(AironeTestCase):
             {"name": "e2", "schema": public_entity, "is_public": False},
             {"name": "e3", "schema": public_entity, "is_public": True},
         ]
-        entries = [
-            Entry.objects.create(created_user=admin_user, **info) for info in entry_info
-        ]
+        entries = [Entry.objects.create(created_user=admin_user, **info) for info in entry_info]
         for entry in entries:
             entry.complement_attrs(admin_user)
 
@@ -3593,9 +3339,7 @@ class ModelTest(AironeTestCase):
             entity.attrs.add(attr)
 
         for index in range(0, 11):
-            entry = Entry.objects.create(
-                name="e-%d" % index, schema=entity, created_user=user
-            )
+            entry = Entry.objects.create(name="e-%d" % index, schema=entity, created_user=user)
             entry.complement_attrs(user)
 
             for attr_name, info in attr_info.items():
@@ -3689,14 +3433,10 @@ class ModelTest(AironeTestCase):
             self.assertEqual(ret["ret_count"], 0)
 
         # check functionallity of the 'entry_name' parameter
-        ret = Entry.search_entries(
-            user, [entity.id], entry_name=CONFIG.EMPTY_SEARCH_CHARACTER
-        )
+        ret = Entry.search_entries(user, [entity.id], entry_name=CONFIG.EMPTY_SEARCH_CHARACTER)
         self.assertEqual(ret["ret_count"], 1)
 
-        ret = Entry.search_entries(
-            user, [entity.id], entry_name=double_empty_search_character
-        )
+        ret = Entry.search_entries(user, [entity.id], entry_name=double_empty_search_character)
         self.assertEqual(ret["ret_count"], 0)
 
         # check combination of 'entry_name' and 'hint_attrs' parameter
@@ -3718,9 +3458,7 @@ class ModelTest(AironeTestCase):
         # initialize Entity an Entry
         user = User.objects.create(username="hoge")
         entity = Entity.objects.create(name="entity", created_user=user)
-        attrbase = EntityAttr.objects.create(
-            name="attr", created_user=user, parent_entity=entity
-        )
+        attrbase = EntityAttr.objects.create(name="attr", created_user=user, parent_entity=entity)
         entity.attrs.add(attrbase)
 
         # call add_attribute_from_base method more than once
@@ -3733,16 +3471,10 @@ class ModelTest(AironeTestCase):
     def test_may_append_attr(self):
         # initialize Entity an Entry
         entity = Entity.objects.create(name="entity", created_user=self._user)
-        entry1 = Entry.objects.create(
-            name="entry1", created_user=self._user, schema=entity
-        )
-        entry2 = Entry.objects.create(
-            name="entry2", created_user=self._user, schema=entity
-        )
+        entry1 = Entry.objects.create(name="entry1", created_user=self._user, schema=entity)
+        entry2 = Entry.objects.create(name="entry2", created_user=self._user, schema=entity)
 
-        attr = self.make_attr(
-            "attr", attrtype=AttrTypeArrStr, entity=entity, entry=entry1
-        )
+        attr = self.make_attr("attr", attrtype=AttrTypeArrStr, entity=entity, entry=entry1)
 
         # Just after creating entries, there is no attribute in attrs member
         self.assertEqual(entry1.attrs.count(), 0)
@@ -3806,9 +3538,7 @@ class ModelTest(AironeTestCase):
             entity.attrs.add(attr)
 
         for i, x in enumerate(attr_info):
-            entry = Entry.objects.create(
-                name="e-%s" % i, schema=entity, created_user=user
-            )
+            entry = Entry.objects.create(name="e-%s" % i, schema=entity, created_user=user)
             entry.complement_attrs(user)
 
             for attr_name, info in x.items():
@@ -3992,9 +3722,7 @@ class ModelTest(AironeTestCase):
         testdata3 entry_name:'barbaz'
         """
         for entry_name in ["foo", "bar", "barbaz"]:
-            entry = Entry.objects.create(
-                name=entry_name, schema=entity, created_user=user
-            )
+            entry = Entry.objects.create(name=entry_name, schema=entity, created_user=user)
             entry.register_es()
 
         search_words = {"foo": 1, "bar&baz": 1, "foo|bar": 3, "foo|bar&baz": 2}
@@ -4041,9 +3769,7 @@ class ModelTest(AironeTestCase):
         test_suites = []
         for i, add_char in enumerate(add_chars):
             entry_name = "test%s%s" % (add_char, i)
-            entry = Entry.objects.create(
-                name=entry_name, schema=entity, created_user=user
-            )
+            entry = Entry.objects.create(name=entry_name, schema=entity, created_user=user)
             entry.register_es()
 
             test_suites.append(
@@ -4051,13 +3777,9 @@ class ModelTest(AironeTestCase):
             )
 
         for test_suite in test_suites:
-            ret = Entry.search_entries(
-                user, [entity.id], entry_name=test_suite["search_word"]
-            )
+            ret = Entry.search_entries(user, [entity.id], entry_name=test_suite["search_word"])
             self.assertEqual(ret["ret_count"], test_suite["ret_cnt"])
-            self.assertEqual(
-                ret["ret_values"][0]["entry"]["name"], test_suite["ret_entry_name"]
-            )
+            self.assertEqual(ret["ret_values"][0]["entry"]["name"], test_suite["ret_entry_name"])
 
     def test_search_entries_with_is_output_all(self):
         self._entity.attrs.add(self._attr.schema)
@@ -4110,9 +3832,7 @@ class ModelTest(AironeTestCase):
     def test_search_entries_for_simple_with_hint_entity_name(self):
         self._entry.register_es()
         entity = Entity.objects.create(name="entity2", created_user=self._user)
-        entry = Entry.objects.create(
-            name="entry2", schema=entity, created_user=self._user
-        )
+        entry = Entry.objects.create(name="entry2", schema=entity, created_user=self._user)
         entry.register_es()
 
         ret = Entry.search_entries_for_simple("entry")
@@ -4132,15 +3852,11 @@ class ModelTest(AironeTestCase):
 
         ret = Entry.search_entries_for_simple("e-", limit=5)
         self.assertEqual(ret["ret_count"], 10)
-        self.assertEqual(
-            [x["name"] for x in ret["ret_values"]], ["e-%s" % x for x in range(0, 5)]
-        )
+        self.assertEqual([x["name"] for x in ret["ret_values"]], ["e-%s" % x for x in range(0, 5)])
 
         ret = Entry.search_entries_for_simple("e-", offset=5)
         self.assertEqual(ret["ret_count"], 10)
-        self.assertEqual(
-            [x["name"] for x in ret["ret_values"]], ["e-%s" % x for x in range(5, 10)]
-        )
+        self.assertEqual([x["name"] for x in ret["ret_values"]], ["e-%s" % x for x in range(5, 10)])
 
         # param larger than max_result_window
         ret = Entry.search_entries_for_simple("e-", limit=500001)
@@ -4157,9 +3873,7 @@ class ModelTest(AironeTestCase):
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="r0", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="r0", schema=ref_entity, created_user=user)
 
         entity = self.create_entity_with_all_type_attributes(user)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -4227,9 +3941,7 @@ class ModelTest(AironeTestCase):
         # check all attribute contexts are expected ones
         for attrname, attrinfo in expected_values.items():
             attr = entry.attrs.get(schema__name=attrname)
-            set_attrs = [
-                x for x in es_registering_value["attr"] if x["name"] == attrname
-            ]
+            set_attrs = [x for x in es_registering_value["attr"] if x["name"] == attrname]
 
             self.assertTrue(all([x["type"] == attr.schema.type for x in set_attrs]))
             self.assertTrue(all([x["is_readble"] is True for x in set_attrs]))
@@ -4274,9 +3986,7 @@ class ModelTest(AironeTestCase):
         ref_attr.referral.add(self._entity)
         ref_entity.attrs.add(ref_attr)
 
-        ref_entry = Entry.objects.create(
-            name="ref", schema=ref_entity, created_user=self._user
-        )
+        ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=self._user)
         ref_entry.complement_attrs(self._user)
 
         ref_entry.attrs.first().add_value(self._user, self._entry)
@@ -4378,9 +4088,7 @@ class ModelTest(AironeTestCase):
         attr = entry.attrs.first()
         self.assertTrue(attr.is_public)
         self.assertTrue(all([g.has_permission(attr, ACLType.Full) for g in groups]))
-        self.assertTrue(
-            all([u.has_permission(attr, ACLType.Full) for u in [user1, user2]])
-        )
+        self.assertTrue(all([u.has_permission(attr, ACLType.Full) for u in [user1, user2]]))
 
     def test_format_for_history(self):
         user = User.objects.create(username="hoge")
@@ -4458,23 +4166,17 @@ class ModelTest(AironeTestCase):
             {
                 "name": "arr_name",
                 "set_val": [{"name": "hoge", "id": str(test_ref.id)}],
-                "exp_val": [
-                    {"value": "hoge", "referral": ACLBase.objects.get(id=test_ref.id)}
-                ],
+                "exp_val": [{"value": "hoge", "referral": ACLBase.objects.get(id=test_ref.id)}],
             },
             {
                 "name": "arr_name",
                 "set_val": [{"name": "hoge", "id": test_ref.id}],
-                "exp_val": [
-                    {"value": "hoge", "referral": ACLBase.objects.get(id=test_ref.id)}
-                ],
+                "exp_val": [{"value": "hoge", "referral": ACLBase.objects.get(id=test_ref.id)}],
             },
             {
                 "name": "arr_name",
                 "set_val": [{"name": "hoge", "id": test_ref}],
-                "exp_val": [
-                    {"value": "hoge", "referral": ACLBase.objects.get(id=test_ref.id)}
-                ],
+                "exp_val": [{"value": "hoge", "referral": ACLBase.objects.get(id=test_ref.id)}],
             },
             {
                 "name": "date",
@@ -4494,9 +4196,7 @@ class ModelTest(AironeTestCase):
             attr = entry.attrs.get(name=info["name"])
             attr.add_value(user, info["set_val"])
 
-            self.assertEqual(
-                attr.get_latest_value().format_for_history(), info["exp_val"]
-            )
+            self.assertEqual(attr.get_latest_value().format_for_history(), info["exp_val"])
 
     def test_get_default_value(self):
         user = User.objects.create(username="hoge")
@@ -4524,6 +4224,4 @@ class ModelTest(AironeTestCase):
                     list(AttributeValue.get_default_value(attr)),
                 )
             else:
-                self.assertEqual(
-                    default_values[attr.name], AttributeValue.get_default_value(attr)
-                )
+                self.assertEqual(default_values[attr.name], AttributeValue.get_default_value(attr))

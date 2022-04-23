@@ -76,9 +76,7 @@ class APITest(AironeViewTest):
         # After cheeting created_at time back to CONFIG.RECENT_SECONDS or more,
         # this checks that nothing result will be returned.
         for job in jobs:
-            job.created_at = job.created_at - timedelta(
-                seconds=(CONFIG.RECENT_SECONDS + 1)
-            )
+            job.created_at = job.created_at - timedelta(seconds=(CONFIG.RECENT_SECONDS + 1))
             job.save(update_fields=["created_at"])
 
         resp = self.client.get("/api/v1/job/")
@@ -203,9 +201,7 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
 
         # send request with a GET parameter that doesn't match any job
-        resp = self.client.get(
-            "/api/v1/job/search", {"operation": JobOperation.COPY_ENTRY.value}
-        )
+        resp = self.client.get("/api/v1/job/search", {"operation": JobOperation.COPY_ENTRY.value})
         self.assertEqual(resp.status_code, 404)
 
         # send requests with GET parameter that matches the created job
@@ -235,9 +231,7 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.content, b'"Parameter job_id is required"')
 
         # send request with invalid job id
-        resp = self.client.delete(
-            "/api/v1/job/", json.dumps({"job_id": 99999}), "application/json"
-        )
+        resp = self.client.delete("/api/v1/job/", json.dumps({"job_id": 99999}), "application/json")
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content, b'"Failed to find Job(id=99999)"')
 
@@ -279,6 +273,4 @@ class APITest(AironeViewTest):
         # check API result doesn't contain hidden job
         resp_data = resp.json()
         self.assertEqual(len(resp_data["result"]), 1)
-        self.assertEqual(
-            resp_data["result"][0]["operation"], JobOperation.CREATE_ENTRY.value
-        )
+        self.assertEqual(resp_data["result"][0]["operation"], JobOperation.CREATE_ENTRY.value)

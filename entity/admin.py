@@ -38,9 +38,7 @@ class EntityResource(AironeModelResource):
         if Entity.objects.filter(name=data["name"]).exists():
             entity = Entity.objects.filter(name=data["name"]).get()
             if "id" not in data or not data["id"] or entity.id != data["id"]:
-                raise RuntimeError(
-                    "There is a duplicate entity object (%s)" % data["name"]
-                )
+                raise RuntimeError("There is a duplicate entity object (%s)" % data["name"])
 
         # Set event handler for custom-view. When it returns not None, then it abort to import.
         if custom_view.is_custom("import_entity"):
@@ -116,9 +114,7 @@ class EntityAttrResource(AironeModelResource):
 
         # The processing fails when 'type' parameter is not existed for creating a new instance
         if not instance.pk and not data["type"]:
-            raise RuntimeError(
-                "The parameter 'type' is mandatory when a new EntityAtter create"
-            )
+            raise RuntimeError("The parameter 'type' is mandatory when a new EntityAtter create")
 
         # Set event handler for custom-view. When it returns not None, then it abort to import.
         if custom_view.is_custom("import_entity_attr"):

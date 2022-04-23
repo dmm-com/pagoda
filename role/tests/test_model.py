@@ -67,9 +67,7 @@ class ModelTest(RoleTestBase):
     def test_set_permission(self):
         # create ACLBase object to set ACL
         user = self.users["userA"]
-        entity = Entity.objects.create(
-            name="Entity", created_user=user, is_public=False
-        )
+        entity = Entity.objects.create(name="Entity", created_user=user, is_public=False)
 
         # set permission for created Entity
         self.role.permissions.add(entity.writable)

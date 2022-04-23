@@ -22,9 +22,9 @@ def index(request):
         {
             "id": x.id,
             "name": x.name,
-            "members": User.objects.filter(
-                groups__name=x.name, is_active=True
-            ).order_by("username"),
+            "members": User.objects.filter(groups__name=x.name, is_active=True).order_by(
+                "username"
+            ),
         }
         for x in Group.objects.filter(is_active=True)
     ]
@@ -44,9 +44,9 @@ def edit(request, group_id):
     context = {
         "default_group_id": int(group_id),
         "current_group_name": group.name,
-        "current_group_members": User.objects.filter(
-            groups__id=group.id, is_active=True
-        ).order_by("username"),
+        "current_group_members": User.objects.filter(groups__id=group.id, is_active=True).order_by(
+            "username"
+        ),
         "submit_ref": "/group/do_edit/%s" % group_id,
     }
 
@@ -55,9 +55,7 @@ def edit(request, group_id):
         {
             "id": x.id,
             "name": x.name,
-            "members": User.objects.filter(groups__id=x.id, is_active=True).order_by(
-                "username"
-            ),
+            "members": User.objects.filter(groups__id=x.id, is_active=True).order_by("username"),
         }
         for x in Group.objects.filter(is_active=True)
     ]
@@ -82,8 +80,7 @@ def edit(request, group_id):
             "name": "users",
             "type": list,
             "checker": lambda x: (
-                x["users"]
-                and all([User.objects.filter(id=u).exists() for u in x["users"]])
+                x["users"] and all([User.objects.filter(id=u).exists() for u in x["users"]])
             ),
         },
     ]
@@ -104,24 +101,18 @@ def do_edit(request, group_id, recv_data):
             )
 
     # get users who are belonged to the selected group for updating
-    old_users = [
-        str(x.id) for x in User.objects.filter(groups__id=group_id, is_active=True)
-    ]
+    old_users = [str(x.id) for x in User.objects.filter(groups__id=group_id, is_active=True)]
 
     # update group_name with specified one
     group.name = recv_data["name"]
     group.save()
 
     # the processing for deleted users
-    for user in [
-        User.objects.get(id=x) for x in set(old_users) - set(recv_data["users"])
-    ]:
+    for user in [User.objects.get(id=x) for x in set(old_users) - set(recv_data["users"])]:
         user.groups.remove(group)
 
     # the processing for added users
-    for user in [
-        User.objects.get(id=x) for x in set(recv_data["users"]) - set(old_users)
-    ]:
+    for user in [User.objects.get(id=x) for x in set(recv_data["users"]) - set(old_users)]:
         user.groups.add(group)
 
     return JsonResponse(
@@ -144,9 +135,7 @@ def create(request):
         {
             "id": x.id,
             "name": x.name,
-            "members": User.objects.filter(groups__id=x.id, is_active=True).order_by(
-                "username"
-            ),
+            "members": User.objects.filter(groups__id=x.id, is_active=True).order_by("username"),
         }
         for x in Group.objects.filter(is_active=True)
     ]
@@ -169,16 +158,13 @@ def create(request):
         {
             "name": "name",
             "type": str,
-            "checker": lambda x: (
-                x["name"] and not Group.objects.filter(name=x["name"]).exists()
-            ),
+            "checker": lambda x: (x["name"] and not Group.objects.filter(name=x["name"]).exists()),
         },
         {
             "name": "users",
             "type": list,
             "checker": lambda x: (
-                x["users"]
-                and all([User.objects.filter(id=u).exists() for u in x["users"]])
+                x["users"] and all([User.objects.filter(id=u).exists() for u in x["users"]])
             ),
         },
     ]
@@ -241,9 +227,7 @@ def export(request):
             {
                 "email": user.email,
                 "groups": ",".join(
-                    list(
-                        map(lambda x: x.name, user.groups.filter(group__is_active=True))
-                    )
+                    list(map(lambda x: x.name, user.groups.filter(group__is_active=True)))
                 ),
                 "id": user.id,
                 "username": user.username,

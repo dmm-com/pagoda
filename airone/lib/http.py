@@ -31,8 +31,7 @@ def http_get(func):
 
         if not request.user.is_authenticated:
             return HttpResponseSeeOther(
-                "/auth/login?next=%s?%s"
-                % (request.path, quote(request.GET.urlencode()))
+                "/auth/login?next=%s?%s" % (request.path, quote(request.GET.urlencode()))
             )
 
         return func(*args, **kwargs)
@@ -63,9 +62,7 @@ def check_superuser(func):
             return HttpResponseSeeOther("/auth/login")
 
         if not request.user.is_superuser:
-            return HttpResponse(
-                "This page needs administrative permission to access", status=400
-            )
+            return HttpResponse("This page needs administrative permission to access", status=400)
 
         return func(*args, **kwargs)
 
@@ -81,9 +78,7 @@ def http_post(validator=[]):
                 return HttpResponse("Invalid HTTP method is specified", status=400)
 
             if not request.user.is_authenticated:
-                return HttpResponse(
-                    "You have to login to execute this operation", status=401
-                )
+                return HttpResponse("You have to login to execute this operation", status=401)
 
             try:
                 kwargs["recv_data"] = json.loads(request.body.decode("utf-8"))
@@ -132,9 +127,7 @@ def http_file_upload(func):
 
 def render(request, template, context={}):
     # added default parameters for navigate
-    entity_objects = entity_models.Entity.objects.order_by("name").filter(
-        is_active=True
-    )
+    entity_objects = entity_models.Entity.objects.order_by("name").filter(is_active=True)
     context["navigator"] = {
         "entities": [x for x in entity_objects],
         "acl_objtype": {
@@ -203,9 +196,7 @@ def render(request, template, context={}):
 
 
 def get_download_response(io_stream, fname):
-    response = HttpResponse(
-        io_stream.getvalue(), content_type="application/force-download"
-    )
+    response = HttpResponse(io_stream.getvalue(), content_type="application/force-download")
     response["Content-Disposition"] = 'attachment; filename="{fn}"'.format(
         fn=urllib.parse.quote(smart_str(fname))
     )
@@ -220,11 +211,7 @@ def _is_valid(params, meta_info):
         return False
     # These are type checks of each parameters
     if not all(
-        [
-            isinstance(params[x["name"]], x["type"])
-            for x in meta_info
-            if x["name"] in params.keys()
-        ]
+        [isinstance(params[x["name"]], x["type"]) for x in meta_info if x["name"] in params.keys()]
     ):
         return False
     # These are value checks of each parameters

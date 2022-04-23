@@ -33,9 +33,7 @@ class ViewTest(RoleTestBase):
             "/role/do_create/", json.dumps(self._BASE_CREATE_PARAMS), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(
-            resp.json(), {"msg": 'Succeeded in creating new Role "Creating Role"'}
-        )
+        self.assertEqual(resp.json(), {"msg": 'Succeeded in creating new Role "Creating Role"'})
 
         # check new Role instance was created
         role = Role.objects.get(name="Creating Role", is_active=True)
@@ -58,9 +56,7 @@ class ViewTest(RoleTestBase):
                 "admin_groups": [{"id": self.groups["groupB"].id}],
             }
         )
-        resp = self.client.post(
-            "/role/do_create/", json.dumps(params), "application/json"
-        )
+        resp = self.client.post("/role/do_create/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
 
     def test_fail_to_edit_with_empty_name(self):
@@ -149,9 +145,7 @@ class ViewTest(RoleTestBase):
                 "name": "Creating Role to be fail",
             }
         )
-        resp = self.client.post(
-            "/role/do_create/", json.dumps(params), "application/json"
-        )
+        resp = self.client.post("/role/do_create/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.content.decode("utf-8"),

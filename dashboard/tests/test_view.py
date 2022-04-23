@@ -54,15 +54,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.content, b"Sending parameter is too large")
 
         # check boundary value
-        resp = self.client.get(
-            reverse("dashboard:search"), {"query": "A" * CONFIG.MAX_QUERY_SIZE}
-        )
+        resp = self.client.get(reverse("dashboard:search"), {"query": "A" * CONFIG.MAX_QUERY_SIZE})
         self.assertEqual(resp.status_code, 200)
 
         # When multibyte characters were sent, check the length of byte number
-        resp = self.client.get(
-            reverse("dashboard:search"), {"query": "あ" * CONFIG.MAX_QUERY_SIZE}
-        )
+        resp = self.client.get(reverse("dashboard:search"), {"query": "あ" * CONFIG.MAX_QUERY_SIZE})
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content, b"Sending parameter is too large")
 
@@ -176,9 +172,7 @@ class ViewTest(AironeViewTest):
     )
     def test_show_advanced_search_results(self):
         for entity_index in range(0, 2):
-            entity = Entity.objects.create(
-                name="entity-%d" % entity_index, created_user=self.admin
-            )
+            entity = Entity.objects.create(name="entity-%d" % entity_index, created_user=self.admin)
             entity.attrs.add(
                 EntityAttr.objects.create(
                     **{
@@ -208,9 +202,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
             {
-                "entity[]": [
-                    x.id for x in Entity.objects.filter(name__regex="^entity-")
-                ],
+                "entity[]": [x.id for x in Entity.objects.filter(name__regex="^entity-")],
                 "attr[]": ["attr"],  # an older param will be deprecated
             },
         )
@@ -218,9 +210,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
             {
-                "entity[]": [
-                    x.id for x in Entity.objects.filter(name__regex="^entity-")
-                ],
+                "entity[]": [x.id for x in Entity.objects.filter(name__regex="^entity-")],
                 "attrinfo": json.dumps([{"name": "attr"}]),  # A newer param
             },
         )
@@ -256,9 +246,7 @@ class ViewTest(AironeViewTest):
             },
         )
         self.assertEqual(resp.context["max_num"], 100)
-        self.assertEqual(
-            resp.context["entities"], ",".join([str(x.id) for x in entities])
-        )
+        self.assertEqual(resp.context["entities"], ",".join([str(x.id) for x in entities]))
         self.assertEqual(resp.context["has_referral"], False)
         self.assertEqual(resp.context["referral_name"], None)
         self.assertEqual(resp.context["is_all_entities"], False)
@@ -318,9 +306,7 @@ class ViewTest(AironeViewTest):
         # test to show advanced_search_result page without mandatory params
         resp = self.client.get(reverse("dashboard:advanced_search_result"), {})
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "The entity[] parameters are required"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "The entity[] parameters are required")
 
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
@@ -329,9 +315,7 @@ class ViewTest(AironeViewTest):
             },
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "The attrinfo parameter is not JSON"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "The attrinfo parameter is not JSON")
 
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
@@ -352,9 +336,7 @@ class ViewTest(AironeViewTest):
             },
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid value for attrinfo parameter"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid value for attrinfo parameter")
 
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
@@ -364,9 +346,7 @@ class ViewTest(AironeViewTest):
             },
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid value for attribute parameter"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid value for attribute parameter")
 
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
@@ -375,9 +355,7 @@ class ViewTest(AironeViewTest):
             },
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid value for attrinfo parameter"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid value for attrinfo parameter")
 
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
@@ -386,9 +364,7 @@ class ViewTest(AironeViewTest):
             },
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "The entity[] parameters are required"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "The entity[] parameters are required")
 
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
@@ -521,9 +497,7 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context["results"]["ret_count"], 3)
-        self.assertTrue(
-            all(["referrals" not in x for x in resp.context["results"]["ret_values"]])
-        )
+        self.assertTrue(all(["referrals" not in x for x in resp.context["results"]["ret_values"]]))
         self.assertEqual(resp.context["has_referral"], False)
 
     def test_show_advanced_search_results_with_no_permission(self):
@@ -593,9 +567,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.context["results"]["ret_count"], 1)
         resp_entry = resp.context["results"]["ret_values"][0]
         self.assertTrue(resp_entry["is_readble"])
-        self.assertEqual(
-            resp_entry["attrs"]["attr-obj"]["value"], {"id": 8, "name": "entry11"}
-        )
+        self.assertEqual(resp_entry["attrs"]["attr-obj"]["value"], {"id": 8, "name": "entry11"})
 
         # check when not have permission to read Attribute
         attr = entry.attrs.get(name="attr-obj")
@@ -636,9 +608,7 @@ class ViewTest(AironeViewTest):
         user = self.admin
 
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="ref_entry", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="ref_entry", schema=ref_entity, created_user=user)
         grp_entry = Group.objects.create(name="group_entry")
         attr_info = {
             "str": {"type": AttrTypeValue["string"], "value": "foo"},
@@ -708,9 +678,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -723,9 +691,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -738,9 +704,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         # test to export_search_result with invalid params
         resp = self.client.post(
@@ -755,9 +719,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -771,9 +733,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -787,9 +747,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -803,9 +761,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -819,9 +775,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -835,9 +789,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -851,9 +803,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -867,9 +817,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -883,9 +831,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -899,9 +845,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -916,9 +860,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -933,9 +875,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -950,9 +890,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         # test to show advanced_search_result page with large param
         resp = self.client.post(
@@ -968,9 +906,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -984,9 +920,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content.decode("utf-8"), "Invalid parameters are specified"
-        )
+        self.assertEqual(resp.content.decode("utf-8"), "Invalid parameters are specified")
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -1033,9 +967,7 @@ class ViewTest(AironeViewTest):
         csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
 
         # checks all attribute are exported in order of specified sequence
-        self.assertEqual(
-            csv_contents[0], "Name,Entity,%s" % ",".join(exporting_attr_names)
-        )
+        self.assertEqual(csv_contents[0], "Name,Entity,%s" % ",".join(exporting_attr_names))
 
         # checks all data value are exported
         self.assertEqual(
@@ -1065,9 +997,7 @@ class ViewTest(AironeViewTest):
         entity.attrs.add(entity_attr)
 
         # initialize Entries
-        ref_entry = Entry.objects.create(
-            name="ref", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)
         ref_entry.register_es()
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -1167,9 +1097,7 @@ class ViewTest(AironeViewTest):
             type_name = case[0].__name__  # AttrTypeStr -> 'AttrTypeStr'
             attr_name = type_name + ',"ATTR"'
 
-            test_entity = Entity.objects.create(
-                name="TestEntity_" + type_name, created_user=user
-            )
+            test_entity = Entity.objects.create(name="TestEntity_" + type_name, created_user=user)
 
             test_entity_attr = EntityAttr.objects.create(
                 name=attr_name,
@@ -1201,22 +1129,14 @@ class ViewTest(AironeViewTest):
 
             if case[0].TYPE & AttrTypeValue["array"] == 0:
                 if case[0] == AttrTypeStr:
-                    test_val = AttributeValue.create(
-                        user=user, attr=test_attr, value=case[1]
-                    )
+                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
                 elif case[0] == AttrTypeObj:
-                    test_val = AttributeValue.create(
-                        user=user, attr=test_attr, referral=case[1]
-                    )
+                    test_val = AttributeValue.create(user=user, attr=test_attr, referral=case[1])
                 elif case[0] == AttrTypeText:
-                    test_val = AttributeValue.create(
-                        user=user, attr=test_attr, value=case[1]
-                    )
+                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
                 elif case[0] == AttrTypeNamedObj:
                     [(k, v)] = case[1].items()
-                    test_val = AttributeValue.create(
-                        user=user, attr=test_attr, value=k, referral=v
-                    )
+                    test_val = AttributeValue.create(user=user, attr=test_attr, value=k, referral=v)
             else:
                 test_val = AttributeValue.create(user=user, attr=test_attr)
                 test_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
@@ -1261,13 +1181,9 @@ class ViewTest(AironeViewTest):
             self.assertEqual(header, 'Name,Entity,"%s,""ATTR"""' % type_name)
 
             data = content.replace(header, "", 1).strip()
-            self.assertEqual(
-                data, '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, case[2])
-            )
+            self.assertEqual(data, '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, case[2]))
 
-    @patch(
-        "entry.tasks.import_entries.delay", Mock(side_effect=entry_tasks.import_entries)
-    )
+    @patch("entry.tasks.import_entries.delay", Mock(side_effect=entry_tasks.import_entries))
     @patch(
         "dashboard.tasks.export_search_result.delay",
         Mock(side_effect=dashboard_tasks.export_search_result),
@@ -1277,9 +1193,7 @@ class ViewTest(AironeViewTest):
 
         # create entity
         entity_ref = Entity.objects.create(name="RefEntity", created_user=user)
-        entry_ref = Entry.objects.create(
-            name="ref", schema=entity_ref, created_user=user
-        )
+        entry_ref = Entry.objects.create(name="ref", schema=entity_ref, created_user=user)
 
         attr_info = {
             "str": {
@@ -1349,9 +1263,7 @@ class ViewTest(AironeViewTest):
             reverse("dashboard:export_search_result"),
             json.dumps(
                 {
-                    "entities": [
-                        x.id for x in Entity.objects.filter(name__regex="^Entity-")
-                    ],
+                    "entities": [x.id for x in Entity.objects.filter(name__regex="^Entity-")],
                     "attrinfo": [{"name": x, "keyword": ""} for x in attr_info.keys()],
                     "export_style": "yaml",
                 }
@@ -1490,9 +1402,7 @@ class ViewTest(AironeViewTest):
     def test_export_with_hint_entry_name(self):
         entity = Entity.objects.create(name="Entity", created_user=self.admin)
         for name in ["foo", "bar", "baz"]:
-            Entry.objects.create(
-                name=name, schema=entity, created_user=self.admin
-            ).register_es()
+            Entry.objects.create(name=name, schema=entity, created_user=self.admin).register_es()
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),
@@ -1532,9 +1442,7 @@ class ViewTest(AironeViewTest):
         entity.attrs.add(entity_attr)
 
         # initialize Entries
-        ref_entry = Entry.objects.create(
-            name="ref", schema=ref_entity, created_user=user
-        )
+        ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)
         ref_entry.register_es()
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)

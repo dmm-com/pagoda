@@ -11,9 +11,7 @@ class ViewTest(AironeViewTest):
             {"name": "bar", "is_public": False},
         ]
         for info in entity_info:
-            Entity.objects.create(
-                name=info["name"], is_public=info["is_public"], created_user=user
-            )
+            Entity.objects.create(name=info["name"], is_public=info["is_public"], created_user=user)
 
         resp = self.client.get("/entity/api/v1/get_entities")
         self.assertEqual(resp.status_code, 200)

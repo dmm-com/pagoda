@@ -46,12 +46,8 @@ class ImportTest(AironeViewTest):
         self.assertEqual(entity.attrs.count(), 4)
         self.assertEqual(entity.attrs.get(name="attr-str").type, atype.AttrTypeStr)
         self.assertEqual(entity.attrs.get(name="attr-obj").type, atype.AttrTypeObj)
-        self.assertEqual(
-            entity.attrs.get(name="attr-arr-str").type, atype.AttrTypeArrStr
-        )
-        self.assertEqual(
-            entity.attrs.get(name="attr-arr-obj").type, atype.AttrTypeArrObj
-        )
+        self.assertEqual(entity.attrs.get(name="attr-arr-str").type, atype.AttrTypeArrStr)
+        self.assertEqual(entity.attrs.get(name="attr-arr-obj").type, atype.AttrTypeArrObj)
         self.assertFalse(entity.attrs.get(name="attr-str").is_mandatory)
         self.assertTrue(entity.attrs.get(name="attr-obj").is_mandatory)
         self.assertEqual(entity.attrs.get(name="attr-obj").referral.count(), 1)
@@ -68,9 +64,7 @@ class ImportTest(AironeViewTest):
             # checks that warning messagees were outputted
             self.assertEqual(len(warning_log.output), 2)
             self.assertTrue(
-                re.match(
-                    r"^.*Entity.*Unnecessary key is specified$", warning_log.output[0]
-                )
+                re.match(r"^.*Entity.*Unnecessary key is specified$", warning_log.output[0])
             )
             self.assertTrue(
                 re.match(
@@ -93,9 +87,7 @@ class ImportTest(AironeViewTest):
 
             # checks that warning messagees were outputted
             self.assertEqual(len(warning_log.output), 3)
-            self.assertRegex(
-                warning_log.output[0], "Entity.*Mandatory key doesn't exist$"
-            )
+            self.assertRegex(warning_log.output[0], "Entity.*Mandatory key doesn't exist$")
             self.assertRegex(
                 warning_log.output[1],
                 "The parameter 'type' is mandatory when a new EntityAtter create$",
@@ -149,36 +141,20 @@ class ImportTest(AironeViewTest):
         # checks that after_save_instance processing was normally worked
         entry = Entry.objects.get(name="srv001")
         self.assertEqual(entry.attrs.count(), 4)
-        self.assertEqual(
-            entry.attrs.get(name="attr-str").schema.type, atype.AttrTypeStr
-        )
-        self.assertEqual(
-            entry.attrs.get(name="attr-obj").schema.type, atype.AttrTypeObj
-        )
-        self.assertEqual(
-            entry.attrs.get(name="attr-arr-str").schema.type, atype.AttrTypeArrStr
-        )
-        self.assertEqual(
-            entry.attrs.get(name="attr-arr-obj").schema.type, atype.AttrTypeArrObj
-        )
+        self.assertEqual(entry.attrs.get(name="attr-str").schema.type, atype.AttrTypeStr)
+        self.assertEqual(entry.attrs.get(name="attr-obj").schema.type, atype.AttrTypeObj)
+        self.assertEqual(entry.attrs.get(name="attr-arr-str").schema.type, atype.AttrTypeArrStr)
+        self.assertEqual(entry.attrs.get(name="attr-arr-obj").schema.type, atype.AttrTypeArrObj)
 
         # checks that attr has corrected referral
-        self.assertEqual(
-            Attribute.objects.get(name="attr-str").schema.referral.count(), 0
-        )
-        self.assertEqual(
-            Attribute.objects.get(name="attr-obj").schema.referral.count(), 1
-        )
+        self.assertEqual(Attribute.objects.get(name="attr-str").schema.referral.count(), 0)
+        self.assertEqual(Attribute.objects.get(name="attr-obj").schema.referral.count(), 1)
         self.assertEqual(
             Attribute.objects.get(name="attr-obj").schema.referral.last().name,
             "Entity1",
         )
-        self.assertEqual(
-            Attribute.objects.get(name="attr-arr-str").schema.referral.count(), 0
-        )
-        self.assertEqual(
-            Attribute.objects.get(name="attr-arr-obj").schema.referral.count(), 1
-        )
+        self.assertEqual(Attribute.objects.get(name="attr-arr-str").schema.referral.count(), 0)
+        self.assertEqual(Attribute.objects.get(name="attr-arr-obj").schema.referral.count(), 1)
         self.assertEqual(
             Attribute.objects.get(name="attr-arr-obj").schema.referral.last().name,
             "Entity2",
@@ -194,9 +170,7 @@ class ImportTest(AironeViewTest):
         attr_value = Attribute.objects.get(name="attr-arr-obj").get_latest_value()
         self.assertTrue(attr_value.status & AttributeValue.STATUS_DATA_ARRAY_PARENT)
         self.assertEqual(attr_value.data_array.count(), 2)
-        self.assertTrue(
-            all([x.parent_attrv == attr_value for x in attr_value.data_array.all()])
-        )
+        self.assertTrue(all([x.parent_attrv == attr_value for x in attr_value.data_array.all()]))
 
         # checks latest flags are correctly set for each AttributeValues
         # - 1 is the latest value of attr 'attr-str'
@@ -209,9 +183,7 @@ class ImportTest(AironeViewTest):
 
         # checks that imported Entries were registered to the Elasticsearch
         res = self._es.indices.stats(index=settings.ES_CONFIG["INDEX"])
-        self.assertEqual(
-            res["_all"]["total"]["segments"]["count"], Entry.objects.count()
-        )
+        self.assertEqual(res["_all"]["total"]["segments"]["count"], Entry.objects.count())
 
     def test_import_entry_without_mandatory_values(self):
         self.admin_login()
@@ -230,12 +202,8 @@ class ImportTest(AironeViewTest):
 
         # checks for the output wanring messages
         self.assertEqual(len(warns), 2)
-        self.assertTrue(
-            any([re.match(r".*The value of .* is needed", x) for x in warns])
-        )
-        self.assertTrue(
-            any([re.match(r".*Mandatory key doesn't exist", x) for x in warns])
-        )
+        self.assertTrue(any([re.match(r".*The value of .* is needed", x) for x in warns]))
+        self.assertTrue(any([re.match(r".*Mandatory key doesn't exist", x) for x in warns]))
 
         # checks for the imported objects successfully
         self.assertEqual(Entity.objects.count(), 1)
@@ -272,9 +240,7 @@ class ImportTest(AironeViewTest):
 
             # checks that an exception caused by the duplicate entity is occurred
             self.assertEqual(len(warning_log.output), 1)
-            self.assertRegex(
-                warning_log.output[0], "^WARNING.*There is a duplicate entry object$"
-            )
+            self.assertRegex(warning_log.output[0], "^WARNING.*There is a duplicate entry object$")
         fp.close()
 
         entity = Entity.objects.get(name="Server")

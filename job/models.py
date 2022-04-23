@@ -238,9 +238,7 @@ class Job(models.Model):
                 seconds=kls._get_job_timeout()
             )
             dependent_job = (
-                Job.objects.filter(
-                    target=target, operation=operation, updated_at__gt=threshold
-                )
+                Job.objects.filter(target=target, operation=operation, updated_at__gt=threshold)
                 .order_by("updated_at")
                 .last()
             )
@@ -326,9 +324,7 @@ class Job(models.Model):
 
     @classmethod
     def new_delete(kls, user, target, text="", params={}):
-        return kls._create_new_job(
-            user, target, JobOperation.DELETE_ENTRY.value, text, params
-        )
+        return kls._create_new_job(user, target, JobOperation.DELETE_ENTRY.value, text, params)
 
     @classmethod
     def new_copy(kls, user, target, text="", params={}):
@@ -362,9 +358,7 @@ class Job(models.Model):
 
     @classmethod
     def new_restore(kls, user, target, text="", params={}):
-        return kls._create_new_job(
-            user, target, JobOperation.RESTORE_ENTRY.value, text, params
-        )
+        return kls._create_new_job(user, target, JobOperation.RESTORE_ENTRY.value, text, params)
 
     @classmethod
     def new_export_search_result(kls, user, target=None, text="", params={}):
@@ -408,9 +402,7 @@ class Job(models.Model):
 
     @classmethod
     def new_delete_entity(kls, user, target, text="", params={}):
-        return kls._create_new_job(
-            user, target, JobOperation.DELETE_ENTITY.value, text, params
-        )
+        return kls._create_new_job(user, target, JobOperation.DELETE_ENTITY.value, text, params)
 
     @classmethod
     def new_notify_create_entry(kls, user, target, text="", params={}):
@@ -431,16 +423,12 @@ class Job(models.Model):
         )
 
     def set_cache(self, value):
-        with open(
-            "%s/job_%d" % (settings.AIRONE["FILE_STORE_PATH"], self.id), "wb"
-        ) as fp:
+        with open("%s/job_%d" % (settings.AIRONE["FILE_STORE_PATH"], self.id), "wb") as fp:
             pickle.dump(value, fp)
 
     def get_cache(self):
         value = ""
-        with open(
-            "%s/job_%d" % (settings.AIRONE["FILE_STORE_PATH"], self.id), "rb"
-        ) as fp:
+        with open("%s/job_%d" % (settings.AIRONE["FILE_STORE_PATH"], self.id), "rb") as fp:
             value = pickle.load(fp)
 
         return value

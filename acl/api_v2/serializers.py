@@ -12,12 +12,8 @@ from user.models import User
 
 class ACLSerializer(serializers.ModelSerializer):
     parent = serializers.SerializerMethodField(method_name="get_parent", read_only=True)
-    acltypes = serializers.SerializerMethodField(
-        method_name="get_acltypes", read_only=True
-    )
-    members = serializers.SerializerMethodField(
-        method_name="get_members", read_only=True
-    )
+    acltypes = serializers.SerializerMethodField(method_name="get_acltypes", read_only=True)
+    members = serializers.SerializerMethodField(method_name="get_members", read_only=True)
     # TODO better name?
     acl = serializers.ListField(write_only=True)
 
@@ -49,9 +45,7 @@ class ACLSerializer(serializers.ModelSerializer):
     def get_members(self, obj: ACLBase) -> List[Dict[str, Any]]:
         # get ACLTypeID of target_obj if a permission is set
         def get_current_permission(member):
-            permissions = [
-                x for x in member.permissions.all() if x.get_objid() == obj.id
-            ]
+            permissions = [x for x in member.permissions.all() if x.get_objid() == obj.id]
             if permissions:
                 return permissions[0].get_aclid()
             else:
@@ -95,9 +89,9 @@ class ACLSerializer(serializers.ModelSerializer):
         return attrs
 
     def update(self, instance, validated_data):
-        acl_obj = getattr(
-            self._get_acl_model(validated_data["objtype"]), "objects"
-        ).get(id=instance.id)
+        acl_obj = getattr(self._get_acl_model(validated_data["objtype"]), "objects").get(
+            id=instance.id
+        )
         acl_obj.is_public = validated_data["is_public"]
         acl_obj.default_permission = validated_data["default_permission"]
         acl_obj.save()

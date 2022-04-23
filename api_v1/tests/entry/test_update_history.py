@@ -18,9 +18,7 @@ class APITest(AironeViewTest):
         self.user = self.guest_login()
         self.group = Group.objects.create(name="group")
 
-        ref_entity = Entity.objects.create(
-            name="Referred Entity", created_user=self.user
-        )
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=self.user)
         ref_entry = Entry.objects.create(
             name="referred_entry", schema=ref_entity, created_user=self.user
         )
@@ -100,9 +98,7 @@ class APITest(AironeViewTest):
 
     def test_with_fully_set_value(self):
         # create test entry and set each values
-        entry = Entry.objects.create(
-            name="entry", schema=self.entity, created_user=self.user
-        )
+        entry = Entry.objects.create(name="entry", schema=self.entity, created_user=self.user)
         entry.complement_attrs(self.user)
 
         for (name, info) in self.test_attrs.items():
@@ -124,9 +120,7 @@ class APITest(AironeViewTest):
 
             # check resp data has expected parameters
             self.assertEqual(len(retdata), 1)
-            self.assertEqual(
-                retdata[0]["entity"], {"id": self.entity.id, "name": self.entity.name}
-            )
+            self.assertEqual(retdata[0]["entity"], {"id": self.entity.id, "name": self.entity.name})
             self.assertEqual(retdata[0]["entry"], {"id": entry.id, "name": entry.name})
             self.assertEqual(retdata[0]["attribute"]["id"], attr.id)
             self.assertEqual(retdata[0]["attribute"]["name"], attr.name)
@@ -153,9 +147,7 @@ class APITest(AironeViewTest):
 
     def test_without_set_value(self):
         # create test entry and set each values
-        entry = Entry.objects.create(
-            name="entry", schema=self.entity, created_user=self.user
-        )
+        entry = Entry.objects.create(name="entry", schema=self.entity, created_user=self.user)
         entry.complement_attrs(self.user)
 
         for (name, info) in self.test_attrs.items():
@@ -173,9 +165,7 @@ class APITest(AironeViewTest):
             # check resp data has expected parameters
             attr = entry.attrs.get(schema__name=name)
             self.assertEqual(len(retdata), 1)
-            self.assertEqual(
-                retdata[0]["entity"], {"id": self.entity.id, "name": self.entity.name}
-            )
+            self.assertEqual(retdata[0]["entity"], {"id": self.entity.id, "name": self.entity.name})
             self.assertEqual(retdata[0]["entry"], {"id": entry.id, "name": entry.name})
             self.assertEqual(retdata[0]["attribute"]["id"], attr.id)
             self.assertEqual(retdata[0]["attribute"]["name"], attr.name)
@@ -185,9 +175,7 @@ class APITest(AironeViewTest):
             if info["type"] & AttrTypeValue["array"]:
                 self.assertEqual(len(attr_history), 1)
                 self.assertEqual(attr_history[0]["value"], [])
-                self.assertEqual(
-                    attr_history[0]["updated_username"], self.user.username
-                )
+                self.assertEqual(attr_history[0]["updated_username"], self.user.username)
                 self.assertEqual(attr_history[0]["updated_userid"], self.user.id)
             else:
                 self.assertEqual(attr_history, [])
@@ -196,14 +184,10 @@ class APITest(AironeViewTest):
         # call update_history API without attribute parameter
         resp = self.client.get("/api/v1/entry/update_history")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            str(resp.content, "utf-8"), "\"'attribute' parameter is required\""
-        )
+        self.assertEqual(str(resp.content, "utf-8"), "\"'attribute' parameter is required\"")
 
         # call update_history API without both entry and entryid parameters
-        resp = self.client.get(
-            "/api/v1/entry/update_history", {"attribute": "test-attribute"}
-        )
+        resp = self.client.get("/api/v1/entry/update_history", {"attribute": "test-attribute"})
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             str(resp.content, "utf-8"),
@@ -212,9 +196,7 @@ class APITest(AironeViewTest):
 
     def test_with_invalid_params(self):
         # create a test entry to use this test-suite
-        entry = Entry.objects.create(
-            name="entry", schema=self.entity, created_user=self.user
-        )
+        entry = Entry.objects.create(name="entry", schema=self.entity, created_user=self.user)
         entry.complement_attrs(self.user)
 
         # call API request with invalid entry
@@ -247,17 +229,13 @@ class APITest(AironeViewTest):
 
     def test_with_entity_params(self):
         # create a test entry to use this test-suite
-        entry = Entry.objects.create(
-            name="entry", schema=self.entity, created_user=self.user
-        )
+        entry = Entry.objects.create(name="entry", schema=self.entity, created_user=self.user)
         entry.complement_attrs(self.user)
 
         # This creates another entity that has same name attribute with 'entity'
         # which is created in setUp method. And this test will create same name entry with
         # 'entry' which is created before.
-        another_entity = Entity.objects.create(
-            name="AnotherEntity", created_user=self.user
-        )
+        another_entity = Entity.objects.create(name="AnotherEntity", created_user=self.user)
         another_entity.attrs.add(
             EntityAttr.objects.create(
                 **{
@@ -309,9 +287,7 @@ class APITest(AironeViewTest):
         )
 
     def test_maximum_number_of_history(self):
-        entry = Entry.objects.create(
-            name="entry", schema=self.entity, created_user=self.user
-        )
+        entry = Entry.objects.create(name="entry", schema=self.entity, created_user=self.user)
         entry.complement_attrs(self.user)
 
         # set attribute value which is overflowing number of CONFIG_ENTRY['MAX_HISTORY_COUNT']
@@ -335,21 +311,15 @@ class APITest(AironeViewTest):
         self.assertEqual(len(attr_history), CONFIG_ENTRY.MAX_HISTORY_COUNT)
 
     def test_narrow_down_time_range_to_get(self):
-        entry = Entry.objects.create(
-            name="entry", schema=self.entity, created_user=self.user
-        )
+        entry = Entry.objects.create(name="entry", schema=self.entity, created_user=self.user)
         entry.complement_attrs(self.user)
 
         attr = entry.attrs.get(schema__name="str")
 
-        attrvs = [
-            attr.add_value(self.user, x) for x in ["initial value", "second value"]
-        ]
+        attrvs = [attr.add_value(self.user, x) for x in ["initial value", "second value"]]
 
         # This is test processing to pretend that both Values are set at different times.
-        reference_time = datetime.now().replace(
-            tzinfo=pytz.timezone(settings.TIME_ZONE)
-        )
+        reference_time = datetime.now().replace(tzinfo=pytz.timezone(settings.TIME_ZONE))
         attrvs[0].created_time = reference_time - timedelta(seconds=5)
         attrvs[1].created_time = reference_time + timedelta(seconds=5)
         for attrv in attrvs:

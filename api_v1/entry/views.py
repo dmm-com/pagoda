@@ -47,9 +47,7 @@ class EntrySearchAPI(APIView):
         # check attribute params
         for hint_attr in hint_attrs:
             if "name" not in hint_attr:
-                return Response(
-                    "The name key is required for attrinfo parameter", status=400
-                )
+                return Response("The name key is required for attrinfo parameter", status=400)
             if not isinstance(hint_attr["name"], str):
                 return Response("Invalid value for attrinfo parameter", status=400)
             if hint_attr.get("keyword"):
@@ -73,9 +71,7 @@ class EntrySearchAPI(APIView):
                         Q(id=hint_entity) | Q(name=hint_entity), Q(is_active=True)
                     ).first()
                 else:
-                    entity = Entity.objects.filter(
-                        name=hint_entity, is_active=True
-                    ).first()
+                    entity = Entity.objects.filter(name=hint_entity, is_active=True).first()
 
             if entity and user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
@@ -127,9 +123,7 @@ class EntryReferredAPI(APIView):
                             if param_quiet
                             else {"id": x.schema.id, "name": x.schema.name},
                         }
-                        for x in entry.get_referred_objects(
-                            entity_name=param_target_entity
-                        )
+                        for x in entry.get_referred_objects(entity_name=param_target_entity)
                     ],
                 }
             )
@@ -142,9 +136,7 @@ class UpdateHistory(APIView):
         # validate whether mandatory parameters are specified
         p_attr = request.GET.get("attribute")
         if not p_attr:
-            return Response(
-                "'attribute' parameter is required", status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response("'attribute' parameter is required", status=status.HTTP_400_BAD_REQUEST)
 
         # both entry and entry_id parameters accept str and connma separated array
         p_entry = request.GET.get("entry", "")
@@ -160,9 +152,9 @@ class UpdateHistory(APIView):
         p_older_than = request.GET.get("older_than")
         if p_older_than:
             try:
-                older_than = datetime.strptime(
-                    p_older_than, CONFIG_ENTRY.TIME_FORMAT
-                ).replace(tzinfo=pytz.timezone(settings.TIME_ZONE))
+                older_than = datetime.strptime(p_older_than, CONFIG_ENTRY.TIME_FORMAT).replace(
+                    tzinfo=pytz.timezone(settings.TIME_ZONE)
+                )
             except ValueError:
                 return Response(
                     (
@@ -180,9 +172,9 @@ class UpdateHistory(APIView):
         p_newer_than = request.GET.get("newer_than")
         if p_newer_than:
             try:
-                newer_than = datetime.strptime(
-                    p_newer_than, CONFIG_ENTRY.TIME_FORMAT
-                ).replace(tzinfo=pytz.timezone(settings.TIME_ZONE))
+                newer_than = datetime.strptime(p_newer_than, CONFIG_ENTRY.TIME_FORMAT).replace(
+                    tzinfo=pytz.timezone(settings.TIME_ZONE)
+                )
             except ValueError:
                 return Response(
                     (

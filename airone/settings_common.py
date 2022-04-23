@@ -134,9 +134,7 @@ class Common(Configuration):
     REPLICATED_READ_ONLY_DOWNTIME = settings.REPLICATED_READ_ONLY_DOWNTIME
     REPLICATED_READ_ONLY_TRIES = settings.REPLICATED_READ_ONLY_TRIES
     REPLICATED_FORCE_MASTER_COOKIE_NAME = settings.REPLICATED_FORCE_MASTER_COOKIE_NAME
-    REPLICATED_FORCE_MASTER_COOKIE_MAX_AGE = (
-        settings.REPLICATED_FORCE_MASTER_COOKIE_MAX_AGE
-    )
+    REPLICATED_FORCE_MASTER_COOKIE_MAX_AGE = settings.REPLICATED_FORCE_MASTER_COOKIE_MAX_AGE
     REPLICATED_FORCE_STATE_HEADER = settings.REPLICATED_FORCE_STATE_HEADER
     REPLICATED_CHECK_STATE_ON_WRITE = settings.REPLICATED_CHECK_STATE_ON_WRITE
     REPLICATED_FORCE_MASTER_COOKIE_STATUS_CODES = (
@@ -213,9 +211,7 @@ class Common(Configuration):
         elif isinstance(outs, bytes):
             AIRONE["VERSION"] = outs.decode("utf-8").strip()
         else:
-            logging.getLogger(__name__).warning(
-                "could not describe airone version from git"
-            )
+            logging.getLogger(__name__).warning("could not describe airone version from git")
 
         # create a directory to store temporary file for applications
         if not os.path.exists(AIRONE["FILE_STORE_PATH"]):

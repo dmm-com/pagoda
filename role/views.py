@@ -99,9 +99,7 @@ def create(request):
 )
 def do_create(request, recv_data):
     if Role.objects.filter(name=recv_data["name"], is_active=True).exists():
-        return HttpResponse(
-            "Duplicate named role has already been registered", status=400
-        )
+        return HttpResponse("Duplicate named role has already been registered", status=400)
 
     # This checks whether specified parameter might make this role not to be able to
     # delete this role by this user.
@@ -121,9 +119,7 @@ def do_create(request, recv_data):
     # set users and groups, which include administrative ones, to role instance
     set_role_members(role, recv_data)
 
-    return JsonResponse(
-        {"msg": 'Succeeded in creating new Role "%s"' % recv_data["name"]}
-    )
+    return JsonResponse({"msg": 'Succeeded in creating new Role "%s"' % recv_data["name"]})
 
 
 @http_get
@@ -131,14 +127,10 @@ def edit(request, role_id):
     user = request.user
     role = Role.objects.filter(id=role_id, is_active=True).first()
     if not role:
-        return HttpResponse(
-            "Specified Role(id:%d) does not exist" % role_id, status=400
-        )
+        return HttpResponse("Specified Role(id:%d) does not exist" % role_id, status=400)
 
     if not role.is_editable(user):
-        return HttpResponse(
-            "You do not have permission to change this role", status=400
-        )
+        return HttpResponse("You do not have permission to change this role", status=400)
 
     # get user and group members that are selectable as role members
     context = initialize_role_context()
@@ -179,20 +171,14 @@ def do_edit(request, role_id, recv_data):
     user = request.user
     role = Role.objects.filter(id=role_id, is_active=True).first()
     if not role:
-        return HttpResponse(
-            "Specified Role(id:%d) does not exist" % role_id, status=400
-        )
+        return HttpResponse("Specified Role(id:%d) does not exist" % role_id, status=400)
 
     dup_role = Role.objects.filter(name=recv_data["name"], is_active=True).first()
     if dup_role and dup_role.id != int(role_id):
-        return HttpResponse(
-            "Other duplicate named role has already been registered", status=400
-        )
+        return HttpResponse("Other duplicate named role has already been registered", status=400)
 
     if not role.is_editable(user):
-        return HttpResponse(
-            "You do not have permission to change this role", status=400
-        )
+        return HttpResponse("You do not have permission to change this role", status=400)
 
     # This checks whether specified parameter might make this role not to be able to
     # delete this role by this user.
@@ -217,6 +203,4 @@ def do_edit(request, role_id, recv_data):
 
     role.save(update_fields=update_fields)
 
-    return JsonResponse(
-        {"msg": 'Succeeded in creating new Role "%s"' % recv_data["name"]}
-    )
+    return JsonResponse({"msg": 'Succeeded in creating new Role "%s"' % recv_data["name"]})

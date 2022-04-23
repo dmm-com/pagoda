@@ -77,7 +77,5 @@ class ViewTest(AironeViewTest):
             self.user, Entry, self.entry.id, ACLType.Full
         )
         self.assertIsNone(target_obj)
-        self.assertEqual(
-            error.content, b"You don't have permission to access this object"
-        )
+        self.assertEqual(error.content, b"You don't have permission to access this object")
         self.assertEqual(error.status_code, 400)

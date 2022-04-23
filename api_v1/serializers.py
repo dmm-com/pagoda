@@ -147,11 +147,7 @@ class PostEntrySerializer(serializers.Serializer):
 
             elif attr.type & AttrTypeValue["group"]:
                 return [
-                    x
-                    for x in [
-                        AttributeValue.uniform_storable_for_group(v) for v in value
-                    ]
-                    if x
+                    x for x in [AttributeValue.uniform_storable_for_group(v) for v in value] if x
                 ]
 
         elif attr.type & AttrTypeValue["string"] or attr.type & AttrTypeValue["text"]:
@@ -171,11 +167,7 @@ class PostEntrySerializer(serializers.Serializer):
                 return 0
 
             if isinstance(value, str):
-                entryset = [
-                    get_entry(x, value)
-                    for x in attr.referral.all()
-                    if is_entry(x, value)
-                ]
+                entryset = [get_entry(x, value) for x in attr.referral.all() if is_entry(x, value)]
                 if any(entryset):
                     return entryset[0]
 
@@ -206,9 +198,7 @@ class PostEntrySerializer(serializers.Serializer):
         # checks specified entity is existed
         if not Entity.objects.filter(is_active=True, name=data["entity"]).exists():
             raise ValidationError("Invalid Entity is specified (%s)" % data["entity"])
-        entity = data["entity"] = Entity.objects.get(
-            is_active=True, name=data["entity"]
-        )
+        entity = data["entity"] = Entity.objects.get(is_active=True, name=data["entity"])
 
         entry = None
         if Entry.objects.filter(schema=entity, name=data["name"]).exists():
@@ -231,16 +221,12 @@ class PostEntrySerializer(serializers.Serializer):
         # checks specified attr values are valid
         for attr_name, attr_value in data["attrs"].items():
             if not entity.attrs.filter(is_active=True, name=attr_name).exists():
-                raise ValidationError(
-                    "Target entity doesn't specified attr(%s)" % (attr_name)
-                )
+                raise ValidationError("Target entity doesn't specified attr(%s)" % (attr_name))
 
             attr = entity.attrs.get(name=attr_name)
             validated_value = self._validate_attr(attr, attr_value)
             if validated_value is None:
-                raise ValidationError(
-                    "Invalid attribute value(%s) is specified" % (attr_name)
-                )
+                raise ValidationError("Invalid attribute value(%s) is specified" % (attr_name))
 
             data["attrs"][attr_name] = validated_value
 

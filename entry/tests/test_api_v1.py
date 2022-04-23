@@ -30,28 +30,19 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp.json()["results"]), CONFIG.MAX_LIST_ENTRIES)
 
         # send request with empty keyword
-        resp = self.client.get(
-            "/entry/api/v1/get_entries/%d/" % entity.id, {"keyword": ""}
-        )
+        resp = self.client.get("/entry/api/v1/get_entries/%d/" % entity.id, {"keyword": ""})
         self.assertEqual(resp.status_code, 200)
         self.assertTrue("results" in resp.json())
         self.assertEqual(len(resp.json()["results"]), CONFIG.MAX_LIST_ENTRIES)
 
         # send request with keyword parameter
-        resp = self.client.get(
-            "/entry/api/v1/get_entries/%d/" % entity.id, {"keyword": "10"}
-        )
+        resp = self.client.get("/entry/api/v1/get_entries/%d/" % entity.id, {"keyword": "10"})
         self.assertEqual(resp.status_code, 200)
 
         self.assertTrue("results" in resp.json())
         self.assertEqual(len(resp.json()["results"]), 2)
         self.assertTrue(
-            all(
-                [
-                    x["name"] == "e-10" or x["name"] == "e-100"
-                    for x in resp.json()["results"]
-                ]
-            )
+            all([x["name"] == "e-10" or x["name"] == "e-100" for x in resp.json()["results"]])
         )
 
         # send request with invalid keyword parameter
@@ -64,9 +55,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp.json()["results"]), 0)
 
         # send request to check keyword would be insensitive case
-        resp = self.client.get(
-            "/entry/api/v1/get_entries/%d/" % entity.id, {"keyword": "E-0"}
-        )
+        resp = self.client.get("/entry/api/v1/get_entries/%d/" % entity.id, {"keyword": "E-0"})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()["results"]), 1)
         self.assertTrue(resp.json()["results"][0]["name"], "e-0")
@@ -110,9 +99,7 @@ class ViewTest(AironeViewTest):
         test_suites = []
         for i, add_char in enumerate(add_chars):
             entry_name = "test%s%s" % (i, add_char)
-            entry = Entry.objects.create(
-                name=entry_name, schema=entity, created_user=admin
-            )
+            entry = Entry.objects.create(name=entry_name, schema=entity, created_user=admin)
             entry.register_es()
 
             test_suites.append(
@@ -131,9 +118,7 @@ class ViewTest(AironeViewTest):
             )
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(len(resp.json()["results"]), ret_cnt)
-            self.assertEqual(
-                resp.json()["results"][0]["name"], test_suite["ret_entry_name"]
-            )
+            self.assertEqual(resp.json()["results"][0]["name"], test_suite["ret_entry_name"])
 
     def test_get_entries_with_multiple_ids(self):
         admin = self.admin_login()
@@ -244,12 +229,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.json()["total_count"], CONFIG.MAX_LIST_REFERRALS + 1)
         self.assertEqual(resp.json()["found_count"], CONFIG.MAX_LIST_REFERRALS)
         self.assertTrue(
-            all(
-                [
-                    "id" in x and "name" in x and "entity" in x
-                    for x in resp.json()["entries"]
-                ]
-            )
+            all(["id" in x and "name" in x and "entity" in x for x in resp.json()["entries"]])
         )
 
         # send request with keyword parameter
@@ -313,9 +293,7 @@ class ViewTest(AironeViewTest):
 
             # This expects results has only information of 'g-bar' because 'g-foo' is
             # not matched with keyword and 'g-baz' has already been deleted.
-            self.assertEqual(
-                resp.json()["results"], [{"id": groups[1].id, "name": groups[1].name}]
-            )
+            self.assertEqual(resp.json()["results"], [{"id": groups[1].id, "name": groups[1].name}])
 
     def test_get_attr_referrals_of_entry(self):
         admin = self.admin_login()
@@ -337,9 +315,7 @@ class ViewTest(AironeViewTest):
         entity.attrs.add(entity_attr)
 
         for index in range(CONFIG.MAX_LIST_REFERRALS, -1, -1):
-            Entry.objects.create(
-                name="e-%s" % index, schema=ref_entity, created_user=admin
-            )
+            Entry.objects.create(name="e-%s" % index, schema=ref_entity, created_user=admin)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=admin)
 
@@ -357,9 +333,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
 
         # speify valid Attribute ID and a enalbed keyword
-        resp = self.client.get(
-            "/entry/api/v1/get_attr_referrals/%s/" % attr.id, {"keyword": "e-1"}
-        )
+        resp = self.client.get("/entry/api/v1/get_attr_referrals/%s/" % attr.id, {"keyword": "e-1"})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp["Content-Type"], "application/json")
         self.assertTrue("results" in resp.json())
@@ -376,14 +350,10 @@ class ViewTest(AironeViewTest):
 
         # Add new data
         for index in [101, 111, 100, 110]:
-            Entry.objects.create(
-                name="e-%s" % index, schema=ref_entity, created_user=admin
-            )
+            Entry.objects.create(name="e-%s" % index, schema=ref_entity, created_user=admin)
 
         # Run with 'e-1' as keyword
-        resp = self.client.get(
-            "/entry/api/v1/get_attr_referrals/%s/" % attr.id, {"keyword": "e-1"}
-        )
+        resp = self.client.get("/entry/api/v1/get_attr_referrals/%s/" % attr.id, {"keyword": "e-1"})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp["Content-Type"], "application/json")
         self.assertTrue("results" in resp.json())
@@ -399,9 +369,7 @@ class ViewTest(AironeViewTest):
         # send request with keywords that hit more than MAX_LIST_REFERRALS
         Entry.objects.create(name="e", schema=ref_entity, created_user=admin)
 
-        resp = self.client.get(
-            "/entry/api/v1/get_attr_referrals/%d/" % attr.id, {"keyword": "e"}
-        )
+        resp = self.client.get("/entry/api/v1/get_attr_referrals/%d/" % attr.id, {"keyword": "e"})
         self.assertEqual(resp.status_code, 200)
 
         self.assertEqual(resp.json()["results"][0]["name"], "e")
@@ -417,9 +385,7 @@ class ViewTest(AironeViewTest):
         # create Entity&Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=admin)
         for index in range(0, CONFIG.MAX_LIST_REFERRALS + 1):
-            Entry.objects.create(
-                name="e-%s" % index, schema=ref_entity, created_user=admin
-            )
+            Entry.objects.create(name="e-%s" % index, schema=ref_entity, created_user=admin)
 
         entity = Entity.objects.create(name="Entity", created_user=admin)
         entity_attr = EntityAttr.objects.create(
@@ -449,9 +415,7 @@ class ViewTest(AironeViewTest):
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=admin)
         for index in range(0, 20):
-            Entry.objects.create(
-                name="r-%s" % index, schema=ref_entity, created_user=admin
-            )
+            Entry.objects.create(name="r-%s" % index, schema=ref_entity, created_user=admin)
 
         attr_infos = [
             {"name": "attr_ref", "type": AttrTypeValue["object"], "ref": ref_entity},
@@ -474,9 +438,7 @@ class ViewTest(AironeViewTest):
             entity.attrs.add(entity_attr)
 
         for index in range(0, 20):
-            entry = Entry.objects.create(
-                name="e-%d" % index, schema=entity, created_user=admin
-            )
+            entry = Entry.objects.create(name="e-%d" % index, schema=entity, created_user=admin)
             entry.complement_attrs(admin)
             for attr_name in ["attr_ref", "attr_val"]:
                 attr = entry.attrs.get(name=attr_name)
@@ -638,16 +600,13 @@ class ViewTest(AironeViewTest):
         # initialize Entity and Entry for this test
         ref_entity = Entity.objects.create(name="Entity", created_user=user)
         ref_entries = [
-            Entry.objects.create(name=x, created_user=user, schema=ref_entity)
-            for x in ["r0", "r1"]
+            Entry.objects.create(name=x, created_user=user, schema=ref_entity) for x in ["r0", "r1"]
         ]
         groups = [Group.objects.create(name=x) for x in ["g0", "g1"]]
         attrinfo = {
             "string": {"values": ["foo", "bar"]},
             "object": {"values": [ref_entries[0], ref_entries[1]]},
-            "named_object": {
-                "values": [{"name": x.name, "id": x} for x in ref_entries]
-            },
+            "named_object": {"values": [{"name": x.name, "id": x} for x in ref_entries]},
             "array_object": {"values": [[ref_entries[0]], [ref_entries[1]]]},
             "array_string": {"values": [["foo"], ["bar"]]},
             "array_named_object": {
@@ -685,9 +644,7 @@ class ViewTest(AironeViewTest):
                 attr.add_value(user, value)
 
         # test sending request for the API endpoint of get_entry_history
-        resp = self.client.get(
-            "/entry/api/v1/get_entry_history/%d/" % entry.id, {"count": 100}
-        )
+        resp = self.client.get("/entry/api/v1/get_entry_history/%d/" % entry.id, {"count": 100})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp["Content-Type"], "application/json")
 
@@ -845,6 +802,4 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.content, b"There is no Entry which is specified by entry_id"
-        )
+        self.assertEqual(resp.content, b"There is no Entry which is specified by entry_id")

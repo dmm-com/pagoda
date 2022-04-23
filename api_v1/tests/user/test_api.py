@@ -79,9 +79,7 @@ class APITest(AironeViewTest):
         user.set_password("password")
         user.save()
 
-        auth_byte = ("%s:%s" % ("test-user", "invalid-password")).encode(
-            HTTP_HEADER_ENCODING
-        )
+        auth_byte = ("%s:%s" % ("test-user", "invalid-password")).encode(HTTP_HEADER_ENCODING)
         auth_info = base64.b64encode(auth_byte).decode(HTTP_HEADER_ENCODING)
 
         resp = self.client.get(

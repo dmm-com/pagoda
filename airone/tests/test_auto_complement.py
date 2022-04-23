@@ -11,9 +11,7 @@ class LibAutoComplementTest(AironeTestCase):
         super(LibAutoComplementTest, self).setUp()
 
         # When both user and password were correct, it would be success.
-        self.user = User(
-            username="guest", email="guest@example.com", is_superuser=False
-        )
+        self.user = User(username="guest", email="guest@example.com", is_superuser=False)
         self.user.set_password("guest")
         self.user.save()
 

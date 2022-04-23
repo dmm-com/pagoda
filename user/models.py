@@ -35,9 +35,7 @@ class User(DjangoUser):
         return any(
             [
                 permission_level.id <= x.get_aclid()
-                for x in self.permissions.filter(
-                    codename__startswith=(str(target_obj.id) + ".")
-                )
+                for x in self.permissions.filter(codename__startswith=(str(target_obj.id) + "."))
             ]
         )
 
@@ -117,9 +115,7 @@ class User(DjangoUser):
         ) and self._user_has_permission(*args):
             return True
 
-        if groups and self._group_has_permission(
-            *(args + [Group.objects.filter(id__in=groups)])
-        ):
+        if groups and self._group_has_permission(*(args + [Group.objects.filter(id__in=groups)])):
             return True
 
         return False
@@ -276,9 +272,7 @@ class History(models.Model):
                 is_detail=is_detail,
             )
         else:
-            raise TypeError(
-                "Couldn't register history '%s' because of invalid type" % str(target)
-            )
+            raise TypeError("Couldn't register history '%s' because of invalid type" % str(target))
 
     @classmethod
     def _type_check(kls, target, operation):

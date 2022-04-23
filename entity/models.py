@@ -10,9 +10,7 @@ class EntityAttr(ACLBase):
 
     type = models.IntegerField(default=0)
     is_mandatory = models.BooleanField(default=False)
-    referral = models.ManyToManyField(
-        ACLBase, default=[], related_name="referred_attr_base"
-    )
+    referral = models.ManyToManyField(ACLBase, default=[], related_name="referred_attr_base")
     index = models.IntegerField(default=0)
 
     # When this parameters set, all entries which are related to the parent_entity will be analyzed
@@ -52,9 +50,7 @@ class Entity(ACLBase):
     attrs = models.ManyToManyField(EntityAttr)
 
     # This indicates informatoin where to send request for notification
-    webhooks = models.ManyToManyField(
-        Webhook, default=[], related_name="registered_entity"
-    )
+    webhooks = models.ManyToManyField(Webhook, default=[], related_name="registered_entity")
 
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)

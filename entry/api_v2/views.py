@@ -76,9 +76,7 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
             return queryset
 
         name_results = list(
-            Entry.objects.filter(name__iregex=r"%s" % query, is_active=True).order_by(
-                "name"
-            )
+            Entry.objects.filter(name__iregex=r"%s" % query, is_active=True).order_by("name")
         )
         value_results = [
             x.parent_attr.parent_entry
@@ -92,9 +90,7 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
         ]
         ref_results = [
             x.parent_attr.parent_entry
-            for x in AttributeValue.objects.select_related(
-                "parent_attr__parent_entry", "referral"
-            )
+            for x in AttributeValue.objects.select_related("parent_attr__parent_entry", "referral")
             .filter(
                 Q(referral__is_active=True),
                 Q(referral__name__iregex=r"%s" % query),

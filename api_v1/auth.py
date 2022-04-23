@@ -8,16 +8,14 @@ from user.models import User
 
 class AironeTokenAuth(TokenAuthentication):
     def authenticate_credentials(self, key):
-        (django_user, token) = super(AironeTokenAuth, self).authenticate_credentials(
-            key
-        )
+        (django_user, token) = super(AironeTokenAuth, self).authenticate_credentials(key)
 
         # get Airone user object from django_user id
         user = User.objects.get(id=django_user.id)
 
-        if user.token_lifetime > 0 and datetime.now(
-            tz=pytz.UTC
-        ) > token.created + timedelta(seconds=user.token_lifetime):
+        if user.token_lifetime > 0 and datetime.now(tz=pytz.UTC) > token.created + timedelta(
+            seconds=user.token_lifetime
+        ):
             raise AuthenticationFailed("Token lifetime is expired")
 
         return (user, token)

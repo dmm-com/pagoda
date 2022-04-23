@@ -31,9 +31,7 @@ class ViewTest(AironeViewTest):
             ],
             "default_permission": str(ACLType.Nothing.id),
         }
-        return self.client.post(
-            reverse("acl:set"), json.dumps(params), "application/json"
-        )
+        return self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
 
     def test_index_without_login(self):
         resp = self.client.get(reverse("acl:index", args=[0]))
@@ -53,9 +51,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse("acl:index", args=[self._aclobj.id]))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(
-            [x["name"] for x in resp.context["members"]], ["admin", "hoge"]
-        )
+        self.assertEqual([x["name"] for x in resp.context["members"]], ["admin", "hoge"])
 
     def test_get_acl_set(self):
         self.admin_login()
@@ -81,9 +77,7 @@ class ViewTest(AironeViewTest):
             ],
             "default_permission": str(ACLType.Nothing.id),
         }
-        resp = self.client.post(
-            reverse("acl:set"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 401)
 
@@ -100,9 +94,7 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        attrbase = EntityAttr.objects.create(
-            name="hoge", created_user=user, parent_entity=entity
-        )
+        attrbase = EntityAttr.objects.create(name="hoge", created_user=user, parent_entity=entity)
         resp = self.send_set_request(attrbase, user)
 
         self.assertEqual(resp.status_code, 200)
@@ -126,9 +118,7 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="hoge", created_user=user)
         entry = Entry.objects.create(name="hoge", created_user=user, schema=entity)
-        attrbase = EntityAttr.objects.create(
-            name="hoge", created_user=user, parent_entity=entity
-        )
+        attrbase = EntityAttr.objects.create(name="hoge", created_user=user, parent_entity=entity)
         entity.attrs.add(attrbase)
         attr = entry.add_attribute_from_base(attrbase, user)
 
@@ -139,9 +129,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(user.permissions.last(), attr.writable)
         self.assertFalse(Attribute.objects.get(id=attr.id).is_public)
         search_result = self._es.search(body={"query": {"term": {"name": entry.name}}})
-        self.assertFalse(
-            search_result["hits"]["hits"][0]["_source"]["attr"][0]["is_readble"]
-        )
+        self.assertFalse(search_result["hits"]["hits"][0]["_source"]["attr"][0]["is_readble"])
 
     def test_post_acl_set_entry(self):
         user = self.admin_login()
@@ -172,9 +160,7 @@ class ViewTest(AironeViewTest):
             ],
             "default_permission": str(ACLType.Nothing.id),
         }
-        resp = self.client.post(
-            reverse("acl:set"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(user.permissions.count(), 0)
@@ -200,9 +186,7 @@ class ViewTest(AironeViewTest):
             ],
             "default_permission": str(ACLType.Nothing.id),
         }
-        resp = self.client.post(
-            reverse("acl:set"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(group.permissions.count(), 1)
         self.assertEqual(group.permissions.last(), self._aclobj.readable)
@@ -229,9 +213,7 @@ class ViewTest(AironeViewTest):
             ],
             "default_permission": str(ACLType.Nothing.id),
         }
-        resp = self.client.post(
-            reverse("acl:set"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(group.permissions.count(), 0)
 
@@ -242,18 +224,14 @@ class ViewTest(AironeViewTest):
                 {"member_id": str(user.id), "value": str(ACLType.Writable)},
             ]
         }
-        resp = self.client.post(
-            reverse("acl:set"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
 
     def test_post_acl_set_without_acl_params(self):
         self.admin_login()
         params = {"object_id": str(self._aclobj.id)}
-        resp = self.client.post(
-            reverse("acl:set"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
 
@@ -265,9 +243,7 @@ class ViewTest(AironeViewTest):
                 {"member_id": "9999", "value": str(ACLType.Writable)},
             ],
         }
-        resp = self.client.post(
-            reverse("acl:set"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
 
@@ -279,9 +255,7 @@ class ViewTest(AironeViewTest):
                 {"member_id": str(user.id), "value": "abcd"},
             ],
         }
-        resp = self.client.post(
-            reverse("acl:set"), json.dumps(params), "application/json"
-        )
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
 
@@ -314,9 +288,7 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         entity = Entity.objects.create(name="hoge", created_user=user)
-        attrbase = EntityAttr.objects.create(
-            name="attr1", created_user=user, parent_entity=entity
-        )
+        attrbase = EntityAttr.objects.create(name="attr1", created_user=user, parent_entity=entity)
 
         entry = Entry.objects.create(name="fuga", created_user=user, schema=entity)
         attr = entry.add_attribute_from_base(attrbase, user)

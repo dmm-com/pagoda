@@ -69,19 +69,13 @@ class AironeTestCase(TestCase):
             else:
                 return default_value
 
-        entity = Entity.objects.create(
-            name=name, created_user=user, is_public=is_public
-        )
+        entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
         for attr_info in attrs:
             entity_attr = EntityAttr.objects.create(
                 **{
                     "name": attr_info["name"],
-                    "type": _get_entity_attr_params(
-                        attr_info, "type", AttrTypeValue["string"]
-                    ),
-                    "is_mandatory": _get_entity_attr_params(
-                        attr_info, "is_mandatory", False
-                    ),
+                    "type": _get_entity_attr_params(attr_info, "type", AttrTypeValue["string"]),
+                    "is_mandatory": _get_entity_attr_params(attr_info, "is_mandatory", False),
                     "parent_entity": entity,
                     "created_user": user,
                 }
@@ -115,9 +109,7 @@ class AironeViewTest(AironeTestCase):
         self.client = Client()
 
         settings.MIDDLEWARE = [
-            x
-            for x in settings.MIDDLEWARE
-            if x != "airone.lib.log.LoggingRequestMiddleware"
+            x for x in settings.MIDDLEWARE if x != "airone.lib.log.LoggingRequestMiddleware"
         ]
 
     def _do_login(self, uname, is_superuser=False):

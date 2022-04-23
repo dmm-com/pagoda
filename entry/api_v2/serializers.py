@@ -83,9 +83,7 @@ class GetEntryWithAttrSerializer(GetEntrySerializer):
                     ]
 
                 elif attr.schema.type & AttrTypeValue["group"]:
-                    groups = [
-                        Group.objects.get(id=x.value) for x in attrv.data_array.all()
-                    ]
+                    groups = [Group.objects.get(id=x.value) for x in attrv.data_array.all()]
                     return [
                         {
                             "id": group.id,
@@ -169,9 +167,7 @@ class GetEntryWithAttrSerializer(GetEntrySerializer):
 
         # add and remove attributes depending on entity
         if custom_view.is_custom("get_entry_attr", obj.schema.name):
-            attrinfo = custom_view.call_custom(
-                "get_entry_attr", obj.schema.name, obj, attrinfo
-            )
+            attrinfo = custom_view.call_custom("get_entry_attr", obj.schema.name, obj, attrinfo)
 
         return attrinfo
 

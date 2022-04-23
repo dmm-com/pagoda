@@ -13,9 +13,7 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "members"]
 
     def get_members(self, obj: Group) -> List[Dict[str, Any]]:
-        users = User.objects.filter(groups__name=obj.name, is_active=True).order_by(
-            "username"
-        )
+        users = User.objects.filter(groups__name=obj.name, is_active=True).order_by("username")
         return [
             {
                 "id": u.id,
