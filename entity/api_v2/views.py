@@ -13,6 +13,7 @@ from django.http.response import JsonResponse, HttpResponse
 
 from entity.models import Entity
 
+
 @http_get
 def history(request, entity_id):
     if not Entity.objects.filter(id=entity_id).exists():
