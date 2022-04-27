@@ -427,7 +427,9 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.json()['result'], 'Permission denied to create(or update) entry')
 
         # Set permisson to create new entry
-        guest.permissions.add(entity.writable)
+        role = Role.objects.create(name='Role')
+        role.permissions.add(entity.writable)
+        role.users.add(guest)
 
         # checks that we can create an entry but attr2 doesn't set because
         # guest doesn't have permission of writable for attr2

@@ -7,6 +7,7 @@ from entry.models import Entry, Attribute, AttributeValue
 from entry.settings import CONFIG
 from user.models import User
 from acl.models import ACLBase
+from role.models import Role
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeArrStr, AttrTypeArrObj
 from airone.lib.types import AttrTypeValue
@@ -915,6 +916,7 @@ class ModelTest(AironeTestCase):
 
     def test_clone_entry_without_permission(self):
         unknown_user = User.objects.create(username='unknown_user')
+        role = Role.objects.create(name='role')
 
         entry = Entry.objects.create(name='entry',
                                      schema=self._entity,
@@ -925,7 +927,8 @@ class ModelTest(AironeTestCase):
         self.assertIsNone(entry.clone(unknown_user))
 
         # set permission to access, then it can be cloned
-        unknown_user.permissions.add(entry.readable)
+        role.permissions.add(entry.readable)
+        role.users.add(unknown_user)
         self.assertIsNotNone(entry.clone(unknown_user))
 
     def test_set_value_method(self):
@@ -3365,6 +3368,12 @@ class ModelTest(AironeTestCase):
     def test_inherit_individual_attribute_permissions_when_it_is_complemented(self):
         [user1, user2] = [User.objects.create(username=x) for x in ['u1', 'u2']]
         groups = [Group.objects.create(name=x) for x in ['g1', 'g2']]
+        [user1.groups.add(g) for g in groups]
+
+        # initialize Role instance
+        role = Role.objects.create(name='Role')
+        [role.users.add(x) for x in [user1, user2]]
+        [role.groups.add(x) for x in groups]
 
         entity = Entity.objects.create(name='entity', created_user=user1)
         entity_attr = EntityAttr.objects.create(name='attr',
@@ -3372,8 +3381,10 @@ class ModelTest(AironeTestCase):
                                                 created_user=user1,
                                                 parent_entity=entity,
                                                 is_public=False)
-        [x.permissions.add(entity_attr.full) for x in [user1, user2] + groups]
-        [user1.groups.add(g) for g in groups]
+
+        # set permission for test Role instance
+        role.permissions.add(entity_attr.full)
+
         entity.attrs.add(entity_attr)
 
         entry = Entry.objects.create(name='entry', schema=entity, created_user=user1)

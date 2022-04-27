@@ -39,7 +39,7 @@ class User(DjangoUser):
     def has_permission(self, target_obj, permission_level):
         # A bypass processing to rapidly return.
         # This condition is effective when the public objects are majority.
-        if self.is_superuser or target_obj.is_public:
+        if self.is_superuser:
             return True
 
         # This try-catch syntax is needed because the 'issubclass' may occur a
@@ -59,6 +59,10 @@ class User(DjangoUser):
              isinstance(target_obj, import_module('entry.models').Attribute)) and
                 not self.has_permission(target_obj.schema, permission_level)):
             return False
+
+        # This check processing must be set after checking superior data structure's check
+        if target_obj.is_public:
+            return True
 
         # This checks Roles that this user and groups, which this user belongs to,
         # have permission of specified permission_level
