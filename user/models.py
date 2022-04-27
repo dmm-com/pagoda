@@ -39,7 +39,7 @@ class User(DjangoUser):
     def has_permission(self, target_obj, permission_level):
         # A bypass processing to rapidly return.
         # This condition is effective when the public objects are majority.
-        if self.is_superuser:
+        if self.is_superuser or target_obj.is_public:
             return True
 
         # This try-catch syntax is needed because the 'issubclass' may occur a

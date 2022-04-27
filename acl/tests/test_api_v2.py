@@ -1,6 +1,7 @@
 import json
 
 from acl.models import ACLBase
+from role.models import Role
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
 
@@ -30,10 +31,13 @@ class ACLAPITest(AironeViewTest):
         self.assertEqual(resp.status_code, 403)
 
     def test_update(self):
-        user = self.admin_login()
+        user = self.guest_login()
+        role = Role.objects.create(name='role')
+        role.admin_users.add(user)
 
         acl = ACLBase(name='test', created_user=user)
         acl.save()
+
 
         resp = self.client.put('/acl/api/v2/acls/%s' % acl.id, json.dumps({
             'name': acl.name,
@@ -42,8 +46,7 @@ class ACLAPITest(AironeViewTest):
             'objtype': acl.objtype,
             'acl': [
                 {
-                    'member_id': str(user.id),
-                    'member_type': 'user',
+                    'member_id': str(role.id),
                     'value': str(ACLType.Writable.id),
                 },
             ],
@@ -51,12 +54,13 @@ class ACLAPITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
     def test_update_by_others(self):
-        user = self.admin_login()
+        user = self.guest_login()
+        role = Role.objects.create(name='role')
 
         acl = ACLBase(name='test', created_user=user)
         acl.save()
 
-        self.guest_login()
+        # send request to update ACL of Role that is not permitted to be edited
         resp = self.client.put('/acl/api/v2/acls/%s' % acl.id, json.dumps({
             'name': acl.name,
             'is_public': False,
@@ -64,8 +68,7 @@ class ACLAPITest(AironeViewTest):
             'objtype': acl.objtype,
             'acl': [
                 {
-                    'member_id': str(user.id),
-                    'member_type': 'user',
+                    'member_id': str(role.id),
                     'value': str(ACLType.Writable.id),
                 },
             ],

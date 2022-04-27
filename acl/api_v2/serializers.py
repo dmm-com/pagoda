@@ -7,6 +7,7 @@ from airone.lib.acl import ACLType, ACLObjType
 from entity.models import EntityAttr, Entity
 from entry.models import Attribute, Entry
 from group.models import Group
+from role.models import Role
 from user.models import User
 
 
@@ -59,6 +60,19 @@ class ACLSerializer(serializers.ModelSerializer):
         if not user.has_permission(self.instance, ACLType.Full):
             raise ValidationError("Inadmissible setting."
                                   "By this change you will never change this ACL")
+
+        # validate acl paramter
+        for acl_info in attrs['acl']:
+            if 'member_id' not in acl_info:
+                raise ValidationError('"member_id" parameter is necessary for "acl" parameter')
+
+            role = Role.objects.filter(id=acl_info['member_id']).first()
+            if not role:
+                raise ValidationError('Invalid member_id of Role instance is specified')
+
+            if not role.is_editable(user):
+                raise ValidationError('This user does not have permission to edit specified Role')
+
         return attrs
 
     def update(self, instance, validated_data):
@@ -69,14 +83,11 @@ class ACLSerializer(serializers.ModelSerializer):
         acl_obj.save()
 
         for item in [x for x in validated_data['acl'] if x['value']]:
-            if item['member_type'] == 'user':
-                member = User.objects.get(id=item['member_id'])
-            else:
-                member = Group.objects.get(id=item['member_id'])
+            role = Role.objects.get(id=item['member_id'])
             acl_type = [x for x in ACLType.all() if x == int(item['value'])][0]
 
             # update permissios for the target ACLBased object
-            self._set_permission(member, acl_obj, acl_type)
+            self._set_permission(role, acl_obj, acl_type)
 
         return acl_obj
 
@@ -94,12 +105,12 @@ class ACLSerializer(serializers.ModelSerializer):
             return ACLBase
 
     @staticmethod
-    def _set_permission(member, acl_obj, acl_type):
+    def _set_permission(role, acl_obj, acl_type):
         # clear unset permissions of target ACLbased object
         for _acltype in ACLType.all():
             if _acltype != acl_type and _acltype != ACLType.Nothing:
-                member.permissions.remove(getattr(acl_obj, _acltype.name))
+                role.permissions.remove(getattr(acl_obj, _acltype.name))
 
         # set new permissoin to be specified except for 'Nothing' permission
         if acl_type != ACLType.Nothing:
-            member.permissions.add(getattr(acl_obj, acl_type.name))
+            role.permissions.add(getattr(acl_obj, acl_type.name))

@@ -13,6 +13,7 @@ from entry.models import Entry, Attribute, AttributeValue
 from entry import tasks
 from group.models import Group
 from job.models import Job, JobOperation
+from role.models import Role
 from user.models import User
 
 from entry.settings import CONFIG as ENTRY_CONFIG
@@ -853,8 +854,10 @@ class APITest(AironeViewTest):
         # There was a bug(#28) when there are multiple users, individual attribute authorization
         # would not be inherited from EntityAttr to Attribute. To confirm that the bug is corrected,
         # this create multiple users ('_u1' and '_u2').
+        role = Role.objects.create(name='Role')
+        role.permissions.add(entity_attr.full)
         for user in users.values():
-            user.permissions.add(entity_attr.full)
+            role.users.add(user)
 
         # create an Entry through API call
         resp = self.client.post('/api/v1/entry', json.dumps({
