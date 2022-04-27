@@ -6,6 +6,7 @@ from airone.lib.acl import ACLType
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from group.models import Group
+from role.models import Role
 from user.models import User, History
 
 
@@ -109,15 +110,17 @@ class ModelTest(TestCase):
 
         user = User.objects.create(username='user')
         group = Group.objects.create(name='group')
+        role = Role.objects.create(name='role')
 
         user.groups.add(group)
+        role.groups.add(group)
 
         entity = Entity.objects.create(name='entity',
                                        created_user=admin,
                                        is_public=False,
                                        default_permission=ACLType.Nothing.id)
 
-        group.permissions.add(entity.readable)
+        role.permissions.add(entity.readable)
 
         self.assertTrue(user.has_permission(entity, ACLType.Readable))
         self.assertFalse(user.has_permission(entity, ACLType.Writable))
