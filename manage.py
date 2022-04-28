@@ -9,8 +9,8 @@ from airone.lib.log import Logger
 
 
 def main():
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'airone.settings')
-    os.environ.setdefault('DJANGO_CONFIGURATION', 'Dev')
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "airone.settings")
+    os.environ.setdefault("DJANGO_CONFIGURATION", "Dev")
 
     try:
         from configurations.management import execute_from_command_line
@@ -21,14 +21,14 @@ def main():
             "forget to activate a virtual environment?"
         ) from exc
 
-    for extension in settings.AIRONE['EXTENSIONS']:
+    for extension in settings.AIRONE["EXTENSIONS"]:
         try:
-            importlib.import_module('%s.settings' % extension)
+            importlib.import_module("%s.settings" % extension)
         except ImportError:
-            Logger.warning('Failed to load settings %s' % extension)
+            Logger.warning("Failed to load settings %s" % extension)
 
     execute_from_command_line(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
