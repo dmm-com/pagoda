@@ -56,6 +56,7 @@ export function getEntrySearch(query: string): Promise<Response> {
   return fetch(`/entry/api/v2/search?query=${query}`);
 }
 
+/*
 export function getEntries(
   entityId: number,
   isActive = true,
@@ -66,6 +67,7 @@ export function getEntries(
     `/entry/api/v2/entries/${entityId}?page=${pageNumber}&is_active=${isActiveParam}`
   );
 }
+*/
 
 export function getAttrReferrals(attr_id) {
   return fetch(`/entry/api/v1/get_attr_referrals/${attr_id}/`);
@@ -162,7 +164,7 @@ export function deleteEntity(entityId: number): Promise<Response> {
     body: JSON.stringify({}),
   });
 }
-
+/*
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
 export function createEntry(
@@ -218,6 +220,7 @@ export function restoreEntry(entryId: number): Promise<Response> {
     body: JSON.stringify({}),
   });
 }
+*/
 
 export function copyEntry(entryId: number, entries: string): Promise<Response> {
   return fetch(`/entry/do_copy/${entryId}`, {

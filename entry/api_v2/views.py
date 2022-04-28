@@ -1,16 +1,17 @@
-# from rest_framework import viewsets, filters
-from rest_framework import viewsets
+import re
+
+from rest_framework import viewsets, status
 from rest_framework.exceptions import ValidationError
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
-# from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.response import Response
 from django.db.models import Q
 
 import custom_view
 from airone.lib.acl import ACLType
 from entry.api_v2.serializers import GetEntrySimpleSerializer
-from entry.api_v2.serializers import EntryBaseSerializer, EntryRetrieveSerializer
-from entry.api_v2.serializers import EntryCreateSerializer, EntryUpdateSerializer
+from entry.api_v2.serializers import EntryBaseSerializer
+from entry.api_v2.serializers import EntryRetrieveSerializer
+from entry.api_v2.serializers import EntryUpdateSerializer
 from entry.models import AttributeValue, Entry
 from job.models import Job
 from user.models import User
@@ -18,11 +19,12 @@ from user.models import User
 
 class EntryPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
-        user = User.objects.get(id=request.user.id)
+        user: User = User.objects.get(id=request.user.id)
         permisson = {
             'retrieve': ACLType.Readable,
             'update': ACLType.Writable,
             'destroy': ACLType.Writable,
+            'restore': ACLType.Full,
         }
 
         if not user.has_permission(obj, permisson.get(view.action)):
@@ -33,22 +35,21 @@ class EntryPermission(BasePermission):
 
 class EntryAPI(viewsets.ModelViewSet):
     queryset = Entry.objects.all()
-    pagination_class = PageNumberPagination
     permission_classes = [IsAuthenticated & EntryPermission]
 
     def get_serializer_class(self):
         serializer = {
             'retrieve': EntryRetrieveSerializer,
             'update': EntryUpdateSerializer,
-            'create': EntryCreateSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
-    def perform_destroy(self, entry: Entry):
+    def destroy(self, request, pk):
+        entry: Entry = self.get_object()
         if not entry.is_active:
             raise ValidationError("specified entry has already been deleted")
 
-        user = User.objects.get(id=self.request.user.id)
+        user: User = User.objects.get(id=request.user.id)
 
         if custom_view.is_custom("before_delete_entry", entry.schema.name):
             custom_view.call_custom("before_delete_entry", entry.schema.name, user, entry)
@@ -63,17 +64,46 @@ class EntryAPI(viewsets.ModelViewSet):
             custom_view.call_custom("after_delete_entry", entry.schema.name, user, entry)
 
         # Send notification to the webhook URL
-        job_notify = Job.new_notify_delete_entry(user, entry)
+        job_notify: Job = Job.new_notify_delete_entry(user, entry)
         job_notify.run()
 
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-'''
-    permission_classes = [IsAuthenticated & EntryPermission]
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    filterset_fields = ['is_active']
-    ordering_fields = ['name']
-    search_fields = ['name']
-'''
+    def restore(self, request, pk):
+        entry: Entry = self.get_object()
+
+        if entry.is_active:
+            raise ValidationError("specified entry has not deleted")
+
+        # checks that a same name entry corresponding to the entity is existed, or not.
+        if Entry.objects.filter(
+            schema=entry.schema,
+            name=re.sub(r'_deleted_[0-9_]*$', '', entry.name),
+            is_active=True
+        ).exists():
+            raise ValidationError("specified entry has already exist other")
+
+        user: User = User.objects.get(id=request.user.id)
+
+        if custom_view.is_custom("before_restore_entry", entry.schema.name):
+            custom_view.call_custom("before_restore_entry", entry.schema.name, user, entry)
+
+        entry.set_status(Entry.STATUS_CREATING)
+
+        # restore entry
+        entry.restore()
+
+        if custom_view.is_custom("after_restore_entry", entry.schema.name):
+            custom_view.call_custom("after_restore_entry", entry.schema.name, user, entry)
+
+        # remove status flag which is set before calling this
+        entry.del_status(Entry.STATUS_CREATING)
+
+        # Send notification to the webhook URL
+        job_notify_event = Job.new_notify_create_entry(user, entry)
+        job_notify_event.run()
+
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class searchAPI(viewsets.ReadOnlyModelViewSet):

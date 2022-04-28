@@ -346,9 +346,6 @@ def restore_entry(self, job_id):
         if custom_view.is_custom("after_restore_entry", entry.schema.name):
             custom_view.call_custom("after_restore_entry", entry.schema.name, job.user, entry)
 
-        # update entry information to Elasticsearch
-        entry.register_es()
-
         # update job status and save it
         job.update(Job.STATUS['DONE'])
 
