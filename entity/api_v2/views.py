@@ -50,8 +50,8 @@ def history(request, entity_id):
 
 @extend_schema(
     parameters=[
-        OpenApiParameter('query', OpenApiTypes.STR, OpenApiParameter.QUERY),
-        OpenApiParameter('is_top_level', OpenApiTypes.BOOL, OpenApiParameter.QUERY),
+        OpenApiParameter("query", OpenApiTypes.STR, OpenApiParameter.QUERY),
+        OpenApiParameter("is_top_level", OpenApiTypes.BOOL, OpenApiParameter.QUERY),
     ],
 )
 class EntityAPI(viewsets.ReadOnlyModelViewSet):
@@ -59,21 +59,18 @@ class EntityAPI(viewsets.ReadOnlyModelViewSet):
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
-        query = self.request.query_params.get('query', None)
-        is_top_level = self.request.query_params.get('is_top_level', None)
+        query = self.request.query_params.get("query", None)
+        is_top_level = self.request.query_params.get("is_top_level", None)
 
-        filter_condition = {
-            'is_active': True
-        }
+        filter_condition = {"is_active": True}
         exclude_condition = {}
 
         if query:
-            filter_condition['name__iregex'] = r'%s' % query
+            filter_condition["name__iregex"] = r"%s" % query
         if is_top_level is not None:
             if strtobool(is_top_level):
-                filter_condition['status'] = F('status').bitor(Entity.STATUS_TOP_LEVEL)
+                filter_condition["status"] = F("status").bitor(Entity.STATUS_TOP_LEVEL)
             else:
-                exclude_condition['status'] = F('status').bitor(Entity.STATUS_TOP_LEVEL)
+                exclude_condition["status"] = F("status").bitor(Entity.STATUS_TOP_LEVEL)
 
-        return Entity.objects.filter(**filter_condition).exclude(
-            **exclude_condition).order_by('id')
+        return Entity.objects.filter(**filter_condition).exclude(**exclude_condition).order_by("id")

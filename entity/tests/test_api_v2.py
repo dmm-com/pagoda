@@ -79,8 +79,9 @@ class ViewTest(AironeViewTest):
     def test_get_entity(self):
         user = self.guest_login()
 
-        entity = Entity.objects.create(name='foo', is_public=True, created_user=user,
-                                       status=Entity.STATUS_TOP_LEVEL)
+        entity = Entity.objects.create(
+            name="foo", is_public=True, created_user=user, status=Entity.STATUS_TOP_LEVEL
+        )
 
         resp = self.client.get("/entity/api/v2/entities/%s" % entity.id)
         self.assertEqual(resp.status_code, 200)
@@ -92,11 +93,11 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get("/entity/api/v2/entities?query=foo")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()['results']), 1)
+        self.assertEqual(len(resp.json()["results"]), 1)
 
-        resp = self.client.get('/entity/api/v2/entities?is_top_level=true')
+        resp = self.client.get("/entity/api/v2/entities?is_top_level=true")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()['results']), 1)
-        resp = self.client.get('/entity/api/v2/entities?is_top_level=false')
+        self.assertEqual(len(resp.json()["results"]), 1)
+        resp = self.client.get("/entity/api/v2/entities?is_top_level=false")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()['results']), 0)
+        self.assertEqual(len(resp.json()["results"]), 0)

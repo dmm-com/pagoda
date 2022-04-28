@@ -107,27 +107,46 @@ def edit(request, entity_id):
     return render(request, "edit_entity.html", context)
 
 
-@http_post([
-    {'name': 'name', 'type': str, 'checker': lambda x: (
-            x['name'] and len(x['name']) <= Entity._meta.get_field('name').max_length
-    )},
-    {'name': 'note', 'type': str},
-    {'name': 'is_toplevel', 'type': bool},
-    {'name': 'attrs', 'type': list, 'meta': [
-        {'name': 'name', 'type': str, 'checker': lambda x: (
-                x['name'] and not re.match(r'^\s*$', x['name']) and
-                len(x['name']) <= EntityAttr._meta.get_field('name').max_length
-        )},
-        {'name': 'type', 'type': str, 'checker': lambda x: (
-                any([y == int(x['type']) for y in AttrTypes])
-        )},
-        {'name': 'is_mandatory', 'type': bool},
-        {'name': 'is_delete_in_chain', 'type': bool},
-        {'name': 'row_index', 'type': str, 'checker': lambda x: (
-                re.match(r"^[0-9]*$", x['row_index'])
-        )}
-    ]}
-])
+@http_post(
+    [
+        {
+            "name": "name",
+            "type": str,
+            "checker": lambda x: (
+                x["name"] and len(x["name"]) <= Entity._meta.get_field("name").max_length
+            ),
+        },
+        {"name": "note", "type": str},
+        {"name": "is_toplevel", "type": bool},
+        {
+            "name": "attrs",
+            "type": list,
+            "meta": [
+                {
+                    "name": "name",
+                    "type": str,
+                    "checker": lambda x: (
+                        x["name"]
+                        and not re.match(r"^\s*$", x["name"])
+                        and len(x["name"]) <= EntityAttr._meta.get_field("name").max_length
+                    ),
+                },
+                {
+                    "name": "type",
+                    "type": str,
+                    "checker": lambda x: (any([y == int(x["type"]) for y in AttrTypes])),
+                },
+                {"name": "is_mandatory", "type": bool},
+                {"name": "is_delete_in_chain", "type": bool},
+                {
+                    "name": "row_index",
+                    "type": str,
+                    "checker": lambda x: (re.match(r"^[0-9]*$", x["row_index"])),
+                },
+            ],
+        },
+    ]
+)
 def do_edit(request, entity_id, recv_data):
     user = User.objects.get(id=request.user.id)
     entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Writable)
@@ -147,10 +166,15 @@ def do_edit(request, entity_id, recv_data):
             return HttpResponse("Specified referral is invalid", status=400)
 
     # duplication checks
-    counter = collections.Counter([attr['name'] for attr in recv_data['attrs']
-                                   if 'deleted' not in attr or not attr['deleted']])
+    counter = collections.Counter(
+        [
+            attr["name"]
+            for attr in recv_data["attrs"]
+            if "deleted" not in attr or not attr["deleted"]
+        ]
+    )
     if len([v for v, count in counter.items() if count > 1]):
-        return HttpResponse('Duplicated attribute names are not allowed', status=400)
+        return HttpResponse("Duplicated attribute names are not allowed", status=400)
 
     # prevent to show edit page under the processing
     if entity.get_status(Entity.STATUS_EDITING):
@@ -186,28 +210,48 @@ def do_edit(request, entity_id, recv_data):
     )
 
 
-@http_post([
-    {'name': 'name', 'type': str, 'checker': lambda x: (
-            x['name'] and not Entity.objects.filter(name=x['name']).exists() and
-            len(x['name']) <= Entity._meta.get_field('name').max_length
-    )},
-    {'name': 'note', 'type': str},
-    {'name': 'is_toplevel', 'type': bool},
-    {'name': 'attrs', 'type': list, 'meta': [
-        {'name': 'name', 'type': str, 'checker': lambda x: (
-                x['name'] and not re.match(r'^\s*$', x['name']) and
-                len(x['name']) <= EntityAttr._meta.get_field('name').max_length
-        )},
-        {'name': 'type', 'type': str, 'checker': lambda x: (
-                any([y == int(x['type']) for y in AttrTypes])
-        )},
-        {'name': 'is_mandatory', 'type': bool},
-        {'name': 'is_delete_in_chain', 'type': bool},
-        {'name': 'row_index', 'type': str, 'checker': lambda x: (
-                re.match(r"^[0-9]*$", x['row_index'])
-        )}
-    ]},
-])
+@http_post(
+    [
+        {
+            "name": "name",
+            "type": str,
+            "checker": lambda x: (
+                x["name"]
+                and not Entity.objects.filter(name=x["name"]).exists()
+                and len(x["name"]) <= Entity._meta.get_field("name").max_length
+            ),
+        },
+        {"name": "note", "type": str},
+        {"name": "is_toplevel", "type": bool},
+        {
+            "name": "attrs",
+            "type": list,
+            "meta": [
+                {
+                    "name": "name",
+                    "type": str,
+                    "checker": lambda x: (
+                        x["name"]
+                        and not re.match(r"^\s*$", x["name"])
+                        and len(x["name"]) <= EntityAttr._meta.get_field("name").max_length
+                    ),
+                },
+                {
+                    "name": "type",
+                    "type": str,
+                    "checker": lambda x: (any([y == int(x["type"]) for y in AttrTypes])),
+                },
+                {"name": "is_mandatory", "type": bool},
+                {"name": "is_delete_in_chain", "type": bool},
+                {
+                    "name": "row_index",
+                    "type": str,
+                    "checker": lambda x: (re.match(r"^[0-9]*$", x["row_index"])),
+                },
+            ],
+        },
+    ]
+)
 def do_create(request, recv_data):
     # validation checks
     for attr in recv_data["attrs"]:
@@ -222,10 +266,15 @@ def do_create(request, recv_data):
             return HttpResponse("Specified referral is invalid", status=400)
 
     # duplication checks
-    counter = collections.Counter([attr['name'] for attr in recv_data['attrs']
-                                   if 'deleted' not in attr or not attr['deleted']])
+    counter = collections.Counter(
+        [
+            attr["name"]
+            for attr in recv_data["attrs"]
+            if "deleted" not in attr or not attr["deleted"]
+        ]
+    )
     if len([v for v, count in counter.items() if count > 1]):
-        return HttpResponse('Duplicated attribute names are not allowed', status=400)
+        return HttpResponse("Duplicated attribute names are not allowed", status=400)
 
     # get user object that current access
     user = User.objects.get(id=request.user.id)
@@ -393,9 +442,9 @@ def dashboard(request, entity_id):
             schema=entity, is_active=True
         ).count() - sum([x["count"] for x in summarized_data[attr]["referral_count"]])
 
-        summarized_data[attr]['no_referral_ratio'] = '%2.1f' % \
-                                                     ((100 * summarized_data[attr][
-                                                         'no_referral_count']) / total_entry_count)
+        summarized_data[attr]["no_referral_ratio"] = "%2.1f" % (
+            (100 * summarized_data[attr]["no_referral_count"]) / total_entry_count
+        )
 
         # sort by referral counts
         summarized_data[attr]["referral_count"] = sorted(

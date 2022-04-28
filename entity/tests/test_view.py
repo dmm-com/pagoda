@@ -224,18 +224,26 @@ class ViewTest(AironeViewTest):
 
         # with duplicated attr names
         params = {
-            'note': 'fuga',
-            'is_toplevel': False,
-            'attrs': [
-                {'name': 'foo', 'type': str(AttrTypeStr), 'is_delete_in_chain': False,
-                 'is_mandatory': True, 'row_index': '1'},
-                {'name': 'foo', 'type': str(AttrTypeStr), 'is_delete_in_chain': False,
-                 'is_mandatory': False, 'row_index': '2'},
+            "note": "fuga",
+            "is_toplevel": False,
+            "attrs": [
+                {
+                    "name": "foo",
+                    "type": str(AttrTypeStr),
+                    "is_delete_in_chain": False,
+                    "is_mandatory": True,
+                    "row_index": "1",
+                },
+                {
+                    "name": "foo",
+                    "type": str(AttrTypeStr),
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "row_index": "2",
+                },
             ],
         }
-        resp = self.client.post(reverse('entity:do_create'),
-                                json.dumps(params),
-                                'application/json')
+        resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
 
         self.assertEqual(resp.status_code, 400)
         self.assertIsNone(Entity.objects.first())
@@ -408,22 +416,32 @@ class ViewTest(AironeViewTest):
 
         # with duplicated attr names
         params = {
-            'name': 'hoge',
-            'note': 'fuga',
-            'is_toplevel': False,
-            'attrs': [
-                {'name': 'foo', 'type': str(AttrTypeStr), 'is_delete_in_chain': False,
-                 'is_mandatory': True, 'row_index': '1'},
-                {'name': 'foo', 'type': str(AttrTypeStr), 'is_delete_in_chain': False,
-                 'is_mandatory': True, 'row_index': '2'},
+            "name": "hoge",
+            "note": "fuga",
+            "is_toplevel": False,
+            "attrs": [
+                {
+                    "name": "foo",
+                    "type": str(AttrTypeStr),
+                    "is_delete_in_chain": False,
+                    "is_mandatory": True,
+                    "row_index": "1",
+                },
+                {
+                    "name": "foo",
+                    "type": str(AttrTypeStr),
+                    "is_delete_in_chain": False,
+                    "is_mandatory": True,
+                    "row_index": "2",
+                },
             ],
         }
-        resp = self.client.post(reverse('entity:do_edit', args=[entity.id]),
-                                json.dumps(params),
-                                'application/json')
+        resp = self.client.post(
+            reverse("entity:do_edit", args=[entity.id]), json.dumps(params), "application/json"
+        )
         self.assertEqual(resp.status_code, 400)
 
-    @mock.patch('entity.tasks.edit_entity.delay', mock.Mock(side_effect=tasks.edit_entity))
+    @mock.patch("entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity))
     def test_post_edit_with_valid_params(self):
         user = self.admin_login()
 
