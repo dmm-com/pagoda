@@ -44,7 +44,7 @@ export const DashboardPage: FC = () => {
 
   const entities = useAsync(async () => {
     // TODO get only top level entities with server-side filters
-    const entities = await aironeApiClientV2.getEntities(1);
+    const entities = await aironeApiClientV2.getEntities(1, undefined, true);
     return entities.results.filter((e) => e.isToplevel);
   });
 

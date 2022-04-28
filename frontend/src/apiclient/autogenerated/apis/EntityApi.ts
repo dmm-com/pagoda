@@ -23,6 +23,7 @@ import {
 } from "../models";
 
 export interface EntityApiV2EntitiesListRequest {
+  isTopLevel?: boolean;
   limit?: number;
   offset?: number;
   query?: string;
@@ -30,6 +31,7 @@ export interface EntityApiV2EntitiesListRequest {
 
 export interface EntityApiV2EntitiesRetrieveRequest {
   id: number;
+  isTopLevel?: boolean;
   query?: string;
 }
 
@@ -44,6 +46,10 @@ export class EntityApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<runtime.ApiResponse<PaginatedEntityList>> {
     const queryParameters: any = {};
+
+    if (requestParameters.isTopLevel !== undefined) {
+      queryParameters["is_top_level"] = requestParameters.isTopLevel;
+    }
 
     if (requestParameters.limit !== undefined) {
       queryParameters["limit"] = requestParameters.limit;
@@ -115,6 +121,10 @@ export class EntityApi extends runtime.BaseAPI {
     }
 
     const queryParameters: any = {};
+
+    if (requestParameters.isTopLevel !== undefined) {
+      queryParameters["is_top_level"] = requestParameters.isTopLevel;
+    }
 
     if (requestParameters.query !== undefined) {
       queryParameters["query"] = requestParameters.query;
