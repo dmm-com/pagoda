@@ -1,6 +1,4 @@
-
 from django.test import TestCase
-from entity.models import Entity
 from group.models import Group
 from user.models import User
 

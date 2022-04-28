@@ -38,7 +38,6 @@ class ACLAPITest(AironeViewTest):
         acl = ACLBase(name='test', created_user=user)
         acl.save()
 
-
         resp = self.client.put('/acl/api/v2/acls/%s' % acl.id, json.dumps({
             'name': acl.name,
             'is_public': False,
