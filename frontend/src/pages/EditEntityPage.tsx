@@ -15,10 +15,33 @@ import { EntityForm } from "components/entity/EntityForm";
 export const EditEntityPage: FC = () => {
   const { entityId } = useParams<{ entityId: number }>();
 
+  const [entityInfo, setEntityInfo] = useState<{
+    name: string;
+    note: string;
+    isTopLevel: boolean;
+    attributes: { [key: string]: any }[];
+  }>({
+    name: "",
+    note: "",
+    isTopLevel: false,
+    attributes: [],
+  });
+
   const entity = useAsync(async () => {
-    return entityId !== undefined
-      ? await aironeApiClientV2.getEntity(entityId)
-      : undefined;
+    if (entityId !== undefined) {
+      const resp = await aironeApiClientV2.getEntity(entityId);
+      setEntityInfo({
+        name: resp.name,
+        note: resp.note,
+        isTopLevel: resp.isToplevel,
+        attributes:
+          resp.attrs.map((attr) => {
+            return { ...attr, refIds: attr.referrals.map((r) => r.id) };
+          }) ?? [],
+      });
+      return resp;
+    }
+    return undefined;
   });
 
   const referralEntities = useAsync(async () => {
@@ -91,6 +114,8 @@ export const EditEntityPage: FC = () => {
 
         <EntityForm
           entity={entity.value}
+          entityInfo={entityInfo}
+          setEntityInfo={setEntityInfo}
           referralEntities={referralEntities.value}
           setSubmittable={setSubmittable}
         />

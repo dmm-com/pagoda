@@ -22,15 +22,25 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface Props {
-  attributes: { [key: string]: any }[];
+  entityInfo: {
+    name: string;
+    note: string;
+    isTopLevel: boolean;
+    attributes: { [key: string]: any }[];
+  };
+  setEntityInfo: (entityInfo: {
+    name: string;
+    note: string;
+    isTopLevel: boolean;
+    attributes: { [key: string]: any }[];
+  }) => void;
   referralEntities: Entity[];
-  setAttributes: (attributes: { [key: string]: any }[]) => void;
 }
 
 export const AttributesFields: FC<Props> = ({
-  attributes,
+  entityInfo,
+  setEntityInfo,
   referralEntities,
-  setAttributes,
 }) => {
   const classes = useStyles();
 
@@ -56,24 +66,27 @@ export const AttributesFields: FC<Props> = ({
         </TableHead>
         <TableBody>
           <>
-            {attributes.map((attr, index) => (
+            {entityInfo.attributes.map((attr, index) => (
               <Fragment key={index}>
                 {attr.deleted !== true && (
                   <AttributeRow
                     index={index}
                     currentAttr={attr}
-                    allAttrs={attributes}
+                    allAttrs={entityInfo.attributes}
                     referralEntities={referralEntities}
-                    setAttributes={setAttributes}
+                    entityInfo={entityInfo}
+                    setEntityInfo={setEntityInfo}
                   />
                 )}
               </Fragment>
             ))}
-            {attributes.filter((attr) => !attr.deleted).length === 0 && (
+            {entityInfo.attributes.filter((attr) => !attr.deleted).length ===
+              0 && (
               <AttributeRow
-                allAttrs={attributes}
+                allAttrs={entityInfo.attributes}
                 referralEntities={referralEntities}
-                setAttributes={setAttributes}
+                entityInfo={entityInfo}
+                setEntityInfo={setEntityInfo}
               />
             )}
           </>

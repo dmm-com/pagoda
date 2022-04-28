@@ -45,7 +45,18 @@ interface Props {
   currentAttr?: { [key: string]: any };
   allAttrs: { [key: string]: any }[];
   referralEntities: Entity[];
-  setAttributes: (attributes: { [key: string]: any }[]) => void;
+  entityInfo: {
+    name: string;
+    note: string;
+    isTopLevel: boolean;
+    attributes: { [key: string]: any }[];
+  };
+  setEntityInfo: (entityInfo: {
+    name: string;
+    note: string;
+    isTopLevel: boolean;
+    attributes: { [key: string]: any }[];
+  }) => void;
 }
 
 export const AttributeRow: FC<Props> = ({
@@ -53,7 +64,8 @@ export const AttributeRow: FC<Props> = ({
   currentAttr,
   allAttrs,
   referralEntities,
-  setAttributes,
+  entityInfo,
+  setEntityInfo,
 }) => {
   const classes = useStyles();
 
@@ -65,7 +77,7 @@ export const AttributeRow: FC<Props> = ({
       is_delete_in_chain: false,
       refIds: [],
     });
-    setAttributes([...allAttrs]);
+    setEntityInfo({ ...entityInfo, attributes: [...allAttrs] });
   };
 
   const handleDeleteAttribute = (index: number) => {
@@ -73,7 +85,7 @@ export const AttributeRow: FC<Props> = ({
       ...allAttrs[index],
       deleted: true,
     };
-    setAttributes([...allAttrs]);
+    setEntityInfo({ ...entityInfo, attributes: [...allAttrs] });
   };
 
   const attributeTypeMenuItems = useMemo(() => {
@@ -90,7 +102,7 @@ export const AttributeRow: FC<Props> = ({
     value: any
   ) => {
     allAttrs[index][key] = value;
-    setAttributes([...allAttrs]);
+    setEntityInfo({ ...entityInfo, attributes: [...allAttrs] });
   };
 
   return (

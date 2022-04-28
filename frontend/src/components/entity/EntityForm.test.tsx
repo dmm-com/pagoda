@@ -12,6 +12,15 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(
       <EntityForm
+        entityInfo={{
+          name: "hoge",
+          note: "fuga",
+          isTopLevel: false,
+          attributes: [],
+        }}
+        setEntityInfo={(d) => {
+          /* no operation */
+        }}
         referralEntities={[]}
         setSubmittable={(b) => {
           /* no operation */

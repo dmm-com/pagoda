@@ -13,9 +13,14 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(
       <AttributesFields
-        attributes={[]}
         referralEntities={[]}
-        setAttributes={() => {
+        entityInfo={{
+          name: "hoge",
+          note: "fuga",
+          isTopLevel: false,
+          attributes: [],
+        }}
+        setEntityInfo={() => {
           /* nothing */
         }}
       />,

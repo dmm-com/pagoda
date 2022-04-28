@@ -12,22 +12,21 @@ import {
 import React, { FC } from "react";
 
 interface Props {
-  name: string;
-  note: string;
-  isTopLevel: boolean;
-  setName: (name: string) => void;
-  setNote: (note: string) => void;
-  setIsTopLevel: (isTopLevel: boolean) => void;
+  entityInfo: {
+    name: string;
+    note: string;
+    isTopLevel: boolean;
+    attributes: { [key: string]: any }[];
+  };
+  setEntityInfo: (entityInfo: {
+    name: string;
+    note: string;
+    isTopLevel: boolean;
+    attributes: { [key: string]: any }[];
+  }) => void;
 }
 
-export const BasicFields: FC<Props> = ({
-  name,
-  note,
-  isTopLevel,
-  setName,
-  setNote,
-  setIsTopLevel,
-}) => {
+export const BasicFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
   return (
     <Box>
       <Box my="32px">
@@ -49,11 +48,13 @@ export const BasicFields: FC<Props> = ({
             <TableCell>
               <Input
                 type="text"
-                value={name}
+                value={entityInfo.name}
                 placeholder="エンティティ名"
                 sx={{ width: "100%" }}
-                onChange={(e) => setName(e.target.value)}
-                error={name === ""}
+                onChange={(e) =>
+                  setEntityInfo({ ...entityInfo, name: e.target.value })
+                }
+                error={entityInfo.name === ""}
               />
             </TableCell>
           </TableRow>
@@ -62,10 +63,12 @@ export const BasicFields: FC<Props> = ({
             <TableCell>
               <Input
                 type="text"
-                value={note}
+                value={entityInfo.note}
                 placeholder="備考"
                 sx={{ width: "100%" }}
-                onChange={(e) => setNote(e.target.value)}
+                onChange={(e) =>
+                  setEntityInfo({ ...entityInfo, note: e.target.value })
+                }
               />
             </TableCell>
           </TableRow>
@@ -73,8 +76,10 @@ export const BasicFields: FC<Props> = ({
             <TableCell>サイドバーに表示</TableCell>
             <TableCell>
               <Checkbox
-                checked={isTopLevel}
-                onChange={(e) => setIsTopLevel(e.target.checked)}
+                checked={entityInfo.isTopLevel}
+                onChange={(e) =>
+                  setEntityInfo({ ...entityInfo, isTopLevel: e.target.checked })
+                }
               />
             </TableCell>
           </TableRow>

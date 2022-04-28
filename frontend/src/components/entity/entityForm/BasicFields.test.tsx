@@ -13,16 +13,13 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(
       <BasicFields
-        name="name"
-        note="note"
-        isTopLevel={false}
-        setName={() => {
-          /* nothing */
+        entityInfo={{
+          name: "hoge",
+          note: "fuga",
+          isTopLevel: false,
+          attributes: [],
         }}
-        setNote={() => {
-          /* nothing */
-        }}
-        setIsTopLevel={() => {
+        setEntityInfo={() => {
           /* nothing */
         }}
       />,
