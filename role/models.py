@@ -1,6 +1,3 @@
-from importlib import import_module
-
-from airone.lib.acl import ACLTypeBase
 from django.db import models
 from group.models import Group
 from user.models import User
@@ -52,32 +49,10 @@ class Role(models.Model):
                              list(self.admin_groups.all()))
 
     def is_permitted(self, target_obj, permission_level):
+        """This method has regulation
+        * You don't call this method to check object permission directly because,
+          this method don't care about hieralchical data structure
+          (e.g. Entity/Entry, EntityAttr/Attribute).
+        """
         return any([permission_level.id <= x.get_aclid()
                    for x in self.permissions.filter(codename__startswith=(str(target_obj.id)+'.'))])
-
-    def has_permission(self, target_obj, permission_level):
-        # A bypass processing to rapidly return.
-        # This condition is effective when the public objects are majority.
-        if target_obj.is_public:
-            return True
-
-        # The case that parent data structure (Entity in Entry, or EntityAttr in Attribute)
-        # doesn't permit, access to the children's objects are also not permitted.
-        if ((isinstance(target_obj, import_module('entry.models').Entry) or
-             isinstance(target_obj, import_module('entry.models').Attribute)) and
-                not self.has_permission(target_obj.schema, permission_level)):
-            return False
-
-        # This try-catch syntax is needed because the 'issubclass' may occur a
-        # TypeError exception when permission_level is not object.
-        try:
-            if not issubclass(permission_level, ACLTypeBase):
-                return False
-        except TypeError:
-            return False
-
-        # Checks that the default permission permits to access, or not
-        if permission_level <= target_obj.default_permission:
-            return True
-
-        return self.is_permitted(target_obj, permission_level)

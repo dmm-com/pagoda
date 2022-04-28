@@ -50,10 +50,6 @@ class User(DjangoUser):
         except TypeError:
             return False
 
-        # Checks that the default permission permits to access, or not
-        if permission_level <= target_obj.default_permission:
-            return True
-
         # doesn't permit, access to the children's objects are also not permitted.
         if ((isinstance(target_obj, import_module('entry.models').Entry) or
              isinstance(target_obj, import_module('entry.models').Attribute)) and
@@ -64,6 +60,10 @@ class User(DjangoUser):
         if target_obj.is_public:
             return True
 
+        # Checks that the default permission permits to access, or not
+        if permission_level <= target_obj.default_permission:
+            return True
+
         # This checks Roles that this user and groups, which this user belongs to,
         # have permission of specified permission_level
         belonged_roles = set(
@@ -71,7 +71,7 @@ class User(DjangoUser):
             sum([list(g.role.filter(is_active=True)) for g in self.airone_groups], [])
         )
         for role in belonged_roles:
-            if role.has_permission(target_obj, permission_level):
+            if role.is_permitted(target_obj, permission_level):
                 return True
 
         return False

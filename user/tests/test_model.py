@@ -125,3 +125,18 @@ class ModelTest(TestCase):
         self.assertTrue(user.has_permission(entity, ACLType.Readable))
         self.assertFalse(user.has_permission(entity, ACLType.Writable))
         self.assertFalse(user.has_permission(entity, ACLType.Full))
+
+    def test_object_acl_that_should_not_be_shown(self):
+        user = User.objects.create(username='user')
+        entity = Entity.objects.create(name='entity',
+                                       created_user=user,
+                                       is_public=False,
+                                       default_permission=ACLType.Nothing.id)
+
+        entry = Entry.objects.create(name='Entry',
+                                     schema=entity,
+                                     is_public=False,
+                                     default_permission=ACLType.Full.id,
+                                     created_user=user)
+
+        self.assertFalse(user.has_permission(entry, ACLType.Readable))
