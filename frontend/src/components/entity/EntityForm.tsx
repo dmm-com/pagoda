@@ -14,9 +14,14 @@ import { DjangoContext } from "utils/DjangoContext";
 interface Props {
   entity?: Entity;
   referralEntities: Entity[];
+  setSubmittable: (isSubmittable: boolean) => void;
 }
 
-export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
+export const EntityForm: FC<Props> = ({
+  entity,
+  referralEntities,
+  setSubmittable,
+}) => {
   const history = useHistory();
 
   const createMode = entity?.id === undefined;
@@ -28,7 +33,7 @@ export const EntityForm: FC<Props> = ({ entity, referralEntities }) => {
       return { ...attr, refIds: attr.referrals.map((r) => r.id) };
     }) ?? []
   );
-  const [submittable, setSubmittable] = useState<boolean>(false);
+  //const [submittable, setSubmittable] = useState<boolean>(false);
 
   const handleSubmit = async () => {
     // Adjusted attributes for the API

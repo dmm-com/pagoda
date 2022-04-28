@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -33,6 +33,7 @@ export const EditEntityPage: FC = () => {
       return [];
     }
   });
+  const [submittable, setSubmittable] = useState<boolean>(false);
 
   if (entity.loading || referralEntities.loading || webhooks.loading) {
     return <Loading />;
@@ -58,9 +59,9 @@ export const EditEntityPage: FC = () => {
       </AironeBreadcrumbs>
 
       {/* TODO z-index, position: fixed, margin-top, background-color */}
-      <PageHeader>
+      <PageHeader isSubmittable={submittable}>
         {entity?.value != null
-          ? `${entity.value.name}の編集`
+          ? entity.value.name + "の編集"
           : "新規エンティティの作成"}
       </PageHeader>
 
@@ -87,9 +88,11 @@ export const EditEntityPage: FC = () => {
           )}
         </Box>
         */}
+
         <EntityForm
           entity={entity.value}
           referralEntities={referralEntities.value}
+          setSubmittable={setSubmittable}
         />
       </Box>
     </Box>

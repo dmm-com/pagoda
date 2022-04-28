@@ -10,6 +10,16 @@ import { TestWrapper } from "utils/TestWrapper";
 
 test("should render a component with essential props", function () {
   expect(() =>
-    render(<EntityForm referralEntities={[]} />, { wrapper: TestWrapper })
+    render(
+      <EntityForm
+        referralEntities={[]}
+        setSubmittable={(b) => {
+          /* no operation */
+        }}
+      />,
+      {
+        wrapper: TestWrapper,
+      }
+    )
   ).not.toThrow();
 });

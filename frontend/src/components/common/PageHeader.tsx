@@ -1,7 +1,11 @@
 import { Box, Button, Divider, Grid, Typography } from "@mui/material";
 import React, { FC } from "react";
 
-export const PageHeader: FC = ({ children }) => {
+interface Props {
+  isSubmittable: boolean;
+}
+
+export const PageHeader: FC<Props> = ({ isSubmittable, children }) => {
   return (
     <>
       <Box
@@ -21,7 +25,11 @@ export const PageHeader: FC = ({ children }) => {
             <Grid item xs={2}>
               <Box display="flex" justifyContent="center" my="32px">
                 <Box mx="4px">
-                  <Button variant="contained" color="secondary">
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    disabled={!isSubmittable}
+                  >
                     保存
                   </Button>
                 </Box>
