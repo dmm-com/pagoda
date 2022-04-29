@@ -32,68 +32,68 @@ class MetaAttrType(type):
 
 
 class AttrTypeObj(with_metaclass(MetaAttrType)):
-    NAME = 'entry'
+    NAME = "entry"
     TYPE = _ATTR_OBJECT_TYPE
     DEFAULT_VALUE = None
 
 
 # STRING-type restricts data size to AttributeValue.MAXIMUM_VALUE_LENGTH
 class AttrTypeStr(with_metaclass(MetaAttrType)):
-    NAME = 'string'
+    NAME = "string"
     TYPE = _ATTR_STRING_TYPE
-    DEFAULT_VALUE = ''
+    DEFAULT_VALUE = ""
 
 
 class AttrTypeNamedObj(with_metaclass(MetaAttrType)):
-    NAME = 'named_entry'
+    NAME = "named_entry"
     TYPE = _ATTR_OBJECT_TYPE | _ATTR_NAMED_TYPE
-    DEFAULT_VALUE = {'name': '', 'id': None}
+    DEFAULT_VALUE = {"name": "", "id": None}
 
 
 class AttrTypeArrObj(with_metaclass(MetaAttrType)):
-    NAME = 'array_entry'
+    NAME = "array_entry"
     TYPE = _ATTR_OBJECT_TYPE | _ATTR_ARRAY_TYPE
     DEFAULT_VALUE = []
 
 
 class AttrTypeArrStr(with_metaclass(MetaAttrType)):
-    NAME = 'array_string'
+    NAME = "array_string"
     TYPE = _ATTR_STRING_TYPE | _ATTR_ARRAY_TYPE
     DEFAULT_VALUE = []
 
 
 class AttrTypeArrNamedObj(with_metaclass(MetaAttrType)):
-    NAME = 'array_named_entry'
+    NAME = "array_named_entry"
     TYPE = _ATTR_OBJECT_TYPE | _ATTR_NAMED_TYPE | _ATTR_ARRAY_TYPE
     DEFAULT_VALUE: Any = dict().values()
 
 
 class AttrTypeArrGroup(with_metaclass(MetaAttrType)):
-    NAME = 'array_group'
+    NAME = "array_group"
     TYPE = _ATTR_GROUP_TYPE | _ATTR_ARRAY_TYPE
     DEFAULT_VALUE = []
 
 
 class AttrTypeText(with_metaclass(MetaAttrType)):
-    NAME = 'textarea'
+    NAME = "textarea"
     TYPE = _ATTR_TEXT_TYPE
-    DEFAULT_VALUE = ''
+    DEFAULT_VALUE = ""
 
 
 class AttrTypeBoolean(with_metaclass(MetaAttrType)):
-    NAME = 'boolean'
+    NAME = "boolean"
     TYPE = _ATTR_BOOL_TYPE
     DEFAULT_VALUE = False
 
 
 class AttrTypeGroup(with_metaclass(MetaAttrType)):
-    NAME = 'group'
+    NAME = "group"
     TYPE = _ATTR_GROUP_TYPE
     DEFAULT_VALUE = None
 
 
 class AttrTypeDate(with_metaclass(MetaAttrType)):
-    NAME = 'date'
+    NAME = "date"
     TYPE = _ATTR_DATE_TYPE
     DEFAULT_VALUE = None
 
@@ -112,30 +112,30 @@ AttrTypes = [
     AttrTypeDate,
 ]
 AttrTypeValue = {
-    'object': AttrTypeObj.TYPE,
-    'string': AttrTypeStr.TYPE,
-    'named': _ATTR_NAMED_TYPE,
-    'named_object': AttrTypeNamedObj.TYPE,
-    'array': _ATTR_ARRAY_TYPE,
-    'array_object': AttrTypeArrObj.TYPE,
-    'array_string': AttrTypeArrStr.TYPE,
-    'array_named_object': AttrTypeArrNamedObj.TYPE,
-    'array_group': AttrTypeArrGroup.TYPE,
-    'text': AttrTypeText.TYPE,
-    'boolean': AttrTypeBoolean.TYPE,
-    'group': AttrTypeGroup.TYPE,
-    'date': AttrTypeDate.TYPE,
+    "object": AttrTypeObj.TYPE,
+    "string": AttrTypeStr.TYPE,
+    "named": _ATTR_NAMED_TYPE,
+    "named_object": AttrTypeNamedObj.TYPE,
+    "array": _ATTR_ARRAY_TYPE,
+    "array_object": AttrTypeArrObj.TYPE,
+    "array_string": AttrTypeArrStr.TYPE,
+    "array_named_object": AttrTypeArrNamedObj.TYPE,
+    "array_group": AttrTypeArrGroup.TYPE,
+    "text": AttrTypeText.TYPE,
+    "boolean": AttrTypeBoolean.TYPE,
+    "group": AttrTypeGroup.TYPE,
+    "date": AttrTypeDate.TYPE,
 }
 AttrDefaultValue = {
-    AttrTypeValue['object']: AttrTypeObj.DEFAULT_VALUE,
-    AttrTypeValue['string']: AttrTypeStr.DEFAULT_VALUE,
-    AttrTypeValue['named_object']: AttrTypeNamedObj.DEFAULT_VALUE,
-    AttrTypeValue['array_object']: AttrTypeArrObj.DEFAULT_VALUE,
-    AttrTypeValue['array_string']: AttrTypeArrStr.DEFAULT_VALUE,
-    AttrTypeValue['array_named_object']: AttrTypeArrNamedObj.DEFAULT_VALUE,
-    AttrTypeValue['array_group']: AttrTypeArrGroup.DEFAULT_VALUE,
-    AttrTypeValue['text']: AttrTypeText.DEFAULT_VALUE,
-    AttrTypeValue['boolean']: AttrTypeBoolean.DEFAULT_VALUE,
-    AttrTypeValue['group']: AttrTypeGroup.DEFAULT_VALUE,
-    AttrTypeValue['date']: AttrTypeDate.DEFAULT_VALUE,
+    AttrTypeValue["object"]: AttrTypeObj.DEFAULT_VALUE,
+    AttrTypeValue["string"]: AttrTypeStr.DEFAULT_VALUE,
+    AttrTypeValue["named_object"]: AttrTypeNamedObj.DEFAULT_VALUE,
+    AttrTypeValue["array_object"]: AttrTypeArrObj.DEFAULT_VALUE,
+    AttrTypeValue["array_string"]: AttrTypeArrStr.DEFAULT_VALUE,
+    AttrTypeValue["array_named_object"]: AttrTypeArrNamedObj.DEFAULT_VALUE,
+    AttrTypeValue["array_group"]: AttrTypeArrGroup.DEFAULT_VALUE,
+    AttrTypeValue["text"]: AttrTypeText.DEFAULT_VALUE,
+    AttrTypeValue["boolean"]: AttrTypeBoolean.DEFAULT_VALUE,
+    AttrTypeValue["group"]: AttrTypeGroup.DEFAULT_VALUE,
+    AttrTypeValue["date"]: AttrTypeDate.DEFAULT_VALUE,
 }

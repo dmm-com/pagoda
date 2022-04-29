@@ -111,24 +111,35 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         queryset = []
-        query = self.request.query_params.get('query', None)
+        query = self.request.query_params.get("query", None)
 
         if not query:
             return queryset
 
-        name_results = list(Entry.objects.filter(name__iregex=r'%s' % query,
-                                                 is_active=True).order_by('name'))
-        value_results = [x.parent_attr.parent_entry for x in AttributeValue.objects.select_related(
-                         'parent_attr__parent_entry').filter(Q(value__iregex=r'%s' % query),
-                         Q(is_latest=True) | Q(parent_attrv__is_latest=True),
-                         Q(parent_attr__parent_entry__is_active=True)).order_by(
-                         'parent_attr__parent_entry__name')]
-        ref_results = [x.parent_attr.parent_entry for x in AttributeValue.objects.select_related(
-                       'parent_attr__parent_entry', 'referral').filter(
-                       Q(referral__is_active=True), Q(referral__name__iregex=r'%s' % query),
-                       Q(is_latest=True) | Q(parent_attrv__is_latest=True),
-                       Q(parent_attr__parent_entry__is_active=True)).order_by(
-                       'parent_attr__parent_entry__name')]
+        name_results = list(
+            Entry.objects.filter(name__iregex=r"%s" % query, is_active=True).order_by("name")
+        )
+        value_results = [
+            x.parent_attr.parent_entry
+            for x in AttributeValue.objects.select_related("parent_attr__parent_entry")
+            .filter(
+                Q(value__iregex=r"%s" % query),
+                Q(is_latest=True) | Q(parent_attrv__is_latest=True),
+                Q(parent_attr__parent_entry__is_active=True),
+            )
+            .order_by("parent_attr__parent_entry__name")
+        ]
+        ref_results = [
+            x.parent_attr.parent_entry
+            for x in AttributeValue.objects.select_related("parent_attr__parent_entry", "referral")
+            .filter(
+                Q(referral__is_active=True),
+                Q(referral__name__iregex=r"%s" % query),
+                Q(is_latest=True) | Q(parent_attrv__is_latest=True),
+                Q(parent_attr__parent_entry__is_active=True),
+            )
+            .order_by("parent_attr__parent_entry__name")
+        ]
         results = name_results + value_results + ref_results
         queryset = sorted(set(results), key=results.index)
 

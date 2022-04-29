@@ -34,6 +34,8 @@ user@hostname:~$ cd airone
 user@hostname:~/airone$ virtualenv -p python3 virtualenv
 user@hostname:~/airone$ source virtualenv/bin/activate
 (virtualenv) user@hostname:~/airone$ sudo pip install -r requirements.txt
+# or, during development 
+(virtualenv) user@hostname:~/airone$ sudo pip install -r requirements-dev.txt
 ```
 
 ### Setting-up MySQL configuration
@@ -333,6 +335,13 @@ $ gunicorn airone.wsgi:application --bind=0.0.0.0:8080 --workers=3
 (In development)
 $ source .venv/bin/activate
 $ python manage.py runserver
+```
+
+## Auto-format
+
+```
+$ source .venv/bin/activate
+$ black .
 ```
 
 ## [Experimental] Build the new UI with React

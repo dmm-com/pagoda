@@ -14,11 +14,18 @@ def _send_request_to_webhook_endpoint(entry, user, event_type):
         except Exception:
             request_headers = {}
 
-        requests.post(webhook.url, headers=request_headers, verify=False, data=json.dumps({
-            'event': event_type,
-            'data': entry.to_dict(user),
-            'user': user.username,
-        }))
+        requests.post(
+            webhook.url,
+            headers=request_headers,
+            verify=False,
+            data=json.dumps(
+                {
+                    "event": event_type,
+                    "data": entry.to_dict(user),
+                    "user": user.username,
+                }
+            ),
+        )
 
 
 def notify_entry_create(entry, user):
@@ -26,7 +33,7 @@ def notify_entry_create(entry, user):
     entry.complement_attrs(user)
 
     # send a request to the registered WebHook URL
-    _send_request_to_webhook_endpoint(entry, user, 'entry.create')
+    _send_request_to_webhook_endpoint(entry, user, "entry.create")
 
 
 def notify_entry_update(entry, user):
@@ -34,9 +41,9 @@ def notify_entry_update(entry, user):
     entry.complement_attrs(user)
 
     # send a request to the registered WebHook URL
-    _send_request_to_webhook_endpoint(entry, user, 'entry.update')
+    _send_request_to_webhook_endpoint(entry, user, "entry.update")
 
 
 def notify_entry_delete(entry, user):
     # send a request to the registered WebHook URL
-    _send_request_to_webhook_endpoint(entry, user, 'entry.delete')
+    _send_request_to_webhook_endpoint(entry, user, "entry.delete")

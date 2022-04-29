@@ -37,50 +37,50 @@ def _merge_referrals_by_index(ref_list, name_list):
     result = {}
     for ref_info, name_info in zip(ref_list, name_list):
         if ref_info:
-            if ref_info['index'] not in result:
-                result[ref_info['index']] = {}
-            result[ref_info['index']]['id'] = ref_info['data']
+            if ref_info["index"] not in result:
+                result[ref_info["index"]] = {}
+            result[ref_info["index"]]["id"] = ref_info["data"]
 
         if name_info:
-            if name_info['index'] not in result:
-                result[name_info['index']] = {}
-            result[name_info['index']]['name'] = name_info['data']
+            if name_info["index"] not in result:
+                result[name_info["index"]] = {}
+            result[name_info["index"]]["name"] = name_info["data"]
 
     return result
 
 
 def _convert_data_value(attr, info):
-    if attr.schema.type & AttrTypeValue['array']:
+    if attr.schema.type & AttrTypeValue["array"]:
         recv_value = []
-        if 'value' in info and info['value']:
-            recv_value = [x['data'] for x in info['value'] if 'data' in x]
+        if "value" in info and info["value"]:
+            recv_value = [x["data"] for x in info["value"] if "data" in x]
 
-        if attr.schema.type & AttrTypeValue['named']:
-            return _merge_referrals_by_index(info['value'], info['referral_key']).values()
+        if attr.schema.type & AttrTypeValue["named"]:
+            return _merge_referrals_by_index(info["value"], info["referral_key"]).values()
         else:
             return recv_value
 
     else:
-        recv_value = recv_ref_key = ''
+        recv_value = recv_ref_key = ""
 
-        if 'value' in info and info['value'] and 'data' in info['value'][0]:
-            recv_value = info['value'][0]['data']
-        if 'referral_key' in info and info['referral_key'] and 'data' in info['referral_key'][0]:
-            recv_ref_key = info['referral_key'][0]['data']
+        if "value" in info and info["value"] and "data" in info["value"][0]:
+            recv_value = info["value"][0]["data"]
+        if "referral_key" in info and info["referral_key"] and "data" in info["referral_key"][0]:
+            recv_ref_key = info["referral_key"][0]["data"]
 
-        if attr.schema.type & AttrTypeValue['named']:
+        if attr.schema.type & AttrTypeValue["named"]:
             return {
-                'name': recv_ref_key,
-                'id': recv_value,
+                "name": recv_ref_key,
+                "id": recv_value,
             }
-        elif attr.schema.type & AttrTypeValue['date']:
-            if recv_value is None or recv_value == '':
+        elif attr.schema.type & AttrTypeValue["date"]:
+            if recv_value is None or recv_value == "":
                 return None
             else:
-                return datetime.strptime(recv_value, '%Y-%m-%d').date()
+                return datetime.strptime(recv_value, "%Y-%m-%d").date()
 
-        elif attr.schema.type & AttrTypeValue['boolean']:
-            if recv_value is None or recv_value == '':
+        elif attr.schema.type & AttrTypeValue["boolean"]:
+            if recv_value is None or recv_value == "":
                 return False
             else:
                 return recv_value
@@ -94,42 +94,45 @@ def _do_import_entries(job):
 
     entity = Entity.objects.get(id=job.target.id)
     if not user.has_permission(entity, ACLType.Writable):
-        job.update(**{
-            'status': Job.STATUS['ERROR'],
-            'text': 'Permission denied to import. '
-                    'You need Writable permission for "%s"' % entity.name
-        })
+        job.update(
+            **{
+                "status": Job.STATUS["ERROR"],
+                "text": "Permission denied to import. "
+                'You need Writable permission for "%s"' % entity.name,
+            }
+        )
         return
 
     whole_data = json.loads(job.params).get(entity.name)
     if not whole_data:
-        job.update(**{
-            'status': Job.STATUS['ERROR'],
-            'text': 'Uploaded file has no entry data of %s' % entity.name
-        })
+        job.update(
+            **{
+                "status": Job.STATUS["ERROR"],
+                "text": "Uploaded file has no entry data of %s" % entity.name,
+            }
+        )
         return
 
     # get custom_view method to prevent executing check method in every loop processing
     custom_view_handler = None
     if custom_view.is_custom("after_import_entry", entity.name):
-        custom_view_handler = 'after_import_entry'
+        custom_view_handler = "after_import_entry"
 
-    job.update(Job.STATUS['PROCESSING'])
+    job.update(Job.STATUS["PROCESSING"])
 
     total_count = len(whole_data)
     # create or update entry
     for (index, entry_data) in enumerate(whole_data):
-        job.text = 'Now importing... (progress: [%5d/%5d])' % (index + 1, total_count)
-        job.save(update_fields=['text'])
+        job.text = "Now importing... (progress: [%5d/%5d])" % (index + 1, total_count)
+        job.save(update_fields=["text"])
 
         # abort processing when job is canceled
         if job.is_canceled():
             return
 
-        entry = Entry.objects.filter(name=entry_data['name'], schema=entity).first()
+        entry = Entry.objects.filter(name=entry_data["name"], schema=entity).first()
         if not entry:
-            entry = Entry.objects.create(name=entry_data['name'], schema=entity,
-                                         created_user=user)
+            entry = Entry.objects.create(name=entry_data["name"], schema=entity, created_user=user)
 
             # create job to notify create event to the WebHook URL
             job_notify = Job.new_notify_create_entry(user, entry)
@@ -142,7 +145,7 @@ def _do_import_entries(job):
             job_notify = Job.new_notify_update_entry(user, entry)
 
         entry.complement_attrs(user)
-        for attr_name, value in entry_data['attrs'].items():
+        for attr_name, value in entry_data["attrs"].items():
             # If user doesn't have readable permission for target Attribute,
             # it won't be created.
             if not entry.attrs.filter(schema__name=attr_name).exists():
@@ -152,27 +155,31 @@ def _do_import_entries(job):
             # Once there are multiple EntityAttrs, it must be an abnormal situation.
             # In that case, this aborts import processing for this entry and reports it
             # as an error.
-            attr_query = entry.attrs.filter(schema__name=attr_name, is_active=True,
-                                            schema__parent_entity=entry.schema)
+            attr_query = entry.attrs.filter(
+                schema__name=attr_name,
+                is_active=True,
+                schema__parent_entity=entry.schema,
+            )
             if attr_query.count() > 1:
-                Logger.error('[task.import_entry] Abnormal entry was detected(%s:%d)' %
-                             (entry.name, entry.id))
+                Logger.error(
+                    "[task.import_entry] Abnormal entry was detected(%s:%d)"
+                    % (entry.name, entry.id)
+                )
                 break
 
             attr = attr_query.last()
-            if (not user.has_permission(attr.schema, ACLType.Writable) or
-                    not user.has_permission(attr, ACLType.Writable)):
+            if not user.has_permission(attr.schema, ACLType.Writable) or not user.has_permission(
+                attr, ACLType.Writable
+            ):
                 continue
 
             input_value = attr.convert_value_to_register(value)
-            if user.has_permission(
-                    attr.schema, ACLType.Writable) and attr.is_updated(input_value):
+            if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(input_value):
                 attr.add_value(user, input_value)
 
             # call custom-view processing corresponding to import entry
             if custom_view_handler:
-                custom_view.call_custom(custom_view_handler, entity.name, user, entry, attr,
-                                        value)
+                custom_view.call_custom(custom_view_handler, entity.name, user, entry, attr, value)
 
         # register entry to the Elasticsearch
         entry.register_es()
@@ -181,7 +188,7 @@ def _do_import_entries(job):
         job_notify.run()
 
     if not job.is_canceled():
-        job.update(status=Job.STATUS['DONE'], text='')
+        job.update(status=Job.STATUS["DONE"], text="")
 
 
 @app.task(bind=True)
@@ -190,13 +197,13 @@ def create_entry_attrs(self, job_id):
 
     if job.proceed_if_ready():
         # At the first time, update job status to prevent executing this job duplicately
-        job.update(Job.STATUS['PROCESSING'])
+        job.update(Job.STATUS["PROCESSING"])
 
         user = User.objects.filter(id=job.user.id).first()
         entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
         if not entry or not user:
             # Abort when specified entry doesn't exist
-            job.update(Job.STATUS['CANCELED'])
+            job.update(Job.STATUS["CANCELED"])
             return
 
         recv_data = json.loads(job.params)
@@ -218,7 +225,7 @@ def create_entry_attrs(self, job_id):
                 return
 
             # make an initial AttributeValue object if the initial value is specified
-            attr_data = [x for x in recv_data['attrs'] if int(x['id']) == entity_attr.id]
+            attr_data = [x for x in recv_data["attrs"] if int(x["id"]) == entity_attr.id]
 
             if not attr or not attr_data:
                 continue
@@ -227,7 +234,7 @@ def create_entry_attrs(self, job_id):
             try:
                 attr.add_value(user, _convert_data_value(attr, attr_data[0]))
             except ValueError as e:
-                Logger.warning('(%s) attr_data: %s' % (e, str(attr_data[0])))
+                Logger.warning("(%s) attr_data: %s" % (e, str(attr_data[0])))
 
         # Delete duplicate attrs because this processing may execute concurrently
         for entity_attr in entry.schema.attrs.filter(is_active=True):
@@ -246,7 +253,7 @@ def create_entry_attrs(self, job_id):
 
         # update job status and save it except for the case that target job is canceled.
         if not job.is_canceled():
-            job.update(Job.STATUS['DONE'])
+            job.update(Job.STATUS["DONE"])
 
             # Send notification to the webhook URL
             job_notify_event = Job.new_notify_create_entry(user, entry)
@@ -265,18 +272,18 @@ def edit_entry_attrs(self, job_id):
 
     if job.proceed_if_ready():
         # At the first time, update job status to prevent executing this job duplicately
-        job.update(Job.STATUS['PROCESSING'])
+        job.update(Job.STATUS["PROCESSING"])
 
         user = User.objects.get(id=job.user.id)
         entry = Entry.objects.get(id=job.target.id)
 
         recv_data = json.loads(job.params)
 
-        for info in recv_data['attrs']:
-            if info['id']:
-                attr = Attribute.objects.get(id=info['id'])
+        for info in recv_data["attrs"]:
+            if info["id"]:
+                attr = Attribute.objects.get(id=info["id"])
             else:
-                entity_attr = EntityAttr.objects.get(id=info['entity_attr_id'])
+                entity_attr = EntityAttr.objects.get(id=info["entity_attr_id"])
                 attr = entry.attrs.filter(schema=entity_attr, is_active=True).first()
                 if not attr:
                     attr = entry.add_attribute_from_base(entity_attr, user)
@@ -284,7 +291,7 @@ def edit_entry_attrs(self, job_id):
             try:
                 converted_value = _convert_data_value(attr, info)
             except ValueError as e:
-                Logger.warning('(%s) attr_data: %s' % (e, str(info)))
+                Logger.warning("(%s) attr_data: %s" % (e, str(info)))
                 continue
 
             # Check a new update value is specified, or not
@@ -304,7 +311,7 @@ def edit_entry_attrs(self, job_id):
         entry.del_status(Entry.STATUS_EDITING)
 
         # update job status and save it
-        job.update(Job.STATUS['DONE'])
+        job.update(Job.STATUS["DONE"])
 
         # running job to notify changing entry event
         job_notify_event = Job.new_notify_update_entry(user, entry)
@@ -316,7 +323,7 @@ def delete_entry(self, job_id):
     job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():
-        job.update(Job.STATUS['PROCESSING'])
+        job.update(Job.STATUS["PROCESSING"])
 
         entry = Entry.objects.get(id=job.target.id)
         entry.delete()
@@ -326,7 +333,7 @@ def delete_entry(self, job_id):
             custom_view.call_custom("after_delete_entry", entry.schema.name, user, entry)
 
         # update job status and save it
-        job.update(Job.STATUS['DONE'])
+        job.update(Job.STATUS["DONE"])
 
 
 @app.task(bind=True)
@@ -334,7 +341,7 @@ def restore_entry(self, job_id):
     job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():
-        job.update(Job.STATUS['PROCESSING'])
+        job.update(Job.STATUS["PROCESSING"])
 
         entry = Entry.objects.get(id=job.target.id)
         entry.restore()
@@ -347,7 +354,7 @@ def restore_entry(self, job_id):
             custom_view.call_custom("after_restore_entry", entry.schema.name, job.user, entry)
 
         # update job status and save it
-        job.update(Job.STATUS['DONE'])
+        job.update(Job.STATUS["DONE"])
 
 
 @app.task(bind=True)
@@ -356,23 +363,29 @@ def copy_entry(self, job_id):
 
     if job.proceed_if_ready():
         # update job status
-        job.update(Job.STATUS['PROCESSING'])
+        job.update(Job.STATUS["PROCESSING"])
 
         user = User.objects.get(id=job.user.id)
         src_entry = Entry.objects.get(id=job.target.id)
 
         params = json.loads(job.params)
-        dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params['new_name']).first()
+        dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params["new_name"]).first()
         if not dest_entry:
-            dest_entry = src_entry.clone(user, name=params['new_name'])
+            dest_entry = src_entry.clone(user, name=params["new_name"])
             dest_entry.register_es()
 
         if custom_view.is_custom("after_copy_entry", src_entry.schema.name):
-            custom_view.call_custom("after_copy_entry", src_entry.schema.name, user, src_entry,
-                                    dest_entry, params['post_data'])
+            custom_view.call_custom(
+                "after_copy_entry",
+                src_entry.schema.name,
+                user,
+                src_entry,
+                dest_entry,
+                params["post_data"],
+            )
 
         # update job status and save it
-        job.update(Job.STATUS['DONE'], 'original entry: %s' % src_entry.name, dest_entry)
+        job.update(Job.STATUS["DONE"], "original entry: %s" % src_entry.name, dest_entry)
 
         # create and run event notification job
         job_notify_event = Job.new_notify_create_entry(user, dest_entry)
@@ -387,8 +400,10 @@ def import_entries(self, job_id):
         try:
             _do_import_entries(job)
         except Exception as e:
-            job.update(status=Job.STATUS['ERROR'], text="[task.import] [job:%d] %s" %
-                       (job.id, str(e)))
+            job.update(
+                status=Job.STATUS["ERROR"],
+                text="[task.import] [job:%d] %s" % (job.id, str(e)),
+            )
 
 
 @app.task(bind=True)
@@ -398,7 +413,7 @@ def export_entries(self, job_id):
     if not job.proceed_if_ready():
         return
 
-    job.update(Job.STATUS['PROCESSING'])
+    job.update(Job.STATUS["PROCESSING"])
 
     user = job.user
     entity = Entity.objects.get(id=job.target.id)
@@ -427,34 +442,40 @@ def export_entries(self, job_id):
         export_item_counter += 1
 
     output = None
-    if params['export_format'] == 'csv':
+    if params["export_format"] == "csv":
         # newline is blank because csv module performs universal newlines
         # https://docs.python.org/ja/3/library/csv.html#id3
-        output = io.StringIO(newline='')
+        output = io.StringIO(newline="")
         writer = csv.writer(output)
 
         attrs = [x.name for x in entity.attrs.filter(is_active=True)]
-        writer.writerow(['Name'] + attrs)
+        writer.writerow(["Name"] + attrs)
 
         def data2str(data):
             if not data:
-                return ''
+                return ""
             return str(data)
 
         for data in exported_data:
             writer.writerow(
-                [data['name']] + [data2str(data['attrs'][x]) for x in attrs if x in data['attrs']])
+                [data["name"]] + [data2str(data["attrs"][x]) for x in attrs if x in data["attrs"]]
+            )
     else:
         output = io.StringIO()
-        output.write(yaml.dump({entity.name: exported_data}, default_flow_style=False,
-                               allow_unicode=True))
+        output.write(
+            yaml.dump(
+                {entity.name: exported_data},
+                default_flow_style=False,
+                allow_unicode=True,
+            )
+        )
 
     if output:
         job.set_cache(output.getvalue())
 
     # update job status and save it except for the case that target job is canceled.
     if not job.is_canceled():
-        job.update(Job.STATUS['DONE'])
+        job.update(Job.STATUS["DONE"])
 
 
 @app.task(bind=True)
@@ -463,7 +484,7 @@ def register_referrals(self, job_id):
 
     # The python client for elasticsearch is thread safe, so this start processing
     # without waiting any other jobs.
-    job.update(Job.STATUS['PROCESSING'])
+    job.update(Job.STATUS["PROCESSING"])
 
     # register entries data which refer target entry to elasticsearch
     entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
@@ -471,19 +492,19 @@ def register_referrals(self, job_id):
         [r.register_es() for r in entry.get_referred_objects()]
 
     if not job.is_canceled():
-        job.update(Job.STATUS['DONE'])
+        job.update(Job.STATUS["DONE"])
 
 
 def _notify_event(notification_method, object_id, user):
     entry = Entry.objects.filter(id=object_id).first()
     if not entry:
-        return (Job.STATUS['ERROR'], "Failed to get job.target (%s)" % object_id)
+        return (Job.STATUS["ERROR"], "Failed to get job.target (%s)" % object_id)
 
     try:
         notification_method(entry, user)
 
     except Exception as e:
-        return (Job.STATUS['ERROR'], str(e))
+        return (Job.STATUS["ERROR"], str(e))
 
 
 @app.task(bind=True)

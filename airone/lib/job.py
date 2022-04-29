@@ -8,7 +8,7 @@ def may_schedule_until_job_is_ready(func):
         job = Job.objects.get(id=job_id)
         if job.proceed_if_ready():
             # update Job status from PREPARING to PROCEEDING
-            job.update(Job.STATUS['PROCESSING'])
+            job.update(Job.STATUS["PROCESSING"])
 
             # running Job processing
             ret = func(kls, job)
@@ -19,6 +19,6 @@ def may_schedule_until_job_is_ready(func):
             elif isinstance(ret, tuple) and len(ret) == 2:
                 job.update(status=ret[0], text=ret[1])
             elif not job.is_canceled():
-                job.update(Job.STATUS['DONE'])
+                job.update(Job.STATUS["DONE"])
 
     return wrapper

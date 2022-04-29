@@ -59,10 +59,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         resp_data = resp.json()
-        self.assertEqual(resp_data['id'], entry.id)
-        self.assertEqual(resp_data['name'], entry.name)
-        self.assertEqual(resp_data['schema'],
-                         {'id': entry.schema.id, 'name': entry.schema.name})
+        self.assertEqual(resp_data["id"], entry.id)
+        self.assertEqual(resp_data["name"], entry.name)
+        self.assertEqual(resp_data["schema"], {"id": entry.schema.id, "name": entry.schema.name})
 
         self.assertEqual(next(filter(lambda x: x['schema']['name'] == 'val', resp_data['attrs'])), {
             'type': AttrTypeValue['string'],
@@ -271,9 +270,9 @@ class ViewTest(AironeViewTest):
     @mock.patch('custom_view.call_custom')
     def test_retrieve_entry_with_customview(self, mock_call_custom):
         def side_effect(handler_name, entity_name, entry, entry_attrs):
-            self.assertEqual(handler_name, 'get_entry_attr')
-            self.assertEqual(entity_name, 'test-entity')
-            self.assertEqual(entry.name, 'test-entry')
+            self.assertEqual(handler_name, "get_entry_attr")
+            self.assertEqual(entity_name, "test-entity")
+            self.assertEqual(entry.name, "test-entry")
             self.assertEqual(len(entry_attrs), len(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY))
 
             # add attribute
@@ -898,8 +897,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         resp_data = resp.json()
         self.assertEqual(len(resp_data), 1)
-        self.assertEqual(resp_data[0]['id'], entry.id)
-        self.assertEqual(resp_data[0]['name'], entry.name)
+        self.assertEqual(resp_data[0]["id"], entry.id)
+        self.assertEqual(resp_data[0]["name"], entry.name)
 
         resp = self.client.get('/entry/api/v2/search/?query=R-')
         self.assertEqual(resp.status_code, 200)
@@ -919,8 +918,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         resp_data = resp.json()
         self.assertEqual(len(resp_data), 1)
-        self.assertEqual(resp_data[0]['id'], entry.id)
-        self.assertEqual(resp_data[0]['name'], entry.name)
+        self.assertEqual(resp_data[0]["id"], entry.id)
+        self.assertEqual(resp_data[0]["name"], entry.name)
 
     def test_serach_entry_order_by(self):
         self.add_entry(self.user, 'z_hoge', self.entity)
@@ -983,8 +982,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         resp_data = resp.json()
         self.assertEqual(len(resp_data), 1)
-        self.assertEqual(resp_data[0]['id'], ref_entry1.id)
-        self.assertEqual(resp_data[0]['name'], ref_entry1.name)
+        self.assertEqual(resp_data[0]["id"], ref_entry1.id)
+        self.assertEqual(resp_data[0]["name"], ref_entry1.name)
 
     def test_entry_after_entity_attr_was_deleted(self):
         entry: Entry = self.add_entry(self.user, 'Entry', self.entity)

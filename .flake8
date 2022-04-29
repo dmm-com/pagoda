@@ -1,9 +1,13 @@
 [flake8]
 max-line-length = 100
+ignore = E203,W503
 exclude =
     ./.git,
     ./venv,
     ./.venv,
     ./.tox,
     ./*/migrations,
-    .manage.py
+    .manage.py,
+    ./node_modules,
+per-file-ignores =
+    ./airone/tests/test_elasticsearch.py:E501

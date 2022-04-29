@@ -43,8 +43,9 @@ export const DashboardPage: FC = () => {
   const [entryQuery, setEntryQuery] = useState("");
 
   const entities = useAsync(async () => {
-    const entities = await aironeApiClientV2.getEntities();
-    return entities.filter((e) => e.isToplevel);
+    // TODO get only top level entities with server-side filters
+    const entities = await aironeApiClientV2.getEntities(1, undefined, true);
+    return entities.results.filter((e) => e.isToplevel);
   });
 
   const handleSearchQuery = (event) => {

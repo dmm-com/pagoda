@@ -1,7 +1,9 @@
 import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -10,7 +12,7 @@ import { EntryForm } from "components/entry/EntryForm";
 
 export const EditEntryPage: FC = () => {
   const { entityId, entryId } =
-    useParams<{ entityId: number; entryId: number }>();
+    useTypedParams<{ entityId: number; entryId: number }>();
 
   const entry = useAsync(async () => {
     return entryId != undefined

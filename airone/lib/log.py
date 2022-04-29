@@ -5,7 +5,7 @@ from time import time
 from django.core.mail import mail_admins
 from django.http import HttpResponseServerError
 
-Logger = getLogger('airone')
+Logger = getLogger("airone")
 
 
 class LoggingRequestMiddleware:
@@ -17,9 +17,14 @@ class LoggingRequestMiddleware:
 
         response = self.get_response(request)
 
-        user_id = request.user.id if hasattr(request, 'user') else None
-        logger_msg = '(Profiling result: %fs) (user-id: %s) %s %s %s' % (
-            time() - start_time, user_id, request.method, request.path, response.status_code)
+        user_id = request.user.id if hasattr(request, "user") else None
+        logger_msg = "(Profiling result: %fs) (user-id: %s) %s %s %s" % (
+            time() - start_time,
+            user_id,
+            request.method,
+            request.path,
+            response.status_code,
+        )
         if response.status_code >= 500:
             Logger.error(logger_msg)
         elif response.status_code >= 400:
@@ -42,9 +47,11 @@ raised exception:
 
 full traceback:
 {traceback_msg}
-""".format(request=request, exception=exception, traceback_msg=traceback_msg)
+""".format(
+            request=request, exception=exception, traceback_msg=traceback_msg
+        )
 
         # Print for DEBUG because email is not sent in dev environment
         print(message)
         mail_admins(subject, message)
-        return HttpResponseServerError('Internal Server Error')
+        return HttpResponseServerError("Internal Server Error")

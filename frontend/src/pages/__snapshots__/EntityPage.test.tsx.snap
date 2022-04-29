@@ -389,24 +389,9 @@ Object {
                     </li>
                     <li>
                       <button
-                        aria-current="true"
-                        aria-label="page 1"
-                        class="MuiButtonBase-root MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-selected MuiPaginationItem-page css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
-                        tabindex="0"
-                        type="button"
-                      >
-                        1
-                        <span
-                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                        />
-                      </button>
-                    </li>
-                    <li>
-                      <button
                         aria-label="Go to next page"
-                        class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
-                        disabled=""
-                        tabindex="-1"
+                        class="MuiButtonBase-root MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                        tabindex="0"
                         type="button"
                       >
                         <svg
@@ -420,6 +405,9 @@ Object {
                             d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
                           />
                         </svg>
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                        />
                       </button>
                     </li>
                   </ul>
@@ -816,24 +804,9 @@ Object {
                   </li>
                   <li>
                     <button
-                      aria-current="true"
-                      aria-label="page 1"
-                      class="MuiButtonBase-root MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-selected MuiPaginationItem-page css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
-                      tabindex="0"
-                      type="button"
-                    >
-                      1
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
-                    </button>
-                  </li>
-                  <li>
-                    <button
                       aria-label="Go to next page"
-                      class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
-                      disabled=""
-                      tabindex="-1"
+                      class="MuiButtonBase-root MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                      tabindex="0"
                       type="button"
                     >
                       <svg
@@ -847,6 +820,9 @@ Object {
                           d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
                         />
                       </svg>
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
                     </button>
                   </li>
                 </ul>

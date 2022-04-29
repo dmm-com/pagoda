@@ -1,7 +1,9 @@
 import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import {
   entitiesPath,
@@ -15,7 +17,7 @@ import { Loading } from "components/common/Loading";
 import { CopyForm } from "components/entry/CopyForm";
 
 export const CopyEntryPage: FC = () => {
-  const { entryId } = useParams<{ entryId: number }>();
+  const { entryId } = useTypedParams<{ entryId: number }>();
 
   const entry = useAsync(async () => {
     return await aironeApiClientV2.getEntry(entryId);

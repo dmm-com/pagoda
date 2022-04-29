@@ -10,9 +10,11 @@ class RoleTestBase(AironeViewTest):
         super(RoleTestBase, self).setUp()
 
         # create Users and Groups for using this test
-        self.users = {n: User.objects.create(username=n, email='%s@example.com' % n)
-                      for n in ['userA', 'userB']}
-        self.groups = {n: Group.objects.create(name=n) for n in ['groupA', 'groupB']}
+        self.users = {
+            n: User.objects.create(username=n, email="%s@example.com" % n)
+            for n in ["userA", "userB"]
+        }
+        self.groups = {n: Group.objects.create(name=n) for n in ["groupA", "groupB"]}
 
         # create test Role instance
-        self.role = Role.objects.create(name='test_role')
+        self.role = Role.objects.create(name="test_role")
