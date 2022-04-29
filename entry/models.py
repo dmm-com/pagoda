@@ -290,10 +290,11 @@ class AttributeValue(models.Model):
             is_valid(bool): result of validate
             msg(str): error message(Optional)
         """
+
         def _validate_attr_str(value):
             if not isinstance(value, str):
                 raise Exception("value(%s) is not str" % value)
-            if len(str(value).encode('utf-8')) > AttributeValue.MAXIMUM_VALUE_SIZE:
+            if len(str(value).encode("utf-8")) > AttributeValue.MAXIMUM_VALUE_SIZE:
                 raise Exception("value(%s) is exceeded the limit" % value)
 
         def _validate_attr_object(value):
@@ -304,39 +305,39 @@ class AttributeValue(models.Model):
                 raise Exception("value(%s) is not int" % value)
 
         def _validate_attr(value):
-            if type & AttrTypeValue['string'] or type & AttrTypeValue['text']:
+            if type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
                 return _validate_attr_str(value)
 
-            if type & AttrTypeValue['object']:
-                if type & AttrTypeValue['named']:
+            if type & AttrTypeValue["object"]:
+                if type & AttrTypeValue["named"]:
                     if not isinstance(value, dict):
                         raise Exception("value(%s) is not dict" % value)
-                    if not ('name' in value.keys() and 'id' in value.keys()):
+                    if not ("name" in value.keys() and "id" in value.keys()):
                         raise Exception("value(%s) is not key('name', 'id')" % value)
-                    _validate_attr_str(value['name'])
-                    _validate_attr_object(value['id'])
+                    _validate_attr_str(value["name"])
+                    _validate_attr_object(value["id"])
                 else:
                     _validate_attr_object(value)
 
-            if type & AttrTypeValue['group']:
+            if type & AttrTypeValue["group"]:
                 try:
                     if not Group.objects.filter(id=value, is_active=True).exists():
                         raise Exception("value(%s) is not group id" % value)
                 except (ValueError, TypeError):
                     raise Exception("value(%s) is not int" % value)
 
-            if type & AttrTypeValue['boolean']:
+            if type & AttrTypeValue["boolean"]:
                 if not isinstance(value, bool):
                     raise Exception("value(%s) is not bool" % value)
 
-            if type & AttrTypeValue['date']:
+            if type & AttrTypeValue["date"]:
                 try:
-                    datetime.strptime(value, '%Y-%m-%d').date()
+                    datetime.strptime(value, "%Y-%m-%d").date()
                 except (ValueError, TypeError):
                     raise Exception("value(%s) is not format(YYYY-MM-DD)" % value)
 
         try:
-            if type & AttrTypeValue['array']:
+            if type & AttrTypeValue["array"]:
                 if not isinstance(input_value, list):
                     raise Exception("value(%s) is not list" % input_value)
                 for val in input_value:

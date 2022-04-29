@@ -21,10 +21,10 @@ class EntryPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         user: User = User.objects.get(id=request.user.id)
         permisson = {
-            'retrieve': ACLType.Readable,
-            'update': ACLType.Writable,
-            'destroy': ACLType.Writable,
-            'restore': ACLType.Full,
+            "retrieve": ACLType.Readable,
+            "update": ACLType.Writable,
+            "destroy": ACLType.Writable,
+            "restore": ACLType.Full,
         }
 
         if not user.has_permission(obj, permisson.get(view.action)):
@@ -39,8 +39,8 @@ class EntryAPI(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         serializer = {
-            'retrieve': EntryRetrieveSerializer,
-            'update': EntryUpdateSerializer,
+            "retrieve": EntryRetrieveSerializer,
+            "update": EntryUpdateSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -77,9 +77,7 @@ class EntryAPI(viewsets.ModelViewSet):
 
         # checks that a same name entry corresponding to the entity is existed, or not.
         if Entry.objects.filter(
-            schema=entry.schema,
-            name=re.sub(r'_deleted_[0-9_]*$', '', entry.name),
-            is_active=True
+            schema=entry.schema, name=re.sub(r"_deleted_[0-9_]*$", "", entry.name), is_active=True
         ).exists():
             raise ValidationError("specified entry has already exist other")
 

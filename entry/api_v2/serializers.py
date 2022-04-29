@@ -33,7 +33,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Entry
-        fields = ['id', 'name', 'schema', 'is_active']
+        fields = ["id", "name", "schema", "is_active"]
 
     def _validate(self, name: str, schema: Entity, attrs: List[Dict[str, Any]]):
         # check name
@@ -44,27 +44,29 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
         # In create case, check attrs mandatory attribute
         if not self.instance:
-            user: User = User.objects.get(id=self.context['request'].user.id)
+            user: User = User.objects.get(id=self.context["request"].user.id)
             for mandatory_attr in schema.attrs.filter(is_mandatory=True, is_active=True):
                 if not user.has_permission(mandatory_attr, ACLType.Writable):
                     raise ValidationError(
-                        "mandatory attrs id(%s) is permission denied" % mandatory_attr.id)
+                        "mandatory attrs id(%s) is permission denied" % mandatory_attr.id
+                    )
 
-                if mandatory_attr.id not in [attr['id'] for attr in attrs]:
+                if mandatory_attr.id not in [attr["id"] for attr in attrs]:
                     raise ValidationError(
-                        "mandatory attrs id(%s) is not specified" % mandatory_attr.id)
+                        "mandatory attrs id(%s) is not specified" % mandatory_attr.id
+                    )
 
         # check attrs
         for attr in attrs:
             # check attrs id
-            entity_attr = schema.attrs.filter(id=attr['id'], is_active=True).first()
+            entity_attr = schema.attrs.filter(id=attr["id"], is_active=True).first()
             if not entity_attr:
-                raise ValidationError("attrs id(%s) does not exist" % attr['id'])
+                raise ValidationError("attrs id(%s) does not exist" % attr["id"])
 
             # check attrs value
-            (is_valid, msg) = AttributeValue.validate_attr_value(entity_attr.type, attr['value'])
+            (is_valid, msg) = AttributeValue.validate_attr_value(entity_attr.type, attr["value"])
             if not is_valid:
-                raise ValidationError("attrs id(%s) - %s" % (attr['id'], msg))
+                raise ValidationError("attrs id(%s) - %s" % (attr["id"], msg))
 
 
 @extend_schema_field({})
@@ -78,9 +80,7 @@ class AttributeSerializer(serializers.Serializer):
     value = AttributeValueField()
 
 
-@extend_schema_serializer(
-    exclude_fields=['schema']
-)
+@extend_schema_serializer(exclude_fields=["schema"])
 class EntryCreateSerializer(EntryBaseSerializer):
     schema = serializers.PrimaryKeyRelatedField(
         queryset=Entity.objects.all(), write_only=True, required=True
@@ -92,20 +92,20 @@ class EntryCreateSerializer(EntryBaseSerializer):
 
     class Meta:
         model = Entry
-        fields = ['id', 'name', 'schema', 'attrs']
+        fields = ["id", "name", "schema", "attrs"]
 
     def validate(self, params):
-        self._validate(params['name'], params['schema'], params.get('attrs', []))
+        self._validate(params["name"], params["schema"], params.get("attrs", []))
         return params
 
     def create(self, validated_data):
-        user: User = User.objects.get(id=self.context['request'].user.id)
+        user: User = User.objects.get(id=self.context["request"].user.id)
 
-        entity_name = validated_data['schema'].name
+        entity_name = validated_data["schema"].name
         if custom_view.is_custom("before_create_entry", entity_name):
             custom_view.call_custom("before_create_entry", entity_name, user, validated_data)
 
-        attrs_data = validated_data.pop('attrs', [])
+        attrs_data = validated_data.pop("attrs", [])
         entry: Entry = Entry.objects.create(
             **validated_data, status=Entry.STATUS_CREATING, created_user=user
         )
@@ -118,10 +118,10 @@ class EntryCreateSerializer(EntryBaseSerializer):
                 continue
 
             # make an initial AttributeValue object if the initial value is specified
-            attr_data = [x for x in attrs_data if int(x['id']) == entity_attr.id]
+            attr_data = [x for x in attrs_data if int(x["id"]) == entity_attr.id]
             if not attr_data:
                 continue
-            attr.add_value(user, attr_data[0]['value'])
+            attr.add_value(user, attr_data[0]["value"])
 
         if custom_view.is_custom("after_create_entry", entity_name):
             custom_view.call_custom("after_create_entry", entity_name, user, attrs_data, entry)
@@ -144,31 +144,31 @@ class EntryUpdateSerializer(EntryBaseSerializer):
 
     class Meta:
         model = Entry
-        fields = ['id', 'name', 'attrs']
+        fields = ["id", "name", "attrs"]
         extra_kwargs = {
-            'name': {'required': False},
+            "name": {"required": False},
         }
 
     def validate(self, params):
-        self._validate(params.get('name', None), self.instance.schema, params.get('attrs', []))
+        self._validate(params.get("name", None), self.instance.schema, params.get("attrs", []))
         return params
 
     def update(self, entry: Entry, validated_data):
         entry.set_status(Entry.STATUS_EDITING)
-        user: User = User.objects.get(id=self.context['request'].user.id)
+        user: User = User.objects.get(id=self.context["request"].user.id)
 
         entity_name = entry.schema.name
         if custom_view.is_custom("before_update_entry", entity_name):
             custom_view.call_custom("before_update_entry", entity_name, user, validated_data, entry)
 
-        attrs_data = validated_data.pop('attrs', [])
+        attrs_data = validated_data.pop("attrs", [])
 
         # update name of Entry object. If name would be updated, the elasticsearch data of entries
         # that refers this entry also be updated by creating REGISTERED_REFERRALS task.
         job_register_referrals: Optional[Job] = None
-        if 'name' in validated_data and entry.name != validated_data['name']:
-            entry.name = validated_data['name']
-            entry.save(update_fields=['name'])
+        if "name" in validated_data and entry.name != validated_data["name"]:
+            entry.name = validated_data["name"]
+            entry.save(update_fields=["name"])
             job_register_referrals = Job.new_register_referrals(user, entry)
 
         for entity_attr in entry.schema.attrs.filter(is_active=True):
@@ -181,15 +181,15 @@ class EntryUpdateSerializer(EntryBaseSerializer):
                 continue
 
             # make AttributeValue object if the value is specified
-            attr_data = [x for x in attrs_data if int(x['id']) == entity_attr.id]
+            attr_data = [x for x in attrs_data if int(x["id"]) == entity_attr.id]
             if not attr_data:
                 continue
 
             # Check a new update value is specified, or not
-            if not attr.is_updated(attr_data[0]['value']):
+            if not attr.is_updated(attr_data[0]["value"]):
                 continue
 
-            attr.add_value(user, attr_data[0]['value'])
+            attr.add_value(user, attr_data[0]["value"])
 
         if custom_view.is_custom("after_update_entry", entity_name):
             custom_view.call_custom("after_update_entry", entity_name, user, attrs_data, entry)
@@ -216,8 +216,8 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
     class Meta:
         model = Entry
-        fields = ['id', 'name', 'schema', 'is_active', 'attrs']
-        read_only_fields = ['is_active']
+        fields = ["id", "name", "schema", "is_active", "attrs"]
+        read_only_fields = ["is_active"]
 
     def get_attrs(self, obj: Entry) -> List[EntryAttributeType]:
         def get_attr_value(attr: Attribute):
@@ -335,15 +335,17 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
         for entity_attr in entity_attrs:
             attr = entity_attr.attr_list[0] if entity_attr.attr_list else None
             value = get_attr_value(attr) if attr else AttrDefaultValue[entity_attr.type]
-            attrinfo.append({
-                'id': attr.id if attr else None,
-                'type': entity_attr.type,
-                'value': value,
-                'schema': {
-                    'id': entity_attr.id,
-                    'name': entity_attr.name,
+            attrinfo.append(
+                {
+                    "id": attr.id if attr else None,
+                    "type": entity_attr.type,
+                    "value": value,
+                    "schema": {
+                        "id": entity_attr.id,
+                        "name": entity_attr.name,
+                    },
                 }
-            })
+            )
 
         # add and remove attributes depending on entity
         if custom_view.is_custom("get_entry_attr", obj.schema.name):

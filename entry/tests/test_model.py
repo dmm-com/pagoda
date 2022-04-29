@@ -3059,11 +3059,11 @@ class ModelTest(AironeTestCase):
 
     def test_restore_entry(self):
         entity = self.create_entity_with_all_type_attributes(self._user)
-        ref_entry = Entry.objects.create(name='ref_entry', schema=entity, created_user=self._user)
-        entry = Entry.objects.create(name='entry', schema=entity, created_user=self._user)
+        ref_entry = Entry.objects.create(name="ref_entry", schema=entity, created_user=self._user)
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=self._user)
         entry.complement_attrs(self._user)
 
-        attr = entry.attrs.get(schema__name='obj')
+        attr = entry.attrs.get(schema__name="obj")
         attr.add_value(self._user, ref_entry)
 
         ref_entry.delete()
@@ -3071,13 +3071,13 @@ class ModelTest(AironeTestCase):
 
         ref_entry.refresh_from_db()
         self.assertTrue(ref_entry.is_active)
-        self.assertEqual(ref_entry.name, 'ref_entry')
+        self.assertEqual(ref_entry.name, "ref_entry")
         self.assertTrue(all([attr.is_active for attr in ref_entry.attrs.all()]))
 
-        ret = Entry.search_entries(self._user, [entity.id], [{'name': 'obj'}])
-        self.assertEqual(ret['ret_values'][0]['entry']['name'], 'entry')
-        self.assertEqual(ret['ret_values'][0]['attrs']['obj']['value']['name'], 'ref_entry')
-        self.assertEqual(ret['ret_values'][1]['entry']['name'], 'ref_entry')
+        ret = Entry.search_entries(self._user, [entity.id], [{"name": "obj"}])
+        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "entry")
+        self.assertEqual(ret["ret_values"][0]["attrs"]["obj"]["value"]["name"], "ref_entry")
+        self.assertEqual(ret["ret_values"][1]["entry"]["name"], "ref_entry")
 
     def test_restore_entry_in_chain(self):
         # initilaize referral Entries for checking processing caused
@@ -4246,111 +4246,184 @@ class ModelTest(AironeTestCase):
                     list(AttributeValue.get_default_value(attr)),
                 )
             else:
-                self.assertEqual(default_values[attr.name],
-                                 AttributeValue.get_default_value(attr))
+                self.assertEqual(default_values[attr.name], AttributeValue.get_default_value(attr))
 
     def test_validate_attr_value(self):
-        for type in ['string', 'text']:
-            self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue[type], 'hoge'),
-                             (True, None))
-            self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue[type], ['hoge']),
-                             (False, "value(['hoge']) is not str"))
-            self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue[type],
-                             'a' * AttributeValue.MAXIMUM_VALUE_SIZE),
-                             (True, None))
-            self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue[type],
-                             'a' * (AttributeValue.MAXIMUM_VALUE_SIZE + 1)),
-                             (False, "value(%s) is exceeded the limit" %
-                             ('a' * (AttributeValue.MAXIMUM_VALUE_SIZE + 1))))
-            self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue[type], ''),
-                             (True, None))
+        for type in ["string", "text"]:
+            self.assertEqual(
+                AttributeValue.validate_attr_value(AttrTypeValue[type], "hoge"), (True, None)
+            )
+            self.assertEqual(
+                AttributeValue.validate_attr_value(AttrTypeValue[type], ["hoge"]),
+                (False, "value(['hoge']) is not str"),
+            )
+            self.assertEqual(
+                AttributeValue.validate_attr_value(
+                    AttrTypeValue[type], "a" * AttributeValue.MAXIMUM_VALUE_SIZE
+                ),
+                (True, None),
+            )
+            self.assertEqual(
+                AttributeValue.validate_attr_value(
+                    AttrTypeValue[type], "a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1)
+                ),
+                (
+                    False,
+                    "value(%s) is exceeded the limit"
+                    % ("a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1)),
+                ),
+            )
+            self.assertEqual(
+                AttributeValue.validate_attr_value(AttrTypeValue[type], ""), (True, None)
+            )
 
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['object'],
-                         self._entry.id),
-                         (True, None))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['object'], 'hoge'),
-                         (False, "value(hoge) is not int"))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['object'], 9999),
-                         (False, "value(9999) is not entry id"))
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["object"], self._entry.id),
+            (True, None),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["object"], "hoge"),
+            (False, "value(hoge) is not int"),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["object"], 9999),
+            (False, "value(9999) is not entry id"),
+        )
 
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['named_object'],
-                         {'name': 'hoge', 'id': self._entry.id}),
-                         (True, None))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['named_object'],
-                         {'name': ['hoge'], 'id': self._entry.id}),
-                         (False, "value(['hoge']) is not str"))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['named_object'],
-                         {'name': 'a' * AttributeValue.MAXIMUM_VALUE_SIZE, 'id': self._entry.id}),
-                         (True, None))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['named_object'],
-                         {'name': 'a' * (AttributeValue.MAXIMUM_VALUE_SIZE + 1),
-                          'id': self._entry.id}),
-                         (False, "value(%s) is exceeded the limit" %
-                          ('a' * (AttributeValue.MAXIMUM_VALUE_SIZE + 1))))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['named_object'],
-                         {'name': 'hoge', 'id': 'hoge'}),
-                         (False, "value(hoge) is not int"))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['named_object'],
-                         {'name': 'hoge', 'id': 9999}),
-                         (False, "value(9999) is not entry id"))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['named_object'], 'hoge'),
-                         (False, "value(hoge) is not dict"))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['named_object'],
-                         {'a': 1, 'b': 2}),
-                         (False, "value({'a': 1, 'b': 2}) is not key('name', 'id')"))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['named_object'],
-                         {'name': '', 'id': self._entry.id}),
-                         (True, None))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['named_object'],
-                         {'name': 'hoge', 'id': ''}),
-                         (True, None))
+        self.assertEqual(
+            AttributeValue.validate_attr_value(
+                AttrTypeValue["named_object"], {"name": "hoge", "id": self._entry.id}
+            ),
+            (True, None),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(
+                AttrTypeValue["named_object"], {"name": ["hoge"], "id": self._entry.id}
+            ),
+            (False, "value(['hoge']) is not str"),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(
+                AttrTypeValue["named_object"],
+                {"name": "a" * AttributeValue.MAXIMUM_VALUE_SIZE, "id": self._entry.id},
+            ),
+            (True, None),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(
+                AttrTypeValue["named_object"],
+                {"name": "a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1), "id": self._entry.id},
+            ),
+            (
+                False,
+                "value(%s) is exceeded the limit" % ("a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1)),
+            ),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(
+                AttrTypeValue["named_object"], {"name": "hoge", "id": "hoge"}
+            ),
+            (False, "value(hoge) is not int"),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(
+                AttrTypeValue["named_object"], {"name": "hoge", "id": 9999}
+            ),
+            (False, "value(9999) is not entry id"),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["named_object"], "hoge"),
+            (False, "value(hoge) is not dict"),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["named_object"], {"a": 1, "b": 2}),
+            (False, "value({'a': 1, 'b': 2}) is not key('name', 'id')"),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(
+                AttrTypeValue["named_object"], {"name": "", "id": self._entry.id}
+            ),
+            (True, None),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(
+                AttrTypeValue["named_object"], {"name": "hoge", "id": ""}
+            ),
+            (True, None),
+        )
 
-        group: Group = Group.objects.create(name='group0')
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['group'], group.id),
-                         (True, None))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['group'], 'hoge'),
-                         (False, "value(hoge) is not int"))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['group'], 9999),
-                         (False, "value(9999) is not group id"))
+        group: Group = Group.objects.create(name="group0")
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["group"], group.id), (True, None)
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["group"], "hoge"),
+            (False, "value(hoge) is not int"),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["group"], 9999),
+            (False, "value(9999) is not group id"),
+        )
 
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['boolean'], True),
-                         (True, None))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['boolean'], False),
-                         (True, None))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['boolean'], 'hoge'),
-                         (False, "value(hoge) is not bool"))
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["boolean"], True), (True, None)
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["boolean"], False), (True, None)
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["boolean"], "hoge"),
+            (False, "value(hoge) is not bool"),
+        )
 
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['date'], '2020-01-01'),
-                         (True, None))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['date'], '01-01'),
-                         (False, "value(01-01) is not format(YYYY-MM-DD)"))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['date'], 'hoge'),
-                         (False, "value(hoge) is not format(YYYY-MM-DD)"))
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["date"], "2020-01-01"), (True, None)
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["date"], "01-01"),
+            (False, "value(01-01) is not format(YYYY-MM-DD)"),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["date"], "hoge"),
+            (False, "value(hoge) is not format(YYYY-MM-DD)"),
+        )
 
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['array_string'],
-                         ['hoge', 'fuga']),
-                         (True, None))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['array_string'],
-                         'hoge'),
-                         (False, "value(hoge) is not list"))
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["array_string"], ["hoge", "fuga"]),
+            (True, None),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["array_string"], "hoge"),
+            (False, "value(hoge) is not list"),
+        )
 
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['array_object'],
-                         [self._entry.id]),
-                         (True, None))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['array_object'],
-                         self._entry.id),
-                         (False, "value(%s) is not list" % self._entry.id))
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["array_object"], [self._entry.id]),
+            (True, None),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["array_object"], self._entry.id),
+            (False, "value(%s) is not list" % self._entry.id),
+        )
 
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['array_named_object'],
-                         [{'name': 'hoge', 'id': self._entry.id}]),
-                         (True, None))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['array_named_object'],
-                         {'name': 'hoge', 'id': self._entry.id}),
-                         (False, "value({'name': 'hoge', 'id': %s}) is not list" % self._entry.id))
+        self.assertEqual(
+            AttributeValue.validate_attr_value(
+                AttrTypeValue["array_named_object"], [{"name": "hoge", "id": self._entry.id}]
+            ),
+            (True, None),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(
+                AttrTypeValue["array_named_object"], {"name": "hoge", "id": self._entry.id}
+            ),
+            (False, "value({'name': 'hoge', 'id': %s}) is not list" % self._entry.id),
+        )
 
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['array_group'],
-                         [group.id]),
-                         (True, None))
-        self.assertEqual(AttributeValue.validate_attr_value(AttrTypeValue['array_group'],
-                         group.id),
-                         (False, "value(%s) is not list" % group.id))
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["array_group"], [group.id]),
+            (True, None),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrTypeValue["array_group"], group.id),
+            (False, "value(%s) is not list" % group.id),
+        )
