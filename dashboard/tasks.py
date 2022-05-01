@@ -4,11 +4,17 @@ import json
 import yaml
 
 from airone.celery import app
+from airone.lib.acl import ACLType
+from airone.lib.log import Logger
 from airone.lib.types import AttrTypeValue
 from django.conf import settings
+
+from entity.models import Entity
 from entry.models import Entry
 from job.models import Job
 from natsort import natsorted
+
+from user.models import User
 
 
 def _csv_export(job, values, recv_data, has_referral):
@@ -200,3 +206,72 @@ def export_search_result(self, job_id):
     # update job status and save it except for the case that target job is canceled.
     if not job.is_canceled():
         job.update(Job.STATUS["DONE"])
+
+
+def _do_import_entries(user: User, entity: Entity, entity_param):
+    for (index, entry_data) in enumerate(entity_param):
+        entry = Entry.objects.filter(name=entry_data["name"], schema=entity).first()
+        if not entry:
+            entry = Entry.objects.create(name=entry_data["name"], schema=entity, created_user=user)
+
+        elif not user.has_permission(entry, ACLType.Writable):
+            continue
+
+        entry.complement_attrs(user)
+        for attr_name, value in entry_data["attrs"].items():
+            # If user doesn't have readable permission for target Attribute,
+            # it won't be created.
+            if not entry.attrs.filter(schema__name=attr_name).exists():
+                continue
+
+            # There should be only one EntityAttr that is specified by name and Entity.
+            # Once there are multiple EntityAttrs, it must be an abnormal situation.
+            # In that case, this aborts import processing for this entry and reports it
+            # as an error.
+            attr_query = entry.attrs.filter(
+                schema__name=attr_name,
+                is_active=True,
+                schema__parent_entity=entry.schema,
+            )
+            if attr_query.count() > 1:
+                Logger.error(
+                    "[task.import_search_result] Abnormal entry was detected(%s:%d)"
+                    % (entry.name, entry.id)
+                )
+                break
+
+            attr = attr_query.last()
+            if not user.has_permission(attr.schema, ACLType.Writable) or not user.has_permission(
+                attr, ACLType.Writable
+            ):
+                continue
+
+            input_value = attr.convert_value_to_register(value)
+            if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(input_value):
+                attr.add_value(user, input_value)
+
+        # register entry to the Elasticsearch
+        entry.register_es()
+
+
+@app.task(bind=True)
+def import_search_result(self, job_id):
+    job = Job.objects.get(id=job_id)
+
+    if not job.proceed_if_ready():
+        return
+
+    # set flag to indicate that this job starts processing
+    job.update(Job.STATUS["PROCESSING"])
+
+    user = job.user
+    recv_data = json.loads(job.params)
+
+    entities = Entity.objects.filter(name__in=[name for name in recv_data])
+    for entity in entities:
+        Logger.info("[task.import_search_result] import %s" % entity.name)
+        _do_import_entries(user, entity, recv_data[entity.name])
+
+    # update job status and save it except for the case that target job is canceled.
+    if not job.is_canceled():
+        job.update(status=Job.STATUS["DONE"], text="finished to import %s entities" % len(entities))

@@ -42,6 +42,7 @@ class JobOperation(Enum):
     NOTIFY_CREATE_ENTRY = 13
     NOTIFY_UPDATE_ENTRY = 14
     NOTIFY_DELETE_ENTRY = 15
+    IMPORT_SEARCH_RESULT = 16
 
 
 class Job(models.Model):
@@ -286,6 +287,7 @@ class Job(models.Model):
                 JobOperation.NOTIFY_CREATE_ENTRY.value: entry_task.notify_create_entry,
                 JobOperation.NOTIFY_UPDATE_ENTRY.value: entry_task.notify_update_entry,
                 JobOperation.NOTIFY_DELETE_ENTRY.value: entry_task.notify_delete_entry,
+                JobOperation.IMPORT_SEARCH_RESULT.value: dashboard_task.import_search_result,
             }
 
         return kls._METHOD_TABLE
@@ -432,6 +434,16 @@ class Job(models.Model):
             value = pickle.load(fp)
 
         return value
+
+    @classmethod
+    def new_import_search_result(kls, user, target=None, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.IMPORT_SEARCH_RESULT.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
 
     @classmethod
     def _get_job_timeout(kls):

@@ -164,6 +164,7 @@ def render(request, template, context={}):
             "CREATE_ENTITY": JobOperation.CREATE_ENTITY.value,
             "EDIT_ENTITY": JobOperation.EDIT_ENTITY.value,
             "DELETE_ENTITY": JobOperation.DELETE_ENTITY.value,
+            "IMPORT_SEARCH_RESULT": JobOperation.IMPORT_SEARCH_RESULT.value,
         },
     }
 

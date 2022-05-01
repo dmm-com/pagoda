@@ -38,6 +38,7 @@ class JobAPI(APIView):
                 "create_entity": JobOperation.CREATE_ENTITY.value,
                 "edit_entity": JobOperation.EDIT_ENTITY.value,
                 "delete_entity": JobOperation.DELETE_ENTITY.value,
+                "import_search_result": JobOperation.IMPORT_SEARCH_RESULT.value,
             },
         }
 

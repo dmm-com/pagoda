@@ -17,6 +17,10 @@ urlpatterns = [
         views.export_search_result,
         name="export_search_result",
     ),
+    url(r"^import_search_result/$", views.import_search_result, name="import_search_result"),
+    url(
+        r"^do_import_search_result/$", views.do_import_search_result, name="do_import_search_result"
+    ),
 ]
 
 # If a custom view exists, the custom view has priority for viewing

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Entry{% endblock %}
+
+{% block nav_sub_header %}
+{% with "import_search_result" as path %}
+{% include 'navigation.html' %}
+{% endwith %}
+{% endblock %}
+
+{% block content %}
+<form action='/dashboard/do_import_search_result/' method='POST' enctype='multipart/form-data'>
+  {% csrf_token %}
+  <input type="file" id="upfile" name="file"/>
+  <input type="submit" id="send" value="アップロード" disabled="True" />
+</form>
+<p>(注：CSV 形式のデータはインポートできません)</p>
+{% endblock %}

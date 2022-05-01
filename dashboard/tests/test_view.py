@@ -1469,3 +1469,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(referrals), 1)
         self.assertEqual(referrals[0]["entity"], "entity")
         self.assertEqual(referrals[0]["entry"], "entry")
+
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.import_search_result),
+    )
+    def test_do_import_search_result(self):
+        fp = self.open_fixture_file("search_results.yaml")
+        resp = self.client.post(reverse("dashboard:do_import_search_result"), {"file": fp})
+        self.assertEqual(resp.status_code, 303)
+
+    def test_do_import_search_result_with_invalid_files(self):
+        # wrong format
+        fp = self.open_fixture_file("entity.yaml")
+        resp = self.client.post(reverse("dashboard:do_import_search_result"), {"file": fp})
+        self.assertEqual(resp.status_code, 400)
