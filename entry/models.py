@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from datetime import datetime, date
+from typing import Any, Optional, Tuple
 
 from django.db import models
 from django.db.models import Q, Prefetch
@@ -281,6 +282,73 @@ class AttributeValue(models.Model):
         # not to cause ValueError exception at other retrieval processing.
         return str(obj_group.id) if obj_group else ""
 
+    @classmethod
+    def validate_attr_value(kls, type: int, input_value: Any) -> Tuple[bool, Optional[str]]:
+        """
+        Validate if to add_value is a possible value.
+        Returns: (is_valid, msg)
+            is_valid(bool): result of validate
+            msg(str): error message(Optional)
+        """
+
+        def _validate_attr_str(value):
+            if not isinstance(value, str):
+                raise Exception("value(%s) is not str" % value)
+            if len(str(value).encode("utf-8")) > AttributeValue.MAXIMUM_VALUE_SIZE:
+                raise Exception("value(%s) is exceeded the limit" % value)
+
+        def _validate_attr_object(value):
+            try:
+                if value and not Entry.objects.filter(id=value, is_active=True).exists():
+                    raise Exception("value(%s) is not entry id" % value)
+            except (ValueError, TypeError):
+                raise Exception("value(%s) is not int" % value)
+
+        def _validate_attr(value):
+            if type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
+                return _validate_attr_str(value)
+
+            if type & AttrTypeValue["object"]:
+                if type & AttrTypeValue["named"]:
+                    if not isinstance(value, dict):
+                        raise Exception("value(%s) is not dict" % value)
+                    if not ("name" in value.keys() and "id" in value.keys()):
+                        raise Exception("value(%s) is not key('name', 'id')" % value)
+                    _validate_attr_str(value["name"])
+                    _validate_attr_object(value["id"])
+                else:
+                    _validate_attr_object(value)
+
+            if type & AttrTypeValue["group"]:
+                try:
+                    if not Group.objects.filter(id=value, is_active=True).exists():
+                        raise Exception("value(%s) is not group id" % value)
+                except (ValueError, TypeError):
+                    raise Exception("value(%s) is not int" % value)
+
+            if type & AttrTypeValue["boolean"]:
+                if not isinstance(value, bool):
+                    raise Exception("value(%s) is not bool" % value)
+
+            if type & AttrTypeValue["date"]:
+                try:
+                    datetime.strptime(value, "%Y-%m-%d").date()
+                except (ValueError, TypeError):
+                    raise Exception("value(%s) is not format(YYYY-MM-DD)" % value)
+
+        try:
+            if type & AttrTypeValue["array"]:
+                if not isinstance(input_value, list):
+                    raise Exception("value(%s) is not list" % input_value)
+                for val in input_value:
+                    _validate_attr(val)
+            else:
+                _validate_attr(input_value)
+        except Exception as e:
+            return (False, str(e))
+
+        return (True, None)
+
 
 class Attribute(ACLBase):
     values = models.ManyToManyField(AttributeValue)
@@ -372,6 +440,8 @@ class Attribute(ACLBase):
             return last_value.value != AttributeValue.uniform_storable_for_group(recv_value)
 
         elif self.schema.type == AttrTypeValue["date"]:
+            if isinstance(recv_value, str):
+                return last_value.date != datetime.strptime(recv_value, "%Y-%m-%d").date()
             return last_value.date != recv_value
 
         elif self.schema.type == AttrTypeValue["named_object"]:
@@ -1363,6 +1433,14 @@ class Entry(ACLBase):
 
             # restore Attribute object
             attr.restore()
+
+        # update Elasticsearch index info which refered this entry to refer this link
+        es_object = ESS()
+        for entry in [x for x in self.get_referred_objects()]:
+            entry.register_es(es=es_object)
+
+        # update entry information to Elasticsearch
+        self.register_es()
 
     def clone(self, user, **extra_params):
         if not user.has_permission(self, ACLType.Readable) or not user.has_permission(

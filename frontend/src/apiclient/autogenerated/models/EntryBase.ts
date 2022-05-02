@@ -13,51 +13,70 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import {
+  Entity,
+  EntityFromJSON,
+  EntityFromJSONTyped,
+  EntityToJSON,
+} from "./Entity";
+
 /**
  *
  * @export
- * @interface Entity
+ * @interface EntryBase
  */
-export interface Entity {
+export interface EntryBase {
   /**
    *
    * @type {number}
-   * @memberof Entity
+   * @memberof EntryBase
    */
   readonly id: number;
   /**
    *
    * @type {string}
-   * @memberof Entity
+   * @memberof EntryBase
    */
-  name: string;
+  readonly name: string;
+  /**
+   *
+   * @type {Entity}
+   * @memberof EntryBase
+   */
+  readonly schema: Entity | null;
+  /**
+   *
+   * @type {boolean}
+   * @memberof EntryBase
+   */
+  readonly isActive: boolean;
 }
 
-export function EntityFromJSON(json: any): Entity {
-  return EntityFromJSONTyped(json, false);
+export function EntryBaseFromJSON(json: any): EntryBase {
+  return EntryBaseFromJSONTyped(json, false);
 }
 
-export function EntityFromJSONTyped(
+export function EntryBaseFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): Entity {
+): EntryBase {
   if (json === undefined || json === null) {
     return json;
   }
   return {
     id: json["id"],
     name: json["name"],
+    schema: EntityFromJSON(json["schema"]),
+    isActive: json["is_active"],
   };
 }
 
-export function EntityToJSON(value?: Entity | null): any {
+export function EntryBaseToJSON(value?: EntryBase | null): any {
   if (value === undefined) {
     return undefined;
   }
   if (value === null) {
     return null;
   }
-  return {
-    name: value.name,
-  };
+  return {};
 }
