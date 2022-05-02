@@ -41,34 +41,55 @@ def index(request, obj_id):
         Logger.warning("failed to get related parent object")
 
     context = {
-        'object': target_obj,
-        'parent': parent_obj,
-        'acltypes': [{'id': x.id, 'name': x.label} for x in ACLType.all()],
-        'roles': [{
-            'id': x.id,
-            'name': x.name,
-            'description': x.description,
-            'current_permission': get_current_permission(x),
-        } for x in Role.objects.filter(is_active=True)],
+        "object": target_obj,
+        "parent": parent_obj,
+        "acltypes": [{"id": x.id, "name": x.label} for x in ACLType.all()],
+        "roles": [
+            {
+                "id": x.id,
+                "name": x.name,
+                "description": x.description,
+                "current_permission": get_current_permission(x),
+            }
+            for x in Role.objects.filter(is_active=True)
+        ],
     }
-    return render(request, 'edit_acl.html', context)
+    return render(request, "edit_acl.html", context)
 
 
-@http_post([
-    {'name': 'object_id', 'type': str,
-     'checker': lambda x: ACLBase.objects.filter(id=x['object_id']).exists()},
-    {'name': 'object_type', 'type': str,
-     'checker': lambda x: x['object_type']},
-    {'name': 'acl', 'type': list, 'meta': [
-        {'name': 'role_id', 'type': str,
-         'checker': lambda x: Role.objects.filter(id=x['role_id'], is_active=True).exists()},
-        {'name': 'value', 'type': (str, type(None)),
-         'checker': lambda x: [y for y in ACLType.all() if int(x['value']) == y]},
-    ]},
-    {'name': 'default_permission', 'type': str, 'checker': lambda x: any(
-        [y == int(x['default_permission']) for y in ACLType.all()]
-    )},
-])
+@http_post(
+    [
+        {
+            "name": "object_id",
+            "type": str,
+            "checker": lambda x: ACLBase.objects.filter(id=x["object_id"]).exists(),
+        },
+        {"name": "object_type", "type": str, "checker": lambda x: x["object_type"]},
+        {
+            "name": "acl",
+            "type": list,
+            "meta": [
+                {
+                    "name": "role_id",
+                    "type": str,
+                    "checker": lambda x: Role.objects.filter(
+                        id=x["role_id"], is_active=True
+                    ).exists(),
+                },
+                {
+                    "name": "value",
+                    "type": (str, type(None)),
+                    "checker": lambda x: [y for y in ACLType.all() if int(x["value"]) == y],
+                },
+            ],
+        },
+        {
+            "name": "default_permission",
+            "type": str,
+            "checker": lambda x: any([y == int(x["default_permission"]) for y in ACLType.all()]),
+        },
+    ]
+)
 def set(request, recv_data):
     user = User.objects.get(id=request.user.id)
     acl_obj = getattr(_get_acl_model(recv_data["object_type"]), "objects").get(
@@ -77,7 +98,8 @@ def set(request, recv_data):
 
     if not user.has_permission(acl_obj, ACLType.Full):
         return HttpResponse(
-            "User(%s) doesn't have permission to change this ACL" % user.username, status=400)
+            "User(%s) doesn't have permission to change this ACL" % user.username, status=400
+        )
 
     acl_obj.is_public = False
     if "is_public" in recv_data:
@@ -88,9 +110,9 @@ def set(request, recv_data):
     # update the Public/Private flag parameter
     acl_obj.save()
 
-    for acl_data in [x for x in recv_data['acl'] if x['value']]:
-        role = Role.objects.get(id=acl_data['role_id'])
-        acl_type = [x for x in ACLType.all() if x == int(acl_data['value'])][0]
+    for acl_data in [x for x in recv_data["acl"] if x["value"]]:
+        role = Role.objects.get(id=acl_data["role_id"])
+        acl_type = [x for x in ACLType.all() if x == int(acl_data["value"])][0]
 
         # update permissios for the target ACLBased object
         _set_permission(role, acl_obj, acl_type)

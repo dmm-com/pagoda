@@ -109,9 +109,9 @@ class ModelTest(TestCase):
 
         admin = User.objects.create(username="admin")
 
-        user = User.objects.create(username='user')
-        group = Group.objects.create(name='group')
-        role = Role.objects.create(name='role')
+        user = User.objects.create(username="user")
+        group = Group.objects.create(name="group")
+        role = Role.objects.create(name="role")
 
         user.groups.add(group)
         role.groups.add(group)
@@ -130,16 +130,17 @@ class ModelTest(TestCase):
         self.assertFalse(user.has_permission(entity, ACLType.Full))
 
     def test_object_acl_that_should_not_be_shown(self):
-        user = User.objects.create(username='user')
-        entity = Entity.objects.create(name='entity',
-                                       created_user=user,
-                                       is_public=False,
-                                       default_permission=ACLType.Nothing.id)
+        user = User.objects.create(username="user")
+        entity = Entity.objects.create(
+            name="entity", created_user=user, is_public=False, default_permission=ACLType.Nothing.id
+        )
 
-        entry = Entry.objects.create(name='Entry',
-                                     schema=entity,
-                                     is_public=False,
-                                     default_permission=ACLType.Full.id,
-                                     created_user=user)
+        entry = Entry.objects.create(
+            name="Entry",
+            schema=entity,
+            is_public=False,
+            default_permission=ACLType.Full.id,
+            created_user=user,
+        )
 
         self.assertFalse(user.has_permission(entry, ACLType.Readable))

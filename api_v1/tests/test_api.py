@@ -475,7 +475,7 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.json()["result"], "Permission denied to create(or update) entry")
 
         # Set permisson to create new entry
-        role = Role.objects.create(name='Role')
+        role = Role.objects.create(name="Role")
         role.permissions.add(entity.writable)
         role.users.add(guest)
 
@@ -964,7 +964,7 @@ class APITest(AironeViewTest):
         # There was a bug(#28) when there are multiple users, individual attribute authorization
         # would not be inherited from EntityAttr to Attribute. To confirm that the bug is corrected,
         # this create multiple users ('_u1' and '_u2').
-        role = Role.objects.create(name='Role')
+        role = Role.objects.create(name="Role")
         role.permissions.add(entity_attr.full)
         for user in users.values():
             role.users.add(user)

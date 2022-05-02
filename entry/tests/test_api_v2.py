@@ -17,7 +17,7 @@ class ViewTest(AironeViewTest):
         super(ViewTest, self).setUp()
 
         self.user: User = self.guest_login()
-        self.role: Role = Role.objects.create(name='Role')
+        self.role: Role = Role.objects.create(name="Role")
 
         # create Entities, Entries and Group for using this test case
         self.ref_entity: Entity = self.create_entity(self.user, "ref_entity")

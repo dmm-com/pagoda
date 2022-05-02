@@ -1043,8 +1043,8 @@ class ModelTest(AironeTestCase):
         self.assertEqual(clone.name, "cloned_entry")
 
     def test_clone_entry_without_permission(self):
-        unknown_user = User.objects.create(username='unknown_user')
-        role = Role.objects.create(name='role')
+        unknown_user = User.objects.create(username="unknown_user")
+        role = Role.objects.create(name="role")
 
         entry = Entry.objects.create(
             name="entry", schema=self._entity, created_user=self._user, is_public=False
@@ -4091,21 +4091,23 @@ class ModelTest(AironeTestCase):
         self.assertEqual(entry.get_attrv("attr").value, "fuga")
 
     def test_inherit_individual_attribute_permissions_when_it_is_complemented(self):
-        [user1, user2] = [User.objects.create(username=x) for x in ['u1', 'u2']]
-        groups = [Group.objects.create(name=x) for x in ['g1', 'g2']]
+        [user1, user2] = [User.objects.create(username=x) for x in ["u1", "u2"]]
+        groups = [Group.objects.create(name=x) for x in ["g1", "g2"]]
         [user1.groups.add(g) for g in groups]
 
         # initialize Role instance
-        role = Role.objects.create(name='Role')
+        role = Role.objects.create(name="Role")
         [role.users.add(x) for x in [user1, user2]]
         [role.groups.add(x) for x in groups]
 
-        entity = Entity.objects.create(name='entity', created_user=user1)
-        entity_attr = EntityAttr.objects.create(name='attr',
-                                                type=AttrTypeValue['string'],
-                                                created_user=user1,
-                                                parent_entity=entity,
-                                                is_public=False)
+        entity = Entity.objects.create(name="entity", created_user=user1)
+        entity_attr = EntityAttr.objects.create(
+            name="attr",
+            type=AttrTypeValue["string"],
+            created_user=user1,
+            parent_entity=entity,
+            is_public=False,
+        )
 
         # set permission for test Role instance
         role.permissions.add(entity_attr.full)

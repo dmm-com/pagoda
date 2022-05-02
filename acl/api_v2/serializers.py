@@ -74,22 +74,23 @@ class ACLSerializer(serializers.ModelSerializer):
         return default_permission in ACLType.all()
 
     def validate(self, attrs: Dict[str, Any]):
-        user = User.objects.get(id=self.context['request'].user.id)
+        user = User.objects.get(id=self.context["request"].user.id)
         if not user.has_permission(self.instance, ACLType.Full):
-            raise ValidationError("Inadmissible setting."
-                                  "By this change you will never change this ACL")
+            raise ValidationError(
+                "Inadmissible setting." "By this change you will never change this ACL"
+            )
 
         # validate acl paramter
-        for acl_info in attrs['acl']:
-            if 'member_id' not in acl_info:
+        for acl_info in attrs["acl"]:
+            if "member_id" not in acl_info:
                 raise ValidationError('"member_id" parameter is necessary for "acl" parameter')
 
-            role = Role.objects.filter(id=acl_info['member_id']).first()
+            role = Role.objects.filter(id=acl_info["member_id"]).first()
             if not role:
-                raise ValidationError('Invalid member_id of Role instance is specified')
+                raise ValidationError("Invalid member_id of Role instance is specified")
 
             if not role.is_editable(user):
-                raise ValidationError('This user does not have permission to edit specified Role')
+                raise ValidationError("This user does not have permission to edit specified Role")
 
         return attrs
 
@@ -101,9 +102,9 @@ class ACLSerializer(serializers.ModelSerializer):
         acl_obj.default_permission = validated_data["default_permission"]
         acl_obj.save()
 
-        for item in [x for x in validated_data['acl'] if x['value']]:
-            role = Role.objects.get(id=item['member_id'])
-            acl_type = [x for x in ACLType.all() if x == int(item['value'])][0]
+        for item in [x for x in validated_data["acl"] if x["value"]]:
+            role = Role.objects.get(id=item["member_id"])
+            acl_type = [x for x in ACLType.all() if x == int(item["value"])][0]
 
             # update permissios for the target ACLBased object
             self._set_permission(role, acl_obj, acl_type)

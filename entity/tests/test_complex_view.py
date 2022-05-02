@@ -206,7 +206,7 @@ class ComplexViewTest(AironeViewTest):
         - The Entry(entry2) whcih is created by the guest user has no Attribute
         """
         user = self.admin_login()
-        role = Role.objects.create(name='TestRole')
+        role = Role.objects.create(name="TestRole")
         role.users.add(user)
 
         # create an Entity
@@ -229,16 +229,11 @@ class ComplexViewTest(AironeViewTest):
         self.assertEqual(EntityAttr.objects.count(), 1)
 
         # set acl of attr to Role
-        entityattr = EntityAttr.objects.get(name='attr')
+        entityattr = EntityAttr.objects.get(name="attr")
         params = {
             "object_id": str(entityattr.id),
             "object_type": str(entityattr.objtype),
-            "acl": [
-                {
-                    'role_id': str(role.id),
-                    'value': str(ACLType.Full.id)
-                }
-            ],
+            "acl": [{"role_id": str(role.id), "value": str(ACLType.Full.id)}],
             "default_permission": str(ACLType.Nothing.id),
         }
         resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")

@@ -24,8 +24,7 @@ class User(DjangoUser):
 
     @property
     def airone_groups(self):
-        return Group.objects.filter(id__in=[g.id for g in self.groups.all()],
-                                    is_active=True)
+        return Group.objects.filter(id__in=[g.id for g in self.groups.all()], is_active=True)
 
     # to make a polymorphism between the Group model
     @property
@@ -51,9 +50,10 @@ class User(DjangoUser):
             return False
 
         # doesn't permit, access to the children's objects are also not permitted.
-        if ((isinstance(target_obj, import_module('entry.models').Entry)
-             or isinstance(target_obj, import_module('entry.models').Attribute))
-                and not self.has_permission(target_obj.schema, permission_level)):
+        if (
+            isinstance(target_obj, import_module("entry.models").Entry)
+            or isinstance(target_obj, import_module("entry.models").Attribute)
+        ) and not self.has_permission(target_obj.schema, permission_level):
             return False
 
         # This check processing must be set after checking superior data structure's check

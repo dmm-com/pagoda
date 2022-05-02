@@ -556,7 +556,7 @@ class ViewTest(AironeViewTest):
         self.assertFalse(resp_entry["is_readble"])
         self.assertEqual(resp_entry["attrs"], {})
 
-        role = Role.objects.create(name='Role')
+        role = Role.objects.create(name="Role")
         role.permissions.add(entry.readable)
         role.users.add(guest_user)
 
@@ -591,17 +591,22 @@ class ViewTest(AironeViewTest):
         self.assertFalse("value" in resp_attr)
 
         role.permissions.add(attr.readable)
-        resp = self.client.get(reverse('dashboard:advanced_search_result'), {
-            'entity[]': [entity.id],
-            'attrinfo': json.dumps([{'name': 'attr-obj'}]),
-        })
-        self.assertEqual(resp.context['results']['ret_count'], 1)
-        resp_attr = resp.context['results']['ret_values'][0]['attrs']['attr-obj']
-        self.assertTrue(resp_attr['is_readble'])
-        self.assertEqual(resp_attr['value'], {'id': 8, 'name': 'entry11'})
+        resp = self.client.get(
+            reverse("dashboard:advanced_search_result"),
+            {
+                "entity[]": [entity.id],
+                "attrinfo": json.dumps([{"name": "attr-obj"}]),
+            },
+        )
+        self.assertEqual(resp.context["results"]["ret_count"], 1)
+        resp_attr = resp.context["results"]["ret_values"][0]["attrs"]["attr-obj"]
+        self.assertTrue(resp_attr["is_readble"])
+        self.assertEqual(resp_attr["value"], {"id": 8, "name": "entry11"})
 
-    @patch('dashboard.tasks.export_search_result.delay',
-           Mock(side_effect=dashboard_tasks.export_search_result))
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
     def test_export_advanced_search_result(self):
         user = self.admin
 

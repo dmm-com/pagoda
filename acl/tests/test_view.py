@@ -17,7 +17,7 @@ class ViewTest(AironeViewTest):
         super(ViewTest, self).setUp()
 
         # create test Role instance which is used in this test
-        self._role = Role.objects.create(name='TestRole', description='Hoge')
+        self._role = Role.objects.create(name="TestRole", description="Hoge")
 
     # override 'admin_login' method to create initial ACLBase objects
     def admin_login(self):
@@ -30,12 +30,10 @@ class ViewTest(AironeViewTest):
 
     def send_set_request(self, aclobj, role, aclid=ACLType.Writable.id):
         params = {
-            'object_id': str(aclobj.id),
-            'object_type': str(aclobj.objtype),
-            'acl': [
-                {
-                    'role_id': str(role.id),
-                    'value': str(aclid)},
+            "object_id": str(aclobj.id),
+            "object_type": str(aclobj.objtype),
+            "acl": [
+                {"role_id": str(role.id), "value": str(aclid)},
             ],
             "default_permission": str(ACLType.Nothing.id),
         }
@@ -49,13 +47,14 @@ class ViewTest(AironeViewTest):
         self.admin_login()
 
         # create Roles to be listed
-        for name in ['r1', 'r2']:
+        for name in ["r1", "r2"]:
             Role.objects.create(name=name)
 
         resp = self.client.get(reverse("acl:index", args=[self._aclobj.id]))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(sorted([x['name'] for x in resp.context['roles']]),
-                         sorted(['TestRole', 'r1', 'r2']))
+        self.assertEqual(
+            sorted([x["name"] for x in resp.context["roles"]]), sorted(["TestRole", "r1", "r2"])
+        )
 
     def test_get_acl_set(self):
         self.admin_login()
@@ -97,25 +96,23 @@ class ViewTest(AironeViewTest):
     def test_post_acl_set_attrbase(self):
         user = self.admin_login()
 
-        entity = Entity.objects.create(name='entity', created_user=user)
-        attrbase = EntityAttr.objects.create(name='hoge',
-                                             created_user=user,
-                                             parent_entity=entity)
+        entity = Entity.objects.create(name="entity", created_user=user)
+        attrbase = EntityAttr.objects.create(name="hoge", created_user=user, parent_entity=entity)
         resp = self.send_set_request(attrbase, self._role)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()['redirect_url'], '/entity/edit/%s' % entity.id)
+        self.assertEqual(resp.json()["redirect_url"], "/entity/edit/%s" % entity.id)
         self.assertEqual(self._role.permissions.last(), attrbase.writable)
         self.assertFalse(EntityAttr.objects.get(id=attrbase.id).is_public)
 
     def test_post_acl_set_entity(self):
         user = self.admin_login()
 
-        entity = Entity.objects.create(name='hoge', created_user=user)
+        entity = Entity.objects.create(name="hoge", created_user=user)
         resp = self.send_set_request(entity, self._role)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()['redirect_url'], '/entity/')
+        self.assertEqual(resp.json()["redirect_url"], "/entity/")
         self.assertEqual(self._role.permissions.last(), entity.writable)
         self.assertFalse(Entity.objects.get(id=entity.id).is_public)
 
@@ -131,7 +128,7 @@ class ViewTest(AironeViewTest):
         resp = self.send_set_request(attr, self._role)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()['redirect_url'], '/entry/edit/%s' % entry.id)
+        self.assertEqual(resp.json()["redirect_url"], "/entry/edit/%s" % entry.id)
         self.assertEqual(self._role.permissions.last(), attr.writable)
         self.assertFalse(Attribute.objects.get(id=attr.id).is_public)
         search_result = self._es.search(body={"query": {"term": {"name": entry.name}}})
@@ -140,12 +137,12 @@ class ViewTest(AironeViewTest):
     def test_post_acl_set_entry(self):
         user = self.admin_login()
 
-        entity = Entity.objects.create(name='hoge', created_user=user)
-        entry = Entry.objects.create(name='fuga', created_user=user, schema=entity)
+        entity = Entity.objects.create(name="hoge", created_user=user)
+        entry = Entry.objects.create(name="fuga", created_user=user, schema=entity)
         resp = self.send_set_request(entry, self._role)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()['redirect_url'], '/entry/show/%s' % entry.id)
+        self.assertEqual(resp.json()["redirect_url"], "/entry/show/%s" % entry.id)
         self.assertEqual(self._role.permissions.last(), entry.writable)
         self.assertFalse(Entry.objects.get(id=entry.id).is_public)
         search_result = self._es.search(body={"query": {"term": {"name": entry.name}}})
@@ -158,9 +155,7 @@ class ViewTest(AironeViewTest):
             "object_type": str(self._aclobj.objtype),
             "is_public": "on",
             "acl": [
-                {
-                    'role_id': str(self._role.id),
-                    'value': str(ACLType.Nothing.id)},
+                {"role_id": str(self._role.id), "value": str(ACLType.Nothing.id)},
             ],
             "default_permission": str(ACLType.Nothing.id),
         }
@@ -178,12 +173,7 @@ class ViewTest(AironeViewTest):
         params = {
             "object_id": str(self._aclobj.id),
             "object_type": str(self._aclobj.objtype),
-            "acl": [
-                {
-                    'role_id': str(self._role.id),
-                    'value': str(ACLType.Readable.id)
-                }
-            ],
+            "acl": [{"role_id": str(self._role.id), "value": str(ACLType.Readable.id)}],
             "default_permission": str(ACLType.Nothing.id),
         }
         resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
@@ -201,12 +191,7 @@ class ViewTest(AironeViewTest):
         params = {
             "object_id": str(self._aclobj.id),
             "object_type": str(self._aclobj.objtype),
-            "acl": [
-                {
-                    'role_id': str(self._role.id),
-                    'value': str(ACLType.Nothing.id)
-                }
-            ],
+            "acl": [{"role_id": str(self._role.id), "value": str(ACLType.Nothing.id)}],
             "default_permission": str(ACLType.Nothing.id),
         }
         resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")

@@ -31,44 +31,56 @@ class ACLAPITest(AironeViewTest):
 
     def test_update(self):
         user = self.guest_login()
-        role = Role.objects.create(name='role')
+        role = Role.objects.create(name="role")
         role.admin_users.add(user)
 
         acl = ACLBase(name="test", created_user=user)
         acl.save()
 
-        resp = self.client.put('/acl/api/v2/acls/%s' % acl.id, json.dumps({
-            'name': acl.name,
-            'is_public': False,
-            'default_permission': str(ACLType.Nothing.id),
-            'objtype': acl.objtype,
-            'acl': [
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps(
                 {
-                    'member_id': str(role.id),
-                    'value': str(ACLType.Writable.id),
-                },
-            ],
-        }), 'application/json;charset=utf-8')
+                    "name": acl.name,
+                    "is_public": False,
+                    "default_permission": str(ACLType.Nothing.id),
+                    "objtype": acl.objtype,
+                    "acl": [
+                        {
+                            "member_id": str(role.id),
+                            "value": str(ACLType.Writable.id),
+                        },
+                    ],
+                }
+            ),
+            "application/json;charset=utf-8",
+        )
         self.assertEqual(resp.status_code, 200)
 
     def test_update_by_others(self):
         user = self.guest_login()
-        role = Role.objects.create(name='role')
+        role = Role.objects.create(name="role")
 
         acl = ACLBase(name="test", created_user=user)
         acl.save()
 
         # send request to update ACL of Role that is not permitted to be edited
-        resp = self.client.put('/acl/api/v2/acls/%s' % acl.id, json.dumps({
-            'name': acl.name,
-            'is_public': False,
-            'default_permission': str(ACLType.Nothing.id),
-            'objtype': acl.objtype,
-            'acl': [
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps(
                 {
-                    'member_id': str(role.id),
-                    'value': str(ACLType.Writable.id),
-                },
-            ],
-        }), 'application/json;charset=utf-8')
+                    "name": acl.name,
+                    "is_public": False,
+                    "default_permission": str(ACLType.Nothing.id),
+                    "objtype": acl.objtype,
+                    "acl": [
+                        {
+                            "member_id": str(role.id),
+                            "value": str(ACLType.Writable.id),
+                        },
+                    ],
+                }
+            ),
+            "application/json;charset=utf-8",
+        )
         self.assertEqual(resp.status_code, 400)

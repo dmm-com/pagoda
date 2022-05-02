@@ -13,7 +13,7 @@ class ModelTest(TestCase):
         self.user = User.objects.create(username="foo", email="hoge@example.com", password="fuga")
 
         # create test Role instance and set user to be belonged to it
-        self.role = Role.objects.create(name='test_role')
+        self.role = Role.objects.create(name="test_role")
         self.role.users.add(self.user)
 
     def test_acl_base(self):
@@ -70,8 +70,8 @@ class ModelTest(TestCase):
         self.assertFalse(another_user.has_permission(aclobj, ACLType.Writable))
 
     def test_pass_permission_check_with_group_permissoin(self):
-        another_user = User.objects.create(username='bar', email='bar@example.com', password='')
-        group = Group.objects.create(name='hoge')
+        another_user = User.objects.create(username="bar", email="bar@example.com", password="")
+        group = Group.objects.create(name="hoge")
         self.role.groups.add(group)
 
         aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)

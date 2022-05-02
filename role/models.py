@@ -54,7 +54,9 @@ class Role(models.Model):
           this method don't care about hieralchical data structure
           (e.g. Entity/Entry, EntityAttr/Attribute).
         """
-        return any([permission_level.id <= x.get_aclid()
-                   for x in self.permissions.filter(codename__startswith=(
-                       str(target_obj.id) + '.'
-                   ))])
+        return any(
+            [
+                permission_level.id <= x.get_aclid()
+                for x in self.permissions.filter(codename__startswith=(str(target_obj.id) + "."))
+            ]
+        )
