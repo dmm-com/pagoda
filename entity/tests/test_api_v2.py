@@ -13,6 +13,7 @@ from unittest import mock
 from entry.models import Entry
 from group.models import Group
 from user.models import User
+from role.models import Role
 
 
 class ViewTest(AironeViewTest):
@@ -20,6 +21,7 @@ class ViewTest(AironeViewTest):
         super(ViewTest, self).setUp()
 
         self.user: User = self.guest_login()
+        self.role: Role = Role.objects.create(name="Role")
 
         # create Entities, Entries and Group for using this test case
         self.ref_entity: Entity = self.create_entity(self.user, "ref_entity")
@@ -106,7 +108,9 @@ class ViewTest(AironeViewTest):
             resp.json(), {"detail": "You do not have permission to perform this action."}
         )
 
-        self.user.permissions.add(self.entity.readable)
+        self.role.permissions.add(self.entity.readable)
+        self.role.users.add(self.user)
+
         resp = self.client.get("/entity/api/v2/%d/entries/" % self.entity.id)
         self.assertEqual(resp.status_code, 200)
 
@@ -194,7 +198,8 @@ class ViewTest(AironeViewTest):
         )
 
         # permission readable
-        self.user.permissions.add(self.entity.readable)
+        self.role.permissions.add(self.entity.readable)
+        self.role.users.add(self.user)
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
@@ -204,7 +209,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission writable
-        self.user.permissions.add(self.entity.writable)
+        self.role.permissions.add(self.entity.writable)
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
