@@ -51,9 +51,9 @@ class User(DjangoUser):
             return False
 
         # doesn't permit, access to the children's objects are also not permitted.
-        if ((isinstance(target_obj, import_module('entry.models').Entry) or
-             isinstance(target_obj, import_module('entry.models').Attribute)) and
-                not self.has_permission(target_obj.schema, permission_level)):
+        if ((isinstance(target_obj, import_module('entry.models').Entry)
+             or isinstance(target_obj, import_module('entry.models').Attribute))
+                and not self.has_permission(target_obj.schema, permission_level)):
             return False
 
         # This check processing must be set after checking superior data structure's check
@@ -67,8 +67,8 @@ class User(DjangoUser):
         # This checks Roles that this user and groups, which this user belongs to,
         # have permission of specified permission_level
         belonged_roles = set(
-            list(self.role.filter(is_active=True)) +
-            sum([list(g.role.filter(is_active=True)) for g in self.airone_groups], [])
+            list(self.role.filter(is_active=True))
+            + sum([list(g.role.filter(is_active=True)) for g in self.airone_groups], [])
         )
         for role in belonged_roles:
             if role.is_permitted(target_obj, permission_level):

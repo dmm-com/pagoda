@@ -55,4 +55,6 @@ class Role(models.Model):
           (e.g. Entity/Entry, EntityAttr/Attribute).
         """
         return any([permission_level.id <= x.get_aclid()
-                   for x in self.permissions.filter(codename__startswith=(str(target_obj.id)+'.'))])
+                   for x in self.permissions.filter(codename__startswith=(
+                       str(target_obj.id) + '.'
+                   ))])
