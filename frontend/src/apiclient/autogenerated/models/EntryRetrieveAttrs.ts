@@ -13,54 +13,53 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import {
+  EntryRetrieveSchema,
+  EntryRetrieveSchemaFromJSON,
+  EntryRetrieveSchemaFromJSONTyped,
+  EntryRetrieveSchemaToJSON,
+} from "./EntryRetrieveSchema";
+
 /**
  *
  * @export
- * @interface GetEntryWithAttrAttrs
+ * @interface EntryRetrieveAttrs
  */
-export interface GetEntryWithAttrAttrs {
+export interface EntryRetrieveAttrs {
   /**
    *
    * @type {number}
-   * @memberof GetEntryWithAttrAttrs
+   * @memberof EntryRetrieveAttrs
    */
   id?: number | null;
   /**
    *
    * @type {number}
-   * @memberof GetEntryWithAttrAttrs
+   * @memberof EntryRetrieveAttrs
    */
   type?: number;
   /**
    *
    * @type {any}
-   * @memberof GetEntryWithAttrAttrs
+   * @memberof EntryRetrieveAttrs
    */
   value?: any | null;
   /**
    *
-   * @type {number}
-   * @memberof GetEntryWithAttrAttrs
+   * @type {EntryRetrieveSchema}
+   * @memberof EntryRetrieveAttrs
    */
-  schemaId?: number;
-  /**
-   *
-   * @type {string}
-   * @memberof GetEntryWithAttrAttrs
-   */
-  schemaName?: string;
+  schema?: EntryRetrieveSchema;
 }
 
-export function GetEntryWithAttrAttrsFromJSON(
-  json: any
-): GetEntryWithAttrAttrs {
-  return GetEntryWithAttrAttrsFromJSONTyped(json, false);
+export function EntryRetrieveAttrsFromJSON(json: any): EntryRetrieveAttrs {
+  return EntryRetrieveAttrsFromJSONTyped(json, false);
 }
 
-export function GetEntryWithAttrAttrsFromJSONTyped(
+export function EntryRetrieveAttrsFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): GetEntryWithAttrAttrs {
+): EntryRetrieveAttrs {
   if (json === undefined || json === null) {
     return json;
   }
@@ -68,13 +67,14 @@ export function GetEntryWithAttrAttrsFromJSONTyped(
     id: !exists(json, "id") ? undefined : json["id"],
     type: !exists(json, "type") ? undefined : json["type"],
     value: !exists(json, "value") ? undefined : json["value"],
-    schemaId: !exists(json, "schema_id") ? undefined : json["schema_id"],
-    schemaName: !exists(json, "schema_name") ? undefined : json["schema_name"],
+    schema: !exists(json, "schema")
+      ? undefined
+      : EntryRetrieveSchemaFromJSON(json["schema"]),
   };
 }
 
-export function GetEntryWithAttrAttrsToJSON(
-  value?: GetEntryWithAttrAttrs | null
+export function EntryRetrieveAttrsToJSON(
+  value?: EntryRetrieveAttrs | null
 ): any {
   if (value === undefined) {
     return undefined;
@@ -86,7 +86,6 @@ export function GetEntryWithAttrAttrsToJSON(
     id: value.id,
     type: value.type,
     value: value.value,
-    schema_id: value.schemaId,
-    schema_name: value.schemaName,
+    schema: EntryRetrieveSchemaToJSON(value.schema),
   };
 }

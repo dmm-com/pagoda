@@ -8,6 +8,12 @@ from user.models import User
 
 
 class EntitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Entity
+        fields = ["id", "name"]
+
+
+class EntityWithAttrSerializer(EntitySerializer):
     is_toplevel = serializers.SerializerMethodField(method_name="get_is_toplevel")
     attrs = serializers.SerializerMethodField(method_name="get_attrs")
 
