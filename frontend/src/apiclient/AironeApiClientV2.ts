@@ -7,11 +7,13 @@ import {
   AclApi,
   Attribute,
   Configuration,
-  Entity,
+  EntityWithAttr,
   EntityApi,
   EntryApi,
   EntryCreate,
   EntryRetrieve,
+  EntryUpdate,
+  EntryBase,
   Group,
   GroupApi,
   PaginatedEntryBaseList,
@@ -102,7 +104,7 @@ class AironeApiClientV2 {
     return await this.entity.entityApiV2EntitiesList(params);
   }
 
-  async getEntity(id: number): Promise<Entity> {
+  async getEntity(id: number): Promise<EntityWithAttr> {
     return await this.entity.entityApiV2EntitiesRetrieve({ id });
   }
 
@@ -117,6 +119,46 @@ class AironeApiClientV2 {
   ): Promise<EntryCreate> {
     return await this.entity.entityApiV2EntriesCreate(
       { entityId, entryCreate: { id: undefined, name, attrs } },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async updateEntry(
+    id: number,
+    name: string,
+    attrs: Attribute[]
+  ): Promise<EntryUpdate> {
+    return await this.entry.entryApiV2Update(
+      { id, entryUpdate: { id: undefined, name, attrs } },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async destroyEntry(id: number): Promise<void> {
+    return await this.entry.entryApiV2Destroy(
+      { id },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async restoreEntry(id: number): Promise<EntryBase> {
+    return await this.entry.entryApiV2RestoreCreate(
+      { id },
       {
         headers: {
           "Content-Type": "application/json;charset=utf-8",

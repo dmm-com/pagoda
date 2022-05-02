@@ -14,52 +14,54 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  Entity,
-  EntityFromJSON,
-  EntityFromJSONTyped,
-  EntityToJSON,
-} from "./Entity";
+  EntryBase,
+  EntryBaseFromJSON,
+  EntryBaseFromJSONTyped,
+  EntryBaseToJSON,
+} from "./EntryBase";
 
 /**
  *
  * @export
- * @interface PaginatedEntityList
+ * @interface PaginatedEntryBaseList
  */
-export interface PaginatedEntityList {
+export interface PaginatedEntryBaseList {
   /**
    *
    * @type {number}
-   * @memberof PaginatedEntityList
+   * @memberof PaginatedEntryBaseList
    */
   count?: number;
   /**
    *
    * @type {string}
-   * @memberof PaginatedEntityList
+   * @memberof PaginatedEntryBaseList
    */
   next?: string | null;
   /**
    *
    * @type {string}
-   * @memberof PaginatedEntityList
+   * @memberof PaginatedEntryBaseList
    */
   previous?: string | null;
   /**
    *
-   * @type {Array<Entity>}
-   * @memberof PaginatedEntityList
+   * @type {Array<EntryBase>}
+   * @memberof PaginatedEntryBaseList
    */
-  results?: Array<Entity>;
+  results?: Array<EntryBase>;
 }
 
-export function PaginatedEntityListFromJSON(json: any): PaginatedEntityList {
-  return PaginatedEntityListFromJSONTyped(json, false);
+export function PaginatedEntryBaseListFromJSON(
+  json: any
+): PaginatedEntryBaseList {
+  return PaginatedEntryBaseListFromJSONTyped(json, false);
 }
 
-export function PaginatedEntityListFromJSONTyped(
+export function PaginatedEntryBaseListFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): PaginatedEntityList {
+): PaginatedEntryBaseList {
   if (json === undefined || json === null) {
     return json;
   }
@@ -69,12 +71,12 @@ export function PaginatedEntityListFromJSONTyped(
     previous: !exists(json, "previous") ? undefined : json["previous"],
     results: !exists(json, "results")
       ? undefined
-      : (json["results"] as Array<any>).map(EntityFromJSON),
+      : (json["results"] as Array<any>).map(EntryBaseFromJSON),
   };
 }
 
-export function PaginatedEntityListToJSON(
-  value?: PaginatedEntityList | null
+export function PaginatedEntryBaseListToJSON(
+  value?: PaginatedEntryBaseList | null
 ): any {
   if (value === undefined) {
     return undefined;
@@ -89,6 +91,6 @@ export function PaginatedEntityListToJSON(
     results:
       value.results === undefined
         ? undefined
-        : (value.results as Array<any>).map(EntityToJSON),
+        : (value.results as Array<any>).map(EntryBaseToJSON),
   };
 }

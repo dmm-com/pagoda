@@ -440,6 +440,8 @@ class Attribute(ACLBase):
             return last_value.value != AttributeValue.uniform_storable_for_group(recv_value)
 
         elif self.schema.type == AttrTypeValue["date"]:
+            if isinstance(recv_value, str):
+                return last_value.date != datetime.strptime(recv_value, "%Y-%m-%d").date()
             return last_value.date != recv_value
 
         elif self.schema.type == AttrTypeValue["named_object"]:

@@ -34,6 +34,11 @@ class EntryBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Entry
         fields = ["id", "name", "schema", "is_active"]
+        extra_kwargs = {
+            "id": {"read_only": True},
+            "name": {"read_only": True},
+            "is_active": {"read_only": True},
+        }
 
     def _validate(self, name: str, schema: Entity, attrs: List[Dict[str, Any]]):
         # check name
