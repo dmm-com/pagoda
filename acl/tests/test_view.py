@@ -280,7 +280,6 @@ class ViewTest(AironeViewTest):
         # check that Role doesn't have permission to access Entry
         # that schema's acl is set
         self.assertTrue(entry.is_public)
-        self.assertTrue(self._role.has_permission(entry, ACLType.Readable))
         self.assertFalse(guest.has_permission(entry, ACLType.Readable))
 
     def test_check_attribute_permission_by_setting_permission_of_entityattr(self):
@@ -310,7 +309,6 @@ class ViewTest(AironeViewTest):
         # check that Role doesn't have permission to access Entry
         # that schema's acl is set
         self.assertTrue(attr.is_public)
-        self.assertTrue(self._role.has_permission(attr, ACLType.Full))
         self.assertFalse(guest.has_permission(attr, ACLType.Full))
 
     def test_access_to_no_permission_object(self):
