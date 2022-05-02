@@ -1,7 +1,9 @@
 import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import { topPath, usersPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -10,7 +12,7 @@ import { UserForm } from "components/user/UserForm";
 import { getUser } from "utils/AironeAPIClient";
 
 export const EditUserPage: FC = () => {
-  const { userId } = useParams<{ userId: number }>();
+  const { userId } = useTypedParams<{ userId: number }>();
 
   const user = useAsync(async () => {
     if (userId) {

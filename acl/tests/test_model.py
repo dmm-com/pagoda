@@ -10,7 +10,7 @@ from airone.lib.acl import ACLType
 
 class ModelTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create(username='foo', email='hoge@example.com', password='fuga')
+        self.user = User.objects.create(username="foo", email="hoge@example.com", password="fuga")
 
         # create test Role instance and set user to be belonged to it
         self.role = Role.objects.create(name='test_role')
@@ -18,7 +18,7 @@ class ModelTest(TestCase):
 
     def test_acl_base(self):
         # chacks to enable embedded acl field
-        ACLBase(name='hoge', created_user=User.objects.create(username='hoge')).save()
+        ACLBase(name="hoge", created_user=User.objects.create(username="hoge")).save()
 
         acl = ACLBase.objects.first()
         self.assertIsNotNone(acl)
@@ -27,24 +27,24 @@ class ModelTest(TestCase):
         self.assertIsInstance(acl.full, Permission)
 
     def test_pass_permission_check_with_public_obj(self):
-        aclobj = ACLBase.objects.create(name='hoge', created_user=self.user, is_public=True)
+        aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=True)
 
         self.assertTrue(self.user.has_permission(aclobj, ACLType.Readable))
 
     def test_pass_permission_check_with_created_user(self):
-        aclobj = ACLBase.objects.create(name='hoge', created_user=self.user, is_public=False)
+        aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)
 
-        self.assertFalse(self.user.has_permission(aclobj, 'invalid-permission-level'))
+        self.assertFalse(self.user.has_permission(aclobj, "invalid-permission-level"))
 
     def test_fail_permission_check_with_invalid_level(self):
-        another_user = User.objects.create(username='bar', email='bar@example.com', password='')
+        another_user = User.objects.create(username="bar", email="bar@example.com", password="")
 
-        aclobj = ACLBase.objects.create(name='hoge', created_user=self.user, is_public=False)
+        aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)
 
-        self.assertFalse(another_user.has_permission(aclobj, 'invalid-permission-level'))
+        self.assertFalse(another_user.has_permission(aclobj, "invalid-permission-level"))
 
     def test_pass_permission_check_with_user_permissoin(self):
-        aclobj = ACLBase.objects.create(name='hoge', created_user=self.user, is_public=False)
+        aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)
 
         # set correct permission
         self.role.permissions.add(aclobj.readable)
@@ -52,7 +52,7 @@ class ModelTest(TestCase):
         self.assertTrue(self.user.has_permission(aclobj, ACLType.Readable))
 
     def test_pass_permission_check_with_surperior_permissoin(self):
-        aclobj = ACLBase.objects.create(name='hoge', created_user=self.user, is_public=False)
+        aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)
 
         # set surperior permission
         self.role.permissions.add(aclobj.writable)
@@ -60,9 +60,9 @@ class ModelTest(TestCase):
         self.assertTrue(self.user.has_permission(aclobj, ACLType.Readable))
 
     def test_fail_permission_check_with_inferior_permissoin(self):
-        another_user = User.objects.create(username='bar', email='bar@example.com', password='')
+        another_user = User.objects.create(username="bar", email="bar@example.com", password="")
 
-        aclobj = ACLBase.objects.create(name='hoge', created_user=self.user, is_public=False)
+        aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)
 
         # set inferior permission
         self.role.permissions.add(aclobj.readable)
@@ -74,7 +74,7 @@ class ModelTest(TestCase):
         group = Group.objects.create(name='hoge')
         self.role.groups.add(group)
 
-        aclobj = ACLBase.objects.create(name='hoge', created_user=self.user, is_public=False)
+        aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)
 
         # set correct permission to the group that test user is belonged to
         self.role.permissions.add(aclobj.readable)
@@ -84,11 +84,11 @@ class ModelTest(TestCase):
 
     def test_get_subclass_object(self):
         # make objects to test
-        model_entity = import_module('entity.models')
-        model_entry = import_module('entry.models')
+        model_entity = import_module("entity.models")
+        model_entry = import_module("entry.models")
         kwargs = {
-            'name': 'test-object',
-            'created_user': self.user,
+            "name": "test-object",
+            "created_user": self.user,
         }
 
         entity = model_entity.Entity.objects.create(**kwargs)
@@ -104,12 +104,13 @@ class ModelTest(TestCase):
         self.assertEqual(ACLBase.objects.get(id=base.id).get_subclass_object(), base)
 
     def test_manipurate_status_param(self):
-        TEST_FLAG_0 = (1 << 0)
-        TEST_FLAG_1 = (1 << 1)
-        TEST_FLAG_2 = (1 << 2)
+        TEST_FLAG_0 = 1 << 0
+        TEST_FLAG_1 = 1 << 1
+        TEST_FLAG_2 = 1 << 2
 
-        entity = import_module('entity.models').Entity.objects.create(name='entity1',
-                                                                      created_user=self.user)
+        entity = import_module("entity.models").Entity.objects.create(
+            name="entity1", created_user=self.user
+        )
 
         entity.set_status(TEST_FLAG_0 | TEST_FLAG_2)
         self.assertTrue(entity.get_status(TEST_FLAG_0))
@@ -137,12 +138,14 @@ class ModelTest(TestCase):
         self.assertFalse(type_readable <= ACLType.Nothing)
 
     def test_default_permission(self):
-        admin_user = User.objects.create(username='admin', is_superuser=True)
-        another_user = User.objects.create(username='bar', email='bar@example.com', password='')
-        aclobj = ACLBase.objects.create(name='hoge',
-                                        created_user=another_user,
-                                        is_public=False,
-                                        default_permission=ACLType.Readable.id)
+        admin_user = User.objects.create(username="admin", is_superuser=True)
+        another_user = User.objects.create(username="bar", email="bar@example.com", password="")
+        aclobj = ACLBase.objects.create(
+            name="hoge",
+            created_user=another_user,
+            is_public=False,
+            default_permission=ACLType.Readable.id,
+        )
 
         self.assertTrue(self.user.has_permission(aclobj, ACLType.Nothing))
         self.assertTrue(self.user.has_permission(aclobj, ACLType.Readable))
@@ -163,28 +166,34 @@ class ModelTest(TestCase):
         self.assertTrue(admin_user.has_permission(aclobj, ACLType.Full))
 
     def test_delete(self):
-        aclobj = ACLBase.objects.create(name='obj', created_user=self.user)
+        aclobj = ACLBase.objects.create(name="obj", created_user=self.user)
 
         aclobj.delete()
 
         self.assertFalse(aclobj.is_active)
-        self.assertEqual(aclobj.name.find('obj_deleted_'), 0)
+        self.assertEqual(aclobj.name.find("obj_deleted_"), 0)
 
     def test_could_access_by_superuser(self):
-        superuser = User.objects.create(username='superuser',
-                                        email='superuser@example.com',
-                                        password='',
-                                        is_superuser=True)
+        superuser = User.objects.create(
+            username="superuser",
+            email="superuser@example.com",
+            password="",
+            is_superuser=True,
+        )
 
-        guestuser = User.objects.create(username='guestuser',
-                                        email='guestuser@example.com',
-                                        password='',
-                                        is_superuser=False)
+        guestuser = User.objects.create(
+            username="guestuser",
+            email="guestuser@example.com",
+            password="",
+            is_superuser=False,
+        )
 
-        aclobj = ACLBase.objects.create(name='obj',
-                                        created_user=self.user,
-                                        is_public=False,
-                                        default_permission=ACLType.Nothing.id)
+        aclobj = ACLBase.objects.create(
+            name="obj",
+            created_user=self.user,
+            is_public=False,
+            default_permission=ACLType.Nothing.id,
+        )
 
         self.assertTrue(superuser.has_permission(aclobj, ACLType.Full))
         self.assertFalse(guestuser.has_permission(aclobj, ACLType.Full))

@@ -11,7 +11,7 @@ from datetime import datetime
 
 
 class User(DjangoUser):
-    MAXIMUM_TOKEN_LIFETIME = 10 ** 8
+    MAXIMUM_TOKEN_LIFETIME = 10**8
     TOKEN_LIFETIME = 86400
 
     # These constants describe where user data is stored.
@@ -81,7 +81,10 @@ class User(DjangoUser):
         Override Model.delete method of Django
         """
         self.is_active = False
-        self.username = "%s_deleted_%s" % (self.username, datetime.now().strftime("%Y%m%d_%H%M%S"))
+        self.username = "%s_deleted_%s" % (
+            self.username,
+            datetime.now().strftime("%Y%m%d_%H%M%S"),
+        )
         self.email = "deleted__%s" % (self.email)
         self.save()
 
@@ -111,6 +114,7 @@ class History(models.Model):
       - 010 : EntityAttr
       - 100 : Entry
     """
+
     OP_ADD = 1 << 0
     OP_MOD = 1 << 1
     OP_DEL = 1 << 2
@@ -127,9 +131,12 @@ class History(models.Model):
     DEL_ATTR = OP_DEL + TARGET_ATTR
     DEL_ENTRY = OP_DEL + TARGET_ENTRY
 
-    target_obj = models.ForeignKey(import_module('acl.models').ACLBase,
-                                   related_name='referred_target_obj',
-                                   on_delete=models.SET_NULL, null=True)
+    target_obj = models.ForeignKey(
+        import_module("acl.models").ACLBase,
+        related_name="referred_target_obj",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
     time = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     operation = models.IntegerField(default=0)
@@ -137,59 +144,75 @@ class History(models.Model):
     is_detail = models.BooleanField(default=False)
 
     # This parameter is needed to record related operation histories
-    details = models.ManyToManyField('History')
+    details = models.ManyToManyField("History")
 
-    def add_attr(self, target, text=''):
-        detail = History.register(target=target,
-                                  operation=History.ADD_ATTR,
-                                  user=self.user,
-                                  text=text,
-                                  is_detail=True)
+    def add_attr(self, target, text=""):
+        detail = History.register(
+            target=target,
+            operation=History.ADD_ATTR,
+            user=self.user,
+            text=text,
+            is_detail=True,
+        )
         self.details.add(detail)
 
-    def mod_attr(self, target, text=''):
-        detail = History.register(target=target,
-                                  operation=History.MOD_ATTR,
-                                  user=self.user,
-                                  text=text,
-                                  is_detail=True)
+    def mod_attr(self, target, text=""):
+        detail = History.register(
+            target=target,
+            operation=History.MOD_ATTR,
+            user=self.user,
+            text=text,
+            is_detail=True,
+        )
         self.details.add(detail)
 
-    def del_attr(self, target, text=''):
-        detail = History.register(target=target,
-                                  operation=History.DEL_ATTR,
-                                  user=self.user,
-                                  text=text,
-                                  is_detail=True)
+    def del_attr(self, target, text=""):
+        detail = History.register(
+            target=target,
+            operation=History.DEL_ATTR,
+            user=self.user,
+            text=text,
+            is_detail=True,
+        )
         self.details.add(detail)
 
-    def mod_entity(self, target, text=''):
-        detail = History.register(target=target,
-                                  operation=History.MOD_ENTITY,
-                                  user=self.user,
-                                  text=text,
-                                  is_detail=True)
+    def mod_entity(self, target, text=""):
+        detail = History.register(
+            target=target,
+            operation=History.MOD_ENTITY,
+            user=self.user,
+            text=text,
+            is_detail=True,
+        )
         self.details.add(detail)
 
     @classmethod
-    def register(kls, user, target, operation, is_detail=False, text=''):
+    def register(kls, user, target, operation, is_detail=False, text=""):
         if kls._type_check(target, operation):
-            return kls.objects.create(target_obj=target,
-                                      user=user,
-                                      operation=operation,
-                                      text=text,
-                                      is_detail=is_detail)
+            return kls.objects.create(
+                target_obj=target,
+                user=user,
+                operation=operation,
+                text=text,
+                is_detail=is_detail,
+            )
         else:
             raise TypeError("Couldn't register history '%s' because of invalid type" % str(target))
 
     @classmethod
     def _type_check(kls, target, operation):
-        if ((operation & kls.TARGET_ENTITY and
-             isinstance(target, import_module('entity.models').Entity) or
-            (operation & kls.TARGET_ATTR and
-                 isinstance(target, import_module('entity.models').EntityAttr)) or
-            (operation & kls.TARGET_ENTRY and
-                 isinstance(target, import_module('entry.models').Entry)))):
+        if (
+            operation & kls.TARGET_ENTITY
+            and isinstance(target, import_module("entity.models").Entity)
+            or (
+                operation & kls.TARGET_ATTR
+                and isinstance(target, import_module("entity.models").EntityAttr)
+            )
+            or (
+                operation & kls.TARGET_ENTRY
+                and isinstance(target, import_module("entry.models").Entry)
+            )
+        ):
             return True
         else:
             return False

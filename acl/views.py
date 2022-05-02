@@ -38,7 +38,7 @@ def index(request, obj_id):
         elif isinstance(target_obj, EntityAttr):
             parent_obj = target_obj.parent_entity
     except StopIteration:
-        Logger.warning('failed to get related parent object')
+        Logger.warning("failed to get related parent object")
 
     context = {
         'object': target_obj,
@@ -71,18 +71,19 @@ def index(request, obj_id):
 ])
 def set(request, recv_data):
     user = User.objects.get(id=request.user.id)
-    acl_obj = getattr(_get_acl_model(recv_data['object_type']),
-                      'objects').get(id=recv_data['object_id'])
+    acl_obj = getattr(_get_acl_model(recv_data["object_type"]), "objects").get(
+        id=recv_data["object_id"]
+    )
 
     if not user.has_permission(acl_obj, ACLType.Full):
         return HttpResponse(
             "User(%s) doesn't have permission to change this ACL" % user.username, status=400)
 
     acl_obj.is_public = False
-    if 'is_public' in recv_data:
+    if "is_public" in recv_data:
         acl_obj.is_public = True
 
-    acl_obj.default_permission = int(recv_data['default_permission'])
+    acl_obj.default_permission = int(recv_data["default_permission"])
 
     # update the Public/Private flag parameter
     acl_obj.save()
@@ -94,15 +95,15 @@ def set(request, recv_data):
         # update permissios for the target ACLBased object
         _set_permission(role, acl_obj, acl_type)
 
-    redirect_url = '/'
+    redirect_url = "/"
     if isinstance(acl_obj, Entity):
-        redirect_url = '/entity/'
+        redirect_url = "/entity/"
     elif isinstance(acl_obj, EntityAttr):
-        redirect_url = '/entity/edit/%s' % acl_obj.parent_entity.id
+        redirect_url = "/entity/edit/%s" % acl_obj.parent_entity.id
     elif isinstance(acl_obj, Entry):
-        redirect_url = '/entry/show/%s' % acl_obj.id
+        redirect_url = "/entry/show/%s" % acl_obj.id
     elif isinstance(acl_obj, Attribute):
-        redirect_url = '/entry/edit/%s' % acl_obj.parent_entry.id
+        redirect_url = "/entry/edit/%s" % acl_obj.parent_entry.id
 
     if isinstance(acl_obj, Attribute):
         acl_obj = acl_obj.parent_entry
@@ -110,10 +111,12 @@ def set(request, recv_data):
     if isinstance(acl_obj, Entry):
         acl_obj.register_es()
 
-    return JsonResponse({
-        'redirect_url': redirect_url,
-        'msg': 'Success to update ACL of "%s"' % acl_obj.name,
-    })
+    return JsonResponse(
+        {
+            "redirect_url": redirect_url,
+            "msg": 'Success to update ACL of "%s"' % acl_obj.name,
+        }
+    )
 
 
 def _get_acl_model(object_id):

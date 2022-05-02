@@ -7,27 +7,26 @@ from airone.lib.test import AironeViewTest
 
 
 class ACLAPITest(AironeViewTest):
-
     def test_retrieve(self):
         user = self.admin_login()
 
-        acl = ACLBase(name='test', created_user=user)
+        acl = ACLBase(name="test", created_user=user)
         acl.save()
 
-        resp = self.client.get('/acl/api/v2/acls/%s' % acl.id)
+        resp = self.client.get("/acl/api/v2/acls/%s" % acl.id)
         self.assertEqual(resp.status_code, 200)
         body = resp.json()
-        self.assertEqual(body['id'], acl.id)
-        self.assertEqual(body['name'], acl.name)
+        self.assertEqual(body["id"], acl.id)
+        self.assertEqual(body["name"], acl.name)
 
     def test_retrieve_by_others(self):
         user = self.admin_login()
 
-        acl = ACLBase(name='test', created_user=user, is_public=False)
+        acl = ACLBase(name="test", created_user=user, is_public=False)
         acl.save()
 
         self.guest_login()
-        resp = self.client.get('/acl/api/v2/acls/%s' % acl.id)
+        resp = self.client.get("/acl/api/v2/acls/%s" % acl.id)
         self.assertEqual(resp.status_code, 403)
 
     def test_update(self):
@@ -35,7 +34,7 @@ class ACLAPITest(AironeViewTest):
         role = Role.objects.create(name='role')
         role.admin_users.add(user)
 
-        acl = ACLBase(name='test', created_user=user)
+        acl = ACLBase(name="test", created_user=user)
         acl.save()
 
         resp = self.client.put('/acl/api/v2/acls/%s' % acl.id, json.dumps({
@@ -56,7 +55,7 @@ class ACLAPITest(AironeViewTest):
         user = self.guest_login()
         role = Role.objects.create(name='role')
 
-        acl = ACLBase(name='test', created_user=user)
+        acl = ACLBase(name="test", created_user=user)
         acl.save()
 
         # send request to update ACL of Role that is not permitted to be edited

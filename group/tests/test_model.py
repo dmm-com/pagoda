@@ -23,11 +23,11 @@ class ModelTest(TestCase):
         self.assertEqual(user2.groups.count(), 1)
 
     def test_delete(self):
-        group = Group.objects.create(name='group')
+        group = Group.objects.create(name="group")
         group.delete()
 
         self.assertFalse(group.is_active)
-        self.assertEqual(group.name.find('group_deleted_'), 0)
+        self.assertEqual(group.name.find("group_deleted_"), 0)
 
     def _create_user(self, name):
         user = User(username=name)

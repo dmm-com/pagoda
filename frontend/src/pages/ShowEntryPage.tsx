@@ -1,7 +1,9 @@
 import { Box, Tab, Tabs, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -15,7 +17,7 @@ import { EntryReferral } from "components/entry/EntryReferral";
 import { getEntryHistory } from "utils/AironeAPIClient";
 
 export const ShowEntryPage: FC = () => {
-  const { entryId } = useParams<{ entityId: number }>();
+  const { entryId } = useTypedParams<{ entryId: number }>();
 
   const [tabValue, setTabValue] = useState(0);
 

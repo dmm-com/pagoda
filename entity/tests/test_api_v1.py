@@ -7,15 +7,15 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         entity_info = [
-            {'name': 'foo', 'is_public': True},
-            {'name': 'bar', 'is_public': False},
+            {"name": "foo", "is_public": True},
+            {"name": "bar", "is_public": False},
         ]
         for info in entity_info:
-            Entity.objects.create(name=info['name'], is_public=info['is_public'], created_user=user)
+            Entity.objects.create(name=info["name"], is_public=info["is_public"], created_user=user)
 
-        resp = self.client.get('/entity/api/v1/get_entities')
+        resp = self.client.get("/entity/api/v1/get_entities")
         self.assertEqual(resp.status_code, 200)
 
-        entities = resp.json()['entities']
+        entities = resp.json()["entities"]
         self.assertEqual(len(entities), 1)
-        self.assertEqual(entities[0]['name'], 'foo')
+        self.assertEqual(entities[0]["name"], "foo")

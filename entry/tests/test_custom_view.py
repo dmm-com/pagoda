@@ -14,7 +14,7 @@ class ViewTest(AironeViewTest):
         super(ViewTest, self).setUp()
 
         self.custom_view_basedir = custom_view.BASE_DIR
-        custom_view.BASE_DIR = '%s/custom_view' % BASE_DIR
+        custom_view.BASE_DIR = "%s/custom_view" % BASE_DIR
 
     def tearDown(self):
         super(ViewTest, self).tearDown()
@@ -24,14 +24,14 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         # initialize entity for custom_view
-        entity = Entity.objects.create(name='entity_has_list_without_context', created_user=user)
+        entity = Entity.objects.create(name="entity_has_list_without_context", created_user=user)
 
         # checks custum list_entry method is called correctly
-        resp = self.client.get(reverse('entry:index', args=[entity.id]))
+        resp = self.client.get(reverse("entry:index", args=[entity.id]))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.context['test_key'], 'test_value')
+        self.assertEqual(resp.context["test_key"], "test_value")
 
         # checks custum list_entry without context is called correctly
-        resp = self.client.get('%s?return_resp=1' % reverse('entry:index', args=[entity.id]))
+        resp = self.client.get("%s?return_resp=1" % reverse("entry:index", args=[entity.id]))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content.decode('utf-8'), 'return no data')
+        self.assertEqual(resp.content.decode("utf-8"), "return no data")

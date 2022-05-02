@@ -11,12 +11,17 @@ from user.models import User
 def get_entities(request):
     user = User.objects.get(id=request.user.id)
 
-    return JsonResponse({
-        'entities': [{
-            'id': x.id,
-            'name': x.name,
-            'status': x.status,
-            'note': x.note,
-        } for x in Entity.objects.filter(is_active=True)
-            if user.has_permission(x, ACLType.Readable)]
-    })
+    return JsonResponse(
+        {
+            "entities": [
+                {
+                    "id": x.id,
+                    "name": x.name,
+                    "status": x.status,
+                    "note": x.note,
+                }
+                for x in Entity.objects.filter(is_active=True)
+                if user.has_permission(x, ACLType.Readable)
+            ]
+        }
+    )

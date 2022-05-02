@@ -1,10 +1,11 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { EntityControlMenu } from "../components/entity/EntityControlMenu";
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import { entitiesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -16,7 +17,7 @@ interface Props {
 }
 
 export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
-  const { entityId } = useParams<{ entityId: number }>();
+  const { entityId } = useTypedParams<{ entityId: number }>();
 
   const [entityAnchorEl, setEntityAnchorEl] =
     useState<HTMLButtonElement | null>();

@@ -22,7 +22,7 @@ def index(request):
     user = User.objects.get(id=request.user.id)
 
     limitation = CONFIG.MAX_LIST_VIEW
-    if request.GET.get('nolimit', None):
+    if request.GET.get("nolimit", None):
         limitation = None
 
     export_operations = [
@@ -32,25 +32,30 @@ def index(request):
 
     query = Q(Q(user=user), ~Q(operation__in=Job.HIDDEN_OPERATIONS))
     context = {
-        'jobs': [{
-            'id': x.id,
-            'target': x.target,
-            'text': x.text,
-            'status': x.status,
-            'operation': x.operation,
-            'can_cancel': x.operation in Job.CANCELABLE_OPERATIONS,
-            'created_at': x.created_at,
-            'passed_time': (
-                x.updated_at - x.created_at
-            ).seconds if x.is_finished() else (datetime.now(timezone.utc) - x.created_at).seconds,
-        } for x in Job.objects.filter(query).order_by('-created_at')[:limitation]
-            if (x.operation in export_operations or
-                (x.operation not in export_operations and x.target and x.target.is_active) or
-                (x.operation is JobOperation.DELETE_ENTITY.value and x.target) or
-                (x.operation is JobOperation.DELETE_ENTRY.value and x.target))]
+        "jobs": [
+            {
+                "id": x.id,
+                "target": x.target,
+                "text": x.text,
+                "status": x.status,
+                "operation": x.operation,
+                "can_cancel": x.operation in Job.CANCELABLE_OPERATIONS,
+                "created_at": x.created_at,
+                "passed_time": (x.updated_at - x.created_at).seconds
+                if x.is_finished()
+                else (datetime.now(timezone.utc) - x.created_at).seconds,
+            }
+            for x in Job.objects.filter(query).order_by("-created_at")[:limitation]
+            if (
+                x.operation in export_operations
+                or (x.operation not in export_operations and x.target and x.target.is_active)
+                or (x.operation is JobOperation.DELETE_ENTITY.value and x.target)
+                or (x.operation is JobOperation.DELETE_ENTRY.value and x.target)
+            )
+        ]
     }
 
-    return render(request, 'list_jobs.html', context)
+    return render(request, "list_jobs.html", context)
 
 
 @http_get
@@ -66,7 +71,7 @@ def download(request, job_id):
 
     export_operations = [
         JobOperation.EXPORT_ENTRY.value,
-        JobOperation.EXPORT_SEARCH_RESULT.value
+        JobOperation.EXPORT_SEARCH_RESULT.value,
     ]
     if job.operation not in export_operations:
         return HttpResponse("Target Job has no value to return", status=400)
