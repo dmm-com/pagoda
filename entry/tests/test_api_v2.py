@@ -766,6 +766,14 @@ class ViewTest(AironeViewTest):
         # permission writable entity
         self.user.permissions.add(self.entity.writable)
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(), {"detail": "You do not have permission to perform this action."}
+        )
+
+        # permission full entity
+        self.user.permissions.add(self.entity.full)
+        resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 204)
 
         entry.restore()
@@ -789,6 +797,14 @@ class ViewTest(AironeViewTest):
 
         # permission writable entry
         self.user.permissions.add(entry.writable)
+        resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(), {"detail": "You do not have permission to perform this action."}
+        )
+
+        # permission full entry
+        self.user.permissions.add(entry.full)
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 204)
 

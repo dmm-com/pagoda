@@ -23,7 +23,7 @@ class EntryPermission(BasePermission):
         permisson = {
             "retrieve": ACLType.Readable,
             "update": ACLType.Writable,
-            "destroy": ACLType.Writable,
+            "destroy": ACLType.Full,
             "restore": ACLType.Full,
         }
 
