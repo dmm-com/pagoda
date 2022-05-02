@@ -13,44 +13,60 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import {
+  Attribute,
+  AttributeFromJSON,
+  AttributeFromJSONTyped,
+  AttributeToJSON,
+} from "./Attribute";
+
 /**
  *
  * @export
- * @interface Entity
+ * @interface EntryCreate
  */
-export interface Entity {
+export interface EntryCreate {
   /**
    *
    * @type {number}
-   * @memberof Entity
+   * @memberof EntryCreate
    */
   readonly id: number;
   /**
    *
    * @type {string}
-   * @memberof Entity
+   * @memberof EntryCreate
    */
   name: string;
+  /**
+   *
+   * @type {Array<Attribute>}
+   * @memberof EntryCreate
+   */
+  attrs?: Array<Attribute>;
 }
 
-export function EntityFromJSON(json: any): Entity {
-  return EntityFromJSONTyped(json, false);
+export function EntryCreateFromJSON(json: any): EntryCreate {
+  return EntryCreateFromJSONTyped(json, false);
 }
 
-export function EntityFromJSONTyped(
+export function EntryCreateFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): Entity {
+): EntryCreate {
   if (json === undefined || json === null) {
     return json;
   }
   return {
     id: json["id"],
     name: json["name"],
+    attrs: !exists(json, "attrs")
+      ? undefined
+      : (json["attrs"] as Array<any>).map(AttributeFromJSON),
   };
 }
 
-export function EntityToJSON(value?: Entity | null): any {
+export function EntryCreateToJSON(value?: EntryCreate | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -59,5 +75,9 @@ export function EntityToJSON(value?: Entity | null): any {
   }
   return {
     name: value.name,
+    attrs:
+      value.attrs === undefined
+        ? undefined
+        : (value.attrs as Array<any>).map(AttributeToJSON),
   };
 }

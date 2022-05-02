@@ -14,27 +14,36 @@
 
 import * as runtime from "../runtime";
 import {
+  EntryBase,
+  EntryBaseFromJSON,
+  EntryBaseToJSON,
+  EntryRetrieve,
+  EntryRetrieveFromJSON,
+  EntryRetrieveToJSON,
+  EntryUpdate,
+  EntryUpdateFromJSON,
+  EntryUpdateToJSON,
   GetEntrySimple,
   GetEntrySimpleFromJSON,
   GetEntrySimpleToJSON,
-  GetEntryWithAttr,
-  GetEntryWithAttrFromJSON,
-  GetEntryWithAttrToJSON,
-  PaginatedGetEntryList,
-  PaginatedGetEntryListFromJSON,
-  PaginatedGetEntryListToJSON,
 } from "../models";
 
-export interface EntryApiV2EntriesListRequest {
-  entityId: number;
-  isActive?: boolean;
-  ordering?: string;
-  page?: number;
-  search?: string;
+export interface EntryApiV2DestroyRequest {
+  id: number;
+}
+
+export interface EntryApiV2RestoreCreateRequest {
+  id: number;
+  entryBase?: EntryBase;
 }
 
 export interface EntryApiV2RetrieveRequest {
   id: number;
+}
+
+export interface EntryApiV2UpdateRequest {
+  id: number;
+  entryUpdate?: EntryUpdate;
 }
 
 /**
@@ -43,37 +52,18 @@ export interface EntryApiV2RetrieveRequest {
 export class EntryApi extends runtime.BaseAPI {
   /**
    */
-  async entryApiV2EntriesListRaw(
-    requestParameters: EntryApiV2EntriesListRequest,
+  async entryApiV2DestroyRaw(
+    requestParameters: EntryApiV2DestroyRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<PaginatedGetEntryList>> {
-    if (
-      requestParameters.entityId === null ||
-      requestParameters.entityId === undefined
-    ) {
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
-        "entityId",
-        "Required parameter requestParameters.entityId was null or undefined when calling entryApiV2EntriesList."
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling entryApiV2Destroy."
       );
     }
 
     const queryParameters: any = {};
-
-    if (requestParameters.isActive !== undefined) {
-      queryParameters["is_active"] = requestParameters.isActive;
-    }
-
-    if (requestParameters.ordering !== undefined) {
-      queryParameters["ordering"] = requestParameters.ordering;
-    }
-
-    if (requestParameters.page !== undefined) {
-      queryParameters["page"] = requestParameters.page;
-    }
-
-    if (requestParameters.search !== undefined) {
-      queryParameters["search"] = requestParameters.search;
-    }
 
     const headerParameters: runtime.HTTPHeaders = {};
 
@@ -93,29 +83,88 @@ export class EntryApi extends runtime.BaseAPI {
 
     const response = await this.request(
       {
-        path: `/entry/api/v2/entries/{entity_id}`.replace(
-          `{${"entity_id"}}`,
-          encodeURIComponent(String(requestParameters.entityId))
+        path: `/entry/api/v2/{id}/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
         ),
-        method: "GET",
+        method: "DELETE",
         headers: headerParameters,
         query: queryParameters,
       },
       initOverrides
     );
 
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async entryApiV2Destroy(
+    requestParameters: EntryApiV2DestroyRequest,
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.entryApiV2DestroyRaw(requestParameters, initOverrides);
+  }
+
+  /**
+   */
+  async entryApiV2RestoreCreateRaw(
+    requestParameters: EntryApiV2RestoreCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<EntryBase>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling entryApiV2RestoreCreate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/{id}/restore/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+        body: EntryBaseToJSON(requestParameters.entryBase),
+      },
+      initOverrides
+    );
+
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      PaginatedGetEntryListFromJSON(jsonValue)
+      EntryBaseFromJSON(jsonValue)
     );
   }
 
   /**
    */
-  async entryApiV2EntriesList(
-    requestParameters: EntryApiV2EntriesListRequest,
+  async entryApiV2RestoreCreate(
+    requestParameters: EntryApiV2RestoreCreateRequest,
     initOverrides?: RequestInit
-  ): Promise<PaginatedGetEntryList> {
-    const response = await this.entryApiV2EntriesListRaw(
+  ): Promise<EntryBase> {
+    const response = await this.entryApiV2RestoreCreateRaw(
       requestParameters,
       initOverrides
     );
@@ -127,7 +176,7 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2RetrieveRaw(
     requestParameters: EntryApiV2RetrieveRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<GetEntryWithAttr>> {
+  ): Promise<runtime.ApiResponse<EntryRetrieve>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
         "id",
@@ -155,7 +204,7 @@ export class EntryApi extends runtime.BaseAPI {
 
     const response = await this.request(
       {
-        path: `/entry/api/v2/{id}`.replace(
+        path: `/entry/api/v2/{id}/`.replace(
           `{${"id"}}`,
           encodeURIComponent(String(requestParameters.id))
         ),
@@ -167,7 +216,7 @@ export class EntryApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      GetEntryWithAttrFromJSON(jsonValue)
+      EntryRetrieveFromJSON(jsonValue)
     );
   }
 
@@ -176,7 +225,7 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2Retrieve(
     requestParameters: EntryApiV2RetrieveRequest,
     initOverrides?: RequestInit
-  ): Promise<GetEntryWithAttr> {
+  ): Promise<EntryRetrieve> {
     const response = await this.entryApiV2RetrieveRaw(
       requestParameters,
       initOverrides
@@ -209,7 +258,7 @@ export class EntryApi extends runtime.BaseAPI {
 
     const response = await this.request(
       {
-        path: `/entry/api/v2/search`,
+        path: `/entry/api/v2/search/`,
         method: "GET",
         headers: headerParameters,
         query: queryParameters,
@@ -228,6 +277,71 @@ export class EntryApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<Array<GetEntrySimple>> {
     const response = await this.entryApiV2SearchListRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   */
+  async entryApiV2UpdateRaw(
+    requestParameters: EntryApiV2UpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<EntryUpdate>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling entryApiV2Update."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/{id}/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PUT",
+        headers: headerParameters,
+        query: queryParameters,
+        body: EntryUpdateToJSON(requestParameters.entryUpdate),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      EntryUpdateFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async entryApiV2Update(
+    requestParameters: EntryApiV2UpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<EntryUpdate> {
+    const response = await this.entryApiV2UpdateRaw(
+      requestParameters,
+      initOverrides
+    );
     return await response.value();
   }
 }

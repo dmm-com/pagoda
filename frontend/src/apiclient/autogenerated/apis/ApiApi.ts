@@ -340,6 +340,7 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
+   * This cancels a specified Job.
    */
   async apiV1JobDestroyRaw(
     initOverrides?: RequestInit
@@ -376,12 +377,14 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
+   * This cancels a specified Job.
    */
   async apiV1JobDestroy(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1JobDestroyRaw(initOverrides);
   }
 
   /**
+   * This returns only jobs that are created by the user who sends this request.
    */
   async apiV1JobRetrieveRaw(
     initOverrides?: RequestInit
@@ -418,6 +421,7 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
+   * This returns only jobs that are created by the user who sends this request.
    */
   async apiV1JobRetrieve(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1JobRetrieveRaw(initOverrides);
@@ -483,6 +487,7 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
+   * This returns jobs that are matched to the specified conditions in spite of who makes.
    */
   async apiV1JobSearchRetrieveRaw(
     initOverrides?: RequestInit
@@ -519,6 +524,7 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
+   * This returns jobs that are matched to the specified conditions in spite of who makes.
    */
   async apiV1JobSearchRetrieve(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1JobSearchRetrieveRaw(initOverrides);
@@ -569,6 +575,7 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
+   * This refresh access_token to another one
    */
   async apiV1UserAccessTokenUpdateRaw(
     initOverrides?: RequestInit
@@ -605,6 +612,7 @@ export class ApiApi extends runtime.BaseAPI {
   }
 
   /**
+   * This refresh access_token to another one
    */
   async apiV1UserAccessTokenUpdate(initOverrides?: RequestInit): Promise<void> {
     await this.apiV1UserAccessTokenUpdateRaw(initOverrides);
