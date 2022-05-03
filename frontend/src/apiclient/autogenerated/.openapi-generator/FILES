@@ -1,10 +1,10 @@
-.openapi-generator-ignore
 apis/AclApi.ts
 apis/ApiApi.ts
 apis/EntityApi.ts
 apis/EntryApi.ts
 apis/GroupApi.ts
 apis/RoleApi.ts
+apis/UserApi.ts
 apis/WebhookApi.ts
 apis/index.ts
 index.ts
@@ -22,5 +22,8 @@ models/GetEntrySimple.ts
 models/Group.ts
 models/PaginatedEntityWithAttrList.ts
 models/PaginatedEntryBaseList.ts
+models/UserList.ts
+models/UserRetrieve.ts
+models/UserRetrieveToken.ts
 models/index.ts
 runtime.ts
