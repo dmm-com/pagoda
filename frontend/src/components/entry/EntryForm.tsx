@@ -35,10 +35,26 @@ export const EntryForm: FC<Props> = ({
 
   /* FIXME attach checked flag to entry-like types
    */
+  // TODO replace with EntryFormAttributes
   const changedInitAttr = initAttributes
     .map((attr) => {
       switch (attr.type) {
         case djangoContext.attrTypeValue.group:
+          return {
+            name: attr.schema.name,
+            value: {
+              id: attr.id,
+              type: attr.type,
+              schema: attr.schema,
+              value: [
+                {
+                  ...attr.value.asGroup,
+                  checked: true,
+                },
+              ],
+            },
+          };
+
         case djangoContext.attrTypeValue.object:
           return {
             name: attr.schema.name,
@@ -48,7 +64,7 @@ export const EntryForm: FC<Props> = ({
               schema: attr.schema,
               value: [
                 {
-                  ...attr.value,
+                  ...attr.value.asObject,
                   checked: true,
                 },
               ],
@@ -56,8 +72,8 @@ export const EntryForm: FC<Props> = ({
           };
 
         case djangoContext.attrTypeValue.named_object:
-          const name = Object.keys(attr.value)[0];
-          const value = attr.value[name];
+          const name = Object.keys(attr.value.asNamedObject)[0];
+          const value = attr.value.asNamedObject[name];
 
           return {
             name: attr.schema.name,
@@ -78,6 +94,23 @@ export const EntryForm: FC<Props> = ({
           };
 
         case djangoContext.attrTypeValue.array_group:
+          return {
+            name: attr.schema.name,
+            value: {
+              id: attr.id,
+              type: attr.type,
+              schema: attr.schema,
+              value: attr.value.asArrayGroup.map((val) => {
+                return [
+                  {
+                    ...val,
+                    checked: true,
+                  },
+                ];
+              }),
+            },
+          };
+
         case djangoContext.attrTypeValue.array_object:
           return {
             name: attr.schema.name,
@@ -85,7 +118,7 @@ export const EntryForm: FC<Props> = ({
               id: attr.id,
               type: attr.type,
               schema: attr.schema,
-              value: attr.value.map((val) => {
+              value: attr.value.asArrayObject.map((val) => {
                 return [
                   {
                     ...val,
@@ -103,7 +136,7 @@ export const EntryForm: FC<Props> = ({
               id: attr.id,
               type: attr.type,
               schema: attr.schema,
-              value: attr.value.map((val) => {
+              value: attr.value.asArrayNamedObject.map((val) => {
                 const name = Object.keys(val)[0];
                 const value = val[name];
                 return {
@@ -118,6 +151,28 @@ export const EntryForm: FC<Props> = ({
             },
           };
 
+        case djangoContext.attrTypeValue.array_string:
+          return {
+            name: attr.schema.name,
+            value: {
+              id: attr.id,
+              type: attr.type,
+              schema: attr.schema,
+              value: attr.value.asArrayString,
+            },
+          };
+
+        case djangoContext.attrTypeValue.boolean:
+          return {
+            name: attr.schema.name,
+            value: {
+              id: attr.id,
+              type: attr.type,
+              schema: attr.schema,
+              value: attr.value.asBoolean,
+            },
+          };
+
         default:
           return {
             name: attr.schema.name,
@@ -125,7 +180,7 @@ export const EntryForm: FC<Props> = ({
               id: attr.id,
               type: attr.type,
               schema: attr.schema,
-              value: attr.value,
+              value: attr.value.asString,
             },
           };
       }
@@ -137,6 +192,7 @@ export const EntryForm: FC<Props> = ({
 
   const [name, setName] = useState(initName);
   const [attributes, setAttributes] = useState(changedInitAttr);
+  console.log(attributes);
 
   const handleChangeAttribute = (event, name: string, valueInfo) => {
     switch (valueInfo.type) {
