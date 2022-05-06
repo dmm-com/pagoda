@@ -1,6 +1,5 @@
 .openapi-generator-ignore
 apis/AclApi.ts
-apis/ApiApi.ts
 apis/EntityApi.ts
 apis/EntryApi.ts
 apis/GroupApi.ts
