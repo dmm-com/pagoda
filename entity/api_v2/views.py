@@ -15,7 +15,7 @@ from entity.api_v2.serializers import EntityWithAttrSerializer
 from entity.models import Entity
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
-from user.models import History, User
+from user.models import History
 
 
 @http_get
