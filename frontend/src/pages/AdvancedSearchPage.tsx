@@ -20,6 +20,7 @@ import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+import { fuzzyMatch } from "../utils/StringUtil";
 
 import { advancedSearchResultPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -81,7 +82,8 @@ export const AdvancedSearchPage: FC = () => {
   const [attrNameFilter, setAttrNameFilter] = useState("");
 
   const entities = useAsync(async () => {
-    return await aironeApiClientV2.getEntities();
+    const entities = await aironeApiClientV2.getEntities();
+    return entities.results;
   });
 
   // TODO should be better to fetch all the values once, then filter it
@@ -110,9 +112,7 @@ export const AdvancedSearchPage: FC = () => {
         entities.value
           .filter(
             (entity) =>
-              entity.name
-                .toLowerCase()
-                .indexOf(entityNameFilter.toLowerCase()) !== -1 &&
+              fuzzyMatch(entity.name, entityNameFilter) &&
               selectedEntityIds.indexOf(entity.id) === -1
           )
           .map((entity) => toggleSelectedEntityIds(entity.id))
@@ -125,7 +125,7 @@ export const AdvancedSearchPage: FC = () => {
         attrs.value
           .filter(
             (attr) =>
-              attr.toLowerCase().indexOf(attrNameFilter.toLowerCase()) !== -1 &&
+              fuzzyMatch(attr, attrNameFilter) &&
               selectedAttrs.indexOf(attr) === -1
           )
           .map((attr) => toggleSelectedAttrs(attr))
@@ -157,12 +157,7 @@ export const AdvancedSearchPage: FC = () => {
           {!entities.loading ? (
             <>
               {entities.value
-                .filter(
-                  (entity) =>
-                    entity.name
-                      .toLowerCase()
-                      .indexOf(entityNameFilter.toLowerCase()) !== -1
-                )
+                .filter((entity) => fuzzyMatch(entity.name, entityNameFilter))
                 .map((entity) => (
                   <ListItem
                     key={entity.id}
@@ -206,11 +201,7 @@ export const AdvancedSearchPage: FC = () => {
           {!attrs.loading ? (
             <>
               {attrs.value
-                .filter(
-                  (attr) =>
-                    attr.toLowerCase().indexOf(attrNameFilter.toLowerCase()) !==
-                    -1
-                )
+                .filter((attr) => fuzzyMatch(attr, attrNameFilter))
                 .map((attr) => (
                   <ListItem
                     key={attr}

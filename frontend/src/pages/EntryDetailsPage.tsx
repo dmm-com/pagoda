@@ -10,9 +10,11 @@ import {
   Typography,
 } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Element, scroller } from "react-scroll";
 import { useAsync } from "react-use";
+
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -23,8 +25,8 @@ import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
 
 export const EntryDetailsPage: FC = () => {
-  const { entityId } = useParams<{ entityId: number }>();
-  const { entryId } = useParams<{ entryId: number }>();
+  const { entityId, entryId } =
+    useTypedParams<{ entityId: number; entryId: number }>();
 
   const [entryAnchorEl, setEntryAnchorEl] =
     useState<HTMLButtonElement | null>();

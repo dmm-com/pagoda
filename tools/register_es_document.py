@@ -9,16 +9,16 @@ sys.path.append("./")
 
 # prepare to load the data models of AirOne
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "airone.settings")
-os.environ.setdefault('DJANGO_CONFIGURATION', 'Dev')
+os.environ.setdefault("DJANGO_CONFIGURATION", "Dev")
 
 # load AirOne application
 configurations.setup()
 
-from airone.lib.elasticsearch import ESS # NOQA
-from entry.models import Entry # NOQA
-from django.db.models import Q # NOQA
+from airone.lib.elasticsearch import ESS  # NOQA
+from entry.models import Entry  # NOQA
+from django.db.models import Q  # NOQA
 
-ES_INDEX = django.conf.settings.ES_CONFIG['INDEX']
+ES_INDEX = django.conf.settings.ES_CONFIG["INDEX"]
 
 
 def register_entries(es, target_entities=None):
@@ -29,7 +29,7 @@ def register_entries(es, target_entities=None):
     current_index = 1
     total_count = Entry.objects.filter(db_query).count()
     for entry in Entry.objects.filter(db_query):
-        sys.stdout.write('\rRegister entry: (%6d/%6d)' % (current_index, total_count))
+        sys.stdout.write("\rRegister entry: (%6d/%6d)" % (current_index, total_count))
 
         entry.register_es(es, skip_refresh=True)
 

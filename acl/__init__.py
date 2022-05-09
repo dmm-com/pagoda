@@ -1,1 +1,1 @@
-default_app_config = 'acl.apps.AclConfig'
+default_app_config = "acl.apps.AclConfig"

@@ -1,9 +1,9 @@
 import { ThemeProvider } from "@mui/material/styles";
-import { SnackbarProvider } from "notistack";
 import React from "react";
 import { FC } from "react";
 import ReactDOM from "react-dom";
 
+import { AironeSnackbarProvider } from "AironeSnackbarProvider";
 import { AppRouter } from "AppRouter";
 import { ErrorHandler } from "ErrorHandler";
 import { theme } from "Theme";
@@ -12,10 +12,9 @@ const App: FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <ErrorHandler>
-        {/* TODO does it unable to apply custom styles? reimplement it ourselves? */}
-        <SnackbarProvider maxSnack={3}>
+        <AironeSnackbarProvider>
           <AppRouter />
-        </SnackbarProvider>
+        </AironeSnackbarProvider>
       </ErrorHandler>
     </ThemeProvider>
   );

@@ -7,11 +7,8 @@ from rest_framework.views import APIView
 
 
 class AccessTokenAPI(APIView):
-
     def get(self, request, format=None):
-        return Response(
-            {'results': str(request.user.token)}
-        )
+        return Response({"results": str(request.user.token)})
 
     @method_decorator(csrf_protect)
     def put(self, request, format=None):
@@ -23,8 +20,8 @@ class AccessTokenAPI(APIView):
 
         # If the token is not created, this returns it.
         if created:
-            return Response({'results': str(token)})
+            return Response({"results": str(token)})
 
         # This recreates another Token when it has been already existed.
         token.delete()
-        return Response({'results': str(Token.objects.create(user=request.user))})
+        return Response({"results": str(Token.objects.create(user=request.user))})

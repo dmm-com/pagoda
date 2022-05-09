@@ -1,7 +1,9 @@
 import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import { groupsPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -11,7 +13,7 @@ import { GroupForm } from "components/group/GroupForm";
 import { getUsers } from "utils/AironeAPIClient";
 
 export const EditGroupPage: FC = () => {
-  const { groupId } = useParams<{ groupId: number }>();
+  const { groupId } = useTypedParams<{ groupId: number }>();
 
   const users = useAsync(async () => {
     const resp = await getUsers();

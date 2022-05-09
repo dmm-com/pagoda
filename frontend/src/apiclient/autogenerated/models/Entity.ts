@@ -31,30 +31,6 @@ export interface Entity {
    * @memberof Entity
    */
   name: string;
-  /**
-   *
-   * @type {string}
-   * @memberof Entity
-   */
-  note: string;
-  /**
-   *
-   * @type {number}
-   * @memberof Entity
-   */
-  status?: number;
-  /**
-   *
-   * @type {boolean}
-   * @memberof Entity
-   */
-  readonly isToplevel: boolean;
-  /**
-   *
-   * @type {Array<{ [key: string]: any; }>}
-   * @memberof Entity
-   */
-  readonly attrs: Array<{ [key: string]: any }>;
 }
 
 export function EntityFromJSON(json: any): Entity {
@@ -71,10 +47,6 @@ export function EntityFromJSONTyped(
   return {
     id: json["id"],
     name: json["name"],
-    note: json["note"],
-    status: !exists(json, "status") ? undefined : json["status"],
-    isToplevel: json["is_toplevel"],
-    attrs: json["attrs"],
   };
 }
 
@@ -87,7 +59,5 @@ export function EntityToJSON(value?: Entity | null): any {
   }
   return {
     name: value.name,
-    note: value.note,
-    status: value.status,
   };
 }

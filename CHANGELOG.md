@@ -5,7 +5,10 @@
 ### Added
 * Added add and remove attributes depending on entity in get entry api v2
   Contributed by @hinashi
-
+* Added custom processing when after delete entry
+  Contributed by @hinashi
+* Added create, update, delete, restore entry api in APIv2
+  Contributed by @hinashi
 ### Changed
 * Changed user model of django
   Contributed by @hinashi

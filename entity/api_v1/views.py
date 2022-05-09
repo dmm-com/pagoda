@@ -7,12 +7,17 @@ from entity.models import Entity
 
 @http_get
 def get_entities(request):
-    return JsonResponse({
-        'entities': [{
-            'id': x.id,
-            'name': x.name,
-            'status': x.status,
-            'note': x.note,
-        } for x in Entity.objects.filter(is_active=True)
-            if request.user.has_permission(x, ACLType.Readable)]
-    })
+    return JsonResponse(
+        {
+            "entities": [
+                {
+                    "id": x.id,
+                    "name": x.name,
+                    "status": x.status,
+                    "note": x.note,
+                }
+                for x in Entity.objects.filter(is_active=True)
+                if request.user.has_permission(x, ACLType.Readable)
+            ]
+        }
+    )

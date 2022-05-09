@@ -12,7 +12,11 @@ def list_webhook(request, entity_id):
     if error:
         return error
 
-    return render(request, 'list_webhooks.html', {
-        'entity': entity,
-        'webhooks': entity.webhooks.all(),
-    })
+    return render(
+        request,
+        "list_webhooks.html",
+        {
+            "entity": entity,
+            "webhooks": entity.webhooks.all(),
+        },
+    )

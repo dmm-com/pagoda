@@ -1,6 +1,8 @@
 import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
+
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -8,7 +10,7 @@ import { ImportForm } from "components/common/ImportForm";
 import { importEntries } from "utils/AironeAPIClient";
 
 export const ImportEntryPage: FC = () => {
-  const { entityId } = useParams<{ entityId: number }>();
+  const { entityId } = useTypedParams<{ entityId: number }>();
 
   return (
     <Box>

@@ -12,7 +12,7 @@ from airone.lib.acl import ACLType
 def create_permission(instance):
     content_type = ContentType.objects.get_for_model(instance)
     for acltype in ACLType.availables():
-        codename = '%s.%s' % (instance.id, acltype.id)
+        codename = "%s.%s" % (instance.id, acltype.id)
         Permission(name=acltype.name, codename=codename, content_type=content_type).save()
 
 

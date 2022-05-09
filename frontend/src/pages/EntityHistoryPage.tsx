@@ -8,8 +8,10 @@ import {
   Typography,
 } from "@mui/material";
 import React, { FC } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import { entitiesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -39,7 +41,7 @@ const TargetOperation = {
 };
 
 export const EntityHistoryPage: FC = () => {
-  const { entityId } = useParams<{ entityId: number }>();
+  const { entityId } = useTypedParams<{ entityId: number }>();
 
   const history = useAsync(async () => {
     const resp = await getEntityHistory(entityId);

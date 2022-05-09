@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 import {
   aclPath,
@@ -33,17 +33,15 @@ export const EntityControlMenu: FC<Props> = ({
   handleClose,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const history = useHistory();
 
   const handleDelete = async (event, entityId: number) => {
     const resp = await deleteEntity(entityId);
     if (resp.ok) {
-      enqueueSnackbar("エンティティの削除が成功しました", {
-        variant: "success",
-      });
+      history.go(0);
     } else {
       enqueueSnackbar("エンティティの削除が失敗しました", { variant: "error" });
     }
-    history.go(0);
   };
   const handleExport = async (entityId: number, format: ExportFormatType) => {
     const resp = await exportEntries(entityId, format);

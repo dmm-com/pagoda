@@ -10,6 +10,20 @@ import { TestWrapper } from "utils/TestWrapper";
 
 test("should render with essential props", () => {
   expect(() =>
-    render(<EntityList entities={[]} />, { wrapper: TestWrapper })
+    render(
+      <EntityList
+        entities={[]}
+        page={1}
+        query=""
+        maxPage={1}
+        handleChangePage={() => {
+          /* nothing */
+        }}
+        handleChangeQuery={() => {
+          /* nothing */
+        }}
+      />,
+      { wrapper: TestWrapper }
+    )
   ).not.toThrow();
 });

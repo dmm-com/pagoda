@@ -15,13 +15,13 @@ from airone.lib.acl import ACLType, ACLObjType
 def _get_acltype(permission):
     if not any([permission.name == x.name for x in ACLType.all()]):
         return 0
-    return int(permission.codename.split('.')[-1])
+    return int(permission.codename.split(".")[-1])
 
 
 def _get_objid(permission):
     if not any([permission.name == x.name for x in ACLType.all()]):
         return 0
-    return int(permission.codename.split('.')[0])
+    return int(permission.codename.split(".")[0])
 
 
 Permission.get_aclid = lambda self: _get_acltype(self)
@@ -44,28 +44,31 @@ class ACLBase(models.Model):
 
     def set_status(self, val):
         self.status |= val
-        self.save(update_fields=['status'])
+        self.save(update_fields=["status"])
 
     def del_status(self, val):
         self.status &= ~val
-        self.save(update_fields=['status'])
+        self.save(update_fields=["status"])
 
     def get_status(self, val):
         return self.status & val
 
     def delete(self, *args, **kwargs):
         self.is_active = False
-        self.name = "%s_deleted_%s" % (self.name, datetime.now().strftime("%Y%m%d_%H%M%S"))
+        self.name = "%s_deleted_%s" % (
+            self.name,
+            datetime.now().strftime("%Y%m%d_%H%M%S"),
+        )
         self.save()
 
     def restore(self, *args, **kwargs):
         self.is_active = True
-        self.name = re.sub(r'_deleted_[0-9_]*$', '', self.name)
+        self.name = re.sub(r"_deleted_[0-9_]*$", "", self.name)
         self.save()
 
     def inherit_acl(self, aclobj):
         if not isinstance(aclobj, ACLBase):
-            raise TypeError('specified object(%s) is not ACLBase object')
+            raise TypeError("specified object(%s) is not ACLBase object")
 
         # inherit parameter of ACL
         self.is_public = aclobj.is_public
@@ -89,13 +92,13 @@ class ACLBase(models.Model):
     def get_subclass_object(self):
         # Use importlib to prevent circular import
         if self.objtype == ACLObjType.Entity:
-            model = importlib.import_module('entity.models').Entity
+            model = importlib.import_module("entity.models").Entity
         elif self.objtype == ACLObjType.EntityAttr:
-            model = importlib.import_module('entity.models').EntityAttr
+            model = importlib.import_module("entity.models").EntityAttr
         elif self.objtype == ACLObjType.Entry:
-            model = importlib.import_module('entry.models').Entry
+            model = importlib.import_module("entry.models").Entry
         elif self.objtype == ACLObjType.EntryAttr:
-            model = importlib.import_module('entry.models').Attribute
+            model = importlib.import_module("entry.models").Attribute
         else:
             # set ACLBase model
             model = type(self)
@@ -103,16 +106,18 @@ class ACLBase(models.Model):
         return model.objects.get(id=self.id)
 
     def is_same_object(self, comp):
-        return all([self[x] == comp[x] for x in self._IMPORT_INFO['header']])
+        return all([self[x] == comp[x] for x in self._IMPORT_INFO["header"]])
 
     @classmethod
     def search(kls, query):
         results = []
         for obj in kls.objects.filter(name__icontains=query):
-            results.append({
-                'type': kls.__name__,
-                'object': obj,
-                'hint': '',
-            })
+            results.append(
+                {
+                    "type": kls.__name__,
+                    "object": obj,
+                    "hint": "",
+                }
+            )
 
         return results

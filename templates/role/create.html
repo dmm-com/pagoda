@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% block title %}{{ current_group_name }} - Edit Group{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
+    <li class="breadcrumb-item"><a href="/role">ロール管理</a></li>
+    <li class="breadcrumb-item">ロールの編集</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<form id="edit-form" name="edit-form" url='{{ submit_ref }}' method='post'>
+  {% csrf_token %}
+  <div class="form-row">
+    <div class="form-group col-md-11">
+      <input type="text" name="name" class="form-control" id="role_name"
+       value="{{ name }}" placeholder="ロール名"/>
+      <div class='invalid-feedback role_name'></div>
+    </div>
+    <div class="form-group col-md-1">
+      {% if 'create' in submit_ref %}
+        <button type="submit" class="btn btn-primary">作成</button>
+      {% else %}
+        <button type="submit" class="btn btn-primary">更新</button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Collapse for role description -->
+  <div class='config_role description'>
+    <div class="toggle">
+      <h6 href='#collapseDescription' class='collapse_title description' data-toggle='collapse' aria-expanded="false">
+        備考
+      </h6>
+    </div>
+
+    <div class='collapse' id='collapseDescription'>
+      <textarea class='form-control' name='description' rows="5">{{ description }}</textarea>
+    </div>
+  </div>
+
+  {% include "role/select_user_groups.html" with collapse_id="collapseUserGroups" collapse_title="登録ユーザ / グループ" is_open=True %}
+
+  {% include "role/select_user_groups.html" with collapse_id="collapseAdminUserGroups" collapse_title="管理登録ユーザ / グループ" %}
+
+</form>
+</div>
+
+{% endblock %}
+
+{% block head %}
+<style type="text/css"><!--
+  {% include 'role/create.css' %}
+--></style>
+{% endblock %}
+
+{% block script %}
+<script>
+
+function convert_dict_to_list(dict_obj) {
+  // attach is_checked attribute if it's not existed
+  Object.keys(dict_obj).forEach(k => dict_obj[k].is_checked = dict_obj[k].is_checked ? true : false);
+
+  // convert dict object to list
+  return Object.keys(dict_obj).map(((k) => {
+    return {
+      id: Number(k),
+      ...dict_obj[k],
+    };
+  }));
+
+}
+
+
+const USERS = convert_dict_to_list({{ user_info|safe }});
+const GROUPS = convert_dict_to_list({{ group_info|safe }});
+const ADMIN_USERS = convert_dict_to_list({{ admin_user_info|safe }});
+const ADMIN_GROUPS = convert_dict_to_list({{ admin_group_info|safe }});
+
+
+// update 'is_selected' fields when current users and groups are specified
+
+$('#edit-form').submit(function(){
+  MessageBox.clear();
+
+  // clear warning of input form
+  $('#role_name').removeClass('is-invalid');
+  $('.collapse_title').removeClass('text-danger');
+
+  const role_name = $('#role_name').val();
+  if (! role_name) {
+    // set warning of invalid role_name
+    $('#role_name').addClass('is-invalid');
+    MessageBox.error("You have to specify role name");
+
+    return false;
+  }
+
+  const sending_params = {
+    users: USERS.filter(x => x.is_checked),
+    groups: GROUPS.filter(x => x.is_checked),
+    admin_users: ADMIN_USERS.filter(x => x.is_checked),
+    admin_groups: ADMIN_GROUPS.filter(x => x.is_checked),
+  };
+
+  HttpPost($(this), sending_params
+  ).done(function(data) {
+    MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, data.msg);
+
+    location.href = '/role';
+  }).fail(function(data) {
+    if (data.responseText == "Duplicate named role has already been registered") {
+      $('#role_name').addClass('is-invalid');
+    }
+    if (data.responseText == "You can't edit this role. Please set administrative members") {
+      // open collapse of setting administrative members
+      $('.collapse_title.collapseAdminUserGroups').addClass('text-danger');
+      $('#collapseUserGroups').collapse('hide');
+      $('#collapseAdminUserGroups').collapse('show');
+
+    }
+    MessageBox.error(data.responseText);
+  });
+
+  return false;
+});
+
+$('.collapse').on('show.bs.collapse', function(e) {
+  // close other collapse
+  $('.collapse').collapse('hide');
+});
+
+function handle_filter_list_values(ev, userList, groupList) {
+  // clear current contents before showing filtered ones
+  const elem_tbody = $(ev.target).parents('.config_role.members').find('tbody');
+  elem_tbody.empty();
+
+  const inputValue = $(ev.target).val();
+  if (inputValue !== "") {
+    const rowValues = Array();
+
+    // filter listing users and groups result associated with specified keyword
+    userList.concat(groupList).some(function(obj) {
+      if (rowValues.length >= 30) {
+        return true;
+      }
+      if (obj.name.indexOf(inputValue) != -1) {
+        rowValues.push(obj);
+      }
+    });
+
+    // add filtered contents at the user/group list
+    rowValues.forEach((x) => {
+      elem_tbody.append(generate_user_group_content(x));
+    });
+
+    // register event handler when checkbox is changed
+    register_checkbox_event_handler();
+
+  } else {
+    const collapseId = $(ev.target).parents('.collapse').attr('id');
+    initialize_user_group_table(collapseId);
+  }
+
+  if ((ev.which && ev.which === 13) || (ev.keyCode && ev.keyCode === 13)) {
+    return false;
+  }
+}
+
+$('#collapseUserGroups input.filter').on('keypress', (e) => {
+  return handle_filter_list_values(e, USERS, GROUPS);
+});
+$('#collapseAdminUserGroups input.filter').on('keypress', (e) => {
+  return handle_filter_list_values(e, ADMIN_USERS, ADMIN_GROUPS);
+});
+
+function register_checkbox_event_handler() {
+
+  function _do_register_handler(collapseId, userList, groupList) {
+    $(`#${ collapseId } input[type="checkbox"]`).on('change', function(e) {
+      const obj_id = $(e.target).val();
+      const obj_type = $(e.target).attr('obj_type');
+
+      const target_list = obj_type == 'user' ? userList : groupList;
+
+      target_list.some((obj) => {
+        if (obj.id == obj_id) {
+          obj.is_checked = $(e.target).is(":checked");
+          return true;
+        }
+      });
+    });
+  }
+
+  _do_register_handler('collapseUserGroups', USERS, GROUPS);
+  _do_register_handler('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
+}
+
+function generate_user_group_content(obj) {
+  if (obj.is_checked) {
+    return `<tr>` +
+        `<td><input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }" checked/></td>` +
+        `<td> ${ obj.name } </td>` +
+        `<td> ${ obj.type } </td>` +
+      `</tr>`;
+  } else {
+    return `<tr>` +
+        `<td><input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }"/></td>` +
+        `<td> ${ obj.name } </td>` +
+        `<td> ${ obj.type } </td>` +
+      `</tr>`;
+  }
+}
+
+function initialize_user_group_table(initializeCollapseId) {
+  function _do_initialize_table(collapseId, userList, groupList) {
+    // clear table context at first
+    $(`#${ collapseId } tbody`).empty();
+
+    userList.slice(0, 10).forEach((user) => {
+      $(`#${ collapseId } tbody`).append(generate_user_group_content(user));
+    });
+
+    groupList.slice(0, 10).forEach((group) => {
+      $(`#${ collapseId } tbody`).append(generate_user_group_content(group));
+    });
+  }
+  if (initializeCollapseId === 'collapseUserGroups') {
+    _do_initialize_table('collapseUserGroups', USERS, GROUPS);
+
+  } else if (initializeCollapseId === 'collapseAdminUserGroups') {
+    _do_initialize_table('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
+
+  } else {
+    _do_initialize_table('collapseUserGroups', USERS, GROUPS);
+    _do_initialize_table('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
+  }
+
+  register_checkbox_event_handler();
+}
+
+$(document).ready(function() {
+  // initialize user/group list tables
+  initialize_user_group_table();
+});
+
+</script>
+{% endblock %}
