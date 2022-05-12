@@ -3,6 +3,16 @@
 ## In development
 
 ### Added
+
+### Changed
+* Changed user model of django
+  Contributed by @hinashi
+
+### Fixed
+
+## v3.7.0
+
+### Added
 * Added add and remove attributes depending on entity in get entry api v2
   Contributed by @hinashi
 * Added custom processing when after delete entry
@@ -14,8 +24,12 @@
   Contributed by @hinashi
 
 ### Changed
+* Deny duplicated active entity attribute names
+  Contributed by @syucream
 
 ### Fixed
+* Fixed by validate length of entity/attr name
+  Contributed by @syucream
 
 ## v3.6.0
 

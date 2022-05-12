@@ -1,7 +1,7 @@
 from importlib import import_module
 
 from django.db import models
-from django.contrib.auth.models import User as DjangoUser
+from django.contrib.auth.models import AbstractUser
 from airone.lib.acl import ACLTypeBase
 from group.models import Group
 
@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 from datetime import datetime
 
 
-class User(DjangoUser):
+class User(AbstractUser):
     MAXIMUM_TOKEN_LIFETIME = 10**8
     TOKEN_LIFETIME = 86400
 

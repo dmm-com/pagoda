@@ -19,7 +19,6 @@ from entity.models import Entity, EntityAttr
 from entry.models import Entry, AttributeValue
 from entry.settings import CONFIG as CONFIG_ENTRY
 from job.models import Job
-from user.models import User
 from .settings import CONFIG
 
 IMPORT_INFOS = [
@@ -33,7 +32,7 @@ IMPORT_INFOS = [
 
 def index(request):
     context = {}
-    if request.user.is_authenticated and User.objects.filter(id=request.user.id).exists():
+    if request.user.is_authenticated:
         history = []
         # Sort by newest attribute update date (id is auto increment)
         for attr_value in (
@@ -66,8 +65,6 @@ def import_data(request):
 
 @http_file_upload
 def do_import_data(request, context):
-    user = User.objects.get(id=request.user.id)
-
     if request.FILES["file"].size >= CONFIG.LIMIT_FILE_SIZE:
         return HttpResponse("File size over", status=400)
 
@@ -80,7 +77,7 @@ def do_import_data(request, context):
         results = []
         for data in iter_data:
             try:
-                result = resource.import_data_from_request(data, user)
+                result = resource.import_data_from_request(data, request.user)
 
                 results.append({"result": result, "data": data})
             except RuntimeError as e:
@@ -107,7 +104,6 @@ def _search_by_keyword(query, entity_name, per_page, page_num):
 
 @http_get
 def search(request):
-    user = User.objects.get(id=request.user.id)
     query = request.GET.get("query")
     entity_name = request.GET.get("entity")
     try:
@@ -129,7 +125,7 @@ def search(request):
     # matches, this returns entry results
     if entity_name:
         entry = Entry.objects.filter(name=query, schema__name=entity_name, is_active=True).first()
-        if entry and user.has_permission(entry, ACLType.Readable):
+        if entry and request.user.has_permission(entry, ACLType.Readable):
             return redirect("/entry/show/%s/" % entry.id)
 
     per_page = CONFIG.MAXIMUM_SEARCH_RESULTS
@@ -177,8 +173,6 @@ def advanced_search(request):
 
 @http_get
 def advanced_search_result(request):
-    user = User.objects.get(id=request.user.id)
-
     recv_entity = request.GET.getlist("entity[]")
     recv_attr = request.GET.getlist("attr[]")
     is_all_entities = request.GET.get("is_all_entities") == "true"
@@ -247,7 +241,7 @@ def advanced_search_result(request):
         if not entity:
             return HttpResponse("Invalid entity ID is specified", status=400)
 
-        if user.has_permission(entity, ACLType.Readable):
+        if request.user.has_permission(entity, ACLType.Readable):
             hint_entity_ids.append(entity.id)
 
     return render(
@@ -256,7 +250,7 @@ def advanced_search_result(request):
         {
             "hint_attrs": hint_attrs,
             "results": Entry.search_entries(
-                user,
+                request.user,
                 hint_entity_ids,
                 hint_attrs,
                 CONFIG.MAXIMUM_SEARCH_RESULTS,
@@ -316,16 +310,18 @@ def advanced_search_result(request):
     ]
 )
 def export_search_result(request, recv_data):
-    user = User.objects.get(id=request.user.id)
-
     # check whether same job is sent
     job_status_not_finished = [Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"]]
-    if Job.get_job_with_params(user, recv_data).filter(status__in=job_status_not_finished).exists():
+    if (
+        Job.get_job_with_params(request.user, recv_data)
+        .filter(status__in=job_status_not_finished)
+        .exists()
+    ):
         return HttpResponse("Same export processing is under execution", status=400)
 
     # create a job to export search result and run it
     job = Job.new_export_search_result(
-        user,
+        request.user,
         **{
             "text": "search_results.%s" % recv_data["export_style"],
             "params": recv_data,
