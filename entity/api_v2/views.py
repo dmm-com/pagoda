@@ -11,7 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from airone.lib.acl import ACLType
 from airone.lib.http import http_get
-from entity.api_v2.serializers import EntityWithAttrSerializer
+from entity.api_v2.serializers import EntityDetailSerializer
 from entity.models import Entity
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
@@ -75,7 +75,7 @@ class EntityPermission(BasePermission):
     ],
 )
 class EntityAPI(viewsets.ReadOnlyModelViewSet):
-    serializer_class = EntityWithAttrSerializer
+    serializer_class = EntityDetailSerializer
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):

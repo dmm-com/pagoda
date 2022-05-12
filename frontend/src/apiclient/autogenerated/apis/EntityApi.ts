@@ -14,15 +14,15 @@
 
 import * as runtime from "../runtime";
 import {
-  EntityWithAttr,
-  EntityWithAttrFromJSON,
-  EntityWithAttrToJSON,
+  EntityDetail,
+  EntityDetailFromJSON,
+  EntityDetailToJSON,
   EntryCreate,
   EntryCreateFromJSON,
   EntryCreateToJSON,
-  PaginatedEntityWithAttrList,
-  PaginatedEntityWithAttrListFromJSON,
-  PaginatedEntityWithAttrListToJSON,
+  PaginatedEntityDetailList,
+  PaginatedEntityDetailListFromJSON,
+  PaginatedEntityDetailListToJSON,
   PaginatedEntryBaseList,
   PaginatedEntryBaseListFromJSON,
   PaginatedEntryBaseListToJSON,
@@ -63,7 +63,7 @@ export class EntityApi extends runtime.BaseAPI {
   async entityApiV2EntitiesListRaw(
     requestParameters: EntityApiV2EntitiesListRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<PaginatedEntityWithAttrList>> {
+  ): Promise<runtime.ApiResponse<PaginatedEntityDetailList>> {
     const queryParameters: any = {};
 
     if (requestParameters.isTopLevel !== undefined) {
@@ -109,7 +109,7 @@ export class EntityApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      PaginatedEntityWithAttrListFromJSON(jsonValue)
+      PaginatedEntityDetailListFromJSON(jsonValue)
     );
   }
 
@@ -118,7 +118,7 @@ export class EntityApi extends runtime.BaseAPI {
   async entityApiV2EntitiesList(
     requestParameters: EntityApiV2EntitiesListRequest = {},
     initOverrides?: RequestInit
-  ): Promise<PaginatedEntityWithAttrList> {
+  ): Promise<PaginatedEntityDetailList> {
     const response = await this.entityApiV2EntitiesListRaw(
       requestParameters,
       initOverrides
@@ -131,7 +131,7 @@ export class EntityApi extends runtime.BaseAPI {
   async entityApiV2EntitiesRetrieveRaw(
     requestParameters: EntityApiV2EntitiesRetrieveRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<EntityWithAttr>> {
+  ): Promise<runtime.ApiResponse<EntityDetail>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
         "id",
@@ -179,7 +179,7 @@ export class EntityApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      EntityWithAttrFromJSON(jsonValue)
+      EntityDetailFromJSON(jsonValue)
     );
   }
 
@@ -188,7 +188,7 @@ export class EntityApi extends runtime.BaseAPI {
   async entityApiV2EntitiesRetrieve(
     requestParameters: EntityApiV2EntitiesRetrieveRequest,
     initOverrides?: RequestInit
-  ): Promise<EntityWithAttr> {
+  ): Promise<EntityDetail> {
     const response = await this.entityApiV2EntitiesRetrieveRaw(
       requestParameters,
       initOverrides

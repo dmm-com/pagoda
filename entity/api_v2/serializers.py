@@ -5,6 +5,7 @@ from rest_framework import serializers
 from airone.lib.acl import ACLType
 from entity.models import Entity
 from user.models import User
+from webhook.models import Webhook
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -44,3 +45,18 @@ class EntityWithAttrSerializer(EntitySerializer):
             for x in obj.attrs.filter(is_active=True).order_by("index")
             if user.has_permission(x, ACLType.Writable)
         ]
+
+
+class WebhookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Webhook
+        fields = ["id", "label", "url", "is_enabled", "is_verified", "headers"]
+
+
+class EntityDetailSerializer(EntityWithAttrSerializer):
+    # webhooks = serializers.ListField(child=WebhookSerializer())
+    webhooks = WebhookSerializer(many=True)
+
+    class Meta:
+        model = Entity
+        fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks"]

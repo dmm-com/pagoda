@@ -3,7 +3,7 @@
 export * from "./ACL";
 export * from "./Attribute";
 export * from "./Entity";
-export * from "./EntityWithAttr";
+export * from "./EntityDetail";
 export * from "./EntryBase";
 export * from "./EntryCreate";
 export * from "./EntryRetrieve";
@@ -12,5 +12,6 @@ export * from "./EntryRetrieveSchema";
 export * from "./EntryUpdate";
 export * from "./GetEntrySimple";
 export * from "./Group";
-export * from "./PaginatedEntityWithAttrList";
+export * from "./PaginatedEntityDetailList";
 export * from "./PaginatedEntryBaseList";
+export * from "./Webhook";
