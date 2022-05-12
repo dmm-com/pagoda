@@ -16,6 +16,7 @@ from datetime import date
 
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute, AttributeValue
+from role.models import Role
 from entry import tasks as entry_tasks
 from dashboard import tasks as dashboard_tasks
 
@@ -555,7 +556,9 @@ class ViewTest(AironeViewTest):
         self.assertFalse(resp_entry["is_readble"])
         self.assertEqual(resp_entry["attrs"], {})
 
-        guest_user.permissions.add(entry.readable)
+        role = Role.objects.create(name="Role")
+        role.permissions.add(entry.readable)
+        role.users.add(guest_user)
 
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
@@ -587,7 +590,7 @@ class ViewTest(AironeViewTest):
         self.assertFalse(resp_attr["is_readble"])
         self.assertFalse("value" in resp_attr)
 
-        guest_user.permissions.add(attr.readable)
+        role.permissions.add(attr.readable)
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
             {

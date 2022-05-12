@@ -59,18 +59,24 @@
       <table class="table table-bordered">
         <thead>
           <tr>
-            <td>ユーザ or グループ</td>
+            <td>ロール</td>
+            <td>備考</td>
             <td>権限</td>
           </tr>
         </thead>
         <tbody>
-          {% for member in members %}
+          {% for role in roles %}
           <tr>
-            <td>{{ member.name }}</td>
+            <td>{{ role.name }}</td>
             <td>
-              <select name="acl" member_id="{{ member.id }}" member_type="{{ member.type }}">
+              <span data-toggle="tooltip" data-placement="top" title="{{ role.description }}">
+                {{ role.description|truncatechars:30 }}
+              </span>
+            </td>
+            <td>
+              <select name="acl" role_id="{{ role.id }}">
                 {% for acltype in acltypes %}
-                  {% if acltype.id == member.current_permission %}
+                  {% if acltype.id == role.current_permission %}
                     <option value="{{ acltype.id }}" selected="selected">{{ acltype.name }}</option>
                   {% else %}
                     <option value="{{ acltype.id }}">{{ acltype.name }}</option>
@@ -113,8 +119,7 @@ $('#acl-form').submit(function(event){
 
   $(this).find('select[name=acl].changed').each(function(){
     acl.push({
-      'member_type': $(this).attr('member_type'),
-      'member_id': $(this).attr('member_id'),
+      'role_id': $(this).attr('role_id'),
       'value': $(this).val() != "" ? $(this).val() : null,
     });
   });
@@ -131,6 +136,13 @@ $('#acl-form').submit(function(event){
   });
 
   return false;
+});
+
+$(document).ready(function() {
+  // initialize tooltips
+  $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+  })
 });
 </script>
 {% endblock %}

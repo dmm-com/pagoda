@@ -17,6 +17,9 @@
   Contributed by @hinashi
 * Added custom processing when after delete entry
   Contributed by @hinashi
+* Added new feature Role that has permissions which users (and groups)
+  that are belonged to Role could access to information (#462)
+  contributed by @userlocalhost
 * Added create, update, delete, restore entry api in APIv2
   Contributed by @hinashi
 

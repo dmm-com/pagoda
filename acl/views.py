@@ -8,8 +8,7 @@ from airone.lib.log import Logger
 
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute
-from group.models import Group
-from user.models import User
+from role.models import Role
 from .models import ACLBase
 
 
@@ -43,23 +42,14 @@ def index(request, obj_id):
         "object": target_obj,
         "parent": parent_obj,
         "acltypes": [{"id": x.id, "name": x.label} for x in ACLType.all()],
-        "members": [
-            {
-                "id": x.id,
-                "name": x.username,
-                "current_permission": get_current_permission(x),
-                "type": "user",
-            }
-            for x in User.objects.filter(is_active=True)
-        ]
-        + [
+        "roles": [
             {
                 "id": x.id,
                 "name": x.name,
+                "description": x.description,
                 "current_permission": get_current_permission(x),
-                "type": "group",
             }
-            for x in Group.objects.filter(is_active=True)
+            for x in Role.objects.filter(is_active=True)
         ],
     }
     return render(request, "edit_acl.html", context)
@@ -78,19 +68,11 @@ def index(request, obj_id):
             "type": list,
             "meta": [
                 {
-                    "name": "member_type",
+                    "name": "role_id",
                     "type": str,
-                    "checker": lambda x: x["member_type"] == "user" or x["member_type"] == "group",
-                },
-                {
-                    "name": "member_id",
-                    "type": str,
-                    "checker": lambda x: any(
-                        [
-                            User.objects.filter(id=x["member_id"]).exists(),
-                            Group.objects.filter(id=x["member_id"]).exists(),
-                        ]
-                    ),
+                    "checker": lambda x: Role.objects.filter(
+                        id=x["role_id"], is_active=True
+                    ).exists(),
                 },
                 {
                     "name": "value",
@@ -114,21 +96,7 @@ def set(request, recv_data):
     if not request.user.has_permission(acl_obj, ACLType.Full):
         return HttpResponse(
             "User(%s) doesn't have permission to change this ACL" % request.user.username,
-            status=400,
-        )
-
-    if not request.user.may_permitted(
-        acl_obj,
-        ACLType.Full,
-        **{
-            "is_public": True if "is_public" in recv_data else False,
-            "default_permission": int(recv_data["default_permission"]),
-            "acl_settings": recv_data["acl"],
-        }
-    ):
-        return HttpResponse(
-            "Inadmissible setting. By this change you will never change this ACL",
-            status=400,
+            status=400
         )
 
     acl_obj.is_public = False
@@ -141,15 +109,11 @@ def set(request, recv_data):
     acl_obj.save()
 
     for acl_data in [x for x in recv_data["acl"] if x["value"]]:
-        if acl_data["member_type"] == "user":
-            member = User.objects.get(id=acl_data["member_id"])
-        else:
-            member = Group.objects.get(id=acl_data["member_id"])
-
+        role = Role.objects.get(id=acl_data["role_id"])
         acl_type = [x for x in ACLType.all() if x == int(acl_data["value"])][0]
 
         # update permissios for the target ACLBased object
-        _set_permission(member, acl_obj, acl_type)
+        _set_permission(role, acl_obj, acl_type)
 
     redirect_url = "/"
     if isinstance(acl_obj, Entity):
@@ -188,12 +152,12 @@ def _get_acl_model(object_id):
         return ACLBase
 
 
-def _set_permission(member, acl_obj, acl_type):
+def _set_permission(role, acl_obj, acl_type):
     # clear unset permissions of target ACLbased object
     for _acltype in ACLType.all():
         if _acltype != acl_type and _acltype != ACLType.Nothing:
-            member.permissions.remove(getattr(acl_obj, _acltype.name))
+            role.permissions.remove(getattr(acl_obj, _acltype.name))
 
     # set new permissoin to be specified except for 'Nothing' permission
     if acl_type != ACLType.Nothing:
-        member.permissions.add(getattr(acl_obj, acl_type.name))
+        role.permissions.add(getattr(acl_obj, acl_type.name))
