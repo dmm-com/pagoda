@@ -23,11 +23,13 @@ export const EditEntityPage: FC = () => {
     name: string;
     note: string;
     isTopLevel: boolean;
+    webhooks: any[];
     attributes: { [key: string]: any }[];
   }>({
     name: "",
     note: "",
     isTopLevel: false,
+    webhooks: [],
     attributes: [],
   });
 
@@ -38,6 +40,16 @@ export const EditEntityPage: FC = () => {
         name: resp.name,
         note: resp.note,
         isTopLevel: resp.isToplevel,
+        webhooks: [
+          {
+            id: 1,
+            url: "https://example.com/",
+            label: "test label",
+            enabled: true,
+            isAvailable: true,
+            headers: [],
+          },
+        ],
         attributes:
           resp.attrs.map((attr) => {
             return { ...attr, refIds: attr.referrals.map((r) => r.id) };
