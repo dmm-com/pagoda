@@ -1,20 +1,23 @@
 import { Box, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { Loading } from "../components/common/Loading";
-import { getWebhooks } from "../utils/AironeAPIClient";
 import { useTypedParams } from "../hooks/useTypedParams";
+import { getWebhooks } from "../utils/AironeAPIClient";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityForm } from "components/entity/EntityForm";
+import { createEntity, updateEntity } from "utils/AironeAPIClient";
 
 export const EditEntityPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
+  const history = useHistory();
 
   const [entityInfo, setEntityInfo] = useState<{
     name: string;
@@ -51,7 +54,7 @@ export const EditEntityPage: FC = () => {
   });
 
   const webhooks = useAsync(async () => {
-    if (entityId != null) {
+    if (entityId !== undefined) {
       const resp = await getWebhooks(entityId);
       return await resp.json();
     } else {
@@ -59,6 +62,49 @@ export const EditEntityPage: FC = () => {
     }
   });
   const [submittable, setSubmittable] = useState<boolean>(false);
+
+  const handleCancel = () => {
+    history.replace(entitiesPath());
+  };
+  const handleSubmit = async () => {
+    console.log("[onix/handleSubmit(00)]");
+
+    const createMode = entityId === undefined;
+    // Adjusted attributes for the API
+    const attrs = entityInfo.attributes
+      .filter((attr) => attr.id != null || !attr.deleted)
+      .map((attr, index) => {
+        return {
+          id: attr.id,
+          name: attr.name,
+          type: String(attr.type),
+          row_index: String(index),
+          is_mandatory: attr.is_mandatory,
+          is_delete_in_chain: attr.is_delete_in_chain,
+          ref_ids: attr.refIds,
+          deleted: attr.deleted,
+        };
+      });
+
+    if (createMode) {
+      await createEntity(
+        entityInfo.name,
+        entityInfo.note,
+        entityInfo.isTopLevel,
+        attrs
+      );
+      history.replace(entitiesPath());
+    } else {
+      await updateEntity(
+        entityId,
+        entityInfo.name,
+        entityInfo.note,
+        entityInfo.isTopLevel,
+        attrs
+      );
+      history.replace(entityEntriesPath(entityId));
+    }
+  };
 
   if (entity.loading || referralEntities.loading || webhooks.loading) {
     return <Loading />;
@@ -84,7 +130,11 @@ export const EditEntityPage: FC = () => {
       </AironeBreadcrumbs>
 
       {/* TODO z-index, position: fixed, margin-top, background-color */}
-      <PageHeader isSubmittable={submittable}>
+      <PageHeader
+        isSubmittable={submittable}
+        handleSubmit={handleSubmit}
+        handleCancel={handleCancel}
+      >
         {entity?.value != null
           ? entity.value.name + "の編集"
           : "新規エンティティの作成"}

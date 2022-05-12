@@ -3,9 +3,16 @@ import React, { FC } from "react";
 
 interface Props {
   isSubmittable: boolean;
+  handleSubmit: (args?: object) => void;
+  handleCancel: (args?: object) => void;
 }
 
-export const PageHeader: FC<Props> = ({ isSubmittable, children }) => {
+export const PageHeader: FC<Props> = ({
+  isSubmittable,
+  handleSubmit,
+  handleCancel,
+  children,
+}) => {
   return (
     <>
       <Box
@@ -29,12 +36,17 @@ export const PageHeader: FC<Props> = ({ isSubmittable, children }) => {
                     variant="contained"
                     color="secondary"
                     disabled={!isSubmittable}
+                    onClick={handleSubmit}
                   >
                     保存
                   </Button>
                 </Box>
                 <Box mx="4px">
-                  <Button variant="outlined" color="primary">
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={handleCancel}
+                  >
                     キャンセル
                   </Button>
                 </Box>
