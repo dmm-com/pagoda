@@ -1,0 +1,27 @@
+.filter-icon {
+  filter: invert(100%);
+  cursor: pointer;
+}
+
+.filter-icon:hover {
+  filter: none;
+}
+
+.toggle {
+  border-bottom: 1px solid #e9ecef;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  cursor: pointer;
+}
+
+.toggle [aria-expanded="false"] {
+  padding-left: 20px;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M3 3 L6 5 L3 7 Z" /></svg>');
+  background-repeat: no-repeat;
+}
+
+.toggle [aria-expanded="true"] {
+  padding-left: 20px;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M3 3 L7 3 L5 7 Z" /></svg>');
+  background-repeat: no-repeat;
+}

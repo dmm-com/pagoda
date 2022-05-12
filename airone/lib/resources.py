@@ -20,6 +20,7 @@ class AironeModelResource(ModelResource):
     """
     This private method checks that two instance has same content in each attribute.
     """
+
     def _is_updated(self, comp1, comp2):
         return any([getattr(comp1, x) != getattr(comp2, x) for x in self.COMPARING_KEYS])
 
@@ -55,8 +56,10 @@ class AironeModelResource(ModelResource):
 
     @classmethod
     def import_data_from_request(self, data, request_user):
-        resource = getattr(importlib.import_module(self._IMPORT_INFO['resource_module']),
-                           self._IMPORT_INFO['resource_model_name'])()
+        resource = getattr(
+            importlib.import_module(self._IMPORT_INFO["resource_module"]),
+            self._IMPORT_INFO["resource_model_name"],
+        )()
         if not resource:
             raise RuntimeError("Resource object is not defined")
 
@@ -64,21 +67,25 @@ class AironeModelResource(ModelResource):
         resource.request_user = request_user
 
         # check mandatory keys are existed, or not
-        if not all([x in data for x in self._IMPORT_INFO['mandatory_keys']]):
+        if not all([x in data for x in self._IMPORT_INFO["mandatory_keys"]]):
             raise RuntimeError("Mandatory key doesn't exist")
 
         # check that mandatory values is set
-        if ('mandatory_values' in self._IMPORT_INFO and
-                any(not data[x] for x in self._IMPORT_INFO['mandatory_values'])):
-            raise RuntimeError("The value of '%s' is needed" %
-                               str(self._IMPORT_INFO['mandatory_values']))
+        if "mandatory_values" in self._IMPORT_INFO and any(
+            not data[x] for x in self._IMPORT_INFO["mandatory_values"]
+        ):
+            raise RuntimeError(
+                "The value of '%s' is needed" % str(self._IMPORT_INFO["mandatory_values"])
+            )
 
         # check unnecessary parameters are specified, or not
-        if not all([x in self._IMPORT_INFO['header'] for x in data.keys()]):
+        if not all([x in self._IMPORT_INFO["header"] for x in data.keys()]):
             raise RuntimeError("Unnecessary key is specified")
 
         # get dataset to import
-        dataset = tablib.Dataset([x in data and data[x] or '' for x in self._IMPORT_INFO['header']],
-                                 headers=self._IMPORT_INFO['header'])
+        dataset = tablib.Dataset(
+            [x in data and data[x] or "" for x in self._IMPORT_INFO["header"]],
+            headers=self._IMPORT_INFO["header"],
+        )
 
         return resource.import_data(dataset, raise_errors=True)

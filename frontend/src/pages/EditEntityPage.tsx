@@ -1,11 +1,12 @@
 import { Box, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { Loading } from "../components/common/Loading";
 import { getWebhooks } from "../utils/AironeAPIClient";
+import { useTypedParams } from "../hooks/useTypedParams";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -13,7 +14,7 @@ import { PageHeader } from "components/common/PageHeader";
 import { EntityForm } from "components/entity/EntityForm";
 
 export const EditEntityPage: FC = () => {
-  const { entityId } = useParams<{ entityId: number }>();
+  const { entityId } = useTypedParams<{ entityId: number }>();
 
   const [entityInfo, setEntityInfo] = useState<{
     name: string;
@@ -45,7 +46,8 @@ export const EditEntityPage: FC = () => {
   });
 
   const referralEntities = useAsync(async () => {
-    return await aironeApiClientV2.getEntities();
+    const entities = await aironeApiClientV2.getEntities();
+    return entities.results;
   });
 
   const webhooks = useAsync(async () => {

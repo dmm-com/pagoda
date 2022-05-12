@@ -47,7 +47,7 @@ test("should match snapshot", async () => {
       require("../apiclient/AironeApiClientV2").aironeApiClientV2,
       "getEntities"
     )
-    .mockResolvedValue(Promise.resolve(entities));
+    .mockResolvedValue(Promise.resolve({ results: entities }));
   /* eslint-enable */
 
   // wait async calls and get rendered fragment

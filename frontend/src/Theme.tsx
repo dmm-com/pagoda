@@ -7,6 +7,12 @@ export const theme = createTheme({
     secondary: {
       main: "#90CAF9",
     },
+    success: {
+      main: "#1B76D2",
+    },
+    error: {
+      main: "#B00020",
+    },
     background: {
       default: "#607D8B",
     },

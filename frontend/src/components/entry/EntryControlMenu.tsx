@@ -16,8 +16,8 @@ import {
   showEntryHistoryPath,
   copyEntryPath,
 } from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Confirmable } from "components/common/Confirmable";
-import { deleteEntry } from "utils/AironeAPIClient";
 
 interface EntryControlProps {
   entityId: number;
@@ -35,7 +35,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
   const history = useHistory();
 
   const handleDelete = async (event, entryId) => {
-    await deleteEntry(entryId);
+    await aironeApiClientV2.destroyEntry(entryId);
     history.go(0);
   };
 

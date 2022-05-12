@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}List Users{% endblock %}
+
+{% block nav_sub_header %}
+<div class="conatiner-fluid">
+  <ul class="breadcrumb airone-breadcrumb">
+    <li class="breadcrumb-item"><a href="/">TOP</a></li>
+    <li class="breadcrumb-item">ロール管理</li>
+  </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <div class="float-left">
+        <button name="button_new" type="button" class="btn btn-primary" onclick="location.href='/role/create'">新規作成</button>
+        <button id="delete_role" type="button" class="btn btn-danger">削除</button>
+      </div>
+    </div>
+  </div>
+
+  <table class='table table-sm'>
+    <thead>
+      <th scope='col'></th>
+      <th scope='col'>名前</th>
+      <th scope='col'>備考</th>
+      <th scope='col'>登録ユーザ・グループ</th>
+      <th scope='col'>管理ユーザ・グループ</th>
+    <thead>
+    <tbody>
+      {% for role in roles %}
+      <tr>
+        <td>
+          <input class="role_select" type="checkbox"
+                 role_id="{{ role.id }}" role_name="{{ role.name }}" />
+        </td>
+
+        <!-- Role name -->
+        <td><a href='/role/edit/{{ role.id }}'>{{ role.name }}</a></td>
+
+        <!-- Role description -->
+        <td><span data-toggle="tooltip" data-placement="top" title="{{ role.description }}">{{ role.description|truncatechars:15 }}</span></td>
+
+        <!-- Registered Users and Groups -->
+        <td>
+          <ul class="list-group list-group-flush">
+            {% for user in role.users %}
+            <li>(user) {{ user.username }}</li>
+            {% endfor %}
+            {% for group in role.groups %}
+            <li>(group) {{ group.name }}</li>
+            {% endfor %}
+          </ul>
+        </td>
+
+        <!-- Administrative Users and Groups -->
+        <td>
+          <ul class="list-group list-group-flush">
+            {% for user in role.admin_users %}
+            <li>(user) {{ user.username }}</li>
+            {% endfor %}
+            {% for group in role.admin_groups %}
+            <li>(group) {{ group.name }}</li>
+            {% endfor %}
+          </ul>
+        </td>
+
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!--
+  <div class="row">
+    <div class="col">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <td>名前</td>
+            <td>メンバー</td>
+            <td></td>
+          </tr>
+        </thead>
+        <tbody>
+          {% for role in roles %}
+          <tr class='role-{{ role.id }}'>
+            <td class='role_name'><a href="/role/edit/{{ role.id }}">{{ role.name }}</a></td>
+            <td class='role_member'>
+              <ul>
+                {% for member in role.members %}
+                <li>{{ member.username }}</li>
+                {% endfor %}
+              </ul>
+            </td>
+            <td class='role_delete'><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/role/do_delete/{{ role.id }}">del</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  -->
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+$('#delete_role').on('click', function(e) {
+  if(window.confirm('Are you all right to delete selected Role?')) {
+    $('.role_select:checked').each((i, elem) => {
+      const role_id = $(elem).attr('role_id');
+      const role_name = $(elem).attr('role_name');
+
+      $.ajax({
+        type: 'DELETE',
+        url: `/role/api/v1/${ role_id }/`,
+      }).done(function(resp) {
+        MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS,
+                                        `Succeeded in deleting Role(${ role_name })`);
+      }).fail(function(resp) {
+        MessageBox.setNextOnLoadMessage(MessageBox.ERROR, resp.responseText);
+      });
+    });
+
+    // Refresh page after completing to reiceve responses,
+    // which are correspond of all deleting requests
+    $(document).ajaxComplete(function(event, request, settings) {
+      location.href = '/role/';
+    });
+  }
+});
+
+$(document).ready(function() {
+  $('.del-item').on('click', confirm_delete_table_item);
+
+  // initialize tooltips
+  $(function () {
+      $('[data-toggle="tooltip"]').tooltip()
+  })
+});
+</script>
+{% endblock %}
