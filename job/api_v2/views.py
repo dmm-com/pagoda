@@ -7,7 +7,6 @@ from airone.lib.http import http_get
 
 # related models in AirOne
 from job.models import Job, JobOperation
-from user.models import User
 
 # configuration of this app
 from job.settings import CONFIG
@@ -15,8 +14,6 @@ from job.settings import CONFIG
 
 @http_get
 def list_jobs(request):
-    user = User.objects.get(id=request.user.id)
-
     limitation = CONFIG.MAX_LIST_VIEW
     if request.GET.get("nolimit", None):
         limitation = None
@@ -26,7 +23,7 @@ def list_jobs(request):
         JobOperation.EXPORT_SEARCH_RESULT.value,
     ]
 
-    query = Q(Q(user=user), ~Q(operation__in=Job.HIDDEN_OPERATIONS))
+    query = Q(Q(user=request.user), ~Q(operation__in=Job.HIDDEN_OPERATIONS))
 
     jobs = [
         x

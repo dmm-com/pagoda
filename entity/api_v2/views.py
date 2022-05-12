@@ -15,7 +15,7 @@ from entity.api_v2.serializers import EntityWithAttrSerializer
 from entity.models import Entity
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
-from user.models import History, User
+from user.models import History
 
 
 @http_get
@@ -59,10 +59,9 @@ class EntityPermission(BasePermission):
             "create": ACLType.Writable,
         }
 
-        user: User = User.objects.get(id=request.user.id)
         entity = Entity.objects.filter(id=view.kwargs.get("entity_id"), is_active=True).first()
 
-        if entity and not user.has_permission(entity, permisson.get(view.action)):
+        if entity and not request.user.has_permission(entity, permisson.get(view.action)):
             return False
 
         view.entity = entity

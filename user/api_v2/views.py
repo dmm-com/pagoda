@@ -9,7 +9,7 @@ from user.models import User
 
 @http_get
 def get_user(request, user_id):
-    current_user = User.objects.get(id=request.user.id)
+    current_user = request.user
     user = User.objects.get(id=user_id)
     if not current_user.is_superuser and current_user != user:
         return HttpResponse("You don't have permission to access", status=400)
@@ -21,7 +21,7 @@ def get_user(request, user_id):
             "email": user.email,
             "is_superuser": user.is_superuser,
             "date_joined": user.date_joined.isoformat(),
-            "token": str(user.token) if request.user.id == user.id else "",
+            "token": str(user.token) if current_user.id == user.id else "",
             "token_lifetime": user.token_lifetime,
             "token_expire": (
                 user.token.created + timedelta(seconds=user.token_lifetime) if user.token else ""

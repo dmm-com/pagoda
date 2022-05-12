@@ -9,7 +9,7 @@ from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
 from airone.lib.types import AttrTypeNamedObj, AttrTypeArrNamedObj
 from airone.lib.types import AttrTypeValue
 from django.urls import reverse
-from django.contrib.auth.models import User as DjangoUser
+from user.models import User
 from group.models import Group
 from job.models import Job, JobOperation
 from datetime import date
@@ -120,7 +120,7 @@ class ViewTest(AironeViewTest):
 
     def test_show_dashboard_with_django_user(self):
         # create test user which is authenticated by Django, not AirOne
-        user = DjangoUser(username="django-user")
+        user = User(username="django-user")
         user.set_password("passwd")
         user.save()
 

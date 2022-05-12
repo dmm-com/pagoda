@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Changed user model of django
+  Contributed by @hinashi
 
 ### Fixed
 

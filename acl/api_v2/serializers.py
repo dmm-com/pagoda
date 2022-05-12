@@ -73,7 +73,7 @@ class ACLSerializer(serializers.ModelSerializer):
         return default_permission in ACLType.all()
 
     def validate(self, attrs: Dict[str, Any]):
-        user = User.objects.get(id=self.context["request"].user.id)
+        user = self.context["request"].user
         if not user.may_permitted(
             self.instance,
             ACLType.Full,

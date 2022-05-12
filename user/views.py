@@ -23,10 +23,8 @@ def index(request):
     if not request.user.is_authenticated:
         return HttpResponseSeeOther("/auth/login")
 
-    user = User.objects.get(id=request.user.id)
-
-    context = {"users": [user]}
-    if user.is_superuser:
+    context = {"users": [request.user]}
+    if request.user.is_superuser:
         context = {
             "users": User.objects.filter(is_active=True),
         }
@@ -75,7 +73,7 @@ def do_create(request, recv_data):
 
 @http_get
 def edit(request, user_id):
-    current_user = User.objects.get(id=request.user.id)
+    current_user = request.user
     try:
         user = User.objects.get(id=user_id, is_active=True)
     except ObjectDoesNotExist:
@@ -111,7 +109,7 @@ def edit(request, user_id):
     ]
 )
 def do_edit(request, user_id, recv_data):
-    access_user = User.objects.get(id=request.user.id)
+    access_user = request.user
     try:
         target_user = User.objects.get(id=user_id, is_active=True)
     except ObjectDoesNotExist:
@@ -266,17 +264,17 @@ def do_delete(request, user_id, recv_data):
 
 @http_post([{"name": "ldap_password", "type": str, "checker": lambda x: x["ldap_password"]}])
 def change_ldap_auth(request, recv_data):
-    user = User.objects.get(id=request.user.id)
-
-    if LDAPBackend.is_authenticated(user.username, recv_data["ldap_password"]):
+    if LDAPBackend.is_authenticated(request.user.username, recv_data["ldap_password"]):
         # When LDAP authentication is passed with current username and specified password,
         # this chnages authentication type from local to LDAP.
-        user.authenticate_type = User.AUTH_TYPE_LDAP
-        user.save(update_fields=["authenticate_type"])
+        request.user.authenticate_type = User.AUTH_TYPE_LDAP
+        request.user.save(update_fields=["authenticate_type"])
 
         return HttpResponse("Succeeded")
     else:
-        return HttpResponse("LDAP authentication was Failed of user %s" % user.username, status=400)
+        return HttpResponse(
+            "LDAP authentication was Failed of user %s" % request.user.username, status=400
+        )
 
 
 class PasswordReset(auth_views.PasswordResetView):

@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.contrib.auth.models import User as DjangoUser
 from rest_framework.authtoken.models import Token
 
 from airone.lib.acl import ACLType
@@ -25,7 +24,6 @@ class ModelTest(TestCase):
         self.assertEqual(self.user.token, Token.objects.get(user=self.user))
 
     def test_make_user(self):
-        self.assertTrue(isinstance(self.user, DjangoUser))
         self.assertEqual(self.user.username, "ほげ")
         self.assertEqual(self.user.authorized_type, 0)
         self.assertIsNotNone(self.user.date_joined)
@@ -35,7 +33,6 @@ class ModelTest(TestCase):
         self.user.delete()
 
         user = User.objects.get(id=self.user.id)
-        self.assertTrue(isinstance(user, DjangoUser))
         self.assertEqual(user.username.find("ほげ_deleted_"), 0)
         self.assertEqual(user.email, "deleted__hoge@example.com")
         self.assertEqual(user.authorized_type, 0)

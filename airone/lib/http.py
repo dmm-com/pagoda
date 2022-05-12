@@ -39,7 +39,7 @@ def http_get(func):
     return wrapper
 
 
-def get_object_with_check_permission(user, model, object_id, permission_level):
+def get_obj_with_check_perm(user, model, object_id, permission_level):
     target_obj = model.objects.filter(id=object_id).first()
     if not target_obj:
         return (None, HttpResponse("Failed to get entity of specified id", status=400))
