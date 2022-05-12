@@ -8,7 +8,6 @@ from airone.lib.log import Logger
 
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute
-from user.models import User
 from role.models import Role
 from .models import ACLBase
 
