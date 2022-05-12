@@ -17,6 +17,7 @@ test("should render a component with essential props", function () {
           note: "fuga",
           isTopLevel: false,
           attributes: [],
+          webhooks: [],
         }}
         setEntityInfo={(d) => {
           /* no operation */

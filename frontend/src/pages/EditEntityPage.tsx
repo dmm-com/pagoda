@@ -40,16 +40,7 @@ export const EditEntityPage: FC = () => {
         name: resp.name,
         note: resp.note,
         isTopLevel: resp.isToplevel,
-        webhooks: [
-          {
-            id: 1,
-            url: "https://example.com/",
-            label: "test label",
-            enabled: true,
-            isAvailable: true,
-            headers: [],
-          },
-        ],
+        webhooks: resp.webhooks,
         attributes:
           resp.attrs.map((attr) => {
             return { ...attr, refIds: attr.referrals.map((r) => r.id) };
@@ -79,8 +70,6 @@ export const EditEntityPage: FC = () => {
     history.replace(entitiesPath());
   };
   const handleSubmit = async () => {
-    console.log("[onix/handleSubmit(00)]");
-
     const createMode = entityId === undefined;
     // Adjusted attributes for the API
     const attrs = entityInfo.attributes
@@ -153,29 +142,6 @@ export const EditEntityPage: FC = () => {
       </PageHeader>
 
       <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
-        {/*
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab label="編集" />
-          <Tab label="設定" />
-        </Tabs>
-
-        <Box hidden={tabValue !== 0}>
-          <EntityForm
-            entity={entity.value}
-            referralEntities={referralEntities.value}
-          />
-        </Box>
-        <Box hidden={tabValue !== 1}>
-          {entityId !== undefined ? (
-            <WebhookForm entityId={entityId} webhooks={webhooks.value} />
-          ) : (
-            <Typography>
-              未作成のエンティティはWebhookを設定できません。まずエンティティを作成してください。
-            </Typography>
-          )}
-        </Box>
-        */}
-
         <EntityForm
           entity={entity.value}
           entityInfo={entityInfo}
