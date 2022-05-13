@@ -205,8 +205,6 @@ def do_delete(request, group_id, recv_data):
 
 @http_get
 def export(request):
-    user = User.objects.get(id=request.user.id)
-
     output = io.StringIO()
 
     data = {

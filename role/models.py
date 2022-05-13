@@ -49,6 +49,11 @@ class Role(models.Model):
         )
 
     def is_permitted(self, target_obj, permission_level):
+        """This method has regulation
+        * You don't call this method to check object permission directly because,
+          this method don't care about hieralchical data structure
+          (e.g. Entity/Entry, EntityAttr/Attribute).
+        """
         return any(
             [
                 permission_level.id <= x.get_aclid()

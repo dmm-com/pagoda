@@ -7,7 +7,7 @@ from user.models import User
 
 class UserRetrievePermission(BasePermission):
     def has_object_permission(self, request, view, obj: User):
-        current_user = User.objects.get(id=request.user.id)
+        current_user = request.user
         return current_user.is_superuser or current_user == obj
 
 

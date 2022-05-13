@@ -1,5 +1,7 @@
 import json
 import re
+from pytz import timezone
+from natsort import natsorted
 
 from django.db.models import Q
 from django.http import HttpResponse
@@ -15,9 +17,6 @@ from entry.models import Entry, Attribute
 from entity.models import Entity, EntityAttr
 from entry.settings import CONFIG
 from group.models import Group
-from pytz import timezone
-from user.models import User
-from natsort import natsorted
 
 
 @http_get
@@ -239,7 +238,6 @@ def get_attr_referrals(request, attr_id):
 @http_get
 def get_entry_history(request, entry_id):
     params = {"index": None, "count": None}
-    user = User.objects.get(id=request.user.id)
 
     for key in params.keys():
         try:
@@ -264,7 +262,7 @@ def get_entry_history(request, entry_id):
 
         raise TypeError("Type %s not serializable" % type(obj))
 
-    history = entry.get_value_history(user, count=params["count"], index=params["index"])
+    history = entry.get_value_history(request.user, count=params["count"], index=params["index"])
 
     return JsonResponse(
         {
@@ -278,7 +276,6 @@ def get_entry_info(request, entry_id):
     """
     This returns latest attribute values corresponding to specified entry-id
     """
-    user = User.objects.get(id=request.user.id)
     entry = Entry.objects.filter(id=entry_id).first()
     if not entry:
         return HttpResponse("There is no entry which is specified by entry_id", status=400)
@@ -297,7 +294,7 @@ def get_entry_info(request, entry_id):
                         **x.get_latest_value().get_value(with_metainfo=True)
                     )
                     for x in entry.attrs.all()
-                    if user.has_permission(x, ACLType.Readable)
+                    if request.user.has_permission(x, ACLType.Readable)
                 ],
                 key=lambda x: x["index"],
             ),
@@ -307,7 +304,6 @@ def get_entry_info(request, entry_id):
 
 @http_post([{"name": "entity_attr_id", "type": int}])
 def create_entry_attr(request, entry_id, recv_data):
-    user = User.objects.get(id=request.user.id)
     entry = Entry.objects.filter(id=entry_id).first()
     entity_attr = EntityAttr.objects.filter(id=recv_data["entity_attr_id"], is_active=True).first()
 
@@ -321,6 +317,6 @@ def create_entry_attr(request, entry_id, recv_data):
 
     attr = entry.attrs.filter(schema=entity_attr, is_active=True).first()
     if not attr:
-        attr = entry.add_attribute_from_base(entity_attr, user)
+        attr = entry.add_attribute_from_base(entity_attr, request.user)
 
     return JsonResponse({"id": attr.id})

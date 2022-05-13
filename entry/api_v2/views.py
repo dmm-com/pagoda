@@ -19,7 +19,7 @@ from user.models import User
 
 class EntryPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
-        user: User = User.objects.get(id=request.user.id)
+        user: User = request.user
         permisson = {
             "retrieve": ACLType.Readable,
             "update": ACLType.Writable,
@@ -49,7 +49,7 @@ class EntryAPI(viewsets.ModelViewSet):
         if not entry.is_active:
             raise ValidationError("specified entry has already been deleted")
 
-        user: User = User.objects.get(id=request.user.id)
+        user: User = request.user
 
         if custom_view.is_custom("before_delete_entry", entry.schema.name):
             custom_view.call_custom("before_delete_entry", entry.schema.name, user, entry)
@@ -81,7 +81,7 @@ class EntryAPI(viewsets.ModelViewSet):
         ).exists():
             raise ValidationError("specified entry has already exist other")
 
-        user: User = User.objects.get(id=request.user.id)
+        user: User = request.user
 
         if custom_view.is_custom("before_restore_entry", entry.schema.name):
             custom_view.call_custom("before_restore_entry", entry.schema.name, user, entry)

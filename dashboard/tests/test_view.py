@@ -9,13 +9,14 @@ from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
 from airone.lib.types import AttrTypeNamedObj, AttrTypeArrNamedObj
 from airone.lib.types import AttrTypeValue
 from django.urls import reverse
-from django.contrib.auth.models import User as DjangoUser
+from user.models import User
 from group.models import Group
 from job.models import Job, JobOperation
 from datetime import date
 
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute, AttributeValue
+from role.models import Role
 from entry import tasks as entry_tasks
 from dashboard import tasks as dashboard_tasks
 
@@ -120,7 +121,7 @@ class ViewTest(AironeViewTest):
 
     def test_show_dashboard_with_django_user(self):
         # create test user which is authenticated by Django, not AirOne
-        user = DjangoUser(username="django-user")
+        user = User(username="django-user")
         user.set_password("passwd")
         user.save()
 
@@ -555,7 +556,9 @@ class ViewTest(AironeViewTest):
         self.assertFalse(resp_entry["is_readble"])
         self.assertEqual(resp_entry["attrs"], {})
 
-        guest_user.permissions.add(entry.readable)
+        role = Role.objects.create(name="Role")
+        role.permissions.add(entry.readable)
+        role.users.add(guest_user)
 
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
@@ -587,7 +590,7 @@ class ViewTest(AironeViewTest):
         self.assertFalse(resp_attr["is_readble"])
         self.assertFalse("value" in resp_attr)
 
-        guest_user.permissions.add(attr.readable)
+        role.permissions.add(attr.readable)
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
             {

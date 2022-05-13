@@ -2,8 +2,8 @@ from unittest import mock
 
 from django.test import TestCase
 from django.contrib.auth import hashers
-from django.contrib.auth.models import User
 
+from user.models import User
 from user.forms import UsernameBasedPasswordResetForm
 
 
