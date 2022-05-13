@@ -5,10 +5,14 @@
 ### Added
 
 ### Changed
-* Changed user model of django
-  Contributed by @hinashi
 
 ### Fixed
+
+## v3.8.0
+
+### Changed
+* Changed user model of django
+  Contributed by @hinashi
 
 ## v3.7.0
 
