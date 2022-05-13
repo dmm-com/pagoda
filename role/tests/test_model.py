@@ -76,3 +76,11 @@ class ModelTest(RoleTestBase):
         self.assertTrue(self.role.is_permitted(entity, ACLType.Readable))
         self.assertTrue(self.role.is_permitted(entity, ACLType.Writable))
         self.assertFalse(self.role.is_permitted(entity, ACLType.Full))
+
+    def test_delete(self):
+        self.role.delete()
+
+        deleted_role = Role.objects.filter(id=self.role.id).first()
+        self.assertEqual(deleted_role, self.role)
+        self.assertFalse(deleted_role.is_active)
+        self.assertIn("test_role", deleted_role.name)
