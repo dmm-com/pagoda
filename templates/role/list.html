@@ -73,37 +73,6 @@
       {% endfor %}
     </tbody>
   </table>
-
-  <!--
-  <div class="row">
-    <div class="col">
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <td>名前</td>
-            <td>メンバー</td>
-            <td></td>
-          </tr>
-        </thead>
-        <tbody>
-          {% for role in roles %}
-          <tr class='role-{{ role.id }}'>
-            <td class='role_name'><a href="/role/edit/{{ role.id }}">{{ role.name }}</a></td>
-            <td class='role_member'>
-              <ul>
-                {% for member in role.members %}
-                <li>{{ member.username }}</li>
-                {% endfor %}
-              </ul>
-            </td>
-            <td class='role_delete'><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/role/do_delete/{{ role.id }}">del</button></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-  -->
 </div>
 {% endblock %}
 
