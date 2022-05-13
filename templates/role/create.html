@@ -80,6 +80,7 @@ const USERS = convert_dict_to_list({{ user_info|safe }});
 const GROUPS = convert_dict_to_list({{ group_info|safe }});
 const ADMIN_USERS = convert_dict_to_list({{ admin_user_info|safe }});
 const ADMIN_GROUPS = convert_dict_to_list({{ admin_group_info|safe }});
+const MAXIMUM_LIST_COUNT = 20;
 
 
 // update 'is_selected' fields when current users and groups are specified
@@ -221,12 +222,33 @@ function initialize_user_group_table(initializeCollapseId) {
     // clear table context at first
     $(`#${ collapseId } tbody`).empty();
 
-    userList.slice(0, 10).forEach((user) => {
-      $(`#${ collapseId } tbody`).append(generate_user_group_content(user));
+    let list_count = 0;
+    // show selected members at first
+    userList.filter(x => x.is_checked).forEach((user) => {
+      if (list_count < MAXIMUM_LIST_COUNT) {
+        $(`#${ collapseId } tbody`).append(generate_user_group_content(user));
+      }
+      list_count++;
+    });
+    groupList.filter(x => x.is_checked).forEach((group) => {
+      if (list_count < MAXIMUM_LIST_COUNT) {
+        $(`#${ collapseId } tbody`).append(generate_user_group_content(group));
+      }
+      list_count++;
     });
 
-    groupList.slice(0, 10).forEach((group) => {
-      $(`#${ collapseId } tbody`).append(generate_user_group_content(group));
+    // then, show un-selected members
+    userList.filter(x => ! x.is_checked).forEach((user) => {
+      if (list_count < MAXIMUM_LIST_COUNT) {
+        $(`#${ collapseId } tbody`).append(generate_user_group_content(user));
+      }
+      list_count++;
+    });
+    groupList.filter(x => ! x.is_checked).forEach((group) => {
+      if (list_count < MAXIMUM_LIST_COUNT) {
+        $(`#${ collapseId } tbody`).append(generate_user_group_content(group));
+      }
+      list_count++;
     });
   }
   if (initializeCollapseId === 'collapseUserGroups') {
