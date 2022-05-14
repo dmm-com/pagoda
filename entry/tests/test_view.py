@@ -4585,7 +4585,20 @@ class ViewTest(AironeViewTest):
         # check the import is success
         self.assertEqual(resp.status_code, 303)
         self.assertEqual(Entry.objects.filter(schema=self._entity).count(), 0)
-        self.assertEqual(Job.objects.last().text, "Now importing... (progress: [    1/    3])")
+        self.assertEqual(
+            Job.objects.last().text, "Now importing... (progress: [    1/    3] for hoge)"
+        )
+
+    @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
+    def test_importing_entries_on_multiple_entities(self):
+        self.admin_login()
+
+        fp = self.open_fixture_file("import_data04.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[self._entity.id]), {"file": fp})
+        fp.close()
+
+        # check the import is success
+        self.assertEqual(resp.status_code, 303)
 
     @patch(
         "entry.tasks.register_referrals.delay",
