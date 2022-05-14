@@ -97,8 +97,6 @@
               編集
             {% elif job.operation|divmod:100 == JOB.OPERATION.DELETE_ENTITY %}
               削除
-            {% elif job.operation|divmod:100 == JOB.OPERATION.IMPORT_SEARCH_RESULT %}
-              インポート
             {% endif %}
             </td>
 

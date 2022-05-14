@@ -25,9 +25,6 @@ def index(request):
     if request.GET.get("nolimit", None):
         limitation = None
 
-    import_operations = [
-        JobOperation.IMPORT_SEARCH_RESULT.value,
-    ]
     export_operations = [
         JobOperation.EXPORT_ENTRY.value,
         JobOperation.EXPORT_SEARCH_RESULT.value,
@@ -51,7 +48,6 @@ def index(request):
             for x in Job.objects.filter(query).order_by("-created_at")[:limitation]
             if (
                 x.operation in export_operations
-                or x.operation in import_operations
                 or (x.operation not in export_operations and x.target and x.target.is_active)
                 or (x.operation is JobOperation.DELETE_ENTITY.value and x.target)
                 or (x.operation is JobOperation.DELETE_ENTRY.value and x.target)

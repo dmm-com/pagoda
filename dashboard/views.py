@@ -336,33 +336,3 @@ def export_search_result(request, recv_data):
     return JsonResponse(
         {"result": "Succeed in registering export processing. " + "Please check Job list."}
     )
-
-
-@http_get
-def import_search_result(request):
-    return render(request, "import_search_result.html")
-
-
-@http_file_upload
-def do_import_search_result(request, context):
-    user = User.objects.get(id=request.user.id)
-
-    try:
-        data = yaml.load(context, Loader=yaml.FullLoader)
-    except yaml.parser.ParserError:
-        return HttpResponse("Couldn't parse uploaded file", status=400)
-    except ValueError as e:
-        return HttpResponse("Invalid value is found: %s" % e, status=400)
-    except yaml.scanner.ScannerError:
-        return HttpResponse("Couldn't scan uploaded file", status=400)
-    except Exception as e:
-        return HttpResponse("Unknown exception: %s" % e, status=500)
-
-    if not Entry.is_importable_data(data):
-        return HttpResponse("Uploaded file has invalid data structure to import", status=400)
-
-    # create job to import data to create or update entries and run it
-    job = Job.new_import_search_result(user, text="Preparing to import data", params=data)
-    job.run()
-
-    return HttpResponseSeeOther("/dashboard/")
