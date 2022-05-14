@@ -10,14 +10,12 @@ import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { GroupForm } from "components/group/GroupForm";
-import { getUsers } from "utils/AironeAPIClient";
 
 export const EditGroupPage: FC = () => {
   const { groupId } = useTypedParams<{ groupId: number }>();
 
   const users = useAsync(async () => {
-    const resp = await getUsers();
-    return await resp.json();
+    return await aironeApiClientV2.getUsers();
   });
   const group = useAsync(async () => {
     return groupId != undefined
