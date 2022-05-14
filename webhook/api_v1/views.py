@@ -4,7 +4,7 @@ import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 
 from airone.lib.acl import ACLType
-from airone.lib.http import get_object_with_check_permission
+from airone.lib.http import get_obj_with_check_perm
 from airone.lib.http import http_post
 
 from django.core.exceptions import ValidationError
@@ -12,7 +12,6 @@ from django.core.validators import URLValidator
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from entity.models import Entity
-from user.models import User
 
 from webhook.models import Webhook
 
@@ -28,8 +27,7 @@ urllib3.disable_warnings(InsecureRequestWarning)
     ]
 )
 def set_webhook(request, entity_id, recv_data):
-    user = User.objects.get(id=request.user.id)
-    entity, error = get_object_with_check_permission(user, Entity, entity_id, ACLType.Full)
+    entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Full)
     if error:
         return error
 

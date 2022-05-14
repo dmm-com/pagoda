@@ -4,12 +4,14 @@ import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+
 import { importUsersPath, newUserPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { CreateButton } from "components/common/CreateButton";
 import { Loading } from "components/common/Loading";
 import { UserList } from "components/user/UserList";
-import { downloadExportedUsers, getUsers } from "utils/AironeAPIClient";
+import { downloadExportedUsers } from "utils/AironeAPIClient";
 import { DjangoContext } from "utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -23,12 +25,10 @@ export const UserPage: FC = () => {
   const djangoContext = DjangoContext.getInstance();
 
   const users = useAsync(async () => {
-    const resp = await getUsers();
-    const data = await resp.json();
-
+    const _users = await aironeApiClientV2.getUsers();
     return djangoContext.user.isSuperuser
-      ? data
-      : data.filter((d) => d.id === djangoContext.user.id);
+      ? _users
+      : _users.filter((d) => d.id === djangoContext.user.id);
   });
 
   return (

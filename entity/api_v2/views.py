@@ -2,16 +2,20 @@ from distutils.util import strtobool
 from django.db.models import F
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import viewsets
-from rest_framework.pagination import LimitOffsetPagination
-
-from entity.api_v2.serializers import EntitySerializer
-from user.models import History
-from airone.lib.http import http_get
-
+from rest_framework import filters, viewsets
+from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from django.http import Http404
 from django.http.response import JsonResponse, HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 
+from airone.lib.acl import ACLType
+from airone.lib.http import http_get
+from entity.api_v2.serializers import EntityWithAttrSerializer
 from entity.models import Entity
+from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
+from entry.models import Entry
+from user.models import History
 
 
 @http_get
@@ -48,6 +52,22 @@ def history(request, entity_id):
     )
 
 
+class EntityPermission(BasePermission):
+    def has_permission(self, request, view):
+        permisson = {
+            "list": ACLType.Readable,
+            "create": ACLType.Writable,
+        }
+
+        entity = Entity.objects.filter(id=view.kwargs.get("entity_id"), is_active=True).first()
+
+        if entity and not request.user.has_permission(entity, permisson.get(view.action)):
+            return False
+
+        view.entity = entity
+        return True
+
+
 @extend_schema(
     parameters=[
         OpenApiParameter("query", OpenApiTypes.STR, OpenApiParameter.QUERY),
@@ -55,7 +75,7 @@ def history(request, entity_id):
     ],
 )
 class EntityAPI(viewsets.ReadOnlyModelViewSet):
-    serializer_class = EntitySerializer
+    serializer_class = EntityWithAttrSerializer
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
@@ -74,3 +94,29 @@ class EntityAPI(viewsets.ReadOnlyModelViewSet):
                 exclude_condition["status"] = F("status").bitor(Entity.STATUS_TOP_LEVEL)
 
         return Entity.objects.filter(**filter_condition).exclude(**exclude_condition).order_by("id")
+
+
+class EntityEntryAPI(viewsets.ModelViewSet):
+    queryset = Entry.objects.all()
+    pagination_class = PageNumberPagination
+    permission_classes = [IsAuthenticated & EntityPermission]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    filterset_fields = ["is_active"]
+    ordering_fields = ["name"]
+    search_fields = ["name"]
+
+    def get_serializer_class(self):
+        serializer = {
+            "create": EntryCreateSerializer,
+        }
+        return serializer.get(self.action, EntryBaseSerializer)
+
+    def get_queryset(self):
+        entity = Entity.objects.filter(id=self.kwargs.get("entity_id"), is_active=True).first()
+        if not entity:
+            raise Http404
+        return self.queryset.filter(schema=entity)
+
+    def create(self, request, entity_id):
+        request.data["schema"] = entity_id
+        return super().create(request)

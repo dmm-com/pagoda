@@ -56,17 +56,6 @@ export function getEntrySearch(query: string): Promise<Response> {
   return fetch(`/entry/api/v2/search?query=${query}`);
 }
 
-export function getEntries(
-  entityId: number,
-  isActive = true,
-  pageNumber = 1
-): Promise<Response> {
-  const isActiveParam = isActive ? "True" : "False";
-  return fetch(
-    `/entry/api/v2/entries/${entityId}?page=${pageNumber}&is_active=${isActiveParam}`
-  );
-}
-
 export function getAttrReferrals(attr_id) {
   return fetch(`/entry/api/v1/get_attr_referrals/${attr_id}/`);
 }
@@ -163,62 +152,6 @@ export function deleteEntity(entityId: number): Promise<Response> {
   });
 }
 
-// NOTE it calls non-API endpoint
-// FIXME implement internal API then call it
-export function createEntry(
-  entityId: number,
-  name: string,
-  attrs: object[]
-): Promise<Response> {
-  return fetch(`/entry/do_create/${entityId}/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({
-      entry_name: name,
-      attrs: attrs,
-    }),
-  });
-}
-
-export function updateEntry(entryId, name, attrs) {
-  return fetch(`/entry/do_edit/${entryId}`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({
-      entry_name: name,
-      attrs: attrs,
-    }),
-  });
-}
-
-// NOTE it calls non-API endpoint
-// FIXME implement internal API then call it
-export function deleteEntry(entryId: number): Promise<Response> {
-  return fetch(`/entry/do_delete/${entryId}/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({}),
-  });
-}
-
-// NOTE it calls non-API endpoint
-// FIXME implement internal API then call it
-export function restoreEntry(entryId: number): Promise<Response> {
-  return fetch(`/entry/do_restore/${entryId}/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({}),
-  });
-}
-
 export function copyEntry(entryId: number, entries: string): Promise<Response> {
   return fetch(`/entry/do_copy/${entryId}`, {
     method: "POST",
@@ -269,15 +202,6 @@ export function exportEntries(
       format: format,
     }),
   });
-}
-
-// FIXME implement internal API then call it
-export function getUser(userId: number): Promise<Response> {
-  return fetch(`/user/api/v2/users/${userId}`);
-}
-
-export function getUsers(): Promise<Response> {
-  return fetch("/user/api/v2/users");
 }
 
 // NOTE it calls non-API endpoint

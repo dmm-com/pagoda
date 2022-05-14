@@ -1,49 +1,23 @@
-from datetime import timedelta
+from rest_framework.generics import RetrieveAPIView, ListAPIView
+from rest_framework.permissions import IsAuthenticated, BasePermission
 
-from airone.lib.http import http_get
-
-from django.http.response import JsonResponse, HttpResponse
-
+from user.api_v2.serializers import UserListSerializer, UserRetrieveSerializer
 from user.models import User
 
 
-@http_get
-def get_user(request, user_id):
-    current_user = User.objects.get(id=request.user.id)
-    user = User.objects.get(id=user_id)
-    if not current_user.is_superuser and current_user != user:
-        return HttpResponse("You don't have permission to access", status=400)
-
-    return JsonResponse(
-        {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "is_superuser": user.is_superuser,
-            "date_joined": user.date_joined.isoformat(),
-            "token": str(user.token) if request.user.id == user.id else "",
-            "token_lifetime": user.token_lifetime,
-            "token_expire": (
-                user.token.created + timedelta(seconds=user.token_lifetime) if user.token else ""
-            ),
-        }
-    )
+class UserRetrievePermission(BasePermission):
+    def has_object_permission(self, request, view, obj: User):
+        current_user = request.user
+        return current_user.is_superuser or current_user == obj
 
 
-@http_get
-def list_users(request):
-    users = User.objects.filter(is_active=True)
+class UserRetrieveAPI(RetrieveAPIView):
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = UserRetrieveSerializer
+    permission_classes = [IsAuthenticated & UserRetrievePermission]
 
-    return JsonResponse(
-        [
-            {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "is_superuser": user.is_superuser,
-                "date_joined": user.date_joined.isoformat(),
-            }
-            for user in users
-        ],
-        safe=False,
-    )
+
+class UserListAPI(ListAPIView):
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = UserListSerializer
+    permission_classes = [IsAuthenticated]

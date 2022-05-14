@@ -16,48 +16,43 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface GetEntry
+ * @interface EntryRetrieveSchema
  */
-export interface GetEntry {
+export interface EntryRetrieveSchema {
   /**
    *
    * @type {number}
-   * @memberof GetEntry
+   * @memberof EntryRetrieveSchema
    */
-  readonly id: number;
+  id?: number;
   /**
    *
    * @type {string}
-   * @memberof GetEntry
+   * @memberof EntryRetrieveSchema
    */
-  name: string;
-  /**
-   *
-   * @type {{ [key: string]: any; }}
-   * @memberof GetEntry
-   */
-  readonly schema: { [key: string]: any };
+  name?: string;
 }
 
-export function GetEntryFromJSON(json: any): GetEntry {
-  return GetEntryFromJSONTyped(json, false);
+export function EntryRetrieveSchemaFromJSON(json: any): EntryRetrieveSchema {
+  return EntryRetrieveSchemaFromJSONTyped(json, false);
 }
 
-export function GetEntryFromJSONTyped(
+export function EntryRetrieveSchemaFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): GetEntry {
+): EntryRetrieveSchema {
   if (json === undefined || json === null) {
     return json;
   }
   return {
-    id: json["id"],
-    name: json["name"],
-    schema: json["schema"],
+    id: !exists(json, "id") ? undefined : json["id"],
+    name: !exists(json, "name") ? undefined : json["name"],
   };
 }
 
-export function GetEntryToJSON(value?: GetEntry | null): any {
+export function EntryRetrieveSchemaToJSON(
+  value?: EntryRetrieveSchema | null
+): any {
   if (value === undefined) {
     return undefined;
   }
@@ -65,6 +60,7 @@ export function GetEntryToJSON(value?: GetEntry | null): any {
     return null;
   }
   return {
+    id: value.id,
     name: value.name,
   };
 }

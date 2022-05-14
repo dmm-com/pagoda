@@ -1,7 +1,7 @@
 from importlib import import_module
 
 from django.db import models
-from django.contrib.auth.models import User as DjangoUser
+from django.contrib.auth.models import AbstractUser
 from airone.lib.acl import ACLTypeBase
 from group.models import Group
 
@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 from datetime import datetime
 
 
-class User(DjangoUser):
+class User(AbstractUser):
     MAXIMUM_TOKEN_LIFETIME = 10**8
     TOKEN_LIFETIME = 86400
 
@@ -22,6 +22,10 @@ class User(DjangoUser):
     authorized_type = models.IntegerField(default=0)
     token_lifetime = models.IntegerField(default=TOKEN_LIFETIME)
 
+    @property
+    def airone_groups(self):
+        return Group.objects.filter(id__in=[g.id for g in self.groups.all()], is_active=True)
+
     # to make a polymorphism between the Group model
     @property
     def permissions(self):
@@ -31,107 +35,10 @@ class User(DjangoUser):
     def token(self):
         return Token.objects.filter(user=self).first()
 
-    def _user_has_permission(self, target_obj, permission_level):
-        return any(
-            [
-                permission_level.id <= x.get_aclid()
-                for x in self.permissions.filter(codename__startswith=(str(target_obj.id) + "."))
-            ]
-        )
-
-    def _group_has_permission(self, target_obj, permission_level, groups):
-        return any(
-            sum(
-                [
-                    [
-                        permission_level.id <= x.get_aclid()
-                        for x in g.permissions.filter(
-                            codename__startswith=(str(target_obj.id) + ".")
-                        )
-                    ]
-                    for g in groups
-                ],
-                [],
-            )
-        )
-
-    def is_permitted(self, target_obj, permission_level, groups=[]):
-        if not groups:
-            groups = self.groups.all()
-
-        return self._user_has_permission(
-            target_obj, permission_level
-        ) or self._group_has_permission(target_obj, permission_level, groups)
-
-    def may_permitted(
-        self,
-        target_obj,
-        expected_permission,
-        is_public,
-        default_permission,
-        acl_settings,
-    ):
-        """
-        This checks specified permission settings have expected_permission for this user
-
-        Return value:
-            - True: user has expected_permission
-            - False: user doesn't have expected_permission
-        """
-        if self.is_superuser:
-            return True
-
-        if is_public:
-            return True
-
-        if expected_permission <= default_permission:
-            return True
-
-        groups = [g.id for g in self.groups.all()]
-        for acl_data in [x for x in acl_settings if x["value"]]:
-            if (
-                acl_data["member_type"] == "user"
-                and int(acl_data["member_id"]) == self.id
-                and int(acl_data["value"]) >= expected_permission
-            ):
-                return True
-
-            elif (
-                acl_data["member_type"] == "group"
-                and int(acl_data["member_id"]) in groups
-                and int(acl_data["value"]) >= expected_permission
-            ):
-                return True
-
-            # get rid of group id for checking permission
-            if int(acl_data["member_id"]) in groups:
-                groups.remove(int(acl_data["member_id"]))
-
-        # If input won't change current user's permission and user has permission originally,
-        # then this permits to change permissoin
-        args = [target_obj, expected_permission]
-        if not any(
-            [int(x["member_id"]) == self.id for x in acl_settings]
-        ) and self._user_has_permission(*args):
-            return True
-
-        if groups and self._group_has_permission(*(args + [Group.objects.filter(id__in=groups)])):
-            return True
-
-        return False
-
-    def has_permission(self, target_obj, permission_level, groups=[]):
-        # The case that parent data structure (Entity in Entry, or EntityAttr in Attribute)
-        # doesn't permit, access to the children's objects are also not permitted.
-        if (
-            isinstance(target_obj, import_module("entry.models").Entry)
-            or isinstance(target_obj, import_module("entry.models").Attribute)
-        ) and not self.has_permission(target_obj.schema, permission_level):
-            return False
-
+    def has_permission(self, target_obj, permission_level):
         # A bypass processing to rapidly return.
         # This condition is effective when the public objects are majority.
-        if target_obj.is_public or self.is_superuser:
+        if self.is_superuser:
             return True
 
         # This try-catch syntax is needed because the 'issubclass' may occur a
@@ -142,14 +49,32 @@ class User(DjangoUser):
         except TypeError:
             return False
 
+        # doesn't permit, access to the children's objects are also not permitted.
+        if (
+            isinstance(target_obj, import_module("entry.models").Entry)
+            or isinstance(target_obj, import_module("entry.models").Attribute)
+        ) and not self.has_permission(target_obj.schema, permission_level):
+            return False
+
+        # This check processing must be set after checking superior data structure's check
+        if target_obj.is_public:
+            return True
+
         # Checks that the default permission permits to access, or not
         if permission_level <= target_obj.default_permission:
             return True
 
-        return self.is_permitted(target_obj, permission_level, groups)
+        # This checks Roles that this user and groups, which this user belongs to,
+        # have permission of specified permission_level
+        belonged_roles = set(
+            list(self.role.filter(is_active=True))
+            + sum([list(g.role.filter(is_active=True)) for g in self.airone_groups], [])
+        )
+        for role in belonged_roles:
+            if role.is_permitted(target_obj, permission_level):
+                return True
 
-    def get_acls(self, aclobj):
-        return self.permissions.filter(codename__regex=(r"^%d\." % aclobj.id))
+        return False
 
     def delete(self):
         """

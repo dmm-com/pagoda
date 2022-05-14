@@ -363,6 +363,10 @@ If you have any change on API V2, you need to run this command before you build:
 ```
 $ npm run generate:client
 ```
+```
+(For Customview)
+$ npm run generate:custom_client
+```
 
 You can also auto-format .js files with [prettier](https://prettier.io/):
 

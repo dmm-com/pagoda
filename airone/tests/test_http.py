@@ -1,6 +1,6 @@
 import unittest
 
-from airone.lib.http import http_get, get_object_with_check_permission
+from airone.lib.http import http_get, get_obj_with_check_perm
 from airone.lib.test import AironeViewTest
 from airone.lib.acl import ACLType
 from entry.models import Entry
@@ -53,29 +53,25 @@ class ViewTest(AironeViewTest):
         self.entry = self.add_entry(self.user, "Entry", self.entity, {"attr": "hoge"})
         self.attr = self.entry.attrs.get(schema=self.entityattr)
 
-    def test_get_object_with_check_permission(self):
+    def test_get_obj_with_check_perm(self):
         for obj in [self.entity, self.entityattr, self.entry, self.attr]:
-            target_obj, error = get_object_with_check_permission(
+            target_obj, error = get_obj_with_check_perm(
                 self.user, obj.__class__, obj.id, ACLType.Full
             )
             self.assertEqual(target_obj, obj)
             self.assertIsNone(error)
 
-    def test_get_object_with_check_permission_with_invalid_param(self):
-        target_obj, error = get_object_with_check_permission(
-            self.user, Entry, self.entity.id, ACLType.Full
-        )
+    def test_get_obj_with_check_perm_with_invalid_param(self):
+        target_obj, error = get_obj_with_check_perm(self.user, Entry, self.entity.id, ACLType.Full)
         self.assertIsNone(target_obj)
         self.assertEqual(error.content, b"Failed to get entity of specified id")
         self.assertEqual(error.status_code, 400)
 
-    def test_get_object_with_check_permission_without_permission(self):
+    def test_get_obj_with_check_perm_without_permission(self):
         self.entry.is_public = False
         self.entry.save()
 
-        target_obj, error = get_object_with_check_permission(
-            self.user, Entry, self.entry.id, ACLType.Full
-        )
+        target_obj, error = get_obj_with_check_perm(self.user, Entry, self.entry.id, ACLType.Full)
         self.assertIsNone(target_obj)
         self.assertEqual(error.content, b"You don't have permission to access this object")
         self.assertEqual(error.status_code, 400)
