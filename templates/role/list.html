@@ -34,19 +34,23 @@
     <tbody>
       {% for role in roles %}
       <tr>
-        <td>
+        <td class='select'>
           <input class="role_select" type="checkbox"
                  role_id="{{ role.id }}" role_name="{{ role.name }}" />
         </td>
 
         <!-- Role name -->
-        <td><a href='/role/edit/{{ role.id }}'>{{ role.name }}</a></td>
+        <td class='name'>
+          <a href='/role/edit/{{ role.id }}'>{{ role.name }}</a>
+        </td>
 
         <!-- Role description -->
-        <td><span data-toggle="tooltip" data-placement="top" title="{{ role.description }}">{{ role.description|truncatechars:15 }}</span></td>
+        <td class='desc'>
+          <span data-toggle="tooltip" data-placement="top" title="{{ role.description }}">{{ role.description|truncatechars:15 }}</span>
+        </td>
 
         <!-- Registered Users and Groups -->
-        <td>
+        <td class='members'>
           <ul class="list-group list-group-flush">
             {% for user in role.users %}
             <li>(user) {{ user.username }}</li>
@@ -58,7 +62,7 @@
         </td>
 
         <!-- Administrative Users and Groups -->
-        <td>
+        <td class='admin_members'>
           <ul class="list-group list-group-flush">
             {% for user in role.admin_users %}
             <li>(user) {{ user.username }}</li>
