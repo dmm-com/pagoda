@@ -9,6 +9,8 @@
   Contributed by @hinashi
 
 ### Fixed
+* Fixed model and UI problems that are related with Role
+  Contributed by @userlocalhost
 
 ## v3.7.0
 
