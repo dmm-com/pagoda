@@ -76,6 +76,40 @@ class User(AbstractUser):
 
         return False
 
+    def is_permitted_to_change(
+        self, target_obj, expected_permission, is_public, default_permission, acl_settings
+    ):
+        """
+        This checks specified permission settings have expected_permission for this user.
+
+        * Params:
+            - acl_settings[dict]: it must have following members
+                - role [Role]: Role instance to set ACL
+                - value [ACLType]: An ACLType value to set
+
+        * Return value:
+            - True: user has expected_permission
+            - False: user doesn't have expected_permission
+
+        * Use-case:
+            This method is called only when ACL configuration is changed of it and decide
+            whether current user has "expected" permission to the target_obj.
+        """
+        # These are obvious cases when current user has permission to operate target_obj
+        if self.is_superuser or is_public or expected_permission <= default_permission:
+            return True
+
+        for acl_info in acl_settings:
+            role = acl_info.get("role")
+            if (
+                role
+                and role.is_belonged_to(self)
+                and acl_info.get("value", 0) >= expected_permission
+            ):
+                return True
+
+        return False
+
     def delete(self):
         """
         Override Model.delete method of Django

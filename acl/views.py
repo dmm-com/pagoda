@@ -93,16 +93,35 @@ def set(request, recv_data):
         id=recv_data["object_id"]
     )
 
+    # This checks that user currently has permission to change it
     if not request.user.has_permission(acl_obj, ACLType.Full):
         return HttpResponse(
             "User(%s) doesn't have permission to change this ACL" % request.user.username,
-            status=400
+            status=400,
         )
 
-    acl_obj.is_public = False
-    if "is_public" in recv_data:
-        acl_obj.is_public = True
+    # This checks that user will have permission as user specifies by this change
+    # (NOTE: this processing is completely different from above permissoin check)
+    if not request.user.is_permitted_to_change(
+        **{
+            "target_obj": acl_obj,
+            "expected_permission": ACLType.Full,
+            "is_public": recv_data.get("is_public", False),
+            "default_permission": int(recv_data["default_permission"]),
+            "acl_settings": [
+                {
+                    "role": Role.objects.filter(id=x["role_id"], is_active=True).first(),
+                    "value": int(x["value"]),
+                }
+                for x in recv_data["acl"]
+            ],
+        }
+    ):
+        return HttpResponse(
+            "Inadmissible setting. By this change you will never change this ACL", status=400
+        )
 
+    acl_obj.is_public = bool(recv_data.get("is_public", False))
     acl_obj.default_permission = int(recv_data["default_permission"])
 
     # update the Public/Private flag parameter
@@ -112,8 +131,10 @@ def set(request, recv_data):
         role = Role.objects.get(id=acl_data["role_id"])
         acl_type = [x for x in ACLType.all() if x == int(acl_data["value"])][0]
 
-        # update permissios for the target ACLBased object
-        _set_permission(role, acl_obj, acl_type)
+        # Role can be cahnged by user who belonged to administrative members
+        if role.is_editable(request.user):
+            # update permissios for the target ACLBased object
+            _set_permission(role, acl_obj, acl_type)
 
     redirect_url = "/"
     if isinstance(acl_obj, Entity):

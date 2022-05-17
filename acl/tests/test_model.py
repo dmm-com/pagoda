@@ -197,3 +197,112 @@ class ModelTest(TestCase):
 
         self.assertTrue(superuser.has_permission(aclobj, ACLType.Full))
         self.assertFalse(guestuser.has_permission(aclobj, ACLType.Full))
+
+    def test_is_permitted_to_change(self):
+        admin_user = User.objects.create(username="admin", is_superuser=True)
+        non_admin_user = User.objects.create(username="user", is_superuser=False)
+        aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)
+
+        # add and register group to non_admin_user
+        group = Group.objects.create(name="group", is_active=True)
+        self.role.groups.add(group)
+        non_admin_user.groups.add(group)
+
+        acl_bases = {
+            "acl1": {"is_public": True, "default_permission": ACLType.Nothing.id},
+            "acl2": {"is_public": False, "default_permission": ACLType.Full.id},
+            "acl3": {"is_public": False, "default_permission": ACLType.Readable.id},
+            "acl4": {"is_public": False, "default_permission": ACLType.Nothing.id},
+        }
+
+        acl = {
+            "readable": {
+                "acl_settings": [
+                    {
+                        "role": self.role,
+                        "value": ACLType.Readable.id,
+                    }
+                ]
+            },
+            "full": {
+                "acl_settings": [
+                    {
+                        "role": self.role,
+                        "value": ACLType.Full.id,
+                    }
+                ]
+            },
+            "nothing": {"acl_settings": []},
+        }
+
+        # checks that admin user can access any case
+        for info in acl_bases.values():
+            self.assertTrue(
+                admin_user.is_permitted_to_change(aclobj, ACLType.Full, acl_settings=[], **info)
+            )
+
+        # checks permitted cases
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Readable, acl_settings=[], **acl_bases["acl1"]
+            )
+        )
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Readable, acl_settings=[], **acl_bases["acl2"]
+            )
+        )
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Readable, acl_settings=[], **acl_bases["acl3"]
+            )
+        )
+
+        param = {}
+        param["is_public"] = acl_bases["acl4"]["is_public"]
+        param["default_permission"] = acl_bases["acl4"]["default_permission"]
+
+        # checks permitted cases with indivisual permissions
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Readable, **dict(acl["readable"], **acl_bases["acl4"])
+            )
+        )
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Full, **dict(acl["full"], **acl_bases["acl4"])
+            )
+        )
+
+        # checks unpermitted cases
+        self.assertFalse(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Full, acl_settings=[], **acl_bases["acl3"]
+            )
+        )
+        self.assertFalse(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Full, acl_settings=[], **acl_bases["acl4"]
+            )
+        )
+
+        # checks unpermitted cases with indivisual permissions
+        self.assertFalse(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Full, **dict(acl["readable"], **acl_bases["acl4"])
+            )
+        )
+
+        # It's unpermitted to change ACL that current user won't change it.
+        # (Whatever role permission is)
+        self.assertFalse(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Full, **dict(acl["nothing"], **acl_bases["acl4"])
+            )
+        )
+        self.role.permissions.add(aclobj.full)
+        self.assertFalse(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Full, **dict(acl["nothing"], **acl_bases["acl4"])
+            )
+        )
