@@ -198,7 +198,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(self._role.permissions.count(), 0)
 
     def test_post_acl_set_without_object_id(self):
-        user = self.admin_login()
+        self.admin_login()
         params = {
             "acl": [
                 {"role_id": str(self._role.id), "value": str(ACLType.Writable)},
@@ -228,7 +228,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
 
     def test_post_acl_set_with_invalid_acl(self):
-        user = self.admin_login()
+        self.admin_login()
         params = {
             "object_id": str(self._aclobj.id),
             "acl": [
