@@ -112,7 +112,7 @@ class ACLSerializer(serializers.ModelSerializer):
                 return True
 
             admin_roles = Role.objects.filter(
-                permissions__codename="%s.%s" % (self.instance.id, ACLType.Full.id)
+                permissions__codename="%s.%s" % (self.instance.id, ACLType.Full.id)  # type: ignore
             )
             if len([r for r in admin_roles if _tobe_admin(r)]) == 0:
                 raise ValidationError(
