@@ -33,8 +33,8 @@
     </div>
 
     <div class="col">
-      <div class="float-right">
-        {{ page_index_start|add:"1" }} - {{ page_index_end }} / {{ total_count }}
+      <div id='search_result' class="float-right">
+        <a>{{ page_index_start|add:"1" }} - {{ page_index_end }} / {{ total_count }}</a>
 
         {% if page_index_start == 0 or entity_count == total_count %}
           <button type="button" class="btn btn-sm btn-primary" disabled>＜</button>
@@ -67,8 +67,8 @@
         </thead>
         <tbody>
           {% for entity in entities %}
-          <tr>
-            <td class='entity-{{ entity.id }}'>
+          <tr class='entity-{{ entity.id }}'>
+            <td class='entity_name'>
               {% if entity.status|bitwise_and:STATUS_ENTITY.CREATING %}
                 {{ entity.name }} [作成中]
               {% elif entity.status|bitwise_and:STATUS_ENTITY.EDITING %}
@@ -77,8 +77,8 @@
                 <a href='/entry/{{ entity.id }}/'>{{ entity.name }}</a>
               {% endif %}
             </td>
-            <td>{{ entity.note }}</td>
-            <td>
+            <td class='entity_note'>{{ entity.note }}</td>
+            <td class='entity_button'>
               <a href="/entity/edit/{{ entity.id }}"><button type='button' class='btn btn-info btn-sm'>エンティティ編集</button></a>
               <a href='/entity/history/{{ entity.id }}'><button type='button' class='btn btn-info btn-sm'>変更履歴</button></a>
               <a href='/acl/{{ entity.id }}/'><button type='button' class='btn btn-info btn-sm'>ACL</button></a>

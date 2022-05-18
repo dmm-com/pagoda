@@ -6,11 +6,11 @@ from webhook.models import Webhook
 
 class EntityAttr(ACLBase):
     # This parameter is needed to make a relationship to the corresponding Entity at importing
-    parent_entity = models.ForeignKey('Entity', on_delete=models.SET_NULL, null=True)
+    parent_entity = models.ForeignKey("Entity", on_delete=models.SET_NULL, null=True)
 
     type = models.IntegerField(default=0)
     is_mandatory = models.BooleanField(default=False)
-    referral = models.ManyToManyField(ACLBase, default=[], related_name='referred_attr_base')
+    referral = models.ManyToManyField(ACLBase, default=[], related_name="referred_attr_base")
     index = models.IntegerField(default=0)
 
     # When this parameters set, all entries which are related to the parent_entity will be analyzed
@@ -27,21 +27,18 @@ class EntityAttr(ACLBase):
 
     def is_updated(self, name, is_mandatory, is_delete_in_chain, index, refs):
         # checks each parameters that are different between current object parameters
-        if (self.name != name or
-                self.is_mandatory != is_mandatory or
-                self.is_delete_in_chain != is_delete_in_chain or
-                self.index != int(index) or
-                sorted([x.id for x in self.referral.all()]) != sorted(refs)):
+        if (
+            self.name != name
+            or self.is_mandatory != is_mandatory
+            or self.is_delete_in_chain != is_delete_in_chain
+            or self.index != int(index)
+            or sorted([x.id for x in self.referral.all()]) != sorted(refs)
+        ):
 
             return True
 
         # This means that all specified parameters are same with current object's ones.
         return False
-
-    def unset_latest_flag(self):
-        from entry.models import AttributeValue
-        AttributeValue.objects.filter(parent_attr__schema=self,
-                                      is_latest=True).update(is_latest=False)
 
 
 class Entity(ACLBase):
@@ -53,7 +50,7 @@ class Entity(ACLBase):
     attrs = models.ManyToManyField(EntityAttr)
 
     # This indicates informatoin where to send request for notification
-    webhooks = models.ManyToManyField(Webhook, default=[], related_name='registered_entity')
+    webhooks = models.ManyToManyField(Webhook, default=[], related_name="registered_entity")
 
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)

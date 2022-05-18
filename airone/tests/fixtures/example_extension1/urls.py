@@ -3,9 +3,9 @@ from django.http import HttpResponse
 
 
 def test_view_handler(request):
-    return HttpResponse('test extension response')
+    return HttpResponse("test extension response")
 
 
 urlpatterns = [
-    url(r'^$', test_view_handler, name='test'),
+    url(r"^$", test_view_handler, name="test"),
 ]

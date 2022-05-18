@@ -8,7 +8,7 @@ from airone.lib.http import render
 @csrf_protect
 def logout(request):
     if request.method != "POST":
-        return HttpResponse('Invalid HTTP method is specified', status=400)
+        return HttpResponse("Invalid HTTP method is specified", status=400)
 
     django_logout(request)
-    return render(request, 'registration/logged_out.html')
+    return render(request, "registration/logged_out.html")

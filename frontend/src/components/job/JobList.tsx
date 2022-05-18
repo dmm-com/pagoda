@@ -1,0 +1,180 @@
+import {
+  Button,
+  List,
+  ListItem,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Theme,
+  Typography,
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
+import React, { FC } from "react";
+import { useHistory } from "react-router-dom";
+
+import { cancelJob, rerunJob } from "../../utils/AironeAPIClient";
+import { Confirmable } from "../common/Confirmable";
+
+const JOB_STATUS = {
+  PREPARING: 1,
+  DONE: 2,
+  ERROR: 3,
+  TIMEOUT: 4,
+  PROCESSING: 5,
+  CANCELED: 6,
+};
+
+interface Job {
+  id: number;
+  operation: string;
+  status: number;
+  passed_time: string;
+  created_at: string;
+  note: string;
+  target?: {
+    name: string;
+  };
+}
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  button: {
+    margin: theme.spacing(1),
+  },
+  entityName: {
+    margin: theme.spacing(1),
+  },
+}));
+
+interface Props {
+  jobs: Job[];
+}
+
+export const JobList: FC<Props> = ({ jobs }) => {
+  const classes = useStyles();
+  const history = useHistory();
+
+  const handleRerun = async (jobId: number) => {
+    await rerunJob(jobId);
+    history.go(0);
+  };
+
+  const handleCancel = async (jobId: number) => {
+    await cancelJob(jobId);
+    history.go(0);
+  };
+
+  return (
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>
+              <Typography>対象エントリ</Typography>
+            </TableCell>
+            <TableCell>
+              <Typography>操作</Typography>
+            </TableCell>
+            <TableCell>
+              <Typography>状況</Typography>
+            </TableCell>
+            <TableCell>
+              <Typography>実行時間</Typography>
+            </TableCell>
+            <TableCell>
+              <Typography>実行日時</Typography>
+            </TableCell>
+            <TableCell align="right">
+              <Typography>備考</Typography>
+            </TableCell>
+            <TableCell align="right" />
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {jobs.map((job) => (
+            <TableRow key={job.id}>
+              <TableCell>
+                <Typography>{job.target && job.target.name}</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography>{job.operation}</Typography>
+              </TableCell>
+              <TableCell>
+                {(() => {
+                  switch (job.status) {
+                    case JOB_STATUS.PREPARING:
+                      return <Typography>処理前</Typography>;
+                    case JOB_STATUS.DONE:
+                      return <Typography>完了</Typography>;
+                    case JOB_STATUS.ERROR:
+                      return <Typography>エラー</Typography>;
+                    case JOB_STATUS.TIMEOUT:
+                      return <Typography>完了</Typography>;
+                    case JOB_STATUS.PROCESSING:
+                      return <Typography>処理中</Typography>;
+                    case JOB_STATUS.CANCELED:
+                      return <Typography>キャンセル</Typography>;
+                    default:
+                      return <Typography>不明</Typography>;
+                  }
+                })()}
+              </TableCell>
+              <TableCell>
+                <Typography>{job.passed_time} s</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography>{job.created_at}</Typography>
+              </TableCell>
+              <TableCell align="right">
+                <Typography>{job.note}</Typography>
+              </TableCell>
+              <TableCell align="right">
+                <List>
+                  {![
+                    JOB_STATUS.DONE,
+                    JOB_STATUS.PROCESSING,
+                    JOB_STATUS.CANCELED,
+                  ].includes(job.status) && (
+                    <ListItem>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        className={classes.button}
+                        onClick={() => handleRerun(job.id)}
+                      >
+                        Re-run
+                      </Button>
+                    </ListItem>
+                  )}
+                  {![JOB_STATUS.DONE, JOB_STATUS.CANCELED].includes(
+                    job.status
+                  ) && (
+                    <ListItem>
+                      <Confirmable
+                        componentGenerator={(handleOpen) => (
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            className={classes.button}
+                            onClick={handleOpen}
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                        dialogTitle="本当にキャンセルしますか？"
+                        onClickYes={() => handleCancel(job.id)}
+                      />
+                    </ListItem>
+                  )}
+                </List>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};

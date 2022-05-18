@@ -5,7 +5,7 @@
     {% if attr.is_mandatory %}<strong>(*)</strong>{% endif %}{{ attr.name }}
   </td>
   <td id='{{ attr.name }}'>
-  {% if not attr.permission %}
+  {% if not attr.is_readble %}
     <span>Permission denied.</span>  
   {% else %}
     {% if attr.type|bitwise_and:attr_type_value.array %}

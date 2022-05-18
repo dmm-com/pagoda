@@ -6,6 +6,7 @@ class Webhook(models.Model):
     """
     This data-structure describes the feature to notify events (e.g. changing Entry)
     """
+
     # This describes what this webhook is for user
     label = models.TextField()
 
@@ -29,10 +30,10 @@ class Webhook(models.Model):
             webhook_headers = []
 
         return {
-            'id': self.id,
-            'label': self.label,
-            'url': self.url,
-            'is_enabled': self.is_enabled,
-            'is_verified': self.is_verified,
-            'headers': webhook_headers,
+            "id": self.id,
+            "label": self.label,
+            "url": self.url,
+            "is_enabled": self.is_enabled,
+            "is_verified": self.is_verified,
+            "headers": webhook_headers,
         }

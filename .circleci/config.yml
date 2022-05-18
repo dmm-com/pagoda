@@ -1,15 +1,15 @@
 version: 2
 jobs:
-  python36:
+  python38:
     docker:
-      - image: circleci/python:3.6
-      - image: rabbitmq:3.7
-      - image: memcached:1.5
-      - image: docker.elastic.co/elasticsearch/elasticsearch:6.2.3
+      - image: circleci/python:3.8
+      - image: rabbitmq:3.8.19-management
+      - image: bitnami/memcached:1.6.9
+      - image: docker.elastic.co/elasticsearch/elasticsearch:6.8.16
         environment:
           discovery.type: single-node
           ES_JAVA_OPTS: -Xms512m -Xmx512m
-      - image: mysql:5.7
+      - image: mysql:5.7.34
         environment:
           MYSQL_USER: airone
           MYSQL_PASSWORD: password
@@ -17,16 +17,16 @@ jobs:
           MYSQL_DATABASE: airone
         command: [--character-set-server=utf8, --collation-server=utf8_general_ci, --default-storage-engine=innodb]
     environment:
-      TOXENV: "py36"
+      TOXENV: "py38"
     steps:
       - checkout
       - run:
           name: Wait for ElasticSearch
           command: dockerize -wait tcp://127.0.0.1:9200 -timeout 120s
       - restore_cache:
-          key: py36-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}
+          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}
       - run:
-          name: Install tox coverage
+          name: Install tox tox-pyenv coverage
           command: |
             python3 -m venv venv
             . venv/bin/activate
@@ -51,71 +51,15 @@ jobs:
             . venv/bin/activate
             tox
       - save_cache:
-          key: py36-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}
+          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}
           paths:
             - venv
-            - .tox/py36
+            - .tox/py38
       - run:
           name: Coverage
           command: |
             . venv/bin/activate
             codecov
-
-  python38:
-    docker:
-      - image: circleci/python:3.8
-      - image: rabbitmq:3.7
-      - image: memcached:1.5
-      - image: docker.elastic.co/elasticsearch/elasticsearch:6.2.3
-        environment:
-          discovery.type: single-node
-          ES_JAVA_OPTS: -Xms512m -Xmx512m
-      - image: mysql:5.7
-        environment:
-          MYSQL_USER: airone
-          MYSQL_PASSWORD: password
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: airone
-        command: [--character-set-server=utf8, --collation-server=utf8_general_ci, --default-storage-engine=innodb]
-    environment:
-      TOXENV: "py38"
-    steps:
-      - checkout
-      - run:
-          name: Wait for ElasticSearch
-          command: dockerize -wait tcp://127.0.0.1:9200 -timeout 120s
-      - restore_cache:
-          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}
-      - run:
-          name: Install tox tox-pyenv coverage
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install --upgrade pip
-            pip install tox coverage
-      - run:
-          name: Wait for MySQL is available
-          command: dockerize -wait tcp://127.0.0.1:3306 -timeout 120s
-      - run:
-          name: Grant permission for airone user to be able to manipulate multiple databases (airone and test_airone)
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y default-mysql-client
-            mysql -uroot -h127.0.0.1 -ppassword -e "GRANT ALL ON *.* to airone@'%' IDENTIFIED BY 'password'"
-      - run:
-          name: Install additional dependencies
-          command: |
-            sudo apt-get install -y libldap2-dev libsasl2-dev
-      - run:
-          name: Testing
-          command: |
-            . venv/bin/activate
-            tox
-      - save_cache:
-          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}
-          paths:
-            - venv
-            - .tox/py38
 
   pep8:
     docker:
@@ -158,6 +102,7 @@ jobs:
       - run:
           name: Install additional dependencies
           command: |
+            sudo apt-get update
             sudo apt-get install -y libldap2-dev libsasl2-dev
       - run:
           name: mypy
@@ -195,13 +140,12 @@ jobs:
       - run:
           name: test
           command: |
-            npm run test
+            npm run test:ci
 
 workflows:
   version: 2
   build_and_test:
     jobs:
-      - python36
       - python38
       - pep8
       - frontend

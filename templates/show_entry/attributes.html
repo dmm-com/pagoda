@@ -3,9 +3,9 @@
     <table class="table table-bordered airone-entry-table-show table-striped">
       {% for attr in attributes %}
       <tr id='{{ attr.name|cut:" " }}'>
-        <td class='attr'>{{ attr.name }}</td>
-        <td>
-        {% if not attr.permission %}
+        <td class='attr_name'>{{ attr.name }}</td>
+        <td class='attr_value'>
+        {% if not attr.is_readble %}
           <span>Permission denied.</span>
         {% elif attr.type == attr_type.string %}
           <span class='url_conv'>{{ attr.last_value }}</span>

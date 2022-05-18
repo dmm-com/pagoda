@@ -4,7 +4,7 @@ from django.conf import settings
 from airone.lib.log import Logger
 from user.models import User
 
-CONF_LDAP = settings.AUTH_CONFIG['LDAP']
+CONF_LDAP = settings.AUTH_CONFIG["LDAP"]
 
 
 class LDAPBackend(object):
@@ -12,18 +12,18 @@ class LDAPBackend(object):
     def authenticate(self, request, username=None, password=None):
 
         # check authentication with local database at first.
-        user = User.objects.filter(username=username,
-                                   authenticate_type=User.AUTH_TYPE_LOCAL,
-                                   is_active=True).first()
+        user = User.objects.filter(
+            username=username, authenticate_type=User.AUTH_TYPE_LOCAL, is_active=True
+        ).first()
         if user and user.check_password(password):
             return user
         elif user:
             # This is necessary not to send a request to check authentication even though
             # the specified user is in the local database.
-            Logger.info('Failed to authenticate user(%s) in local' % username)
+            Logger.info("Failed to authenticate user(%s) in local" % username)
             return None
 
-        if not hasattr(settings, 'AUTH_CONFIG'):
+        if not hasattr(settings, "AUTH_CONFIG"):
             Logger.warn('"AUTH_CONFIG" parameter is necessary in airone/settings.py')
             return None
 
@@ -32,12 +32,14 @@ class LDAPBackend(object):
             # This creates LDAP-authenticated user if necessary. Those of them who
             # authenticated by LDAP are distinguished by 'authenticate_type' parameter
             # of User object.
-            (user, _) = User.objects.get_or_create(**{
-                'username': username,
-                'authenticate_type': User.AUTH_TYPE_LDAP,
-            })
+            (user, _) = User.objects.get_or_create(
+                **{
+                    "username": username,
+                    "authenticate_type": User.AUTH_TYPE_LDAP,
+                }
+            )
         else:
-            Logger.info('Failed to authenticate user(%s) in LDAP' % username)
+            Logger.info("Failed to authenticate user(%s) in LDAP" % username)
 
         return user
 
@@ -48,9 +50,9 @@ class LDAPBackend(object):
     @classmethod
     def is_authenticated(kls, username, password):
         try:
-            o = ldap.initialize(CONF_LDAP['SERVER_ADDRESS'])
+            o = ldap.initialize(CONF_LDAP["SERVER_ADDRESS"])
             o.protocol_version = ldap.VERSION3
-            o.simple_bind_s(who=CONF_LDAP['USER_FILTER'].format(username=username), cred=password)
+            o.simple_bind_s(who=CONF_LDAP["USER_FILTER"].format(username=username), cred=password)
             o.unbind_s()
             return True
         except ldap.INVALID_CREDENTIALS:

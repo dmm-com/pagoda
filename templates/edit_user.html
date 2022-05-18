@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Edit User{% endblock %}
+{% block title %}{{ user_name }} - Edit User{% endblock %}
 
 {% block nav_sub_header %}
 <div class="conatiner-fluid">
@@ -188,6 +188,11 @@ $("#refresh_token").on('click', function() {
  function event_change_auth_to_ldap(e) {
   // clear warning message which is shown previously
   $('#modal_input_warning').text('');
+
+  if ($('#ldap_user_password').val() === '') {
+    $('#modal_input_warning').text('Please enter password.');
+    return
+  }
 
   $.ajax({
     type: 'POST',

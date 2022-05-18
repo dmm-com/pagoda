@@ -82,19 +82,36 @@ $('.narrow_down_option').keyup(function() {
 });
 
 $('#do_search').on('click', function() {
-  // Build URL encoded JSON stringified attrinfo
-  const attrinfo = $('#selected_attr').children().map(function() {
-    return {'name': this.value};
-  }).get();
-  const encoded_attrinfo = encodeURIComponent(JSON.stringify(attrinfo));
+  var params = [];
 
   var entities = $('#selected_entity').children().map(function() {
     return 'entity[]=' + encodeURIComponent(this.value);
   }).get().join('&');
 
   var is_all_entities = $('#select_all_entity').is(':checked');
+  if (is_all_entities){
+    params.push('is_all_entities=true');
+  } else {
+    $('#selected_entity').children().map(function() {
+      params.push('entity[]=' + encodeURIComponent(this.value));
+    });
+  }
 
-  location.href = `/dashboard/advanced_search_result?has_referral=${ $('#add_referral').is(':checked') }&is_all_entities=${ is_all_entities }&attrinfo=${ encoded_attrinfo }&${ entities }`;
+  params.push('entry_name=');
+
+  // Build URL encoded JSON stringified attrinfo
+  const attrinfo = $('#selected_attr').children().map(function() {
+    return {'name': this.value};
+  }).get();
+  params.push('attrinfo=' + encodeURIComponent(JSON.stringify(attrinfo)))
+
+  var has_referral = $('#add_referral').is(':checked')
+  if (has_referral){
+    params.push('has_referral=true');
+    params.push('referral_name=');
+  }
+
+  location.href = `/dashboard/advanced_search_result?${ params.join('&') }`;
 });
 
 $('#select_all_entity').on('click', function() {

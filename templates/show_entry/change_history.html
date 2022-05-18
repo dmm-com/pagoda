@@ -2,7 +2,7 @@
   <div class="col">
     <table class="table table-borderless airone-entry-table-history" id='attribute-history'>
       {% for history in value_history %}
-      <tr class='attr_info'>
+      <tr class='attr_info' attr_id='{{ history.attr_id }}'>
         <td class='attr_name'>{{ history.attr_name }}</td>
         <td>
           {% if history.prev %}

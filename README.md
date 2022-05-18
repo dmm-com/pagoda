@@ -34,6 +34,8 @@ user@hostname:~$ cd airone
 user@hostname:~/airone$ virtualenv -p python3 virtualenv
 user@hostname:~/airone$ source virtualenv/bin/activate
 (virtualenv) user@hostname:~/airone$ sudo pip install -r requirements.txt
+# or, during development 
+(virtualenv) user@hostname:~/airone$ sudo pip install -r requirements-dev.txt
 ```
 
 ### Setting-up MySQL configuration
@@ -335,6 +337,13 @@ $ source .venv/bin/activate
 $ python manage.py runserver
 ```
 
+## Auto-format
+
+```
+$ source .venv/bin/activate
+$ black .
+```
+
 ## [Experimental] Build the new UI with React
 
 `/new-ui/` serves React-based new UI. Before you try it, you need to build `main.js`:
@@ -349,6 +358,16 @@ $ npm install
 $ npm run watch
 ```
 
+If you have any change on API V2, you need to run this command before you build:
+
+```
+$ npm run generate:client
+```
+```
+(For Customview)
+$ npm run generate:custom_client
+```
+
 You can also auto-format .js files with [prettier](https://prettier.io/):
 
 ```
@@ -359,4 +378,18 @@ To execute test written in [Jest](https://jestjs.io/):
 
 ```
 $ npm run test
+```
+
+If you have any change on a page component, please re-build snapshots along with current implementaion as below.
+
+```
+$ npm run test:update
+```
+
+To customize UI:
+
+```
+$ cp -pi ./frontend/src/App.tsx ./frontend/src/customview/CustomApp.tsx
+(edit CustomApp.tsx)
+$ npm run build:custom
 ```

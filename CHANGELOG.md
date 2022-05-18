@@ -7,7 +7,115 @@
 ### Changed
 
 ### Fixed
+
+## v3.8.0
+
+### Changed
+* Changed user model of django
+  Contributed by @hinashi
+
+## v3.7.0
+
+### Added
+* Added add and remove attributes depending on entity in get entry api v2
+  Contributed by @hinashi
+* Added custom processing when after delete entry
+  Contributed by @hinashi
+* Added new feature Role that has permissions which users (and groups)
+  that are belonged to Role could access to information (#462)
+  contributed by @userlocalhost
+* Added create, update, delete, restore entry api in APIv2
+  Contributed by @hinashi
+
+### Changed
+* Deny duplicated active entity attribute names
+  Contributed by @syucream
+
+### Fixed
+* Fixed by validate length of entity/attr name
+  Contributed by @syucream
+
+## v3.6.0
+
+### Changed
+* Set entry-id for each entry columns in the list entry page
+* Changed the logging method from airone profile to logging middleware
+  Contributed by @hinashi
+* Changed to separate settings for each environment by django-configrations
+  Contributed by @hinashi
+
+### Fixed
+* Fixed problems that changing values for group won't be shown correctly
+  in the changing entry's attribute page
+* Fixed problem to return attribute information that has already been
+  deleted (#400)
+* Fixed exception error in /entry/do_edit/ (#443)
+  Contributed by @hinashi
+* Fixed problem that none of AttributeValue have is_latest is True (#441)
+  Contributed by @hinashi
+* Fixed that can be retrieved without permission in Entry API v2
+  Contributed by @hinashi
+* Fixed request even if the password is empty on change ldap auth (#465)
+  Contributed by @hinashi
+
+## v3.5.0
+
+### Added
+* Added to be able to insert custom javascript
+
+### Changed
+* Updated Django version that fixed security bug (CVE-2021-44420)
+* Droped Python 3.6 support
+* Upgrade celery version from v4.4.7 to v5.2.2
+* Upgrade kombu version from v4.6.11 to v5.2.2
+* Upgrade flower version from v0.9.7 to v1.0.0
+* Upgrade django-filter version from v1.1.0 to v2.4.0
+
+### Fixed
+* Fixed an issue where advanced search narrow down was slow (#321)
+* Fixed not being able to use regexp in entry names in the entry search API (#314)
+* Fixed an exception error when specifying an invalid parameter in advanced search (#327)
+* Fixed the order of entities when is_all_entities is specified in advanced search (#330)
+* Fixed that cannot be retried after error when narrowing down in advanced search (#332)
+* Fixed an issue with array type attributes when copying entries (#342)
+* Fixed take a long time to create entry (#352)
+
+### Refactored
+* Refactored referral param in advanced search (#326)
+* Refactored the process of check permission
+* Refactored the process of get_available_attrs in Entry
+* Refactored drf response format and default settings
+
+## v3.4.1
+
+## Fixed
+* Fixed an error when specifying old parameters in advanced search (#323)
+* Fixed different count of ret_values in advanced search results (#324)
+
+## v3.4.0
+
+### Added
+* Added param of editting user for ldap (#256)
+* Added attach referring entries on yaml export
+* (WIP) Added a new UI in React
+
+### Changed
+* Changed redirect authenticated users to the top page
+* Changed cookie of session to secure attribute, and to return HSTS header (#257)
+
+### Fixed
+* Fixed that the entry being created cannot be deleted (#242)
+* Fixed update history of TOP page (#258)
+* Fixed unused URL settings (#278)
+* Fixed Escape \ on ES query
+* Fixed a missing null check on the deleted list entry page
 * Fixed an issue that caused redirects by incorrect URL links
+* Fixed implementation for ACL inheritance for Attribute
+* Fixed no permission check in advanced search and simple search(#282)
+* Fixed a different number of entries displayed on the entity dashboard (#308)
+
+### Refactored
+* Refactored the entry list page
 
 ## v3.3.1
 
@@ -19,7 +127,6 @@
 ### Added
 * Added the django-replicated library (#166)
 * Added job function that cannot be canceled (#199)
-* Added param of editting user for ldap (#256)
 
 ### Changed
 * Changed to remove complement_attrs when requesting show entry page (#166)
@@ -28,17 +135,10 @@
 * Changed not to create tokens with GET user.access_token API (#166)
 * Changed the behavior of token refresh (#208)
 * Upgrade Django version from v3.2.4 to v3.2.5 (#254)
-* Changed cookie of session to secure attribute, and to return HSTS header (#257)
 
 ### Fixed
 * Fixed the problem that the URL of Webhook API is different (#202)
 * Fixed some attributes are not updated in advanced search results (#230)
-* Fixed that the entry being created cannot be deleted (#242)
-* Fixed update history of TOP page (#258)
-* Fixed unused URL settings (#278)
-
-### Refactored
-* Refactored the entry list page
 
 ## v3.2.0
 

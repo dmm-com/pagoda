@@ -245,9 +245,6 @@ var save_settings = function(e){
     request_params.id = webhooks[target_webhook_index].id;
   }
 
-  console.log('[onix/save_settings(10)] ### request_params');
-  console.log(request_params);
-
   $.ajax({
     type: 'POST',
     url: "/webhook/api/v1/set/{{ entity.id }}",
@@ -292,10 +289,6 @@ var delete_header_info = function(e) {
   $(e.target).closest('.header-info').remove();
 }
 
-var show_webhook_modal = function(e) {
-  console.log('[onix/show_webhook_modal(00)]');
-}
-
 var hide_webhook_modal = function(e) {
   // remove all input elements
   $('#webhook_url').val('');
@@ -319,8 +312,6 @@ var create_webhook = function(e) {
 
 var show_edit_webhook = function(e) {
   var index = $(e.target).attr("webhook_index")
-  console.log(`[onix/edit_webhook(00)] index: ${ index }`);
-  console.log(webhooks[index]);
 
   // set editing webhook_id;
   target_webhook_index = index;
@@ -334,7 +325,6 @@ var show_edit_webhook = function(e) {
   for (const [key, value] of Object.entries(webhooks[index].headers)) {
     var header_elem = create_header_input_element();
 
-    console.log(`[onix/edit_webhook(10)] (key, value) = (${ key }, ${ value })`);
     header_elem.find('.header-key').val(key);
     header_elem.find('.header-value').val(value);
 
@@ -346,8 +336,6 @@ var show_edit_webhook = function(e) {
 
 var show_delete_webhook = function(e) {
   var index = $(e.target).attr("webhook_index");
-
-  console.log(`[onix/delete_webhook(00)] ${ index }`);
 
 	// update target_webhook_index
 	target_webhook_index = index;
@@ -376,7 +364,6 @@ $(document).ready(function() {
   $('#save_settings').on('click', save_settings);
   $('#add-header-info').on('click', add_header_info);
   $('.delete-header-info').on('click', delete_header_info);
-  $('#WebhookModal').on('shown.bs.modal', show_webhook_modal);
   $('#WebhookModal').on('hide.bs.modal', hide_webhook_modal);
   $('.show_edit_webhook').on('click', show_edit_webhook);
   $('.show_delete_webhook').on('click', show_delete_webhook);

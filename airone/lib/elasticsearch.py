@@ -6,7 +6,11 @@ from datetime import datetime
 from django.conf import settings
 from django.db.models import Q
 from elasticsearch import Elasticsearch
+from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
+from airone.lib.log import Logger
+from entity.models import Entity
+from user.models import User
 from entry.settings import CONFIG
 
 
@@ -16,13 +20,14 @@ class ESS(Elasticsearch):
     def __init__(self, index=None, *args, **kwargs):
         self.additional_config = False
 
+        self._index = index
         if not index:
-            self._index = settings.ES_CONFIG['INDEX']
+            self._index = settings.ES_CONFIG["INDEX"]
 
-        if ('timeout' not in kwargs) and (settings.ES_CONFIG['TIMEOUT'] is not None):
-            kwargs['timeout'] = settings.ES_CONFIG['TIMEOUT']
+        if ("timeout" not in kwargs) and (settings.ES_CONFIG["TIMEOUT"] is not None):
+            kwargs["timeout"] = settings.ES_CONFIG["TIMEOUT"]
 
-        super(ESS, self).__init__(settings.ES_CONFIG['NODES'], *args, **kwargs)
+        super(ESS, self).__init__(settings.ES_CONFIG["NODES"], *args, **kwargs)
 
     def delete(self, *args, **kwargs):
         return super(ESS, self).delete(index=self._index, *args, **kwargs)
@@ -38,93 +43,111 @@ class ESS(Elasticsearch):
         if not self.additional_config:
             self.additional_config = True
 
-            body = {"index": {"max_result_window": settings.ES_CONFIG['MAXIMUM_RESULTS_NUM']}}
+            body = {"index": {"max_result_window": settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]}}
             self.indices.put_settings(index=self._index, body=body)
 
-        return super(ESS, self).search(index=self._index,
-                                       size=settings.ES_CONFIG['MAXIMUM_RESULTS_NUM'], *args,
-                                       **kwargs)
+        if "size" not in kwargs:
+            kwargs["size"] = settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]
+
+        return super(ESS, self).search(index=self._index, *args, **kwargs)
 
     def recreate_index(self) -> None:
         self.indices.delete(index=self._index, ignore=[400, 404])
-        self.indices.create(index=self._index, ignore=400, body=json.dumps({
-            'mappings': {
-                'entry': {
-                    'properties': {
-                        'name': {
-                            'type': 'text',
-                            'index': 'true',
-                            'analyzer': 'keyword',
-                            'fields': {
-                                'keyword': {'type': 'keyword'},
-                            },
-                        },
-                        'entity': {
-                            'type': 'nested',
-                            'properties': {
-                                'id': {
-                                    'type': 'integer',
-                                    'index': 'true',
+        self.indices.create(
+            index=self._index,
+            ignore=400,
+            body=json.dumps(
+                {
+                    "mappings": {
+                        "entry": {
+                            "properties": {
+                                "name": {
+                                    "type": "text",
+                                    "index": "true",
+                                    "analyzer": "keyword",
+                                    "fields": {
+                                        "keyword": {"type": "keyword"},
+                                    },
                                 },
-                                'name': {
-                                    'type': 'text',
-                                    'index': 'true',
-                                    'analyzer': 'keyword'
-                                }
-                            }
-                        },
-                        'attr': {
-                            'type': 'nested',
-                            'properties': {
-                                'name': {
-                                    'type': 'text',
-                                    'index': 'true',
-                                    'analyzer': 'keyword'
+                                "entity": {
+                                    "type": "nested",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "index": "true",
+                                        },
+                                        "name": {
+                                            "type": "text",
+                                            "index": "true",
+                                            "analyzer": "keyword",
+                                        },
+                                    },
                                 },
-                                'type': {
-                                    'type': 'integer',
-                                    'index': 'false',
+                                "attr": {
+                                    "type": "nested",
+                                    "properties": {
+                                        "name": {
+                                            "type": "text",
+                                            "index": "true",
+                                            "analyzer": "keyword",
+                                        },
+                                        "type": {
+                                            "type": "integer",
+                                            "index": "false",
+                                        },
+                                        "id": {
+                                            "type": "integer",
+                                            "index": "false",
+                                        },
+                                        "key": {
+                                            "type": "text",
+                                            "index": "true",
+                                        },
+                                        "date_value": {
+                                            "type": "date",
+                                            "index": "true",
+                                        },
+                                        "value": {
+                                            "type": "text",
+                                            "index": "true",
+                                            "analyzer": "keyword",
+                                        },
+                                        "referral_id": {
+                                            "type": "integer",
+                                            "index": "false",
+                                        },
+                                        "is_readble": {
+                                            "type": "boolean",
+                                            "index": "true",
+                                        },
+                                    },
                                 },
-                                'id': {
-                                    'type': 'integer',
-                                    'index': 'false',
+                                "is_readble": {
+                                    "type": "boolean",
+                                    "index": "true",
                                 },
-                                'key': {
-                                    'type': 'text',
-                                    'index': 'true',
-                                },
-                                'date_value': {
-                                    'type': 'date',
-                                    'index': 'true',
-                                },
-                                'value': {
-                                    'type': 'text',
-                                    'index': 'true',
-                                    'analyzer': 'keyword'
-                                },
-                                'referral_id': {
-                                    'type': 'integer',
-                                    'index': 'false',
-                                }
                             }
                         }
                     }
                 }
-            }
-        }))
+            ),
+        )
 
 
 __all__ = [
-    'make_query',
-    'execute_query',
-    'make_search_results',
-    'prepend_escape_character',
-    'is_date_check'
+    "make_query",
+    "make_query_for_simple",
+    "execute_query",
+    "make_search_results",
+    "make_search_results_for_simple",
+    "prepend_escape_character",
+    "is_date_check",
 ]
 
 
-def make_query(hint_entity_ids: List[str], hint_attrs: List[Dict[str, str]],
-               hint_attr_value: Optional[Any], entry_name: str, or_match: bool) -> Dict[str, str]:
+def make_query(
+    hint_entity: Entity, hint_attrs: List[Dict[str, str]], entry_name: str
+) -> Dict[str, str]:
     """Create a search query for Elasticsearch.
 
     Do the following:
@@ -136,11 +159,9 @@ def make_query(hint_entity_ids: List[str], hint_attrs: List[Dict[str, str]],
     6. Build queries along keywords.
 
     Args:
-        hint_entity_ids (list(str)): Entity ID specified in the search condition input
+        hint_entity (Entity): Entity ID specified in the search condition input
         hint_attrs (list(dict[str, str])): A list of search strings and attribute sets
         entry_name (str): Search string for entry name
-        or_match (bool): Flag to determine whether the simple search or
-            advanced search is called
 
     Returns:
         dict[str, str]: The created search query is returned.
@@ -151,64 +172,93 @@ def make_query(hint_entity_ids: List[str], hint_attrs: List[Dict[str, str]],
     query: Dict = {
         "query": {
             "bool": {
-                'filter': [],
-                'should': [],
+                "filter": [],
+                "should": [],
             }
         }
     }
 
     # set condition to get results that only have specified entity
-    query['query']['bool']['filter'].append({
-        'nested': {
-            'path': 'entity',
-            'query': {
-                'bool': {'should': [{'term': {'entity.id': int(x)}} for x in hint_entity_ids]}
-            }
-        }
-    })
+    query["query"]["bool"]["filter"].append(
+        {"nested": {"path": "entity", "query": {"term": {"entity.id": hint_entity.id}}}}
+    )
 
     # Included in query if refinement is entered for 'Name' in advanced search
     if entry_name:
-        query['query']['bool']['filter'].append(_make_entry_name_query(entry_name))
+        query["query"]["bool"]["filter"].append(_make_entry_name_query(entry_name))
 
     # Set the attribute name so that all the attributes specified in the attribute,
     # to be searched can be used
     if hint_attrs:
-        query['query']['bool']['filter'].append({
-            'nested': {
-                'path': 'attr',
-                'query': {
-                    'bool': {
-                        'should': [
-                            {'term': {'attr.name': x['name']}} for x in hint_attrs if 'name' in x
-                        ]
-                    }
+        query["query"]["bool"]["filter"].append(
+            {
+                "nested": {
+                    "path": "attr",
+                    "query": {
+                        "bool": {
+                            "should": [
+                                {"term": {"attr.name": x["name"]}}
+                                for x in hint_attrs
+                                if "name" in x
+                            ]
+                        }
+                    },
                 }
             }
-        })
-
-    if hint_attr_value:
-        query['query']['bool']['filter'].append({
-            'nested': {
-                'path': 'attr',
-                'query': {
-                    'regexp': {
-                        'attr.value': ".*" + _get_regex_pattern(str(hint_attr_value)) + ".*"
-                    }
-                }
-            }
-        })
+        )
 
     attr_query: Dict = {}
 
     # filter attribute by keywords
-    for hint in [x for x in hint_attrs if 'name' in x and 'keyword' in x and x['keyword']]:
-        _parse_or_search(hint, or_match, attr_query)
+    for hint in [x for x in hint_attrs if "name" in x and "keyword" in x and x["keyword"]]:
+        _parse_or_search(hint, attr_query)
 
     # Build queries along keywords
     if attr_query:
-        query['query']['bool']['filter'].append(
-            _build_queries_along_keywords(hint_attrs, attr_query, or_match))
+        query["query"]["bool"]["filter"].append(
+            _build_queries_along_keywords(hint_attrs, attr_query)
+        )
+
+    return query
+
+
+def make_query_for_simple(hint_string: str, hint_entity_name: str, offset: int) -> Dict[str, str]:
+    """Create a search query for Elasticsearch.
+
+    Do the following:
+        Create a query to search by AttributeValue and Entry Name.
+        inner_hits returns only filtered attributes
+
+    Args:
+        hint_string (str): Search string
+        hint_entity_name (str): Search string for Entity Name
+        offset (int): Offset number
+
+    Returns:
+        dict[str, str]: The created search query is returned.
+
+    """
+    query: Dict = {
+        "query": {"bool": {"must": []}},
+        "_source": ["name"],
+        "sort": [{"_score": {"order": "desc"}, "name.keyword": {"order": "asc"}}],
+        "from": offset,
+    }
+
+    hint_query: Dict = {"bool": {"should": []}}
+    hint_query["bool"]["should"].append(_make_entry_name_query(hint_string))
+    hint_query["bool"]["should"].append(_make_attr_query_for_simple(hint_string))
+    query["query"]["bool"]["must"].append(hint_query)
+
+    if hint_entity_name:
+        query["query"]["bool"]["must"].append(
+            {
+                "nested": {
+                    "path": "entity",
+                    "query": {"term": {"entity.name": hint_entity_name}},
+                }
+            }
+        )
 
     return query
 
@@ -228,11 +278,19 @@ def _get_regex_pattern(keyword: str) -> str:
     escaped = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS, keyword)
 
     # Elasticsearch doesn't support anchor operators,
-    # so it supports both ignoring it and handle it as a normal character
-    chars = escaped.replace('^', '^?').replace('$', '$?')
+    begin = ".*"
+    if escaped[0] == "^":
+        begin = ""
+        escaped = escaped.lstrip("^")
 
-    return '.*%s.*' % ''.join(['[%s%s]' % (
-        x.lower(), x.upper()) if x.isalpha() else x for x in chars])
+    end = ".*"
+    if escaped and escaped[-1] == "$":
+        end = ""
+        escaped = escaped.rstrip("$")
+
+    body = "".join(["[%s%s]" % (x.lower(), x.upper()) if x.isalpha() else x for x in escaped])
+
+    return begin + body + end
 
 
 def prepend_escape_character(escape_character_list: List[str], keyword: str) -> str:
@@ -249,7 +307,7 @@ def prepend_escape_character(escape_character_list: List[str], keyword: str) -> 
         str: Returns 'keyword' after conversion.
 
     """
-    return ''.join(['\\' + x if x in escape_character_list else x for x in list(keyword)])
+    return "".join(["\\" + x if x in escape_character_list else x for x in list(keyword)])
 
 
 def _get_hint_keyword_val(keyword: str) -> str:
@@ -265,11 +323,10 @@ def _get_hint_keyword_val(keyword: str) -> str:
             Otherwise, the input value is returned.
 
     """
-    if (CONFIG.EMPTY_SEARCH_CHARACTER == keyword or
-            CONFIG.EMPTY_SEARCH_CHARACTER_CODE == keyword):
-        return ''
-    if '\\' in keyword:
-        return ' '
+    if CONFIG.EMPTY_SEARCH_CHARACTER == keyword or CONFIG.EMPTY_SEARCH_CHARACTER_CODE == keyword:
+        return ""
+    if "\\" in keyword:
+        return " "
     return keyword
 
 
@@ -288,53 +345,72 @@ def _make_entry_name_query(entry_name: str) -> Dict[str, str]:
         dict[str, str]: Entry name search query
 
     """
-    entry_name_or_query: Dict = {
-        'bool': {
-            'should': []
-        }
-    }
+    entry_name_or_query: Dict = {"bool": {"should": []}}
 
     # Split and process keywords with 'or'
     for keyword_divided_or in entry_name.split(CONFIG.OR_SEARCH_CHARACTER):
 
-        entry_name_and_query: Dict = {
-            'bool': {
-                'filter': []
-            }
-        }
+        entry_name_and_query: Dict = {"bool": {"must": []}}
 
         # Keyword divided by 'or' is processed by dividing by 'and'
         for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
             name_val = _get_hint_keyword_val(keyword)
             if name_val:
                 # When normal conditions are specified
-                entry_name_and_query['bool']['filter'].append({
-                    'regexp': {
-                        'name': _get_regex_pattern(name_val)
-                    }
-                })
+                entry_name_and_query["bool"]["must"].append(
+                    {"regexp": {"name": _get_regex_pattern(name_val)}}
+                )
             else:
                 # When blank is specified in the condition
-                entry_name_and_query['bool']['filter'].append({
-                    'match': {
-                        'name': ''
-                    }
-                })
-        entry_name_or_query['bool']['should'].append(entry_name_and_query)
+                entry_name_and_query["bool"]["must"].append({"match": {"name": ""}})
+        entry_name_or_query["bool"]["should"].append(entry_name_and_query)
 
     return entry_name_or_query
 
 
-def _parse_or_search(hint: Dict[str, str], or_match: bool, attr_query: Dict[str, str])\
-        -> Dict[str, str]:
+def _make_attr_query_for_simple(hint_string: str) -> Dict[str, str]:
+    """Create a search query for the AttributeValue in simple search.
+
+    Divides the search string with OR.
+    Divide the divided character string with AND.
+    Create a regular expression pattern query with the smallest unit string.
+
+    Args:
+        hint_string (str): Search string for AttributeValue
+
+    Returns:
+        dict[str, str]: AttributeValue search query
+
+    """
+
+    attr_query: Dict = {
+        "bool": {"filter": {"nested": {"path": "attr", "inner_hits": {"_source": ["attr.name"]}}}}
+    }
+
+    attr_or_query: Dict = {"bool": {"should": []}}
+    for keyword_divided_or in hint_string.split(CONFIG.OR_SEARCH_CHARACTER):
+        if not keyword_divided_or:
+            continue
+
+        attr_and_query: Dict = {"bool": {"filter": []}}
+        for keyword_divided_and in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
+            attr_and_query["bool"]["filter"].append(
+                {"regexp": {"attr.value": _get_regex_pattern(keyword_divided_and)}}
+            )
+        attr_or_query["bool"]["should"].append(attr_and_query)
+
+    attr_query["bool"]["filter"]["nested"]["query"] = attr_or_query
+
+    return attr_query
+
+
+def _parse_or_search(hint: Dict[str, str], attr_query: Dict[str, str]) -> Dict[str, str]:
     """Performs keyword analysis processing.
 
     The search keyword is separated by OR and passed to the next process.
 
     Args:
         hint (dict[str, str]): Dictionary of attribute names and search keywords to be processed
-        or_match (bool): Flag to determine whether the simple search or
-            advanced search is called
         attr_query (dict[str, str]): Search query being created
 
     Returns:
@@ -345,15 +421,19 @@ def _parse_or_search(hint: Dict[str, str], or_match: bool, attr_query: Dict[str,
     duplicate_keys: List = []
 
     # Split and process keywords with 'or'
-    for keyword_divided_or in hint['keyword'].split(CONFIG.OR_SEARCH_CHARACTER):
+    for keyword_divided_or in hint["keyword"].split(CONFIG.OR_SEARCH_CHARACTER):
 
-        _parse_and_search(hint, keyword_divided_or, or_match, attr_query, duplicate_keys)
+        _parse_and_search(hint, keyword_divided_or, attr_query, duplicate_keys)
 
     return attr_query
 
 
-def _parse_and_search(hint: Dict[str, str], keyword_divided_or: str, or_match: bool,
-                      attr_query: Dict[str, Any], duplicate_keys: List[str]) -> Dict[str, str]:
+def _parse_and_search(
+    hint: Dict[str, str],
+    keyword_divided_or: str,
+    attr_query: Dict[str, Any],
+    duplicate_keys: List[str],
+) -> Dict[str, str]:
     """Analyze the keywords separated by `OR`
 
     Keywords separated by OR are separated by AND.
@@ -375,8 +455,6 @@ def _parse_and_search(hint: Dict[str, str], keyword_divided_or: str, or_match: b
     Args:
         hint (dict[str, str]): Dictionary of attribute names and search keywords to be processed
         keyword_divided_or (str): Character string with search keywords separated by OR
-        or_match (bool): Flag to determine whether the simple search or
-            advanced search is called
         attr_query (dict[str, str]): Search query being created
         duplicate_keys (list(str)): Holds a list of the smallest character strings
             that separate search keywords with AND and OR.
@@ -390,7 +468,7 @@ def _parse_and_search(hint: Dict[str, str], keyword_divided_or: str, or_match: b
 
     # Keyword divided by 'or' is processed by dividing by 'and'
     for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
-        key = _make_key_for_each_block_of_keywords(hint, keyword, or_match)
+        key = keyword + "_" + hint["name"]
 
         # Skip if keywords overlap
         if key in duplicate_keys:
@@ -398,44 +476,15 @@ def _parse_and_search(hint: Dict[str, str], keyword_divided_or: str, or_match: b
         else:
             duplicate_keys.append(key)
 
-        if or_match:
-            if key not in attr_query:
-                # Add keyword if temporary variable doesn't contain keyword
-                attr_query[key] = {'bool': {'should': []}}
-
-            attr_query[key]['bool']['should'].append(
-                _make_an_attribute_filter(hint, keyword))
-        else:
-            attr_query[key] = _make_an_attribute_filter(hint, keyword)
+        attr_query[key] = _make_an_attribute_filter(hint, keyword)
 
     return attr_query
 
 
-def _make_key_for_each_block_of_keywords(hint: Dict[str, str], keyword: str, or_match: bool) -> str:
-    """Create a key for each block of minimal keywords.
-
-    Create a key for each block of keywords.
-    For simple search, the keyword is used as a key.
-    In case of advanced search, attribute name is given to judge for each attribute.
-
-    Args:
-        hint (dict[str, str]): Dictionary of attribute names and search keywords to be processed
-        keyword (str): String of the smallest unit in which search keyword is
-            separated by AND and OR
-        or_match (bool): Flag to determine whether the simple search or
-            advanced search is called
-
-    Returns:
-        dict[str, str]: For simple search, the keyword of the argument is returned.
-            In the case of advanced search,
-            the attribute name is assigned to the argument keyword and returned.
-
-    """
-    return keyword if or_match else keyword + '_' + hint['name']
-
-
-def _build_queries_along_keywords(hint_attrs: List[Dict[str, str]], attr_query: Dict[str, str],
-                                  or_match: bool) -> Dict[str, str]:
+def _build_queries_along_keywords(
+    hint_attrs: List[Dict[str, str]],
+    attr_query: Dict[str, str],
+) -> Dict[str, str]:
     """Build queries along search terms.
 
     Do the following:
@@ -458,8 +507,6 @@ def _build_queries_along_keywords(hint_attrs: List[Dict[str, str]], attr_query: 
         hint_attrs (list(dict[str, str])): A list of search strings and attribute sets
         attr_query (dict[str, str]): A query that summarizes attributes
             by the smallest unit of a search keyword
-        or_match (bool): Flag to determine whether the simple search or
-            advanced search is called
 
     Returns:
         dict[str, str]: Assemble and return the attribute value part of the search query.
@@ -467,7 +514,7 @@ def _build_queries_along_keywords(hint_attrs: List[Dict[str, str]], attr_query: 
     """
 
     # Get the keyword.
-    hints = [x for x in hint_attrs if x['keyword']] if not or_match else [hint_attrs[0]]
+    hints = [x for x in hint_attrs if "keyword" in x and x["keyword"]]
     res_query: Dict[str, Any] = {}
 
     for hint in hints:
@@ -475,30 +522,28 @@ def _build_queries_along_keywords(hint_attrs: List[Dict[str, str]], attr_query: 
         or_query: Dict[str, Any] = {}
 
         # Split keyword by 'or'
-        for keyword_divided_or in hint['keyword'].split(CONFIG.OR_SEARCH_CHARACTER):
+        for keyword_divided_or in hint["keyword"].split(CONFIG.OR_SEARCH_CHARACTER):
             if CONFIG.AND_SEARCH_CHARACTER in keyword_divided_or:
 
                 # If 'AND' is included in the keyword divided by 'OR', add it to 'filter'
                 for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
                     if keyword_divided_or not in and_query:
-                        and_query[keyword_divided_or] = {'bool': {'filter': []}}
+                        and_query[keyword_divided_or] = {"bool": {"filter": []}}
 
-                    and_query[keyword_divided_or]['bool']['filter'].append(
-                        attr_query[_make_key_for_each_block_of_keywords(
-                                           hint, keyword, or_match)])
+                    and_query[keyword_divided_or]["bool"]["filter"].append(
+                        attr_query[keyword + "_" + hint["name"]]
+                    )
 
             else:
-                and_query[keyword_divided_or] = attr_query[
-                    _make_key_for_each_block_of_keywords(hint, keyword_divided_or, or_match)
-                ]
+                and_query[keyword_divided_or] = attr_query[keyword_divided_or + "_" + hint["name"]]
 
-            if CONFIG.OR_SEARCH_CHARACTER in hint['keyword']:
+            if CONFIG.OR_SEARCH_CHARACTER in hint["keyword"]:
 
                 # If the keyword contains 'or', concatenate with 'should'
                 if not or_query:
-                    or_query = {'bool': {'should': []}}
+                    or_query = {"bool": {"should": []}}
 
-                or_query['bool']['should'].append(and_query[keyword_divided_or])
+                or_query["bool"]["should"].append(and_query[keyword_divided_or])
 
             else:
                 or_query = and_query[keyword_divided_or]
@@ -507,9 +552,9 @@ def _build_queries_along_keywords(hint_attrs: List[Dict[str, str]], attr_query: 
             # If conditions are specified for multiple attributes in advanced search,
             # connect with 'filter'
             if not res_query:
-                res_query = {'bool': {'filter': []}}
+                res_query = {"bool": {"filter": []}}
 
-            res_query['bool']['filter'].append(or_query)
+            res_query["bool"]["filter"].append(or_query)
 
         else:
             res_query = or_query
@@ -546,87 +591,51 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
         dict[str, str]: Created attribute filter
 
     """
-    cond_attr: List[Dict] = [{
-        'term': {'attr.name': hint['name']}
-    }]
+    cond_attr: List[Dict] = [{"term": {"attr.name": hint["name"]}}]
 
     date_results = _is_date(keyword)
     if date_results:
         date_cond = {
-            'range': {
-                'attr.date_value': {
-                    'format': 'yyyy-MM-dd'
-                }
-            },
+            "range": {"attr.date_value": {"format": "yyyy-MM-dd"}},
         }
         for (range_check, date_obj) in date_results:
-            timestr = date_obj.strftime('%Y-%m-%d')
-            if range_check == '<':
+            timestr = date_obj.strftime("%Y-%m-%d")
+            if range_check == "<":
                 # search of before date user specified
-                date_cond['range']['attr.date_value']['lt'] = timestr
+                date_cond["range"]["attr.date_value"]["lt"] = timestr
 
-            elif range_check == '>':
+            elif range_check == ">":
                 # search of after date user specified
-                date_cond['range']['attr.date_value']['gt'] = timestr
+                date_cond["range"]["attr.date_value"]["gt"] = timestr
 
             else:
                 # search of exact day
-                date_cond['range']['attr.date_value']['gte'] = timestr
-                date_cond['range']['attr.date_value']['lte'] = timestr
+                date_cond["range"]["attr.date_value"]["gte"] = timestr
+                date_cond["range"]["attr.date_value"]["lte"] = timestr
 
         cond_attr.append(date_cond)
 
     else:
         hint_kyeword_val = _get_hint_keyword_val(keyword)
-        cond_val = [{'match': {'attr.value': hint_kyeword_val}}]
+        cond_val = [{"match": {"attr.value": hint_kyeword_val}}]
 
         if hint_kyeword_val:
-            if 'exact_match' not in hint:
-                cond_val.append({
-                    'regexp': {
-                        'attr.value': _get_regex_pattern(hint_kyeword_val)
-                    }
-                })
+            if "exact_match" not in hint:
+                cond_val.append({"regexp": {"attr.value": _get_regex_pattern(hint_kyeword_val)}})
 
-            cond_attr.append({'bool': {'should': cond_val}})
+            cond_attr.append({"bool": {"should": cond_val}})
 
         else:
-            cond_val_tmp = [{'bool': {'must_not': {'exists': {'field': 'attr.date_value'}}}},
-                            {'bool': {'should': cond_val}}]
-            cond_attr.append({'bool': {'must': cond_val_tmp}})
+            cond_val_tmp = [
+                {"bool": {"must_not": {"exists": {"field": "attr.date_value"}}}},
+                {"bool": {"should": cond_val}},
+            ]
+            cond_attr.append({"bool": {"must": cond_val_tmp}})
 
-    return {
-        'nested': {
-            'path': 'attr',
-            'query': {
-                'bool': {
-                    'filter': cond_attr
-                }
-            }
-        }
-    }
+    return {"nested": {"path": "attr", "query": {"bool": {"filter": cond_attr}}}}
 
 
-def _is_matched_entry(attrs: List[Dict[str, str]], hint_attrs: List[Dict[str, str]]) -> bool:
-    """
-    Predicate if an entry matches hint attrs
-    """
-    hint_keywords = {h['name']: h['keyword'] for h in hint_attrs if 'keyword' in h}
-
-    for attr in attrs:
-        tpe = attr['type']
-        if tpe == AttrTypeValue['string'] or tpe == AttrTypeValue['text']:
-            hint_keyword = hint_keywords.get(attr['name'], '')
-
-            # it checks anchor operators if it exists because its not supported by Elasticsearch
-            if len(hint_keyword) > 1 and (hint_keyword[0] == '^' or hint_keyword[-1] == '$'):
-                if not re.search(hint_keyword, attr['value']):
-                    return False
-
-    return True
-
-
-def execute_query(query: Dict[str, str]) -> Dict[str, str]:
+def execute_query(query: Dict[str, str], size: int = 0) -> Dict[str, str]:
     """Run a search query.
 
     Args:
@@ -639,16 +648,30 @@ def execute_query(query: Dict[str, str]) -> Dict[str, str]:
         dict[str, str]: Search execution result
 
     """
+    kwargs = {
+        "size": settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
+        "body": query,
+        "ignore": [404],
+        "sort": ["name.keyword:asc"],
+    }
+    if size and isinstance(size, int):
+        kwargs["size"] = size
+
     try:
-        res = ESS().search(body=query, ignore=[404], sort=['name.keyword:asc'])
+        res = ESS().search(**kwargs)
     except Exception as e:
-        raise(e)
+        raise (e)
 
     return res
 
 
-def make_search_results(res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
-                        limit: int, hint_referral: str) -> Dict[str, str]:
+def make_search_results(
+    user: User,
+    res: Dict[str, Any],
+    hint_attrs: List[Dict[str, str]],
+    limit: int,
+    hint_referral: str,
+) -> Dict[str, str]:
     """Acquires and returns the attribute values held by each search result
 
     When the condition of reference entry is specified, the entry to reference is acquired.
@@ -674,6 +697,7 @@ def make_search_results(res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
 
     Args:
         res (`str`, optional): Search results for Elasticsearch
+        hint_attrs (list(dict[str, str])):  A list of search strings and attribute sets
         limit (int): Maximum number of search results to return
         hint_referral (str): Input value used to refine the reference entry.
             Use only for advanced searches.
@@ -687,46 +711,60 @@ def make_search_results(res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
 
     # set numbers of found entries
     results = {
-        'ret_count': res['hits']['total'],
-        'ret_values': [],
+        "ret_count": res["hits"]["total"],
+        "ret_values": [],
     }
 
     # get django objects from the hit information from Elasticsearch
-    hit_entry_ids = [x['_id'] for x in res['hits']['hits']]
+    hit_entry_ids = [x["_id"] for x in res["hits"]["hits"]]
     if isinstance(hint_referral, str) and hint_referral:
         # If the hint_referral parameter is specified,
         # this filters results that only have specified referral entry.
 
-        if (CONFIG.EMPTY_SEARCH_CHARACTER == hint_referral or
-                CONFIG.EMPTY_SEARCH_CHARACTER_CODE == hint_referral):
+        if (
+            CONFIG.EMPTY_SEARCH_CHARACTER == hint_referral
+            or CONFIG.EMPTY_SEARCH_CHARACTER_CODE == hint_referral
+        ):
 
             hit_entry_ids_num = [int(x) for x in hit_entry_ids]
-            filtered_ids = set(hit_entry_ids_num) - set(AttributeValue.objects.filter(
-                    Q(referral__id__in=hit_entry_ids,
-                      parent_attr__is_active=True,
-                      is_latest=True) |
-                    Q(referral__id__in=hit_entry_ids,
-                      parent_attr__is_active=True,
-                      parent_attrv__is_latest=True)
-                    ).values_list('referral_id', flat=True))
+            filtered_ids = set(hit_entry_ids_num) - set(
+                AttributeValue.objects.filter(
+                    Q(
+                        referral__id__in=hit_entry_ids,
+                        parent_attr__is_active=True,
+                        is_latest=True,
+                    )
+                    | Q(
+                        referral__id__in=hit_entry_ids,
+                        parent_attr__is_active=True,
+                        parent_attrv__is_latest=True,
+                    )
+                ).values_list("referral_id", flat=True)
+            )
 
         else:
 
             filtered_ids = AttributeValue.objects.filter(
-                    Q(parent_attr__parent_entry__name__iregex=prepend_escape_character(
-                        CONFIG.ESCAPE_CHARACTERS_REFERRALS_ENTRY, hint_referral),
-                      referral__id__in=hit_entry_ids,
-                      is_latest=True) |
-                    Q(parent_attr__parent_entry__name__iregex=prepend_escape_character(
-                        CONFIG.ESCAPE_CHARACTERS_REFERRALS_ENTRY, hint_referral),
-                      referral__id__in=hit_entry_ids,
-                      parent_attrv__is_latest=True)
-                    ).values_list('referral', flat=True)
+                Q(
+                    parent_attr__parent_entry__name__iregex=prepend_escape_character(
+                        CONFIG.ESCAPE_CHARACTERS_REFERRALS_ENTRY, hint_referral
+                    ),
+                    referral__id__in=hit_entry_ids,
+                    is_latest=True,
+                )
+                | Q(
+                    parent_attr__parent_entry__name__iregex=prepend_escape_character(
+                        CONFIG.ESCAPE_CHARACTERS_REFERRALS_ENTRY, hint_referral
+                    ),
+                    referral__id__in=hit_entry_ids,
+                    parent_attrv__is_latest=True,
+                )
+            ).values_list("referral", flat=True)
 
         hit_entries = Entry.objects.filter(pk__in=filtered_ids, is_active=True)
 
         # reset matched count by filtered results by hint_referral parameter
-        results['ret_count'] = len(hit_entries)
+        results["ret_count"] = len(hit_entries)
     else:
         hit_entries = Entry.objects.filter(id__in=hit_entry_ids, is_active=True)
 
@@ -735,107 +773,175 @@ def make_search_results(res: Dict[str, Any], hint_attrs: List[Dict[str, str]],
         if len(hit_infos) >= limit:
             break
 
-        hit_infos[entry] = [
-            x['_source']['attr'] for x in res['hits']['hits'] if int(x['_id']) == entry.id
-        ][0]
+        hit_infos[entry] = [x["_source"] for x in res["hits"]["hits"] if int(x["_id"]) == entry.id][
+            0
+        ]
 
-    for (entry, hit_attrs) in sorted(hit_infos.items(), key=lambda x: x[0].name):
-        # ignore an entry doesn't match hint attrs
-        if not _is_matched_entry(hit_attrs, hint_attrs):
-            # subtract number from hitted count because it will be ignored
-            results['ret_count'] -= 1
-            continue
-
+    for (entry, entry_info) in sorted(hit_infos.items(), key=lambda x: x[0].name):
         ret_info: Dict[str, Any] = {
-            'entity': {'id': entry.schema.id, 'name': entry.schema.name},
-            'entry': {'id': entry.id, 'name': entry.name},
-            'attrs': {},
+            "entity": {"id": entry.schema.id, "name": entry.schema.name},
+            "entry": {"id": entry.id, "name": entry.name},
+            "attrs": {},
         }
 
         # When 'hint_referral' parameter is specifed, return referred entries for each results
         if hint_referral is not False:
-            ret_info['referrals'] = [{
-                'id': x.id,
-                'name': x.name,
-                'schema': x.schema.name,
-            } for x in entry.get_referred_objects()]
+            ret_info["referrals"] = [
+                {
+                    "id": x.id,
+                    "name": x.name,
+                    "schema": x.schema.name,
+                }
+                for x in entry.get_referred_objects()
+            ]
+
+        # Check for has permission to Entry
+        if entry_info["is_readble"] or user.has_permission(entry, ACLType.Readable):
+            ret_info["is_readble"] = True
+        else:
+            ret_info["is_readble"] = False
+            results["ret_values"].append(ret_info)
+            continue
 
         # formalize attribute values according to the type
-        for attrinfo in hit_attrs:
-            if attrinfo['name'] in ret_info['attrs']:
-                ret_attrinfo = ret_info['attrs'][attrinfo['name']]
+        for attrinfo in entry_info["attr"]:
+            # Skip other than the target Attribute
+            if attrinfo["name"] not in [x["name"] for x in hint_attrs]:
+                continue
+
+            if attrinfo["name"] in ret_info["attrs"]:
+                ret_attrinfo = ret_info["attrs"][attrinfo["name"]]
             else:
-                ret_attrinfo = ret_info['attrs'][attrinfo['name']] = {}
+                ret_attrinfo = ret_info["attrs"][attrinfo["name"]] = {}
 
             # if target attribute is array type, then values would be stored in array
-            if attrinfo['name'] not in ret_info['attrs']:
-                if attrinfo['type'] & AttrTypeValue['array']:
-                    ret_info['attrs'][attrinfo['name']] = []
+            if attrinfo["name"] not in ret_info["attrs"]:
+                if attrinfo["type"] & AttrTypeValue["array"]:
+                    ret_info["attrs"][attrinfo["name"]] = []
                 else:
-                    ret_info['attrs'][attrinfo['name']] = ret_attrinfo
+                    ret_info["attrs"][attrinfo["name"]] = ret_attrinfo
 
-            ret_attrinfo['type'] = attrinfo['type']
-            if (attrinfo['type'] == AttrTypeValue['string'] or
-               attrinfo['type'] == AttrTypeValue['text']):
+            # Check for has permission to EntityAttr
+            if attrinfo["name"] not in [x["name"] for x in hint_attrs if x["is_readble"]]:
+                ret_attrinfo["is_readble"] = False
+                continue
 
-                if attrinfo['value']:
-                    ret_attrinfo['value'] = attrinfo['value']
-                elif 'date_value' in attrinfo and attrinfo['date_value']:
-                    ret_attrinfo['value'] = attrinfo['date_value'].split('T')[0]
+            # Check for has permission to Attribute
+            if not attrinfo["is_readble"]:
+                attr = entry.attrs.filter(schema__name=attrinfo["name"], is_active=True).first()
+                if not attr:
+                    Logger.warning(
+                        "Non exist Attribute (entry:%s, name:%s) is registered in ESS."
+                        % (entry.id, attrinfo["name"])
+                    )
+                    continue
 
-            elif attrinfo['type'] == AttrTypeValue['boolean']:
-                ret_attrinfo['value'] = attrinfo['value']
+                if not user.has_permission(attr, ACLType.Readable):
+                    ret_attrinfo["is_readble"] = False
+                    continue
 
-            elif attrinfo['type'] == AttrTypeValue['date']:
-                ret_attrinfo['value'] = attrinfo['date_value']
+            ret_attrinfo["is_readble"] = True
 
-            elif (attrinfo['type'] == AttrTypeValue['object'] or
-                  attrinfo['type'] == AttrTypeValue['group']):
-                ret_attrinfo['value'] = {'id': attrinfo['referral_id'], 'name': attrinfo['value']}
+            ret_attrinfo["type"] = attrinfo["type"]
+            if (
+                attrinfo["type"] == AttrTypeValue["string"]
+                or attrinfo["type"] == AttrTypeValue["text"]
+            ):
 
-            elif (attrinfo['type'] == AttrTypeValue['named_object']):
-                ret_attrinfo['value'] = {
-                        attrinfo['key']: {'id': attrinfo['referral_id'], 'name': attrinfo['value']}
+                if attrinfo["value"]:
+                    ret_attrinfo["value"] = attrinfo["value"]
+                elif "date_value" in attrinfo and attrinfo["date_value"]:
+                    ret_attrinfo["value"] = attrinfo["date_value"].split("T")[0]
+
+            elif attrinfo["type"] == AttrTypeValue["boolean"]:
+                ret_attrinfo["value"] = attrinfo["value"]
+
+            elif attrinfo["type"] == AttrTypeValue["date"]:
+                ret_attrinfo["value"] = attrinfo["date_value"]
+
+            elif (
+                attrinfo["type"] == AttrTypeValue["object"]
+                or attrinfo["type"] == AttrTypeValue["group"]
+            ):
+                ret_attrinfo["value"] = {
+                    "id": attrinfo["referral_id"],
+                    "name": attrinfo["value"],
                 }
 
-            elif attrinfo['type'] & AttrTypeValue['array']:
-                if 'value' not in ret_attrinfo:
-                    ret_attrinfo['value'] = []
+            elif attrinfo["type"] == AttrTypeValue["named_object"]:
+                ret_attrinfo["value"] = {
+                    attrinfo["key"]: {
+                        "id": attrinfo["referral_id"],
+                        "name": attrinfo["value"],
+                    }
+                }
 
-                if attrinfo['type'] & AttrTypeValue['named']:
-                    ret_attrinfo['value'].append({
-                        attrinfo['key']: {'id': attrinfo['referral_id'], 'name': attrinfo['value']}
-                    })
+            elif attrinfo["type"] & AttrTypeValue["array"]:
+                if "value" not in ret_attrinfo:
+                    ret_attrinfo["value"] = []
 
-                elif attrinfo['type'] & AttrTypeValue['string']:
-                    if 'date_value' in attrinfo:
-                        ret_attrinfo['value'].append(attrinfo['date_value'].split('T')[0])
+                if attrinfo["type"] & AttrTypeValue["named"]:
+                    ret_attrinfo["value"].append(
+                        {
+                            attrinfo["key"]: {
+                                "id": attrinfo["referral_id"],
+                                "name": attrinfo["value"],
+                            }
+                        }
+                    )
+
+                elif attrinfo["type"] & AttrTypeValue["string"]:
+                    if "date_value" in attrinfo:
+                        ret_attrinfo["value"].append(attrinfo["date_value"].split("T")[0])
                     else:
-                        ret_attrinfo['value'].append(attrinfo['value'])
+                        ret_attrinfo["value"].append(attrinfo["value"])
 
-                elif attrinfo['type'] & (AttrTypeValue['object'] | AttrTypeValue['group']):
-                    ret_attrinfo['value'].append({
-                        'id': attrinfo['referral_id'],
-                        'name': attrinfo['value']
-                    })
+                elif attrinfo["type"] & (AttrTypeValue["object"] | AttrTypeValue["group"]):
+                    ret_attrinfo["value"].append(
+                        {"id": attrinfo["referral_id"], "name": attrinfo["value"]}
+                    )
 
-        results['ret_values'].append(ret_info)
+        results["ret_values"].append(ret_info)
 
     return results
 
 
+def make_search_results_for_simple(res: Dict[str, Any]) -> Dict[str, str]:
+    result = {
+        "ret_count": res["hits"]["total"],
+        "ret_values": [],
+    }
+
+    for resp_entry in res["hits"]["hits"]:
+
+        ret_value = {
+            "id": resp_entry["_id"],
+            "name": resp_entry["_source"]["name"],
+        }
+
+        for resp_entry_attr in resp_entry["inner_hits"]["attr"]["hits"]["hits"]:
+            ret_value["attr"] = resp_entry_attr["_source"]["name"]
+            break
+
+        result["ret_values"].append(ret_value)
+
+    return result
+
+
 def is_date_check(value: str) -> Optional[Tuple[str, datetime]]:
     try:
-        for delimiter in ['-', '/']:
-            date_format = '%%Y%(del)s%%m%(del)s%%d' % {'del': delimiter}
+        for delimiter in ["-", "/"]:
+            date_format = "%%Y%(del)s%%m%(del)s%%d" % {"del": delimiter}
 
-            if re.match(r'^[<>]?[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+' % {'del': delimiter}, value):
+            if re.match(r"^[<>]?[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter}, value):
 
-                if value[0] in ['<', '>']:
-                    return (value[0],
-                            datetime.strptime(value[1:].split(' ')[0], date_format))
+                if value[0] in ["<", ">"]:
+                    return (
+                        value[0],
+                        datetime.strptime(value[1:].split(" ")[0], date_format),
+                    )
                 else:
-                    return '', datetime.strptime(value.split(' ')[0], date_format)
+                    return "", datetime.strptime(value.split(" ")[0], date_format)
 
     except ValueError:
         # When datetime.strptie raised ValueError, it means value parameter maches date
@@ -848,7 +954,7 @@ def is_date_check(value: str) -> Optional[Tuple[str, datetime]]:
 
 def _is_date(value: str) -> Optional[List]:
     # checks all specified value is date format
-    result = [is_date_check(x) for x in value.split(' ') if x]
+    result = [is_date_check(x) for x in value.split(" ") if x]
 
     # If result is not empty and all value is date, this returns the result
     return result if result and all(result) else None

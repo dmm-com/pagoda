@@ -12,4 +12,4 @@ def index(request):
         social_user = UserSocialAuth.objects.get(user_id=request.user.id)
 
     [user, social_user]
-    return render(request, 'index.html')
+    return render(request, "index.html")

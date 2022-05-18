@@ -8,23 +8,18 @@ from django.db.models import Q
 # libraries of AirOne
 from airone.lib.http import get_download_response
 from airone.lib.http import http_get, render
-from airone.lib.profile import airone_profile
 
 # related models in AirOne
 from job.models import Job, JobOperation
-from user.models import User
 
 # configuration of this app
 from .settings import CONFIG
 
 
-@airone_profile
 @http_get
 def index(request):
-    user = User.objects.get(id=request.user.id)
-
     limitation = CONFIG.MAX_LIST_VIEW
-    if request.GET.get('nolimit', None):
+    if request.GET.get("nolimit", None):
         limitation = None
 
     export_operations = [
@@ -32,44 +27,46 @@ def index(request):
         JobOperation.EXPORT_SEARCH_RESULT.value,
     ]
 
-    query = Q(Q(user=user), ~Q(operation__in=Job.HIDDEN_OPERATIONS))
+    query = Q(Q(user=request.user), ~Q(operation__in=Job.HIDDEN_OPERATIONS))
     context = {
-        'jobs': [{
-            'id': x.id,
-            'target': x.target,
-            'text': x.text,
-            'status': x.status,
-            'operation': x.operation,
-            'can_cancel': x.operation in Job.CANCELABLE_OPERATIONS,
-            'created_at': x.created_at,
-            'passed_time': (
-                x.updated_at - x.created_at
-            ).seconds if x.is_finished() else (datetime.now(timezone.utc) - x.created_at).seconds,
-        } for x in Job.objects.filter(query).order_by('-created_at')[:limitation]
-            if (x.operation in export_operations or
-                (x.operation not in export_operations and x.target and x.target.is_active) or
-                (x.operation is JobOperation.DELETE_ENTITY.value and x.target) or
-                (x.operation is JobOperation.DELETE_ENTRY.value and x.target))]
+        "jobs": [
+            {
+                "id": x.id,
+                "target": x.target,
+                "text": x.text,
+                "status": x.status,
+                "operation": x.operation,
+                "can_cancel": x.operation in Job.CANCELABLE_OPERATIONS,
+                "created_at": x.created_at,
+                "passed_time": (x.updated_at - x.created_at).seconds
+                if x.is_finished()
+                else (datetime.now(timezone.utc) - x.created_at).seconds,
+            }
+            for x in Job.objects.filter(query).order_by("-created_at")[:limitation]
+            if (
+                x.operation in export_operations
+                or (x.operation not in export_operations and x.target and x.target.is_active)
+                or (x.operation is JobOperation.DELETE_ENTITY.value and x.target)
+                or (x.operation is JobOperation.DELETE_ENTRY.value and x.target)
+            )
+        ]
     }
 
-    return render(request, 'list_jobs.html', context)
+    return render(request, "list_jobs.html", context)
 
 
-@airone_profile
 @http_get
 def download(request, job_id):
-    user = User.objects.get(id=request.user.id)
-
     job = Job.objects.filter(id=job_id).first()
     if not job:
         return HttpResponse("Invalid Job-ID is specified", status=400)
 
-    if job.user.id != user.id:
+    if job.user.id != request.user.id:
         return HttpResponse("Target Job is executed by other people", status=400)
 
     export_operations = [
         JobOperation.EXPORT_ENTRY.value,
-        JobOperation.EXPORT_SEARCH_RESULT.value
+        JobOperation.EXPORT_SEARCH_RESULT.value,
     ]
     if job.operation not in export_operations:
         return HttpResponse("Target Job has no value to return", status=400)

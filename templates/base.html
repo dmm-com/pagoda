@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <!-- custom script head -->
+    {% include 'custom_view/custom_script_head.html' %}
+
     <meta charset="UTF-8" />
     <title>{% block title %}AirOne Page{% endblock %}</title>
 
@@ -17,6 +20,9 @@
     {% block head %}{% endblock %}
   </head>
   <body>
+    <!-- custom script body -->
+    {% include 'custom_view/custom_script_body.html' %}
+
     <!-- header bar -->
     {% include 'nav_header.html' %}
 
