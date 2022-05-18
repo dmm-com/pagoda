@@ -74,6 +74,15 @@ class ACLSerializer(serializers.ModelSerializer):
         return default_permission in ACLType.all()
 
     def validate(self, attrs: Dict[str, Any]):
+        # validate acl paramter
+        for acl_info in attrs["acl"]:
+            if "member_id" not in acl_info:
+                raise ValidationError('"member_id" parameter is necessary for "acl" parameter')
+
+            role = Role.objects.filter(id=acl_info["member_id"]).first()
+            if not role:
+                raise ValidationError("Invalid member_id of Role instance is specified")
+
         user = self.context["request"].user
         if not user.is_permitted_to_change(
             self.instance,
@@ -90,21 +99,25 @@ class ACLSerializer(serializers.ModelSerializer):
                 ],
             }
         ):
-            raise ValidationError(
-                "Inadmissible setting." "By this change you will never change this ACL"
+            # This checks there are any administrative roles that can control this object left
+            def _tobe_admin(role):
+                for r_info in attrs["acl"]:
+                    if (
+                        int(r_info["member_id"]) != role.id
+                        and int(r_info["value"]) != ACLType.Full.id
+                    ):
+                        return False
+
+                # This means specified "role" has full-control permission to the acl_obj
+                return True
+
+            admin_roles = Role.objects.filter(
+                permissions__codename="%s.%s" % (self.instance.id, ACLType.Full.id)
             )
-
-        # validate acl paramter
-        for acl_info in attrs["acl"]:
-            if "member_id" not in acl_info:
-                raise ValidationError('"member_id" parameter is necessary for "acl" parameter')
-
-            role = Role.objects.filter(id=acl_info["member_id"]).first()
-            if not role:
-                raise ValidationError("Invalid member_id of Role instance is specified")
-
-            if not role.is_editable(user):
-                raise ValidationError("This user does not have permission to edit specified Role")
+            if len([r for r in admin_roles if _tobe_admin(r)]) == 0:
+                raise ValidationError(
+                    "Inadmissible setting." "By this change you will never change this ACL"
+                )
 
         return attrs
 

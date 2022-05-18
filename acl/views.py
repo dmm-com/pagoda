@@ -50,6 +50,7 @@ def index(request, obj_id):
                 "current_permission": get_current_permission(x),
             }
             for x in Role.objects.filter(is_active=True)
+            if x.is_editable(request.user)
         ],
     }
     return render(request, "edit_acl.html", context)
@@ -117,9 +118,22 @@ def set(request, recv_data):
             ],
         }
     ):
-        return HttpResponse(
-            "Inadmissible setting. By this change you will never change this ACL", status=400
+        # This checks there are any administrative roles that can control this object left
+        def _tobe_admin(role):
+            for r_info in recv_data["acl"]:
+                if int(r_info["role_id"]) != role.id and int(r_info["value"]) != ACLType.Full.id:
+                    return False
+
+            # This means specified "role" has full-control permission to the acl_obj
+            return True
+
+        admin_roles = Role.objects.filter(
+            permissions__codename="%s.%s" % (acl_obj.id, ACLType.Full.id)
         )
+        if len([r for r in admin_roles if _tobe_admin(r)]) == 0:
+            return HttpResponse(
+                "Inadmissible setting. By this change you will never change this ACL", status=400
+            )
 
     acl_obj.is_public = bool(recv_data.get("is_public", False))
     acl_obj.default_permission = int(recv_data["default_permission"])
@@ -131,10 +145,8 @@ def set(request, recv_data):
         role = Role.objects.get(id=acl_data["role_id"])
         acl_type = [x for x in ACLType.all() if x == int(acl_data["value"])][0]
 
-        # Role can be cahnged by user who belonged to administrative members
-        if role.is_editable(request.user):
-            # update permissios for the target ACLBased object
-            _set_permission(role, acl_obj, acl_type)
+        # update permissios for the target ACLBased object
+        _set_permission(role, acl_obj, acl_type)
 
     redirect_url = "/"
     if isinstance(acl_obj, Entity):

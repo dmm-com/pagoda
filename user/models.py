@@ -101,11 +101,7 @@ class User(AbstractUser):
 
         for acl_info in acl_settings:
             role = acl_info.get("role")
-            if (
-                role
-                and role.is_belonged_to(self)
-                and acl_info.get("value", 0) >= expected_permission
-            ):
+            if role and role.is_editable(self) and acl_info.get("value", 0) >= expected_permission:
                 return True
 
         return False

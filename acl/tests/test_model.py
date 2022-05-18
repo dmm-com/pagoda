@@ -205,7 +205,7 @@ class ModelTest(TestCase):
 
         # add and register group to non_admin_user
         group = Group.objects.create(name="group", is_active=True)
-        self.role.groups.add(group)
+        self.role.admin_groups.add(group)
         non_admin_user.groups.add(group)
 
         acl_bases = {

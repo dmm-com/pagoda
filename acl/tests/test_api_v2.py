@@ -85,8 +85,6 @@ class ACLAPITest(AironeViewTest):
 
     def test_update_acl_to_nobody_control(self):
         user = self.guest_login()
-        role = Role.objects.create(name="role")
-        role.users.add(user)
 
         acl = ACLBase.objects.create(name="test", created_user=user)
         resp = self.client.put(
@@ -111,6 +109,29 @@ class ACLAPITest(AironeViewTest):
                 ]
             },
         )
+
+    def test_update_acl_to_clear_acl(self):
+        user = self.guest_login()
+        role = Role.objects.create(name="role")
+        role.admin_users.add(user)
+
+        acl = ACLBase.objects.create(name="test", created_user=user)
+        role.permissions.add(acl.full)
+
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps(
+                {
+                    "name": acl.name,
+                    "is_public": False,
+                    "default_permission": str(ACLType.Nothing.id),
+                    "objtype": acl.objtype,
+                    "acl": [],
+                }
+            ),
+            "application/json;charset=utf-8",
+        )
+        self.assertEqual(resp.status_code, 200)
 
     def test_update_acl_without_permission(self):
         user = self.guest_login()
