@@ -1,5 +1,4 @@
 import yaml
-import json
 import re
 
 import custom_view
@@ -22,7 +21,7 @@ from airone.lib.acl import ACLType
 
 from entity.models import Entity
 from entry.models import Entry, Attribute, AttributeValue
-from job.models import Job, JobOperation
+from job.models import Job
 from group.models import Group
 from .settings import CONFIG
 
@@ -574,17 +573,20 @@ def copy(request, entry_id):
     ]
 )
 def do_copy(request, entry_id, recv_data):
-    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Full)
     if error:
         return error
 
-    # validation check
-    if "entries" not in recv_data:
-        return HttpResponse("Malformed data is specified (%s)" % recv_data, status=400)
-
     ret = []
+    params = {
+        "new_name_list": [],
+        "post_data": recv_data,
+    }
     for new_name in [x for x in recv_data["entries"].split("\n") if x]:
-        if Entry.objects.filter(schema=entry.schema, name=new_name).exists():
+        if (
+            new_name in params["new_name_list"]
+            or Entry.objects.filter(schema=entry.schema, name=new_name).exists()
+        ):
             ret.append(
                 {
                     "status": "fail",
@@ -612,36 +614,19 @@ def do_copy(request, entry_id, recv_data):
                 )
                 continue
 
-        params = {
-            "new_name": new_name,
-            "post_data": recv_data,
-        }
-
-        # Check another COPY job that targets same name entry is under processing
-        if Job.objects.filter(
-            operation=JobOperation.COPY_ENTRY.value,
-            target=entry,
-            status__in=[Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"]],
-            params=json.dumps(params, sort_keys=True),
-        ):
-            ret.append(
-                {
-                    "status": "fail",
-                    "msg": "There is another job that targets same name(%s) is existed" % new_name,
-                }
-            )
-            continue
-
-        # make a new job to copy entry and run it
-        job = Job.new_copy(request.user, entry, text=new_name, params=params)
-        job.run()
-
+        params["new_name_list"].append(new_name)
         ret.append(
             {
                 "status": "success",
                 "msg": "Success to create new entry '%s'" % new_name,
             }
         )
+
+    # if there is no entry to copy, do not create a job.
+    if params["new_name_list"]:
+        # make a new job to copy entry and run it
+        job = Job.new_copy(request.user, entry, text="Preparing to copy entry", params=params)
+        job.run()
 
     return JsonResponse({"results": ret})
 

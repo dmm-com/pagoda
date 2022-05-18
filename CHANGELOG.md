@@ -7,6 +7,8 @@
 ### Changed
 
 ### Fixed
+* Fixed an error when copying a lot of entries
+  Contributed by @hinashi
 
 ## v3.8.0
 

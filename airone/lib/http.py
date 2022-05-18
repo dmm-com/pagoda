@@ -157,6 +157,7 @@ def render(request, template, context={}):
             "EDIT": JobOperation.EDIT_ENTRY.value,
             "DELETE": JobOperation.DELETE_ENTRY.value,
             "COPY": JobOperation.COPY_ENTRY.value,
+            "DO_COPY": JobOperation.DO_COPY_ENTRY.value,
             "IMPORT": JobOperation.IMPORT_ENTRY.value,
             "EXPORT": JobOperation.EXPORT_ENTRY.value,
             "RESTORE": JobOperation.RESTORE_ENTRY.value,

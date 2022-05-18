@@ -50,6 +50,7 @@ class APITest(AironeViewTest):
                 "edit": JobOperation.EDIT_ENTRY.value,
                 "delete": JobOperation.DELETE_ENTRY.value,
                 "copy": JobOperation.COPY_ENTRY.value,
+                "do_copy": JobOperation.DO_COPY_ENTRY.value,
                 "import": JobOperation.IMPORT_ENTRY.value,
                 "export": JobOperation.EXPORT_ENTRY.value,
                 "export_search_result": JobOperation.EXPORT_SEARCH_RESULT.value,
@@ -154,7 +155,7 @@ class APITest(AironeViewTest):
         self.assertEqual(entry.attrs.first().get_latest_value().value, "fuga")
 
         # make and send a job to copy entry
-        job = Job.new_copy(user, entry, params={"new_name": "new_entry"})
+        job = Job.new_do_copy(user, entry, params={"new_name": "new_entry"})
         resp = self.client.post("/api/v1/job/run/%d" % job.id)
 
         self.assertEqual(resp.status_code, 200)
