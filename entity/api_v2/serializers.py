@@ -1,5 +1,6 @@
 import json
 from typing import Any, Dict, List
+import custom_view
 
 from rest_framework import serializers
 
@@ -69,3 +70,35 @@ class EntityDetailSerializer(EntityWithAttrSerializer):
     class Meta:
         model = Entity
         fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks"]
+
+
+class EntityAttrSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+
+
+class EntityCreateSerializer(EntitySerializer):
+    attrs = serializers.ListField(child=EntityAttrSerializer(), write_only=True, required=False)
+    webhooks = WebhookSerializer(many=True)
+
+    class Meta:
+        model = Entity
+        fields = ["id", "name", "attrs", "note", "webhooks"]
+
+    def create(self, validated_data):
+        user: User = User.objects.get(id=self.context["request"].user.id)
+
+        if custom_view.is_custom("before_create_entity"):
+            custom_view.call_custom("before_create_entity", None, validated_data)
+
+        attrs_data = validated_data.pop("attrs", [])
+        webhooks_data = validated_data.pop("webhooks", [])
+        entity: Entity = Entity.objects.create(
+            **validated_data, status=Entity.STATUS_CREATING, created_user=user
+        )
+
+        # set status parameters
+        if validated_data.get("is_toplevel", False):
+            entity.status = Entity.STATUS_TOP_LEVEL
+            entity.save(update_fields=["status"])
+
+        return entity

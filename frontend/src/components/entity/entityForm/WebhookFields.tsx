@@ -218,42 +218,49 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
         onClose={handleCloseModal}
       >
         <Box className={classes.paper}>
-          hoge( {openModalIndex} )
           <Typography variant={"h6"}>AdditionalHeader (Optional)</Typography>
           <Typography variant={"caption"}>
             指定した endpoint URL
             に送るリクエストに付加するヘッダ情報を入力してください。
           </Typography>
-          {/*
-          <Box className={classes.headerRow}>
-            <Box className={classes.headerInput}>
-              <TextField label="Key" variant="standard" />
-            </Box>
-            <Box className={classes.headerInput}>
-              <TextField label="Value" variant="standard" />
-            </Box>
-            <IconButton onClick={() => 1}>
-              <DeleteOutlineIcon />
-            </IconButton>
-            <IconButton onClick={() => 1}>
-              <AddIcon />
-            </IconButton>
-          </Box>
-          */}
           <Table className="table">
             <TableBody>
               {entityInfo.webhooks[openModalIndex]?.headers.length === 0 && (
                 <TableRow>
-                  <TableCell>
+                  <TableCell
+                    sx={{ p: "4px 8px 0px 0px", borderBottom: "0px" }}
+                  >
+                    <TextField
+                      label="Key"
+                      variant="standard"
+                      fullWidth={true}
+                      disabled={true}
+                    />
+                  </TableCell>
+                  <TableCell
+                    sx={{ p: "4px 8px 0px 0px", borderBottom: "0px" }}
+                  >
+                    <TextField
+                      label="Value"
+                      variant="standard"
+                      fullWidth={true}
+                      disabled={true}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ borderBottom: "0px" }}>
+                    <IconButton
+                      disabled={true}
+                    >
+                      <DeleteOutlineIcon />
+                    </IconButton>
+                  </TableCell>
+                  <TableCell sx={{ borderBottom: "0px" }}>
                     <IconButton
                       onClick={() => handleAppendWebhookAdditionalHeader(0)}
                     >
                       <AddIcon />
                     </IconButton>
                   </TableCell>
-                  <TableCell></TableCell>
-                  <TableCell></TableCell>
-                  <TableCell></TableCell>
                 </TableRow>
               )}
               {entityInfo.webhooks[openModalIndex]?.headers.map(
