@@ -51,10 +51,10 @@ export interface Webhook {
   isVerified?: boolean;
   /**
    *
-   * @type {string}
+   * @type {Array<{ [key: string]: string; }>}
    * @memberof Webhook
    */
-  headers: string;
+  readonly headers: Array<{ [key: string]: string }>;
 }
 
 export function WebhookFromJSON(json: any): Webhook {
@@ -90,6 +90,5 @@ export function WebhookToJSON(value?: Webhook | null): any {
     url: value.url,
     is_enabled: value.isEnabled,
     is_verified: value.isVerified,
-    headers: value.headers,
   };
 }

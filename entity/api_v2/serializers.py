@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List
 
 from rest_framework import serializers
@@ -48,9 +49,17 @@ class EntityWithAttrSerializer(EntitySerializer):
 
 
 class WebhookSerializer(serializers.ModelSerializer):
+    headers = serializers.SerializerMethodField()
+
     class Meta:
         model = Webhook
         fields = ["id", "label", "url", "is_enabled", "is_verified", "headers"]
+
+    def get_headers(self, obj: Webhook) -> List[Dict[str, str]]:
+        try:
+            return [{'headerKey': k, 'headerValue': v} for k, v in json.loads(obj.headers)]
+        except json.decoder.JSONDecodeError:
+            return []
 
 
 class EntityDetailSerializer(EntityWithAttrSerializer):
