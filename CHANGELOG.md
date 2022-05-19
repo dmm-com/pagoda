@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Changed entity import to import entries belonging to multiple entities
+  Contributed by @syucream
 
 ### Fixed
 
