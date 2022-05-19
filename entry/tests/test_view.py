@@ -7,7 +7,6 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.core.cache import cache
 from django.conf import settings
-from django.db.models import Q
 from group.models import Group
 from datetime import date
 
@@ -2868,9 +2867,14 @@ class ViewTest(AironeViewTest):
         self.assertEqual(res["_all"]["total"]["segments"]["count"], 3)
 
         # checks jobs were created as expected
-        copy_jobs = Job.objects.filter(user=user, operation=JobOperation.COPY_ENTRY.value)
-        self.assertEqual(copy_jobs.count(), 3)
-        for obj in copy_jobs.all():
+        copy_job = Job.objects.filter(user=user, operation=JobOperation.COPY_ENTRY.value).first()
+        self.assertEqual(copy_job.text, "Copy completed [%5d/%5d]" % (3, 3))
+        self.assertEqual(copy_job.target.entry, entry)
+        self.assertEqual(copy_job.status, Job.STATUS["DONE"])
+
+        do_copy_jobs = Job.objects.filter(user=user, operation=JobOperation.DO_COPY_ENTRY.value)
+        self.assertEqual(do_copy_jobs.count(), 3)
+        for obj in do_copy_jobs.all():
             self.assertTrue(any([obj.target.name == x for x in ["foo", "bar", "baz"]]))
             self.assertEqual(obj.text, "original entry: %s" % entry.name)
             self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
@@ -2884,37 +2888,7 @@ class ViewTest(AironeViewTest):
             status=Job.STATUS["PREPARING"],
             user=user,
         )
-        self.assertEqual(notify_jobs.count(), copy_jobs.count())
-
-    @patch("entry.tasks.copy_entry.delay", Mock(side_effect=tasks.copy_entry))
-    def test_post_copy_after_job_creating(self):
-        user = self.admin_login()
-        entry = Entry.objects.create(name="entry", created_user=user, schema=self._entity)
-
-        # creating a job to copy entry
-        params = {
-            # A job of creating entry 'foo' is already created
-            "entries": "foo",
-        }
-        job = Job.new_copy(user, entry, text="", params={"new_name": "foo", "post_data": params})
-        resp = self.client.post(
-            reverse("entry:do_copy", args=[entry.id]),
-            json.dumps(params),
-            "application/json",
-        )
-        self.assertEqual(resp.status_code, 200)
-
-        # check that creating foo would be failed
-        results = resp.json()["results"]
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]["status"], "fail")
-        self.assertEqual(
-            results[0]["msg"],
-            "There is another job that targets same name(foo) is existed",
-        )
-
-        # check job won't be created by this request
-        self.assertFalse(Job.objects.filter(Q(target=entry) & ~Q(id=job.id)).exists())
+        self.assertEqual(notify_jobs.count(), do_copy_jobs.count())
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",

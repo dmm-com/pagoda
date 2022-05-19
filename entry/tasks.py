@@ -369,6 +369,40 @@ def copy_entry(self, job_id):
         src_entry = Entry.objects.get(id=job.target.id)
 
         params = json.loads(job.params)
+        total_count = len(params["new_name_list"])
+        for (index, new_name) in enumerate(params["new_name_list"]):
+            # abort processing when job is canceled
+            if job.is_canceled():
+                job.text = "Copy completed [%5d/%5d]" % (index, total_count)
+                job.save(update_fields=["text"])
+                return
+
+            job.text = "Now copying... (progress: [%5d/%5d])" % (index + 1, total_count)
+            job.save(update_fields=["text"])
+
+            params["new_name"] = new_name
+            job_do_copy_entry = Job.new_do_copy(user, src_entry, new_name, params)
+            job_do_copy_entry.run(will_delay=False)
+
+        # update job status and save it
+        job.update(
+            status=Job.STATUS["DONE"],
+            text="Copy completed [%5d/%5d]" % (total_count, total_count),
+        )
+
+
+@app.task(bind=True)
+def do_copy_entry(self, job_id):
+    job = Job.objects.get(id=job_id)
+
+    if job.proceed_if_ready():
+        # update job status
+        job.update(Job.STATUS["PROCESSING"])
+
+        user = User.objects.get(id=job.user.id)
+        src_entry = Entry.objects.get(id=job.target.id)
+
+        params = json.loads(job.params)
         dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params["new_name"]).first()
         if not dest_entry:
             dest_entry = src_entry.clone(user, name=params["new_name"])

@@ -42,6 +42,7 @@ class JobOperation(Enum):
     NOTIFY_CREATE_ENTRY = 13
     NOTIFY_UPDATE_ENTRY = 14
     NOTIFY_DELETE_ENTRY = 15
+    DO_COPY_ENTRY = 16
 
 
 class Job(models.Model):
@@ -92,6 +93,7 @@ class Job(models.Model):
 
     CANCELABLE_OPERATIONS = [
         JobOperation.CREATE_ENTRY.value,
+        JobOperation.COPY_ENTRY.value,
         JobOperation.IMPORT_ENTRY.value,
         JobOperation.EXPORT_ENTRY.value,
         JobOperation.REGISTER_REFERRALS.value,
@@ -275,6 +277,7 @@ class Job(models.Model):
                 JobOperation.EDIT_ENTRY.value: entry_task.edit_entry_attrs,
                 JobOperation.DELETE_ENTRY.value: entry_task.delete_entry,
                 JobOperation.COPY_ENTRY.value: entry_task.copy_entry,
+                JobOperation.DO_COPY_ENTRY.value: entry_task.do_copy_entry,
                 JobOperation.IMPORT_ENTRY.value: entry_task.import_entries,
                 JobOperation.EXPORT_ENTRY.value: entry_task.export_entries,
                 JobOperation.RESTORE_ENTRY.value: entry_task.restore_entry,
@@ -332,6 +335,16 @@ class Job(models.Model):
             user,
             target,
             JobOperation.COPY_ENTRY.value,
+            text,
+            json.dumps(params, sort_keys=True),
+        )
+
+    @classmethod
+    def new_do_copy(kls, user, target, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.DO_COPY_ENTRY.value,
             text,
             json.dumps(params, sort_keys=True),
         )

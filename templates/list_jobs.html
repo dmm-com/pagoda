@@ -83,6 +83,8 @@
               削除
             {% elif job.operation|divmod:100 == JOB.OPERATION.COPY %}
               コピー
+            {% elif job.operation|divmod:100 == JOB.OPERATION.DO_COPY %}
+              コピー
             {% elif job.operation|divmod:100 == JOB.OPERATION.IMPORT %}
               インポート
             {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT %}
