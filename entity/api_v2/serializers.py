@@ -49,12 +49,14 @@ class EntityWithAttrSerializer(EntitySerializer):
         ]
 
 
-class WebhookSerializer(serializers.ModelSerializer):
-    headers = serializers.SerializerMethodField()
-
+class WebhookSerializerBase(serializers.ModelSerializer):
     class Meta:
         model = Webhook
         fields = ["id", "label", "url", "is_enabled", "is_verified", "headers"]
+
+
+class WebhookGetSerializer(WebhookSerializerBase):
+    headers = serializers.SerializerMethodField()
 
     def get_headers(self, obj: Webhook) -> List[Dict[str, str]]:
         try:
@@ -63,9 +65,16 @@ class WebhookSerializer(serializers.ModelSerializer):
             return []
 
 
+class WebhookPostSerializer(WebhookSerializerBase):
+    headers = serializers.ListField(child=serializers.DictField(child=serializers.CharField(), allow_empty=True), allow_empty=True)
+
+    def validate_headers(self, value):
+        return json.dumps(value)
+
+
 class EntityDetailSerializer(EntityWithAttrSerializer):
-    # webhooks = serializers.ListField(child=WebhookSerializer())
-    webhooks = WebhookSerializer(many=True)
+    # webhooks = serializers.ListField(child=WebhookGetSerializer())
+    webhooks = WebhookGetSerializer(many=True)
 
     class Meta:
         model = Entity
@@ -78,13 +87,18 @@ class EntityAttrSerializer(serializers.Serializer):
 
 class EntityCreateSerializer(EntitySerializer):
     attrs = serializers.ListField(child=EntityAttrSerializer(), write_only=True, required=False)
-    webhooks = WebhookSerializer(many=True)
+    webhooks = WebhookPostSerializer(many=True)
 
     class Meta:
         model = Entity
         fields = ["id", "name", "attrs", "note", "webhooks"]
 
+    def validate(self, data):
+        # todo: duplication check
+        pass
+
     def create(self, validated_data):
+        print(validated_data)
         user: User = User.objects.get(id=self.context["request"].user.id)
 
         if custom_view.is_custom("before_create_entity"):
@@ -100,5 +114,11 @@ class EntityCreateSerializer(EntitySerializer):
         if validated_data.get("is_toplevel", False):
             entity.status = Entity.STATUS_TOP_LEVEL
             entity.save(update_fields=["status"])
+
+        entity.del_status(Entity.STATUS_CREATING)
+
+        # TODO:
+        # - valudate attrs_data
+        # - register EntityAttr(s) and Webhook(s)
 
         return entity
