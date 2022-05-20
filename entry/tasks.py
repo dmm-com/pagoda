@@ -92,100 +92,115 @@ def _convert_data_value(attr, info):
 def _do_import_entries(job):
     user = job.user
 
-    entity = Entity.objects.get(id=job.target.id)
-    if not user.has_permission(entity, ACLType.Writable):
+    entities_data = json.loads(job.params)
+    if not entities_data:
         job.update(
             **{
                 "status": Job.STATUS["ERROR"],
-                "text": "Permission denied to import. "
-                'You need Writable permission for "%s"' % entity.name,
+                "text": "Uploaded file has no entry data",
             }
         )
         return
 
-    whole_data = json.loads(job.params).get(entity.name)
-    if not whole_data:
-        job.update(
-            **{
-                "status": Job.STATUS["ERROR"],
-                "text": "Uploaded file has no entry data of %s" % entity.name,
-            }
-        )
-        return
-
-    # get custom_view method to prevent executing check method in every loop processing
-    custom_view_handler = None
-    if custom_view.is_custom("after_import_entry", entity.name):
-        custom_view_handler = "after_import_entry"
+    entities = Entity.objects.filter(name__in=entities_data.keys())
+    for entity in entities:
+        if not user.has_permission(entity, ACLType.Writable):
+            job.update(
+                **{
+                    "status": Job.STATUS["ERROR"],
+                    "text": "Permission denied to import. "
+                    'You need Writable permission for "%s"' % entity.name,
+                }
+            )
+            return
 
     job.update(Job.STATUS["PROCESSING"])
 
-    total_count = len(whole_data)
-    # create or update entry
-    for (index, entry_data) in enumerate(whole_data):
-        job.text = "Now importing... (progress: [%5d/%5d])" % (index + 1, total_count)
-        job.save(update_fields=["text"])
+    # NOTE it imports all entities other than specified by job.target.id
+    for entity in entities:
+        # get custom_view method to prevent executing check method in every loop processing
+        custom_view_handler = None
+        if custom_view.is_custom("after_import_entry", entity.name):
+            custom_view_handler = "after_import_entry"
 
-        # abort processing when job is canceled
-        if job.is_canceled():
-            return
+        entries_data = entities_data[entity.name]
+        total_count = len(entries_data)
 
-        entry = Entry.objects.filter(name=entry_data["name"], schema=entity).first()
-        if not entry:
-            entry = Entry.objects.create(name=entry_data["name"], schema=entity, created_user=user)
-
-            # create job to notify create event to the WebHook URL
-            job_notify = Job.new_notify_create_entry(user, entry)
-
-        elif not user.has_permission(entry, ACLType.Writable):
-            continue
-
-        else:
-            # create job to notify edit event to the WebHook URL
-            job_notify = Job.new_notify_update_entry(user, entry)
-
-        entry.complement_attrs(user)
-        for attr_name, value in entry_data["attrs"].items():
-            # If user doesn't have readable permission for target Attribute,
-            # it won't be created.
-            if not entry.attrs.filter(schema__name=attr_name).exists():
-                continue
-
-            # There should be only one EntityAttr that is specified by name and Entity.
-            # Once there are multiple EntityAttrs, it must be an abnormal situation.
-            # In that case, this aborts import processing for this entry and reports it
-            # as an error.
-            attr_query = entry.attrs.filter(
-                schema__name=attr_name,
-                is_active=True,
-                schema__parent_entity=entry.schema,
+        # create or update entry
+        for (index, entry_data) in enumerate(entries_data):
+            job.text = "Now importing... (progress: [%5d/%5d] for %s)" % (
+                index + 1,
+                total_count,
+                entity.name,
             )
-            if attr_query.count() > 1:
-                Logger.error(
-                    "[task.import_entry] Abnormal entry was detected(%s:%d)"
-                    % (entry.name, entry.id)
-                )
-                break
+            job.save(update_fields=["text"])
 
-            attr = attr_query.last()
-            if not user.has_permission(attr.schema, ACLType.Writable) or not user.has_permission(
-                attr, ACLType.Writable
-            ):
+            # abort processing when job is canceled
+            if job.is_canceled():
+                return
+
+            entry = Entry.objects.filter(name=entry_data["name"], schema=entity).first()
+            if not entry:
+                entry = Entry.objects.create(
+                    name=entry_data["name"], schema=entity, created_user=user
+                )
+
+                # create job to notify create event to the WebHook URL
+                job_notify = Job.new_notify_create_entry(user, entry)
+
+            elif not user.has_permission(entry, ACLType.Writable):
                 continue
 
-            input_value = attr.convert_value_to_register(value)
-            if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(input_value):
-                attr.add_value(user, input_value)
+            else:
+                # create job to notify edit event to the WebHook URL
+                job_notify = Job.new_notify_update_entry(user, entry)
 
-            # call custom-view processing corresponding to import entry
-            if custom_view_handler:
-                custom_view.call_custom(custom_view_handler, entity.name, user, entry, attr, value)
+            entry.complement_attrs(user)
+            for attr_name, value in entry_data["attrs"].items():
+                # If user doesn't have readable permission for target Attribute,
+                # it won't be created.
+                if not entry.attrs.filter(schema__name=attr_name).exists():
+                    continue
 
-        # register entry to the Elasticsearch
-        entry.register_es()
+                # There should be only one EntityAttr that is specified by name and Entity.
+                # Once there are multiple EntityAttrs, it must be an abnormal situation.
+                # In that case, this aborts import processing for this entry and reports it
+                # as an error.
+                attr_query = entry.attrs.filter(
+                    schema__name=attr_name,
+                    is_active=True,
+                    schema__parent_entity=entry.schema,
+                )
+                if attr_query.count() > 1:
+                    Logger.error(
+                        "[task.import_entry] Abnormal entry was detected(%s:%d)"
+                        % (entry.name, entry.id)
+                    )
+                    break
 
-        # run notification job
-        job_notify.run()
+                attr = attr_query.last()
+                if not user.has_permission(
+                    attr.schema, ACLType.Writable
+                ) or not user.has_permission(attr, ACLType.Writable):
+                    continue
+
+                input_value = attr.convert_value_to_register(value)
+                if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(
+                    input_value
+                ):
+                    attr.add_value(user, input_value)
+
+                # call custom-view processing corresponding to import entry
+                if custom_view_handler:
+                    custom_view.call_custom(
+                        custom_view_handler, entity.name, user, entry, attr, value
+                    )
+
+            # register entry to the Elasticsearch
+            entry.register_es()
+
+            # run notification job
+            job_notify.run()
 
     if not job.is_canceled():
         job.update(status=Job.STATUS["DONE"], text="")
@@ -359,6 +374,40 @@ def restore_entry(self, job_id):
 
 @app.task(bind=True)
 def copy_entry(self, job_id):
+    job = Job.objects.get(id=job_id)
+
+    if job.proceed_if_ready():
+        # update job status
+        job.update(Job.STATUS["PROCESSING"])
+
+        user = User.objects.get(id=job.user.id)
+        src_entry = Entry.objects.get(id=job.target.id)
+
+        params = json.loads(job.params)
+        total_count = len(params["new_name_list"])
+        for (index, new_name) in enumerate(params["new_name_list"]):
+            # abort processing when job is canceled
+            if job.is_canceled():
+                job.text = "Copy completed [%5d/%5d]" % (index, total_count)
+                job.save(update_fields=["text"])
+                return
+
+            job.text = "Now copying... (progress: [%5d/%5d])" % (index + 1, total_count)
+            job.save(update_fields=["text"])
+
+            params["new_name"] = new_name
+            job_do_copy_entry = Job.new_do_copy(user, src_entry, new_name, params)
+            job_do_copy_entry.run(will_delay=False)
+
+        # update job status and save it
+        job.update(
+            status=Job.STATUS["DONE"],
+            text="Copy completed [%5d/%5d]" % (total_count, total_count),
+        )
+
+
+@app.task(bind=True)
+def do_copy_entry(self, job_id):
     job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():

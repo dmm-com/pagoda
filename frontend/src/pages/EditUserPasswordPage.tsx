@@ -3,13 +3,13 @@ import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { useTypedParams } from "../hooks/useTypedParams";
 
 import { topPath, usersPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { UserPasswordForm } from "components/user/UserPasswordForm";
-import { getUser } from "utils/AironeAPIClient";
 import { DjangoContext } from "utils/DjangoContext";
 
 export const EditUserPasswordPage: FC = () => {
@@ -17,8 +17,7 @@ export const EditUserPasswordPage: FC = () => {
   const djangoContext = DjangoContext.getInstance();
 
   const user = useAsync(async () => {
-    const resp = await getUser(userId);
-    return await resp.json();
+    return await aironeApiClientV2.getUser(userId);
   });
 
   return (
