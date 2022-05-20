@@ -118,22 +118,9 @@ def set(request, recv_data):
             ],
         }
     ):
-        # This checks there are any administrative roles that can control this object left
-        def _tobe_admin(role):
-            for r_info in recv_data["acl"]:
-                if int(r_info["role_id"]) != role.id and int(r_info["value"]) != ACLType.Full.id:
-                    return False
-
-            # This means specified "role" has full-control permission to the acl_obj
-            return True
-
-        admin_roles = Role.objects.filter(
-            permissions__codename="%s.%s" % (acl_obj.id, ACLType.Full.id)
+        return HttpResponse(
+            "Inadmissible setting. By this change you will never change this ACL", status=400
         )
-        if len([r for r in admin_roles if _tobe_admin(r)]) == 0:
-            return HttpResponse(
-                "Inadmissible setting. By this change you will never change this ACL", status=400
-            )
 
     acl_obj.is_public = bool(recv_data.get("is_public", False))
     acl_obj.default_permission = int(recv_data["default_permission"])

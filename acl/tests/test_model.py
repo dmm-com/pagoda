@@ -232,7 +232,14 @@ class ModelTest(TestCase):
                     }
                 ]
             },
-            "nothing": {"acl_settings": []},
+            "nothing": {
+                "acl_settings": [
+                    {
+                        "role": self.role,
+                        "value": ACLType.Nothing.id,
+                    }
+                ]
+            },
         }
 
         # checks that admin user can access any case

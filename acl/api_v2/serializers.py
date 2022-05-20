@@ -99,25 +99,9 @@ class ACLSerializer(serializers.ModelSerializer):
                 ],
             }
         ):
-            # This checks there are any administrative roles that can control this object left
-            def _tobe_admin(role):
-                for r_info in attrs["acl"]:
-                    if (
-                        int(r_info["member_id"]) != role.id
-                        and int(r_info["value"]) != ACLType.Full.id
-                    ):
-                        return False
-
-                # This means specified "role" has full-control permission to the acl_obj
-                return True
-
-            admin_roles = Role.objects.filter(
-                permissions__codename="%s.%s" % (self.instance.id, ACLType.Full.id)  # type: ignore
+            raise ValidationError(
+                "Inadmissible setting." "By this change you will never change this ACL"
             )
-            if len([r for r in admin_roles if _tobe_admin(r)]) == 0:
-                raise ValidationError(
-                    "Inadmissible setting." "By this change you will never change this ACL"
-                )
 
         return attrs
 

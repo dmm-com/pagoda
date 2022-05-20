@@ -73,7 +73,7 @@ class ViewTest(AironeViewTest):
             "object_type": str(aclobj.objtype),
             "acl": [
                 {
-                    "role_id": str(user.id),
+                    "role_id": str(self._role.id),
                     "value": str(ACLType.Writable.id),
                 },
             ],
@@ -323,18 +323,31 @@ class ViewTest(AironeViewTest):
         )
 
     def test_clear_permission_when_there_is_available_role(self):
+        """This test remove last role permission. It is expected that processing
+           won't be accepted to prevent making object no-one can control.
+        """
         user = self.guest_login()
         self._role.admin_users.add(user)
+
+        # make another role to remove permission
+        another_role = Role.objects.create(name="Another Role")
+        another_role.admin_users.add(user)
 
         # create an aclobj and set full-permission to operate aclobj to the test Role
         aclobj = ACLBase.objects.create(name="obj", created_user=user)
         self._role.permissions.add(aclobj.full)
+        another_role.permissions.add(aclobj.full)
 
         params = {
             "object_id": str(aclobj.id),
             "object_type": str(aclobj.objtype),
             "is_public": "",
-            "acl": [],
+            "acl": [
+                {
+                    "role_id": str(another_role.id),
+                    "value": str(ACLType.Nothing.id),
+                },
+            ],
             "default_permission": str(ACLType.Nothing.id),
         }
         resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")

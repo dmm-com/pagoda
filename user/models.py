@@ -1,9 +1,10 @@
 from importlib import import_module
 
+from airone.lib.acl import ACLTypeBase, ACLType
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from airone.lib.acl import ACLTypeBase
 from group.models import Group
+from role.models import Role
 
 from rest_framework.authtoken.models import Token
 
@@ -103,6 +104,21 @@ class User(AbstractUser):
             role = acl_info.get("role")
             if role and role.is_editable(self) and acl_info.get("value", 0) >= expected_permission:
                 return True
+
+        # This checks there are any administrative roles that can control this object left
+        def _tobe_admin(role):
+            for r_info in acl_settings:
+                if r_info["role"].id == role.id and r_info["value"] != ACLType.Full.id:
+                    return False
+
+            # This means specified "role" has full-control permission to the acl_obj
+            return True
+
+        admin_roles = Role.objects.filter(
+            permissions__codename="%s.%s" % (target_obj.id, ACLType.Full.id)
+        )
+        if len([r for r in admin_roles if _tobe_admin(r)]) > 0:
+            return True
 
         return False
 

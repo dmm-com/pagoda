@@ -85,33 +85,6 @@ class ACLAPITest(AironeViewTest):
 
     def test_update_acl_to_nobody_control(self):
         user = self.guest_login()
-
-        acl = ACLBase.objects.create(name="test", created_user=user)
-        resp = self.client.put(
-            "/acl/api/v2/acls/%s" % acl.id,
-            json.dumps(
-                {
-                    "name": acl.name,
-                    "is_public": False,
-                    "default_permission": str(ACLType.Nothing.id),
-                    "objtype": acl.objtype,
-                    "acl": [],
-                }
-            ),
-            "application/json;charset=utf-8",
-        )
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.json(),
-            {
-                "non_field_errors": [
-                    "Inadmissible setting.By this change you will never change this ACL"
-                ]
-            },
-        )
-
-    def test_update_acl_to_clear_acl(self):
-        user = self.guest_login()
         role = Role.objects.create(name="role")
         role.admin_users.add(user)
 
@@ -126,7 +99,49 @@ class ACLAPITest(AironeViewTest):
                     "is_public": False,
                     "default_permission": str(ACLType.Nothing.id),
                     "objtype": acl.objtype,
-                    "acl": [],
+                    "acl": [
+                        {
+                            "member_id": str(role.id),
+                            "value": str(ACLType.Nothing.id),
+                        },
+                    ],
+                }
+            ),
+            "application/json;charset=utf-8",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "non_field_errors": [
+                    "Inadmissible setting.By this change you will never change this ACL"
+                ]
+            },
+        )
+
+    def test_remove_acl_when_administrative_role_is_left(self):
+        user = self.guest_login()
+        acl = ACLBase.objects.create(name="test", created_user=user)
+
+        roles = [Role.objects.create(name="role-%d" % i) for i in range(2)]
+        for role in roles:
+            role.admin_users.add(user)
+            role.permissions.add(acl.full)
+
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps(
+                {
+                    "name": acl.name,
+                    "is_public": False,
+                    "default_permission": str(ACLType.Nothing.id),
+                    "objtype": acl.objtype,
+                    "acl": [
+                        {
+                            "member_id": str(roles[0].id),
+                            "value": str(ACLType.Nothing.id),
+                        },
+                    ],
                 }
             ),
             "application/json;charset=utf-8",
