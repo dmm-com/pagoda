@@ -78,7 +78,7 @@ class ViewTest(AironeViewTest):
             next(filter(lambda x: x["schema"]["name"] == "val", resp_data["attrs"])),
             {
                 "type": AttrTypeValue["string"],
-                "value": "hoge",
+                "value": {"as_string": "hoge"},
                 "id": entry.attrs.get(schema__name="val").id,
                 "schema": {
                     "id": entry.attrs.get(schema__name="val").schema.id,
@@ -91,11 +91,13 @@ class ViewTest(AironeViewTest):
             {
                 "type": AttrTypeValue["object"],
                 "value": {
-                    "id": self.ref_entry.id,
-                    "name": self.ref_entry.name,
-                    "schema": {
-                        "id": self.ref_entry.schema.id,
-                        "name": self.ref_entry.schema.name,
+                    "as_object": {
+                        "id": self.ref_entry.id,
+                        "name": self.ref_entry.name,
+                        "schema": {
+                            "id": self.ref_entry.schema.id,
+                            "name": self.ref_entry.schema.name,
+                        },
                     },
                 },
                 "id": entry.attrs.get(schema__name="ref").id,
@@ -110,12 +112,14 @@ class ViewTest(AironeViewTest):
             {
                 "type": AttrTypeValue["named_object"],
                 "value": {
-                    "hoge": {
-                        "id": self.ref_entry.id,
-                        "name": self.ref_entry.name,
-                        "schema": {
-                            "id": self.ref_entry.schema.id,
-                            "name": self.ref_entry.schema.name,
+                    "as_named_object": {
+                        "hoge": {
+                            "id": self.ref_entry.id,
+                            "name": self.ref_entry.name,
+                            "schema": {
+                                "id": self.ref_entry.schema.id,
+                                "name": self.ref_entry.schema.name,
+                            },
                         },
                     },
                 },
@@ -130,7 +134,7 @@ class ViewTest(AironeViewTest):
             next(filter(lambda x: x["schema"]["name"] == "bool", resp_data["attrs"])),
             {
                 "type": AttrTypeValue["boolean"],
-                "value": False,
+                "value": {"as_boolean": False},
                 "id": entry.attrs.get(schema__name="bool").id,
                 "schema": {
                     "id": entry.attrs.get(schema__name="bool").schema.id,
@@ -142,7 +146,7 @@ class ViewTest(AironeViewTest):
             next(filter(lambda x: x["schema"]["name"] == "date", resp_data["attrs"])),
             {
                 "type": AttrTypeValue["date"],
-                "value": "2018-12-31",
+                "value": {"as_string": "2018-12-31"},
                 "id": entry.attrs.get(schema__name="date").id,
                 "schema": {
                     "id": entry.attrs.get(schema__name="date").schema.id,
@@ -155,8 +159,10 @@ class ViewTest(AironeViewTest):
             {
                 "type": AttrTypeValue["group"],
                 "value": {
-                    "id": self.group.id,
-                    "name": self.group.name,
+                    "as_group": {
+                        "id": self.group.id,
+                        "name": self.group.name,
+                    },
                 },
                 "id": entry.attrs.get(schema__name="group").id,
                 "schema": {
@@ -169,12 +175,14 @@ class ViewTest(AironeViewTest):
             next(filter(lambda x: x["schema"]["name"] == "groups", resp_data["attrs"])),
             {
                 "type": AttrTypeValue["array_group"],
-                "value": [
-                    {
-                        "id": self.group.id,
-                        "name": self.group.name,
-                    }
-                ],
+                "value": {
+                    "as_array_group": [
+                        {
+                            "id": self.group.id,
+                            "name": self.group.name,
+                        }
+                    ]
+                },
                 "id": entry.attrs.get(schema__name="groups").id,
                 "schema": {
                     "id": entry.attrs.get(schema__name="groups").schema.id,
@@ -186,7 +194,7 @@ class ViewTest(AironeViewTest):
             next(filter(lambda x: x["schema"]["name"] == "text", resp_data["attrs"])),
             {
                 "type": AttrTypeValue["text"],
-                "value": "fuga",
+                "value": {"as_string": "fuga"},
                 "id": entry.attrs.get(schema__name="text").id,
                 "schema": {
                     "id": entry.attrs.get(schema__name="text").schema.id,
@@ -198,7 +206,7 @@ class ViewTest(AironeViewTest):
             next(filter(lambda x: x["schema"]["name"] == "vals", resp_data["attrs"])),
             {
                 "type": AttrTypeValue["array_string"],
-                "value": ["foo", "bar"],
+                "value": {"as_array_string": ["foo", "bar"]},
                 "id": entry.attrs.get(schema__name="vals").id,
                 "schema": {
                     "id": entry.attrs.get(schema__name="vals").schema.id,
@@ -210,16 +218,18 @@ class ViewTest(AironeViewTest):
             next(filter(lambda x: x["schema"]["name"] == "refs", resp_data["attrs"])),
             {
                 "type": AttrTypeValue["array_object"],
-                "value": [
-                    {
-                        "id": self.ref_entry.id,
-                        "name": self.ref_entry.name,
-                        "schema": {
-                            "id": self.ref_entry.schema.id,
-                            "name": self.ref_entry.schema.name,
-                        },
-                    }
-                ],
+                "value": {
+                    "as_array_object": [
+                        {
+                            "id": self.ref_entry.id,
+                            "name": self.ref_entry.name,
+                            "schema": {
+                                "id": self.ref_entry.schema.id,
+                                "name": self.ref_entry.schema.name,
+                            },
+                        }
+                    ]
+                },
                 "id": entry.attrs.get(schema__name="refs").id,
                 "schema": {
                     "id": entry.attrs.get(schema__name="refs").schema.id,
@@ -231,28 +241,30 @@ class ViewTest(AironeViewTest):
             next(filter(lambda x: x["schema"]["name"] == "names", resp_data["attrs"])),
             {
                 "type": AttrTypeValue["array_named_object"],
-                "value": [
-                    {
-                        "foo": {
-                            "id": self.ref_entry.id,
-                            "name": self.ref_entry.name,
-                            "schema": {
-                                "id": self.ref_entry.schema.id,
-                                "name": self.ref_entry.schema.name,
+                "value": {
+                    "as_array_named_object": [
+                        {
+                            "foo": {
+                                "id": self.ref_entry.id,
+                                "name": self.ref_entry.name,
+                                "schema": {
+                                    "id": self.ref_entry.schema.id,
+                                    "name": self.ref_entry.schema.name,
+                                },
                             },
                         },
-                    },
-                    {
-                        "bar": {
-                            "id": self.ref_entry.id,
-                            "name": self.ref_entry.name,
-                            "schema": {
-                                "id": self.ref_entry.schema.id,
-                                "name": self.ref_entry.schema.name,
+                        {
+                            "bar": {
+                                "id": self.ref_entry.id,
+                                "name": self.ref_entry.name,
+                                "schema": {
+                                    "id": self.ref_entry.schema.id,
+                                    "name": self.ref_entry.schema.name,
+                                },
                             },
                         },
-                    },
-                ],
+                    ]
+                },
                 "id": entry.attrs.get(schema__name="names").id,
                 "schema": {
                     "id": entry.attrs.get(schema__name="names").schema.id,
@@ -264,7 +276,7 @@ class ViewTest(AironeViewTest):
             next(filter(lambda x: x["schema"]["name"] == "opt", resp_data["attrs"])),
             {
                 "type": AttrTypeValue["string"],
-                "value": AttrTypeStr.DEFAULT_VALUE,
+                "value": {"as_string": AttrTypeStr.DEFAULT_VALUE},
                 "id": None,
                 "schema": {
                     "id": self.entity.attrs.get(name="opt").id,

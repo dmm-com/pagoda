@@ -362,6 +362,42 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
             return {}
 
+        def get_default_attr_value(type: int) -> EntryAttributeValue:
+            if type & AttrTypeValue["array"]:
+                if type & AttrTypeValue["string"]:
+                    return {
+                        "as_array_string": AttrDefaultValue[type],
+                    }
+
+                elif type & AttrTypeValue["named"]:
+                    return {"as_array_named_object": AttrDefaultValue[type]}
+
+                elif type & AttrTypeValue["object"]:
+                    return {"as_array_object": AttrDefaultValue[type]}
+
+                elif type & AttrTypeValue["group"]:
+                    return {"as_array_group": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
+                return {"as_string": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["named"]:
+                return {"as_named_object": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["object"]:
+                return {"as_object": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["boolean"]:
+                return {"as_boolean": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["date"]:
+                return {"as_string": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["group"]:
+                return {"as_group": AttrDefaultValue[type]}
+
+            raise ValidationError(f"unexpected type: {type}")
+
         attr_prefetch = Prefetch(
             "attribute_set",
             queryset=Attribute.objects.filter(parent_entry=obj, is_active=True),
@@ -376,7 +412,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
         attrinfo: List[EntryAttributeType] = []
         for entity_attr in entity_attrs:
             attr = entity_attr.attr_list[0] if entity_attr.attr_list else None
-            value = get_attr_value(attr) if attr else AttrDefaultValue[entity_attr.type]
+            value = get_attr_value(attr) if attr else get_default_attr_value(entity_attr.type)
             attrinfo.append(
                 {
                     "id": attr.id if attr else None,
