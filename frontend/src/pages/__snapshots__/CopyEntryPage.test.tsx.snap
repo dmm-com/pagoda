@@ -99,24 +99,118 @@ Object {
           </div>
         </div>
         <div
-          class="MuiBox-root css-0"
+          class="MuiContainer-root MuiContainer-maxWidthLg css-m0xtue-MuiContainer-root"
         >
           <div
-            class="MuiBox-root css-0"
+            class="MuiBox-root css-k008qs"
           >
             <div
-              class="MuiBox-root css-0"
+              class="MuiBox-root css-kgitkj"
+            />
+            <div
+              class="MuiBox-root css-i9gxme"
+            >
+              <h2
+                class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter css-icizyq-MuiTypography-root"
+              >
+                aaa
+              </h2>
+              <h4
+                class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
+              >
+                エントリのコピーを作成
+              </h4>
+              <p
+                class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-11kuf95-MuiTypography-root"
+              >
+                入力した各行ごとに
+                aaa
+                と同じ属性を持つ別のエントリを作成
+              </p>
+            </div>
+            <div
+              class="MuiBox-root css-kgitkj"
+            >
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                  data-testid="AppsIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          class="MuiBox-root css-1ir2n9m"
+        >
+          <div
+            class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
+          >
+            <textarea
+              placeholder="コピーするエントリ名"
+              rows="2"
+              style="width: 100%; margin-top: 60px; height: 0px; overflow: hidden;"
+            />
+            <textarea
+              aria-hidden="true"
+              readonly=""
+              style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); width: 100%; margin-top: 60px; padding: 0px;"
+              tabindex="-1"
+            />
+            <div
+              class="MuiBox-root css-1l4w6pd"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-tinmid-MuiTypography-root"
+              >
+                ボード情報をコピーする
+              </p>
+              <span
+                class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+              >
+                <input
+                  class="PrivateSwitchBase-input css-1m9pwf3"
+                  data-indeterminate="false"
+                  type="checkbox"
+                />
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                  data-testid="CheckBoxOutlineBlankIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </span>
+            </div>
+            <div
+              class="MuiBox-root css-kl1xo3"
             >
               <div
-                class="MuiBox-root css-0"
-              >
-                入力した各行毎に同じ属性値を持つ別エントリを作成
-              </div>
-              <div
-                class="MuiBox-root css-0"
+                class="MuiBox-root css-ibnnmb"
               >
                 <button
-                  class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-sghohy-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-zcbmsk-MuiButtonBase-root-MuiButton-root"
                   tabindex="0"
                   type="submit"
                 >
@@ -126,18 +220,98 @@ Object {
                   />
                 </button>
               </div>
+              <div
+                class="MuiBox-root css-ibnnmb"
+              >
+                <button
+                  class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                  tabindex="0"
+                  type="button"
+                >
+                  キャンセル
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </div>
             </div>
-          </div>
-          <div
-            class="MuiBox-root css-0"
-          >
             <div
-              class="MuiBox-root css-0"
+              class="MuiBox-root css-8s50e6"
             >
-              <textarea
-                cols="40"
-                rows="10"
-              />
+              <div
+                class="MuiBox-root css-19n8dai"
+              >
+                <h6
+                  class="MuiTypography-root MuiTypography-h6 css-121dmmo-MuiTypography-root"
+                >
+                  SAMPLE
+                </h6>
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-1ma1smh-MuiTypography-root"
+                >
+                  (Vm0001、vm0002、…vm006の6エントリを作成する場合）
+                </p>
+              </div>
+              <div
+                class="MuiBox-root css-gajhq5"
+              >
+                <div
+                  class="MuiBox-root css-1g2597p"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-1sree81-MuiTypography-root"
+                  >
+                    コピーするエントリ名
+                  </p>
+                  <div
+                    class="MuiBox-root css-11jzykg"
+                  >
+                    <pre>
+                      
+              vm0001
+              vm0002
+              vm0003
+              vm0004
+              vm0005
+              vm0006
+              
+                    </pre>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="MuiBox-root css-1l4w6pd"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-tinmid-MuiTypography-root"
+                >
+                  ボード情報をコピーする
+                </p>
+                <span
+                  class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root Mui-checked css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                >
+                  <input
+                    checked=""
+                    class="PrivateSwitchBase-input css-1m9pwf3"
+                    data-indeterminate="false"
+                    type="checkbox"
+                  />
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                    data-testid="CheckBoxIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -239,24 +413,118 @@ Object {
         </div>
       </div>
       <div
-        class="MuiBox-root css-0"
+        class="MuiContainer-root MuiContainer-maxWidthLg css-m0xtue-MuiContainer-root"
       >
         <div
-          class="MuiBox-root css-0"
+          class="MuiBox-root css-k008qs"
         >
           <div
-            class="MuiBox-root css-0"
+            class="MuiBox-root css-kgitkj"
+          />
+          <div
+            class="MuiBox-root css-i9gxme"
+          >
+            <h2
+              class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter css-icizyq-MuiTypography-root"
+            >
+              aaa
+            </h2>
+            <h4
+              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
+            >
+              エントリのコピーを作成
+            </h4>
+            <p
+              class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-11kuf95-MuiTypography-root"
+            >
+              入力した各行ごとに
+              aaa
+              と同じ属性を持つ別のエントリを作成
+            </p>
+          </div>
+          <div
+            class="MuiBox-root css-kgitkj"
+          >
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+              tabindex="0"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                data-testid="AppsIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        class="MuiBox-root css-1ir2n9m"
+      >
+        <div
+          class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
+        >
+          <textarea
+            placeholder="コピーするエントリ名"
+            rows="2"
+            style="width: 100%; margin-top: 60px; height: 0px; overflow: hidden;"
+          />
+          <textarea
+            aria-hidden="true"
+            readonly=""
+            style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); width: 100%; margin-top: 60px; padding: 0px;"
+            tabindex="-1"
+          />
+          <div
+            class="MuiBox-root css-1l4w6pd"
+          >
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-tinmid-MuiTypography-root"
+            >
+              ボード情報をコピーする
+            </p>
+            <span
+              class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+            >
+              <input
+                class="PrivateSwitchBase-input css-1m9pwf3"
+                data-indeterminate="false"
+                type="checkbox"
+              />
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                data-testid="CheckBoxOutlineBlankIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </span>
+          </div>
+          <div
+            class="MuiBox-root css-kl1xo3"
           >
             <div
-              class="MuiBox-root css-0"
-            >
-              入力した各行毎に同じ属性値を持つ別エントリを作成
-            </div>
-            <div
-              class="MuiBox-root css-0"
+              class="MuiBox-root css-ibnnmb"
             >
               <button
-                class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-sghohy-MuiButtonBase-root-MuiButton-root"
+                class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-zcbmsk-MuiButtonBase-root-MuiButton-root"
                 tabindex="0"
                 type="submit"
               >
@@ -266,18 +534,98 @@ Object {
                 />
               </button>
             </div>
+            <div
+              class="MuiBox-root css-ibnnmb"
+            >
+              <button
+                class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                tabindex="0"
+                type="button"
+              >
+                キャンセル
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </button>
+            </div>
           </div>
-        </div>
-        <div
-          class="MuiBox-root css-0"
-        >
           <div
-            class="MuiBox-root css-0"
+            class="MuiBox-root css-8s50e6"
           >
-            <textarea
-              cols="40"
-              rows="10"
-            />
+            <div
+              class="MuiBox-root css-19n8dai"
+            >
+              <h6
+                class="MuiTypography-root MuiTypography-h6 css-121dmmo-MuiTypography-root"
+              >
+                SAMPLE
+              </h6>
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-1ma1smh-MuiTypography-root"
+              >
+                (Vm0001、vm0002、…vm006の6エントリを作成する場合）
+              </p>
+            </div>
+            <div
+              class="MuiBox-root css-gajhq5"
+            >
+              <div
+                class="MuiBox-root css-1g2597p"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-1sree81-MuiTypography-root"
+                >
+                  コピーするエントリ名
+                </p>
+                <div
+                  class="MuiBox-root css-11jzykg"
+                >
+                  <pre>
+                    
+              vm0001
+              vm0002
+              vm0003
+              vm0004
+              vm0005
+              vm0006
+              
+                  </pre>
+                </div>
+              </div>
+            </div>
+            <div
+              class="MuiBox-root css-1l4w6pd"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-tinmid-MuiTypography-root"
+              >
+                ボード情報をコピーする
+              </p>
+              <span
+                class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root Mui-checked css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+              >
+                <input
+                  checked=""
+                  class="PrivateSwitchBase-input css-1m9pwf3"
+                  data-indeterminate="false"
+                  type="checkbox"
+                />
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                  data-testid="CheckBoxIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </span>
+            </div>
           </div>
         </div>
       </div>
