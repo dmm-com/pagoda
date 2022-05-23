@@ -6,7 +6,11 @@
   <ul class="breadcrumb airone-breadcrumb">
     <li class="breadcrumb-item"><a href="/">TOP</a></li>
     <li class="breadcrumb-item"><a href="/role">ロール管理</a></li>
-    <li class="breadcrumb-item">ロールの編集</li>
+    {% if is_edit == "true" %}
+      <li class="breadcrumb-item">ロールの編集</li>
+    {% else %}
+      <li class="breadcrumb-item">ロールの作成</li>
+    {% endif %}
   </ul>
 </div>
 {% endblock %}
@@ -80,6 +84,7 @@ const USERS = convert_dict_to_list({{ user_info|safe }});
 const GROUPS = convert_dict_to_list({{ group_info|safe }});
 const ADMIN_USERS = convert_dict_to_list({{ admin_user_info|safe }});
 const ADMIN_GROUPS = convert_dict_to_list({{ admin_group_info|safe }});
+const MAXIMUM_LIST_COUNT = 20;
 
 
 // update 'is_selected' fields when current users and groups are specified
@@ -201,19 +206,16 @@ function register_checkbox_event_handler() {
 }
 
 function generate_user_group_content(obj) {
+  let elem_checkbox = `<input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }"/>`;
   if (obj.is_checked) {
-    return `<tr>` +
-        `<td><input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }" checked/></td>` +
-        `<td> ${ obj.name } </td>` +
-        `<td> ${ obj.type } </td>` +
-      `</tr>`;
-  } else {
-    return `<tr>` +
-        `<td><input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }"/></td>` +
-        `<td> ${ obj.name } </td>` +
-        `<td> ${ obj.type } </td>` +
-      `</tr>`;
+    elem_checkbox = `<input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }" checked/>`;
   }
+
+  return `<tr class="member" obj_type="${ obj.type }" obj_id="${ obj.id }">` +
+      `<td class="member_select">${ elem_checkbox }</td>` +
+      `<td class="member_name">${ obj.name }</td>` +
+      `<td class="member_type">${ obj.type }</td>` +
+    `</tr>`;
 }
 
 function initialize_user_group_table(initializeCollapseId) {
@@ -221,12 +223,33 @@ function initialize_user_group_table(initializeCollapseId) {
     // clear table context at first
     $(`#${ collapseId } tbody`).empty();
 
-    userList.slice(0, 10).forEach((user) => {
-      $(`#${ collapseId } tbody`).append(generate_user_group_content(user));
+    let list_count = 0;
+    // show selected members at first
+    userList.filter(x => x.is_checked).forEach((user) => {
+      if (list_count < MAXIMUM_LIST_COUNT) {
+        $(`#${ collapseId } tbody`).append(generate_user_group_content(user));
+      }
+      list_count++;
+    });
+    groupList.filter(x => x.is_checked).forEach((group) => {
+      if (list_count < MAXIMUM_LIST_COUNT) {
+        $(`#${ collapseId } tbody`).append(generate_user_group_content(group));
+      }
+      list_count++;
     });
 
-    groupList.slice(0, 10).forEach((group) => {
-      $(`#${ collapseId } tbody`).append(generate_user_group_content(group));
+    // then, show un-selected members
+    userList.filter(x => ! x.is_checked).forEach((user) => {
+      if (list_count < MAXIMUM_LIST_COUNT) {
+        $(`#${ collapseId } tbody`).append(generate_user_group_content(user));
+      }
+      list_count++;
+    });
+    groupList.filter(x => ! x.is_checked).forEach((group) => {
+      if (list_count < MAXIMUM_LIST_COUNT) {
+        $(`#${ collapseId } tbody`).append(generate_user_group_content(group));
+      }
+      list_count++;
     });
   }
   if (initializeCollapseId === 'collapseUserGroups') {
