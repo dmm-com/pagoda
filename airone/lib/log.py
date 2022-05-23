@@ -2,6 +2,7 @@ import traceback
 from logging import getLogger
 from time import time
 
+from django.conf import settings
 from django.core.mail import mail_admins
 from django.http import HttpResponseServerError
 
@@ -54,4 +55,5 @@ full traceback:
         # Print for DEBUG because email is not sent in dev environment
         print(message)
         mail_admins(subject, message)
-        return HttpResponseServerError("Internal Server Error")
+        if not settings.DEBUG:
+            return HttpResponseServerError("Internal Server Error")
