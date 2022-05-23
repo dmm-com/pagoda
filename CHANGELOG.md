@@ -9,8 +9,12 @@
   Contributed by @syucream
 
 ### Fixed
+* Fixed model and UI problems that are related with Role
+  Contributed by @userlocalhost
 * Fixed an error when copying a lot of entries
   Contributed by @hinashi
+* Fixed some model and UI problems related with new added Role feature
+  Contributed by @userlocalhost
 
 ## v3.8.0
 

@@ -1,6 +1,8 @@
 from django.db import models
 from group.models import Group
 from user.models import User
+
+from datetime import datetime
 from django.contrib.auth.models import Permission
 
 
@@ -60,3 +62,14 @@ class Role(models.Model):
                 for x in self.permissions.filter(codename__startswith=(str(target_obj.id) + "."))
             ]
         )
+
+    def delete(self):
+        """
+        Override Model.delete method of Django
+        """
+        self.is_active = False
+        self.name = "%s_deleted_%s" % (
+            self.name,
+            datetime.now().strftime("%Y%m%d_%H%M%S"),
+        )
+        self.save(update_fields=["is_active", "name"])
