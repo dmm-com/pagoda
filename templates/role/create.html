@@ -155,7 +155,7 @@ function handle_filter_list_values(ev, userList, groupList) {
       if (rowValues.length >= 30) {
         return true;
       }
-      if (obj.name.indexOf(inputValue) != -1) {
+      if (obj.name.toLowerCase().indexOf(inputValue.toLowerCase()) != -1) {
         rowValues.push(obj);
       }
     });
