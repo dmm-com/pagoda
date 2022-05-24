@@ -69,7 +69,17 @@ class User(AbstractUser):
         # have permission of specified permission_level
         belonged_roles = set(
             list(self.role.filter(is_active=True))
-            + sum([list(g.role.filter(is_active=True)) for g in self.airone_groups], [])
+            + list(self.admin_role.filter(is_active=True))
+            + sum(
+                [
+                    (
+                        list(g.role.filter(is_active=True))
+                        + list(g.admin_role.filter(is_active=True))
+                    )
+                    for g in self.airone_groups
+                ],
+                [],
+            )
         )
         for role in belonged_roles:
             if role.is_permitted(target_obj, permission_level):
@@ -78,7 +88,7 @@ class User(AbstractUser):
         return False
 
     def is_permitted_to_change(
-        self, target_obj, expected_permission, is_public, default_permission, acl_settings
+        self, target_obj, expected_permission, will_be_public, default_permission, acl_settings
     ):
         """
         This checks specified permission settings have expected_permission for this user.
@@ -97,13 +107,13 @@ class User(AbstractUser):
             whether current user has "expected" permission to the target_obj.
         """
         # These are obvious cases when current user has permission to operate target_obj
-        if self.is_superuser or is_public or expected_permission <= default_permission:
+        if self.is_superuser or will_be_public or expected_permission <= default_permission:
             return True
 
         for acl_info in acl_settings:
             role = acl_info.get("role")
-            if role and role.is_editable(self) and acl_info.get("value", 0) >= expected_permission:
-                return True
+            if not (role and role.is_belonged_to(self)):
+                return False
 
         # This checks there are any administrative roles that can control this object left
         def _tobe_admin(role):
@@ -117,10 +127,16 @@ class User(AbstractUser):
         admin_roles = Role.objects.filter(
             permissions__codename="%s.%s" % (target_obj.id, ACLType.Full.id)
         )
-        if len([r for r in admin_roles if _tobe_admin(r)]) > 0:
-            return True
+        if (
+            len(
+                [r for r in admin_roles if _tobe_admin(r)]
+                + [r for r in acl_settings if r["value"] == ACLType.Full.id]
+            )
+            == 0
+        ):
+            return False
 
-        return False
+        return True
 
     def delete(self):
         """

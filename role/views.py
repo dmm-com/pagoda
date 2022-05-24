@@ -67,10 +67,26 @@ def index(request):
             "id": x.id,
             "name": x.name,
             "description": x.description,
-            "users": x.users.filter(is_active=True).order_by("username"),
-            "groups": x.groups.filter(is_active=True).order_by("name"),
-            "admin_users": x.admin_users.filter(is_active=True).order_by("username"),
-            "admin_groups": x.admin_groups.filter(is_active=True).order_by("name"),
+            "users": dict(
+                {
+                    u.username: {"is_admin": False}
+                    for u in x.users.filter(is_active=True).order_by("username")
+                },
+                **{
+                    u.username: {"is_admin": True}
+                    for u in x.admin_users.filter(is_active=True).order_by("username")
+                }
+            ),
+            "groups": dict(
+                {
+                    g.name: {"is_admin": False}
+                    for g in x.groups.filter(is_active=True).order_by("name")
+                },
+                **{
+                    g.name: {"is_admin": True}
+                    for g in x.admin_groups.filter(is_active=True).order_by("name")
+                }
+            ),
         }
         for x in Role.objects.filter(is_active=True)
     ]

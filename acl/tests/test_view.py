@@ -43,7 +43,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse("acl:index", args=[0]))
         self.assertEqual(resp.status_code, 303)
 
-    def test_index(self):
+    def test_index_by_admin(self):
         self.admin_login()
 
         # create Roles to be listed
@@ -55,6 +55,20 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             sorted([x["name"] for x in resp.context["roles"]]), sorted(["TestRole", "r1", "r2"])
         )
+
+    def test_index_by_guest(self):
+        """This checks Roles, which only login-user belongs to, will be shown on the Role list."""
+        user = self.guest_login()
+        self._role.users.add(user)
+
+        # create Roles, but these are not shown at the list because user doesn't belong to them.
+        for name in ["r1", "r2"]:
+            Role.objects.create(name=name)
+
+        aclobj = ACLBase.objects.create(name="ACLObj", created_user=user)
+        resp = self.client.get(reverse("acl:index", args=[aclobj.id]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(sorted([x["name"] for x in resp.context["roles"]]), sorted(["TestRole"]))
 
     def test_get_acl_set(self):
         self.admin_login()
@@ -324,7 +338,7 @@ class ViewTest(AironeViewTest):
 
     def test_clear_permission_when_there_is_available_role(self):
         """This test remove last role permission. It is expected that processing
-           won't be accepted to prevent making object no-one can control.
+        won't be accepted to prevent making object no-one can control.
         """
         user = self.guest_login()
         self._role.admin_users.add(user)
@@ -371,7 +385,6 @@ class ViewTest(AironeViewTest):
         params = {
             "object_id": str(aclobj.id),
             "object_type": str(aclobj.objtype),
-            "is_public": "on",
             "acl": [
                 {"role_id": str(irrelevant_role.id), "value": str(ACLType.Full.id)},
             ],
@@ -379,6 +392,10 @@ class ViewTest(AironeViewTest):
         }
         resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.content.decode("utf-8"),
+            "Inadmissible setting. By this change you will never change this ACL",
+        )
 
         # check Role, which user belongs to administrative members, can set ACL
         self.assertTrue(self._role.is_permitted(aclobj, ACLType.Full))

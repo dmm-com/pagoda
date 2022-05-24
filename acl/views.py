@@ -50,7 +50,7 @@ def index(request, obj_id):
                 "current_permission": get_current_permission(x),
             }
             for x in Role.objects.filter(is_active=True)
-            if x.is_editable(request.user)
+            if request.user.is_superuser or x.is_belonged_to(request.user)
         ],
     }
     return render(request, "edit_acl.html", context)
@@ -107,7 +107,7 @@ def set(request, recv_data):
         **{
             "target_obj": acl_obj,
             "expected_permission": ACLType.Full,
-            "is_public": recv_data.get("is_public", False),
+            "will_be_public": recv_data.get("is_public", False),
             "default_permission": int(recv_data["default_permission"]),
             "acl_settings": [
                 {

@@ -88,7 +88,7 @@ class ACLSerializer(serializers.ModelSerializer):
             self.instance,
             ACLType.Full,
             **{
-                "is_public": attrs["is_public"],
+                "will_be_public": attrs["is_public"],
                 "default_permission": attrs["default_permission"],
                 "acl_settings": [
                     {

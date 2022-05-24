@@ -31,10 +31,27 @@ class Role(models.Model):
 
     def is_belonged_to(self, user):
         """check wether specified User is belonged to this Role"""
-        if user.id in [u.id for u in self.users.filter(is_active=True)]:
+        if user.id in [
+            u.id
+            for u in set(
+                list(self.users.filter(is_active=True))
+                + list(self.admin_users.filter(is_active=True))
+            )
+        ]:
             return True
 
-        if bool(set([g.id for g in user.groups.all()]) & set([g.id for g in self.groups.all()])):
+        if bool(
+            set([g.id for g in user.groups.all()])
+            & set(
+                [
+                    g.id
+                    for g in set(
+                        list(self.groups.filter(is_active=True))
+                        + list(self.admin_groups.filter(is_active=True))
+                    )
+                ]
+            )
+        ):
             return True
 
         return False

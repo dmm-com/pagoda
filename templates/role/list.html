@@ -29,7 +29,6 @@
       <th scope='col'>名前</th>
       <th scope='col'>備考</th>
       <th scope='col'>登録ユーザ・グループ</th>
-      <th scope='col'>管理ユーザ・グループ</th>
     <thead>
     <tbody>
       {% for role in roles %}
@@ -52,23 +51,29 @@
         <!-- Registered Users and Groups -->
         <td class='members'>
           <ul class="list-group list-group-flush">
-            {% for user in role.users %}
-            <li>(user) {{ user.username }}</li>
+            {% for member_name, member_info in role.users.items %}
+              {% if member_info.is_admin %}
+                <li class="d-flex justify-content-between align-items-center list-group-item-primary">
+                  (user) {{ member_name }}
+                  <span class="badge bg-primary rounded-pill">管理者</span>
+                </li>
+              {% else %}
+                <li class="d-flex justify-content-between align-items-center">
+                  (user) {{ member_name }}
+                </li>
+              {% endif %}
             {% endfor %}
-            {% for group in role.groups %}
-            <li>(group) {{ group.name }}</li>
-            {% endfor %}
-          </ul>
-        </td>
-
-        <!-- Administrative Users and Groups -->
-        <td class='admin_members'>
-          <ul class="list-group list-group-flush">
-            {% for user in role.admin_users %}
-            <li>(user) {{ user.username }}</li>
-            {% endfor %}
-            {% for group in role.admin_groups %}
-            <li>(group) {{ group.name }}</li>
+            {% for member_name, member_info in role.groups.items %}
+              {% if member_info.is_admin %}
+                <li class="d-flex justify-content-between align-items-center list-group-item-primary">
+                  (group) {{ member_name }}
+                  <span class="badge bg-primary rounded-pill">管理者</span>
+                </li>
+              {% else %}
+                <li class="d-flex justify-content-between align-items-center">
+                  (group) {{ member_name }}
+                </li>
+              {% endif %}
             {% endfor %}
           </ul>
         </td>
