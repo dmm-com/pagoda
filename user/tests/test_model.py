@@ -141,3 +141,25 @@ class ModelTest(TestCase):
         )
 
         self.assertFalse(user.has_permission(entry, ACLType.Readable))
+
+    def test_user_has_permission(self):
+        # This checks user has permission to access ACLObject either user belongs to Role as
+        # normal member and administrative member.
+        user = User.objects.create(username="user")
+        role = Role.objects.create(name="Role1")
+        entity = Entity.objects.create(
+            name="entity", created_user=user, is_public=False, default_permission=ACLType.Nothing.id
+        )
+        role.permissions.add(entity.full)
+
+        # User doesn't have permission before belonging to Role
+        self.assertFalse(user.has_permission(entity, ACLType.Full))
+
+        # User has permission after belonging to Role as member
+        role.users.add(user)
+        self.assertTrue(user.has_permission(entity, ACLType.Full))
+
+        # User has also permission when user belongs to Role as admin-member
+        role.users.clear()
+        role.admin_users.add(user)
+        self.assertTrue(user.has_permission(entity, ACLType.Full))

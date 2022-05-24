@@ -1,8 +1,4 @@
-{% if collapse_id == "collapseAdminUserGroups" %}
-<div class='config_role members admin'>
-{% else %}
 <div class='config_role members'>
-{% endif %}
   <div class="toggle">
     <h6 href='#{{ collapse_id }}' class='collapse_title {{ collapse_id }}' data-toggle='collapse' aria-expanded="false">
       {{ collapse_title }}
@@ -24,9 +20,10 @@
 
     <table class="table table-sm">
       <thead>
-        <th scope='col'></th>
-        <th scope='col'>名前</th>
-        <th scope='col'>タイプ</th>
+        <th scope='col member'>メンバー</th>
+        <th scope='col admin'>管理者</th>
+        <th scope='col name'>名前</th>
+        <th scope='col type'>タイプ</th>
       </thead>
       <tbody />
     </table>
