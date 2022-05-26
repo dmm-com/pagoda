@@ -55,3 +55,6 @@ class Entity(ACLBase):
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entity
+
+    def register_webhook(self, url, is_active, headers):
+        pass

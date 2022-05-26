@@ -1,11 +1,14 @@
+import collections
 import json
 from typing import Any, Dict, List
 import custom_view
 
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from airone.lib.acl import ACLType
-from entity.models import Entity
+from airone.lib.types import AttrTypeValue
+from entity.models import Entity, EntityAttr
 from user.models import User
 from webhook.models import Webhook
 
@@ -60,16 +63,16 @@ class WebhookGetSerializer(WebhookSerializerBase):
 
     def get_headers(self, obj: Webhook) -> List[Dict[str, str]]:
         try:
-            return [{'headerKey': k, 'headerValue': v} for k, v in json.loads(obj.headers)]
+            return [{"headerKey": k, "headerValue": v} for k, v in json.loads(obj.headers)]
         except json.decoder.JSONDecodeError:
             return []
 
 
 class WebhookPostSerializer(WebhookSerializerBase):
-    headers = serializers.ListField(child=serializers.DictField(child=serializers.CharField(), allow_empty=True), allow_empty=True)
-
-    def validate_headers(self, value):
-        return json.dumps(value)
+    headers = serializers.ListField(
+        child=serializers.DictField(child=serializers.CharField(), allow_empty=True),
+        allow_empty=True,
+    )
 
 
 class EntityDetailSerializer(EntityWithAttrSerializer):
@@ -81,8 +84,18 @@ class EntityDetailSerializer(EntityWithAttrSerializer):
         fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks"]
 
 
-class EntityAttrSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+class EntityAttrSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntityAttr
+        fields = [
+            "name",
+            "type",
+            "is_mandatory",
+            "referral",
+            "index",
+            "is_summarized",
+            "is_delete_in_chain",
+        ]
 
 
 class EntityCreateSerializer(EntitySerializer):
@@ -93,12 +106,23 @@ class EntityCreateSerializer(EntitySerializer):
         model = Entity
         fields = ["id", "name", "attrs", "note", "webhooks"]
 
-    def validate(self, data):
-        # todo: duplication check
-        pass
+    def validate_name(self, name):
+        if Entity.objects.filter(name=name, is_active=True).exists():
+            raise ValidationError("Duplication error. There is same named Entity")
+
+        return name
+
+    def validate_attrs(self, attrs):
+        # duplication checks
+        counter = collections.Counter(
+            [attr["name"] for attr in attrs if "deleted" not in attr or not attr["deleted"]]
+        )
+        if len([v for v, count in counter.items() if count > 1]):
+            raise ValidationError("Duplicated attribute names are not allowed", status=400)
+
+        return attrs
 
     def create(self, validated_data):
-        print(validated_data)
         user: User = User.objects.get(id=self.context["request"].user.id)
 
         if custom_view.is_custom("before_create_entity"):
@@ -110,15 +134,40 @@ class EntityCreateSerializer(EntitySerializer):
             **validated_data, status=Entity.STATUS_CREATING, created_user=user
         )
 
+        # register history data to create Entity
+        history = user.seth_entity_add(entity)
+
         # set status parameters
         if validated_data.get("is_toplevel", False):
             entity.status = Entity.STATUS_TOP_LEVEL
             entity.save(update_fields=["status"])
 
+        # create EntityAttr instances in associated with specifying data
+        for attr in attrs_data:
+            # This is necessary not to pass invalid parameter to DRF DB-register
+            attr_referrals = attr.pop("referral", [])
+
+            # create EntityAttr instance with user specified params
+            attr_base = EntityAttr.objects.create(
+                **attr,
+                created_user=user,
+                parent_entity=entity,
+            )
+
+            # set referrals if necessary
+            if int(attr["type"]) & AttrTypeValue["object"]:
+                [attr_base.referral.add(x) for x in attr_referrals]
+
+            # make association with Entity and EntityAttrs
+            entity.attrs.add(attr_base)
+
+            # register history to modify Entity
+            history.add_attr(attr_base)
+
+        # unset Editing MODE
         entity.del_status(Entity.STATUS_CREATING)
 
         # TODO:
-        # - valudate attrs_data
         # - register EntityAttr(s) and Webhook(s)
 
         return entity
