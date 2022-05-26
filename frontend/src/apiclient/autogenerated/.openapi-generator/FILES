@@ -8,6 +8,8 @@ index.ts
 models/ACL.ts
 models/Attribute.ts
 models/Entity.ts
+models/EntityAttr.ts
+models/EntityCreate.ts
 models/EntityDetail.ts
 models/EntryBase.ts
 models/EntryCreate.ts
@@ -19,6 +21,7 @@ models/GetEntrySimple.ts
 models/Group.ts
 models/PaginatedEntityDetailList.ts
 models/PaginatedEntryBaseList.ts
-models/Webhook.ts
+models/WebhookGet.ts
+models/WebhookPost.ts
 models/index.ts
 runtime.ts

@@ -1,6 +1,8 @@
 import collections
 import json
 from typing import Any, Dict, List
+
+import requests
 import custom_view
 
 from rest_framework import serializers
@@ -63,7 +65,7 @@ class WebhookGetSerializer(WebhookSerializerBase):
 
     def get_headers(self, obj: Webhook) -> List[Dict[str, str]]:
         try:
-            return [{"headerKey": k, "headerValue": v} for k, v in json.loads(obj.headers)]
+            return [{"headerKey": k, "headerValue": v} for k, v in json.loads(obj.headers).items()]
         except json.decoder.JSONDecodeError:
             return []
 
@@ -73,6 +75,12 @@ class WebhookPostSerializer(WebhookSerializerBase):
         child=serializers.DictField(child=serializers.CharField(), allow_empty=True),
         allow_empty=True,
     )
+
+    def validate_headers(self, headers):
+        results = {}
+        for header in headers:
+            results[header["headerKey"]] = header["headerValue"]
+        return results
 
 
 class EntityDetailSerializer(EntityWithAttrSerializer):
@@ -100,7 +108,7 @@ class EntityAttrSerializer(serializers.ModelSerializer):
 
 class EntityCreateSerializer(EntitySerializer):
     attrs = serializers.ListField(child=EntityAttrSerializer(), write_only=True, required=False)
-    webhooks = WebhookPostSerializer(many=True)
+    webhooks = WebhookPostSerializer(many=True, write_only=True)
 
     class Meta:
         model = Entity
@@ -169,5 +177,18 @@ class EntityCreateSerializer(EntitySerializer):
 
         # TODO:
         # - register EntityAttr(s) and Webhook(s)
+        for webhook_data in webhooks_data:
+            webhook = Webhook.objects.create(**webhook_data)
+            entity.webhooks.add(webhook)
+            resp = requests.post(
+                webhook.url,
+                **{
+                    "headers": webhook.headers,
+                    "data": json.dumps({}),
+                    "verify": False,
+                },
+            )
+            webhook.is_verified = resp.ok
+            webhook.save()
 
         return entity

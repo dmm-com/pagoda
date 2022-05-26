@@ -14,11 +14,11 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  Webhook,
-  WebhookFromJSON,
-  WebhookFromJSONTyped,
-  WebhookToJSON,
-} from "./Webhook";
+  WebhookGet,
+  WebhookGetFromJSON,
+  WebhookGetFromJSONTyped,
+  WebhookGetToJSON,
+} from "./WebhookGet";
 
 /**
  *
@@ -64,10 +64,10 @@ export interface EntityDetail {
   readonly attrs: Array<{ [key: string]: any }>;
   /**
    *
-   * @type {Array<Webhook>}
+   * @type {Array<WebhookGet>}
    * @memberof EntityDetail
    */
-  webhooks: Array<Webhook>;
+  webhooks: Array<WebhookGet>;
 }
 
 export function EntityDetailFromJSON(json: any): EntityDetail {
@@ -88,7 +88,7 @@ export function EntityDetailFromJSONTyped(
     status: !exists(json, "status") ? undefined : json["status"],
     isToplevel: json["is_toplevel"],
     attrs: json["attrs"],
-    webhooks: (json["webhooks"] as Array<any>).map(WebhookFromJSON),
+    webhooks: (json["webhooks"] as Array<any>).map(WebhookGetFromJSON),
   };
 }
 
@@ -103,6 +103,6 @@ export function EntityDetailToJSON(value?: EntityDetail | null): any {
     name: value.name,
     note: value.note,
     status: value.status,
-    webhooks: (value.webhooks as Array<any>).map(WebhookToJSON),
+    webhooks: (value.webhooks as Array<any>).map(WebhookGetToJSON),
   };
 }
