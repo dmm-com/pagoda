@@ -93,6 +93,8 @@ class EntityDetailSerializer(EntityWithAttrSerializer):
 
 
 class EntityAttrSerializer(serializers.ModelSerializer):
+    referral = serializers.ListField(allow_empty=True)
+
     class Meta:
         model = EntityAttr
         fields = [
@@ -107,6 +109,7 @@ class EntityAttrSerializer(serializers.ModelSerializer):
 
 
 class EntityCreateSerializer(EntitySerializer):
+    note = serializers.CharField(allow_blank=True)
     attrs = serializers.ListField(child=EntityAttrSerializer(), write_only=True, required=False)
     webhooks = WebhookPostSerializer(many=True, write_only=True)
 
