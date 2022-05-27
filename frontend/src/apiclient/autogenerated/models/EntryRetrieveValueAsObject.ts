@@ -14,12 +14,6 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  EntryRetrieveValue,
-  EntryRetrieveValueFromJSON,
-  EntryRetrieveValueFromJSONTyped,
-  EntryRetrieveValueToJSON,
-} from "./EntryRetrieveValue";
-import {
   EntryRetrieveValueAsObjectSchema,
   EntryRetrieveValueAsObjectSchemaFromJSON,
   EntryRetrieveValueAsObjectSchemaFromJSONTyped,
@@ -29,60 +23,53 @@ import {
 /**
  *
  * @export
- * @interface EntryRetrieveAttrs
+ * @interface EntryRetrieveValueAsObject
  */
-export interface EntryRetrieveAttrs {
+export interface EntryRetrieveValueAsObject {
   /**
    *
    * @type {number}
-   * @memberof EntryRetrieveAttrs
+   * @memberof EntryRetrieveValueAsObject
    */
   id?: number | null;
   /**
    *
-   * @type {number}
-   * @memberof EntryRetrieveAttrs
+   * @type {string}
+   * @memberof EntryRetrieveValueAsObject
    */
-  type?: number;
-  /**
-   *
-   * @type {EntryRetrieveValue}
-   * @memberof EntryRetrieveAttrs
-   */
-  value?: EntryRetrieveValue;
+  name?: string;
   /**
    *
    * @type {EntryRetrieveValueAsObjectSchema}
-   * @memberof EntryRetrieveAttrs
+   * @memberof EntryRetrieveValueAsObject
    */
   schema?: EntryRetrieveValueAsObjectSchema;
 }
 
-export function EntryRetrieveAttrsFromJSON(json: any): EntryRetrieveAttrs {
-  return EntryRetrieveAttrsFromJSONTyped(json, false);
+export function EntryRetrieveValueAsObjectFromJSON(
+  json: any
+): EntryRetrieveValueAsObject {
+  return EntryRetrieveValueAsObjectFromJSONTyped(json, false);
 }
 
-export function EntryRetrieveAttrsFromJSONTyped(
+export function EntryRetrieveValueAsObjectFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntryRetrieveAttrs {
+): EntryRetrieveValueAsObject {
   if (json === undefined || json === null) {
     return json;
   }
   return {
     id: !exists(json, "id") ? undefined : json["id"],
-    type: !exists(json, "type") ? undefined : json["type"],
-    value: !exists(json, "value")
-      ? undefined
-      : EntryRetrieveValueFromJSON(json["value"]),
+    name: !exists(json, "name") ? undefined : json["name"],
     schema: !exists(json, "schema")
       ? undefined
       : EntryRetrieveValueAsObjectSchemaFromJSON(json["schema"]),
   };
 }
 
-export function EntryRetrieveAttrsToJSON(
-  value?: EntryRetrieveAttrs | null
+export function EntryRetrieveValueAsObjectToJSON(
+  value?: EntryRetrieveValueAsObject | null
 ): any {
   if (value === undefined) {
     return undefined;
@@ -92,8 +79,7 @@ export function EntryRetrieveAttrsToJSON(
   }
   return {
     id: value.id,
-    type: value.type,
-    value: EntryRetrieveValueToJSON(value.value),
+    name: value.name,
     schema: EntryRetrieveValueAsObjectSchemaToJSON(value.schema),
   };
 }

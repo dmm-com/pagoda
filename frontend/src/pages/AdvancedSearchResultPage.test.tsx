@@ -33,12 +33,12 @@ test("should match snapshot", async () => {
       },
       attrs: {
         attr1: {
-          type: 1,
-          value: "attr1",
+          type: 2,
+          value: { as_string: "attr1" },
         },
         attr2: {
-          type: 1,
-          value: "attr1",
+          type: 2,
+          value: { as_string: "attr1" },
         },
       },
     },

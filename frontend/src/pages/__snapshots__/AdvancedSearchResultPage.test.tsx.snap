@@ -207,10 +207,8 @@ Object {
                       <li
                         class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                       >
-                        <a
+                        <div
                           class="MuiBox-root css-0"
-                          href="/new-ui/entities/0/entries/undefined/details"
-                          sx="[object Object]"
                         />
                       </li>
                     </ul>
@@ -224,10 +222,8 @@ Object {
                       <li
                         class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                       >
-                        <a
+                        <div
                           class="MuiBox-root css-0"
-                          href="/new-ui/entities/0/entries/undefined/details"
-                          sx="[object Object]"
                         />
                       </li>
                     </ul>
@@ -541,10 +537,8 @@ Object {
                     <li
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                     >
-                      <a
+                      <div
                         class="MuiBox-root css-0"
-                        href="/new-ui/entities/0/entries/undefined/details"
-                        sx="[object Object]"
                       />
                     </li>
                   </ul>
@@ -558,10 +552,8 @@ Object {
                     <li
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                     >
-                      <a
+                      <div
                         class="MuiBox-root css-0"
-                        href="/new-ui/entities/0/entries/undefined/details"
-                        sx="[object Object]"
                       />
                     </li>
                   </ul>

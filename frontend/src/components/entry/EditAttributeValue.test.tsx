@@ -29,42 +29,39 @@ beforeAll(() => {
 
 const attributes = [
   {
-    value: "hoge",
+    value: { asString: "hoge" },
     type: "string",
     elem: "ElemString",
   },
   {
-    value: "fuga",
+    value: { asString: "fuga" },
     type: "text",
     elem: "ElemString",
   },
   {
-    value: "2022-01-01",
+    value: { asString: "2022-01-01" },
     type: "date",
     elem: "ElemString",
   },
   {
-    value: true,
+    value: { asBoolean: true },
     type: "boolean",
     elem: "ElemBool",
   },
   {
-    value: "true",
-    type: "boolean",
-    elem: "ElemBool",
-  },
-  {
-    value: { id: 100, name: "hoge" },
+    value: { asObject: [{ id: 100, name: "hoge", checked: false }] },
     type: "object",
     elem: "ElemObject",
   },
   {
-    value: { foo: { id: 100, name: "hoge" } },
+    value: {
+      asNamedObject: { foo: [{ id: 100, name: "hoge", checked: false }] },
+    },
     type: "named_object",
     elem: "ElemNamedObject",
   },
   {
-    value: { id: 100, name: "hoge" },
+    value: { asGroup: [{ id: 100, name: "hoge", checked: false }] },
     type: "group",
     elem: "ElemGroup",
   },
@@ -72,31 +69,37 @@ const attributes = [
 
 const arrayAttributes = [
   {
-    value: ["hoge", "fuga"],
+    value: { asArrayString: ["hoge", "fuga"] },
     type: "array_string",
     elem: "ElemString",
   },
   {
-    value: [
-      { id: 100, name: "hoge" },
-      { id: 200, name: "fuge" },
-    ],
+    value: {
+      asArrayObject: [
+        [{ id: 100, name: "hoge", checked: false }],
+        [{ id: 200, name: "fuge", checked: false }],
+      ],
+    },
     type: "array_object",
     elem: "ElemObject",
   },
   {
-    value: [
-      { foo: { id: 100, name: "hoge" } },
-      { bar: { id: 200, name: "fuga" } },
-    ],
+    value: {
+      asArrayNamedObject: [
+        { foo: [{ id: 100, name: "hoge", checked: false }] },
+        { bar: [{ id: 200, name: "fuga", checked: false }] },
+      ],
+    },
     type: "array_named_object",
     elem: "ElemNamedObject",
   },
   {
-    value: [
-      { id: 100, name: "hoge" },
-      { id: 200, name: "fuge" },
-    ],
+    value: {
+      asArrayGroup: [
+        [{ id: 100, name: "hoge", checked: false }],
+        [{ id: 200, name: "fuge", checked: false }],
+      ],
+    },
     type: "array_group",
     elem: "ElemGroup",
   },
@@ -125,7 +128,9 @@ attributes.forEach((attribute) => {
     expect(wrapper.find(attribute.elem).length).toEqual(1);
     expect(wrapper.find(attribute.elem).prop("attrName")).toEqual(attrName);
     expect(wrapper.find(attribute.elem).prop("attrType")).toEqual(attrType);
-    expect(wrapper.find(attribute.elem).prop("attrValue")).toEqual(attrValue);
+    expect(wrapper.find(attribute.elem).prop("attrValue")).toEqual(
+      Object.values(attrValue)[0]
+    );
   });
 });
 
@@ -153,7 +158,9 @@ arrayAttributes.forEach((arrayAttribute) => {
     wrapper.find(arrayAttribute.elem).forEach((arrayAttributeElem, i) => {
       expect(arrayAttributeElem.prop("attrName")).toEqual(attrName);
       expect(arrayAttributeElem.prop("attrType")).toEqual(attrType);
-      expect(arrayAttributeElem.prop("attrValue")).toEqual(attrValue[i]);
+      expect(arrayAttributeElem.prop("attrValue")).toEqual(
+        Object.values(attrValue)[0][i]
+      );
     });
   });
 });

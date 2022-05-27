@@ -23,42 +23,37 @@ beforeAll(() => {
 
 const attributes = [
   {
-    value: "hoge",
+    value: { asString: "hoge" },
     type: "string",
     elem: "ElemString",
   },
   {
-    value: "fuga",
+    value: { asString: "fuga" },
     type: "text",
     elem: "ElemString",
   },
   {
-    value: "2022-01-01",
+    value: { asString: "2022-01-01" },
     type: "date",
     elem: "ElemString",
   },
   {
-    value: true,
+    value: { asBoolean: true },
     type: "boolean",
     elem: "ElemBool",
   },
   {
-    value: "true",
-    type: "boolean",
-    elem: "ElemBool",
-  },
-  {
-    value: { id: 100, name: "hoge" },
+    value: { asObject: { id: 100, name: "hoge" } },
     type: "object",
     elem: "ElemObject",
   },
   {
-    value: { foo: { id: 100, name: "hoge" } },
+    value: { asNamedObject: { foo: { id: 100, name: "hoge" } } },
     type: "named_object",
     elem: "ElemNamedObject",
   },
   {
-    value: { id: 100, name: "hoge" },
+    value: { asGroup: { id: 100, name: "hoge" } },
     type: "group",
     elem: "ElemGroup",
   },
@@ -66,31 +61,37 @@ const attributes = [
 
 const arrayAttributes = [
   {
-    value: ["hoge", "fuga"],
+    value: { asArrayString: ["hoge", "fuga"] },
     type: "array_string",
     elem: "ElemString",
   },
   {
-    value: [
-      { id: 100, name: "hoge" },
-      { id: 200, name: "fuge" },
-    ],
+    value: {
+      asArrayObject: [
+        { id: 100, name: "hoge" },
+        { id: 200, name: "fuge" },
+      ],
+    },
     type: "array_object",
     elem: "ElemObject",
   },
   {
-    value: [
-      { foo: { id: 100, name: "hoge" } },
-      { bar: { id: 200, name: "fuga" } },
-    ],
+    value: {
+      asArrayNamedObject: [
+        { foo: { id: 100, name: "hoge" } },
+        { bar: { id: 200, name: "fuga" } },
+      ],
+    },
     type: "array_named_object",
     elem: "ElemNamedObject",
   },
   {
-    value: [
-      { id: 100, name: "hoge" },
-      { id: 200, name: "fuge" },
-    ],
+    value: {
+      asArrayGroup: [
+        { id: 100, name: "hoge" },
+        { id: 200, name: "fuge" },
+      ],
+    },
     type: "array_group",
     elem: "ElemGroup",
   },
@@ -110,7 +111,7 @@ attributes.forEach((attribute) => {
 
     expect(wrapper.find(attribute.elem).length).toEqual(1);
     expect(wrapper.find(attribute.elem).props()).toEqual({
-      attrValue: attribute.value,
+      attrValue: Object.values(attribute.value)[0],
     });
   });
 });
@@ -130,7 +131,7 @@ arrayAttributes.forEach((arrayAttributes) => {
     expect(wrapper.find(arrayAttributes.elem).length).toEqual(2);
     wrapper.find(arrayAttributes.elem).forEach((arrayAttributesElem, i) => {
       expect(arrayAttributesElem.props()).toEqual({
-        attrValue: arrayAttributes.value[i],
+        attrValue: Object.values(arrayAttributes.value)[0][i],
       });
     });
   });
