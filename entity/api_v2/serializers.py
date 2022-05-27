@@ -72,7 +72,7 @@ class WebhookGetSerializer(WebhookSerializerBase):
 
 class WebhookPostSerializer(WebhookSerializerBase):
     headers = serializers.ListField(
-        child=serializers.DictField(child=serializers.CharField(), allow_empty=True),
+        child=serializers.DictField(child=serializers.CharField(allow_blank=True), allow_empty=True),
         allow_empty=True,
     )
 

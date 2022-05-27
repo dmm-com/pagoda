@@ -16,6 +16,7 @@ import {
   Theme,
   Typography,
 } from "@mui/material";
+import { Link } from "react-router-dom";
 import { makeStyles } from "@mui/styles";
 import React, { FC, Fragment } from "react";
 
@@ -89,6 +90,21 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
     });
     setEntityInfo({ ...entityInfo });
   };
+
+  const handleWebhookHeaderKey = (openModalIndex: number, headerIndex: number, value: any) => {
+    entityInfo.webhooks[openModalIndex].headers[headerIndex].headerKey = value;
+    setEntityInfo({ ...entityInfo });
+  }
+
+  const handleWebhookHeaderValue = (openModalIndex: number, headerIndex: number, value: any) => {
+    entityInfo.webhooks[openModalIndex].headers[headerIndex].headerValue = value;
+    setEntityInfo({ ...entityInfo });
+  }
+
+  /*
+  const handleWebhookHeaderValue = (ev) => {
+  }
+  */
 
   const handleDeleteWebhook = (index: number) => {
     entityInfo.webhooks[index] = {
@@ -259,7 +275,7 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
               )}
               {entityInfo.webhooks[openModalIndex]?.headers.map(
                 (headerInfo, index) => (
-                  <TableRow>
+                  <TableRow key={index}>
                     <TableCell
                       sx={{ p: "4px 8px 0px 0px", borderBottom: "0px" }}
                     >
@@ -268,6 +284,9 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
                         variant="standard"
                         fullWidth={true}
                         value={headerInfo.headerKey}
+                        onChange={(e) => {
+                          handleWebhookHeaderKey(openModalIndex, index, e.target.value);
+                        }}
                       />
                     </TableCell>
                     <TableCell
@@ -278,6 +297,9 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
                         variant="standard"
                         fullWidth={true}
                         value={headerInfo.headerValue}
+                        onChange={(e) => {
+                          handleWebhookHeaderValue(openModalIndex, index, e.target.value);
+                        }}
                       />
                     </TableCell>
 
@@ -305,6 +327,14 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
               )}
             </TableBody>
           </Table>
+
+          <Box sx={{width: '92%'}}>
+            <Link onClick={handleCloseModal}>
+              <Typography align="right">
+                閉じる
+              </Typography>
+            </Link>
+          </Box>
         </Box>
       </Modal>
     </Box>
