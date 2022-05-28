@@ -12,6 +12,10 @@ export const EntryList = {
   MAX_ROW_COUNT: 30,
 };
 
+export const EntryReferralList = {
+  MAX_ROW_COUNT: 30,
+};
+
 /*
  * This magic number (0xfee0) describes the distance of transferring character code.
  * When a full-width character's code is shifted this number, then that character

@@ -17,24 +17,25 @@ test("should render a component with essential props", async () => {
   const entityId = 2;
   const entryId = 1;
 
-  const referredEntries = {
-    entries: [
-      {
-        id: 1,
-        name: "name",
-        entity: "entity",
-      },
-    ],
-  };
+  const referredEntries = [
+    {
+      id: 1,
+      name: "name",
+    },
+  ];
 
   /* eslint-disable */
   jest
-    .spyOn(require("../../utils/AironeAPIClient"), "getReferredEntries")
-    .mockResolvedValue({
-      json() {
-        return Promise.resolve(referredEntries);
-      },
-    });
+    .spyOn(
+      require("apiclient/AironeApiClientV2").aironeApiClientV2,
+      "getEntryReferral"
+    )
+    .mockResolvedValue(
+      Promise.resolve({
+        results: referredEntries,
+        count: referredEntries.length,
+      })
+    );
   /* eslint-enable */
 
   expect(() =>
