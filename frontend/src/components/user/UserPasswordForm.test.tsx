@@ -12,6 +12,8 @@ test("should render a component with essential props", function () {
   const user = {
     id: 1,
     username: "test",
+    dateJoined: "",
+    token: null,
   };
 
   expect(() =>

@@ -2,6 +2,7 @@ apis/AclApi.ts
 apis/EntityApi.ts
 apis/EntryApi.ts
 apis/GroupApi.ts
+apis/UserApi.ts
 apis/index.ts
 index.ts
 models/ACL.ts
@@ -14,12 +15,17 @@ models/EntryBase.ts
 models/EntryCreate.ts
 models/EntryRetrieve.ts
 models/EntryRetrieveAttrs.ts
-models/EntryRetrieveSchema.ts
+models/EntryRetrieveValue.ts
+models/EntryRetrieveValueAsObject.ts
+models/EntryRetrieveValueAsObjectSchema.ts
 models/EntryUpdate.ts
 models/GetEntrySimple.ts
 models/Group.ts
 models/PaginatedEntityDetailList.ts
 models/PaginatedEntryBaseList.ts
+models/UserList.ts
+models/UserRetrieve.ts
+models/UserRetrieveToken.ts
 models/Webhook.ts
 models/index.ts
 runtime.ts

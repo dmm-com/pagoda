@@ -203,3 +203,118 @@ class ModelTest(TestCase):
 
         self.assertTrue(superuser.has_permission(aclobj, ACLType.Full))
         self.assertFalse(guestuser.has_permission(aclobj, ACLType.Full))
+
+    def test_is_permitted_to_change(self):
+        admin_user = User.objects.create(username="admin", is_superuser=True)
+        non_admin_user = User.objects.create(username="user", is_superuser=False)
+        aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)
+
+        # add and register group to non_admin_user
+        group = Group.objects.create(name="group", is_active=True)
+        non_admin_user.groups.add(group)
+        self.role.users.add(non_admin_user)
+
+        # set admin member of another Role and associate it with permission of aclobj
+        another_role = Role.objects.create(name="AnotherRole")
+        another_role.admin_groups.add(group)
+        another_role.permissions.add(aclobj.full)
+
+        acl_bases = {
+            "acl1": {"will_be_public": True, "default_permission": ACLType.Nothing.id},
+            "acl2": {"will_be_public": False, "default_permission": ACLType.Full.id},
+            "acl3": {"will_be_public": False, "default_permission": ACLType.Readable.id},
+            "acl4": {"will_be_public": False, "default_permission": ACLType.Nothing.id},
+        }
+
+        acl = {
+            "readable": {
+                "acl_settings": [
+                    {
+                        "role": self.role,
+                        "value": ACLType.Readable.id,
+                    }
+                ]
+            },
+            "full": {
+                "acl_settings": [
+                    {
+                        "role": self.role,
+                        "value": ACLType.Full.id,
+                    }
+                ]
+            },
+            "nothing": {
+                "acl_settings": [
+                    {
+                        "role": self.role,
+                        "value": ACLType.Nothing.id,
+                    }
+                ]
+            },
+        }
+
+        # checks that admin user can access any case
+        for info in acl_bases.values():
+            self.assertTrue(
+                admin_user.is_permitted_to_change(aclobj, ACLType.Full, acl_settings=[], **info)
+            )
+
+        # checks permitted cases not to change individual permission but to change default one
+        # when user has full-control permission
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Readable, acl_settings=[], **acl_bases["acl1"]
+            )
+        )
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Readable, acl_settings=[], **acl_bases["acl2"]
+            )
+        )
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Readable, acl_settings=[], **acl_bases["acl3"]
+            )
+        )
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Full, acl_settings=[], **acl_bases["acl4"]
+            )
+        )
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Full, acl_settings=[], **acl_bases["acl3"]
+            )
+        )
+
+        # Permit to give any permissions to individual role when user belongs to role
+        # that has full-control permission
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Full, **dict(acl["full"], **acl_bases["acl4"])
+            )
+        )
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Readable, **dict(acl["readable"], **acl_bases["acl4"])
+            )
+        )
+        self.assertTrue(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Readable, **dict(acl["nothing"], **acl_bases["acl4"])
+            )
+        )
+
+        # Unpermit to deprive full-control permission when there will be no role
+        # that has full-control permission
+        another_role.permissions.remove(aclobj.full)
+        self.assertFalse(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Readable, **dict(acl["readable"], **acl_bases["acl4"])
+            )
+        )
+        self.assertFalse(
+            non_admin_user.is_permitted_to_change(
+                aclobj, ACLType.Readable, **dict(acl["nothing"], **acl_bases["acl4"])
+            )
+        )

@@ -50,6 +50,7 @@ def index(request, obj_id):
                 "current_permission": get_current_permission(x),
             }
             for x in Role.objects.filter(is_active=True)
+            if request.user.is_superuser or x.is_belonged_to(request.user)
         ],
     }
     return render(request, "edit_acl.html", context)
@@ -93,16 +94,35 @@ def set(request, recv_data):
         id=recv_data["object_id"]
     )
 
+    # This checks that user currently has permission to change it
     if not request.user.has_permission(acl_obj, ACLType.Full):
         return HttpResponse(
             "User(%s) doesn't have permission to change this ACL" % request.user.username,
-            status=400
+            status=400,
         )
 
-    acl_obj.is_public = False
-    if "is_public" in recv_data:
-        acl_obj.is_public = True
+    # This checks that user will have permission as user specifies by this change
+    # (NOTE: this processing is completely different from above permissoin check)
+    if not request.user.is_permitted_to_change(
+        **{
+            "target_obj": acl_obj,
+            "expected_permission": ACLType.Full,
+            "will_be_public": recv_data.get("is_public", False),
+            "default_permission": int(recv_data["default_permission"]),
+            "acl_settings": [
+                {
+                    "role": Role.objects.filter(id=x["role_id"], is_active=True).first(),
+                    "value": int(x["value"]),
+                }
+                for x in recv_data["acl"]
+            ],
+        }
+    ):
+        return HttpResponse(
+            "Inadmissible setting. By this change you will never change this ACL", status=400
+        )
 
+    acl_obj.is_public = bool(recv_data.get("is_public", False))
     acl_obj.default_permission = int(recv_data["default_permission"])
 
     # update the Public/Private flag parameter

@@ -48,6 +48,7 @@ $(document).ready(function() {
               operation = '削除';
               break;
             case data['constant']['operation']['copy']:
+            case data['constant']['operation']['do_copy']:
               target_name = jobinfo['target']['name'];
               operation = 'コピー';
               break;

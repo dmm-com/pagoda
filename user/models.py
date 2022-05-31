@@ -1,9 +1,10 @@
 from importlib import import_module
 
+from airone.lib.acl import ACLTypeBase, ACLType
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from airone.lib.acl import ACLTypeBase
 from group.models import Group
+from role.models import Role
 
 from rest_framework.authtoken.models import Token
 
@@ -68,13 +69,74 @@ class User(AbstractUser):
         # have permission of specified permission_level
         belonged_roles = set(
             list(self.role.filter(is_active=True))
-            + sum([list(g.role.filter(is_active=True)) for g in self.airone_groups], [])
+            + list(self.admin_role.filter(is_active=True))
+            + sum(
+                [
+                    (
+                        list(g.role.filter(is_active=True))
+                        + list(g.admin_role.filter(is_active=True))
+                    )
+                    for g in self.airone_groups
+                ],
+                [],
+            )
         )
         for role in belonged_roles:
             if role.is_permitted(target_obj, permission_level):
                 return True
 
         return False
+
+    def is_permitted_to_change(
+        self, target_obj, expected_permission, will_be_public, default_permission, acl_settings
+    ):
+        """
+        This checks specified permission settings have expected_permission for this user.
+
+        * Params:
+            - acl_settings[dict]: it must have following members
+                - role [Role]: Role instance to set ACL
+                - value [ACLType]: An ACLType value to set
+
+        * Return value:
+            - True: user has expected_permission
+            - False: user doesn't have expected_permission
+
+        * Use-case:
+            This method is called only when ACL configuration is changed of it and decide
+            whether current user has "expected" permission to the target_obj.
+        """
+        # These are obvious cases when current user has permission to operate target_obj
+        if self.is_superuser or will_be_public or expected_permission <= default_permission:
+            return True
+
+        for acl_info in acl_settings:
+            role = acl_info.get("role")
+            if not (role and role.is_belonged_to(self)):
+                return False
+
+        # This checks there are any administrative roles that can control this object left
+        def _tobe_admin(role):
+            for r_info in acl_settings:
+                if r_info["role"].id == role.id and r_info["value"] != ACLType.Full.id:
+                    return False
+
+            # This means specified "role" has full-control permission to the acl_obj
+            return True
+
+        admin_roles = Role.objects.filter(
+            permissions__codename="%s.%s" % (target_obj.id, ACLType.Full.id)
+        )
+        if (
+            len(
+                [r for r in admin_roles if _tobe_admin(r)]
+                + [r for r in acl_settings if r["value"] == ACLType.Full.id]
+            )
+            == 0
+        ):
+            return False
+
+        return True
 
     def delete(self):
         """

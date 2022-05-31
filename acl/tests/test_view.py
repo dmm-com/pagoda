@@ -44,7 +44,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse("acl:index", args=[0]))
         self.assertEqual(resp.status_code, 303)
 
-    def test_index(self):
+    def test_index_by_admin(self):
         self.admin_login()
 
         # create Roles to be listed
@@ -56,6 +56,20 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             sorted([x["name"] for x in resp.context["roles"]]), sorted(["TestRole", "r1", "r2"])
         )
+
+    def test_index_by_guest(self):
+        """This checks Roles, which only login-user belongs to, will be shown on the Role list."""
+        user = self.guest_login()
+        self._role.users.add(user)
+
+        # create Roles, but these are not shown at the list because user doesn't belong to them.
+        for name in ["r1", "r2"]:
+            Role.objects.create(name=name)
+
+        aclobj = ACLBase.objects.create(name="ACLObj", created_user=user)
+        resp = self.client.get(reverse("acl:index", args=[aclobj.id]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(sorted([x["name"] for x in resp.context["roles"]]), sorted(["TestRole"]))
 
     def test_get_acl_set(self):
         self.admin_login()
@@ -74,8 +88,7 @@ class ViewTest(AironeViewTest):
             "object_type": str(aclobj.objtype),
             "acl": [
                 {
-                    "member_id": str(user.id),
-                    "member_type": "user",
+                    "role_id": str(self._role.id),
                     "value": str(ACLType.Writable.id),
                 },
             ],
@@ -204,10 +217,10 @@ class ViewTest(AironeViewTest):
         self.assertEqual(self._role.permissions.count(), 0)
 
     def test_post_acl_set_without_object_id(self):
-        user = self.admin_login()
+        self.admin_login()
         params = {
             "acl": [
-                {"member_id": str(user.id), "value": str(ACLType.Writable)},
+                {"role_id": str(self._role.id), "value": str(ACLType.Writable)},
             ]
         }
         resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
@@ -221,12 +234,12 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 400)
 
-    def test_post_acl_set_with_invalid_member_id(self):
+    def test_post_acl_set_with_invalid_role_id(self):
         self.admin_login()
         params = {
             "object_id": str(self._aclobj.id),
             "acl": [
-                {"member_id": "9999", "value": str(ACLType.Writable)},
+                {"role_id": "999999", "value": str(ACLType.Writable)},
             ],
         }
         resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
@@ -234,11 +247,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
 
     def test_post_acl_set_with_invalid_acl(self):
-        user = self.admin_login()
+        self.admin_login()
         params = {
             "object_id": str(self._aclobj.id),
             "acl": [
-                {"member_id": str(user.id), "value": "abcd"},
+                {"role_id": str(self._role.id), "value": "abcd"},
             ],
         }
         resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
@@ -311,3 +324,86 @@ class ViewTest(AironeViewTest):
         self.admin_login()
         resp = self.client.get(reverse("acl:index", args=[obj.id]))
         self.assertEqual(resp.status_code, 200)
+
+    def test_clear_permission(self):
+        user = self.guest_login()
+        aclobj = ACLBase.objects.create(name="obj", created_user=user)
+
+        params = {
+            "object_id": str(aclobj.id),
+            "object_type": str(aclobj.objtype),
+            "is_public": "",
+            "acl": [],
+            "default_permission": str(ACLType.Nothing.id),
+        }
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.content.decode("utf-8"),
+            "Inadmissible setting. By this change you will never change this ACL",
+        )
+
+    def test_clear_permission_when_there_is_available_role(self):
+        """This test remove last role permission. It is expected that processing
+        won't be accepted to prevent making object no-one can control.
+        """
+        user = self.guest_login()
+        self._role.admin_users.add(user)
+
+        # make another role to remove permission
+        another_role = Role.objects.create(name="Another Role")
+        another_role.admin_users.add(user)
+
+        # create an aclobj and set full-permission to operate aclobj to the test Role
+        aclobj = ACLBase.objects.create(name="obj", created_user=user)
+        self._role.permissions.add(aclobj.full)
+        another_role.permissions.add(aclobj.full)
+
+        params = {
+            "object_id": str(aclobj.id),
+            "object_type": str(aclobj.objtype),
+            "is_public": "",
+            "acl": [
+                {
+                    "role_id": str(another_role.id),
+                    "value": str(ACLType.Nothing.id),
+                },
+            ],
+            "default_permission": str(ACLType.Nothing.id),
+        }
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_set_acl_of_uneditable_role(self):
+        """This test try to change ACL of Role that logined-user isn't belonged to
+        as an administrative member.
+        """
+        # initialize role member and it's permitted to fully control the aclobj
+        user = self.guest_login()
+        self._role.admin_users.add(user)
+
+        aclobj = ACLBase.objects.create(name="obj", created_user=user, is_public=False)
+        self._role.permissions.add(aclobj.full)
+
+        # create another role that is not irrelevant with "user"
+        irrelevant_role = Role.objects.create(name="AnotherRole")
+
+        # try to set ACL that includes irrelevant role configuration
+        params = {
+            "object_id": str(aclobj.id),
+            "object_type": str(aclobj.objtype),
+            "acl": [
+                {"role_id": str(irrelevant_role.id), "value": str(ACLType.Full.id)},
+            ],
+            "default_permission": str(ACLType.Nothing.id),
+        }
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.content.decode("utf-8"),
+            "Inadmissible setting. By this change you will never change this ACL",
+        )
+
+        # check Role, which user belongs to administrative members, can set ACL
+        self.assertTrue(self._role.is_permitted(aclobj, ACLType.Full))
+        self.assertFalse(irrelevant_role.is_permitted(aclobj, ACLType.Full))

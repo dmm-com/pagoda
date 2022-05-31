@@ -204,15 +204,6 @@ export function exportEntries(
   });
 }
 
-// FIXME implement internal API then call it
-export function getUser(userId: number): Promise<Response> {
-  return fetch(`/user/api/v2/users/${userId}`);
-}
-
-export function getUsers(): Promise<Response> {
-  return fetch("/user/api/v2/users");
-}
-
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
 export function createUser(

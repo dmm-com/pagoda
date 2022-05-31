@@ -21,10 +21,36 @@ class EntityAttributeType(TypedDict):
     name: str
 
 
+class EntryAttributeValueObject(TypedDict):
+    id: Optional[int]
+    name: str
+    schema: EntityAttributeType
+
+
+class EntryAttributeValueGroup(TypedDict):
+    id: int
+    name: str
+
+
+# A thin container returns typed value(s)
+class EntryAttributeValue(TypedDict, total=False):
+    as_object: Optional[EntryAttributeValueObject]
+    as_string: str
+    as_named_object: Dict[str, Optional[EntryAttributeValueObject]]
+    as_array_object: List[Optional[EntryAttributeValueObject]]
+    as_array_string: List[str]
+    as_array_named_object: List[Dict[str, Optional[EntryAttributeValueObject]]]
+    as_array_group: List[EntryAttributeValueGroup]
+    # text; use string instead
+    as_boolean: bool
+    as_group: EntryAttributeValueGroup
+    # date; use string instead
+
+
 class EntryAttributeType(TypedDict):
     id: Optional[int]
     type: int
-    value: Any
+    value: EntryAttributeValue
     schema: EntityAttributeType
 
 
@@ -225,18 +251,20 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
         read_only_fields = ["is_active"]
 
     def get_attrs(self, obj: Entry) -> List[EntryAttributeType]:
-        def get_attr_value(attr: Attribute):
+        def get_attr_value(attr: Attribute) -> EntryAttributeValue:
             attrv = attr.get_latest_value(is_readonly=True)
 
             if not attrv:
-                return ""
+                return {}
 
             if attr.schema.type & AttrTypeValue["array"]:
                 if attr.schema.type & AttrTypeValue["string"]:
-                    return [x.value for x in attrv.data_array.all()]
+                    return {
+                        "as_array_string": [x.value for x in attrv.data_array.all()],
+                    }
 
                 elif attr.schema.type & AttrTypeValue["named"]:
-                    return [
+                    array_named_object: List[Dict[str, Optional[EntryAttributeValueObject]]] = [
                         {
                             x.value: {
                                 "id": x.referral.id if x.referral else None,
@@ -244,86 +272,131 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                                 "schema": {
                                     "id": x.referral.entry.schema.id,
                                     "name": x.referral.entry.schema.name,
-                                }
-                                if x.referral
-                                else {},
-                            },
-                        }
-                        for x in attrv.data_array.all()
-                    ]
-
-                elif attr.schema.type & AttrTypeValue["object"]:
-                    return [
-                        {
-                            "id": x.referral.id if x.referral else None,
-                            "name": x.referral.name if x.referral else "",
-                            "schema": {
-                                "id": x.referral.entry.schema.id,
-                                "name": x.referral.entry.schema.name,
+                                },
                             }
                             if x.referral
-                            else {},
+                            else None,
                         }
                         for x in attrv.data_array.all()
                     ]
+                    return {"as_array_named_object": array_named_object}
+
+                elif attr.schema.type & AttrTypeValue["object"]:
+                    return {
+                        "as_array_object": [
+                            {
+                                "id": x.referral.id if x.referral else None,
+                                "name": x.referral.name if x.referral else "",
+                                "schema": {
+                                    "id": x.referral.entry.schema.id,
+                                    "name": x.referral.entry.schema.name,
+                                },
+                            }
+                            if x.referral
+                            else None
+                            for x in attrv.data_array.all()
+                        ]
+                    }
 
                 elif attr.schema.type & AttrTypeValue["group"]:
                     groups = [Group.objects.get(id=x.value) for x in attrv.data_array.all()]
-                    return [
-                        {
-                            "id": group.id,
-                            "name": group.name,
-                        }
-                        for group in groups
-                    ]
+                    return {
+                        "as_array_group": [
+                            {
+                                "id": group.id,
+                                "name": group.name,
+                            }
+                            for group in groups
+                        ]
+                    }
 
             elif (
                 attr.schema.type & AttrTypeValue["string"]
                 or attr.schema.type & AttrTypeValue["text"]
             ):
-                return attrv.value
+                return {"as_string": attrv.value}
 
             elif attr.schema.type & AttrTypeValue["named"]:
-                return {
+                named: Dict[str, Optional[EntryAttributeValueObject]] = {
                     attrv.value: {
                         "id": attrv.referral.id if attrv.referral else None,
                         "name": attrv.referral.name if attrv.referral else "",
                         "schema": {
                             "id": attrv.referral.entry.schema.id,
                             "name": attrv.referral.entry.schema.name,
-                        }
-                        if attrv.referral
-                        else {},
+                        },
                     }
+                    if attrv.referral
+                    else None
                 }
+                return {"as_named_object": named}
 
             elif attr.schema.type & AttrTypeValue["object"]:
                 return {
-                    "id": attrv.referral.id if attrv.referral else None,
-                    "name": attrv.referral.name if attrv.referral else "",
-                    "schema": {
-                        "id": attrv.referral.entry.schema.id,
-                        "name": attrv.referral.entry.schema.name,
+                    "as_object": {
+                        "id": attrv.referral.id if attrv.referral else None,
+                        "name": attrv.referral.name if attrv.referral else "",
+                        "schema": {
+                            "id": attrv.referral.entry.schema.id,
+                            "name": attrv.referral.entry.schema.name,
+                        },
                     }
                     if attrv.referral
-                    else {},
+                    else None
                 }
 
             elif attr.schema.type & AttrTypeValue["boolean"]:
-                return attrv.boolean
+                return {"as_boolean": attrv.boolean}
 
             elif attr.schema.type & AttrTypeValue["date"]:
-                return attrv.date
+                return {"as_string": attrv.date}
 
             elif attr.schema.type & AttrTypeValue["group"] and attrv.value:
                 group = Group.objects.get(id=attrv.value)
                 return {
-                    "id": group.id,
-                    "name": group.name,
+                    "as_group": {
+                        "id": group.id,
+                        "name": group.name,
+                    }
                 }
 
-            else:
-                return ""
+            return {}
+
+        def get_default_attr_value(type: int) -> EntryAttributeValue:
+            if type & AttrTypeValue["array"]:
+                if type & AttrTypeValue["string"]:
+                    return {
+                        "as_array_string": AttrDefaultValue[type],
+                    }
+
+                elif type & AttrTypeValue["named"]:
+                    return {"as_array_named_object": AttrDefaultValue[type]}
+
+                elif type & AttrTypeValue["object"]:
+                    return {"as_array_object": AttrDefaultValue[type]}
+
+                elif type & AttrTypeValue["group"]:
+                    return {"as_array_group": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
+                return {"as_string": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["named"]:
+                return {"as_named_object": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["object"]:
+                return {"as_object": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["boolean"]:
+                return {"as_boolean": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["date"]:
+                return {"as_string": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["group"]:
+                return {"as_group": AttrDefaultValue[type]}
+
+            raise ValidationError(f"unexpected type: {type}")
 
         attr_prefetch = Prefetch(
             "attribute_set",
@@ -339,7 +412,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
         attrinfo: List[EntryAttributeType] = []
         for entity_attr in entity_attrs:
             attr = entity_attr.attr_list[0] if entity_attr.attr_list else None
-            value = get_attr_value(attr) if attr else AttrDefaultValue[entity_attr.type]
+            value = get_attr_value(attr) if attr else get_default_attr_value(entity_attr.type)
             attrinfo.append(
                 {
                     "id": attr.id if attr else None,
