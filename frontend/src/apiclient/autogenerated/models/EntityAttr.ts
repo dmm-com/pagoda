@@ -30,7 +30,7 @@ export interface EntityAttr {
    * @type {number}
    * @memberof EntityAttr
    */
-  type?: number;
+  type: number;
   /**
    *
    * @type {boolean}
@@ -76,7 +76,7 @@ export function EntityAttrFromJSONTyped(
   }
   return {
     name: json["name"],
-    type: !exists(json, "type") ? undefined : json["type"],
+    type: json["type"],
     isMandatory: !exists(json, "is_mandatory")
       ? undefined
       : json["is_mandatory"],

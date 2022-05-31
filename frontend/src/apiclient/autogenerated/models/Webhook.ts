@@ -30,7 +30,7 @@ export interface Webhook {
    * @type {string}
    * @memberof Webhook
    */
-  label: string;
+  label?: string;
   /**
    *
    * @type {string}
@@ -48,13 +48,13 @@ export interface Webhook {
    * @type {boolean}
    * @memberof Webhook
    */
-  isVerified?: boolean;
+  readonly isVerified: boolean;
   /**
    *
-   * @type {Array<{ [key: string]: string; }>}
+   * @type {{ [key: string]: string; }}
    * @memberof Webhook
    */
-  readonly headers: Array<{ [key: string]: string }>;
+  headers?: { [key: string]: string };
 }
 
 export function WebhookFromJSON(json: any): Webhook {
@@ -70,11 +70,11 @@ export function WebhookFromJSONTyped(
   }
   return {
     id: json["id"],
-    label: json["label"],
+    label: !exists(json, "label") ? undefined : json["label"],
     url: json["url"],
     isEnabled: !exists(json, "is_enabled") ? undefined : json["is_enabled"],
-    isVerified: !exists(json, "is_verified") ? undefined : json["is_verified"],
-    headers: json["headers"],
+    isVerified: json["is_verified"],
+    headers: !exists(json, "headers") ? undefined : json["headers"],
   };
 }
 
@@ -89,6 +89,6 @@ export function WebhookToJSON(value?: Webhook | null): any {
     label: value.label,
     url: value.url,
     is_enabled: value.isEnabled,
-    is_verified: value.isVerified,
+    headers: value.headers,
   };
 }

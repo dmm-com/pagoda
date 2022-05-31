@@ -2,7 +2,6 @@ apis/AclApi.ts
 apis/EntityApi.ts
 apis/EntryApi.ts
 apis/GroupApi.ts
-apis/WebhookApi.ts
 apis/index.ts
 index.ts
 models/ACL.ts
@@ -21,7 +20,6 @@ models/GetEntrySimple.ts
 models/Group.ts
 models/PaginatedEntityDetailList.ts
 models/PaginatedEntryBaseList.ts
-models/WebhookGet.ts
-models/WebhookPost.ts
+models/Webhook.ts
 models/index.ts
 runtime.ts

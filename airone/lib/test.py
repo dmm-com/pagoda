@@ -23,16 +23,16 @@ class AironeTestCase(TestCase):
 
     ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY = [
         {"name": "val", "type": AttrTypeValue["string"]},
+        {"name": "vals", "type": AttrTypeValue["array_string"]},
         {"name": "ref", "type": AttrTypeValue["object"]},
+        {"name": "refs", "type": AttrTypeValue["array_object"]},
         {"name": "name", "type": AttrTypeValue["named_object"]},
-        {"name": "bool", "type": AttrTypeValue["boolean"]},
-        {"name": "date", "type": AttrTypeValue["date"]},
+        {"name": "names", "type": AttrTypeValue["array_named_object"]},
         {"name": "group", "type": AttrTypeValue["group"]},
         {"name": "groups", "type": AttrTypeValue["array_group"]},
+        {"name": "bool", "type": AttrTypeValue["boolean"]},
         {"name": "text", "type": AttrTypeValue["text"]},
-        {"name": "vals", "type": AttrTypeValue["array_string"]},
-        {"name": "refs", "type": AttrTypeValue["array_object"]},
-        {"name": "names", "type": AttrTypeValue["array_named_object"]},
+        {"name": "date", "type": AttrTypeValue["date"]},
     ]
 
     def setUp(self):
@@ -70,9 +70,10 @@ class AironeTestCase(TestCase):
                 return default_value
 
         entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
-        for attr_info in attrs:
+        for index, attr_info in enumerate(attrs):
             entity_attr = EntityAttr.objects.create(
                 **{
+                    "index": index,
                     "name": attr_info["name"],
                     "type": _get_entity_attr_params(attr_info, "type", AttrTypeValue["string"]),
                     "is_mandatory": _get_entity_attr_params(attr_info, "is_mandatory", False),

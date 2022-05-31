@@ -20,11 +20,11 @@ import {
   EntityAttrToJSON,
 } from "./EntityAttr";
 import {
-  WebhookPost,
-  WebhookPostFromJSON,
-  WebhookPostFromJSONTyped,
-  WebhookPostToJSON,
-} from "./WebhookPost";
+  Webhook,
+  WebhookFromJSON,
+  WebhookFromJSONTyped,
+  WebhookToJSON,
+} from "./Webhook";
 
 /**
  *
@@ -46,22 +46,28 @@ export interface EntityCreate {
   name: string;
   /**
    *
+   * @type {string}
+   * @memberof EntityCreate
+   */
+  note?: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof EntityCreate
+   */
+  isToplevel?: boolean;
+  /**
+   *
    * @type {Array<EntityAttr>}
    * @memberof EntityCreate
    */
   attrs?: Array<EntityAttr>;
   /**
    *
-   * @type {string}
+   * @type {Array<Webhook>}
    * @memberof EntityCreate
    */
-  note: string;
-  /**
-   *
-   * @type {Array<WebhookPost>}
-   * @memberof EntityCreate
-   */
-  webhooks: Array<WebhookPost>;
+  webhooks?: Array<Webhook>;
 }
 
 export function EntityCreateFromJSON(json: any): EntityCreate {
@@ -78,11 +84,14 @@ export function EntityCreateFromJSONTyped(
   return {
     id: json["id"],
     name: json["name"],
+    note: !exists(json, "note") ? undefined : json["note"],
+    isToplevel: !exists(json, "is_toplevel") ? undefined : json["is_toplevel"],
     attrs: !exists(json, "attrs")
       ? undefined
       : (json["attrs"] as Array<any>).map(EntityAttrFromJSON),
-    note: json["note"],
-    webhooks: (json["webhooks"] as Array<any>).map(WebhookPostFromJSON),
+    webhooks: !exists(json, "webhooks")
+      ? undefined
+      : (json["webhooks"] as Array<any>).map(WebhookFromJSON),
   };
 }
 
@@ -95,11 +104,15 @@ export function EntityCreateToJSON(value?: EntityCreate | null): any {
   }
   return {
     name: value.name,
+    note: value.note,
+    is_toplevel: value.isToplevel,
     attrs:
       value.attrs === undefined
         ? undefined
         : (value.attrs as Array<any>).map(EntityAttrToJSON),
-    note: value.note,
-    webhooks: (value.webhooks as Array<any>).map(WebhookPostToJSON),
+    webhooks:
+      value.webhooks === undefined
+        ? undefined
+        : (value.webhooks as Array<any>).map(WebhookToJSON),
   };
 }

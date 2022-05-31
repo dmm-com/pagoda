@@ -8,9 +8,11 @@ class EntityAttr(ACLBase):
     # This parameter is needed to make a relationship to the corresponding Entity at importing
     parent_entity = models.ForeignKey("Entity", on_delete=models.SET_NULL, null=True)
 
-    type = models.IntegerField(default=0)
+    type = models.IntegerField()
     is_mandatory = models.BooleanField(default=False)
-    referral = models.ManyToManyField(ACLBase, default=[], related_name="referred_attr_base")
+    referral = models.ManyToManyField(
+        ACLBase, default=[], blank=True, related_name="referred_attr_base"
+    )
     index = models.IntegerField(default=0)
 
     # When this parameters set, all entries which are related to the parent_entity will be analyzed
@@ -46,7 +48,7 @@ class Entity(ACLBase):
     STATUS_CREATING = 1 << 1
     STATUS_EDITING = 1 << 2
 
-    note = models.CharField(max_length=200)
+    note = models.CharField(max_length=200, blank=True)
     attrs = models.ManyToManyField(EntityAttr)
 
     # This indicates informatoin where to send request for notification

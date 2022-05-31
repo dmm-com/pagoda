@@ -2,6 +2,7 @@ from django.test import TestCase
 from rest_framework.authtoken.models import Token
 
 from airone.lib.acl import ACLType
+from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from group.models import Group
@@ -58,7 +59,10 @@ class ModelTest(TestCase):
     def test_set_history_with_detail(self):
         entity = Entity.objects.create(name="test-entity", created_user=self.user)
         attr = EntityAttr.objects.create(
-            name="test-attr", created_user=self.user, parent_entity=entity
+            name="test-attr",
+            type=AttrTypeValue["object"],
+            created_user=self.user,
+            parent_entity=entity,
         )
 
         history = self.user.seth_entity_add(entity)

@@ -31,23 +31,9 @@ import {
   PaginatedEntryBaseListToJSON,
 } from "../models";
 
-export interface EntityApiV2EntitiesCreateRequest {
+export interface EntityApiV2CreateRequest {
   entityCreate: EntityCreate;
   isTopLevel?: boolean;
-  query?: string;
-}
-
-export interface EntityApiV2EntitiesListRequest {
-  isTopLevel?: boolean;
-  limit?: number;
-  offset?: number;
-  query?: string;
-}
-
-export interface EntityApiV2EntitiesRetrieveRequest {
-  id: number;
-  isTopLevel?: boolean;
-  query?: string;
 }
 
 export interface EntityApiV2EntriesCreateRequest {
@@ -63,14 +49,28 @@ export interface EntityApiV2EntriesListRequest {
   search?: string;
 }
 
+export interface EntityApiV2ListRequest {
+  isActive?: boolean;
+  isTopLevel?: boolean;
+  limit?: number;
+  offset?: number;
+  ordering?: string;
+  search?: string;
+}
+
+export interface EntityApiV2RetrieveRequest {
+  id: number;
+  isTopLevel?: boolean;
+}
+
 /**
  *
  */
 export class EntityApi extends runtime.BaseAPI {
   /**
    */
-  async entityApiV2EntitiesCreateRaw(
-    requestParameters: EntityApiV2EntitiesCreateRequest,
+  async entityApiV2CreateRaw(
+    requestParameters: EntityApiV2CreateRequest,
     initOverrides?: RequestInit
   ): Promise<runtime.ApiResponse<EntityCreate>> {
     if (
@@ -79,7 +79,7 @@ export class EntityApi extends runtime.BaseAPI {
     ) {
       throw new runtime.RequiredError(
         "entityCreate",
-        "Required parameter requestParameters.entityCreate was null or undefined when calling entityApiV2EntitiesCreate."
+        "Required parameter requestParameters.entityCreate was null or undefined when calling entityApiV2Create."
       );
     }
 
@@ -87,10 +87,6 @@ export class EntityApi extends runtime.BaseAPI {
 
     if (requestParameters.isTopLevel !== undefined) {
       queryParameters["is_top_level"] = requestParameters.isTopLevel;
-    }
-
-    if (requestParameters.query !== undefined) {
-      queryParameters["query"] = requestParameters.query;
     }
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -113,7 +109,7 @@ export class EntityApi extends runtime.BaseAPI {
 
     const response = await this.request(
       {
-        path: `/entity/api/v2/entities`,
+        path: `/entity/api/v2/`,
         method: "POST",
         headers: headerParameters,
         query: queryParameters,
@@ -129,149 +125,11 @@ export class EntityApi extends runtime.BaseAPI {
 
   /**
    */
-  async entityApiV2EntitiesCreate(
-    requestParameters: EntityApiV2EntitiesCreateRequest,
+  async entityApiV2Create(
+    requestParameters: EntityApiV2CreateRequest,
     initOverrides?: RequestInit
   ): Promise<EntityCreate> {
-    const response = await this.entityApiV2EntitiesCreateRaw(
-      requestParameters,
-      initOverrides
-    );
-    return await response.value();
-  }
-
-  /**
-   */
-  async entityApiV2EntitiesListRaw(
-    requestParameters: EntityApiV2EntitiesListRequest,
-    initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<PaginatedEntityDetailList>> {
-    const queryParameters: any = {};
-
-    if (requestParameters.isTopLevel !== undefined) {
-      queryParameters["is_top_level"] = requestParameters.isTopLevel;
-    }
-
-    if (requestParameters.limit !== undefined) {
-      queryParameters["limit"] = requestParameters.limit;
-    }
-
-    if (requestParameters.offset !== undefined) {
-      queryParameters["offset"] = requestParameters.offset;
-    }
-
-    if (requestParameters.query !== undefined) {
-      queryParameters["query"] = requestParameters.query;
-    }
-
-    const headerParameters: runtime.HTTPHeaders = {};
-
-    if (
-      this.configuration &&
-      (this.configuration.username !== undefined ||
-        this.configuration.password !== undefined)
-    ) {
-      headerParameters["Authorization"] =
-        "Basic " +
-        btoa(this.configuration.username + ":" + this.configuration.password);
-    }
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters["Authorization"] =
-        this.configuration.apiKey("Authorization"); // tokenAuth authentication
-    }
-
-    const response = await this.request(
-      {
-        path: `/entity/api/v2/entities`,
-        method: "GET",
-        headers: headerParameters,
-        query: queryParameters,
-      },
-      initOverrides
-    );
-
-    return new runtime.JSONApiResponse(response, (jsonValue) =>
-      PaginatedEntityDetailListFromJSON(jsonValue)
-    );
-  }
-
-  /**
-   */
-  async entityApiV2EntitiesList(
-    requestParameters: EntityApiV2EntitiesListRequest = {},
-    initOverrides?: RequestInit
-  ): Promise<PaginatedEntityDetailList> {
-    const response = await this.entityApiV2EntitiesListRaw(
-      requestParameters,
-      initOverrides
-    );
-    return await response.value();
-  }
-
-  /**
-   */
-  async entityApiV2EntitiesRetrieveRaw(
-    requestParameters: EntityApiV2EntitiesRetrieveRequest,
-    initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<EntityDetail>> {
-    if (requestParameters.id === null || requestParameters.id === undefined) {
-      throw new runtime.RequiredError(
-        "id",
-        "Required parameter requestParameters.id was null or undefined when calling entityApiV2EntitiesRetrieve."
-      );
-    }
-
-    const queryParameters: any = {};
-
-    if (requestParameters.isTopLevel !== undefined) {
-      queryParameters["is_top_level"] = requestParameters.isTopLevel;
-    }
-
-    if (requestParameters.query !== undefined) {
-      queryParameters["query"] = requestParameters.query;
-    }
-
-    const headerParameters: runtime.HTTPHeaders = {};
-
-    if (
-      this.configuration &&
-      (this.configuration.username !== undefined ||
-        this.configuration.password !== undefined)
-    ) {
-      headerParameters["Authorization"] =
-        "Basic " +
-        btoa(this.configuration.username + ":" + this.configuration.password);
-    }
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters["Authorization"] =
-        this.configuration.apiKey("Authorization"); // tokenAuth authentication
-    }
-
-    const response = await this.request(
-      {
-        path: `/entity/api/v2/entities/{id}`.replace(
-          `{${"id"}}`,
-          encodeURIComponent(String(requestParameters.id))
-        ),
-        method: "GET",
-        headers: headerParameters,
-        query: queryParameters,
-      },
-      initOverrides
-    );
-
-    return new runtime.JSONApiResponse(response, (jsonValue) =>
-      EntityDetailFromJSON(jsonValue)
-    );
-  }
-
-  /**
-   */
-  async entityApiV2EntitiesRetrieve(
-    requestParameters: EntityApiV2EntitiesRetrieveRequest,
-    initOverrides?: RequestInit
-  ): Promise<EntityDetail> {
-    const response = await this.entityApiV2EntitiesRetrieveRaw(
+    const response = await this.entityApiV2CreateRaw(
       requestParameters,
       initOverrides
     );
@@ -431,6 +289,148 @@ export class EntityApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<PaginatedEntryBaseList> {
     const response = await this.entityApiV2EntriesListRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async entityApiV2ListRaw(
+    requestParameters: EntityApiV2ListRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<PaginatedEntityDetailList>> {
+    const queryParameters: any = {};
+
+    if (requestParameters.isActive !== undefined) {
+      queryParameters["is_active"] = requestParameters.isActive;
+    }
+
+    if (requestParameters.isTopLevel !== undefined) {
+      queryParameters["is_top_level"] = requestParameters.isTopLevel;
+    }
+
+    if (requestParameters.limit !== undefined) {
+      queryParameters["limit"] = requestParameters.limit;
+    }
+
+    if (requestParameters.offset !== undefined) {
+      queryParameters["offset"] = requestParameters.offset;
+    }
+
+    if (requestParameters.ordering !== undefined) {
+      queryParameters["ordering"] = requestParameters.ordering;
+    }
+
+    if (requestParameters.search !== undefined) {
+      queryParameters["search"] = requestParameters.search;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entity/api/v2/`,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      PaginatedEntityDetailListFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async entityApiV2List(
+    requestParameters: EntityApiV2ListRequest = {},
+    initOverrides?: RequestInit
+  ): Promise<PaginatedEntityDetailList> {
+    const response = await this.entityApiV2ListRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async entityApiV2RetrieveRaw(
+    requestParameters: EntityApiV2RetrieveRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<EntityDetail>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling entityApiV2Retrieve."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters.isTopLevel !== undefined) {
+      queryParameters["is_top_level"] = requestParameters.isTopLevel;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entity/api/v2/{id}/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      EntityDetailFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async entityApiV2Retrieve(
+    requestParameters: EntityApiV2RetrieveRequest,
+    initOverrides?: RequestInit
+  ): Promise<EntityDetail> {
+    const response = await this.entityApiV2RetrieveRaw(
       requestParameters,
       initOverrides
     );

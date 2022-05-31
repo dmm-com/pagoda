@@ -7,13 +7,14 @@ from airone.lib.types import AttrTypeArrStr
 from airone.lib.types import AttrTypeValue
 from django.urls import reverse
 from entity import tasks
-from entity.models import Entity
+from entity.models import Entity, EntityAttr
 
 from unittest import mock
 from entry.models import Entry
 from group.models import Group
-from user.models import User
+from user.models import History, User
 from role.models import Role
+from webhook.models import Webhook
 
 
 class ViewTest(AironeViewTest):
@@ -35,6 +36,815 @@ class ViewTest(AironeViewTest):
                 "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
             }
         )
+
+    def test_retrieve_entity(self):
+        self.entity.attrs.all().delete()
+        resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json(),
+            {
+                "id": self.entity.id,
+                "is_toplevel": False,
+                "name": "test-entity",
+                "note": "",
+                "status": 0,
+                "attrs": [],
+                "webhooks": [],
+            },
+        )
+
+        self.entity.note = "hoge"
+        self.entity.status = Entity.STATUS_TOP_LEVEL
+        self.entity.save()
+
+        resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.json()["note"], "hoge")
+        self.assertEqual(resp.json()["is_toplevel"], True)
+
+    def test_retrieve_entity_with_attr(self):
+        resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json()["attrs"],
+            [
+                {
+                    "id": self.entity.attrs.get(name="val").id,
+                    "index": 0,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "val",
+                    "referrals": [],
+                    "type": AttrTypeValue["string"],
+                },
+                {
+                    "id": self.entity.attrs.get(name="vals").id,
+                    "index": 1,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "vals",
+                    "referrals": [],
+                    "type": AttrTypeValue["array_string"],
+                },
+                {
+                    "id": self.entity.attrs.get(name="ref").id,
+                    "index": 2,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "ref",
+                    "referrals": [],
+                    "type": AttrTypeValue["object"],
+                },
+                {
+                    "id": self.entity.attrs.get(name="refs").id,
+                    "index": 3,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "refs",
+                    "referrals": [],
+                    "type": AttrTypeValue["array_object"],
+                },
+                {
+                    "id": self.entity.attrs.get(name="name").id,
+                    "index": 4,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "name",
+                    "referrals": [],
+                    "type": AttrTypeValue["named_object"],
+                },
+                {
+                    "id": self.entity.attrs.get(name="names").id,
+                    "index": 5,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "names",
+                    "referrals": [],
+                    "type": AttrTypeValue["array_named_object"],
+                },
+                {
+                    "id": self.entity.attrs.get(name="group").id,
+                    "index": 6,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "group",
+                    "referrals": [],
+                    "type": AttrTypeValue["group"],
+                },
+                {
+                    "id": self.entity.attrs.get(name="groups").id,
+                    "index": 7,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "groups",
+                    "referrals": [],
+                    "type": AttrTypeValue["array_group"],
+                },
+                {
+                    "id": self.entity.attrs.get(name="bool").id,
+                    "index": 8,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "bool",
+                    "referrals": [],
+                    "type": AttrTypeValue["boolean"],
+                },
+                {
+                    "id": self.entity.attrs.get(name="text").id,
+                    "index": 9,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "text",
+                    "referrals": [],
+                    "type": AttrTypeValue["text"],
+                },
+                {
+                    "id": self.entity.attrs.get(name="date").id,
+                    "index": 10,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "date",
+                    "referrals": [],
+                    "type": AttrTypeValue["date"],
+                },
+            ],
+        )
+
+        entity_attr: EntityAttr = self.entity.attrs.get(name="refs")
+        entity_attr.index = 11
+        entity_attr.is_delete_in_chain = True
+        entity_attr.is_mandatory = True
+        entity_attr.referral.add(self.ref_entity)
+        entity_attr.save()
+
+        resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(
+            resp.json()["attrs"][-1],
+            {
+                "id": entity_attr.id,
+                "index": 11,
+                "is_delete_in_chain": True,
+                "is_mandatory": True,
+                "name": "refs",
+                "referrals": [
+                    {
+                        "id": self.ref_entity.id,
+                        "name": "ref_entity",
+                    }
+                ],
+                "type": AttrTypeValue["array_object"],
+            },
+        )
+
+    def test_retrieve_entity_with_webhook(self):
+        webhook: Webhook = Webhook.objects.create(url="http://airone.com/")
+        self.entity.webhooks.add(webhook)
+
+        resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(
+            resp.json()["webhooks"],
+            [
+                {
+                    "id": webhook.id,
+                    "url": "http://airone.com/",
+                    "is_enabled": False,
+                    "is_verified": False,
+                    "label": "",
+                    "headers": {},
+                }
+            ],
+        )
+
+        webhook.is_enabled = True
+        webhook.is_verified = True
+        webhook.label = "hoge"
+        webhook.headers = {"key1": "value1", "key2": "value2"}
+        webhook.save()
+
+        resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(
+            resp.json()["webhooks"],
+            [
+                {
+                    "id": webhook.id,
+                    "url": "http://airone.com/",
+                    "is_enabled": True,
+                    "is_verified": True,
+                    "label": "hoge",
+                    "headers": {"key1": "value1", "key2": "value2"},
+                }
+            ],
+        )
+
+    def test_retrieve_entity_with_invalid_param(self):
+        resp = self.client.get("/entity/api/v2/%d/" % 9999)
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json(), {"detail": "Not found."})
+
+        resp = self.client.get("/entity/api/v2/%s/" % "hoge")
+        self.assertEqual(resp.status_code, 404)
+
+        self.entity.delete()
+        resp = self.client.get("/entity/api/v2/%d/?is_active=true" % self.entity.id)
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json(), {"detail": "Not found."})
+
+    def test_retrieve_entity_without_permission(self):
+        # permission nothing entity
+        self.entity.is_public = False
+        self.entity.save()
+        resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(), {"detail": "You do not have permission to perform this action."}
+        )
+
+        # permission readble entity
+        self.role.users.add(self.user)
+        self.role.permissions.add(self.entity.readable)
+        resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_list_entity(self):
+        self.entity.attrs.all().delete()
+        resp = self.client.get("/entity/api/v2/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json(),
+            {
+                "count": 2,
+                "next": None,
+                "previous": None,
+                "results": [
+                    {
+                        "id": self.ref_entity.id,
+                        "is_toplevel": False,
+                        "name": "ref_entity",
+                        "note": "",
+                        "status": 0,
+                        "attrs": [],
+                        "webhooks": [],
+                    },
+                    {
+                        "id": self.entity.id,
+                        "is_toplevel": False,
+                        "name": "test-entity",
+                        "note": "",
+                        "status": 0,
+                        "attrs": [],
+                        "webhooks": [],
+                    },
+                ],
+            },
+        )
+
+    def test_list_entity_with_is_top_level(self):
+        self.entity.status = Entity.STATUS_TOP_LEVEL
+        self.entity.save()
+
+        resp = self.client.get("/entity/api/v2/?is_top_level=true")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 1)
+        self.assertEqual(resp.json()["results"][0]["id"], self.entity.id)
+
+    def test_list_entity_with_is_active(self):
+        self.entity.delete()
+
+        resp = self.client.get("/entity/api/v2/?is_active=true")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 1)
+        self.assertEqual(resp.json()["results"][0]["id"], self.ref_entity.id)
+
+    def test_list_entity_with_search(self):
+        resp = self.client.get("/entity/api/v2/?search=ref")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 1)
+        self.assertEqual(resp.json()["results"][0]["id"], self.ref_entity.id)
+
+    def test_list_entity_with_ordering_name(self):
+        resp = self.client.get("/entity/api/v2/?ordering=name")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual([x["name"] for x in resp.json()["results"]], ["ref_entity", "test-entity"])
+
+    def test_list_entity_without_permission(self):
+        self.entity.is_public = False
+        self.entity.save()
+        self.ref_entity.is_public = False
+        self.ref_entity.save()
+
+        resp = self.client.get("/entity/api/v2/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 2)
+
+    def test_create_entity(self):
+        params = {
+            "name": "entity1",
+            "note": "hoge",
+            "is_toplevel": True,
+            "attrs": [
+                {
+                    "name": "attr1",
+                    "index": 1,
+                    "type": AttrTypeValue["object"],
+                    "referral": [self.ref_entity.id],
+                    "is_mandatory": True,
+                    "is_delete_in_chain": True,
+                    "is_summarized": True,
+                }
+            ],
+            "webhooks": [
+                {
+                    "url": "http://airone.com",
+                    "label": "hoge",
+                    "is_enabled": True,
+                    "headers": {"Content-Type": "application/json"},
+                }
+            ],
+        }
+
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 201)
+
+        entity: Entity = Entity.objects.get(id=resp.json()["id"])
+        self.assertEqual(
+            resp.json(),
+            {
+                "id": entity.id,
+                "name": "entity1",
+            },
+        )
+        self.assertEqual(entity.name, "entity1")
+        self.assertEqual(entity.note, "hoge")
+        self.assertEqual(entity.status, Entity.STATUS_TOP_LEVEL)
+        self.assertEqual(entity.created_user, self.user)
+
+        self.assertEqual(entity.attrs.count(), 1)
+        entity_attr: EntityAttr = entity.attrs.first()
+        self.assertEqual(entity_attr.name, "attr1")
+        self.assertEqual(entity_attr.index, 1)
+        self.assertEqual(entity_attr.type, AttrTypeValue["object"])
+        self.assertEqual(entity_attr.referral.count(), 1)
+        self.assertEqual(entity_attr.referral.first().id, self.ref_entity.id)
+        self.assertEqual(entity_attr.is_mandatory, True)
+        self.assertEqual(entity_attr.is_delete_in_chain, True)
+        self.assertEqual(entity_attr.is_summarized, True)
+        self.assertEqual(entity_attr.created_user, self.user)
+
+        self.assertEqual(entity.webhooks.count(), 1)
+        webhook: Webhook = entity.webhooks.first()
+        self.assertEqual(webhook.url, "http://airone.com")
+        self.assertEqual(webhook.label, "hoge")
+        self.assertEqual(webhook.is_enabled, True)
+        self.assertEqual(webhook.headers, {"Content-Type": "application/json"})
+
+        history: History = History.objects.get(target_obj=entity)
+        self.assertEqual(history.user, self.user)
+        self.assertEqual(history.operation, History.ADD_ENTITY)
+        self.assertEqual(history.details.count(), 1)
+        self.assertEqual(history.details.first().target_obj, entity_attr.aclbase_ptr)
+
+    def test_create_entity_with_invalid_param(self):
+        params = {}
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"name": ["This field is required."]})
+
+        # name param
+        params = {"name": ["hoge"]}
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"name": ["Not a valid string."]})
+
+        params = {"name": "a" * (Entity._meta.get_field("name").max_length + 1)}
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), {"name": ["Ensure this field has no more than 200 characters."]}
+        )
+
+        params = {"name": "test-entity"}
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"name": ["Duplication error. There is same named Entity"]})
+
+        # note param
+        params = {
+            "name": "hoge",
+            "note": ["hoge"],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"note": ["Not a valid string."]})
+
+        params = {
+            "name": "hoge",
+            "note": "a" * (Entity._meta.get_field("note").max_length + 1),
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), {"note": ["Ensure this field has no more than 200 characters."]}
+        )
+
+        # is_toplevel param
+        params = {
+            "name": "hoge",
+            "is_toplevel": "hoge",
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"is_toplevel": ["Must be a valid boolean."]})
+
+    def test_create_entity_with_invalid_param_attrs(self):
+        params = {
+            "name": "hoge",
+            "attrs": "hoge",
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"attrs": ['Expected a list of items but got type "str".']})
+
+        params = {
+            "name": "hoge",
+            "attrs": ["hoge"],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "attrs": {
+                    "0": {
+                        "non_field_errors": ["Invalid data. Expected a dictionary, " "but got str."]
+                    }
+                }
+            },
+        )
+
+        params = {
+            "name": "hoge",
+            "attrs": [{}],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "attrs": {
+                    "0": {"name": ["This field is required."], "type": ["This field is required."]}
+                }
+            },
+        )
+
+        # name param
+        params = {
+            "name": "hoge",
+            "attrs": [{"name": ["hoge"], "type": AttrTypeValue["object"]}],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"name": ["Not a valid string."]}}},
+        )
+
+        params = {
+            "name": "hoge",
+            "attrs": [
+                {
+                    "name": "a" * (EntityAttr._meta.get_field("name").max_length + 1),
+                    "type": AttrTypeValue["object"],
+                }
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"name": ["Ensure this field has no more than 200 characters."]}}},
+        )
+
+        params = {
+            "name": "hoge",
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["object"],
+                },
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["object"],
+                },
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": ["Duplicated attribute names are not allowed"]},
+        )
+
+        # param type
+        params = {
+            "name": "hoge",
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": "hoge",
+                }
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"type": ["A valid integer is required."]}}},
+        )
+
+        params = {
+            "name": "hoge",
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": 9999,
+                }
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"type": ["attrs type(9999) does not exist"]}}},
+        )
+
+        # index param
+        params = {
+            "name": "hoge",
+            "attrs": [{"name": "hoge", "type": AttrTypeValue["object"], "index": "hoge"}],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"index": ["A valid integer is required."]}}},
+        )
+
+        params = {
+            "name": "hoge",
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["object"],
+                    "index": 2**32,
+                }
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"index": ["Ensure this value is less than or equal to 2147483647."]}}},
+        )
+
+        # is_mandatory, is_summarized, is_delete_in_chain param
+        for param in ["is_mandatory", "is_summarized", "is_delete_in_chain"]:
+            params = {
+                "name": "hoge",
+                "attrs": [
+                    {
+                        "name": "hoge",
+                        "type": AttrTypeValue["object"],
+                        param: "hoge",
+                    }
+                ],
+            }
+            resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                resp.json(),
+                {"attrs": {"0": {param: ["Must be a valid boolean."]}}},
+            )
+
+        # referral param
+        params = {
+            "name": "hoge",
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["object"],
+                    "referral": "hoge",
+                }
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"referral": ['Expected a list of items but got type "str".']}}},
+        )
+
+        params = {
+            "name": "hoge",
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["object"],
+                    "referral": ["hoge"],
+                }
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"referral": ["Incorrect type. Expected pk value, received str."]}}},
+        )
+
+        params = {
+            "name": "hoge",
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["object"],
+                    "referral": [9999],
+                }
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"referral": ['Invalid pk "9999" - object does not exist.']}}},
+        )
+
+    def test_create_entity_with_invalid_param_webhooks(self):
+        params = {
+            "name": "hoge",
+            "webhooks": "hoge",
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": {"non_field_errors": ['Expected a list of items but got type "str".']}},
+        )
+
+        params = {
+            "name": "hoge",
+            "webhooks": ["hoge"],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "webhooks": [
+                    {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]}
+                ]
+            },
+        )
+
+        params = {
+            "name": "hoge",
+            "webhooks": [{}],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"url": ["This field is required."]}]},
+        )
+
+        # url param
+        params = {
+            "name": "hoge",
+            "webhooks": [{"url": "hoge"}],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"url": ["Enter a valid URL."]}]},
+        )
+
+        params = {
+            "name": "hoge",
+            "webhooks": [
+                {"url": "http://airone.com/" + "a" * Webhook._meta.get_field("url").max_length}
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"url": ["Ensure this field has no more than 200 characters."]}]},
+        )
+
+        # label param
+        params = {
+            "name": "hoge",
+            "webhooks": [{"url": "http://airone.com/", "label": ["hoge"]}],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"label": ["Not a valid string."]}]},
+        )
+
+        # is_enabled param
+        params = {
+            "name": "hoge",
+            "webhooks": [{"url": "http://airone.com/", "is_enabled": "hoge"}],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"is_enabled": ["Must be a valid boolean."]}]},
+        )
+
+        # headers param
+        params = {
+            "name": "hoge",
+            "webhooks": [{"url": "http://airone.com/", "headers": "hoge"}],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"headers": ['Expected a dictionary of items but got type "str".']}]},
+        )
+
+        params = {
+            "name": "hoge",
+            "webhooks": [{"url": "http://airone.com/", "headers": {"hoge": ["hoge"]}}],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"headers": {"hoge": ["Not a valid string."]}}]},
+        )
+
+    def test_create_entity_with_attrs_referral(self):
+        params = {
+            "name": "entity1",
+            "attrs": [
+                {
+                    "name": all_attr["name"],
+                    "index": 1,
+                    "type": all_attr["type"],
+                    "referral": [self.ref_entity.id],
+                }
+                for all_attr in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+            ],
+        }
+
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+
+        entity: Entity = Entity.objects.get(id=resp.json()["id"])
+        for entity_attr in entity.attrs.all():
+            if entity_attr.type & AttrTypeValue["object"]:
+                self.assertEqual([x.id for x in entity_attr.referral.all()], [self.ref_entity.id])
+            else:
+                self.assertEqual([x.id for x in entity_attr.referral.all()], [])
+
+    def test_create_entity_with_webhook_is_verified(self):
+        params = {
+            "name": "entity1",
+            "webhooks": [{"url": "http://example.net/"}, {"url": "http://hoge.hoge/"}],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        entity: Entity = Entity.objects.get(id=resp.json()["id"])
+        self.assertEqual([x.is_verified for x in entity.webhooks.all()], [True, False])
+
+    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("custom_view.call_custom")
+    def test_create_entity_with_customview(self, mock_call_custom):
+        def side_effect(handler_name, entity_name, validated_data):
+            # Check specified parameters are expected
+            self.assertEqual(handler_name, "before_create_entity")
+            self.assertIsNone(entity_name)
+            self.assertEqual(
+                validated_data,
+                {
+                    "name": "hoge",
+                    "is_toplevel": False,
+                    "attrs": [],
+                    "webhooks": [],
+                    "created_user": self.user,
+                },
+            )
+
+        mock_call_custom.side_effect = side_effect
+
+        params = {
+            "name": "hoge",
+        }
+        self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+
+        self.assertTrue(mock_call_custom.called)
 
     def test_list_entry(self):
         entries = []
@@ -511,8 +1321,3 @@ class ViewTest(AironeViewTest):
         histories = resp.json()
         self.assertEqual(len(histories), 1)
         self.assertEqual(len(histories[0]["details"]), 6)
-
-    def test_get_entity(self):
-        resp = self.client.get("/entity/api/v2/entities/%s" % self.entity.id)
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["name"], "test-entity")

@@ -14,11 +14,11 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  WebhookGet,
-  WebhookGetFromJSON,
-  WebhookGetFromJSONTyped,
-  WebhookGetToJSON,
-} from "./WebhookGet";
+  Webhook,
+  WebhookFromJSON,
+  WebhookFromJSONTyped,
+  WebhookToJSON,
+} from "./Webhook";
 
 /**
  *
@@ -43,7 +43,7 @@ export interface EntityDetail {
    * @type {string}
    * @memberof EntityDetail
    */
-  note: string;
+  note?: string;
   /**
    *
    * @type {number}
@@ -64,10 +64,10 @@ export interface EntityDetail {
   readonly attrs: Array<{ [key: string]: any }>;
   /**
    *
-   * @type {Array<WebhookGet>}
+   * @type {Array<Webhook>}
    * @memberof EntityDetail
    */
-  webhooks: Array<WebhookGet>;
+  webhooks: Array<Webhook>;
 }
 
 export function EntityDetailFromJSON(json: any): EntityDetail {
@@ -84,11 +84,11 @@ export function EntityDetailFromJSONTyped(
   return {
     id: json["id"],
     name: json["name"],
-    note: json["note"],
+    note: !exists(json, "note") ? undefined : json["note"],
     status: !exists(json, "status") ? undefined : json["status"],
     isToplevel: json["is_toplevel"],
     attrs: json["attrs"],
-    webhooks: (json["webhooks"] as Array<any>).map(WebhookGetFromJSON),
+    webhooks: (json["webhooks"] as Array<any>).map(WebhookFromJSON),
   };
 }
 
@@ -103,6 +103,6 @@ export function EntityDetailToJSON(value?: EntityDetail | null): any {
     name: value.name,
     note: value.note,
     status: value.status,
-    webhooks: (value.webhooks as Array<any>).map(WebhookGetToJSON),
+    webhooks: (value.webhooks as Array<any>).map(WebhookToJSON),
   };
 }

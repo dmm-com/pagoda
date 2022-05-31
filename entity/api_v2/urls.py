@@ -5,8 +5,8 @@ from . import views
 
 urlpatterns = [
     url(r"^history/(\d+)$", views.history, name="history"),
-    url(
-        r"^entities$",
+    path(
+        "",
         views.EntityAPI.as_view(
             {
                 "get": "list",
@@ -14,7 +14,7 @@ urlpatterns = [
             }
         ),
     ),
-    url(r"^entities/(?P<pk>\d+)$", views.EntityAPI.as_view({"get": "retrieve"})),
+    path("<int:pk>/", views.EntityAPI.as_view({"get": "retrieve"})),
     path(
         "<int:entity_id>/entries/",
         views.EntityEntryAPI.as_view(

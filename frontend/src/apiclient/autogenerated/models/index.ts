@@ -16,5 +16,4 @@ export * from "./GetEntrySimple";
 export * from "./Group";
 export * from "./PaginatedEntityDetailList";
 export * from "./PaginatedEntryBaseList";
-export * from "./WebhookGet";
-export * from "./WebhookPost";
+export * from "./Webhook";
