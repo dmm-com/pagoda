@@ -8,6 +8,7 @@ from django.conf import settings
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from user.models import User
+from webhook.models import Webhook
 from .elasticsearch import ESS
 
 
@@ -50,7 +51,7 @@ class AironeTestCase(TestCase):
         for fname in os.listdir(settings.AIRONE["FILE_STORE_PATH"]):
             os.unlink(os.path.join(settings.AIRONE["FILE_STORE_PATH"], fname))
 
-    def create_entity(self, user, name, attrs=[], is_public=True):
+    def create_entity(self, user, name, attrs=[], webhooks=[], is_public=True):
         """
         This is a helper method to create Entity for test. This method has following parameters.
         * user      : describes user instance which will be registered on creating Entity
@@ -69,9 +70,9 @@ class AironeTestCase(TestCase):
             else:
                 return default_value
 
-        entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
+        entity: Entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
         for index, attr_info in enumerate(attrs):
-            entity_attr = EntityAttr.objects.create(
+            entity_attr: EntityAttr = EntityAttr.objects.create(
                 **{
                     "index": index,
                     "name": attr_info["name"],
@@ -86,6 +87,18 @@ class AironeTestCase(TestCase):
                 entity_attr.referral.add(attr_info["ref"])
 
             entity.attrs.add(entity_attr)
+
+        for webhook_info in webhooks:
+            webhook: Webhook = Webhook.objects.create(
+                **{
+                    "url": webhook_info.get("url", "http://arione.com/"),
+                    "label": webhook_info.get("label", "hoge"),
+                    "is_enabled": webhook_info.get("is_enabled", True),
+                    "is_verified": webhook_info.get("is_verified", True),
+                    "headers": webhook_info.get("headers", {}),
+                }
+            )
+            entity.webhooks.add(webhook)
 
         return entity
 

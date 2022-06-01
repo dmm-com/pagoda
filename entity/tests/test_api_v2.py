@@ -34,11 +34,13 @@ class ViewTest(AironeViewTest):
                 "user": self.user,
                 "name": "test-entity",
                 "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+                "webhooks": [{"url": "http://airone.com/"}],
             }
         )
 
     def test_retrieve_entity(self):
         self.entity.attrs.all().delete()
+        self.entity.webhooks.all().delete()
         resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
@@ -197,8 +199,7 @@ class ViewTest(AironeViewTest):
         )
 
     def test_retrieve_entity_with_webhook(self):
-        webhook: Webhook = Webhook.objects.create(url="http://airone.com/")
-        self.entity.webhooks.add(webhook)
+        webhook: Webhook = self.entity.webhooks.first()
 
         resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
         self.assertEqual(
@@ -207,9 +208,9 @@ class ViewTest(AironeViewTest):
                 {
                     "id": webhook.id,
                     "url": "http://airone.com/",
-                    "is_enabled": False,
-                    "is_verified": False,
-                    "label": "",
+                    "is_enabled": True,
+                    "is_verified": True,
+                    "label": "hoge",
                     "headers": {},
                 }
             ],
@@ -245,7 +246,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 404)
 
         self.entity.delete()
-        resp = self.client.get("/entity/api/v2/%d/?is_active=true" % self.entity.id)
+        resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
         self.assertEqual(resp.status_code, 404)
         self.assertEqual(resp.json(), {"detail": "Not found."})
 
@@ -267,6 +268,7 @@ class ViewTest(AironeViewTest):
 
     def test_list_entity(self):
         self.entity.attrs.all().delete()
+        self.entity.webhooks.all().delete()
         resp = self.client.get("/entity/api/v2/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
@@ -307,22 +309,23 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.json()["count"], 1)
         self.assertEqual(resp.json()["results"][0]["id"], self.entity.id)
 
-    def test_list_entity_with_is_active(self):
+    def test_list_entity_with_deleted_entity(self):
         self.entity.delete()
 
-        resp = self.client.get("/entity/api/v2/?is_active=true")
+        resp = self.client.get("/entity/api/v2/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["count"], 1)
         self.assertEqual(resp.json()["results"][0]["id"], self.ref_entity.id)
 
     def test_list_entity_with_search(self):
-        resp = self.client.get("/entity/api/v2/?search=ref")
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["count"], 1)
-        self.assertEqual(resp.json()["results"][0]["id"], self.ref_entity.id)
+        for search in ["ref", "REF"]:
+            resp = self.client.get("/entity/api/v2/?search=%s" % search)
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.json()["count"], 1)
+            self.assertEqual(resp.json()["results"][0]["id"], self.ref_entity.id)
 
     def test_list_entity_with_ordering_name(self):
-        resp = self.client.get("/entity/api/v2/?ordering=name")
+        resp = self.client.get("/entity/api/v2/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual([x["name"] for x in resp.json()["results"]], ["ref_entity", "test-entity"])
 
@@ -474,9 +477,7 @@ class ViewTest(AironeViewTest):
             resp.json(),
             {
                 "attrs": {
-                    "0": {
-                        "non_field_errors": ["Invalid data. Expected a dictionary, " "but got str."]
-                    }
+                    "0": {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]}
                 }
             },
         )
@@ -499,7 +500,7 @@ class ViewTest(AironeViewTest):
         # name param
         params = {
             "name": "hoge",
-            "attrs": [{"name": ["hoge"], "type": AttrTypeValue["object"]}],
+            "attrs": [{"name": ["hoge"], "type": AttrTypeValue["string"]}],
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
@@ -513,7 +514,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "a" * (EntityAttr._meta.get_field("name").max_length + 1),
-                    "type": AttrTypeValue["object"],
+                    "type": AttrTypeValue["string"],
                 }
             ],
         }
@@ -529,11 +530,11 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrTypeValue["string"],
                 },
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrTypeValue["string"],
                 },
             ],
         }
@@ -544,7 +545,7 @@ class ViewTest(AironeViewTest):
             {"attrs": ["Duplicated attribute names are not allowed"]},
         )
 
-        # param type
+        # type param
         params = {
             "name": "hoge",
             "attrs": [
@@ -675,6 +676,53 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             resp.json(),
             {"attrs": {"0": {"referral": ['Invalid pk "9999" - object does not exist.']}}},
+        )
+
+        params = {
+            "name": "hoge",
+            "attrs": [
+                {
+                    "name": all_attr["name"],
+                    "type": all_attr["type"],
+                }
+                for all_attr in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        attrs = {}
+        for index, all_attr in enumerate(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY):
+            if all_attr["type"] & AttrTypeValue["object"]:
+                attrs[str(index)] = {
+                    "non_field_errors": ["When specified object type, referral field is required"]
+                }
+        self.assertEqual(
+            resp.json(),
+            {"attrs": attrs},
+        )
+
+        params = {
+            "name": "hoge",
+            "attrs": [
+                {
+                    "name": all_attr["name"],
+                    "type": all_attr["type"],
+                    "referral": [],
+                }
+                for all_attr in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        attrs = {}
+        for index, all_attr in enumerate(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY):
+            if all_attr["type"] & AttrTypeValue["object"]:
+                attrs[str(index)] = {
+                    "non_field_errors": ["When specified object type, referral field is required"]
+                }
+        self.assertEqual(
+            resp.json(),
+            {"attrs": attrs},
         )
 
     def test_create_entity_with_invalid_param_webhooks(self):
@@ -845,6 +893,893 @@ class ViewTest(AironeViewTest):
         self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
 
         self.assertTrue(mock_call_custom.called)
+
+    def test_update_entity(self):
+        entity: Entity = self.create_entity(
+            **{
+                "user": self.user,
+                "name": "entity1",
+                "attrs": [
+                    {
+                        "name": "attr1",
+                        "type": AttrTypeValue["object"],
+                    }
+                ],
+                "webhooks": [
+                    {
+                        "url": "http://airone.com/",
+                    }
+                ],
+            }
+        )
+        entity_attr: EntityAttr = entity.attrs.first()
+        webhook: Webhook = entity.webhooks.first()
+        params = {
+            "id": entity.id,
+            "name": "change-entity1",
+            "note": "change-hoge",
+            "is_toplevel": True,
+            "attrs": [
+                {
+                    "id": entity_attr.id,
+                    "name": "change-attr1",
+                    "index": 1,
+                    "type": AttrTypeValue["object"],
+                    "referral": [self.ref_entity.id],
+                    "is_mandatory": True,
+                    "is_delete_in_chain": True,
+                    "is_summarized": True,
+                }
+            ],
+            "webhooks": [
+                {
+                    "id": webhook.id,
+                    "url": "http://change-airone.com",
+                    "label": "change-hoge",
+                    "is_enabled": False,
+                    "headers": {"Content-Type": "application/json"},
+                }
+            ],
+        }
+
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual(
+            resp.json(),
+            {
+                "id": entity.id,
+                "name": "change-entity1",
+            },
+        )
+        entity.refresh_from_db()
+        self.assertEqual(entity.name, "change-entity1")
+        self.assertEqual(entity.note, "change-hoge")
+        self.assertEqual(entity.status, Entity.STATUS_TOP_LEVEL)
+        self.assertEqual(entity.created_user, self.user)
+
+        self.assertEqual(entity.attrs.count(), 1)
+        entity_attr.refresh_from_db()
+        self.assertEqual(entity_attr.name, "change-attr1")
+        self.assertEqual(entity_attr.index, 1)
+        self.assertEqual(entity_attr.type, AttrTypeValue["object"])
+        self.assertEqual(entity_attr.referral.count(), 1)
+        self.assertEqual(entity_attr.referral.first().id, self.ref_entity.id)
+        self.assertEqual(entity_attr.is_mandatory, True)
+        self.assertEqual(entity_attr.is_delete_in_chain, True)
+        self.assertEqual(entity_attr.is_summarized, True)
+        self.assertEqual(entity_attr.created_user, self.user)
+
+        self.assertEqual(entity.webhooks.count(), 1)
+        webhook.refresh_from_db()
+        self.assertEqual(webhook.url, "http://change-airone.com")
+        self.assertEqual(webhook.label, "change-hoge")
+        self.assertEqual(webhook.is_enabled, False)
+        self.assertEqual(webhook.headers, {"Content-Type": "application/json"})
+
+        history: History = History.objects.get(target_obj=entity)
+        self.assertEqual(history.user, self.user)
+        self.assertEqual(history.operation, History.MOD_ENTITY)
+        self.assertEqual(history.details.count(), 1)
+        self.assertEqual(history.details.first().target_obj, entity_attr.aclbase_ptr)
+
+    def test_update_entity_with_invalid_url(self):
+        params = {}
+        resp = self.client.put(
+            "/entity/api/v2/%s/" % "hoge", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 404)
+
+        params = {}
+        resp = self.client.put("/entity/api/v2/%d/" % 9999, json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json(), {"detail": "Not found."})
+
+        self.entity.delete()
+        params = {}
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json(), {"detail": "Not found."})
+
+    def test_update_entity_with_invalid_param(self):
+        # name param
+        params = {"name": ["hoge"]}
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"name": ["Not a valid string."]})
+
+        params = {"name": "a" * (Entity._meta.get_field("name").max_length + 1)}
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), {"name": ["Ensure this field has no more than 200 characters."]}
+        )
+
+        params = {"name": "test-entity"}
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.ref_entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"name": ["Duplication error. There is same named Entity"]})
+
+        # note param
+        params = {
+            "name": "hoge",
+            "note": ["hoge"],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"note": ["Not a valid string."]})
+
+        params = {
+            "name": "hoge",
+            "note": "a" * (Entity._meta.get_field("note").max_length + 1),
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), {"note": ["Ensure this field has no more than 200 characters."]}
+        )
+
+        # is_toplevel param
+        params = {
+            "name": "hoge",
+            "is_toplevel": "hoge",
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"is_toplevel": ["Must be a valid boolean."]})
+
+    def test_update_entity_with_invalid_param_attrs(self):
+        params = {
+            "attrs": "hoge",
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"attrs": ['Expected a list of items but got type "str".']})
+
+        params = {
+            "attrs": ["hoge"],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "attrs": {
+                    "0": {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]}
+                }
+            },
+        )
+
+        params = {
+            "attrs": [{}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"non_field_errors": ["id or (name and type) field is required"]}}},
+        )
+
+        # id param
+        params = {
+            "attrs": [{"id": "hoge"}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"id": ["A valid integer is required."]}}},
+        )
+
+        params = {
+            "attrs": [{"id": 9999}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"id": ["Invalid id(%s) object does not exist" % 9999]}}},
+        )
+
+        entity_attr: EntityAttr = self.entity.attrs.first()
+        entity_attr.delete()
+        params = {
+            "attrs": [{"id": entity_attr.id}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"id": ["Invalid id(%s) object does not exist" % entity_attr.id]}}},
+        )
+        entity_attr.restore()
+
+        # name param
+        params = {
+            "attrs": [{"name": ["hoge"], "type": AttrTypeValue["string"]}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"name": ["Not a valid string."]}}},
+        )
+
+        params = {
+            "attrs": [
+                {
+                    "name": "a" * (EntityAttr._meta.get_field("name").max_length + 1),
+                    "type": AttrTypeValue["string"],
+                }
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"name": ["Ensure this field has no more than 200 characters."]}}},
+        )
+
+        params = {
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["string"],
+                },
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["string"],
+                },
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": ["Duplicated attribute names are not allowed"]},
+        )
+
+        params = {
+            "attrs": [
+                {
+                    "name": "val",
+                    "type": AttrTypeValue["string"],
+                },
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": ["Duplicated attribute names are not allowed"]},
+        )
+
+        # type param
+        params = {
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": "hoge",
+                }
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"type": ["A valid integer is required."]}}},
+        )
+
+        params = {
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": 9999,
+                }
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"type": ["attrs type(9999) does not exist"]}}},
+        )
+
+        params = {
+            "attrs": [{"id": entity_attr.id, "type": AttrTypeValue["array_string"]}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"non_field_errors": ["type cannot be changed"]}}},
+        )
+
+        # index param
+        params = {
+            "attrs": [{"name": "hoge", "type": AttrTypeValue["object"], "index": "hoge"}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"index": ["A valid integer is required."]}}},
+        )
+
+        params = {
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["object"],
+                    "index": 2**32,
+                }
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"index": ["Ensure this value is less than or equal to 2147483647."]}}},
+        )
+
+        # is_mandatory, is_summarized, is_delete_in_chain param
+        for param in ["is_mandatory", "is_summarized", "is_delete_in_chain"]:
+            params = {
+                "attrs": [
+                    {
+                        "name": "hoge",
+                        "type": AttrTypeValue["object"],
+                        param: "hoge",
+                    }
+                ],
+            }
+            resp = self.client.put(
+                "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+            )
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                resp.json(),
+                {"attrs": {"0": {param: ["Must be a valid boolean."]}}},
+            )
+
+        # referral param
+        params = {
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["object"],
+                    "referral": "hoge",
+                }
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"referral": ['Expected a list of items but got type "str".']}}},
+        )
+
+        params = {
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["object"],
+                    "referral": ["hoge"],
+                }
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"referral": ["Incorrect type. Expected pk value, received str."]}}},
+        )
+
+        params = {
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["object"],
+                    "referral": [9999],
+                }
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"referral": ['Invalid pk "9999" - object does not exist.']}}},
+        )
+
+        params = {
+            "attrs": [
+                {
+                    "name": all_attr["name"],
+                    "type": all_attr["type"],
+                }
+                for all_attr in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        attrs = {}
+        for index, all_attr in enumerate(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY):
+            if all_attr["type"] & AttrTypeValue["object"]:
+                attrs[str(index)] = {
+                    "non_field_errors": ["When specified object type, referral field is required"]
+                }
+        self.assertEqual(
+            resp.json(),
+            {"attrs": attrs},
+        )
+
+        params = {
+            "attrs": [
+                {
+                    "name": all_attr["name"],
+                    "type": all_attr["type"],
+                    "referral": [],
+                }
+                for all_attr in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        attrs = {}
+        for index, all_attr in enumerate(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY):
+            if all_attr["type"] & AttrTypeValue["object"]:
+                attrs[str(index)] = {
+                    "non_field_errors": ["When specified object type, referral field is required"]
+                }
+        self.assertEqual(
+            resp.json(),
+            {"attrs": attrs},
+        )
+
+        # is_deleted param
+        params = {
+            "attrs": [
+                {
+                    "name": "hoge",
+                    "type": AttrTypeValue["string"],
+                    "is_deleted": True,
+                }
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "attrs": {
+                    "0": {"non_field_errors": ["When specified is_deleted, id field is required"]}
+                }
+            },
+        )
+
+        entity_attr.refresh_from_db()
+        params = {
+            "attrs": [
+                {
+                    "id": entity_attr.id,
+                    "is_deleted": "hoge",
+                }
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"attrs": {"0": {"is_deleted": ["Must be a valid boolean."]}}},
+        )
+
+        entity_attr.refresh_from_db()
+        params = {
+            "attrs": [
+                {
+                    "id": entity_attr.id,
+                    "is_deleted": True,
+                },
+                {
+                    "name": entity_attr.name,
+                    "type": AttrTypeValue["string"],
+                },
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_update_entity_with_invalid_param_webhooks(self):
+        params = {
+            "webhooks": "hoge",
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": {"non_field_errors": ['Expected a list of items but got type "str".']}},
+        )
+
+        params = {
+            "webhooks": ["hoge"],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "webhooks": [
+                    {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]}
+                ]
+            },
+        )
+
+        params = {
+            "webhooks": [{}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"non_field_errors": ["id or url field is required"]}]},
+        )
+
+        # id param
+        params = {
+            "webhooks": [{"id": "hoge"}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"id": ["A valid integer is required."]}]},
+        )
+
+        params = {
+            "webhooks": [{"id": 9999}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"id": ["Invalid id(%s) object does not exist" % 9999]}]},
+        )
+
+        # url param
+        params = {
+            "webhooks": [{"url": "hoge"}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"url": ["Enter a valid URL."]}]},
+        )
+
+        params = {
+            "webhooks": [
+                {"url": "http://airone.com/" + "a" * Webhook._meta.get_field("url").max_length}
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"url": ["Ensure this field has no more than 200 characters."]}]},
+        )
+
+        # label param
+        params = {
+            "webhooks": [{"url": "http://airone.com/", "label": ["hoge"]}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"label": ["Not a valid string."]}]},
+        )
+
+        # is_enabled param
+        params = {
+            "webhooks": [{"url": "http://airone.com/", "is_enabled": "hoge"}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"is_enabled": ["Must be a valid boolean."]}]},
+        )
+
+        # headers param
+        params = {
+            "webhooks": [{"url": "http://airone.com/", "headers": "hoge"}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"headers": ['Expected a dictionary of items but got type "str".']}]},
+        )
+
+        params = {
+            "webhooks": [{"url": "http://airone.com/", "headers": {"hoge": ["hoge"]}}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"webhooks": [{"headers": {"hoge": ["Not a valid string."]}}]},
+        )
+
+    def test_update_entity_with_attrs_referral(self):
+        self.entity.attrs.all().delete()
+        params = {
+            "attrs": [
+                {
+                    "name": all_attr["name"],
+                    "index": 1,
+                    "type": all_attr["type"],
+                    "referral": [self.ref_entity.id],
+                }
+                for all_attr in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+            ],
+        }
+
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        for entity_attr in self.entity.attrs.all():
+            if entity_attr.type & AttrTypeValue["object"]:
+                self.assertEqual([x.id for x in entity_attr.referral.all()], [self.ref_entity.id])
+            else:
+                self.assertEqual([x.id for x in entity_attr.referral.all()], [])
+
+    def test_update_entity_with_webhook_is_verified(self):
+        self.entity.webhooks.all().delete()
+        params = {
+            "name": "entity1",
+            "webhooks": [{"url": "http://example.net/"}, {"url": "http://hoge.hoge/"}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual([x.is_verified for x in self.entity.webhooks.all()], [True, False])
+
+    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("custom_view.call_custom")
+    def test_update_entity_with_customview(self, mock_call_custom):
+        def side_effect(handler_name, entity_name, validated_data, entity):
+            # Check specified parameters are expected
+            self.assertEqual(handler_name, "before_update_entity")
+            self.assertIsNone(entity_name)
+            self.assertEqual(
+                validated_data,
+                {
+                    "name": "hoge",
+                    "attrs": [],
+                    "webhooks": [],
+                },
+            )
+            self.assertEqual(entity, self.entity)
+
+        mock_call_custom.side_effect = side_effect
+
+        params = {"name": "hoge"}
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(mock_call_custom.called)
+
+    def test_update_entry_with_specified_only_param(self):
+        self.entity.note = "hoge"
+        self.entity.status = Entity.STATUS_TOP_LEVEL
+        self.entity.save()
+
+        attr_count = self.entity.attrs.filter(is_active=True).count()
+        webhook_count = self.entity.webhooks.count()
+
+        params = {
+            "name": "change-entity",
+            "attr": [],
+            "webhooks": [],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        self.entity.refresh_from_db()
+        changed_attr_count = self.entity.attrs.filter(is_active=True).count()
+        changed_webhook_count = self.entity.webhooks.count()
+        self.assertEqual(self.entity.name, "change-entity")
+        self.assertEqual(self.entity.note, "hoge")
+        self.assertEqual(self.entity.status, Entity.STATUS_TOP_LEVEL)
+        self.assertEqual(attr_count, changed_attr_count)
+        self.assertEqual(webhook_count, changed_webhook_count)
+
+    def test_update_entity_without_permission(self):
+        self.role.users.add(self.user)
+
+        # permission nothing Entity
+        self.entity.is_public = False
+        self.entity.save()
+        paramas = {}
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(paramas), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(), {"detail": "You do not have permission to perform this action."}
+        )
+
+        # permission readble Entity
+        self.role.permissions.add(self.entity.readable)
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(paramas), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(), {"detail": "You do not have permission to perform this action."}
+        )
+
+        # permission writable Entity
+        self.role.permissions.add(self.entity.writable)
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(paramas), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # permission nothing EntityAttr update
+        self.entity.is_public = True
+        self.entity.save()
+        entity_attr: EntityAttr = self.entity.attrs.first()
+        entity_attr.is_public = False
+        entity_attr.save()
+        params = {"attrs": [{"id": entity_attr.id}]}
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.json(), {"detail": "Does not have permission to update"})
+
+        # permission readble EntityAttr update
+        self.role.permissions.add(entity_attr.readable)
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.json(), {"detail": "Does not have permission to update"})
+
+        # permission writable EntityAttr update
+        self.role.permissions.add(entity_attr.writable)
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # permission writable EntityAttr delete
+        params = {"attrs": [{"id": entity_attr.id, "is_deleted": True}]}
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.json(), {"detail": "Does not have permission to delete"})
+
+        # permission full EntityAttr delete
+        self.role.permissions.add(entity_attr.full)
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
 
     def test_list_entry(self):
         entries = []

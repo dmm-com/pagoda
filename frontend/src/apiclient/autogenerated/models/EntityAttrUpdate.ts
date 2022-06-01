@@ -16,67 +16,80 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface EntityAttr
+ * @interface EntityAttrUpdate
  */
-export interface EntityAttr {
-  /**
-   *
-   * @type {string}
-   * @memberof EntityAttr
-   */
-  name: string;
+export interface EntityAttrUpdate {
   /**
    *
    * @type {number}
-   * @memberof EntityAttr
+   * @memberof EntityAttrUpdate
    */
-  type: number;
+  id?: number;
+  /**
+   *
+   * @type {string}
+   * @memberof EntityAttrUpdate
+   */
+  name?: string;
+  /**
+   *
+   * @type {number}
+   * @memberof EntityAttrUpdate
+   */
+  type?: number;
   /**
    *
    * @type {boolean}
-   * @memberof EntityAttr
+   * @memberof EntityAttrUpdate
    */
   isMandatory?: boolean;
   /**
    *
    * @type {Array<number>}
-   * @memberof EntityAttr
+   * @memberof EntityAttrUpdate
    */
   referral?: Array<number>;
   /**
    *
    * @type {number}
-   * @memberof EntityAttr
+   * @memberof EntityAttrUpdate
    */
   index?: number;
   /**
    *
    * @type {boolean}
-   * @memberof EntityAttr
+   * @memberof EntityAttrUpdate
    */
   isSummarized?: boolean;
   /**
    *
    * @type {boolean}
-   * @memberof EntityAttr
+   * @memberof EntityAttrUpdate
    */
   isDeleteInChain?: boolean;
+  /**
+   *
+   * @type {boolean}
+   * @memberof EntityAttrUpdate
+   */
+  isDeleted?: boolean;
 }
 
-export function EntityAttrFromJSON(json: any): EntityAttr {
-  return EntityAttrFromJSONTyped(json, false);
+export function EntityAttrUpdateFromJSON(json: any): EntityAttrUpdate {
+  return EntityAttrUpdateFromJSONTyped(json, false);
 }
 
-export function EntityAttrFromJSONTyped(
+export function EntityAttrUpdateFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntityAttr {
+): EntityAttrUpdate {
   if (json === undefined || json === null) {
     return json;
   }
   return {
-    name: json["name"],
-    type: json["type"],
+    id: !exists(json, "id") ? undefined : json["id"],
+    name: !exists(json, "name") ? undefined : json["name"],
+    type: !exists(json, "type") ? undefined : json["type"],
     isMandatory: !exists(json, "is_mandatory")
       ? undefined
       : json["is_mandatory"],
@@ -88,10 +101,11 @@ export function EntityAttrFromJSONTyped(
     isDeleteInChain: !exists(json, "is_delete_in_chain")
       ? undefined
       : json["is_delete_in_chain"],
+    isDeleted: !exists(json, "is_deleted") ? undefined : json["is_deleted"],
   };
 }
 
-export function EntityAttrToJSON(value?: EntityAttr | null): any {
+export function EntityAttrUpdateToJSON(value?: EntityAttrUpdate | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -99,6 +113,7 @@ export function EntityAttrToJSON(value?: EntityAttr | null): any {
     return null;
   }
   return {
+    id: value.id,
     name: value.name,
     type: value.type,
     is_mandatory: value.isMandatory,
@@ -106,5 +121,6 @@ export function EntityAttrToJSON(value?: EntityAttr | null): any {
     index: value.index,
     is_summarized: value.isSummarized,
     is_delete_in_chain: value.isDeleteInChain,
+    is_deleted: value.isDeleted,
   };
 }

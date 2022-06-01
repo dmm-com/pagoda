@@ -11,7 +11,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from airone.lib.acl import ACLType
 from airone.lib.http import http_get
-from entity.api_v2.serializers import EntityDetailSerializer, EntityCreateSerializer
+from entity.api_v2.serializers import EntityDetailSerializer
+from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
 from entity.models import Entity
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
@@ -72,6 +73,7 @@ class EntityPermission(BasePermission):
         permisson = {
             "retrieve": ACLType.Readable,
             "update": ACLType.Writable,
+            "delete": ACLType.Full,
         }
 
         if not user.has_permission(obj, permisson.get(view.action)):
@@ -89,20 +91,20 @@ class EntityAPI(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     permission_classes = [IsAuthenticated & EntityPermission]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    filterset_fields = ["is_active"]
-    ordering_fields = ["name"]
     search_fields = ["name"]
+    ordering = ["name"]
 
     def get_serializer_class(self):
         serializer = {
             "create": EntityCreateSerializer,
+            "update": EntityUpdateSerializer,
         }
         return serializer.get(self.action, EntityDetailSerializer)
 
     def get_queryset(self):
         is_top_level = self.request.query_params.get("is_top_level", None)
 
-        filter_condition = {}
+        filter_condition = {"is_active": True}
         exclude_condition = {}
 
         if is_top_level is not None:

@@ -14,88 +14,88 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  EntityAttrCreate,
-  EntityAttrCreateFromJSON,
-  EntityAttrCreateFromJSONTyped,
-  EntityAttrCreateToJSON,
-} from "./EntityAttrCreate";
+  EntityAttrUpdate,
+  EntityAttrUpdateFromJSON,
+  EntityAttrUpdateFromJSONTyped,
+  EntityAttrUpdateToJSON,
+} from "./EntityAttrUpdate";
 import {
-  Webhook,
-  WebhookFromJSON,
-  WebhookFromJSONTyped,
-  WebhookToJSON,
-} from "./Webhook";
+  WebhookUpdate,
+  WebhookUpdateFromJSON,
+  WebhookUpdateFromJSONTyped,
+  WebhookUpdateToJSON,
+} from "./WebhookUpdate";
 
 /**
  *
  * @export
- * @interface EntityCreate
+ * @interface EntityUpdate
  */
-export interface EntityCreate {
+export interface EntityUpdate {
   /**
    *
    * @type {number}
-   * @memberof EntityCreate
+   * @memberof EntityUpdate
    */
   readonly id: number;
   /**
    *
    * @type {string}
-   * @memberof EntityCreate
+   * @memberof EntityUpdate
    */
-  name: string;
+  name?: string;
   /**
    *
    * @type {string}
-   * @memberof EntityCreate
+   * @memberof EntityUpdate
    */
   note?: string;
   /**
    *
    * @type {boolean}
-   * @memberof EntityCreate
+   * @memberof EntityUpdate
    */
   isToplevel?: boolean;
   /**
    *
-   * @type {Array<EntityAttrCreate>}
-   * @memberof EntityCreate
+   * @type {Array<EntityAttrUpdate>}
+   * @memberof EntityUpdate
    */
-  attrs?: Array<EntityAttrCreate>;
+  attrs?: Array<EntityAttrUpdate>;
   /**
    *
-   * @type {Array<Webhook>}
-   * @memberof EntityCreate
+   * @type {Array<WebhookUpdate>}
+   * @memberof EntityUpdate
    */
-  webhooks?: Array<Webhook>;
+  webhooks?: Array<WebhookUpdate>;
 }
 
-export function EntityCreateFromJSON(json: any): EntityCreate {
-  return EntityCreateFromJSONTyped(json, false);
+export function EntityUpdateFromJSON(json: any): EntityUpdate {
+  return EntityUpdateFromJSONTyped(json, false);
 }
 
-export function EntityCreateFromJSONTyped(
+export function EntityUpdateFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntityCreate {
+): EntityUpdate {
   if (json === undefined || json === null) {
     return json;
   }
   return {
     id: json["id"],
-    name: json["name"],
+    name: !exists(json, "name") ? undefined : json["name"],
     note: !exists(json, "note") ? undefined : json["note"],
     isToplevel: !exists(json, "is_toplevel") ? undefined : json["is_toplevel"],
     attrs: !exists(json, "attrs")
       ? undefined
-      : (json["attrs"] as Array<any>).map(EntityAttrCreateFromJSON),
+      : (json["attrs"] as Array<any>).map(EntityAttrUpdateFromJSON),
     webhooks: !exists(json, "webhooks")
       ? undefined
-      : (json["webhooks"] as Array<any>).map(WebhookFromJSON),
+      : (json["webhooks"] as Array<any>).map(WebhookUpdateFromJSON),
   };
 }
 
-export function EntityCreateToJSON(value?: EntityCreate | null): any {
+export function EntityUpdateToJSON(value?: EntityUpdate | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -109,10 +109,10 @@ export function EntityCreateToJSON(value?: EntityCreate | null): any {
     attrs:
       value.attrs === undefined
         ? undefined
-        : (value.attrs as Array<any>).map(EntityAttrCreateToJSON),
+        : (value.attrs as Array<any>).map(EntityAttrUpdateToJSON),
     webhooks:
       value.webhooks === undefined
         ? undefined
-        : (value.webhooks as Array<any>).map(WebhookToJSON),
+        : (value.webhooks as Array<any>).map(WebhookUpdateToJSON),
   };
 }

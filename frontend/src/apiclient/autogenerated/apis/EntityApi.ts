@@ -20,6 +20,9 @@ import {
   EntityDetail,
   EntityDetailFromJSON,
   EntityDetailToJSON,
+  EntityUpdate,
+  EntityUpdateFromJSON,
+  EntityUpdateToJSON,
   EntryCreate,
   EntryCreateFromJSON,
   EntryCreateToJSON,
@@ -50,7 +53,6 @@ export interface EntityApiV2EntriesListRequest {
 }
 
 export interface EntityApiV2ListRequest {
-  isActive?: boolean;
   isTopLevel?: boolean;
   limit?: number;
   offset?: number;
@@ -61,6 +63,12 @@ export interface EntityApiV2ListRequest {
 export interface EntityApiV2RetrieveRequest {
   id: number;
   isTopLevel?: boolean;
+}
+
+export interface EntityApiV2UpdateRequest {
+  id: number;
+  isTopLevel?: boolean;
+  entityUpdate?: EntityUpdate;
 }
 
 /**
@@ -303,10 +311,6 @@ export class EntityApi extends runtime.BaseAPI {
   ): Promise<runtime.ApiResponse<PaginatedEntityDetailList>> {
     const queryParameters: any = {};
 
-    if (requestParameters.isActive !== undefined) {
-      queryParameters["is_active"] = requestParameters.isActive;
-    }
-
     if (requestParameters.isTopLevel !== undefined) {
       queryParameters["is_top_level"] = requestParameters.isTopLevel;
     }
@@ -431,6 +435,75 @@ export class EntityApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<EntityDetail> {
     const response = await this.entityApiV2RetrieveRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async entityApiV2UpdateRaw(
+    requestParameters: EntityApiV2UpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<EntityUpdate>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling entityApiV2Update."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters.isTopLevel !== undefined) {
+      queryParameters["is_top_level"] = requestParameters.isTopLevel;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entity/api/v2/{id}/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PUT",
+        headers: headerParameters,
+        query: queryParameters,
+        body: EntityUpdateToJSON(requestParameters.entityUpdate),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      EntityUpdateFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async entityApiV2Update(
+    requestParameters: EntityApiV2UpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<EntityUpdate> {
+    const response = await this.entityApiV2UpdateRaw(
       requestParameters,
       initOverrides
     );

@@ -14,7 +14,15 @@ urlpatterns = [
             }
         ),
     ),
-    path("<int:pk>/", views.EntityAPI.as_view({"get": "retrieve"})),
+    path(
+        "<int:pk>/",
+        views.EntityAPI.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+            }
+        ),
+    ),
     path(
         "<int:entity_id>/entries/",
         views.EntityEntryAPI.as_view(

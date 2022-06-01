@@ -3,9 +3,11 @@
 export * from "./ACL";
 export * from "./Attribute";
 export * from "./Entity";
-export * from "./EntityAttr";
+export * from "./EntityAttrCreate";
+export * from "./EntityAttrUpdate";
 export * from "./EntityCreate";
 export * from "./EntityDetail";
+export * from "./EntityUpdate";
 export * from "./EntryBase";
 export * from "./EntryCreate";
 export * from "./EntryRetrieve";
@@ -22,3 +24,4 @@ export * from "./UserList";
 export * from "./UserRetrieve";
 export * from "./UserRetrieveToken";
 export * from "./Webhook";
+export * from "./WebhookUpdate";
