@@ -198,6 +198,7 @@ class Common(Configuration):
         "SUBTITLE": "SubTitle, Please change it",
         "NOTE_DESC": "Description, Please change it",
         "NOTE_LINK": "",
+        "SSO_DESC": "SSO",
     }
 
     try:
@@ -253,6 +254,7 @@ class Common(Configuration):
     # Note: Disable SSO authentication by default in the mean time.
     # (c.f. https://python-social-auth.readthedocs.io/en/latest/backends/saml.html)
     # AUTHENTICATION_BACKENDS = (
+    #     "django.contrib.auth.backends.ModelBackend",
     #     "social_core.backends.saml.SAMLAuth",
     # )
     # SOCIAL_AUTH_SAML_SP_ENTITY_ID = ""
@@ -284,6 +286,20 @@ class Common(Configuration):
     #         "attr_username": "",
     #     }
     # }
+    # SOCIAL_AUTH_CLEAN_USERNAMES = False
+    #
+    # SOCIAL_AUTH_PIPELINE = (
+    #     "social_core.pipeline.social_auth.social_details",
+    #     "social_core.pipeline.social_auth.social_uid",
+    #     "social_core.pipeline.social_auth.auth_allowed",
+    #     "social_core.pipeline.social_auth.social_user",
+    #     "airone.auth.social_auth.create_user",
+    #     # 'social_core.pipeline.user.get_username',
+    #     # 'social_core.pipeline.user.create_user',
+    #     "social_core.pipeline.social_auth.associate_user",
+    #     "social_core.pipeline.social_auth.load_extra_data",
+    #     "social_core.pipeline.user.user_details",
+    # )
 
     AUTH_CONFIG = {
         "LDAP": {

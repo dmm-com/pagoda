@@ -178,6 +178,7 @@ def edit_passwd(request, user_id):
         "user_id": int(user_id),
         "user_name": user.username,
         "user_grade": user_grade,
+        "has_password": bool(user.password),
     }
 
     return render(request, "edit_passwd.html", context)
@@ -185,7 +186,7 @@ def edit_passwd(request, user_id):
 
 @http_post(
     [
-        {"name": "old_passwd", "type": str, "checker": lambda x: x["old_passwd"]},
+        {"name": "old_passwd", "type": str, "omittable": False},
         {"name": "new_passwd", "type": str, "checker": lambda x: x["new_passwd"]},
         {"name": "chk_passwd", "type": str, "checker": lambda x: x["chk_passwd"]},
     ]
@@ -200,13 +201,15 @@ def do_edit_passwd(request, user_id, recv_data):
     if int(request.user.id) != int(user_id):
         return HttpResponse("You don't have permission to access this object", status=400)
 
-    # Whether recv_data matches the old password
-    if not user.check_password(recv_data["old_passwd"]):
-        return HttpResponse("old password is wrong", status=400)
+    # When not have a password, don't check old password.
+    if user.password:
+        # Whether recv_data matches the old password
+        if not user.check_password(recv_data["old_passwd"]):
+            return HttpResponse("old password is wrong", status=400)
 
-    # Whether the old password and the new password duplicate
-    if user.check_password(recv_data["new_passwd"]):
-        return HttpResponse("old and new password are duplicated", status=400)
+        # Whether the old password and the new password duplicate
+        if user.check_password(recv_data["new_passwd"]):
+            return HttpResponse("old and new password are duplicated", status=400)
 
     # Whether the new password matches the check password
     if recv_data["new_passwd"] != recv_data["chk_passwd"]:

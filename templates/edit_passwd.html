@@ -32,7 +32,7 @@
         <tr>
           <th>パスワード</th>
           <td>
-            {% if user_grade == 'self' %}
+            {% if user_grade == 'self' and has_password %}
             <dt><label for="old_password">Old password</label></dt>
             <input class="required" type="password" name="old_passwd" /><br/><br/>
             {% endif %}
