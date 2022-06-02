@@ -3,6 +3,7 @@ import json
 from typing import Any, Dict, List, Optional
 
 import requests
+from django.core.validators import URLValidator
 from requests.exceptions import ConnectionError
 import custom_view
 
@@ -30,9 +31,17 @@ class WebhookSerializer(serializers.ModelSerializer):
         fields = ["id", "label", "url", "is_enabled", "is_verified", "headers", "is_deleted"]
         read_only_fields = ["is_verified"]
 
+    def validate(self, webhook):
+        if not webhook.get("is_deleted"):
+            validator = URLValidator()
+            validator(webhook.get("url"))
+
+        return webhook
+
 
 class WebhookUpdateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
+    url = serializers.CharField()
     headers = serializers.ListField(child=WebhookHeadersSerializer(), required=False)
     is_deleted = serializers.BooleanField(required=False, default=False)
 
@@ -53,6 +62,10 @@ class WebhookUpdateSerializer(serializers.ModelSerializer):
         # case create Webhook
         if "id" not in webhook and "url" not in webhook:
             raise ValidationError("id or url field is required")
+
+        if not webhook.get("is_deleted"):
+            validator = URLValidator()
+            validator(webhook.get("url"))
 
         return webhook
 
