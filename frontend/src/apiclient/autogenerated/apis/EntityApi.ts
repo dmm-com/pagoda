@@ -26,9 +26,9 @@ import {
   EntryCreate,
   EntryCreateFromJSON,
   EntryCreateToJSON,
-  PaginatedEntityDetailList,
-  PaginatedEntityDetailListFromJSON,
-  PaginatedEntityDetailListToJSON,
+  PaginatedEntityListList,
+  PaginatedEntityListListFromJSON,
+  PaginatedEntityListListToJSON,
   PaginatedEntryBaseList,
   PaginatedEntryBaseListFromJSON,
   PaginatedEntryBaseListToJSON,
@@ -36,7 +36,7 @@ import {
 
 export interface EntityApiV2CreateRequest {
   entityCreate: EntityCreate;
-  isTopLevel?: boolean;
+  isToplevel?: boolean;
 }
 
 export interface EntityApiV2EntriesCreateRequest {
@@ -53,7 +53,7 @@ export interface EntityApiV2EntriesListRequest {
 }
 
 export interface EntityApiV2ListRequest {
-  isTopLevel?: boolean;
+  isToplevel?: boolean;
   limit?: number;
   offset?: number;
   ordering?: string;
@@ -62,12 +62,12 @@ export interface EntityApiV2ListRequest {
 
 export interface EntityApiV2RetrieveRequest {
   id: number;
-  isTopLevel?: boolean;
+  isToplevel?: boolean;
 }
 
 export interface EntityApiV2UpdateRequest {
   id: number;
-  isTopLevel?: boolean;
+  isToplevel?: boolean;
   entityUpdate?: EntityUpdate;
 }
 
@@ -93,8 +93,8 @@ export class EntityApi extends runtime.BaseAPI {
 
     const queryParameters: any = {};
 
-    if (requestParameters.isTopLevel !== undefined) {
-      queryParameters["is_top_level"] = requestParameters.isTopLevel;
+    if (requestParameters.isToplevel !== undefined) {
+      queryParameters["is_toplevel"] = requestParameters.isToplevel;
     }
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -308,11 +308,11 @@ export class EntityApi extends runtime.BaseAPI {
   async entityApiV2ListRaw(
     requestParameters: EntityApiV2ListRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<PaginatedEntityDetailList>> {
+  ): Promise<runtime.ApiResponse<PaginatedEntityListList>> {
     const queryParameters: any = {};
 
-    if (requestParameters.isTopLevel !== undefined) {
-      queryParameters["is_top_level"] = requestParameters.isTopLevel;
+    if (requestParameters.isToplevel !== undefined) {
+      queryParameters["is_toplevel"] = requestParameters.isToplevel;
     }
 
     if (requestParameters.limit !== undefined) {
@@ -358,7 +358,7 @@ export class EntityApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      PaginatedEntityDetailListFromJSON(jsonValue)
+      PaginatedEntityListListFromJSON(jsonValue)
     );
   }
 
@@ -367,7 +367,7 @@ export class EntityApi extends runtime.BaseAPI {
   async entityApiV2List(
     requestParameters: EntityApiV2ListRequest = {},
     initOverrides?: RequestInit
-  ): Promise<PaginatedEntityDetailList> {
+  ): Promise<PaginatedEntityListList> {
     const response = await this.entityApiV2ListRaw(
       requestParameters,
       initOverrides
@@ -390,8 +390,8 @@ export class EntityApi extends runtime.BaseAPI {
 
     const queryParameters: any = {};
 
-    if (requestParameters.isTopLevel !== undefined) {
-      queryParameters["is_top_level"] = requestParameters.isTopLevel;
+    if (requestParameters.isToplevel !== undefined) {
+      queryParameters["is_toplevel"] = requestParameters.isToplevel;
     }
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -456,8 +456,8 @@ export class EntityApi extends runtime.BaseAPI {
 
     const queryParameters: any = {};
 
-    if (requestParameters.isTopLevel !== undefined) {
-      queryParameters["is_top_level"] = requestParameters.isTopLevel;
+    if (requestParameters.isToplevel !== undefined) {
+      queryParameters["is_toplevel"] = requestParameters.isToplevel;
     }
 
     const headerParameters: runtime.HTTPHeaders = {};

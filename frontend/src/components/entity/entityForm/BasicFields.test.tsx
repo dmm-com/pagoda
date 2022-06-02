@@ -14,10 +14,11 @@ test("should render a component with essential props", function () {
     render(
       <BasicFields
         entityInfo={{
+          id: 1,
           name: "hoge",
           note: "fuga",
-          isTopLevel: false,
-          attributes: [],
+          isToplevel: false,
+          attrs: [],
         }}
         setEntityInfo={() => {
           /* nothing */

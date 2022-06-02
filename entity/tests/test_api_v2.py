@@ -76,7 +76,7 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "name": "val",
-                    "referrals": [],
+                    "referral": [],
                     "type": AttrTypeValue["string"],
                 },
                 {
@@ -85,7 +85,7 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "name": "vals",
-                    "referrals": [],
+                    "referral": [],
                     "type": AttrTypeValue["array_string"],
                 },
                 {
@@ -94,7 +94,7 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "name": "ref",
-                    "referrals": [],
+                    "referral": [],
                     "type": AttrTypeValue["object"],
                 },
                 {
@@ -103,7 +103,7 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "name": "refs",
-                    "referrals": [],
+                    "referral": [],
                     "type": AttrTypeValue["array_object"],
                 },
                 {
@@ -112,7 +112,7 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "name": "name",
-                    "referrals": [],
+                    "referral": [],
                     "type": AttrTypeValue["named_object"],
                 },
                 {
@@ -121,7 +121,7 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "name": "names",
-                    "referrals": [],
+                    "referral": [],
                     "type": AttrTypeValue["array_named_object"],
                 },
                 {
@@ -130,7 +130,7 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "name": "group",
-                    "referrals": [],
+                    "referral": [],
                     "type": AttrTypeValue["group"],
                 },
                 {
@@ -139,7 +139,7 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "name": "groups",
-                    "referrals": [],
+                    "referral": [],
                     "type": AttrTypeValue["array_group"],
                 },
                 {
@@ -148,7 +148,7 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "name": "bool",
-                    "referrals": [],
+                    "referral": [],
                     "type": AttrTypeValue["boolean"],
                 },
                 {
@@ -157,7 +157,7 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "name": "text",
-                    "referrals": [],
+                    "referral": [],
                     "type": AttrTypeValue["text"],
                 },
                 {
@@ -166,7 +166,7 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "name": "date",
-                    "referrals": [],
+                    "referral": [],
                     "type": AttrTypeValue["date"],
                 },
             ],
@@ -188,7 +188,7 @@ class ViewTest(AironeViewTest):
                 "is_delete_in_chain": True,
                 "is_mandatory": True,
                 "name": "refs",
-                "referrals": [
+                "referral": [
                     {
                         "id": self.ref_entity.id,
                         "name": "ref_entity",
@@ -211,7 +211,7 @@ class ViewTest(AironeViewTest):
                     "is_enabled": True,
                     "is_verified": True,
                     "label": "hoge",
-                    "headers": {},
+                    "headers": [],
                 }
             ],
         )
@@ -219,7 +219,10 @@ class ViewTest(AironeViewTest):
         webhook.is_enabled = True
         webhook.is_verified = True
         webhook.label = "hoge"
-        webhook.headers = {"key1": "value1", "key2": "value2"}
+        webhook.headers = [
+            {"header_key": "key1", "header_value": "value1"},
+            {"header_key": "key2", "header_value": "value2"},
+        ]
         webhook.save()
 
         resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
@@ -232,7 +235,10 @@ class ViewTest(AironeViewTest):
                     "is_enabled": True,
                     "is_verified": True,
                     "label": "hoge",
-                    "headers": {"key1": "value1", "key2": "value2"},
+                    "headers": [
+                        {"header_key": "key1", "header_value": "value1"},
+                        {"header_key": "key2", "header_value": "value2"},
+                    ],
                 }
             ],
         )
@@ -267,8 +273,6 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
     def test_list_entity(self):
-        self.entity.attrs.all().delete()
-        self.entity.webhooks.all().delete()
         resp = self.client.get("/entity/api/v2/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
@@ -284,8 +288,6 @@ class ViewTest(AironeViewTest):
                         "name": "ref_entity",
                         "note": "",
                         "status": 0,
-                        "attrs": [],
-                        "webhooks": [],
                     },
                     {
                         "id": self.entity.id,
@@ -293,18 +295,16 @@ class ViewTest(AironeViewTest):
                         "name": "test-entity",
                         "note": "",
                         "status": 0,
-                        "attrs": [],
-                        "webhooks": [],
                     },
                 ],
             },
         )
 
-    def test_list_entity_with_is_top_level(self):
+    def test_list_entity_with_is_toplevel(self):
         self.entity.status = Entity.STATUS_TOP_LEVEL
         self.entity.save()
 
-        resp = self.client.get("/entity/api/v2/?is_top_level=true")
+        resp = self.client.get("/entity/api/v2/?is_toplevel=true")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["count"], 1)
         self.assertEqual(resp.json()["results"][0]["id"], self.entity.id)
@@ -360,7 +360,7 @@ class ViewTest(AironeViewTest):
                     "url": "http://airone.com",
                     "label": "hoge",
                     "is_enabled": True,
-                    "headers": {"Content-Type": "application/json"},
+                    "headers": [{"header_key": "Content-Type", "header_value": "application/json"}],
                 }
             ],
         }
@@ -398,7 +398,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(webhook.url, "http://airone.com")
         self.assertEqual(webhook.label, "hoge")
         self.assertEqual(webhook.is_enabled, True)
-        self.assertEqual(webhook.headers, {"Content-Type": "application/json"})
+        self.assertEqual(
+            webhook.headers, [{"header_key": "Content-Type", "header_value": "application/json"}]
+        )
 
         history: History = History.objects.get(target_obj=entity)
         self.assertEqual(history.user, self.user)
@@ -821,18 +823,79 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"headers": ['Expected a dictionary of items but got type "str".']}]},
+            {"webhooks": [{"headers": ['Expected a list of items but got type "str".']}]},
         )
 
         params = {
             "name": "hoge",
-            "webhooks": [{"url": "http://airone.com/", "headers": {"hoge": ["hoge"]}}],
+            "webhooks": [{"url": "http://airone.com/", "headers": ["hoge"]}],
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"headers": {"hoge": ["Not a valid string."]}}]},
+            {
+                "webhooks": [
+                    {
+                        "headers": {
+                            "0": {
+                                "non_field_errors": [
+                                    "Invalid data. Expected a dictionary, but got str."
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+        )
+
+        params = {
+            "name": "hoge",
+            "webhooks": [{"url": "http://airone.com/", "headers": [{}]}],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "webhooks": [
+                    {
+                        "headers": {
+                            "0": {
+                                "header_key": ["This field is required."],
+                                "header_value": ["This field is required."],
+                            }
+                        }
+                    }
+                ]
+            },
+        )
+
+        params = {
+            "name": "hoge",
+            "webhooks": [
+                {
+                    "url": "http://airone.com/",
+                    "headers": [{"header_key": ["hoge"], "header_value": ["hoge"]}],
+                }
+            ],
+        }
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "webhooks": [
+                    {
+                        "headers": {
+                            "0": {
+                                "header_key": ["Not a valid string."],
+                                "header_value": ["Not a valid string."],
+                            }
+                        }
+                    }
+                ]
+            },
         )
 
     def test_create_entity_with_attrs_referral(self):
@@ -937,7 +1000,7 @@ class ViewTest(AironeViewTest):
                     "url": "http://change-airone.com",
                     "label": "change-hoge",
                     "is_enabled": False,
-                    "headers": {"Content-Type": "application/json"},
+                    "headers": [{"header_key": "Content-Type", "header_value": "application/json"}],
                 }
             ],
         }
@@ -977,7 +1040,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(webhook.url, "http://change-airone.com")
         self.assertEqual(webhook.label, "change-hoge")
         self.assertEqual(webhook.is_enabled, False)
-        self.assertEqual(webhook.headers, {"Content-Type": "application/json"})
+        self.assertEqual(
+            webhook.headers, [{"header_key": "Content-Type", "header_value": "application/json"}]
+        )
 
         history: History = History.objects.get(target_obj=entity)
         self.assertEqual(history.user, self.user)
@@ -1600,11 +1665,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"headers": ['Expected a dictionary of items but got type "str".']}]},
+            {"webhooks": [{"headers": ['Expected a list of items but got type "str".']}]},
         )
 
         params = {
-            "webhooks": [{"url": "http://airone.com/", "headers": {"hoge": ["hoge"]}}],
+            "webhooks": [{"url": "http://airone.com/", "headers": ["hoge"]}],
         }
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
@@ -1612,7 +1677,70 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"headers": {"hoge": ["Not a valid string."]}}]},
+            {
+                "webhooks": [
+                    {
+                        "headers": {
+                            "0": {
+                                "non_field_errors": [
+                                    "Invalid data. Expected a dictionary, but got str."
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+        )
+
+        params = {
+            "webhooks": [{"url": "http://airone.com/", "headers": [{}]}],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "webhooks": [
+                    {
+                        "headers": {
+                            "0": {
+                                "header_key": ["This field is required."],
+                                "header_value": ["This field is required."],
+                            }
+                        }
+                    }
+                ]
+            },
+        )
+
+        params = {
+            "webhooks": [
+                {
+                    "url": "http://airone.com/",
+                    "headers": [{"header_key": ["hoge"], "header_value": ["hoge"]}],
+                }
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "webhooks": [
+                    {
+                        "headers": {
+                            "0": {
+                                "header_key": ["Not a valid string."],
+                                "header_value": ["Not a valid string."],
+                            }
+                        }
+                    }
+                ]
+            },
         )
 
     def test_update_entity_with_attrs_referral(self):

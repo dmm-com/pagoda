@@ -13,10 +13,11 @@ test("should render a component with essential props", function () {
     render(
       <EntityForm
         entityInfo={{
+          id: 1,
           name: "hoge",
           note: "fuga",
-          isTopLevel: false,
-          attributes: [],
+          isToplevel: false,
+          attrs: [],
           webhooks: [],
         }}
         setEntityInfo={(d) => {

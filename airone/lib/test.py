@@ -95,7 +95,7 @@ class AironeTestCase(TestCase):
                     "label": webhook_info.get("label", "hoge"),
                     "is_enabled": webhook_info.get("is_enabled", True),
                     "is_verified": webhook_info.get("is_verified", True),
-                    "headers": webhook_info.get("headers", {}),
+                    "headers": webhook_info.get("headers", []),
                 }
             )
             entity.webhooks.add(webhook)

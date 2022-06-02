@@ -15,10 +15,11 @@ test("should render a component with essential props", function () {
       <AttributesFields
         referralEntities={[]}
         entityInfo={{
+          id: 1,
           name: "hoge",
           note: "fuga",
-          isTopLevel: false,
-          attributes: [],
+          isToplevel: false,
+          attrs: [],
         }}
         setEntityInfo={() => {
           /* nothing */

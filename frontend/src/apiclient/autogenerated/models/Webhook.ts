@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import {
+  WebhookHeaders,
+  WebhookHeadersFromJSON,
+  WebhookHeadersFromJSONTyped,
+  WebhookHeadersToJSON,
+} from "./WebhookHeaders";
+
 /**
  *
  * @export
@@ -51,10 +58,10 @@ export interface Webhook {
   readonly isVerified: boolean;
   /**
    *
-   * @type {{ [key: string]: string; }}
+   * @type {Array<WebhookHeaders>}
    * @memberof Webhook
    */
-  headers?: { [key: string]: string };
+  headers?: Array<WebhookHeaders>;
 }
 
 export function WebhookFromJSON(json: any): Webhook {
@@ -74,7 +81,9 @@ export function WebhookFromJSONTyped(
     url: json["url"],
     isEnabled: !exists(json, "is_enabled") ? undefined : json["is_enabled"],
     isVerified: json["is_verified"],
-    headers: !exists(json, "headers") ? undefined : json["headers"],
+    headers: !exists(json, "headers")
+      ? undefined
+      : (json["headers"] as Array<any>).map(WebhookHeadersFromJSON),
   };
 }
 
@@ -89,6 +98,9 @@ export function WebhookToJSON(value?: Webhook | null): any {
     label: value.label,
     url: value.url,
     is_enabled: value.isEnabled,
-    headers: value.headers,
+    headers:
+      value.headers === undefined
+        ? undefined
+        : (value.headers as Array<any>).map(WebhookHeadersToJSON),
   };
 }

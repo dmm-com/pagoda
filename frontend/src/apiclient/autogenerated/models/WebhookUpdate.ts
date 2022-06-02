@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import {
+  WebhookHeaders,
+  WebhookHeadersFromJSON,
+  WebhookHeadersFromJSONTyped,
+  WebhookHeadersToJSON,
+} from "./WebhookHeaders";
+
 /**
  *
  * @export
@@ -51,10 +58,10 @@ export interface WebhookUpdate {
   readonly isVerified: boolean;
   /**
    *
-   * @type {{ [key: string]: string; }}
+   * @type {Array<WebhookHeaders>}
    * @memberof WebhookUpdate
    */
-  headers?: { [key: string]: string };
+  headers?: Array<WebhookHeaders>;
   /**
    *
    * @type {boolean}
@@ -80,7 +87,9 @@ export function WebhookUpdateFromJSONTyped(
     url: !exists(json, "url") ? undefined : json["url"],
     isEnabled: !exists(json, "is_enabled") ? undefined : json["is_enabled"],
     isVerified: json["is_verified"],
-    headers: !exists(json, "headers") ? undefined : json["headers"],
+    headers: !exists(json, "headers")
+      ? undefined
+      : (json["headers"] as Array<any>).map(WebhookHeadersFromJSON),
     isDeleted: !exists(json, "is_deleted") ? undefined : json["is_deleted"],
   };
 }
@@ -97,7 +106,10 @@ export function WebhookUpdateToJSON(value?: WebhookUpdate | null): any {
     label: value.label,
     url: value.url,
     is_enabled: value.isEnabled,
-    headers: value.headers,
+    headers:
+      value.headers === undefined
+        ? undefined
+        : (value.headers as Array<any>).map(WebhookHeadersToJSON),
     is_deleted: value.isDeleted,
   };
 }

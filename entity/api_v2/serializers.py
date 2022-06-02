@@ -16,8 +16,13 @@ from user.models import History, User
 from webhook.models import Webhook
 
 
+class WebhookHeadersSerializer(serializers.Serializer):
+    header_key = serializers.CharField()
+    header_value = serializers.CharField()
+
+
 class WebhookSerializer(serializers.ModelSerializer):
-    headers = serializers.DictField(child=serializers.CharField(), required=False)
+    headers = serializers.ListField(child=WebhookHeadersSerializer(), required=False)
 
     class Meta:
         model = Webhook
@@ -27,7 +32,7 @@ class WebhookSerializer(serializers.ModelSerializer):
 
 class WebhookUpdateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
-    headers = serializers.DictField(child=serializers.CharField(), required=False)
+    headers = serializers.ListField(child=WebhookHeadersSerializer(), required=False)
     is_deleted = serializers.BooleanField(required=False, default=False)
 
     class Meta:
@@ -150,12 +155,12 @@ class EntitySerializer(serializers.ModelSerializer):
 
     def _update_or_create(self, user, validated_data, is_toplevel_data, attrs_data, webhooks_data):
         entity: Entity
-        entity, is_created = Entity.objects.update_or_create(
+        entity, is_created_entity = Entity.objects.update_or_create(
             id=validated_data.get("id", None), defaults={**validated_data}
         )
 
         # register history to create, update Entity
-        if is_created:
+        if is_created_entity:
             entity.set_status(Entity.STATUS_CREATING)
             history: History = user.seth_entity_add(entity)
         else:
@@ -183,7 +188,7 @@ class EntitySerializer(serializers.ModelSerializer):
                 break
 
             # create, update EntityAttr instance with user specified params
-            (entity_attr, is_created) = EntityAttr.objects.update_or_create(
+            (entity_attr, is_created_attr) = EntityAttr.objects.update_or_create(
                 id=attr_data.get("id", None), defaults={**attr_data, "parent_entity": entity}
             )
 
@@ -196,7 +201,7 @@ class EntitySerializer(serializers.ModelSerializer):
             entity.attrs.add(entity_attr)
 
             # register history to create, update EntityAttr
-            if is_created:
+            if is_created_attr:
                 history.add_attr(entity_attr)
             else:
                 history.mod_attr(entity_attr)
@@ -211,7 +216,7 @@ class EntitySerializer(serializers.ModelSerializer):
                 break
 
             webhook: Webhook
-            webhook, is_created = Webhook.objects.update_or_create(
+            webhook, is_created_webhook = Webhook.objects.update_or_create(
                 id=webhook_data.get("id", None), defaults={**webhook_data}
             )
             entity.webhooks.add(webhook)
@@ -219,7 +224,7 @@ class EntitySerializer(serializers.ModelSerializer):
                 resp = requests.post(
                     webhook.url,
                     **{
-                        "headers": webhook.headers,
+                        "headers": {x["header_key"]: x["header_value"] for x in webhook.headers},
                         "data": json.dumps({}),
                         "verify": False,
                     },
@@ -233,7 +238,7 @@ class EntitySerializer(serializers.ModelSerializer):
             webhook.save(update_fields=["is_verified"])
 
         # unset Editing MODE
-        if is_created:
+        if is_created_entity:
             entity.del_status(Entity.STATUS_CREATING)
         else:
             entity.del_status(Entity.STATUS_EDITING)
@@ -342,17 +347,24 @@ class EntityUpdateSerializer(EntitySerializer):
         )
 
 
-class EntityDetailSerializer(EntitySerializer):
+class EntityListSerializer(EntitySerializer):
     is_toplevel = serializers.SerializerMethodField(method_name="get_is_toplevel")
+
+    class Meta:
+        model = Entity
+        fields = ["id", "name", "note", "status", "is_toplevel"]
+
+    def get_is_toplevel(self, obj: Entity) -> bool:
+        return (obj.status & Entity.STATUS_TOP_LEVEL) != 0
+
+
+class EntityDetailSerializer(EntityListSerializer):
     attrs = serializers.SerializerMethodField(method_name="get_attrs")
     webhooks = WebhookSerializer(many=True)
 
     class Meta:
         model = Entity
         fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks"]
-
-    def get_is_toplevel(self, obj: Entity) -> bool:
-        return (obj.status & Entity.STATUS_TOP_LEVEL) != 0
 
     def get_attrs(self, obj: Entity) -> List[Dict[str, Any]]:
         user = User.objects.get(id=self.context["request"].user.id)
@@ -364,7 +376,7 @@ class EntityDetailSerializer(EntitySerializer):
                 "type": x.type,
                 "is_mandatory": x.is_mandatory,
                 "is_delete_in_chain": x.is_delete_in_chain,
-                "referrals": [
+                "referral": [
                     {
                         "id": r.id,
                         "name": r.name,

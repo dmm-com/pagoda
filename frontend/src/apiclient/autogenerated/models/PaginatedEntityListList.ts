@@ -14,54 +14,54 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  EntityDetail,
-  EntityDetailFromJSON,
-  EntityDetailFromJSONTyped,
-  EntityDetailToJSON,
-} from "./EntityDetail";
+  EntityList,
+  EntityListFromJSON,
+  EntityListFromJSONTyped,
+  EntityListToJSON,
+} from "./EntityList";
 
 /**
  *
  * @export
- * @interface PaginatedEntityDetailList
+ * @interface PaginatedEntityListList
  */
-export interface PaginatedEntityDetailList {
+export interface PaginatedEntityListList {
   /**
    *
    * @type {number}
-   * @memberof PaginatedEntityDetailList
+   * @memberof PaginatedEntityListList
    */
   count?: number;
   /**
    *
    * @type {string}
-   * @memberof PaginatedEntityDetailList
+   * @memberof PaginatedEntityListList
    */
   next?: string | null;
   /**
    *
    * @type {string}
-   * @memberof PaginatedEntityDetailList
+   * @memberof PaginatedEntityListList
    */
   previous?: string | null;
   /**
    *
-   * @type {Array<EntityDetail>}
-   * @memberof PaginatedEntityDetailList
+   * @type {Array<EntityList>}
+   * @memberof PaginatedEntityListList
    */
-  results?: Array<EntityDetail>;
+  results?: Array<EntityList>;
 }
 
-export function PaginatedEntityDetailListFromJSON(
+export function PaginatedEntityListListFromJSON(
   json: any
-): PaginatedEntityDetailList {
-  return PaginatedEntityDetailListFromJSONTyped(json, false);
+): PaginatedEntityListList {
+  return PaginatedEntityListListFromJSONTyped(json, false);
 }
 
-export function PaginatedEntityDetailListFromJSONTyped(
+export function PaginatedEntityListListFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): PaginatedEntityDetailList {
+): PaginatedEntityListList {
   if (json === undefined || json === null) {
     return json;
   }
@@ -71,12 +71,12 @@ export function PaginatedEntityDetailListFromJSONTyped(
     previous: !exists(json, "previous") ? undefined : json["previous"],
     results: !exists(json, "results")
       ? undefined
-      : (json["results"] as Array<any>).map(EntityDetailFromJSON),
+      : (json["results"] as Array<any>).map(EntityListFromJSON),
   };
 }
 
-export function PaginatedEntityDetailListToJSON(
-  value?: PaginatedEntityDetailList | null
+export function PaginatedEntityListListToJSON(
+  value?: PaginatedEntityListList | null
 ): any {
   if (value === undefined) {
     return undefined;
@@ -91,6 +91,6 @@ export function PaginatedEntityDetailListToJSON(
     results:
       value.results === undefined
         ? undefined
-        : (value.results as Array<any>).map(EntityDetailToJSON),
+        : (value.results as Array<any>).map(EntityListToJSON),
   };
 }

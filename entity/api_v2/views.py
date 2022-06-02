@@ -11,7 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from airone.lib.acl import ACLType
 from airone.lib.http import http_get
-from entity.api_v2.serializers import EntityDetailSerializer
+from entity.api_v2.serializers import EntityDetailSerializer, EntityListSerializer
 from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
 from entity.models import Entity
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
@@ -84,7 +84,7 @@ class EntityPermission(BasePermission):
 
 @extend_schema(
     parameters=[
-        OpenApiParameter("is_top_level", OpenApiTypes.BOOL, OpenApiParameter.QUERY),
+        OpenApiParameter("is_toplevel", OpenApiTypes.BOOL, OpenApiParameter.QUERY),
     ],
 )
 class EntityAPI(viewsets.ModelViewSet):
@@ -96,19 +96,20 @@ class EntityAPI(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         serializer = {
+            "list": EntityListSerializer,
             "create": EntityCreateSerializer,
             "update": EntityUpdateSerializer,
         }
         return serializer.get(self.action, EntityDetailSerializer)
 
     def get_queryset(self):
-        is_top_level = self.request.query_params.get("is_top_level", None)
+        is_toplevel = self.request.query_params.get("is_toplevel", None)
 
         filter_condition = {"is_active": True}
         exclude_condition = {}
 
-        if is_top_level is not None:
-            if strtobool(is_top_level):
+        if is_toplevel is not None:
+            if strtobool(is_toplevel):
                 filter_condition["status"] = F("status").bitor(Entity.STATUS_TOP_LEVEL)
             else:
                 exclude_condition["status"] = F("status").bitor(Entity.STATUS_TOP_LEVEL)

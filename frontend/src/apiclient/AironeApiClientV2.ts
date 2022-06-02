@@ -17,8 +17,8 @@ import {
   Group,
   GroupApi,
   PaginatedEntryBaseList,
-  PaginatedEntityDetailList,
-  EntityAttr,
+  PaginatedEntityListList,
+  EntityAttrCreate,
   EntityCreate,
   EntityApiV2ListRequest,
   UserApi,
@@ -92,19 +92,21 @@ class AironeApiClientV2 {
 
   async getEntities(
     page?: number,
-    query?: string,
-    isTopLevel?: boolean
-  ): Promise<PaginatedEntityDetailList> {
+    search?: string,
+    isToplevel?: boolean
+  ): Promise<PaginatedEntityListList> {
     const params: EntityApiV2ListRequest = page
       ? {
           offset: (page - 1) * ConstEntityList.MAX_ROW_COUNT,
           limit: ConstEntityList.MAX_ROW_COUNT,
-          isTopLevel,
+          search: search,
+          isToplevel: isToplevel,
         }
       : {
           // Any better way to get all the entities?
           limit: Number.MAX_SAFE_INTEGER,
-          isTopLevel,
+          search: search,
+          isToplevel: isToplevel,
         };
 
     return await this.entity.entityApiV2List(params);
@@ -117,20 +119,20 @@ class AironeApiClientV2 {
   async createEntity(
     name: string,
     note: string,
-    isTopLevel: boolean,
-    attrs: Array<EntityAttr>,
+    isToplevel: boolean,
+    attrs: Array<EntityAttrCreate>,
     webhooks: Array<Webhook>
   ): Promise<EntityCreate> {
     return await this.entity.entityApiV2Create(
       {
         entityCreate: {
-          id: null,
+          id: undefined,
           name: name,
           note: note,
+          isToplevel: isToplevel,
           attrs: attrs,
           webhooks: webhooks,
         },
-        isTopLevel: isTopLevel,
       },
       {
         headers: {

@@ -21,7 +21,11 @@ class Webhook(models.Model):
 
     # This contains HTTP headers when sending request to the specified URL
     # (e.g. authentication header if it's needed)
-    headers = models.JSONField(encoder=json.JSONEncoder, default=dict)
+    # [{
+    #     "header_key": "xxx",
+    #     "header_value": "yyy",
+    # }]
+    headers = models.JSONField(encoder=json.JSONEncoder, default=list)
 
     def to_dict(self):
         try:
