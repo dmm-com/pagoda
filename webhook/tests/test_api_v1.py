@@ -1,4 +1,5 @@
 import json
+from requests.exceptions import ConnectionError
 
 from airone.lib.test import AironeViewTest
 from entity.models import Entity
@@ -110,6 +111,30 @@ class APITest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content.decode("utf-8"), "Invalid Webhook ID is specified")
+
+    @mock.patch("webhook.api_v1.views.requests")
+    def test_edit_unreachable_webhook(self, mock_requests):
+        user = self.guest_login()
+        entity = Entity.objects.create(name="test-entity", created_user=user)
+
+        mock_requests.post.side_effect = ConnectionError()
+
+        resp = self.client.post(
+            "/webhook/api/v1/set/%s" % entity.id,
+            json.dumps(
+                {
+                    "webhook_url": "https://example.com",
+                    "label": "test endpoint",
+                    "request_headers": [{"key": "content-type", "value": "application/json"}],
+                    "is_enabled": True,
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        webhook = Webhook.objects.get(id=resp.json()["webhook_id"])
+        self.assertFalse(webhook.is_verified)
 
     @mock.patch("webhook.api_v1.views.requests")
     def test_edit_webhook_instance(self, mock_requests):

@@ -1,6 +1,7 @@
 import json
 import requests
 import urllib3
+from requests.exceptions import ConnectionError
 from urllib3.exceptions import InsecureRequestWarning
 
 from airone.lib.acl import ACLType
@@ -65,20 +66,24 @@ def set_webhook(request, entity_id, recv_data):
         )
         entity.webhooks.add(webhook)
 
-    resp = requests.post(
-        recv_data["webhook_url"],
-        **{
-            "headers": {
-                x["header_key"]: x["header_value"] for x in recv_data.get("request_headers", [])
-            },
-            "data": json.dumps({}),
-            "verify": False,
-        }
-    )
+    try:
+				resp = requests.post(
+						recv_data["webhook_url"],
+						**{
+								"headers": {
+										x["header_key"]: x["header_value"] for x in recv_data.get("request_headers", [])
+								},
+								"data": json.dumps({}),
+								"verify": False,
+						}
+				)
 
-    # The is_verified parameter will be set True,
-    # when requests received HTTP 200 from specifying endpoint.
-    webhook.is_verified = resp.ok
+				# The is_verified parameter will be set True,
+				# when requests received HTTP 200 from specifying endpoint.
+				webhook.is_verified = resp.ok
+    except ConnectionError:
+        webhook.is_verified = False
+
     webhook.save()
 
     return JsonResponse({"webhook_id": webhook.id, "msg": "Succeded in registering Webhook"})
