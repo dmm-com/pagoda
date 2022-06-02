@@ -143,9 +143,6 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             if attr["type"] & AttrTypeValue["object"] and not len(referral):
                 raise ValidationError("When specified object type, referral field is required")
 
-            if attr["is_deleted"]:
-                raise ValidationError("When specified is_deleted, id field is required")
-
         return attr
 
 
@@ -179,18 +176,19 @@ class EntitySerializer(serializers.ModelSerializer):
             attr_referrals = attr_data.pop("referral", [])
 
             # delete EntityAttr if necessary
+            attr_id = attr_data.get("id", None)
             is_deleted = attr_data.pop("is_deleted", False)
             if is_deleted:
-                entity_attr: EntityAttr = EntityAttr.objects.get(id=attr_data["id"])
-                entity_attr.delete()
-
-                # register history data to delete EntityAttr
-                history.del_attr(entity_attr)
-                break
+                if attr_id:
+                    entity_attr: EntityAttr = EntityAttr.objects.get(id=attr_data["id"])
+                    entity_attr.delete()
+                    # register history data to delete EntityAttr
+                    history.del_attr(entity_attr)
+                continue
 
             # create, update EntityAttr instance with user specified params
             (entity_attr, is_created_attr) = EntityAttr.objects.update_or_create(
-                id=attr_data.get("id", None), defaults={**attr_data, "parent_entity": entity}
+                id=attr_id, defaults={**attr_data, "parent_entity": entity}
             )
 
             # set referrals if necessary

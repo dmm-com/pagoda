@@ -72,7 +72,7 @@ export const AttributeRow: FC<Props> = ({
   const handleDeleteAttribute = (index: number) => {
     allAttrs[index] = {
       ...allAttrs[index],
-      deleted: true,
+      isDeleted: true,
     };
     setEntityInfo({ ...entityInfo, attrs: [...allAttrs] });
   };
