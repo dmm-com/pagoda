@@ -62,6 +62,12 @@ export interface Webhook {
    * @memberof Webhook
    */
   headers?: Array<WebhookHeaders>;
+  /**
+   *
+   * @type {boolean}
+   * @memberof Webhook
+   */
+  isDeleted?: boolean;
 }
 
 export function WebhookFromJSON(json: any): Webhook {
@@ -84,6 +90,7 @@ export function WebhookFromJSONTyped(
     headers: !exists(json, "headers")
       ? undefined
       : (json["headers"] as Array<any>).map(WebhookHeadersFromJSON),
+    isDeleted: !exists(json, "is_deleted") ? undefined : json["is_deleted"],
   };
 }
 
@@ -102,5 +109,6 @@ export function WebhookToJSON(value?: Webhook | null): any {
       value.headers === undefined
         ? undefined
         : (value.headers as Array<any>).map(WebhookHeadersToJSON),
+    is_deleted: value.isDeleted,
   };
 }

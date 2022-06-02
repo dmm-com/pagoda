@@ -70,6 +70,7 @@ export const EditEntityPage: FC = () => {
         isEnabled: webhook.isEnabled,
         isVerified: undefined,
         headers: webhook.headers,
+        isDeleted: webhook.isDeleted,
       };
     });
     console.log("webhooks", webhooks);

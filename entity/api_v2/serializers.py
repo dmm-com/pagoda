@@ -23,10 +23,11 @@ class WebhookHeadersSerializer(serializers.Serializer):
 
 class WebhookSerializer(serializers.ModelSerializer):
     headers = serializers.ListField(child=WebhookHeadersSerializer(), required=False)
+    is_deleted = serializers.BooleanField(required=False, default=False, write_only=True)
 
     class Meta:
         model = Webhook
-        fields = ["id", "label", "url", "is_enabled", "is_verified", "headers"]
+        fields = ["id", "label", "url", "is_enabled", "is_verified", "headers", "is_deleted"]
         read_only_fields = ["is_verified"]
 
 
@@ -209,11 +210,14 @@ class EntitySerializer(serializers.ModelSerializer):
         # register webhook
         for webhook_data in webhooks_data:
             # delete Webhook if necessary
+            webhook_id = webhook_data.get("id")
             is_deleted = webhook_data.pop("is_deleted", False)
+
             if is_deleted:
-                webhook: Webhook = Webhook.objects.get(id=webhook_data["id"])
-                webhook.delete()
-                break
+                if webhook_id:
+                    webhook: Webhook = Webhook.objects.get(id=webhook_id)
+                    webhook.delete()
+                continue
 
             webhook: Webhook
             webhook, is_created_webhook = Webhook.objects.update_or_create(
