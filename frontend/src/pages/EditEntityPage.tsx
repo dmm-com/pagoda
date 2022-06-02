@@ -98,7 +98,7 @@ export const EditEntityPage: FC = () => {
   };
 
   useEffect(() => {
-    if (!entity.loading) {
+    if (!entity.loading && entity.value !== undefined) {
       setEntityInfo({
         ...entity.value,
         attrs:

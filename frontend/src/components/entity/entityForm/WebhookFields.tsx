@@ -58,6 +58,7 @@ interface Props {
 
 export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
   const classes = useStyles();
+
   const handleChangeWebhook = (index: number, key: string, value: any) => {
     entityInfo.webhooks[index][key] = value;
     setEntityInfo({ ...entityInfo });
@@ -134,7 +135,7 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
         <TableHead>
           <TableRow sx={{ backgroundColor: "#455A64" }}>
             <TableCell sx={{ color: "#FFFFFF" }}>URL</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>オプション</TableCell>
+            <TableCell sx={{ color: "#FFFFFF" }}>ラベル</TableCell>
             <TableCell />
             <TableCell sx={{ color: "#FFFFFF" }}>URL有効化</TableCell>
             <TableCell sx={{ color: "#FFFFFF" }}>削除</TableCell>
@@ -163,7 +164,7 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
                     <Input
                       type="text"
                       value={webhook.label}
-                      placeholder="Label"
+                      placeholder="ラベル"
                       sx={{ width: "100%" }}
                       onChange={(e) =>
                         handleChangeWebhook(index, "label", e.target.value)
@@ -179,7 +180,7 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
                     <Checkbox
                       checked={webhook.isEnabled}
                       onChange={(e) =>
-                        handleChangeWebhook(index, "enabled", e.target.checked)
+                        handleChangeWebhook(index, "isEnabled", e.target.checked)
                       }
                     />
                   </TableCell>
@@ -237,6 +238,7 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
                       variant="standard"
                       fullWidth={true}
                       disabled={true}
+                      onClick={() => handleAppendWebhookAdditionalHeader(0)}
                     />
                   </TableCell>
                   <TableCell sx={{ p: "4px 8px 0px 0px", borderBottom: "0px" }}>
@@ -245,6 +247,7 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
                       variant="standard"
                       fullWidth={true}
                       disabled={true}
+                      onClick={() => handleAppendWebhookAdditionalHeader(0)}
                     />
                   </TableCell>
                   <TableCell sx={{ borderBottom: "0px" }}>
