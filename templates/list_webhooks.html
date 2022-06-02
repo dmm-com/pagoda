@@ -146,15 +146,6 @@
 
         <h6>Additional Headers (Optional)</h6>
         <div id='header-lines'>
-          {% for key, value in webhook_headers.items %}
-          <div class="input-group mb-3 header-info">
-            <input type="text" class="form-control header-key" placeholder='key' value='{{ key }}' />
-            <input type="text" class="form-control header-value" placeholder='vlaue' value='{{ value }}'/>
-            <div class="input-group-append">
-              <button class="btn btn-outline-danger delete-header-info" type="button">-</button>
-            </div>
-          </div>
-          {% endfor %}
         </div>
 
         <div class="float-right">
@@ -209,7 +200,7 @@ var webhooks = [];
     label: '{{ webhook.label }}',
     is_enabled: '{{ webhook.is_enabled }}' == 'True',
     is_verified: '{{ webhook.is_verified }}' == 'True',
-    headers: JSON.parse('{{ webhook.headers | safe | escape }}'),
+    headers: {{ webhook.headers | safe }},
   })
 {% endfor %}
 
@@ -222,8 +213,8 @@ var save_settings = function(e){
 
     if (key) {
       header_lines.push({
-        key: key,
-        value: $(elem).find('.header-value').val(),
+        header_key: key,
+        header_value: $(elem).find('.header-value').val(),
       });
     }
   });
@@ -322,14 +313,14 @@ var show_edit_webhook = function(e) {
   $('#is_enabled_webhook').prop('checked', webhooks[index].is_enabled);
 
   // create header input form elements
-  for (const [key, value] of Object.entries(webhooks[index].headers)) {
+  webhooks[index].headers.forEach((info) => {
+
     var header_elem = create_header_input_element();
 
-    header_elem.find('.header-key').val(key);
-    header_elem.find('.header-value').val(value);
-
+    header_elem.find('.header-key').val(info.header_key);
+    header_elem.find('.header-value').val(info.header_value);
     $('#header-lines').append(header_elem);
-  }
+  });
 
   $('#WebhookModal').modal('show');
 }

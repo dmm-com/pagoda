@@ -100,7 +100,7 @@ export function searchEntries(
 export function createEntity(
   name: string,
   note: string,
-  isTopLevel: boolean,
+  isToplevel: boolean,
   attrs: object[]
 ): Promise<Response> {
   return fetch(`/entity/do_create`, {
@@ -111,7 +111,7 @@ export function createEntity(
     body: JSON.stringify({
       name: name,
       note: note,
-      is_toplevel: isTopLevel,
+      is_toplevel: isToplevel,
       attrs: attrs,
     }),
   });
@@ -123,7 +123,7 @@ export function updateEntity(
   entityId: number,
   name: string,
   note: string,
-  isTopLevel: boolean,
+  isToplevel: boolean,
   attrs: object[]
 ): Promise<Response> {
   return fetch(`/entity/do_edit/${entityId}`, {
@@ -134,7 +134,7 @@ export function updateEntity(
     body: JSON.stringify({
       name: name,
       note: note,
-      is_toplevel: isTopLevel,
+      is_toplevel: isToplevel,
       attrs: attrs,
     }),
   });

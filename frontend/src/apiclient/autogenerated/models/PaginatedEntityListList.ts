@@ -14,54 +14,54 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  EntityWithAttr,
-  EntityWithAttrFromJSON,
-  EntityWithAttrFromJSONTyped,
-  EntityWithAttrToJSON,
-} from "./EntityWithAttr";
+  EntityList,
+  EntityListFromJSON,
+  EntityListFromJSONTyped,
+  EntityListToJSON,
+} from "./EntityList";
 
 /**
  *
  * @export
- * @interface PaginatedEntityWithAttrList
+ * @interface PaginatedEntityListList
  */
-export interface PaginatedEntityWithAttrList {
+export interface PaginatedEntityListList {
   /**
    *
    * @type {number}
-   * @memberof PaginatedEntityWithAttrList
+   * @memberof PaginatedEntityListList
    */
   count?: number;
   /**
    *
    * @type {string}
-   * @memberof PaginatedEntityWithAttrList
+   * @memberof PaginatedEntityListList
    */
   next?: string | null;
   /**
    *
    * @type {string}
-   * @memberof PaginatedEntityWithAttrList
+   * @memberof PaginatedEntityListList
    */
   previous?: string | null;
   /**
    *
-   * @type {Array<EntityWithAttr>}
-   * @memberof PaginatedEntityWithAttrList
+   * @type {Array<EntityList>}
+   * @memberof PaginatedEntityListList
    */
-  results?: Array<EntityWithAttr>;
+  results?: Array<EntityList>;
 }
 
-export function PaginatedEntityWithAttrListFromJSON(
+export function PaginatedEntityListListFromJSON(
   json: any
-): PaginatedEntityWithAttrList {
-  return PaginatedEntityWithAttrListFromJSONTyped(json, false);
+): PaginatedEntityListList {
+  return PaginatedEntityListListFromJSONTyped(json, false);
 }
 
-export function PaginatedEntityWithAttrListFromJSONTyped(
+export function PaginatedEntityListListFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): PaginatedEntityWithAttrList {
+): PaginatedEntityListList {
   if (json === undefined || json === null) {
     return json;
   }
@@ -71,12 +71,12 @@ export function PaginatedEntityWithAttrListFromJSONTyped(
     previous: !exists(json, "previous") ? undefined : json["previous"],
     results: !exists(json, "results")
       ? undefined
-      : (json["results"] as Array<any>).map(EntityWithAttrFromJSON),
+      : (json["results"] as Array<any>).map(EntityListFromJSON),
   };
 }
 
-export function PaginatedEntityWithAttrListToJSON(
-  value?: PaginatedEntityWithAttrList | null
+export function PaginatedEntityListListToJSON(
+  value?: PaginatedEntityListList | null
 ): any {
   if (value === undefined) {
     return undefined;
@@ -91,6 +91,6 @@ export function PaginatedEntityWithAttrListToJSON(
     results:
       value.results === undefined
         ? undefined
-        : (value.results as Array<any>).map(EntityWithAttrToJSON),
+        : (value.results as Array<any>).map(EntityListToJSON),
   };
 }

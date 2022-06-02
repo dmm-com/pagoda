@@ -8,7 +8,7 @@ class Webhook(models.Model):
     """
 
     # This describes what this webhook is for user
-    label = models.TextField()
+    label = models.TextField(blank=True)
 
     # This describes URL endpoint which a notifying request will be sent
     url = models.URLField()
@@ -21,7 +21,11 @@ class Webhook(models.Model):
 
     # This contains HTTP headers when sending request to the specified URL
     # (e.g. authentication header if it's needed)
-    headers = models.TextField()
+    # [{
+    #     "header_key": "xxx",
+    #     "header_value": "yyy",
+    # }]
+    headers = models.JSONField(encoder=json.JSONEncoder, default=list)
 
     def to_dict(self):
         try:

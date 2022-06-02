@@ -11,11 +11,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from airone.lib.acl import ACLType
 from airone.lib.http import http_get
-from entity.api_v2.serializers import EntityWithAttrSerializer
+from entity.api_v2.serializers import EntityDetailSerializer, EntityListSerializer
+from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
 from entity.models import Entity
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
-from user.models import History
+from user.models import History, User
 
 
 @http_get
@@ -67,33 +68,53 @@ class EntityPermission(BasePermission):
         view.entity = entity
         return True
 
+    def has_object_permission(self, request, view, obj):
+        user: User = request.user
+        permisson = {
+            "retrieve": ACLType.Readable,
+            "update": ACLType.Writable,
+            "delete": ACLType.Full,
+        }
+
+        if not user.has_permission(obj, permisson.get(view.action)):
+            return False
+
+        return True
+
 
 @extend_schema(
     parameters=[
-        OpenApiParameter("query", OpenApiTypes.STR, OpenApiParameter.QUERY),
-        OpenApiParameter("is_top_level", OpenApiTypes.BOOL, OpenApiParameter.QUERY),
+        OpenApiParameter("is_toplevel", OpenApiTypes.BOOL, OpenApiParameter.QUERY),
     ],
 )
-class EntityAPI(viewsets.ReadOnlyModelViewSet):
-    serializer_class = EntityWithAttrSerializer
+class EntityAPI(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
+    permission_classes = [IsAuthenticated & EntityPermission]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    search_fields = ["name"]
+    ordering = ["name"]
+
+    def get_serializer_class(self):
+        serializer = {
+            "list": EntityListSerializer,
+            "create": EntityCreateSerializer,
+            "update": EntityUpdateSerializer,
+        }
+        return serializer.get(self.action, EntityDetailSerializer)
 
     def get_queryset(self):
-        query = self.request.query_params.get("query", None)
-        is_top_level = self.request.query_params.get("is_top_level", None)
+        is_toplevel = self.request.query_params.get("is_toplevel", None)
 
         filter_condition = {"is_active": True}
         exclude_condition = {}
 
-        if query:
-            filter_condition["name__iregex"] = r"%s" % query
-        if is_top_level is not None:
-            if strtobool(is_top_level):
+        if is_toplevel is not None:
+            if strtobool(is_toplevel):
                 filter_condition["status"] = F("status").bitor(Entity.STATUS_TOP_LEVEL)
             else:
                 exclude_condition["status"] = F("status").bitor(Entity.STATUS_TOP_LEVEL)
 
-        return Entity.objects.filter(**filter_condition).exclude(**exclude_condition).order_by("id")
+        return Entity.objects.filter(**filter_condition).exclude(**exclude_condition)
 
 
 class EntityEntryAPI(viewsets.ModelViewSet):

@@ -26,7 +26,9 @@ class APITest(AironeViewTest):
                 {
                     "webhook_url": "https://example.com",
                     "label": "test endpoint",
-                    "request_headers": [{"key": "content-type", "value": "application/json"}],
+                    "request_headers": [
+                        {"header_key": "content-type", "header_value": "application/json"}
+                    ],
                     "is_enabled": True,
                 }
             ),
@@ -38,7 +40,9 @@ class APITest(AironeViewTest):
         webhook = Webhook.objects.get(id=resp.json()["webhook_id"])
         self.assertEqual(webhook.url, "https://example.com")
         self.assertEqual(webhook.label, "test endpoint")
-        self.assertEqual(webhook.headers, json.dumps({"content-type": "application/json"}))
+        self.assertEqual(
+            webhook.headers, [{"header_key": "content-type", "header_value": "application/json"}]
+        )
         self.assertTrue(webhook.is_enabled)
         self.assertFalse(webhook.is_verified)
 
@@ -59,7 +63,9 @@ class APITest(AironeViewTest):
                 {
                     "webhook_url": "https://example.com",
                     "label": "test endpoint",
-                    "request_headers": [{"key": "content-type", "value": "application/json"}],
+                    "request_headers": [
+                        {"header_key": "content-type", "header_value": "application/json"}
+                    ],
                     "is_enabled": True,
                 }
             ),
@@ -71,7 +77,9 @@ class APITest(AironeViewTest):
         webhook = Webhook.objects.get(id=resp.json()["webhook_id"])
         self.assertEqual(webhook.url, "https://example.com")
         self.assertEqual(webhook.label, "test endpoint")
-        self.assertEqual(webhook.headers, json.dumps({"content-type": "application/json"}))
+        self.assertEqual(
+            webhook.headers, [{"header_key": "content-type", "header_value": "application/json"}]
+        )
         self.assertTrue(webhook.is_enabled)
         self.assertTrue(webhook.is_verified)
 
@@ -93,7 +101,9 @@ class APITest(AironeViewTest):
                     "id": 999999,  # invlaid webhook id
                     "webhook_url": "https://example.com",
                     "label": "test endpoint",
-                    "request_headers": [{"key": "content-type", "value": "application/json"}],
+                    "request_headers": [
+                        {"header_key": "content-type", "header_value": "application/json"}
+                    ],
                     "is_enabled": True,
                 }
             ),
@@ -115,7 +125,9 @@ class APITest(AironeViewTest):
                 {
                     "webhook_url": "https://example.com",
                     "label": "test endpoint",
-                    "request_headers": [{"key": "content-type", "value": "application/json"}],
+                    "request_headers": [
+                        {"header_key": "content-type", "header_value": "application/json"}
+                    ],
                     "is_enabled": True,
                 }
             ),
@@ -150,7 +162,9 @@ class APITest(AironeViewTest):
                     "id": webhook.id,
                     "webhook_url": "https://changed-example.com",
                     "label": "changed-label",
-                    "request_headers": [{"key": "content-type", "value": "application/json"}],
+                    "request_headers": [
+                        {"header_key": "content-type", "header_value": "application/json"}
+                    ],
                     "is_enabled": True,
                 }
             ),
@@ -162,7 +176,9 @@ class APITest(AironeViewTest):
         self.assertEqual(webhook.id, resp.json()["webhook_id"])
         self.assertEqual(webhook.url, "https://changed-example.com")
         self.assertEqual(webhook.label, "changed-label")
-        self.assertEqual(webhook.headers, json.dumps({"content-type": "application/json"}))
+        self.assertEqual(
+            webhook.headers, [{"header_key": "content-type", "header_value": "application/json"}]
+        )
         self.assertTrue(webhook.is_enabled)
         self.assertTrue(webhook.is_verified)
 

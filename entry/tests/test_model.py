@@ -176,7 +176,9 @@ class ModelTest(AironeTestCase):
         user = User.objects.create(username="hoge")
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        attrbase = EntityAttr.objects.create(name="attr", created_user=user, parent_entity=entity)
+        attrbase = EntityAttr.objects.create(
+            name="attr", type=AttrTypeValue["object"], created_user=user, parent_entity=entity
+        )
 
         # update acl metadata
         attrbase.is_public = False
@@ -199,7 +201,9 @@ class ModelTest(AironeTestCase):
         user.groups.add(group)
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        attrbase = EntityAttr.objects.create(name="attr", created_user=user, parent_entity=entity)
+        attrbase = EntityAttr.objects.create(
+            name="attr", type=AttrTypeValue["object"], created_user=user, parent_entity=entity
+        )
 
         # set a permission to the user
         group.permissions.add(attrbase.writable)
@@ -3024,6 +3028,7 @@ class ModelTest(AironeTestCase):
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "attr",
+                "type": AttrTypeValue["object"],
                 "created_user": self._user,
                 "parent_entity": self._entity,
             }
@@ -3483,7 +3488,9 @@ class ModelTest(AironeTestCase):
         # initialize Entity an Entry
         user = User.objects.create(username="hoge")
         entity = Entity.objects.create(name="entity", created_user=user)
-        attrbase = EntityAttr.objects.create(name="attr", created_user=user, parent_entity=entity)
+        attrbase = EntityAttr.objects.create(
+            name="attr", type=AttrTypeValue["object"], created_user=user, parent_entity=entity
+        )
         entity.attrs.add(attrbase)
 
         # call add_attribute_from_base method more than once

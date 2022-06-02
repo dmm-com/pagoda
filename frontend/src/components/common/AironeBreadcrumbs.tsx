@@ -15,11 +15,25 @@ export const AironeBreadcrumbs: FC = ({ children }) => {
   const classes = useStyles();
 
   return (
-    <Box className={classes.wrapper}>
-      {/* to align paddings with above AppBar */}
-      <Toolbar>
-        <Breadcrumbs aria-label="breadcrumb">{children}</Breadcrumbs>
-      </Toolbar>
-    </Box>
+    <>
+      <Box
+        sx={{
+          position: "fixed",
+          width: "100%",
+          zIndex: 1,
+          backgroundColor: "white",
+        }}
+      >
+        <Box className={classes.wrapper}>
+          {/* to align paddings with above AppBar */}
+          <Toolbar>
+            <Breadcrumbs aria-label="breadcrumb">{children}</Breadcrumbs>
+          </Toolbar>
+        </Box>
+      </Box>
+
+      {/* This component is a virtual component for above fixed component */}
+      <Box sx={{ width: "100%", height: "64px" }} />
+    </>
   );
 };

@@ -5,8 +5,24 @@ from . import views
 
 urlpatterns = [
     url(r"^history/(\d+)$", views.history, name="history"),
-    url(r"^entities$", views.EntityAPI.as_view({"get": "list"})),
-    url(r"^entities/(?P<pk>\d+)$", views.EntityAPI.as_view({"get": "retrieve"})),
+    path(
+        "",
+        views.EntityAPI.as_view(
+            {
+                "get": "list",
+                "post": "create",
+            }
+        ),
+    ),
+    path(
+        "<int:pk>/",
+        views.EntityAPI.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+            }
+        ),
+    ),
     path(
         "<int:entity_id>/entries/",
         views.EntityEntryAPI.as_view(
