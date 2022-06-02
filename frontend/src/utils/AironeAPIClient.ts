@@ -185,10 +185,6 @@ export function getEntryHistory({}: number): Promise<object> {
   });
 }
 
-export function getReferredEntries(entryId: number): Promise<Response> {
-  return fetch(`/entry/api/v1/get_referrals/${entryId}`);
-}
-
 export function exportEntries(
   entityId: number,
   format: string

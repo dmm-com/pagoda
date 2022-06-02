@@ -3,6 +3,8 @@
 ## In development
 
 ### Added
+* (New-UI) Implemented a new page that shows referral Entries
+  Contributed by @syucream
 
 ### Changed
 
