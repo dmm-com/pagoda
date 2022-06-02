@@ -15,6 +15,9 @@
   Contributed by @hinashi
 * Fixed some model and UI problems related with new added Role feature
   Contributed by @userlocalhost
+* Added URL validation processing when user specify webhook configuration
+  for Entity
+  Contributed by @syucream
 
 ## v3.8.0
 
