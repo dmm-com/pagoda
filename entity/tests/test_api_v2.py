@@ -1477,7 +1477,8 @@ class ViewTest(AironeViewTest):
             {"attrs": attrs},
         )
 
-        # When a new attribute parameter includes "is_deleted", it's acceptable but this attribute won't be created
+        # When a new attribute parameter includes "is_deleted",
+        # it's acceptable but this attribute won't be created.
         params = {
             "attrs": [
                 {
@@ -1491,7 +1492,9 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue(all(['hoge' not in x.name for x in self.entity.attrs.filter(is_active=True)]))
+        self.assertTrue(
+            all(["hoge" not in x.name for x in self.entity.attrs.filter(is_active=True)])
+        )
 
         entity_attr.refresh_from_db()
         params = {
@@ -1605,7 +1608,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {'webhooks': [{'non_field_errors': ['Enter a valid URL.']}]},
+            {"webhooks": [{"non_field_errors": ["Enter a valid URL."]}]},
         )
 
         params = {
