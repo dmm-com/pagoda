@@ -125,7 +125,9 @@ class APITest(AironeViewTest):
                 {
                     "webhook_url": "https://example.com",
                     "label": "test endpoint",
-                    "request_headers": [{"key": "content-type", "value": "application/json"}],
+                    "request_headers": [
+                        {"header_key": "content-type", "header_value": "application/json"}
+                    ],
                     "is_enabled": True,
                 }
             ),

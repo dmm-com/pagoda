@@ -760,10 +760,7 @@ class ViewTest(AironeViewTest):
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.json(),
-            {"webhooks": [{"url": ["This field is required."]}]},
-        )
+        self.assertEqual(resp.json(), {"webhooks": [{"non_field_errors": ["Enter a valid URL."]}]})
 
         # url param
         params = {
@@ -772,10 +769,7 @@ class ViewTest(AironeViewTest):
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.json(),
-            {"webhooks": [{"url": ["Enter a valid URL."]}]},
-        )
+        self.assertEqual(resp.json(), {"webhooks": [{"non_field_errors": ["Enter a valid URL."]}]})
 
         params = {
             "name": "hoge",
