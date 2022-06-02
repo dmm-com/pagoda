@@ -25,6 +25,7 @@ class WebhookHeadersSerializer(serializers.Serializer):
 class WebhookSerializer(serializers.ModelSerializer):
     headers = serializers.ListField(child=WebhookHeadersSerializer(), required=False)
     is_deleted = serializers.BooleanField(required=False, default=False, write_only=True)
+    url = serializers.CharField(required=False, max_length=200)
 
     class Meta:
         model = Webhook
@@ -41,7 +42,7 @@ class WebhookSerializer(serializers.ModelSerializer):
 
 class WebhookUpdateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
-    url = serializers.CharField()
+    url = serializers.CharField(required=False, max_length=200)
     headers = serializers.ListField(child=WebhookHeadersSerializer(), required=False)
     is_deleted = serializers.BooleanField(required=False, default=False)
 

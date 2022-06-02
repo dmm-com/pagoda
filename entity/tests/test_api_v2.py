@@ -1477,7 +1477,7 @@ class ViewTest(AironeViewTest):
             {"attrs": attrs},
         )
 
-        # is_deleted param
+        # When a new attribute parameter includes "is_deleted", it's acceptable but this attribute won't be created
         params = {
             "attrs": [
                 {
@@ -1490,15 +1490,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.json(),
-            {
-                "attrs": {
-                    "0": {"non_field_errors": ["When specified is_deleted, id field is required"]}
-                }
-            },
-        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(all(['hoge' not in x.name for x in self.entity.attrs.filter(is_active=True)]))
 
         entity_attr.refresh_from_db()
         params = {
@@ -1612,7 +1605,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"url": ["Enter a valid URL."]}]},
+            {'webhooks': [{'non_field_errors': ['Enter a valid URL.']}]},
         )
 
         params = {
