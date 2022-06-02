@@ -1,4 +1,5 @@
 import { Box, Typography } from "@mui/material";
+import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
@@ -16,6 +17,7 @@ import { useTypedParams } from "hooks/useTypedParams";
 export const EditEntityPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
   const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
 
   const [entityInfo, setEntityInfo] = useState<EntityUpdate>({
     id: 0,
@@ -72,28 +74,37 @@ export const EditEntityPage: FC = () => {
         isDeleted: webhook.isDeleted,
       };
     });
-    console.log("webhooks", webhooks);
 
-    if (createMode) {
-      await aironeApiClientV2.createEntity(
-        entityInfo.name,
-        entityInfo.note,
-        entityInfo.isToplevel,
-        attrs,
-        webhooks
-      );
-      history.replace(entitiesPath());
-    } else {
-      console.log("updateEntity");
-      await aironeApiClientV2.updateEntity(
-        entityId,
-        entityInfo.name,
-        entityInfo.note,
-        entityInfo.isToplevel,
-        attrs,
-        webhooks
-      );
-      history.replace(entityEntriesPath(entityId));
+    try {
+      if (createMode) {
+        await aironeApiClientV2.createEntity(
+          entityInfo.name,
+          entityInfo.note,
+          entityInfo.isToplevel,
+          attrs,
+          webhooks
+        );
+        history.replace(entitiesPath());
+      } else {
+        await aironeApiClientV2.updateEntity(
+          entityId,
+          entityInfo.name,
+          entityInfo.note,
+          entityInfo.isToplevel,
+          attrs,
+          webhooks
+        );
+        history.replace(entityEntriesPath(entityId));
+      }
+    } catch (e) {
+      if (e instanceof Response) {
+        if (!e.ok) {
+          const text = await e.text();
+          enqueueSnackbar(text, { variant: "error" });
+        }
+      } else {
+        throw e;
+      }
     }
   };
 
