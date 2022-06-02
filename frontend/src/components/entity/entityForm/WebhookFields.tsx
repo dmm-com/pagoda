@@ -66,7 +66,7 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
 
   const handleAppendWebhook = (nextTo) => {
     entityInfo.webhooks.splice(nextTo + 1, 0, {
-      id: 0,
+      id: undefined,
       url: "",
       label: "",
       isEnabled: false,
@@ -180,7 +180,11 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
                     <Checkbox
                       checked={webhook.isEnabled}
                       onChange={(e) =>
-                        handleChangeWebhook(index, "isEnabled", e.target.checked)
+                        handleChangeWebhook(
+                          index,
+                          "isEnabled",
+                          e.target.checked
+                        )
                       }
                     />
                   </TableCell>

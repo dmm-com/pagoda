@@ -20,6 +20,7 @@ import {
   PaginatedEntityListList,
   EntityAttrCreate,
   EntityCreate,
+  EntityUpdate,
   EntityApiV2ListRequest,
   UserApi,
   UserRetrieve,
@@ -126,6 +127,35 @@ class AironeApiClientV2 {
     return await this.entity.entityApiV2Create(
       {
         entityCreate: {
+          id: undefined,
+          name: name,
+          note: note,
+          isToplevel: isToplevel,
+          attrs: attrs,
+          webhooks: webhooks,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async updateEntity(
+    id: number,
+    name: string,
+    note: string,
+    isToplevel: boolean,
+    attrs: Array<EntityAttrCreate>,
+    webhooks: Array<Webhook>
+  ): Promise<EntityUpdate> {
+    return await this.entity.entityApiV2Update(
+      {
+        id: id,
+        entityUpdate: {
           id: undefined,
           name: name,
           note: note,
