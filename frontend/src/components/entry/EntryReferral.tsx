@@ -78,6 +78,8 @@ export const EntryReferral: FC<Props> = ({ entityId, entryId }) => {
       <Box display="flex" justifyContent="center" my="24px">
         <Stack spacing={2}>
           <Pagination
+            siblingCount={0}
+            boundaryCount={1}
             count={maxPage}
             page={page}
             onChange={(e, page) => setPage(page)}
