@@ -147,9 +147,11 @@ export const EditEntityPage: FC = () => {
         handleSubmit={handleSubmit}
         handleCancel={handleCancel}
       >
-        {entity?.value != null
-          ? entity.value.name + "の編集"
-          : "新規エンティティの作成"}
+        <Typography variant="h2">
+          {entity?.value != null
+            ? entity.value.name + "の編集"
+            : "新規エンティティの作成"}
+        </Typography>
       </PageHeader>
 
       <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>

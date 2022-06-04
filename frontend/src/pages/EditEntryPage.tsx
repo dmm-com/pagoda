@@ -195,9 +195,16 @@ export const EditEntryPage: FC = () => {
         handleSubmit={handleSubmit}
         handleCancel={handleCancel}
       >
-        {entry?.value != null
-          ? entry.value.name + "エントリ編集"
-          : "新規エントリの作成"}
+        {entry?.value != null ? (
+          <Box display="flex" alignItems="flex-end">
+            <Typography variant="h2" mr="32px">
+              {entry.value.name}
+            </Typography>
+            <Typography variant="h4">エントリ編集</Typography>
+          </Box>
+        ) : (
+          <Typography variant="h2">新規エントリの作成</Typography>
+        )}
       </PageHeader>
 
       <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>

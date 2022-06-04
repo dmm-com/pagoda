@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Grid, Typography } from "@mui/material";
+import { Box, Button, Divider, Grid } from "@mui/material";
 import React, { FC } from "react";
 
 interface Props {
@@ -26,7 +26,7 @@ export const PageHeader: FC<Props> = ({
         <Box mt="64px" sx={{ width: "78%", mx: "auto" }}>
           <Grid container>
             <Grid item xs={10}>
-              <Typography variant="h2">{children}</Typography>
+              {children}
             </Grid>
 
             <Grid item xs={2}>
