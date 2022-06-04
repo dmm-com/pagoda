@@ -18,7 +18,7 @@ import {
   EditableEntryAttrValueGroup,
   EditableEntryAttrValueNamedObject,
   EditableEntryAttrValueObject,
-} from "./EditableEntryAttrs";
+} from "./EditableEntry";
 
 import { DjangoContext } from "utils/DjangoContext";
 

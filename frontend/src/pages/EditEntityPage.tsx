@@ -27,6 +27,7 @@ export const EditEntityPage: FC = () => {
     webhooks: [],
     attrs: [],
   });
+  const [submittable, setSubmittable] = useState<boolean>(false);
 
   const entity = useAsync(async () => {
     if (entityId !== undefined) {
@@ -41,13 +42,11 @@ export const EditEntityPage: FC = () => {
     return entities.results;
   });
 
-  const [submittable, setSubmittable] = useState<boolean>(false);
-
   const handleCancel = () => {
     history.replace(entitiesPath());
   };
+
   const handleSubmit = async () => {
-    console.log("handleSubmit");
     const createMode = entityId === undefined;
     // Adjusted attributes for the API
     const attrs = entityInfo.attrs.map((attr, index) => {
@@ -143,7 +142,6 @@ export const EditEntityPage: FC = () => {
         </Typography>
       </AironeBreadcrumbs>
 
-      {/* TODO z-index, position: fixed, margin-top, background-color */}
       <PageHeader
         isSubmittable={submittable}
         handleSubmit={handleSubmit}
