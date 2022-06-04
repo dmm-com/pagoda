@@ -25,7 +25,6 @@ import {
   newUserPath,
   passwordPath,
   searchPath,
-  showEntryPath,
   userPath,
   usersPath,
   loginPath,
@@ -56,7 +55,6 @@ import { JobPage } from "pages/JobPage";
 import { LoginPage } from "pages/LoginPage";
 import { SearchPage } from "pages/SearchPage";
 import { ShowEntryHistoryPage } from "pages/ShowEntryHistoryPage";
-import { ShowEntryPage } from "pages/ShowEntryPage";
 import { UserPage } from "pages/UserPage";
 
 interface Props {
@@ -95,7 +93,6 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               component={AdvancedSearchResultsPage}
             />
             <Route path={newEntryPath(":entityId")} component={EditEntryPage} />
-            <Route path={showEntryPath(":entryId")} component={ShowEntryPage} />
             <Route
               path={copyEntryPath(":entityId", ":entryId")}
               component={CopyEntryPage}

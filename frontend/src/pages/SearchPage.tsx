@@ -12,7 +12,7 @@ import React, { FC, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { topPath, searchPath, showEntryPath } from "Routes";
+import { topPath, searchPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PaginatedTable } from "components/common/PaginatedTable";
@@ -88,9 +88,8 @@ export const SearchPage: FC = () => {
             tableBodyRowGenerator={(entry: { id: number; name: string }) => (
               <TableRow key={entry.id}>
                 <TableCell>
-                  <Typography component={Link} to={showEntryPath(entry.id)}>
-                    {entry.name}
-                  </Typography>
+                  {/* TODO link to entry detail page */}
+                  <Typography>{entry.name}</Typography>
                 </TableCell>
               </TableRow>
             )}

@@ -13,8 +13,6 @@ export const searchPath = () => basePath + "search";
 // entris
 export const newEntryPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries/new`;
-export const showEntryPath = (entryId: number | string) =>
-  basePath + `entries/${entryId}/show`;
 export const copyEntryPath = (
   entityId: number | string,
   entryId: number | string
