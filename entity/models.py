@@ -6,7 +6,7 @@ from webhook.models import Webhook
 
 class EntityAttr(ACLBase):
     # This parameter is needed to make a relationship to the corresponding Entity at importing
-    parent_entity = models.ForeignKey("Entity", on_delete=models.SET_NULL, null=True)
+    parent_entity = models.ForeignKey("Entity", on_delete=models.DO_NOTHING)
 
     type = models.IntegerField(default=0)
     is_mandatory = models.BooleanField(default=False)

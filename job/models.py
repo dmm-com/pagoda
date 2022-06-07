@@ -100,7 +100,7 @@ class Job(models.Model):
         JobOperation.EXPORT_SEARCH_RESULT.value,
     ]
 
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     target = models.ForeignKey(ACLBase, null=True, on_delete=models.SET_NULL)
