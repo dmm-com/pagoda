@@ -3,6 +3,7 @@ from django.contrib.auth.models import Permission
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
+from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute
 from user.models import User
@@ -48,7 +49,12 @@ class SignalTest(TestCase):
     def test_entity_attr(self):
         # This checks signal processing creates permission objects after creating object
         entity = Entity.objects.create(name="object", created_user=self.user)
-        obj = EntityAttr.objects.create(name="object", created_user=self.user, parent_entity=entity)
+        obj = EntityAttr.objects.create(
+            name="object",
+            type=AttrTypeValue["object"],
+            created_user=self.user,
+            parent_entity=entity,
+        )
         self._check_object_permissions(obj)
 
         obj.name = "changedName"
@@ -69,7 +75,10 @@ class SignalTest(TestCase):
         # This checks signal processing creates permission objects after creating object
         entity = Entity.objects.create(name="object", created_user=self.user)
         entity_attr = EntityAttr.objects.create(
-            name="object", created_user=self.user, parent_entity=entity
+            name="object",
+            created_user=self.user,
+            type=AttrTypeValue["object"],
+            parent_entity=entity,
         )
         entry = Entry.objects.create(name="object", created_user=self.user, schema=entity)
         obj = Attribute.objects.create(

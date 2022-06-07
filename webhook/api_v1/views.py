@@ -1,6 +1,7 @@
 import json
 import requests
 import urllib3
+from requests.exceptions import ConnectionError
 from urllib3.exceptions import InsecureRequestWarning
 
 from airone.lib.acl import ACLType
@@ -43,9 +44,6 @@ def set_webhook(request, entity_id, recv_data):
     except ValidationError:
         return HttpResponse("Specified URL is invalid", status=400)
 
-    # check specified webhook endpoint is valid
-    request_headers = {x["key"]: x["value"] for x in recv_data["request_headers"]}
-
     if "id" in recv_data:
         # get Webhook instance and set values
         webhook = Webhook.objects.filter(id=recv_data["id"]).first()
@@ -54,7 +52,7 @@ def set_webhook(request, entity_id, recv_data):
 
         webhook.url = recv_data["webhook_url"]
         webhook.label = recv_data["label"]
-        webhook.headers = json.dumps(request_headers)
+        webhook.headers = recv_data.get("request_headers", [])
         webhook.is_enabled = recv_data["is_enabled"]
     else:
         # create Webhook instance and set values
@@ -62,24 +60,30 @@ def set_webhook(request, entity_id, recv_data):
             **{
                 "url": recv_data["webhook_url"],
                 "label": recv_data["label"],
-                "headers": json.dumps(request_headers),
+                "headers": recv_data.get("request_headers", []),
                 "is_enabled": recv_data["is_enabled"],
             }
         )
         entity.webhooks.add(webhook)
 
-    resp = requests.post(
-        recv_data["webhook_url"],
-        **{
-            "headers": request_headers,
-            "data": json.dumps({}),
-            "verify": False,
-        }
-    )
+    try:
+        resp = requests.post(
+            recv_data["webhook_url"],
+            **{
+                "headers": {
+                    x["header_key"]: x["header_value"] for x in recv_data.get("request_headers", [])
+                },
+                "data": json.dumps({}),
+                "verify": False,
+            }
+        )
 
-    # The is_verified parameter will be set True,
-    # when requests received HTTP 200 from specifying endpoint.
-    webhook.is_verified = resp.ok
+        # The is_verified parameter will be set True,
+        # when requests received HTTP 200 from specifying endpoint.
+        webhook.is_verified = resp.ok
+    except ConnectionError:
+        webhook.is_verified = False
+
     webhook.save()
 
     return JsonResponse({"webhook_id": webhook.id, "msg": "Succeded in registering Webhook"})

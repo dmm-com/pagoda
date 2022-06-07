@@ -5,6 +5,7 @@ from acl.models import ACLBase
 from role.models import Role
 from user.models import User
 from importlib import import_module
+from airone.lib.types import AttrTypeValue
 from airone.lib.acl import ACLType
 
 
@@ -90,9 +91,14 @@ class ModelTest(TestCase):
             "name": "test-object",
             "created_user": self.user,
         }
+        entity_attr_kwargs = {
+            "type": AttrTypeValue["object"],
+        }
 
         entity = model_entity.Entity.objects.create(**kwargs)
-        attr_base = model_entity.EntityAttr.objects.create(parent_entity=entity, **kwargs)
+        attr_base = model_entity.EntityAttr.objects.create(
+            parent_entity=entity, **kwargs, **entity_attr_kwargs
+        )
         entry = model_entry.Entry.objects.create(schema=entity, **kwargs)
         attr = model_entry.Attribute.objects.create(parent_entry=entry, schema=attr_base, **kwargs)
         base = ACLBase.objects.create(**kwargs)

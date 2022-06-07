@@ -16,43 +16,41 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface EntryRetrieveSchema
+ * @interface WebhookHeaders
  */
-export interface EntryRetrieveSchema {
-  /**
-   *
-   * @type {number}
-   * @memberof EntryRetrieveSchema
-   */
-  id?: number;
+export interface WebhookHeaders {
   /**
    *
    * @type {string}
-   * @memberof EntryRetrieveSchema
+   * @memberof WebhookHeaders
    */
-  name?: string;
+  headerKey: string;
+  /**
+   *
+   * @type {string}
+   * @memberof WebhookHeaders
+   */
+  headerValue: string;
 }
 
-export function EntryRetrieveSchemaFromJSON(json: any): EntryRetrieveSchema {
-  return EntryRetrieveSchemaFromJSONTyped(json, false);
+export function WebhookHeadersFromJSON(json: any): WebhookHeaders {
+  return WebhookHeadersFromJSONTyped(json, false);
 }
 
-export function EntryRetrieveSchemaFromJSONTyped(
+export function WebhookHeadersFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntryRetrieveSchema {
+): WebhookHeaders {
   if (json === undefined || json === null) {
     return json;
   }
   return {
-    id: !exists(json, "id") ? undefined : json["id"],
-    name: !exists(json, "name") ? undefined : json["name"],
+    headerKey: json["header_key"],
+    headerValue: json["header_value"],
   };
 }
 
-export function EntryRetrieveSchemaToJSON(
-  value?: EntryRetrieveSchema | null
-): any {
+export function WebhookHeadersToJSON(value?: WebhookHeaders | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -60,7 +58,7 @@ export function EntryRetrieveSchemaToJSON(
     return null;
   }
   return {
-    id: value.id,
-    name: value.name,
+    header_key: value.headerKey,
+    header_value: value.headerValue,
   };
 }

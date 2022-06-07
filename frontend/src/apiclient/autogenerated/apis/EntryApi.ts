@@ -26,10 +26,20 @@ import {
   GetEntrySimple,
   GetEntrySimpleFromJSON,
   GetEntrySimpleToJSON,
+  PaginatedGetEntrySimpleList,
+  PaginatedGetEntrySimpleListFromJSON,
+  PaginatedGetEntrySimpleListToJSON,
 } from "../models";
 
 export interface EntryApiV2DestroyRequest {
   id: number;
+}
+
+export interface EntryApiV2ReferralListRequest {
+  id: number;
+  keyword?: string;
+  limit?: number;
+  offset?: number;
 }
 
 export interface EntryApiV2RestoreCreateRequest {
@@ -104,6 +114,80 @@ export class EntryApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<void> {
     await this.entryApiV2DestroyRaw(requestParameters, initOverrides);
+  }
+
+  /**
+   */
+  async entryApiV2ReferralListRaw(
+    requestParameters: EntryApiV2ReferralListRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<PaginatedGetEntrySimpleList>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling entryApiV2ReferralList."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters.keyword !== undefined) {
+      queryParameters["keyword"] = requestParameters.keyword;
+    }
+
+    if (requestParameters.limit !== undefined) {
+      queryParameters["limit"] = requestParameters.limit;
+    }
+
+    if (requestParameters.offset !== undefined) {
+      queryParameters["offset"] = requestParameters.offset;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/{id}/referral/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      PaginatedGetEntrySimpleListFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async entryApiV2ReferralList(
+    requestParameters: EntryApiV2ReferralListRequest,
+    initOverrides?: RequestInit
+  ): Promise<PaginatedGetEntrySimpleList> {
+    const response = await this.entryApiV2ReferralListRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
   }
 
   /**
