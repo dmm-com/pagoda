@@ -202,7 +202,7 @@ class EntitySerializer(serializers.ModelSerializer):
 
             # create, update EntityAttr instance with user specified params
             (entity_attr, is_created_attr) = EntityAttr.objects.update_or_create(
-                id=attr_id, defaults={**attr_data, "parent_entity": entity}
+                id=attr_id, defaults={**attr_data, "parent_entity": entity, "created_user": user}
             )
 
             # set referrals if necessary
