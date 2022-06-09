@@ -30,12 +30,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+interface GenericErrorProps {
+  children: string;
+}
+
 interface Props {
   error: Error;
 }
 
-const ErrorFallback: FC<Props> = ({ error }) => {
-  console.log('[onix/ErrorFallback(00)]');
+const GenericError: FC<GenericErrorProps> = ({ children }) => {
   const classes = useStyles();
   const [open, setOpen] = useState(true);
 
@@ -56,9 +59,7 @@ const ErrorFallback: FC<Props> = ({ error }) => {
           </Typography>
         </Box>
         <Box className={classes.errorDetails}>
-          <Typography variant="body2">
-            エラー詳細: {error.toString()}
-          </Typography>
+          <Typography variant="body2">エラー詳細: {children}</Typography>
         </Box>
         <Box className={classes.buttons}>
           <Button
@@ -74,8 +75,20 @@ const ErrorFallback: FC<Props> = ({ error }) => {
   );
 };
 
+const ErrorFallback: FC<Props> = ({ error }) => {
+  console.log("[onix/ErrorFallback(00)] error.name: ", error.name);
+  console.log("[onix/ErrorFallback(00)] error.message: ", error.message);
+
+  switch (error.name) {
+    case "FailedToGetEntry":
+      return <Box></Box>;
+    default:
+      return <GenericError>{error.toString()}</GenericError>;
+  }
+};
+
 export const ErrorHandler: FC = ({ children }) => {
-  console.log('[onix/ErrorHandler(00)]');
+  console.log("[onix/ErrorHandler(00)]");
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>{children}</ErrorBoundary>
   );

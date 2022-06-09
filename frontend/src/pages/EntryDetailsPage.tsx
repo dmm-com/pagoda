@@ -15,8 +15,8 @@ import {
   Typography,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import { ErrorBoundary } from "react-error-boundary";
 import React, { FC, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { Link } from "react-router-dom";
 import { Element, scroller } from "react-scroll";
 import { useAsync } from "react-use";
@@ -30,7 +30,7 @@ import { Loading } from "components/common/Loading";
 import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
-
+import { FailedToGetEntry } from "utils/Exceptions";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   errorDescription: {
@@ -54,7 +54,7 @@ interface Props {
 }
 
 const ErrorFallbackHoge: FC<Props> = ({ error }) => {
-  console.log('[onix/ErrorFallbackHoge(00)]');
+  console.log("[onix/ErrorFallbackHoge(00)]");
   const classes = useStyles();
   const [open, setOpen] = useState(true);
 
@@ -94,9 +94,11 @@ const ErrorFallbackHoge: FC<Props> = ({ error }) => {
 };
 
 const ErrorHandlerHoge: FC = ({ children }) => {
-  console.log('[onix/ErrorHandlerHoge(00)]');
+  console.log("[onix/ErrorHandlerHoge(00)]");
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallbackHoge}>{children}</ErrorBoundary>
+    <ErrorBoundary FallbackComponent={ErrorFallbackHoge}>
+      {children}
+    </ErrorBoundary>
   );
 };
 
@@ -110,6 +112,12 @@ export const EntryDetailsPage: FC = () => {
   const entry = useAsync(async () => {
     return await aironeApiClientV2.getEntry(entryId);
   }, [entryId]);
+
+  if (!entry.loading && entry.error) {
+    throw new FailedToGetEntry(
+      "Failed to get Entry from AirOne APIv2 endpoint"
+    );
+  }
 
   return (
     <ErrorHandlerHoge>
