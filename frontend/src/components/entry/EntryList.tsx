@@ -22,6 +22,7 @@ import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryList as ConstEntryList } from "utils/Constants";
+import { FailedToGetEntity } from "utils/Exceptions";
 
 interface Props {
   entityId: number;
@@ -35,6 +36,11 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
   const entries = useAsync(async () => {
     return await aironeApiClientV2.getEntries(entityId, true, page, keyword);
   }, [page, keyword]);
+  if (!entries.loading && entries.error) {
+    throw new FailedToGetEntity(
+      "Failed to get Entity from AirOne APIv2 endpoint"
+    );
+  }
 
   const handleChange = (event, value) => {
     setPage(value);

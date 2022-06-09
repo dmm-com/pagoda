@@ -76,19 +76,17 @@ const GenericError: FC<GenericErrorProps> = ({ children }) => {
 };
 
 const ErrorFallback: FC<Props> = ({ error }) => {
-  console.log("[onix/ErrorFallback(00)] error.name: ", error.name);
-  console.log("[onix/ErrorFallback(00)] error.message: ", error.message);
-
   switch (error.name) {
     case "FailedToGetEntry":
-      return <Box></Box>;
+      return <Box>(TBC) Failed to get Entry</Box>;
+    case "FailedToGetEntity":
+      return <Box>(TBC) Failed to get Entity</Box>;
     default:
       return <GenericError>{error.toString()}</GenericError>;
   }
 };
 
 export const ErrorHandler: FC = ({ children }) => {
-  console.log("[onix/ErrorHandler(00)]");
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>{children}</ErrorBoundary>
   );
