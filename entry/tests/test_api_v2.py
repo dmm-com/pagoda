@@ -1219,3 +1219,30 @@ class ViewTest(AironeViewTest):
                 ["ref", "name", "bool", "date", "group", "groups", "text", "vals", "refs", "names"]
             ),
         )
+
+    def test_referral(self):
+        entry = self.add_entry(
+            self.user,
+            "Entry",
+            self.entity,
+            values={
+                "ref": self.ref_entry.id,
+            },
+        )
+
+        resp = self.client.get("/entry/api/v2/%s/referral/" % self.ref_entry.id)
+        self.assertEqual(resp.status_code, 200)
+
+        resp_data = resp.json()
+        results = resp_data["results"]
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["id"], entry.id)
+        self.assertEqual(results[0]["name"], entry.name)
+
+    def test_referral_unrelated_to_entry(self):
+        resp = self.client.get("/entry/api/v2/%s/referral/" % 99999)  # invalid entry id
+        self.assertEqual(resp.status_code, 200)
+
+        resp_data = resp.json()
+        results = resp_data["results"]
+        self.assertEqual(len(results), 0)
