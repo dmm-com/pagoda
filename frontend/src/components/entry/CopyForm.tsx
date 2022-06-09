@@ -1,11 +1,12 @@
 import {
   Box,
   Button,
-  Checkbox,
   Container,
   TextareaAutosize,
+  Theme,
   Typography,
 } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -17,7 +18,14 @@ interface Props {
   entryId: number;
 }
 
+const useStyles = makeStyles<Theme>((theme) => ({
+  sampleBox: {
+    padding: "10px 50px",
+  },
+}));
+
 export const CopyForm: FC<Props> = ({ entityId, entryId }) => {
+  const classes = useStyles();
   const history = useHistory();
 
   // newline delimited string value, not string[]
@@ -42,15 +50,6 @@ export const CopyForm: FC<Props> = ({ entityId, entryId }) => {
         value={entries}
         onChange={(e) => setEntries(e.target.value)}
       />
-      <Box display="flex" justifyContent="center">
-        <Typography sx={{ margin: "revert" }}>
-          ボード情報をコピーする
-        </Typography>
-        <Checkbox
-          checked={copyBoardInfo}
-          onChange={(e) => setCopyBoardInfo(e.target.checked)}
-        />
-      </Box>
       <Box display="flex" justifyContent="center" mt="16px">
         <Box mx="8px">
           <Button
@@ -94,24 +93,16 @@ export const CopyForm: FC<Props> = ({ entityId, entryId }) => {
               width="100%"
               border={0.5}
             >
-              <pre>
-                {`
-              vm0001
-              vm0002
-              vm0003
-              vm0004
-              vm0005
-              vm0006
-              `}
+              <pre className={classes.sampleBox}>
+                {`vm0001
+vm0002
+vm0003
+vm0004
+vm0005
+vm0006`}
               </pre>
             </Box>
           </Box>
-        </Box>
-        <Box display="flex" justifyContent="center">
-          <Typography sx={{ margin: "revert" }}>
-            ボード情報をコピーする
-          </Typography>
-          <Checkbox checked={true} />
         </Box>
       </Box>
     </Container>
