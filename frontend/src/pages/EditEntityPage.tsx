@@ -13,6 +13,7 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityForm } from "components/entity/EntityForm";
 import { useTypedParams } from "hooks/useTypedParams";
+import { FailedToGetEntity } from "utils/Exceptions";
 
 export const EditEntityPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
@@ -35,6 +36,11 @@ export const EditEntityPage: FC = () => {
       return undefined;
     }
   });
+  if (entity !== undefined && !entity.loading && entity.error) {
+    throw new FailedToGetEntity(
+      "Failed to get Entity from AirOne APIv2 endpoint"
+    );
+  }
 
   const referralEntities = useAsync(async () => {
     const entities = await aironeApiClientV2.getEntities();

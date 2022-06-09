@@ -17,6 +17,7 @@ import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { CopyForm } from "components/entry/CopyForm";
+import { FailedToGetEntry } from "utils/Exceptions";
 
 export const CopyEntryPage: FC = () => {
   const { entityId, entryId } =
@@ -28,6 +29,12 @@ export const CopyEntryPage: FC = () => {
   const entry = useAsync(async () => {
     return await aironeApiClientV2.getEntry(entryId);
   }, [entryId]);
+
+  if (!entry.loading && entry.error) {
+    throw new FailedToGetEntry(
+      "Failed to get Entry from AirOne APIv2 endpoint"
+    );
+  }
 
   if (entry.loading) {
     return <Loading />;

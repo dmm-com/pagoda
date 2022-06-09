@@ -23,6 +23,7 @@ import { Loading } from "components/common/Loading";
 import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
+import { FailedToGetEntry } from "utils/Exceptions";
 
 export const EntryDetailsPage: FC = () => {
   const { entityId, entryId } =
@@ -34,6 +35,12 @@ export const EntryDetailsPage: FC = () => {
   const entry = useAsync(async () => {
     return await aironeApiClientV2.getEntry(entryId);
   }, [entryId]);
+
+  if (!entry.loading && entry.error) {
+    throw new FailedToGetEntry(
+      "Failed to get Entry from AirOne APIv2 endpoint"
+    );
+  }
 
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">
