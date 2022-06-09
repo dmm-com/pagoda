@@ -35,6 +35,7 @@ interface Props {
 }
 
 const ErrorFallback: FC<Props> = ({ error }) => {
+  console.log('[onix/ErrorFallback(00)]');
   const classes = useStyles();
   const [open, setOpen] = useState(true);
 
@@ -74,6 +75,7 @@ const ErrorFallback: FC<Props> = ({ error }) => {
 };
 
 export const ErrorHandler: FC = ({ children }) => {
+  console.log('[onix/ErrorHandler(00)]');
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>{children}</ErrorBoundary>
   );
