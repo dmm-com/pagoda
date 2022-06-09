@@ -179,38 +179,6 @@ Object {
               tabindex="-1"
             />
             <div
-              class="MuiBox-root css-1l4w6pd"
-            >
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-tinmid-MuiTypography-root"
-              >
-                ボード情報をコピーする
-              </p>
-              <span
-                class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
-              >
-                <input
-                  class="PrivateSwitchBase-input css-1m9pwf3"
-                  data-indeterminate="false"
-                  type="checkbox"
-                />
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                  data-testid="CheckBoxOutlineBlankIcon"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                  />
-                </svg>
-                <span
-                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                />
-              </span>
-            </div>
-            <div
               class="MuiBox-root css-kl1xo3"
             >
               <div
@@ -273,51 +241,18 @@ Object {
                   <div
                     class="MuiBox-root css-11jzykg"
                   >
-                    <pre>
-                      
-              vm0001
-              vm0002
-              vm0003
-              vm0004
-              vm0005
-              vm0006
-              
+                    <pre
+                      class="makeStyles-sampleBox-4"
+                    >
+                      vm0001
+vm0002
+vm0003
+vm0004
+vm0005
+vm0006
                     </pre>
                   </div>
                 </div>
-              </div>
-              <div
-                class="MuiBox-root css-1l4w6pd"
-              >
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-tinmid-MuiTypography-root"
-                >
-                  ボード情報をコピーする
-                </p>
-                <span
-                  class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root Mui-checked css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
-                >
-                  <input
-                    checked=""
-                    class="PrivateSwitchBase-input css-1m9pwf3"
-                    data-indeterminate="false"
-                    type="checkbox"
-                  />
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                    data-testid="CheckBoxIcon"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-                    />
-                  </svg>
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
-                </span>
               </div>
             </div>
           </div>
@@ -500,38 +435,6 @@ Object {
             tabindex="-1"
           />
           <div
-            class="MuiBox-root css-1l4w6pd"
-          >
-            <p
-              class="MuiTypography-root MuiTypography-body1 css-tinmid-MuiTypography-root"
-            >
-              ボード情報をコピーする
-            </p>
-            <span
-              class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
-            >
-              <input
-                class="PrivateSwitchBase-input css-1m9pwf3"
-                data-indeterminate="false"
-                type="checkbox"
-              />
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                data-testid="CheckBoxOutlineBlankIcon"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                />
-              </svg>
-              <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
-            </span>
-          </div>
-          <div
             class="MuiBox-root css-kl1xo3"
           >
             <div
@@ -594,51 +497,18 @@ Object {
                 <div
                   class="MuiBox-root css-11jzykg"
                 >
-                  <pre>
-                    
-              vm0001
-              vm0002
-              vm0003
-              vm0004
-              vm0005
-              vm0006
-              
+                  <pre
+                    class="makeStyles-sampleBox-4"
+                  >
+                    vm0001
+vm0002
+vm0003
+vm0004
+vm0005
+vm0006
                   </pre>
                 </div>
               </div>
-            </div>
-            <div
-              class="MuiBox-root css-1l4w6pd"
-            >
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-tinmid-MuiTypography-root"
-              >
-                ボード情報をコピーする
-              </p>
-              <span
-                class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root Mui-checked css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
-              >
-                <input
-                  checked=""
-                  class="PrivateSwitchBase-input css-1m9pwf3"
-                  data-indeterminate="false"
-                  type="checkbox"
-                />
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                  data-testid="CheckBoxIcon"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-                  />
-                </svg>
-                <span
-                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                />
-              </span>
             </div>
           </div>
         </div>

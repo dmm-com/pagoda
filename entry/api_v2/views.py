@@ -162,7 +162,7 @@ class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
 
         entry = Entry.objects.filter(pk=entry_id).first()
         if not entry:
-            return None
+            return []
 
         ids = AttributeValue.objects.filter(
             Q(referral=entry, is_latest=True) | Q(referral=entry, parent_attrv__is_latest=True)
