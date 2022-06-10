@@ -196,8 +196,7 @@ class History(models.Model):
     target_obj = models.ForeignKey(
         import_module("acl.models").ACLBase,
         related_name="referred_target_obj",
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.DO_NOTHING,
     )
     time = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
