@@ -33,7 +33,7 @@ Permission.__ge__ = lambda self, comp: _get_acltype(self) >= _get_acltype(comp)
 class ACLBase(models.Model):
     name = models.CharField(max_length=200)
     is_public = models.BooleanField(default=True)
-    created_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     is_active = models.BooleanField(default=True)
     status = models.IntegerField(default=0)
     default_permission = models.IntegerField(default=ACLType.Nothing().id)
