@@ -10,8 +10,13 @@ import {
   ListItem,
   Radio,
   RadioGroup,
+  Typography,
 } from "@mui/material";
-import React, { FC } from "react";
+import React, { FC, useMemo } from "react";
+import { useAsync } from "react-use";
+
+import { getAttrReferrals } from "../../../utils/AironeAPIClient";
+import { AutoCompletedField } from "../../common/AutoCompletedField";
 
 import {
   EditableEntryAttrs,
@@ -43,20 +48,19 @@ const ElemString: FC<
   handleClickDeleteListItem,
 }) => {
   return (
-    <Grid container>
-      <Grid item>
-        <Input
-          type="text"
-          value={attrValue}
-          onChange={(e) =>
-            handleChange(e, attrName, {
-              type: attrType,
-              index: index,
-              value: e.target.value,
-            })
-          }
-        />
-      </Grid>
+    <Box display="flex">
+      <Input
+        type="text"
+        value={attrValue}
+        onChange={(e) =>
+          handleChange(e, attrName, {
+            type: attrType,
+            index: index,
+            value: e.target.value,
+          })
+        }
+        fullWidth
+      />
       {index !== undefined && (
         <Grid item>
           <Button
@@ -67,7 +71,7 @@ const ElemString: FC<
           </Button>
         </Grid>
       )}
-    </Grid>
+    </Box>
   );
 };
 
@@ -102,6 +106,7 @@ const ElemObject: FC<
       attrType: number
     ) => void;
     handleClickDeleteListItem: (attrName: string, index?: number) => void;
+    multiple?: boolean;
   }
 > = ({
   attrId,
@@ -112,51 +117,65 @@ const ElemObject: FC<
   handleChange,
   handleNarrowDownEntries,
   handleClickDeleteListItem,
+  multiple,
 }) => {
+  // FIXME Implement and use API V2
+  // TODO call it reactively to avoid loading API???
+  const referrals = useAsync(async () => {
+    const resp = await getAttrReferrals(attrId);
+    const data = await resp.json();
+    return data.results;
+  });
+
+  const defaultValue = useMemo(() => {
+    const matched = referrals.value?.filter((e) =>
+      attrValue.map((e) => e.id).includes(e.id)
+    );
+    return matched ? (multiple ? matched : matched[0]) : undefined;
+  }, [referrals.value, attrValue]);
+
   return (
-    <Grid container>
-      <Grid item>
-        <Card variant="outlined">
-          <RadioGroup aria-label="object" name="radio-buttons-group">
-            {attrValue.map((value) => (
-              <FormControlLabel
-                key={value.id}
-                control={<Radio checked={value.checked} />}
-                label={value.name}
-                onChange={(e, checked) =>
-                  handleChange(e, attrName, {
-                    type: attrType,
-                    index: index,
-                    id: value.id,
-                    name: value.name,
-                    checked: checked,
-                  })
-                }
-              />
-            ))}
-          </RadioGroup>
-          <Input
-            placeholder="エントリ名で絞り込む"
-            onChange={(e) => {
-              handleNarrowDownEntries(e, attrId, attrName, attrType);
+    <Box>
+      <Typography>エントリを選択</Typography>
+      <Box display="flex" alignItems="center">
+        {!referrals.loading && (
+          <AutoCompletedField
+            options={referrals.value ?? []}
+            getOptionLabel={(option: { id: number; name: string }) =>
+              option.name
+            }
+            defaultValue={defaultValue}
+            handleChangeSelectedValue={(
+              value:
+                | { id: number; name: string }
+                | { id: number; name: string }[]
+            ) => {
+              if (Array.isArray(value)) {
+                // FIXME call handleChange
+                // It will need to modify type of attribute state
+              } else {
+                handleChange(null, attrName, {
+                  type: attrType,
+                  index: index,
+                  id: value.id,
+                  name: value.name,
+                  checked: true,
+                });
+              }
             }}
-            onClick={(e) => {
-              handleNarrowDownEntries(e, attrId, attrName, attrType);
-            }}
+            multiple={multiple}
           />
-        </Card>
-      </Grid>
-      {index !== undefined && (
-        <Grid item>
+        )}
+        {index !== undefined && (
           <Button
             variant="outlined"
             onClick={() => handleClickDeleteListItem(attrName, index)}
           >
             del
           </Button>
-        </Grid>
-      )}
-    </Grid>
+        )}
+      </Box>
+    </Box>
   );
 };
 
@@ -184,18 +203,21 @@ const ElemNamedObject: FC<
 }) => {
   const key = Object.keys(attrValue)[0];
   return (
-    <>
-      <Input
-        type="text"
-        value={key}
-        onChange={(e) =>
-          handleChange(e, attrName, {
-            type: attrType,
-            index: index,
-            key: e.target.value,
-          })
-        }
-      />
+    <Box display="flex">
+      <Box>
+        <Typography>name</Typography>
+        <Input
+          type="text"
+          value={key}
+          onChange={(e) =>
+            handleChange(e, attrName, {
+              type: attrType,
+              index: index,
+              key: e.target.value,
+            })
+          }
+        />
+      </Box>
       <ElemObject
         attrId={attrId}
         attrName={attrName}
@@ -206,7 +228,7 @@ const ElemNamedObject: FC<
         handleNarrowDownEntries={handleNarrowDownEntries}
         handleClickDeleteListItem={handleClickDeleteListItem}
       />
-    </>
+    </Box>
   );
 };
 
@@ -328,7 +350,7 @@ export const EditAttributeValue: FC<Props> = ({
         <ElemObject
           attrId={attrInfo.id}
           attrName={attrName}
-          attrValue={attrInfo.value.asObject}
+          attrValue={[{ ...attrInfo.value.asObject, checked: false }]}
           attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
           handleNarrowDownEntries={handleNarrowDownEntries}
@@ -394,6 +416,7 @@ export const EditAttributeValue: FC<Props> = ({
                   handleChange={handleChangeAttribute}
                   handleNarrowDownEntries={handleNarrowDownEntries}
                   handleClickDeleteListItem={handleClickDeleteListItem}
+                  multiple
                 />
               </ListItem>
             ))}

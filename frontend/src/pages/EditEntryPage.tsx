@@ -76,8 +76,7 @@ export const EditEntryPage: FC = () => {
           case djangoContext.attrTypeValue.object:
             return {
               id: attrValue.schema.id,
-              value:
-                attrValue.value.asObject.filter((x) => x.checked)[0].id ?? "",
+              value: attrValue.value.asObject.id ?? "",
             };
 
           case djangoContext.attrTypeValue.group:

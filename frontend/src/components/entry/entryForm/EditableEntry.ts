@@ -9,6 +9,7 @@ type WithChecked = {
   checked: boolean;
 };
 
+// FIXME 'checked' flag should be no longer needed
 export type EditableEntryAttrValueObject = Array<
   EntryRetrieveValueAsObject & WithChecked
 >;
@@ -25,7 +26,7 @@ type EditableEntryAttrValueArrayNamedObject = Array<{
 type EditableEntryAttrValueArrayGroup = Array<EditableEntryAttrValueGroup>;
 
 type EditableEntryAttrValue = {
-  asObject?: EditableEntryAttrValueObject;
+  asObject?: EntryRetrieveValueAsObject;
   asString?: string;
   asNamedObject?: EditableEntryAttrValueNamedObject;
   asArrayObject?: EditableEntryAttrValueArrayObject;
@@ -84,12 +85,7 @@ export const initializeEditableEntryAttr = (
               isMandatory: attr.isMandatory,
               schema: attr.schema,
               value: {
-                asObject: [
-                  {
-                    ...attr.value.asObject,
-                    checked: true,
-                  },
-                ],
+                asObject: attr.value.asObject,
               },
             },
           ];

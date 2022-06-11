@@ -58,12 +58,7 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         break;
 
       case djangoContext.attrTypeValue.object:
-        entryInfo.attrs[name].value.asObject = entryInfo.attrs[
-          name
-        ].value.asObject.map((x) => ({
-          ...x,
-          checked: x.id == valueInfo.id && valueInfo.checked,
-        }));
+        entryInfo.attrs[name].value.asObject = valueInfo;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
@@ -78,22 +73,16 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         break;
 
       case djangoContext.attrTypeValue.named_object:
-        if (event.target.type === "text") {
-          entryInfo.attrs[name].value.asNamedObject = {
-            [valueInfo.key]: Object.values(
-              entryInfo.attrs[name].value.asNamedObject
-            )[0],
-          };
-        }
-        if (event.target.type === "radio") {
-          const key = Object.keys(entryInfo.attrs[name].value.asNamedObject)[0];
-          entryInfo.attrs[name].value.asNamedObject[key] = entryInfo.attrs[
-            name
-          ].value.asNamedObject[key].map((x) => ({
-            ...x,
-            checked: x.id == valueInfo.id && valueInfo.checked,
-          }));
-        }
+        const namedObjectKey = Object.keys(
+          entryInfo.attrs[name].value.asNamedObject
+        )[0];
+        entryInfo.attrs[name].value.asNamedObject[namedObjectKey] =
+          entryInfo.attrs[name].value.asNamedObject[namedObjectKey].map(
+            (x) => ({
+              ...x,
+              checked: x.id == valueInfo.id && valueInfo.checked,
+            })
+          );
         changeAttributes({ ...entryInfo.attrs });
         break;
 
@@ -140,34 +129,17 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         break;
 
       case djangoContext.attrTypeValue.array_named_object:
-        // In this case, new blank co-Attribute value will be added
-        if (
-          valueInfo.index >=
-          entryInfo.attrs[name].value.asArrayNamedObject.length
-        ) {
-          entryInfo.attrs[name].value.asArrayNamedObject.push(valueInfo.value);
-        } else {
-          if (event.target.type === "text") {
-            entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index] = {
-              [valueInfo.key]: Object.values(
-                entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index]
-              )[0],
-            };
-          }
-          if (event.target.type === "radio") {
-            const key = Object.keys(
-              entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index]
-            )[0];
-            entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index][
-              key
-            ] = entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index][
-              key
-            ].map((x) => ({
-              ...x,
-              checked: x.id == valueInfo.id && valueInfo.checked,
-            }));
-          }
-        }
+        const arrayNamedObjectKey = Object.keys(
+          entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index]
+        )[0];
+        entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index][
+          arrayNamedObjectKey
+        ] = entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index][
+          arrayNamedObjectKey
+        ].map((x) => ({
+          ...x,
+          checked: x.id == valueInfo.id && valueInfo.checked,
+        }));
         changeAttributes({ ...entryInfo.attrs });
         break;
     }
@@ -196,6 +168,7 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
     }
   };
 
+  // FIXME remove it??
   const handleNarrowDownGroups = async (
     e,
     attrName: string,
@@ -347,12 +320,28 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         </TableHead>
         <TableBody>
           <TableRow>
-            <TableCell>エントリ名</TableCell>
+            <TableCell>
+              <Box display="flex" alignItems="center">
+                <Typography flexGrow={1}>エントリ名</Typography>
+                <Typography
+                  sx={{
+                    border: "0.5px solid gray",
+                    borderRadius: 16,
+                    color: "white",
+                    backgroundColor: "gray",
+                    padding: "0 8px",
+                  }}
+                >
+                  必須
+                </Typography>
+              </Box>
+            </TableCell>
             <TableCell>
               <Input
                 type="text"
                 defaultValue={entryInfo.name}
                 onChange={(e) => changeName(e.target.value)}
+                fullWidth
               />
             </TableCell>
           </TableRow>
