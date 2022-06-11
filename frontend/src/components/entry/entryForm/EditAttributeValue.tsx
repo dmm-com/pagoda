@@ -11,7 +11,11 @@ import {
   Radio,
   RadioGroup,
   Typography,
+  TextField,
 } from "@mui/material";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import React, { FC, useMemo } from "react";
 import { useAsync } from "react-use";
 
@@ -298,6 +302,32 @@ const ElemGroup: FC<
   );
 };
 
+const ElemDate: FC<
+  CommonProps & {
+    attrValue: string;
+    handleClickDeleteListItem: (attrName: string, index?: number) => void;
+  }
+> = ({ attrName, attrValue, attrType, handleChange }) => {
+  return (
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <DesktopDatePicker
+        label="月日を選択"
+        inputFormat="yyyy/MM/dd"
+        value={new Date(attrValue)}
+        onChange={(date: Date) => {
+          handleChange(null, attrName, {
+            type: attrType,
+            value: `${date.getFullYear()}/${
+              date.getMonth() + 1
+            }/${date.getDate()}`,
+          });
+        }}
+        renderInput={(params) => <TextField {...params} />}
+      />
+    </LocalizationProvider>
+  );
+};
+
 interface Props {
   attrName: string;
   attrInfo: EditableEntryAttrs;
@@ -370,9 +400,19 @@ export const EditAttributeValue: FC<Props> = ({
 
     case djangoContext.attrTypeValue.string:
     case djangoContext.attrTypeValue.text:
-    case djangoContext.attrTypeValue.date:
       return (
         <ElemString
+          attrName={attrName}
+          attrValue={attrInfo.value.asString}
+          attrType={attrInfo.type}
+          handleChange={handleChangeAttribute}
+          handleClickDeleteListItem={handleClickDeleteListItem}
+        />
+      );
+
+    case djangoContext.attrTypeValue.date:
+      return (
+        <ElemDate
           attrName={attrName}
           attrValue={attrInfo.value.asString}
           attrType={attrInfo.type}
