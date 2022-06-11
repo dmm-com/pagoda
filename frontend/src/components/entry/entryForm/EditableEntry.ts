@@ -43,7 +43,7 @@ export type EditableEntry = {
 
 export type EditableEntryAttrs = Pick<
   EntryRetrieveAttrs,
-  "id" | "type" | "schema"
+  "id" | "type" | "isMandatory" | "schema"
 > & {
   value: EditableEntryAttrValue;
 };
@@ -62,6 +62,7 @@ export const initializeEditableEntryAttr = (
             {
               id: attr.id,
               type: attr.type,
+              isMandatory: attr.isMandatory,
               schema: attr.schema,
               value: {
                 asGroup: [
@@ -80,6 +81,7 @@ export const initializeEditableEntryAttr = (
             {
               id: attr.id,
               type: attr.type,
+              isMandatory: attr.isMandatory,
               schema: attr.schema,
               value: {
                 asObject: [
@@ -101,6 +103,7 @@ export const initializeEditableEntryAttr = (
             {
               id: attr.id,
               type: attr.type,
+              isMandatory: attr.isMandatory,
               schema: attr.schema,
               value: {
                 asNamedObject: {
@@ -122,6 +125,7 @@ export const initializeEditableEntryAttr = (
             {
               id: attr.id,
               type: attr.type,
+              isMandatory: attr.isMandatory,
               schema: attr.schema,
               value: {
                 asArrayGroup: attr.value.asArrayGroup.map((val) => [
@@ -140,6 +144,7 @@ export const initializeEditableEntryAttr = (
             {
               id: attr.id,
               type: attr.type,
+              isMandatory: attr.isMandatory,
               schema: attr.schema,
               value: {
                 asArrayObject: attr.value.asArrayObject.map((val) => [
@@ -158,6 +163,7 @@ export const initializeEditableEntryAttr = (
             {
               id: attr.id,
               type: attr.type,
+              isMandatory: attr.isMandatory,
               schema: attr.schema,
               value: {
                 asArrayNamedObject: attr.value.asArrayNamedObject.map((val) => {
@@ -182,6 +188,7 @@ export const initializeEditableEntryAttr = (
             {
               id: attr.id,
               type: attr.type,
+              isMandatory: attr.isMandatory,
               schema: attr.schema,
               value: { asArrayString: attr.value.asArrayString },
             },
@@ -193,6 +200,7 @@ export const initializeEditableEntryAttr = (
             {
               id: attr.id,
               type: attr.type,
+              isMandatory: attr.isMandatory,
               schema: attr.schema,
               value: { asBoolean: attr.value.asBoolean },
             },
@@ -204,6 +212,7 @@ export const initializeEditableEntryAttr = (
             {
               id: attr.id,
               type: attr.type,
+              isMandatory: attr.isMandatory,
               schema: attr.schema,
               value: { asString: attr.value.asString },
             },

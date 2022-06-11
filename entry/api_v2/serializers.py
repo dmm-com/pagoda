@@ -50,6 +50,7 @@ class EntryAttributeValue(TypedDict, total=False):
 class EntryAttributeType(TypedDict):
     id: Optional[int]
     type: int
+    is_mandatory: bool
     value: EntryAttributeValue
     schema: EntityAttributeType
 
@@ -417,6 +418,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 {
                     "id": attr.id if attr else None,
                     "type": entity_attr.type,
+                    "is_mandatory": entity_attr.is_mandatory,
                     "value": value,
                     "schema": {
                         "id": entity_attr.id,

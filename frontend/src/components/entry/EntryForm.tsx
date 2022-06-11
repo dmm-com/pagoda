@@ -358,7 +358,24 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
           </TableRow>
           {Object.keys(entryInfo.attrs).map((attributeName, index) => (
             <TableRow key={index} id={`attrs-${attributeName}`}>
-              <TableCell>{attributeName}</TableCell>
+              <TableCell>
+                <Box display="flex" alignItems="center">
+                  <Typography flexGrow={1}>{attributeName}</Typography>
+                  {entryInfo.attrs[attributeName]?.isMandatory && (
+                    <Typography
+                      sx={{
+                        border: "0.5px solid gray",
+                        borderRadius: 16,
+                        color: "white",
+                        backgroundColor: "gray",
+                        padding: "0 8px",
+                      }}
+                    >
+                      必須
+                    </Typography>
+                  )}
+                </Box>
+              </TableCell>
               <TableCell>
                 <EditAttributeValue
                   attrName={attributeName}
