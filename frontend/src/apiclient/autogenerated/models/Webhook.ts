@@ -43,7 +43,7 @@ export interface Webhook {
    * @type {string}
    * @memberof Webhook
    */
-  url: string;
+  url?: string;
   /**
    *
    * @type {boolean}
@@ -84,7 +84,7 @@ export function WebhookFromJSONTyped(
   return {
     id: json["id"],
     label: !exists(json, "label") ? undefined : json["label"],
-    url: json["url"],
+    url: !exists(json, "url") ? undefined : json["url"],
     isEnabled: !exists(json, "is_enabled") ? undefined : json["is_enabled"],
     isVerified: json["is_verified"],
     headers: !exists(json, "headers")
