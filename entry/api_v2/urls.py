@@ -30,6 +30,14 @@ urlpatterns = [
         ),
     ),
     path(
+        "<int:pk>/copy/",
+        views.EntryAPI.as_view(
+            {
+                "post": "copy",
+            }
+        ),
+    ),
+    path(
         "search/",
         views.searchAPI.as_view(
             {

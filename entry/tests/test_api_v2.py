@@ -978,6 +978,159 @@ class ViewTest(AironeViewTest):
 
         self.assertTrue(mock_task.called)
 
+    @mock.patch("entry.tasks.copy_entry.delay", mock.Mock(side_effect=tasks.copy_entry))
+    def test_copy_entry(self):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+        params = {"copy_entry_names": ["copy1", "copy2"]}
+
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(
+            Entry.objects.filter(name="copy1", schema=self.entity, is_active=True).exists()
+        )
+        self.assertTrue(
+            Entry.objects.filter(name="copy2", schema=self.entity, is_active=True).exists()
+        )
+
+    def test_copy_entry_without_permission(self):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+        params = {"copy_entry_names": ["copy1"]}
+
+        # permission nothing entity
+        self.entity.is_public = False
+        self.entity.save()
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(), {"detail": "You do not have permission to perform this action."}
+        )
+
+        # permission readable entity
+        self.role.users.add(self.user)
+        self.role.permissions.add(self.entity.readable)
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(), {"detail": "You do not have permission to perform this action."}
+        )
+
+        # permission writable entity
+        self.role.permissions.add(self.entity.writable)
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(
+            resp.json(), {"detail": "You do not have permission to perform this action."}
+        )
+
+        # permission full entity
+        self.role.permissions.add(self.entity.full)
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        params = {"copy_entry_names": ["copy2"]}
+
+        # permission nothing entry
+        entry.is_public = False
+        entry.save()
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(), {"detail": "You do not have permission to perform this action."}
+        )
+
+        # permission readable entry
+        self.role.permissions.add(entry.readable)
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(), {"detail": "You do not have permission to perform this action."}
+        )
+
+        # permission writable entry
+        self.role.permissions.add(entry.writable)
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(), {"detail": "You do not have permission to perform this action."}
+        )
+
+        # permission full entry
+        self.role.permissions.add(entry.full)
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_copy_entry_with_invalid_param(self):
+        params = {"copy_entry_names": ["copy1"]}
+
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % "hoge", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 404)
+
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % 9999, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json(), {"detail": "Not found."})
+
+        entry = self.add_entry(self.user, "entry", self.entity)
+
+        params = {}
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"copy_entry_names": ["This field is required."]})
+
+        params = {"copy_entry_names": "hoge"}
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), {"copy_entry_names": ['Expected a list of items but got type "str".']}
+        )
+
+        params = {"copy_entry_names": [{}]}
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"copy_entry_names": {"0": ["Not a valid string."]}})
+
+        params = {"copy_entry_names": []}
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"copy_entry_names": ["This list may not be empty."]})
+
+        params = {"copy_entry_names": ["entry"]}
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), {"copy_entry_names": ["specified name(entry) already exists"]}
+        )
+
     def test_serach_entry(self):
         ref_entry4 = self.add_entry(self.user, "hoge4", self.ref_entity)
         ref_entry5 = self.add_entry(self.user, "hoge5", self.ref_entity)
