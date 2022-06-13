@@ -57,7 +57,6 @@ test("should match snapshot", async () => {
       attrs: [],
     },
   ];
-  const webhooks = [];
 
   /* eslint-disable */
   jest
@@ -72,13 +71,6 @@ test("should match snapshot", async () => {
       "getEntities"
     )
     .mockResolvedValue(Promise.resolve(entities));
-  jest
-    .spyOn(require("../utils/AironeAPIClient"), "getWebhooks")
-    .mockResolvedValue({
-      json() {
-        return Promise.resolve(webhooks);
-      },
-    });
   /* eslint-enable */
 
   // wait async calls and get rendered fragment

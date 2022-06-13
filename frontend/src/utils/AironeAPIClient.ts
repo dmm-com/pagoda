@@ -411,29 +411,3 @@ export function cancelJob(jobId: number): Promise<Response> {
     }),
   });
 }
-
-export function getWebhooks(entityId: number): Promise<Response> {
-  return fetch(`/webhook/api/v2/${entityId}`);
-}
-
-export function setWebhook(
-  entityId: number,
-  request_parameter: object
-): Promise<Response> {
-  return fetch(`/webhook/api/v1/set/${entityId}`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify(request_parameter),
-  });
-}
-
-export function deleteWebhook(webhookId: number): Promise<Response> {
-  return fetch(`/webhook/api/v1/del/${webhookId}`, {
-    method: "DELETE",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-  });
-}
