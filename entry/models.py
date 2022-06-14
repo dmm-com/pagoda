@@ -1313,18 +1313,16 @@ class Entry(ACLBase):
                     attrinfo["last_value"]["name"] = last_value.referral.name
 
             elif last_value.data_type == AttrTypeValue["array_named_object"]:
-                values = [x.value for x in last_value.data_array.all()]
-                referrals = [x.referral for x in last_value.data_array.all()]
+                values = []
+                for attrv in last_value.data_array.all():
+                    value = {"value": attrv.value}
+                    if attrv.referral and attrv.referral.is_active:
+                        value["id"] = attrv.referral.id
+                        value["name"] = attrv.referral.name
+                    values.append(value)
 
                 attrinfo["last_value"] = sorted(
-                    [
-                        {
-                            "value": v,
-                            "id": r.id if r and r.is_active else None,
-                            "name": r.name if r and r.is_active else None,
-                        }
-                        for (v, r) in zip(values, referrals)
-                    ],
+                    values,
                     key=lambda x: x["value"],
                 )
 

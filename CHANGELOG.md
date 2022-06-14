@@ -9,6 +9,8 @@
 ### Changed
 
 ### Fixed
+* Fixed an issue where None was displayed in array_named_entry attribute
+  Contributed by @hinashi
 
 ## v3.9.0
 
