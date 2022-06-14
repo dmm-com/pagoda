@@ -3,12 +3,20 @@
 ## In development
 
 ### Added
-* (New-UI) Implemented a new page that shows referral Entries
-  Contributed by @syucream
 
 ### Changed
 
 ### Fixed
+
+## v3.10.0
+
+### Added
+* (New-UI) Implemented a new page that shows referral Entries
+  Contributed by @syucream
+
+### Fixed
+* Fixed raising exception on validating URL
+  Contributed by @syucream
 
 ## v3.9.0
 
