@@ -2129,7 +2129,7 @@ class ModelTest(AironeTestCase):
             "arr_ref": {
                 "type": AttrTypeValue["array_object"],
                 "value": [ref_entries[2]],
-                "expected_value": [{"name": "", "id": ""}],
+                "expected_value": [],
             },
             "arr_name": {
                 "type": AttrTypeValue["array_named_object"],

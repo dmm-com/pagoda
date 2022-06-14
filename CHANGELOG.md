@@ -9,6 +9,8 @@
 ### Changed
 
 ### Fixed
+* Fixed empty display of array type in advanced search result
+  Contributed by @hinashi
 
 ## v3.9.0
 
