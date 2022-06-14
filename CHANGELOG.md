@@ -3,10 +3,29 @@
 ## In development
 
 ### Added
+* (New-UI) Implemented a new page that shows referral Entries
+  Contributed by @syucream
 
 ### Changed
 
 ### Fixed
+
+## v3.9.0
+
+### Changed
+* Changed entity import to import entries belonging to multiple entities
+  Contributed by @syucream
+
+### Fixed
+* Fixed model and UI problems that are related with Role
+  Contributed by @userlocalhost
+* Fixed an error when copying a lot of entries
+  Contributed by @hinashi
+* Fixed some model and UI problems related with new added Role feature
+  Contributed by @userlocalhost
+* Added URL validation processing when user specify webhook configuration
+  for Entity
+  Contributed by @syucream
 
 ## v3.8.0
 

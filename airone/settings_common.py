@@ -66,8 +66,9 @@ class Common(Configuration):
     ]
 
     MIDDLEWARE = [
-        "airone.lib.log.LoggingRequestMiddleware",
         "django.middleware.security.SecurityMiddleware",
+        "whitenoise.middleware.WhiteNoiseMiddleware",
+        "airone.lib.log.LoggingRequestMiddleware",
         "django.contrib.sessions.middleware.SessionMiddleware",
         "django.middleware.common.CommonMiddleware",
         "django.middleware.csrf.CsrfViewMiddleware",

@@ -28,6 +28,7 @@ class JobAPI(APIView):
                 "edit": JobOperation.EDIT_ENTRY.value,
                 "delete": JobOperation.DELETE_ENTRY.value,
                 "copy": JobOperation.COPY_ENTRY.value,
+                "do_copy": JobOperation.DO_COPY_ENTRY.value,
                 "import": JobOperation.IMPORT_ENTRY.value,
                 "export": JobOperation.EXPORT_ENTRY.value,
                 "export_search_result": JobOperation.EXPORT_SEARCH_RESULT.value,

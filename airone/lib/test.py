@@ -8,6 +8,7 @@ from django.conf import settings
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from user.models import User
+from webhook.models import Webhook
 from .elasticsearch import ESS
 
 
@@ -23,16 +24,16 @@ class AironeTestCase(TestCase):
 
     ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY = [
         {"name": "val", "type": AttrTypeValue["string"]},
+        {"name": "vals", "type": AttrTypeValue["array_string"]},
         {"name": "ref", "type": AttrTypeValue["object"]},
+        {"name": "refs", "type": AttrTypeValue["array_object"]},
         {"name": "name", "type": AttrTypeValue["named_object"]},
-        {"name": "bool", "type": AttrTypeValue["boolean"]},
-        {"name": "date", "type": AttrTypeValue["date"]},
+        {"name": "names", "type": AttrTypeValue["array_named_object"]},
         {"name": "group", "type": AttrTypeValue["group"]},
         {"name": "groups", "type": AttrTypeValue["array_group"]},
+        {"name": "bool", "type": AttrTypeValue["boolean"]},
         {"name": "text", "type": AttrTypeValue["text"]},
-        {"name": "vals", "type": AttrTypeValue["array_string"]},
-        {"name": "refs", "type": AttrTypeValue["array_object"]},
-        {"name": "names", "type": AttrTypeValue["array_named_object"]},
+        {"name": "date", "type": AttrTypeValue["date"]},
     ]
 
     def setUp(self):
@@ -50,7 +51,7 @@ class AironeTestCase(TestCase):
         for fname in os.listdir(settings.AIRONE["FILE_STORE_PATH"]):
             os.unlink(os.path.join(settings.AIRONE["FILE_STORE_PATH"], fname))
 
-    def create_entity(self, user, name, attrs=[], is_public=True):
+    def create_entity(self, user, name, attrs=[], webhooks=[], is_public=True):
         """
         This is a helper method to create Entity for test. This method has following parameters.
         * user      : describes user instance which will be registered on creating Entity
@@ -69,10 +70,11 @@ class AironeTestCase(TestCase):
             else:
                 return default_value
 
-        entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
-        for attr_info in attrs:
-            entity_attr = EntityAttr.objects.create(
+        entity: Entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
+        for index, attr_info in enumerate(attrs):
+            entity_attr: EntityAttr = EntityAttr.objects.create(
                 **{
+                    "index": index,
                     "name": attr_info["name"],
                     "type": _get_entity_attr_params(attr_info, "type", AttrTypeValue["string"]),
                     "is_mandatory": _get_entity_attr_params(attr_info, "is_mandatory", False),
@@ -85,6 +87,18 @@ class AironeTestCase(TestCase):
                 entity_attr.referral.add(attr_info["ref"])
 
             entity.attrs.add(entity_attr)
+
+        for webhook_info in webhooks:
+            webhook: Webhook = Webhook.objects.create(
+                **{
+                    "url": webhook_info.get("url", "http://arione.com/"),
+                    "label": webhook_info.get("label", "hoge"),
+                    "is_enabled": webhook_info.get("is_enabled", True),
+                    "is_verified": webhook_info.get("is_verified", True),
+                    "headers": webhook_info.get("headers", []),
+                }
+            )
+            entity.webhooks.add(webhook)
 
         return entity
 

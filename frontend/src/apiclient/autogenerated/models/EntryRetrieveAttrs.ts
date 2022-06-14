@@ -14,11 +14,17 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  EntryRetrieveSchema,
-  EntryRetrieveSchemaFromJSON,
-  EntryRetrieveSchemaFromJSONTyped,
-  EntryRetrieveSchemaToJSON,
-} from "./EntryRetrieveSchema";
+  EntryRetrieveValue,
+  EntryRetrieveValueFromJSON,
+  EntryRetrieveValueFromJSONTyped,
+  EntryRetrieveValueToJSON,
+} from "./EntryRetrieveValue";
+import {
+  EntryRetrieveValueAsObjectSchema,
+  EntryRetrieveValueAsObjectSchemaFromJSON,
+  EntryRetrieveValueAsObjectSchemaFromJSONTyped,
+  EntryRetrieveValueAsObjectSchemaToJSON,
+} from "./EntryRetrieveValueAsObjectSchema";
 
 /**
  *
@@ -40,16 +46,16 @@ export interface EntryRetrieveAttrs {
   type?: number;
   /**
    *
-   * @type {any}
+   * @type {EntryRetrieveValue}
    * @memberof EntryRetrieveAttrs
    */
-  value?: any | null;
+  value?: EntryRetrieveValue;
   /**
    *
-   * @type {EntryRetrieveSchema}
+   * @type {EntryRetrieveValueAsObjectSchema}
    * @memberof EntryRetrieveAttrs
    */
-  schema?: EntryRetrieveSchema;
+  schema?: EntryRetrieveValueAsObjectSchema;
 }
 
 export function EntryRetrieveAttrsFromJSON(json: any): EntryRetrieveAttrs {
@@ -66,10 +72,12 @@ export function EntryRetrieveAttrsFromJSONTyped(
   return {
     id: !exists(json, "id") ? undefined : json["id"],
     type: !exists(json, "type") ? undefined : json["type"],
-    value: !exists(json, "value") ? undefined : json["value"],
+    value: !exists(json, "value")
+      ? undefined
+      : EntryRetrieveValueFromJSON(json["value"]),
     schema: !exists(json, "schema")
       ? undefined
-      : EntryRetrieveSchemaFromJSON(json["schema"]),
+      : EntryRetrieveValueAsObjectSchemaFromJSON(json["schema"]),
   };
 }
 
@@ -85,7 +93,7 @@ export function EntryRetrieveAttrsToJSON(
   return {
     id: value.id,
     type: value.type,
-    value: value.value,
-    schema: EntryRetrieveSchemaToJSON(value.schema),
+    value: EntryRetrieveValueToJSON(value.value),
+    schema: EntryRetrieveValueAsObjectSchemaToJSON(value.schema),
   };
 }

@@ -13,72 +13,86 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import {
+  Webhook,
+  WebhookFromJSON,
+  WebhookFromJSONTyped,
+  WebhookToJSON,
+} from "./Webhook";
+
 /**
  *
  * @export
- * @interface EntityWithAttr
+ * @interface EntityDetail
  */
-export interface EntityWithAttr {
+export interface EntityDetail {
   /**
    *
    * @type {number}
-   * @memberof EntityWithAttr
+   * @memberof EntityDetail
    */
   readonly id: number;
   /**
    *
    * @type {string}
-   * @memberof EntityWithAttr
+   * @memberof EntityDetail
    */
   name: string;
   /**
    *
    * @type {string}
-   * @memberof EntityWithAttr
+   * @memberof EntityDetail
    */
-  note: string;
+  note?: string;
   /**
    *
    * @type {number}
-   * @memberof EntityWithAttr
+   * @memberof EntityDetail
    */
   status?: number;
   /**
    *
    * @type {boolean}
-   * @memberof EntityWithAttr
+   * @memberof EntityDetail
    */
   readonly isToplevel: boolean;
   /**
    *
    * @type {Array<{ [key: string]: any; }>}
-   * @memberof EntityWithAttr
+   * @memberof EntityDetail
    */
   readonly attrs: Array<{ [key: string]: any }>;
+  /**
+   *
+   * @type {Array<Webhook>}
+   * @memberof EntityDetail
+   */
+  webhooks: Array<Webhook>;
 }
 
-export function EntityWithAttrFromJSON(json: any): EntityWithAttr {
-  return EntityWithAttrFromJSONTyped(json, false);
+export function EntityDetailFromJSON(json: any): EntityDetail {
+  return EntityDetailFromJSONTyped(json, false);
 }
 
-export function EntityWithAttrFromJSONTyped(
+export function EntityDetailFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntityWithAttr {
+): EntityDetail {
   if (json === undefined || json === null) {
     return json;
   }
   return {
     id: json["id"],
     name: json["name"],
-    note: json["note"],
+    note: !exists(json, "note") ? undefined : json["note"],
     status: !exists(json, "status") ? undefined : json["status"],
     isToplevel: json["is_toplevel"],
     attrs: json["attrs"],
+    webhooks: (json["webhooks"] as Array<any>).map(WebhookFromJSON),
   };
 }
 
-export function EntityWithAttrToJSON(value?: EntityWithAttr | null): any {
+export function EntityDetailToJSON(value?: EntityDetail | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -89,5 +103,6 @@ export function EntityWithAttrToJSON(value?: EntityWithAttr | null): any {
     name: value.name,
     note: value.note,
     status: value.status,
+    webhooks: (value.webhooks as Array<any>).map(WebhookToJSON),
   };
 }

@@ -3,6 +3,7 @@ from social_django.models import UserSocialAuth
 from rest_framework.authtoken.models import Token
 
 from airone.lib.acl import ACLType
+from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from group.models import Group
@@ -61,7 +62,10 @@ class ModelTest(TestCase):
     def test_set_history_with_detail(self):
         entity = Entity.objects.create(name="test-entity", created_user=self.user)
         attr = EntityAttr.objects.create(
-            name="test-attr", created_user=self.user, parent_entity=entity
+            name="test-attr",
+            type=AttrTypeValue["object"],
+            created_user=self.user,
+            parent_entity=entity,
         )
 
         history = self.user.seth_entity_add(entity)
@@ -144,3 +148,25 @@ class ModelTest(TestCase):
         )
 
         self.assertFalse(user.has_permission(entry, ACLType.Readable))
+
+    def test_user_has_permission(self):
+        # This checks user has permission to access ACLObject either user belongs to Role as
+        # normal member and administrative member.
+        user = User.objects.create(username="user")
+        role = Role.objects.create(name="Role1")
+        entity = Entity.objects.create(
+            name="entity", created_user=user, is_public=False, default_permission=ACLType.Nothing.id
+        )
+        role.permissions.add(entity.full)
+
+        # User doesn't have permission before belonging to Role
+        self.assertFalse(user.has_permission(entity, ACLType.Full))
+
+        # User has permission after belonging to Role as member
+        role.users.add(user)
+        self.assertTrue(user.has_permission(entity, ACLType.Full))
+
+        # User has also permission when user belongs to Role as admin-member
+        role.users.clear()
+        role.admin_users.add(user)
+        self.assertTrue(user.has_permission(entity, ACLType.Full))

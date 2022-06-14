@@ -9,47 +9,54 @@ Object {
         class="container-fluid MuiBox-root css-0"
       >
         <div
-          class="makeStyles-wrapper-2 MuiBox-root css-0"
+          class="MuiBox-root css-1l11j2j"
         >
           <div
-            class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
+            class="makeStyles-wrapper-2 MuiBox-root css-0"
           >
-            <nav
-              aria-label="breadcrumb"
-              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+            <div
+              class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
             >
-              <ol
-                class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+              <nav
+                aria-label="breadcrumb"
+                class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
               >
-                <li
-                  class="MuiBreadcrumbs-li"
+                <ol
+                  class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
                 >
-                  <a
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                  <li
+                    class="MuiBreadcrumbs-li"
                   >
-                    Top
-                  </a>
-                </li>
-                <li
-                  aria-hidden="true"
-                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-                >
-                  /
-                </li>
-                <li
-                  class="MuiBreadcrumbs-li"
-                >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                    <a
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      href="/new-ui/"
+                    >
+                      Top
+                    </a>
+                  </li>
+                  <li
+                    aria-hidden="true"
+                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
                   >
-                    検索結果
-                  </p>
-                </li>
-              </ol>
-            </nav>
+                    /
+                  </li>
+                  <li
+                    class="MuiBreadcrumbs-li"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                    >
+                      検索結果
+                    </p>
+                  </li>
+                </ol>
+              </nav>
+            </div>
           </div>
         </div>
+        <div
+          class="MuiBox-root css-ca23fy"
+        />
         <div
           class="MuiBox-root css-1ynyhby"
         >
@@ -207,10 +214,8 @@ Object {
                       <li
                         class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                       >
-                        <a
+                        <div
                           class="MuiBox-root css-0"
-                          href="/new-ui/entities/0/entries/undefined/details"
-                          sx="[object Object]"
                         />
                       </li>
                     </ul>
@@ -224,10 +229,8 @@ Object {
                       <li
                         class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                       >
-                        <a
+                        <div
                           class="MuiBox-root css-0"
-                          href="/new-ui/entities/0/entries/undefined/details"
-                          sx="[object Object]"
                         />
                       </li>
                     </ul>
@@ -343,47 +346,54 @@ Object {
       class="container-fluid MuiBox-root css-0"
     >
       <div
-        class="makeStyles-wrapper-2 MuiBox-root css-0"
+        class="MuiBox-root css-1l11j2j"
       >
         <div
-          class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
+          class="makeStyles-wrapper-2 MuiBox-root css-0"
         >
-          <nav
-            aria-label="breadcrumb"
-            class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+          <div
+            class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
           >
-            <ol
-              class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+            <nav
+              aria-label="breadcrumb"
+              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
             >
-              <li
-                class="MuiBreadcrumbs-li"
+              <ol
+                class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
               >
-                <a
-                  class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                  href="/new-ui/"
+                <li
+                  class="MuiBreadcrumbs-li"
                 >
-                  Top
-                </a>
-              </li>
-              <li
-                aria-hidden="true"
-                class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-              >
-                /
-              </li>
-              <li
-                class="MuiBreadcrumbs-li"
-              >
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/new-ui/"
+                  >
+                    Top
+                  </a>
+                </li>
+                <li
+                  aria-hidden="true"
+                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
                 >
-                  検索結果
-                </p>
-              </li>
-            </ol>
-          </nav>
+                  /
+                </li>
+                <li
+                  class="MuiBreadcrumbs-li"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                  >
+                    検索結果
+                  </p>
+                </li>
+              </ol>
+            </nav>
+          </div>
         </div>
       </div>
+      <div
+        class="MuiBox-root css-ca23fy"
+      />
       <div
         class="MuiBox-root css-1ynyhby"
       >
@@ -541,10 +551,8 @@ Object {
                     <li
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                     >
-                      <a
+                      <div
                         class="MuiBox-root css-0"
-                        href="/new-ui/entities/0/entries/undefined/details"
-                        sx="[object Object]"
                       />
                     </li>
                   </ul>
@@ -558,10 +566,8 @@ Object {
                     <li
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                     >
-                      <a
+                      <div
                         class="MuiBox-root css-0"
-                        href="/new-ui/entities/0/entries/undefined/details"
-                        sx="[object Object]"
                       />
                     </li>
                   </ul>

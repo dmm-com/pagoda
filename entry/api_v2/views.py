@@ -1,5 +1,7 @@
 import re
 
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import BasePermission, IsAuthenticated
@@ -8,6 +10,7 @@ from django.db.models import Q
 
 import custom_view
 from airone.lib.acl import ACLType
+from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import GetEntrySimpleSerializer
 from entry.api_v2.serializers import EntryBaseSerializer
 from entry.api_v2.serializers import EntryRetrieveSerializer
@@ -142,3 +145,32 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
         queryset = sorted(set(results), key=results.index)
 
         return queryset
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter("keyword", OpenApiTypes.STR, OpenApiParameter.QUERY),
+    ],
+)
+class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = GetEntrySimpleSerializer
+    pagination_class = EntryReferralPagination
+
+    def get_queryset(self):
+        entry_id = self.kwargs["pk"]
+        keyword = self.request.query_params.get("keyword", None)
+
+        entry = Entry.objects.filter(pk=entry_id).first()
+        if not entry:
+            return []
+
+        ids = AttributeValue.objects.filter(
+            Q(referral=entry, is_latest=True) | Q(referral=entry, parent_attrv__is_latest=True)
+        ).values_list("parent_attr__parent_entry", flat=True)
+
+        # if entity_name param exists, add schema name to reduce filter execution time
+        query = Q(pk__in=ids, is_active=True)
+        if keyword:
+            query &= Q(name__iregex=r"%s" % keyword)
+
+        return Entry.objects.filter(query)

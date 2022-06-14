@@ -74,12 +74,6 @@ class ACLSerializer(serializers.ModelSerializer):
         return default_permission in ACLType.all()
 
     def validate(self, attrs: Dict[str, Any]):
-        user = self.context["request"].user
-        if not user.has_permission(self.instance, ACLType.Full):
-            raise ValidationError(
-                "Inadmissible setting." "By this change you will never change this ACL"
-            )
-
         # validate acl paramter
         for acl_info in attrs["acl"]:
             if "member_id" not in acl_info:
@@ -89,8 +83,25 @@ class ACLSerializer(serializers.ModelSerializer):
             if not role:
                 raise ValidationError("Invalid member_id of Role instance is specified")
 
-            if not role.is_editable(user):
-                raise ValidationError("This user does not have permission to edit specified Role")
+        user = self.context["request"].user
+        if not user.is_permitted_to_change(
+            self.instance,
+            ACLType.Full,
+            **{
+                "will_be_public": attrs["is_public"],
+                "default_permission": attrs["default_permission"],
+                "acl_settings": [
+                    {
+                        "role": Role.objects.filter(id=x["member_id"], is_active=True).first(),
+                        "value": int(x["value"]),
+                    }
+                    for x in attrs["acl"]
+                ],
+            }
+        ):
+            raise ValidationError(
+                "Inadmissible setting." "By this change you will never change this ACL"
+            )
 
         return attrs
 

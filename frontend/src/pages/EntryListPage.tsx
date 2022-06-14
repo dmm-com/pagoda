@@ -11,6 +11,7 @@ import { entitiesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { EntryList } from "components/entry/EntryList";
+import { FailedToGetEntity } from "utils/Exceptions";
 
 interface Props {
   canCreateEntry?: boolean;
@@ -25,6 +26,11 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
   const entity = useAsync(async () => {
     return await aironeApiClientV2.getEntity(entityId);
   });
+  if (!entity.loading && entity.error) {
+    throw new FailedToGetEntity(
+      "Failed to get Entity from AirOne APIv2 endpoint"
+    );
+  }
 
   return (
     <Box>

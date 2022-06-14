@@ -16,31 +16,33 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface EntryRetrieveSchema
+ * @interface EntryRetrieveValueAsObjectSchema
  */
-export interface EntryRetrieveSchema {
+export interface EntryRetrieveValueAsObjectSchema {
   /**
    *
    * @type {number}
-   * @memberof EntryRetrieveSchema
+   * @memberof EntryRetrieveValueAsObjectSchema
    */
   id?: number;
   /**
    *
    * @type {string}
-   * @memberof EntryRetrieveSchema
+   * @memberof EntryRetrieveValueAsObjectSchema
    */
   name?: string;
 }
 
-export function EntryRetrieveSchemaFromJSON(json: any): EntryRetrieveSchema {
-  return EntryRetrieveSchemaFromJSONTyped(json, false);
+export function EntryRetrieveValueAsObjectSchemaFromJSON(
+  json: any
+): EntryRetrieveValueAsObjectSchema {
+  return EntryRetrieveValueAsObjectSchemaFromJSONTyped(json, false);
 }
 
-export function EntryRetrieveSchemaFromJSONTyped(
+export function EntryRetrieveValueAsObjectSchemaFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntryRetrieveSchema {
+): EntryRetrieveValueAsObjectSchema {
   if (json === undefined || json === null) {
     return json;
   }
@@ -50,8 +52,8 @@ export function EntryRetrieveSchemaFromJSONTyped(
   };
 }
 
-export function EntryRetrieveSchemaToJSON(
-  value?: EntryRetrieveSchema | null
+export function EntryRetrieveValueAsObjectSchemaToJSON(
+  value?: EntryRetrieveValueAsObjectSchema | null
 ): any {
   if (value === undefined) {
     return undefined;

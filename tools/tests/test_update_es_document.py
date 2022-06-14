@@ -78,7 +78,7 @@ class UpdateESDocuemntlTest(AironeTestCase):
 
         # delete entry-0
         entry = self.entries[0]
-        Entry.objects.filter(id=entry.id).delete()
+        Entry.objects.get(id=entry.id).delete()
 
         delete_unnecessary_documents(self._es, self._es._index)
         ret = Entry.search_entries(self.user, [self.entity.id])

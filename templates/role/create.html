@@ -6,7 +6,11 @@
   <ul class="breadcrumb airone-breadcrumb">
     <li class="breadcrumb-item"><a href="/">TOP</a></li>
     <li class="breadcrumb-item"><a href="/role">ロール管理</a></li>
-    <li class="breadcrumb-item">ロールの編集</li>
+    {% if is_edit == "true" %}
+      <li class="breadcrumb-item">ロールの編集</li>
+    {% else %}
+      <li class="breadcrumb-item">ロールの作成</li>
+    {% endif %}
   </ul>
 </div>
 {% endblock %}
@@ -45,8 +49,6 @@
 
   {% include "role/select_user_groups.html" with collapse_id="collapseUserGroups" collapse_title="登録ユーザ / グループ" is_open=True %}
 
-  {% include "role/select_user_groups.html" with collapse_id="collapseAdminUserGroups" collapse_title="管理登録ユーザ / グループ" %}
-
 </form>
 </div>
 
@@ -61,9 +63,12 @@
 {% block script %}
 <script>
 
-function convert_dict_to_list(dict_obj) {
-  // attach is_checked attribute if it's not existed
-  Object.keys(dict_obj).forEach(k => dict_obj[k].is_checked = dict_obj[k].is_checked ? true : false);
+function convert_dict_to_list(dict_obj, admin_dict_obj) {
+  // attach is_checked_member attribute if it's not existed
+  Object.keys(dict_obj).forEach(k => dict_obj[k].is_checked_member = dict_obj[k].is_checked ? true : false);
+
+  // attach is_checked_admin attribute if it's not existed
+  Object.keys(admin_dict_obj).forEach(k => dict_obj[k].is_checked_admin = admin_dict_obj[k].is_checked ? true : false);
 
   // convert dict object to list
   return Object.keys(dict_obj).map(((k) => {
@@ -76,10 +81,13 @@ function convert_dict_to_list(dict_obj) {
 }
 
 
-const USERS = convert_dict_to_list({{ user_info|safe }});
-const GROUPS = convert_dict_to_list({{ group_info|safe }});
+const USERS = convert_dict_to_list({{ user_info|safe }}, {{ admin_user_info|safe }});
+const GROUPS = convert_dict_to_list({{ group_info|safe }}, {{ admin_group_info|safe }});
+/*
 const ADMIN_USERS = convert_dict_to_list({{ admin_user_info|safe }});
 const ADMIN_GROUPS = convert_dict_to_list({{ admin_group_info|safe }});
+*/
+const MAXIMUM_LIST_COUNT = 20;
 
 
 // update 'is_selected' fields when current users and groups are specified
@@ -101,10 +109,10 @@ $('#edit-form').submit(function(){
   }
 
   const sending_params = {
-    users: USERS.filter(x => x.is_checked),
-    groups: GROUPS.filter(x => x.is_checked),
-    admin_users: ADMIN_USERS.filter(x => x.is_checked),
-    admin_groups: ADMIN_GROUPS.filter(x => x.is_checked),
+    users: USERS.filter(x => x.is_checked_member),
+    groups: GROUPS.filter(x => x.is_checked_member),
+    admin_users: USERS.filter(x => x.is_checked_admin),
+    admin_groups: GROUPS.filter(x => x.is_checked_admin),
   };
 
   HttpPost($(this), sending_params
@@ -118,9 +126,8 @@ $('#edit-form').submit(function(){
     }
     if (data.responseText == "You can't edit this role. Please set administrative members") {
       // open collapse of setting administrative members
-      $('.collapse_title.collapseAdminUserGroups').addClass('text-danger');
-      $('#collapseUserGroups').collapse('hide');
-      $('#collapseAdminUserGroups').collapse('show');
+      $('.collapse_title.collapseUserGroups').addClass('text-danger');
+      $('#collapseUserGroups').collapse('show');
 
     }
     MessageBox.error(data.responseText);
@@ -148,7 +155,7 @@ function handle_filter_list_values(ev, userList, groupList) {
       if (rowValues.length >= 30) {
         return true;
       }
-      if (obj.name.indexOf(inputValue) != -1) {
+      if (obj.name.toLowerCase().indexOf(inputValue.toLowerCase()) != -1) {
         rowValues.push(obj);
       }
     });
@@ -163,7 +170,7 @@ function handle_filter_list_values(ev, userList, groupList) {
 
   } else {
     const collapseId = $(ev.target).parents('.collapse').attr('id');
-    initialize_user_group_table(collapseId);
+    initialize_user_group_table();
   }
 
   if ((ev.which && ev.which === 13) || (ev.keyCode && ev.keyCode === 13)) {
@@ -174,9 +181,6 @@ function handle_filter_list_values(ev, userList, groupList) {
 $('#collapseUserGroups input.filter').on('keypress', (e) => {
   return handle_filter_list_values(e, USERS, GROUPS);
 });
-$('#collapseAdminUserGroups input.filter').on('keypress', (e) => {
-  return handle_filter_list_values(e, ADMIN_USERS, ADMIN_GROUPS);
-});
 
 function register_checkbox_event_handler() {
 
@@ -185,11 +189,46 @@ function register_checkbox_event_handler() {
       const obj_id = $(e.target).val();
       const obj_type = $(e.target).attr('obj_type');
 
-      const target_list = obj_type == 'user' ? userList : groupList;
+      // toggle registered member check and admin member check
+      function __toggleCheckbox(toggleClassName) {
+        const elem_tr = $(e.target).closest('tr.member');
 
+        // uncheck specified checkbox column
+        elem_tr.find(`input.${ toggleClassName }`).prop('checked', false);
+      }
+
+      if ($(e.target).is(':checked')) {
+        if ($(e.target).hasClass('member')) {
+          __toggleCheckbox("admin");
+        } else {
+          __toggleCheckbox("member");
+        }
+      }
+
+      // Update userList and groupList object value
+      const target_list = obj_type == 'user' ? userList : groupList;
       target_list.some((obj) => {
         if (obj.id == obj_id) {
-          obj.is_checked = $(e.target).is(":checked");
+          if ($(e.target).hasClass('member')) {
+            obj.is_checked_member = $(e.target).is(":checked");
+          } else {
+            obj.is_checked_admin = $(e.target).is(":checked");
+          }
+
+          // toggle opposite (e.g. clear admin checkbox when member is set, vise versa)
+          if ($(e.target).is(':checked')) {
+            console.log('[onix/_do_register_handler(90)]');
+            if ($(e.target).hasClass('member')) {
+              console.log('[onix/_do_register_handler(91)]');
+              obj.is_checked_admin = false;
+            } else {
+              console.log('[onix/_do_register_handler(92)]');
+              obj.is_checked_member = false;
+            }
+          }
+
+          console.log('[onix/_do_register_handler(99)] obj: ', obj);
+
           return true;
         }
       });
@@ -197,48 +236,60 @@ function register_checkbox_event_handler() {
   }
 
   _do_register_handler('collapseUserGroups', USERS, GROUPS);
-  _do_register_handler('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
 }
 
 function generate_user_group_content(obj) {
-  if (obj.is_checked) {
-    return `<tr>` +
-        `<td><input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }" checked/></td>` +
-        `<td> ${ obj.name } </td>` +
-        `<td> ${ obj.type } </td>` +
-      `</tr>`;
-  } else {
-    return `<tr>` +
-        `<td><input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }"/></td>` +
-        `<td> ${ obj.name } </td>` +
-        `<td> ${ obj.type } </td>` +
-      `</tr>`;
+  function _generate_checkbox(is_checked, class_context) {
+    if (is_checked) {
+      return `<input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }" class="${ class_context }" checked/>`;
+    } else {
+      return `<input type="checkbox" value="${ obj.id }" obj_type="${ obj.type }" class="${ class_context }"/>`;
+    }
   }
+
+  return `<tr class="member" obj_type="${ obj.type }" obj_id="${ obj.id }">` +
+      `<td>${ _generate_checkbox(obj.is_checked_member, "member") }</td>` +
+      `<td>${ _generate_checkbox(obj.is_checked_admin, "admin") }</td>` +
+      `<td class="member_name">${ obj.name }</td>` +
+      `<td class="member_type">${ obj.type }</td>` +
+    `</tr>`;
 }
 
-function initialize_user_group_table(initializeCollapseId) {
+function initialize_user_group_table() {
   function _do_initialize_table(collapseId, userList, groupList) {
     // clear table context at first
     $(`#${ collapseId } tbody`).empty();
 
-    userList.slice(0, 10).forEach((user) => {
-      $(`#${ collapseId } tbody`).append(generate_user_group_content(user));
+    let list_count = 0;
+    // show selected members at first
+    userList.filter(x => x.is_checked_member || x.is_checked_admin).forEach((user) => {
+      if (list_count < MAXIMUM_LIST_COUNT) {
+        $(`#${ collapseId } tbody`).append(generate_user_group_content(user));
+      }
+      list_count++;
+    });
+    groupList.filter(x => x.is_checked_member || x.is_checked_admin).forEach((group) => {
+      if (list_count < MAXIMUM_LIST_COUNT) {
+        $(`#${ collapseId } tbody`).append(generate_user_group_content(group));
+      }
+      list_count++;
     });
 
-    groupList.slice(0, 10).forEach((group) => {
-      $(`#${ collapseId } tbody`).append(generate_user_group_content(group));
+    // then, show un-selected members
+    userList.filter(x => ! (x.is_checked_member || x.is_checked_admin)).forEach((user) => {
+      if (list_count < MAXIMUM_LIST_COUNT) {
+        $(`#${ collapseId } tbody`).append(generate_user_group_content(user));
+      }
+      list_count++;
+    });
+    groupList.filter(x => ! (x.is_checked_member || x.is_checked_admin)).forEach((group) => {
+      if (list_count < MAXIMUM_LIST_COUNT) {
+        $(`#${ collapseId } tbody`).append(generate_user_group_content(group));
+      }
+      list_count++;
     });
   }
-  if (initializeCollapseId === 'collapseUserGroups') {
-    _do_initialize_table('collapseUserGroups', USERS, GROUPS);
-
-  } else if (initializeCollapseId === 'collapseAdminUserGroups') {
-    _do_initialize_table('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
-
-  } else {
-    _do_initialize_table('collapseUserGroups', USERS, GROUPS);
-    _do_initialize_table('collapseAdminUserGroups', ADMIN_USERS, ADMIN_GROUPS);
-  }
+  _do_initialize_table('collapseUserGroups', USERS, GROUPS);
 
   register_checkbox_event_handler();
 }

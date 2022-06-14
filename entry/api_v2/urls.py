@@ -14,6 +14,14 @@ urlpatterns = [
         ),
     ),
     path(
+        "<int:pk>/referral/",
+        views.EntryReferralAPI.as_view(
+            {
+                "get": "list",
+            }
+        ),
+    ),
+    path(
         "<int:pk>/restore/",
         views.EntryAPI.as_view(
             {

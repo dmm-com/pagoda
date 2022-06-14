@@ -100,7 +100,7 @@ export function searchEntries(
 export function createEntity(
   name: string,
   note: string,
-  isTopLevel: boolean,
+  isToplevel: boolean,
   attrs: object[]
 ): Promise<Response> {
   return fetch(`/entity/do_create`, {
@@ -111,7 +111,7 @@ export function createEntity(
     body: JSON.stringify({
       name: name,
       note: note,
-      is_toplevel: isTopLevel,
+      is_toplevel: isToplevel,
       attrs: attrs,
     }),
   });
@@ -123,7 +123,7 @@ export function updateEntity(
   entityId: number,
   name: string,
   note: string,
-  isTopLevel: boolean,
+  isToplevel: boolean,
   attrs: object[]
 ): Promise<Response> {
   return fetch(`/entity/do_edit/${entityId}`, {
@@ -134,7 +134,7 @@ export function updateEntity(
     body: JSON.stringify({
       name: name,
       note: note,
-      is_toplevel: isTopLevel,
+      is_toplevel: isToplevel,
       attrs: attrs,
     }),
   });
@@ -183,10 +183,6 @@ export function getEntryHistory({}: number): Promise<object> {
       },
     ]);
   });
-}
-
-export function getReferredEntries(entryId: number): Promise<Response> {
-  return fetch(`/entry/api/v1/get_referrals/${entryId}`);
 }
 
 export function exportEntries(
@@ -413,31 +409,5 @@ export function cancelJob(jobId: number): Promise<Response> {
     body: JSON.stringify({
       job_id: jobId,
     }),
-  });
-}
-
-export function getWebhooks(entityId: number): Promise<Response> {
-  return fetch(`/webhook/api/v2/${entityId}`);
-}
-
-export function setWebhook(
-  entityId: number,
-  request_parameter: object
-): Promise<Response> {
-  return fetch(`/webhook/api/v1/set/${entityId}`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify(request_parameter),
-  });
-}
-
-export function deleteWebhook(webhookId: number): Promise<Response> {
-  return fetch(`/webhook/api/v1/del/${webhookId}`, {
-    method: "DELETE",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
   });
 }

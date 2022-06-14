@@ -1,6 +1,5 @@
 from django.db import models
-from group.models import Group
-from user.models import User
+from datetime import datetime
 from django.contrib.auth.models import Permission
 
 
@@ -10,10 +9,10 @@ class Role(models.Model):
     is_active = models.BooleanField(default=True)
     description = models.TextField()
 
-    users = models.ManyToManyField(User, related_name="role")
-    groups = models.ManyToManyField(Group, related_name="role")
-    admin_users = models.ManyToManyField(User, related_name="admin_role")
-    admin_groups = models.ManyToManyField(Group, related_name="admin_role")
+    users = models.ManyToManyField("user.User", related_name="role")
+    groups = models.ManyToManyField("group.Group", related_name="role")
+    admin_users = models.ManyToManyField("user.User", related_name="admin_role")
+    admin_groups = models.ManyToManyField("group.Group", related_name="admin_role")
 
     @classmethod
     def editable(kls, user, admin_users, admin_groups):
@@ -30,12 +29,29 @@ class Role(models.Model):
 
         return False
 
-    def is_belonged_to(self, user: User):
+    def is_belonged_to(self, user):
         """check wether specified User is belonged to this Role"""
-        if user.id in [u.id for u in self.users.filter(is_active=True)]:
+        if user.id in [
+            u.id
+            for u in set(
+                list(self.users.filter(is_active=True))
+                + list(self.admin_users.filter(is_active=True))
+            )
+        ]:
             return True
 
-        if bool(set([g.id for g in user.groups.all()]) & set([g.id for g in self.groups.all()])):
+        if bool(
+            set([g.id for g in user.groups.all()])
+            & set(
+                [
+                    g.id
+                    for g in set(
+                        list(self.groups.filter(is_active=True))
+                        + list(self.admin_groups.filter(is_active=True))
+                    )
+                ]
+            )
+        ):
             return True
 
         return False
@@ -60,3 +76,14 @@ class Role(models.Model):
                 for x in self.permissions.filter(codename__startswith=(str(target_obj.id) + "."))
             ]
         )
+
+    def delete(self):
+        """
+        Override Model.delete method of Django
+        """
+        self.is_active = False
+        self.name = "%s_deleted_%s" % (
+            self.name,
+            datetime.now().strftime("%Y%m%d_%H%M%S"),
+        )
+        self.save(update_fields=["is_active", "name"])

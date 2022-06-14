@@ -6,22 +6,36 @@ from role.models import Role
 
 
 class ModelTest(RoleTestBase):
-    def test_is_belonged_to_registered_by_user(self):
-        # set userA belongs to groupA as groups member
-        self.users["userA"].groups.add(self.groups["groupA"])
-
+    def test_is_belonged_to_registered_in_users(self):
         # set userA belongs to test Role as users member
         self.role.users.add(self.users["userA"])
 
         self.assertTrue(self.role.is_belonged_to(self.users["userA"]))
         self.assertFalse(self.role.is_belonged_to(self.users["userB"]))
 
-    def test_is_belonged_to_registered_by_group(self):
+    def test_is_belonged_to_registered_in_groups(self):
         # set userA belongs to groupA as groups member
         self.users["userA"].groups.add(self.groups["groupA"])
 
         # set groupA belongs to test Role as groups member
         self.role.groups.add(self.groups["groupA"])
+
+        self.assertTrue(self.role.is_belonged_to(self.users["userA"]))
+        self.assertFalse(self.role.is_belonged_to(self.users["userB"]))
+
+    def test_is_belonged_to_registered_in_admin_users(self):
+        # set userA belongs to test Role as admin user
+        self.role.admin_users.add(self.users["userA"])
+
+        self.assertTrue(self.role.is_belonged_to(self.users["userA"]))
+        self.assertFalse(self.role.is_belonged_to(self.users["userB"]))
+
+    def test_is_belonged_to_registered_in_admin_groups(self):
+        # set userA belongs to groupA as groups member
+        self.users["userA"].groups.add(self.groups["groupA"])
+
+        # set groupA belongs to test Role as admin group
+        self.role.admin_groups.add(self.groups["groupA"])
 
         self.assertTrue(self.role.is_belonged_to(self.users["userA"]))
         self.assertFalse(self.role.is_belonged_to(self.users["userB"]))
@@ -76,3 +90,11 @@ class ModelTest(RoleTestBase):
         self.assertTrue(self.role.is_permitted(entity, ACLType.Readable))
         self.assertTrue(self.role.is_permitted(entity, ACLType.Writable))
         self.assertFalse(self.role.is_permitted(entity, ACLType.Full))
+
+    def test_delete(self):
+        self.role.delete()
+
+        deleted_role = Role.objects.filter(id=self.role.id).first()
+        self.assertEqual(deleted_role, self.role)
+        self.assertFalse(deleted_role.is_active)
+        self.assertIn("test_role", deleted_role.name)

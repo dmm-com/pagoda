@@ -1338,7 +1338,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        attr = EntityAttr.objects.create(name="attr", created_user=user, parent_entity=entity)
+        attr = EntityAttr.objects.create(
+            name="attr", type=AttrTypeValue["object"], created_user=user, parent_entity=entity
+        )
         entity.attrs.add(attr)
 
         # send post request with parameters which contain an invalid EntityAttr-ID

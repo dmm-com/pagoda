@@ -27,24 +27,26 @@ test("should match snapshot", async () => {
     attrs: [],
   };
 
-  const referredEntries = {
-    entries: [
-      {
-        id: 1,
-        name: "aaa",
-        entity: "bbb",
-      },
-    ],
-  };
+  const referredEntries = [
+    {
+      id: 1,
+      name: "aaa",
+      entity: "bbb",
+    },
+  ];
 
   /* eslint-disable */
   jest
-    .spyOn(require("utils/AironeAPIClient"), "getReferredEntries")
-    .mockResolvedValue({
-      json() {
-        return Promise.resolve(referredEntries);
-      },
-    });
+    .spyOn(
+      require("apiclient/AironeApiClientV2").aironeApiClientV2,
+      "getEntryReferral"
+    )
+    .mockResolvedValue(
+      Promise.resolve({
+        results: referredEntries,
+        count: referredEntries.length,
+      })
+    );
 
   jest
     .spyOn(require("apiclient/AironeApiClientV2").aironeApiClientV2, "getEntry")

@@ -13,11 +13,18 @@ import {
 } from "@mui/material";
 import React, { FC } from "react";
 
+import {
+  EditableEntryAttrs,
+  EditableEntryAttrValueGroup,
+  EditableEntryAttrValueNamedObject,
+  EditableEntryAttrValueObject,
+} from "./EditableEntryAttrs";
+
 import { DjangoContext } from "utils/DjangoContext";
 
 interface CommonProps {
   attrName: string;
-  attrType: string;
+  attrType: number;
   index?: number;
   handleChange: (e: any, attrName: string, valueInfo: any) => void;
 }
@@ -87,12 +94,12 @@ const ElemBool: FC<CommonProps & { attrValue: boolean }> = ({
 const ElemObject: FC<
   CommonProps & {
     attrId: number;
-    attrValue: any;
+    attrValue: EditableEntryAttrValueObject;
     handleNarrowDownEntries: (
       e: any,
       attrId: number,
       attrName: string,
-      attrType: string
+      attrType: number
     ) => void;
     handleClickDeleteListItem: (attrName: string, index?: number) => void;
   }
@@ -156,12 +163,12 @@ const ElemObject: FC<
 const ElemNamedObject: FC<
   CommonProps & {
     attrId: number;
-    attrValue: any;
+    attrValue: EditableEntryAttrValueNamedObject;
     handleNarrowDownEntries: (
       e: any,
       attrId: number,
       attrName: string,
-      attrType: string
+      attrType: number
     ) => void;
     handleClickDeleteListItem: (attrName: string, index?: number) => void;
   }
@@ -205,11 +212,11 @@ const ElemNamedObject: FC<
 
 const ElemGroup: FC<
   CommonProps & {
-    attrValue: any;
+    attrValue: EditableEntryAttrValueGroup;
     handleNarrowDownGroups: (
       e: any,
       attrName: string,
-      attrType: string
+      attrType: number
     ) => void;
     handleClickDeleteListItem?: (attrName: string, index?: number) => void;
   }
@@ -271,15 +278,15 @@ const ElemGroup: FC<
 
 interface Props {
   attrName: string;
-  attrInfo: any;
+  attrInfo: EditableEntryAttrs;
   handleChangeAttribute: (e: any, attrName: string, valueInfo: any) => void;
   handleNarrowDownEntries: (
     e: any,
     attrId: number,
     attrName: string,
-    attrType: string
+    attrType: number
   ) => void;
-  handleNarrowDownGroups: (e: any, attrName: string, attrType: string) => void;
+  handleNarrowDownGroups: (e: any, attrName: string, attrType: number) => void;
   handleClickDeleteListItem: (attrName: string, index?: number) => void;
 }
 
@@ -294,9 +301,23 @@ export const EditAttributeValue: FC<Props> = ({
   const djangoContext = DjangoContext.getInstance();
 
   const handleClickAddListItem = (e, value) => {
+    const index = (() => {
+      switch (attrInfo.type) {
+        case djangoContext.attrTypeValue.array_string:
+          return attrInfo.value.asArrayString.length;
+        case djangoContext.attrTypeValue.array_object:
+          return attrInfo.value.asArrayObject.length;
+        case djangoContext.attrTypeValue.array_named_object:
+          return attrInfo.value.asArrayNamedObject.length;
+        case djangoContext.attrTypeValue.array_group:
+          return attrInfo.value.asArrayGroup.length;
+        default:
+          throw new Error(`${attrInfo.type} is not array-like type`);
+      }
+    })();
     handleChangeAttribute(e, attrName, {
       type: attrInfo.type,
-      index: attrInfo.value.length,
+      index: index,
       value: value,
     });
   };
@@ -307,7 +328,7 @@ export const EditAttributeValue: FC<Props> = ({
         <ElemObject
           attrId={attrInfo.id}
           attrName={attrName}
-          attrValue={attrInfo.value}
+          attrValue={attrInfo.value.asObject}
           attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
           handleNarrowDownEntries={handleNarrowDownEntries}
@@ -319,7 +340,7 @@ export const EditAttributeValue: FC<Props> = ({
       return (
         <ElemBool
           attrName={attrName}
-          attrValue={attrInfo.value}
+          attrValue={attrInfo.value.asBoolean}
           attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
         />
@@ -331,7 +352,7 @@ export const EditAttributeValue: FC<Props> = ({
       return (
         <ElemString
           attrName={attrName}
-          attrValue={attrInfo.value}
+          attrValue={attrInfo.value.asString}
           attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
           handleClickDeleteListItem={handleClickDeleteListItem}
@@ -343,7 +364,7 @@ export const EditAttributeValue: FC<Props> = ({
         <ElemNamedObject
           attrId={attrInfo.id}
           attrName={attrName}
-          attrValue={attrInfo.value}
+          attrValue={attrInfo.value.asNamedObject}
           attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
           handleNarrowDownEntries={handleNarrowDownEntries}
@@ -362,7 +383,7 @@ export const EditAttributeValue: FC<Props> = ({
             add
           </Button>
           <List>
-            {attrInfo.value.map((info, n) => (
+            {attrInfo.value.asArrayObject.map((info, n) => (
               <ListItem key={n}>
                 <ElemObject
                   attrId={attrInfo.id}
@@ -391,7 +412,7 @@ export const EditAttributeValue: FC<Props> = ({
             add
           </Button>
           <List>
-            {attrInfo.value.map((info, n) => (
+            {attrInfo.value.asArrayString.map((info, n) => (
               <ListItem key={n}>
                 <ElemString
                   attrName={attrName}
@@ -418,7 +439,7 @@ export const EditAttributeValue: FC<Props> = ({
             add
           </Button>
           <List>
-            {attrInfo.value.map((info, n) => (
+            {attrInfo.value.asArrayNamedObject.map((info, n) => (
               <ListItem key={n}>
                 <ElemNamedObject
                   attrId={attrInfo.id}
@@ -447,7 +468,7 @@ export const EditAttributeValue: FC<Props> = ({
             add
           </Button>
           <List>
-            {attrInfo.value.map((info, n) => (
+            {attrInfo.value.asArrayGroup.map((info, n) => (
               <ListItem key={n}>
                 <ElemGroup
                   attrName={attrName}
@@ -468,7 +489,7 @@ export const EditAttributeValue: FC<Props> = ({
       return (
         <ElemGroup
           attrName={attrName}
-          attrValue={attrInfo.value}
+          attrValue={attrInfo.value.asGroup}
           attrType={attrInfo.type}
           handleChange={handleChangeAttribute}
           handleNarrowDownGroups={handleNarrowDownGroups}

@@ -45,8 +45,8 @@ class AttributeValue(models.Model):
     )
     data_array = models.ManyToManyField("AttributeValue")
     created_time = models.DateTimeField(auto_now_add=True)
-    created_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    parent_attr = models.ForeignKey("Attribute", on_delete=models.SET_NULL, null=True)
+    created_user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    parent_attr = models.ForeignKey("Attribute", on_delete=models.DO_NOTHING)
     status = models.IntegerField(default=0)
     boolean = models.BooleanField(default=False)
     date = models.DateField(null=True)
@@ -354,8 +354,8 @@ class Attribute(ACLBase):
     values = models.ManyToManyField(AttributeValue)
 
     # This parameter is needed to make a relationship with corresponding EntityAttr
-    schema = models.ForeignKey(EntityAttr, on_delete=models.SET_NULL, null=True)
-    parent_entry = models.ForeignKey("Entry", on_delete=models.SET_NULL, null=True)
+    schema = models.ForeignKey(EntityAttr, on_delete=models.DO_NOTHING)
+    parent_entry = models.ForeignKey("Entry", on_delete=models.DO_NOTHING)
 
     def __init__(self, *args, **kwargs):
         super(Attribute, self).__init__(*args, **kwargs)
@@ -1096,7 +1096,7 @@ class Entry(ACLBase):
     STATUS_COMPLEMENTING_ATTRS = 1 << 2
 
     attrs = models.ManyToManyField(Attribute)
-    schema = models.ForeignKey(Entity, on_delete=models.SET_NULL, null=True)
+    schema = models.ForeignKey(Entity, on_delete=models.DO_NOTHING)
 
     def __init__(self, *args, **kwargs):
         super(Entry, self).__init__(*args, **kwargs)
