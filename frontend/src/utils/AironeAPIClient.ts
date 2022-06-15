@@ -95,63 +95,6 @@ export function searchEntries(
   });
 }
 
-// NOTE it calls non-API endpoint
-// FIXME implement internal API then call it
-export function createEntity(
-  name: string,
-  note: string,
-  isToplevel: boolean,
-  attrs: object[]
-): Promise<Response> {
-  return fetch(`/entity/do_create`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({
-      name: name,
-      note: note,
-      is_toplevel: isToplevel,
-      attrs: attrs,
-    }),
-  });
-}
-
-// NOTE it calls non-API endpoint
-// FIXME implement internal API then call it
-export function updateEntity(
-  entityId: number,
-  name: string,
-  note: string,
-  isToplevel: boolean,
-  attrs: object[]
-): Promise<Response> {
-  return fetch(`/entity/do_edit/${entityId}`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({
-      name: name,
-      note: note,
-      is_toplevel: isToplevel,
-      attrs: attrs,
-    }),
-  });
-}
-
-// NOTE it calls non-API endpoint
-// FIXME implement internal API then call it
-export function deleteEntity(entityId: number): Promise<Response> {
-  return fetch(`/entity/do_delete/${entityId}`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({}),
-  });
-}
-
 export function copyEntry(entryId: number, entries: string): Promise<Response> {
   return fetch(`/entry/do_copy/${entryId}`, {
     method: "POST",

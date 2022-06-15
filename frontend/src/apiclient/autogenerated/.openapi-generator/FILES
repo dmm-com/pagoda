@@ -1,4 +1,3 @@
-.openapi-generator-ignore
 apis/AclApi.ts
 apis/EntityApi.ts
 apis/EntryApi.ts
@@ -27,6 +26,7 @@ models/GetEntrySimple.ts
 models/Group.ts
 models/PaginatedEntityListList.ts
 models/PaginatedEntryBaseList.ts
+models/PaginatedGetEntrySimpleList.ts
 models/UserList.ts
 models/UserRetrieve.ts
 models/UserRetrieveToken.ts
