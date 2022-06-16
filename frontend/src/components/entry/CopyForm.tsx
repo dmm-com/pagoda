@@ -58,7 +58,7 @@ export const CopyForm: FC<Props> = ({ entityId, entryId }) => {
       <TextareaAutosize
         minRows={2}
         placeholder="コピーするエントリ名"
-        style={{ width: "100%", marginTop: 60 }}
+        style={{ width: "100%", marginTop: "111px" }}
         value={entries}
         onChange={(e) => setEntries(e.target.value)}
       />

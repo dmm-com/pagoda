@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -151,9 +151,25 @@ export const EditEntityPage: FC = () => {
 
       {/* TODO z-index, position: fixed, margin-top, background-color */}
       <PageHeader
-        isSubmittable={submittable}
-        handleSubmit={handleSubmit}
-        handleCancel={handleCancel}
+        componentSubmits={
+          <Box display="flex" justifyContent="center" my="32px">
+            <Box mx="4px">
+              <Button
+                variant="contained"
+                color="secondary"
+                disabled={!submittable}
+                onClick={handleSubmit}
+              >
+                保存
+              </Button>
+            </Box>
+            <Box mx="4px">
+              <Button variant="outlined" color="primary" onClick={handleCancel}>
+                キャンセル
+              </Button>
+            </Box>
+          </Box>
+        }
       >
         {entity?.value != null
           ? entity.value.name + "の編集"

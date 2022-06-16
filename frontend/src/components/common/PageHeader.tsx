@@ -1,16 +1,14 @@
-import { Box, Button, Divider, Grid, Typography } from "@mui/material";
-import React, { FC } from "react";
+import { Box, Divider, Grid, Typography } from "@mui/material";
+import React, { FC, ReactElement } from "react";
 
 interface Props {
-  isSubmittable: boolean;
-  handleSubmit: (args?: object) => void;
-  handleCancel: (args?: object) => void;
+  componentSubmits: ReactElement<any>;
+  componentControl?: ReactElement<any>;
 }
 
 export const PageHeader: FC<Props> = ({
-  isSubmittable,
-  handleSubmit,
-  handleCancel,
+  componentControl,
+  componentSubmits,
   children,
 }) => {
   return (
@@ -30,26 +28,10 @@ export const PageHeader: FC<Props> = ({
             </Grid>
 
             <Grid item xs={2}>
-              <Box display="flex" justifyContent="center" my="32px">
-                <Box mx="4px">
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    disabled={!isSubmittable}
-                    onClick={handleSubmit}
-                  >
-                    保存
-                  </Button>
-                </Box>
-                <Box mx="4px">
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={handleCancel}
-                  >
-                    キャンセル
-                  </Button>
-                </Box>
+              <Box display="flex" alignItems="flex-end" flexDirection="column">
+                {componentControl && componentControl}
+
+                {componentSubmits}
               </Box>
             </Grid>
           </Grid>

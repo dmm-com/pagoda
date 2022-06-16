@@ -1,5 +1,5 @@
 import AppsIcon from "@mui/icons-material/Apps";
-import { Box, Container, IconButton, Typography } from "@mui/material";
+import { Box, IconButton, Typography, Button } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -16,6 +16,7 @@ import {
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
+import { PageHeader } from "components/common/PageHeader";
 import { CopyForm } from "components/entry/CopyForm";
 import { FailedToGetEntry } from "utils/Exceptions";
 
@@ -64,6 +65,43 @@ export const CopyEntryPage: FC = () => {
         <Typography>コピー</Typography>
       </AironeBreadcrumbs>
 
+      <PageHeader
+        componentSubmits={
+          <Box display="flex" justifyContent="center" my="32px">
+            <Box mx="4px">
+              <Button variant="contained" color="secondary">
+                コピー
+              </Button>
+            </Box>
+            <Box mx="4px">
+              <Button variant="outlined" color="primary">
+                キャンセル
+              </Button>
+            </Box>
+          </Box>
+        }
+        componentControl={
+          <Box>
+            <IconButton
+              onClick={(e) => {
+                setEntryAnchorEl(e.currentTarget);
+              }}
+            >
+              <AppsIcon />
+            </IconButton>
+            <EntryControlMenu
+              entityId={entityId}
+              entryId={entryId}
+              anchorElem={entryAnchorEl}
+              handleClose={() => setEntryAnchorEl(null)}
+            />
+          </Box>
+        }
+      >
+        (TBD)
+      </PageHeader>
+
+      {/*
       <Container maxWidth="lg" sx={{ pt: "112px" }}>
         <Box display="flex">
           <Box width="50px" />
@@ -96,6 +134,7 @@ export const CopyEntryPage: FC = () => {
           </Box>
         </Box>
       </Container>
+      */}
 
       <Box sx={{ borderTop: 1, borderColor: "#0000008A" }}>
         <CopyForm entityId={entry.value.schema.id} entryId={entry.value.id} />
