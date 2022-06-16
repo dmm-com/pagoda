@@ -16,7 +16,6 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import { makeStyles } from "@mui/styles";
 import React, { FC, useMemo } from "react";
 import { Link } from "react-router-dom";
@@ -30,14 +29,31 @@ const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
-}));
-
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  "&:nth-of-type(odd)": {
-    backgroundColor: "white",
+  tableRow: {
+    "&:nth-of-type(odd)": {
+      backgroundColor: "white",
+    },
+    "&:nth-of-type(even)": {
+      backgroundColor: "#607D8B0A",
+    },
   },
-  "&:nth-of-type(even)": {
-    backgroundColor: "#607D8B0A",
+  highlightedTableRow: {
+    backgroundColor: "yellow",
+
+    // TODO reset the animation with considering rerendering
+    // animation: `$highlighted ease 1s 1`,
+    // "&:nth-of-type(odd)": {
+    //   backgroundColor: "white",
+    // },
+    // "&:nth-of-type(even)": {
+    //   backgroundColor: "#607D8B0A",
+    // },
+  },
+
+  "@keyframes highlighted": {
+    "0%": {
+      backgroundColor: "yellow",
+    },
   },
 }));
 
@@ -48,6 +64,8 @@ interface Props {
   referralEntities: Entity[];
   entityInfo: EntityUpdate;
   setEntityInfo: (entityInfo: EntityUpdate) => void;
+  latestChangedIndex?: number;
+  setLatestChangedIndex: (latestChangedIndex: number) => void;
 }
 
 export const AttributeRow: FC<Props> = ({
@@ -57,6 +75,8 @@ export const AttributeRow: FC<Props> = ({
   referralEntities,
   entityInfo,
   setEntityInfo,
+  latestChangedIndex,
+  setLatestChangedIndex,
 }) => {
   const classes = useStyles();
 
@@ -79,6 +99,7 @@ export const AttributeRow: FC<Props> = ({
     allAttrs[oldIndex] = x;
     allAttrs[newIndex].index = index + 1 - order;
     allAttrs[oldIndex].index = index + 1;
+    setLatestChangedIndex(newIndex);
     setEntityInfo({ ...entityInfo, attrs: [...allAttrs] });
   };
 
@@ -108,7 +129,13 @@ export const AttributeRow: FC<Props> = ({
   };
 
   return (
-    <StyledTableRow>
+    <TableRow
+      className={
+        index === latestChangedIndex
+          ? classes.highlightedTableRow
+          : classes.tableRow
+      }
+    >
       <TableCell>
         {index !== undefined && (
           <Input
@@ -251,6 +278,6 @@ export const AttributeRow: FC<Props> = ({
           </Button>
         )}
       </TableCell>
-    </StyledTableRow>
+    </TableRow>
   );
 };

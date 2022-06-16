@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { Fragment, FC } from "react";
+import React, { Fragment, FC, useState } from "react";
 
 import { AttributeRow } from "./AttributeRow";
 
@@ -32,7 +32,7 @@ export const AttributesFields: FC<Props> = ({
   setEntityInfo,
   referralEntities,
 }) => {
-  const classes = useStyles();
+  const [latestChangedIndex, setLatestChangedIndex] = useState<number>();
 
   return (
     <Box>
@@ -67,6 +67,8 @@ export const AttributesFields: FC<Props> = ({
                     referralEntities={referralEntities}
                     entityInfo={entityInfo}
                     setEntityInfo={setEntityInfo}
+                    latestChangedIndex={latestChangedIndex}
+                    setLatestChangedIndex={setLatestChangedIndex}
                   />
                 )}
               </Fragment>
@@ -78,6 +80,8 @@ export const AttributesFields: FC<Props> = ({
                 referralEntities={referralEntities}
                 entityInfo={entityInfo}
                 setEntityInfo={setEntityInfo}
+                latestChangedIndex={latestChangedIndex}
+                setLatestChangedIndex={setLatestChangedIndex}
               />
             )}
           </>
