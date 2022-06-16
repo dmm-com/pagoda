@@ -49,6 +49,7 @@ export const AttributesFields: FC<Props> = ({
             <TableCell sx={{ color: "#FFFFFF" }}>型</TableCell>
             <TableCell sx={{ color: "#FFFFFF" }}>必須</TableCell>
             <TableCell sx={{ color: "#FFFFFF" }}>関連削除</TableCell>
+            <TableCell sx={{ color: "#FFFFFF" }}>並び替え</TableCell>
             <TableCell sx={{ color: "#FFFFFF" }}>削除</TableCell>
             <TableCell sx={{ color: "#FFFFFF" }}>追加</TableCell>
             <TableCell sx={{ color: "#FFFFFF" }}>ACL設定</TableCell>

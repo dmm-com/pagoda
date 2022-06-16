@@ -1,4 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import GroupIcon from "@mui/icons-material/Group";
 import {
@@ -177,6 +179,20 @@ export const AttributeRow: FC<Props> = ({
               )
             }
           />
+        )}
+      </TableCell>
+
+      <TableCell>
+        {index !== undefined && (
+          <>
+            <IconButton className={classes.button}>
+              <ArrowUpwardIcon />
+            </IconButton>
+
+            <IconButton className={classes.button}>
+              <ArrowDownwardIcon />
+            </IconButton>
+          </>
         )}
       </TableCell>
 
