@@ -71,6 +71,20 @@ export const AttributeRow: FC<Props> = ({
     setEntityInfo({ ...entityInfo, attrs: [...allAttrs] });
   };
 
+  const handleChangeOrderAttribute = (index: number, order: number) => {
+    const newIndex = index - order;
+    const oldIndex = index;
+    if (index - order < 0 || index - order >= allAttrs.length) {
+      return false;
+    }
+    const x = allAttrs[newIndex];
+    allAttrs[newIndex] = allAttrs[oldIndex];
+    allAttrs[oldIndex] = x;
+    allAttrs[newIndex].index = index + 1 - order;
+    allAttrs[oldIndex].index = index + 1;
+    setEntityInfo({ ...entityInfo, attrs: [...allAttrs] });
+  };
+
   const handleDeleteAttribute = (index: number) => {
     allAttrs[index] = {
       ...allAttrs[index],
@@ -185,11 +199,17 @@ export const AttributeRow: FC<Props> = ({
       <TableCell>
         {index !== undefined && (
           <>
-            <IconButton className={classes.button}>
+            <IconButton
+              className={classes.button}
+              onClick={(e) => handleChangeOrderAttribute(index, 1)}
+            >
               <ArrowUpwardIcon />
             </IconButton>
 
-            <IconButton className={classes.button}>
+            <IconButton
+              className={classes.button}
+              onClick={(e) => handleChangeOrderAttribute(index, -1)}
+            >
               <ArrowDownwardIcon />
             </IconButton>
           </>
