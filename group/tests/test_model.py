@@ -1,35 +1,52 @@
+from airone.exceptions.group import GroupOperationException
 from django.test import TestCase
 from group.models import Group
 from user.models import User
 
 
 class ModelTest(TestCase):
-    def test_create_group(self):
-        name = "ほげgroup"
-        user1 = self._create_user("user1")
-        user2 = self._create_user("user2")
-
-        group = Group(name=name)
-        group.save()
-
-        user1.groups.add(group)
-        user2.groups.add(group)
-
-        group = Group.objects.get(name=name)
-        self.assertTrue(isinstance(group, Group))
-        self.assertEqual(group.name, name)
-
-        self.assertEqual(user1.groups.count(), 1)
-        self.assertEqual(user2.groups.count(), 1)
-
-    def test_delete(self):
-        group = Group.objects.create(name="group")
-        group.delete()
-
-        self.assertFalse(group.is_active)
-        self.assertEqual(group.name.find("group_deleted_"), 0)
-
+    # helper methods to craete User and Group
     def _create_user(self, name):
-        user = User(username=name)
-        user.save()
-        return user
+        return User.objects.create(username=name)
+
+    def _create_group(self, name, parent=None):
+        return Group.objects.create(name=name, parent_group=parent)
+
+    def setUp(self):
+        """This test create User (user1) who belongs following hierarchical groups
+        * group0
+            ├──group1
+            └──group2
+                 └──group3(member: user1)
+        """
+        super(ModelTest, self).setUp()
+
+        self.group0 = self._create_group("group0")
+        self.group1 = self._create_group("group1", self.group0)
+        self.group2 = self._create_group("group2", self.group0)
+        self.group3 = self._create_group("group3", self.group2)
+        self.user1 = self._create_user("user1")
+        self.user1.groups.add(self.group3)
+
+    def test_delete_edge_group(self):
+        self.group1.delete()
+
+        self.assertFalse(self.group1.is_active)
+        self.assertEqual(self.group1.name.find("group1_deleted_"), 0)
+
+    def test_delete_parent_group(self):
+        """This try to delete Group that has subordinates. This expects to fail to delete parent one."""
+        for group in [self.group0, self.group2]:
+            with self.assertRaises(GroupOperationException) as cm:
+                group.delete()
+
+            self.assertEqual(cm.exception.args[0], "You can't delete group that has subordinates")
+
+    def test_delete_parent_lonely_group(self):
+        """This try to delete Group that all subordinates have already been deleted. This expects to success to delete parent one."""
+        deleting_groups = [self.group3, self.group2, self.group0]
+        for group in deleting_groups:
+            group.delete()
+
+            self.assertFalse(self.group1.is_active)
+            self.assertEqual(self.group1.name.find("%s_deleted_" % (group.name)), 0)
