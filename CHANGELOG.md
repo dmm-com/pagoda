@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* (New-UI) Added movable Atttribute button at editing Entity page
+  Contributed by @hinashi, @syucream, @userlocalhost
 
 ### Fixed
 
