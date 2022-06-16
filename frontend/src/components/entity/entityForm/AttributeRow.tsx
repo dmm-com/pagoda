@@ -74,9 +74,6 @@ export const AttributeRow: FC<Props> = ({
   const handleChangeOrderAttribute = (index: number, order: number) => {
     const newIndex = index - order;
     const oldIndex = index;
-    if (index - order < 0 || index - order >= allAttrs.length) {
-      return false;
-    }
     const x = allAttrs[newIndex];
     allAttrs[newIndex] = allAttrs[oldIndex];
     allAttrs[oldIndex] = x;
@@ -198,8 +195,9 @@ export const AttributeRow: FC<Props> = ({
 
       <TableCell>
         {index !== undefined && (
-          <>
+          <Box display="flex" flexDirection="column">
             <IconButton
+              disabled={index === 0}
               className={classes.button}
               onClick={(e) => handleChangeOrderAttribute(index, 1)}
             >
@@ -207,12 +205,13 @@ export const AttributeRow: FC<Props> = ({
             </IconButton>
 
             <IconButton
+              disabled={index === allAttrs.length - 1}
               className={classes.button}
               onClick={(e) => handleChangeOrderAttribute(index, -1)}
             >
               <ArrowDownwardIcon />
             </IconButton>
-          </>
+          </Box>
         )}
       </TableCell>
 
