@@ -2289,7 +2289,9 @@ class ViewTest(AironeViewTest):
             self.assertEqual(user, self.user)
 
             if handler_name == "before_create_entry":
-                self.assertEqual(args[0], {**params, "schema": self.entity})
+                self.assertEqual(
+                    args[0], {**params, "schema": self.entity, "created_user": self.user}
+                )
 
             if handler_name == "after_create_entry":
                 entry = Entry.objects.get(name="hoge", is_active=True)
