@@ -9,13 +9,13 @@ Object {
         class="MuiBox-root css-0"
       >
         <div
-          class="MuiBox-root css-1l11j2j"
+          class="makeStyles-frame-3 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-wrapper-3 MuiBox-root css-0"
+            class="makeStyles-fixed-4 MuiBox-root css-0"
           >
             <div
-              class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
+              class="makeStyles-breadcrumb-5 MuiBox-root css-0"
             >
               <nav
                 aria-label="breadcrumb"
@@ -102,9 +102,6 @@ Object {
             </div>
           </div>
         </div>
-        <div
-          class="MuiBox-root css-ca23fy"
-        />
         <div
           class="MuiContainer-root MuiContainer-maxWidthLg css-m0xtue-MuiContainer-root"
         >
@@ -242,7 +239,7 @@ Object {
                     class="MuiBox-root css-11jzykg"
                   >
                     <pre
-                      class="makeStyles-sampleBox-4"
+                      class="makeStyles-sampleBox-6"
                     >
                       vm0001
 vm0002
@@ -265,13 +262,13 @@ vm0006
       class="MuiBox-root css-0"
     >
       <div
-        class="MuiBox-root css-1l11j2j"
+        class="makeStyles-frame-3 MuiBox-root css-0"
       >
         <div
-          class="makeStyles-wrapper-3 MuiBox-root css-0"
+          class="makeStyles-fixed-4 MuiBox-root css-0"
         >
           <div
-            class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
+            class="makeStyles-breadcrumb-5 MuiBox-root css-0"
           >
             <nav
               aria-label="breadcrumb"
@@ -358,9 +355,6 @@ vm0006
           </div>
         </div>
       </div>
-      <div
-        class="MuiBox-root css-ca23fy"
-      />
       <div
         class="MuiContainer-root MuiContainer-maxWidthLg css-m0xtue-MuiContainer-root"
       >
@@ -498,7 +492,7 @@ vm0006
                   class="MuiBox-root css-11jzykg"
                 >
                   <pre
-                    class="makeStyles-sampleBox-4"
+                    class="makeStyles-sampleBox-6"
                   >
                     vm0001
 vm0002
