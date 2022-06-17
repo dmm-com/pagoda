@@ -425,6 +425,12 @@ Object {
                           class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
                           scope="col"
                         >
+                          並び替え
+                        </th>
+                        <th
+                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                          scope="col"
+                        >
                           削除
                         </th>
                         <th
@@ -445,8 +451,11 @@ Object {
                       class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
                     >
                       <tr
-                        class="MuiTableRow-root css-1lwfqbm-MuiTableRow-root"
+                        class="MuiTableRow-root makeStyles-highlightedTableRow-12 css-1q1u3t4-MuiTableRow-root"
                       >
+                        <td
+                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                        />
                         <td
                           class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                         />
@@ -466,7 +475,7 @@ Object {
                           class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                         >
                           <button
-                            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-11 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-10 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                             tabindex="0"
                             type="button"
                           >
@@ -921,6 +930,12 @@ Object {
                         class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
                         scope="col"
                       >
+                        並び替え
+                      </th>
+                      <th
+                        class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                        scope="col"
+                      >
                         削除
                       </th>
                       <th
@@ -941,8 +956,11 @@ Object {
                     class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
                   >
                     <tr
-                      class="MuiTableRow-root css-1lwfqbm-MuiTableRow-root"
+                      class="MuiTableRow-root makeStyles-highlightedTableRow-12 css-1q1u3t4-MuiTableRow-root"
                     >
+                      <td
+                        class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                      />
                       <td
                         class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                       />
@@ -962,7 +980,7 @@ Object {
                         class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                       >
                         <button
-                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-11 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-10 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                           tabindex="0"
                           type="button"
                         >

@@ -7,11 +7,12 @@ import {
   Typography,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
+import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { entryDetailsPath } from "Routes";
-import { copyEntry } from "utils/AironeAPIClient";
+import { entityEntriesPath } from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 
 interface Props {
   entityId: number;
@@ -27,14 +28,25 @@ const useStyles = makeStyles<Theme>((theme) => ({
 export const CopyForm: FC<Props> = ({ entityId, entryId }) => {
   const classes = useStyles();
   const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
 
   // newline delimited string value, not string[]
   const [entries, setEntries] = useState<string>("");
-  const [copyBoardInfo, setCopyBoardInfo] = useState(false);
 
   const handleCopy = async () => {
-    await copyEntry(entryId, entries);
-    history.replace(entryDetailsPath(entityId, entryId));
+    await aironeApiClientV2
+      .copyEntry(entryId, entries.split("\n"))
+      .then((resp) => {
+        enqueueSnackbar("エントリコピーのジョブ登録が成功しました", {
+          variant: "success",
+        });
+        history.replace(entityEntriesPath(entityId));
+      })
+      .catch((error) => {
+        enqueueSnackbar("エントリコピーのジョブ登録が失敗しました", {
+          variant: "error",
+        });
+      });
   };
 
   const handleCancel = () => {
@@ -108,3 +120,6 @@ vm0006`}
     </Container>
   );
 };
+function enqueueSnackbar(arg0: string, arg1: { variant: string }) {
+  throw new Error("Function not implemented.");
+}
