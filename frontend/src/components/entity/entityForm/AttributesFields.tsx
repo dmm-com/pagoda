@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { Fragment, FC } from "react";
+import React, { Fragment, FC, useState } from "react";
 
 import { AttributeRow } from "./AttributeRow";
 
@@ -32,7 +32,7 @@ export const AttributesFields: FC<Props> = ({
   setEntityInfo,
   referralEntities,
 }) => {
-  const classes = useStyles();
+  const [latestChangedIndex, setLatestChangedIndex] = useState<number>();
 
   return (
     <Box>
@@ -49,6 +49,7 @@ export const AttributesFields: FC<Props> = ({
             <TableCell sx={{ color: "#FFFFFF" }}>型</TableCell>
             <TableCell sx={{ color: "#FFFFFF" }}>必須</TableCell>
             <TableCell sx={{ color: "#FFFFFF" }}>関連削除</TableCell>
+            <TableCell sx={{ color: "#FFFFFF" }}>並び替え</TableCell>
             <TableCell sx={{ color: "#FFFFFF" }}>削除</TableCell>
             <TableCell sx={{ color: "#FFFFFF" }}>追加</TableCell>
             <TableCell sx={{ color: "#FFFFFF" }}>ACL設定</TableCell>
@@ -66,6 +67,8 @@ export const AttributesFields: FC<Props> = ({
                     referralEntities={referralEntities}
                     entityInfo={entityInfo}
                     setEntityInfo={setEntityInfo}
+                    latestChangedIndex={latestChangedIndex}
+                    setLatestChangedIndex={setLatestChangedIndex}
                   />
                 )}
               </Fragment>
@@ -77,6 +80,8 @@ export const AttributesFields: FC<Props> = ({
                 referralEntities={referralEntities}
                 entityInfo={entityInfo}
                 setEntityInfo={setEntityInfo}
+                latestChangedIndex={latestChangedIndex}
+                setLatestChangedIndex={setLatestChangedIndex}
               />
             )}
           </>

@@ -10,6 +10,7 @@ export * from "./EntityDetail";
 export * from "./EntityList";
 export * from "./EntityUpdate";
 export * from "./EntryBase";
+export * from "./EntryCopy";
 export * from "./EntryCreate";
 export * from "./EntryRetrieve";
 export * from "./EntryRetrieveAttrs";

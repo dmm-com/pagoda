@@ -15,6 +15,7 @@ from entry.api_v2.serializers import GetEntrySimpleSerializer
 from entry.api_v2.serializers import EntryBaseSerializer
 from entry.api_v2.serializers import EntryRetrieveSerializer
 from entry.api_v2.serializers import EntryUpdateSerializer
+from entry.api_v2.serializers import EntryCopySerializer
 from entry.models import AttributeValue, Entry
 from job.models import Job
 from user.models import User
@@ -28,6 +29,7 @@ class EntryPermission(BasePermission):
             "update": ACLType.Writable,
             "destroy": ACLType.Full,
             "restore": ACLType.Full,
+            "copy": ACLType.Full,
         }
 
         if not user.has_permission(obj, permisson.get(view.action)):
@@ -44,6 +46,7 @@ class EntryAPI(viewsets.ModelViewSet):
         serializer = {
             "retrieve": EntryRetrieveSerializer,
             "update": EntryUpdateSerializer,
+            "copy": EntryCopySerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -105,6 +108,28 @@ class EntryAPI(viewsets.ModelViewSet):
         job_notify_event.run()
 
         return Response(status=status.HTTP_201_CREATED)
+
+    def copy(self, request, pk):
+        src_entry: Entry = self.get_object()
+
+        if not src_entry.is_active:
+            raise ValidationError("specified entry is not active")
+
+        # validate post parameter
+        serializer = self.get_serializer(src_entry, data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # TODO Conversion to support the old UI
+        params = {
+            "new_name_list": request.data["copy_entry_names"],
+            "post_data": request.data,
+        }
+
+        # run copy job
+        job = Job.new_copy(request.user, src_entry, text="Preparing to copy entry", params=params)
+        job.run()
+
+        return Response({}, status=status.HTTP_200_OK)
 
 
 class searchAPI(viewsets.ReadOnlyModelViewSet):
