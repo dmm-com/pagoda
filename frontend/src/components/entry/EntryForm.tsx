@@ -79,6 +79,9 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         break;
 
       case djangoContext.attrTypeValue.array_string:
+        if (entryInfo.attrs[name].value?.asArrayString == null) {
+          entryInfo.attrs[name].value.asArrayString = [];
+        }
         entryInfo.attrs[name].value.asArrayString[valueInfo.index] =
           valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
@@ -95,6 +98,9 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         break;
 
       case djangoContext.attrTypeValue.array_named_object:
+        if (entryInfo.attrs[name].value?.asArrayNamedObject == null) {
+          entryInfo.attrs[name].value.asArrayNamedObject = [{ "": {} }];
+        }
         const arrayNamedObjectKey = valueInfo.key
           ? valueInfo.key
           : Object.keys(

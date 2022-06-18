@@ -112,6 +112,7 @@ const ElemObject: FC<
 }) => {
   // FIXME Implement and use API V2
   // TODO call it reactively to avoid loading API???
+  // FIXME it doesn't work if the attribute is new
   const referrals = useAsync(async () => {
     const resp = await getAttrReferrals(attrId);
     const data = await resp.json();
@@ -119,6 +120,10 @@ const ElemObject: FC<
   });
 
   const defaultValue = useMemo(() => {
+    if (attrValue == null) {
+      return undefined;
+    }
+
     const matched = referrals.value?.filter((e) =>
       multiple
         ? (attrValue as Array<EntryRetrieveValueAsObject>)
@@ -175,7 +180,7 @@ const ElemObject: FC<
 const ElemNamedObject: FC<
   CommonProps & {
     attrId: number;
-    attrValue: { [key: string]: EntryRetrieveValueAsObject };
+    attrValue?: { [key: string]: EntryRetrieveValueAsObject };
     handleClickDeleteListItem: (attrName: string, index?: number) => void;
   }
 > = ({
@@ -187,7 +192,7 @@ const ElemNamedObject: FC<
   handleChange,
   handleClickDeleteListItem,
 }) => {
-  const key = Object.keys(attrValue)[0];
+  const key = attrValue ? Object.keys(attrValue)[0] : "";
   return (
     <Box display="flex">
       <Box>
@@ -207,7 +212,7 @@ const ElemNamedObject: FC<
       <ElemObject
         attrId={attrId}
         attrName={attrName}
-        attrValue={attrValue[key]}
+        attrValue={attrValue ? attrValue[key] : undefined}
         attrType={attrType}
         index={index}
         handleChange={handleChange}
@@ -232,6 +237,10 @@ const ElemGroup: FC<
   });
 
   const defaultValue = useMemo(() => {
+    if (attrValue == null) {
+      return undefined;
+    }
+
     const matched = groups.value?.filter((e) =>
       multiple
         ? (attrValue as Array<EntryRetrieveValueAsObjectSchema>)
@@ -325,19 +334,19 @@ export const EditAttributeValue: FC<Props> = ({
     const index = (() => {
       switch (attrInfo.type) {
         case djangoContext.attrTypeValue.array_string:
-          return attrInfo.value.asArrayString.length;
+          return attrInfo.value?.asArrayString?.length;
         case djangoContext.attrTypeValue.array_object:
-          return attrInfo.value.asArrayObject.length;
+          return attrInfo.value?.asArrayObject?.length;
         case djangoContext.attrTypeValue.array_named_object:
-          return attrInfo.value.asArrayNamedObject.length;
+          return attrInfo.value?.asArrayNamedObject?.length;
         case djangoContext.attrTypeValue.array_group:
-          return attrInfo.value.asArrayGroup.length;
+          return attrInfo.value?.asArrayGroup?.length;
         default:
           throw new Error(`${attrInfo.type} is not array-like type`);
       }
     })();
     handleChangeAttribute(attrName, attrInfo.type, {
-      index: index,
+      index: index ?? 0,
       value: value,
     });
   };
@@ -424,7 +433,7 @@ export const EditAttributeValue: FC<Props> = ({
             add
           </Button>
           <List>
-            {attrInfo.value.asArrayString.map((info, n) => (
+            {attrInfo.value.asArrayString?.map((info, n) => (
               <ListItem key={n}>
                 <ElemString
                   attrName={attrName}
@@ -451,7 +460,7 @@ export const EditAttributeValue: FC<Props> = ({
             add
           </Button>
           <List>
-            {attrInfo.value.asArrayNamedObject.map((info, n) => (
+            {attrInfo.value.asArrayNamedObject?.map((info, n) => (
               <ListItem key={n}>
                 <ElemNamedObject
                   attrId={attrInfo.id}

@@ -8,7 +8,7 @@ import { Loading } from "../components/common/Loading";
 import { PageHeader } from "../components/common/PageHeader";
 import {
   EditableEntry,
-  initializeEditableEntryAttr,
+  EditableEntryAttrs,
 } from "../components/entry/entryForm/EditableEntry";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { DjangoContext } from "../utils/DjangoContext";
@@ -48,10 +48,39 @@ export const EditEntryPage: FC = () => {
     if (!entry.loading && entry.value !== undefined) {
       setEntryInfo({
         name: entry.value.name,
-        attrs: initializeEditableEntryAttr(entry.value.attrs),
+        attrs: Object.fromEntries(
+          entry.value.attrs.map((attr): [string, EditableEntryAttrs] => [
+            attr.schema.name,
+            {
+              id: attr.id,
+              type: attr.type,
+              isMandatory: attr.isMandatory,
+              schema: attr.schema,
+              value: attr.value,
+            },
+          ])
+        ),
+      });
+    } else if (!entity.loading && entity.value !== undefined) {
+      setEntryInfo({
+        name: "",
+        attrs: Object.fromEntries(
+          entity.value.attrs.map((attr): [string, EditableEntryAttrs] => [
+            attr.name,
+            {
+              type: attr.type,
+              isMandatory: attr.isMandatory,
+              schema: {
+                id: attr.id,
+                name: attr.name,
+              },
+              value: {},
+            },
+          ])
+        ),
       });
     }
-  }, [entry]);
+  }, [entity, entry]);
 
   const djangoContext = DjangoContext.getInstance();
 
