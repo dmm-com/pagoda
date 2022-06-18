@@ -16,9 +16,7 @@ import React, { FC } from "react";
 
 import { EditableEntry, EditableEntryAttrs } from "./entryForm/EditableEntry";
 
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { EditAttributeValue } from "components/entry/entryForm/EditAttributeValue";
-import { getAttrReferrals } from "utils/AironeAPIClient";
 import { DjangoContext } from "utils/DjangoContext";
 
 interface Props {
@@ -43,8 +41,8 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
     });
   };
 
-  const handleChangeAttribute = (event, name: string, valueInfo) => {
-    switch (valueInfo.type) {
+  const handleChangeAttribute = (name: string, attrType: number, valueInfo) => {
+    switch (attrType) {
       case djangoContext.attrTypeValue.string:
       case djangoContext.attrTypeValue.date:
       case djangoContext.attrTypeValue.text:
@@ -63,26 +61,20 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         break;
 
       case djangoContext.attrTypeValue.group:
-        entryInfo.attrs[name].value.asGroup = entryInfo.attrs[
-          name
-        ].value.asGroup.map((x) => ({
-          ...x,
-          checked: x.id == valueInfo.id && valueInfo.checked,
-        }));
+        entryInfo.attrs[name].value.asGroup = valueInfo;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
       case djangoContext.attrTypeValue.named_object:
-        const namedObjectKey = Object.keys(
-          entryInfo.attrs[name].value.asNamedObject
-        )[0];
-        entryInfo.attrs[name].value.asNamedObject[namedObjectKey] =
-          entryInfo.attrs[name].value.asNamedObject[namedObjectKey].map(
-            (x) => ({
-              ...x,
-              checked: x.id == valueInfo.id && valueInfo.checked,
-            })
-          );
+        const namedObjectKey = valueInfo.key
+          ? valueInfo.key
+          : Object.keys(entryInfo.attrs[name].value.asNamedObject)[0];
+        entryInfo.attrs[name].value.asNamedObject = {
+          [namedObjectKey]: {
+            id: valueInfo.id,
+            name: valueInfo.name,
+          },
+        };
         changeAttributes({ ...entryInfo.attrs });
         break;
 
@@ -93,53 +85,27 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         break;
 
       case djangoContext.attrTypeValue.array_object:
-        // In this case, new blank co-Attribute value will be added
-        if (
-          valueInfo.index >= entryInfo.attrs[name].value.asArrayObject.length
-        ) {
-          entryInfo.attrs[name].value.asArrayObject.push(valueInfo.value);
-        } else {
-          entryInfo.attrs[name].value.asArrayObject[valueInfo.index] =
-            entryInfo.attrs[name].value.asArrayObject[valueInfo.index].map(
-              (x) => ({
-                ...x,
-                checked: x.id == valueInfo.id && valueInfo.checked,
-              })
-            );
-        }
+        entryInfo.attrs[name].value.asArrayObject = valueInfo;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
       case djangoContext.attrTypeValue.array_group:
-        // In this case, new blank co-Attribute value will be added
-        if (
-          valueInfo.index >= entryInfo.attrs[name].value.asArrayGroup.length
-        ) {
-          entryInfo.attrs[name].value.asArrayGroup.push(valueInfo.value);
-        } else {
-          entryInfo.attrs[name].value.asArrayGroup[valueInfo.index] =
-            entryInfo.attrs[name].value.asArrayGroup[valueInfo.index].map(
-              (x) => ({
-                ...x,
-                checked: x.id == valueInfo.id && valueInfo.checked,
-              })
-            );
-        }
+        entryInfo.attrs[name].value.asArrayGroup = valueInfo;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
       case djangoContext.attrTypeValue.array_named_object:
-        const arrayNamedObjectKey = Object.keys(
-          entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index]
-        )[0];
-        entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index][
-          arrayNamedObjectKey
-        ] = entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index][
-          arrayNamedObjectKey
-        ].map((x) => ({
-          ...x,
-          checked: x.id == valueInfo.id && valueInfo.checked,
-        }));
+        const arrayNamedObjectKey = valueInfo.key
+          ? valueInfo.key
+          : Object.keys(
+              entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index]
+            )[0];
+        entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index] = {
+          [arrayNamedObjectKey]: {
+            id: valueInfo.id,
+            name: valueInfo.name,
+          },
+        };
         changeAttributes({ ...entryInfo.attrs });
         break;
     }
@@ -165,108 +131,6 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
           throw new Error(`${attrType} is not array-like type`);
       }
       changeAttributes({ ...entryInfo.attrs });
-    }
-  };
-
-  // FIXME remove it??
-  const handleNarrowDownGroups = async (
-    e,
-    attrName: string,
-    attrType: number
-  ) => {
-    const refs = await aironeApiClientV2.getGroups();
-    const userInputValue = e.target.value;
-
-    const _getUpdatedValues = (currentValue) => {
-      return refs
-        .filter(
-          (r) =>
-            r.name.includes(userInputValue) ||
-            currentValue.find((x) => x.id === r.id && x.checked)
-        )
-        .map((r) => ({
-          id: r.id,
-          name: r.name,
-          checked: currentValue.find((x) => x.id == r.id)?.checked === true,
-        }));
-    };
-
-    switch (attrType) {
-      case djangoContext.attrTypeValue.group:
-        entryInfo.attrs[attrName].value.asGroup = _getUpdatedValues(
-          entryInfo.attrs[attrName].value.asGroup
-        );
-        changeAttributes({ ...entryInfo.attrs });
-        break;
-
-      case djangoContext.attrTypeValue.array_group:
-        entryInfo.attrs[attrName].value.asArrayGroup = entryInfo.attrs[
-          attrName
-        ].value.asArrayGroup.map((curr) => _getUpdatedValues(curr));
-        changeAttributes({ ...entryInfo.attrs });
-        break;
-    }
-  };
-
-  const handleNarrowDownEntries = async (
-    e,
-    attrId: number,
-    attrName: string,
-    attrType: number
-  ) => {
-    const resp = await getAttrReferrals(attrId);
-    const refs = await resp.json();
-    const userInputValue = e.target.value;
-
-    const _getUpdatedValues = (currentValue) => {
-      return refs.results
-        .filter(
-          (r) =>
-            r.name.includes(userInputValue) ||
-            currentValue.find((x) => x.id === r.id && x.checked)
-        )
-        .map((r) => ({
-          id: r.id,
-          name: r.name,
-          checked: currentValue.find((x) => x.id == r.id)?.checked === true,
-        }));
-    };
-
-    switch (attrType) {
-      case djangoContext.attrTypeValue.object:
-        entryInfo.attrs[attrName].value.asObject = _getUpdatedValues(
-          entryInfo.attrs[attrName].value.asObject
-        );
-        changeAttributes({ ...entryInfo.attrs });
-        break;
-
-      case djangoContext.attrTypeValue.array_object:
-        entryInfo.attrs[attrName].value.asArrayObject = entryInfo.attrs[
-          attrName
-        ].value.asArrayObject.map((curr) => _getUpdatedValues(curr));
-        changeAttributes({ ...entryInfo.attrs });
-        break;
-
-      case djangoContext.attrTypeValue.named_object:
-        const attrKey = Object.keys(
-          entryInfo.attrs[attrName].value.asNamedObject
-        )[0];
-        entryInfo.attrs[attrName].value.asNamedObject[attrKey] =
-          _getUpdatedValues(
-            entryInfo.attrs[attrName].value.asNamedObject[attrKey]
-          );
-        changeAttributes({ ...entryInfo.attrs });
-        break;
-
-      case djangoContext.attrTypeValue.array_named_object:
-        entryInfo.attrs[attrName].value.asArrayNamedObject = entryInfo.attrs[
-          attrName
-        ].value.asArrayNamedObject.map((curr) => {
-          const attrKey = Object.keys(curr)[0];
-          return { [attrKey]: _getUpdatedValues(curr[attrKey]) };
-        });
-        changeAttributes({ ...entryInfo.attrs });
-        break;
     }
   };
 
@@ -370,8 +234,6 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
                   attrName={attributeName}
                   attrInfo={entryInfo.attrs[attributeName]}
                   handleChangeAttribute={handleChangeAttribute}
-                  handleNarrowDownEntries={handleNarrowDownEntries}
-                  handleNarrowDownGroups={handleNarrowDownGroups}
                   handleClickDeleteListItem={handleClickDeleteListItem}
                 />
               </TableCell>

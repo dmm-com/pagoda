@@ -82,18 +82,14 @@ export const EditEntryPage: FC = () => {
           case djangoContext.attrTypeValue.group:
             return {
               id: attrValue.schema.id,
-              value:
-                attrValue.value.asGroup.filter((x) => x.checked)[0].id ?? "",
+              value: attrValue.value.asGroup.id,
             };
 
           case djangoContext.attrTypeValue.named_object:
             return {
               id: attrValue.schema.id,
               value: {
-                id:
-                  Object.values(attrValue.value.asNamedObject)[0].filter(
-                    (x) => x.checked
-                  )[0].id ?? "",
+                id: Object.values(attrValue.value.asNamedObject)[0]?.id,
                 name: Object.keys(attrValue.value.asNamedObject)[0],
               },
             };
@@ -107,17 +103,13 @@ export const EditEntryPage: FC = () => {
           case djangoContext.attrTypeValue.array_object:
             return {
               id: attrValue.schema.id,
-              value: attrValue.value.asArrayObject.map((x) => {
-                return x.filter((y) => y.checked)[0]?.id ?? "";
-              }),
+              value: attrValue.value.asArrayObject.map((x) => x.id),
             };
 
           case djangoContext.attrTypeValue.array_group:
             return {
               id: attrValue.schema.id,
-              value: attrValue.value.asArrayGroup.map((x) => {
-                return x.filter((y) => y.checked)[0]?.id ?? "";
-              }),
+              value: attrValue.value.asArrayGroup.map((x) => x.id),
             };
 
           case djangoContext.attrTypeValue.array_named_object:
@@ -125,7 +117,7 @@ export const EditEntryPage: FC = () => {
               id: attrValue.schema.id,
               value: attrValue.value.asArrayNamedObject.map((x) => {
                 return {
-                  id: Object.values(x)[0].filter((y) => y.checked)[0]?.id ?? "",
+                  id: Object.values(x)[0]?.id,
                   name: Object.keys(x)[0],
                 };
               }),
