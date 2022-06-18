@@ -68,7 +68,8 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
       case djangoContext.attrTypeValue.named_object:
         const namedObjectKey = valueInfo.key
           ? valueInfo.key
-          : Object.keys(entryInfo.attrs[name].value.asNamedObject)[0];
+          : Object.keys(entryInfo.attrs[name].value.asNamedObject ?? {})[0] ??
+            "";
         entryInfo.attrs[name].value.asNamedObject = {
           [namedObjectKey]: {
             id: valueInfo.id,
@@ -104,8 +105,10 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         const arrayNamedObjectKey = valueInfo.key
           ? valueInfo.key
           : Object.keys(
-              entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index]
-            )[0];
+              entryInfo.attrs[name].value.asArrayNamedObject?.[
+                valueInfo.index
+              ] ?? {}
+            )[0] ?? "";
         entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index] = {
           [arrayNamedObjectKey]: {
             id: valueInfo.id,

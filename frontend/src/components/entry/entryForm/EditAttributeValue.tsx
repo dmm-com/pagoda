@@ -95,8 +95,9 @@ const ElemBool: FC<CommonProps & { attrValue: boolean }> = ({
 
 const ElemObject: FC<
   CommonProps & {
-    attrId: number;
+    attrId?: number;
     attrValue: EntryRetrieveValueAsObject | Array<EntryRetrieveValueAsObject>;
+    schemaId: number;
     handleClickDeleteListItem: (attrName: string, index?: number) => void;
     multiple?: boolean;
   }
@@ -105,6 +106,7 @@ const ElemObject: FC<
   attrName,
   attrValue,
   attrType,
+  schemaId,
   index,
   handleChange,
   handleClickDeleteListItem,
@@ -112,9 +114,9 @@ const ElemObject: FC<
 }) => {
   // FIXME Implement and use API V2
   // TODO call it reactively to avoid loading API???
-  // FIXME it doesn't work if the attribute is new
+  // NOTE it causes a runtime warning on AutoCompletedField
   const referrals = useAsync(async () => {
-    const resp = await getAttrReferrals(attrId);
+    const resp = await getAttrReferrals(attrId ?? schemaId);
     const data = await resp.json();
     return data.results;
   });
@@ -179,8 +181,9 @@ const ElemObject: FC<
 
 const ElemNamedObject: FC<
   CommonProps & {
-    attrId: number;
+    attrId?: number;
     attrValue?: { [key: string]: EntryRetrieveValueAsObject };
+    schemaId: number;
     handleClickDeleteListItem: (attrName: string, index?: number) => void;
   }
 > = ({
@@ -188,6 +191,7 @@ const ElemNamedObject: FC<
   attrName,
   attrValue,
   attrType,
+  schemaId,
   index,
   handleChange,
   handleClickDeleteListItem,
@@ -211,6 +215,7 @@ const ElemNamedObject: FC<
       </Box>
       <ElemObject
         attrId={attrId}
+        schemaId={schemaId}
         attrName={attrName}
         attrValue={attrValue ? attrValue[key] : undefined}
         attrType={attrType}
@@ -232,6 +237,7 @@ const ElemGroup: FC<
 > = ({ attrName, attrValue, attrType, index, handleChange, multiple }) => {
   // FIXME Implement and use API V2
   // TODO call it reactively to avoid loading API???
+  // NOTE it causes a runtime warning on AutoCompletedField
   const groups = useAsync(async () => {
     return await aironeApiClientV2.getGroups();
   });
@@ -359,6 +365,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrName={attrName}
           attrValue={attrInfo.value.asObject}
           attrType={attrInfo.type}
+          schemaId={attrInfo.schema.id}
           handleChange={handleChangeAttribute}
           handleClickDeleteListItem={handleClickDeleteListItem}
         />
@@ -404,6 +411,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrName={attrName}
           attrValue={attrInfo.value.asNamedObject}
           attrType={attrInfo.type}
+          schemaId={attrInfo.schema.id}
           handleChange={handleChangeAttribute}
           handleClickDeleteListItem={handleClickDeleteListItem}
         />
@@ -416,6 +424,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrName={attrName}
           attrValue={attrInfo.value.asArrayObject}
           attrType={attrInfo.type}
+          schemaId={attrInfo.schema.id}
           handleChange={handleChangeAttribute}
           handleClickDeleteListItem={handleClickDeleteListItem}
           multiple
@@ -467,6 +476,7 @@ export const EditAttributeValue: FC<Props> = ({
                   attrName={attrName}
                   attrValue={info}
                   attrType={attrInfo.type}
+                  schemaId={attrInfo.schema.id}
                   index={n}
                   handleChange={handleChangeAttribute}
                   handleClickDeleteListItem={handleClickDeleteListItem}
