@@ -94,7 +94,7 @@ class User(AbstractUser):
                         list(g.role.filter(is_active=True))
                         + list(g.admin_role.filter(is_active=True))
                     )
-                    for g in self.airone_groups
+                    for g in self.belonging_groups()
                 ],
                 [],
             )

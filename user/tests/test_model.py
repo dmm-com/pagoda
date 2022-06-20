@@ -190,6 +190,15 @@ class ModelTest(TestCase):
         # This checks behavior when 'is_direct_belonging' parameter is passed, just in case
         self.assertEqual(list(user.belonging_groups(is_direct_belonging=True)), [group3])
 
+        # This tests user permitted to access object when parent group has permission to access it
+        role = Role.objects.create(name="Role1")
+        entity = Entity.objects.create(
+            name="entity", created_user=user, is_public=False, default_permission=ACLType.Nothing.id
+        )
+        role.permissions.add(entity.full)
+        role.admin_groups.add(group0)
+        self.assertTrue(user.has_permission(entity, ACLType.Full))
+
     def test_get_all_hierarchical_groups_when_they_are_looped(self):
         """This test try to get hierarchical groups when those are looped like this
         * group0
