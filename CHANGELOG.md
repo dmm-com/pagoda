@@ -5,10 +5,14 @@
 ### Added
 
 ### Changed
-* (New-UI) Added movable Atttribute button at editing Entity page
-  Contributed by @hinashi, @syucream, @userlocalhost
 
 ### Fixed
+
+## v3.11.0
+
+### Changed
+* (New-UI) Added movable Atttribute button at editing Entity page
+  Contributed by @hinashi, @syucream, @userlocalhost
 
 ## v3.10.0
 
