@@ -29,20 +29,24 @@ class APITest(AironeViewTest):
         group4 = self._create_group("group4", group2)
 
         resp = self.client.get("/group/api/v1/groups/tree")
-        self.assertEqual(resp.json(), [{
-            'id': group0.id,
-            'name': group0.name,
-            'children': [{
-                'id': group1.id,
-                'name': group1.name,
-                'children': [{
-                    'id': group3.id, 'name': group3.name, 'children': []
-                }],
-            }, {
-                'id': group2.id,
-                'name': group2.name,
-                'children': [{
-                    'id': group4.id, 'name': group4.name, 'children': []
-                }],
-            }],
-        }])
+        self.assertEqual(
+            resp.json(),
+            [
+                {
+                    "id": group0.id,
+                    "name": group0.name,
+                    "children": [
+                        {
+                            "id": group1.id,
+                            "name": group1.name,
+                            "children": [{"id": group3.id, "name": group3.name, "children": []}],
+                        },
+                        {
+                            "id": group2.id,
+                            "name": group2.name,
+                            "children": [{"id": group4.id, "name": group4.name, "children": []}],
+                        },
+                    ],
+                }
+            ],
+        )
