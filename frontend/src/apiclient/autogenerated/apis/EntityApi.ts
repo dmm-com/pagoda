@@ -39,6 +39,11 @@ export interface EntityApiV2CreateRequest {
   isToplevel?: boolean;
 }
 
+export interface EntityApiV2DestroyRequest {
+  id: number;
+  isToplevel?: boolean;
+}
+
 export interface EntityApiV2EntriesCreateRequest {
   entityId: number;
   entryCreate: EntryCreate;
@@ -142,6 +147,66 @@ export class EntityApi extends runtime.BaseAPI {
       initOverrides
     );
     return await response.value();
+  }
+
+  /**
+   */
+  async entityApiV2DestroyRaw(
+    requestParameters: EntityApiV2DestroyRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling entityApiV2Destroy."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters.isToplevel !== undefined) {
+      queryParameters["is_toplevel"] = requestParameters.isToplevel;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entity/api/v2/{id}/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "DELETE",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async entityApiV2Destroy(
+    requestParameters: EntityApiV2DestroyRequest,
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.entityApiV2DestroyRaw(requestParameters, initOverrides);
   }
 
   /**
