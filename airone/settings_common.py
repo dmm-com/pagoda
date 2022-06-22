@@ -30,7 +30,7 @@ class Common(Configuration):
 
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = True
-    # INTERNAL_IPS = ['127.0.0.1']
+    # INTERNAL_IPS = ["127.0.0.1"]
 
     ALLOWED_HOSTS = ["*"]
 
@@ -61,6 +61,7 @@ class Common(Configuration):
         "custom_view",
         "drf_spectacular",
         "django_filters",
+        "social_django",
         # "debug_toolbar",
     ]
 
@@ -74,6 +75,7 @@ class Common(Configuration):
         "django.contrib.auth.middleware.AuthenticationMiddleware",
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
+        "social_django.middleware.SocialAuthExceptionMiddleware",
         "airone.lib.db.AirOneReplicationMiddleware",
         # "debug_toolbar.middleware.DebugToolbarMiddleware",
     ]
@@ -94,6 +96,8 @@ class Common(Configuration):
                     "django.template.context_processors.request",
                     "django.contrib.auth.context_processors.auth",
                     "django.contrib.messages.context_processors.messages",
+                    "social_django.context_processors.backends",
+                    "social_django.context_processors.login_redirect",
                 ],
             },
         },
@@ -194,6 +198,7 @@ class Common(Configuration):
         "SUBTITLE": "SubTitle, Please change it",
         "NOTE_DESC": "Description, Please change it",
         "NOTE_LINK": "",
+        "SSO_DESC": "SSO",
     }
 
     try:
@@ -242,7 +247,58 @@ class Common(Configuration):
     # Note: Disable LDAP authentication by default in the mean time.
     #
     # AUTHENTICATION_BACKENDS = (
-    #     'airone.auth.ldap.LDAPBackend',
+    #     "airone.auth.ldap.LDAPBackend",
+    # )
+
+    #
+    # Note: Disable SSO authentication by default in the mean time.
+    # (c.f. https://python-social-auth.readthedocs.io/en/latest/backends/saml.html)
+    # AUTHENTICATION_BACKENDS = (
+    #     "django.contrib.auth.backends.ModelBackend",
+    #     "social_core.backends.saml.SAMLAuth",
+    # )
+    # SOCIAL_AUTH_SAML_SP_ENTITY_ID = ""
+    # SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ""
+    # SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ""
+    # SOCIAL_AUTH_SAML_ORG_INFO = {
+    #     "": {
+    #         "name": "",
+    #         "displayname": "",
+    #         "url": "",
+    #     }
+    # }
+    # SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = {
+    #     "givenName": "",
+    #     "emailAddress": "",
+    # }
+    # SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
+    #     "givenName": "",
+    #     "emailAddress": ""
+    # }
+    # SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+    #     "": {
+    #         "entity_id": "",
+    #         "url": "",
+    #         "x509cert": """
+    #         """,
+    #         "attr_user_permanent_id": "",
+    #         "attr_name": "",
+    #         "attr_username": "",
+    #     }
+    # }
+    # SOCIAL_AUTH_CLEAN_USERNAMES = False
+    #
+    # SOCIAL_AUTH_PIPELINE = (
+    #     "social_core.pipeline.social_auth.social_details",
+    #     "social_core.pipeline.social_auth.social_uid",
+    #     "social_core.pipeline.social_auth.auth_allowed",
+    #     "social_core.pipeline.social_auth.social_user",
+    #     "airone.auth.social_auth.create_user",
+    #     # 'social_core.pipeline.user.get_username',
+    #     # 'social_core.pipeline.user.create_user',
+    #     "social_core.pipeline.social_auth.associate_user",
+    #     "social_core.pipeline.social_auth.load_extra_data",
+    #     "social_core.pipeline.user.user_details",
     # )
 
     AUTH_CONFIG = {

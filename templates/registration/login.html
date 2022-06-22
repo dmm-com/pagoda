@@ -8,6 +8,12 @@
     <!-- custom script body -->
     {% include 'custom_view/custom_script_body.html' %}
     <h2>Login</h2>
+    {% if idp %}
+    <br>
+    <a class="button" href="{% url 'social:begin' 'saml' %}?idp={{ idp }}">{{ sso_desc }}</a>
+    <hr width="500" align="left">
+    <br>
+    {% endif %}
     <form method="post">
       {% csrf_token %}
       {{ form.as_p }}

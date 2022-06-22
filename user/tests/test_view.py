@@ -415,6 +415,7 @@ class ViewTest(TestCase):
         self.assertEqual(resp.context["user_id"], user.id)
         self.assertEqual(resp.context["user_name"], user.username)
         self.assertEqual(resp.context["user_grade"], "self")
+        self.assertEqual(resp.context["has_password"], True)
 
     def test_edit_passwd_get_with_admin_login(self):
         self._admin_login()
