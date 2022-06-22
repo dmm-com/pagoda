@@ -80,7 +80,7 @@ def edit(request, group_id):
             "name": "users",
             "type": list,
             "checker": lambda x: (
-                x["users"] and all([User.objects.filter(id=u).exists() for u in x["users"]])
+                all([User.objects.filter(id=u).exists() for u in x.get("users", [])])
             ),
         },
         {"name": "parent_group", "type": str, "omittable": True},
@@ -112,11 +112,11 @@ def do_edit(request, group_id, recv_data):
     group.save()
 
     # the processing for deleted users
-    for user in [User.objects.get(id=x) for x in set(old_users) - set(recv_data["users"])]:
+    for user in [User.objects.get(id=x) for x in set(old_users) - set(recv_data.get("users", []))]:
         user.groups.remove(group)
 
     # the processing for added users
-    for user in [User.objects.get(id=x) for x in set(recv_data["users"]) - set(old_users)]:
+    for user in [User.objects.get(id=x) for x in set(recv_data.get("users", [])) - set(old_users)]:
         user.groups.add(group)
 
     return JsonResponse(
@@ -168,7 +168,7 @@ def create(request):
             "name": "users",
             "type": list,
             "checker": lambda x: (
-                x["users"] and all([User.objects.filter(id=u).exists() for u in x["users"]])
+                all([User.objects.filter(id=u).exists() for u in x.get("users", [])])
             ),
         },
         {"name": "parent_group", "type": str, "omittable": True},
@@ -184,7 +184,7 @@ def do_create(request, recv_data):
     )
     new_group.save()
 
-    for user in [User.objects.get(id=x) for x in recv_data["users"]]:
+    for user in [User.objects.get(id=x) for x in recv_data.get("users", [])]:
         user.groups.add(new_group)
 
     return JsonResponse(
