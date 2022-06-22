@@ -9,13 +9,13 @@ Object {
         class="container-fluid MuiBox-root css-0"
       >
         <div
-          class="MuiBox-root css-1l11j2j"
+          class="makeStyles-frame-1 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-wrapper-1 MuiBox-root css-0"
+            class="makeStyles-fixed-2 MuiBox-root css-0"
           >
             <div
-              class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
+              class="makeStyles-breadcrumb-3 MuiBox-root css-0"
             >
               <nav
                 aria-label="breadcrumb"
@@ -54,9 +54,6 @@ Object {
             </div>
           </div>
         </div>
-        <div
-          class="MuiBox-root css-ca23fy"
-        />
         <div
           class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
         >
@@ -283,13 +280,13 @@ Object {
       class="container-fluid MuiBox-root css-0"
     >
       <div
-        class="MuiBox-root css-1l11j2j"
+        class="makeStyles-frame-1 MuiBox-root css-0"
       >
         <div
-          class="makeStyles-wrapper-1 MuiBox-root css-0"
+          class="makeStyles-fixed-2 MuiBox-root css-0"
         >
           <div
-            class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
+            class="makeStyles-breadcrumb-3 MuiBox-root css-0"
           >
             <nav
               aria-label="breadcrumb"
@@ -328,9 +325,6 @@ Object {
           </div>
         </div>
       </div>
-      <div
-        class="MuiBox-root css-ca23fy"
-      />
       <div
         class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
       >
