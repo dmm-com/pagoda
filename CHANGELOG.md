@@ -7,6 +7,10 @@
 ### Changed
 
 ### Fixed
+* Fixed empty display of array type in advanced search result
+  Contributed by @hinashi
+* Fixed an issue where None was displayed in array_named_entry attribute
+  Contributed by @hinashi
 
 ## v3.11.0
 
@@ -21,8 +25,6 @@
   Contributed by @syucream
 
 ### Fixed
-* Fixed an issue where None was displayed in array_named_entry attribute
-  Contributed by @hinashi
 * Fixed raising exception on validating URL
   Contributed by @syucream
 
