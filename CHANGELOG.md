@@ -21,6 +21,8 @@
   Contributed by @syucream
 
 ### Fixed
+* Fixed an issue where None was displayed in array_named_entry attribute
+  Contributed by @hinashi
 * Fixed raising exception on validating URL
   Contributed by @syucream
 
