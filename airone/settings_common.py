@@ -75,7 +75,6 @@ class Common(Configuration):
         "django.contrib.auth.middleware.AuthenticationMiddleware",
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
-        "whitenoise.middleware.WhiteNoiseMiddleware",
         "social_django.middleware.SocialAuthExceptionMiddleware",
         "airone.lib.db.AirOneReplicationMiddleware",
         # "debug_toolbar.middleware.DebugToolbarMiddleware",

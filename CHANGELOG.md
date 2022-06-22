@@ -3,12 +3,22 @@
 ## In development
 
 ### Added
+
+### Changed
+* (New-UI) Added movable Atttribute button at editing Entity page
+  Contributed by @hinashi, @syucream, @userlocalhost
+
+### Fixed
+
+## v3.10.0
+
+### Added
 * (New-UI) Implemented a new page that shows referral Entries
   Contributed by @syucream
 
-### Changed
-
 ### Fixed
+* Fixed raising exception on validating URL
+  Contributed by @syucream
 
 ## v3.9.0
 

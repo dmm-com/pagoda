@@ -1,4 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import GroupIcon from "@mui/icons-material/Group";
 import {
@@ -14,7 +16,6 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import { makeStyles } from "@mui/styles";
 import React, { FC, useMemo } from "react";
 import { Link } from "react-router-dom";
@@ -28,14 +29,31 @@ const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
-}));
-
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  "&:nth-of-type(odd)": {
-    backgroundColor: "white",
+  tableRow: {
+    "&:nth-of-type(odd)": {
+      backgroundColor: "white",
+    },
+    "&:nth-of-type(even)": {
+      backgroundColor: "#607D8B0A",
+    },
   },
-  "&:nth-of-type(even)": {
-    backgroundColor: "#607D8B0A",
+  highlightedTableRow: {
+    backgroundColor: "yellow",
+
+    // TODO reset the animation with considering rerendering
+    // animation: `$highlighted ease 1s 1`,
+    // "&:nth-of-type(odd)": {
+    //   backgroundColor: "white",
+    // },
+    // "&:nth-of-type(even)": {
+    //   backgroundColor: "#607D8B0A",
+    // },
+  },
+
+  "@keyframes highlighted": {
+    "0%": {
+      backgroundColor: "yellow",
+    },
   },
 }));
 
@@ -46,6 +64,8 @@ interface Props {
   referralEntities: Entity[];
   entityInfo: EntityUpdate;
   setEntityInfo: (entityInfo: EntityUpdate) => void;
+  latestChangedIndex?: number;
+  setLatestChangedIndex: (latestChangedIndex: number) => void;
 }
 
 export const AttributeRow: FC<Props> = ({
@@ -55,6 +75,8 @@ export const AttributeRow: FC<Props> = ({
   referralEntities,
   entityInfo,
   setEntityInfo,
+  latestChangedIndex,
+  setLatestChangedIndex,
 }) => {
   const classes = useStyles();
 
@@ -66,6 +88,18 @@ export const AttributeRow: FC<Props> = ({
       is_delete_in_chain: false,
       referral: [],
     });
+    setEntityInfo({ ...entityInfo, attrs: [...allAttrs] });
+  };
+
+  const handleChangeOrderAttribute = (index: number, order: number) => {
+    const newIndex = index - order;
+    const oldIndex = index;
+    const x = allAttrs[newIndex];
+    allAttrs[newIndex] = allAttrs[oldIndex];
+    allAttrs[oldIndex] = x;
+    allAttrs[newIndex].index = index + 1 - order;
+    allAttrs[oldIndex].index = index + 1;
+    setLatestChangedIndex(newIndex);
     setEntityInfo({ ...entityInfo, attrs: [...allAttrs] });
   };
 
@@ -95,7 +129,13 @@ export const AttributeRow: FC<Props> = ({
   };
 
   return (
-    <StyledTableRow>
+    <TableRow
+      className={
+        index === latestChangedIndex
+          ? classes.highlightedTableRow
+          : classes.tableRow
+      }
+    >
       <TableCell>
         {index !== undefined && (
           <Input
@@ -182,6 +222,28 @@ export const AttributeRow: FC<Props> = ({
 
       <TableCell>
         {index !== undefined && (
+          <Box display="flex" flexDirection="column">
+            <IconButton
+              disabled={index === 0}
+              className={classes.button}
+              onClick={(e) => handleChangeOrderAttribute(index, 1)}
+            >
+              <ArrowUpwardIcon />
+            </IconButton>
+
+            <IconButton
+              disabled={index === allAttrs.length - 1}
+              className={classes.button}
+              onClick={(e) => handleChangeOrderAttribute(index, -1)}
+            >
+              <ArrowDownwardIcon />
+            </IconButton>
+          </Box>
+        )}
+      </TableCell>
+
+      <TableCell>
+        {index !== undefined && (
           <IconButton
             className={classes.button}
             onClick={(e) => handleDeleteAttribute(index)}
@@ -216,6 +278,6 @@ export const AttributeRow: FC<Props> = ({
           </Button>
         )}
       </TableCell>
-    </StyledTableRow>
+    </TableRow>
   );
 };

@@ -152,18 +152,6 @@ export function deleteEntity(entityId: number): Promise<Response> {
   });
 }
 
-export function copyEntry(entryId: number, entries: string): Promise<Response> {
-  return fetch(`/entry/do_copy/${entryId}`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({
-      entries: entries,
-    }),
-  });
-}
-
 // FIXME unimplemented
 export function getEntryHistory({}: number): Promise<object> {
   return new Promise((resolve) => {
