@@ -28,7 +28,7 @@ class APITest(AironeViewTest):
         group3 = self._create_group("group3", group1)
         group4 = self._create_group("group4", group2)
 
-        resp = self.client.get("/group/api/v1/groups/tree")
+        resp = self.client.get("/group/api/v1/tree")
         self.assertEqual(
             resp.json(),
             [

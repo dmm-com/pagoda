@@ -44,9 +44,9 @@ class ModelTest(TestCase):
 
     def test_delete_parent_lonely_group(self):
         """This try to delete Group that all subordinates have already been deleted. This expects to success to delete parent one."""
-        deleting_groups = [self.group3, self.group2, self.group0]
+        deleting_groups = [self.group1, self.group3]
         for group in deleting_groups:
             group.delete()
 
-            self.assertFalse(self.group1.is_active)
-            self.assertEqual(self.group1.name.find("%s_deleted_" % (group.name)), 0)
+            self.assertFalse(group.is_active)
+            self.assertGreater(group.name.find("_deleted_"), 0)

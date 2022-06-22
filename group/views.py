@@ -83,6 +83,7 @@ def edit(request, group_id):
                 x["users"] and all([User.objects.filter(id=u).exists() for u in x["users"]])
             ),
         },
+        {"name": "parent_group", "type": str, "omittable": True},
     ]
 )
 @check_superuser
@@ -105,6 +106,9 @@ def do_edit(request, group_id, recv_data):
 
     # update group_name with specified one
     group.name = recv_data["name"]
+    group.parent_group = Group.objects.filter(
+        id=recv_data.get("parent_group", 0), is_active=True
+    ).first()
     group.save()
 
     # the processing for deleted users
@@ -167,11 +171,17 @@ def create(request):
                 x["users"] and all([User.objects.filter(id=u).exists() for u in x["users"]])
             ),
         },
+        {"name": "parent_group", "type": str, "omittable": True},
     ]
 )
 @check_superuser
 def do_create(request, recv_data):
-    new_group = Group(name=recv_data["name"])
+    new_group = Group(
+        name=recv_data["name"],
+        parent_group=Group.objects.filter(
+            id=recv_data.get("parent_group", 0), is_active=True
+        ).first(),
+    )
     new_group.save()
 
     for user in [User.objects.get(id=x) for x in recv_data["users"]]:

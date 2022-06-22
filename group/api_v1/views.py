@@ -15,4 +15,8 @@ class GroupTreeAPI(APIView):
                 for g in groups
             ]
 
-        return Response(_make_hierarchical_group(Group.objects.filter(parent_group__isnull=True)))
+        return Response(
+            _make_hierarchical_group(
+                Group.objects.filter(parent_group__isnull=True, is_active=True)
+            )
+        )

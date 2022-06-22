@@ -14,6 +14,7 @@ class Group(DjangoGroup):
         """
         Override Model.delete method of Django
         """
+        print("[onix/Group.delete(00)] %s" % self.name)
         if self.subordinates.filter(is_active=True).exists():
             raise GroupOperationException("You can't delete group that has subordinates")
 
