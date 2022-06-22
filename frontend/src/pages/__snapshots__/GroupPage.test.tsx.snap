@@ -9,13 +9,13 @@ Object {
         class="container-fluid MuiBox-root css-0"
       >
         <div
-          class="MuiBox-root css-1l11j2j"
+          class="makeStyles-frame-3 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-wrapper-3 MuiBox-root css-0"
+            class="makeStyles-fixed-4 MuiBox-root css-0"
           >
             <div
-              class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
+              class="makeStyles-breadcrumb-5 MuiBox-root css-0"
             >
               <nav
                 aria-label="breadcrumb"
@@ -55,9 +55,6 @@ Object {
           </div>
         </div>
         <div
-          class="MuiBox-root css-ca23fy"
-        />
-        <div
           class="row MuiBox-root css-0"
         >
           <div
@@ -67,7 +64,7 @@ Object {
               class="float-left MuiBox-root css-0"
             >
               <a
-                class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-4 css-sghohy-MuiButtonBase-root-MuiButton-root"
+                class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
                 href="/new-ui/groups/new"
                 tabindex="0"
               >
@@ -194,7 +191,7 @@ Object {
                 >
                   <span>
                     <button
-                      class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-7 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-9 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -257,7 +254,7 @@ Object {
                 >
                   <span>
                     <button
-                      class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-7 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-9 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -295,13 +292,13 @@ Object {
       class="container-fluid MuiBox-root css-0"
     >
       <div
-        class="MuiBox-root css-1l11j2j"
+        class="makeStyles-frame-3 MuiBox-root css-0"
       >
         <div
-          class="makeStyles-wrapper-3 MuiBox-root css-0"
+          class="makeStyles-fixed-4 MuiBox-root css-0"
         >
           <div
-            class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
+            class="makeStyles-breadcrumb-5 MuiBox-root css-0"
           >
             <nav
               aria-label="breadcrumb"
@@ -341,9 +338,6 @@ Object {
         </div>
       </div>
       <div
-        class="MuiBox-root css-ca23fy"
-      />
-      <div
         class="row MuiBox-root css-0"
       >
         <div
@@ -353,7 +347,7 @@ Object {
             class="float-left MuiBox-root css-0"
           >
             <a
-              class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-4 css-sghohy-MuiButtonBase-root-MuiButton-root"
+              class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-sghohy-MuiButtonBase-root-MuiButton-root"
               href="/new-ui/groups/new"
               tabindex="0"
             >
@@ -480,7 +474,7 @@ Object {
               >
                 <span>
                   <button
-                    class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-7 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-9 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
@@ -543,7 +537,7 @@ Object {
               >
                 <span>
                   <button
-                    class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-7 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-9 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
