@@ -48,6 +48,7 @@ def edit(request, group_id):
             "username"
         ),
         "submit_ref": "/group/do_edit/%s" % group_id,
+        "parent_group_id": group.parent_group.id if group.parent_group else 0,
     }
 
     # set group members for each groups
