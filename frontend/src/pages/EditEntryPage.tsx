@@ -87,6 +87,7 @@ export const EditEntryPage: FC = () => {
   const handleSubmit = async () => {
     const updatedAttr = Object.entries(entryInfo.attrs).map(
       ([{}, attrValue]) => {
+        console.log("[onix/handleSubmit] ", attrValue);
         switch (attrValue.type) {
           case djangoContext.attrTypeValue.string:
           case djangoContext.attrTypeValue.text:
@@ -103,7 +104,7 @@ export const EditEntryPage: FC = () => {
             };
 
           case djangoContext.attrTypeValue.object:
-            console.log("[onix/handleSubmit.object]", attrValue);
+            console.log("[onix/handleSubmit(object)] ", attrValue);
             return {
               id: attrValue.schema.id,
               value: attrValue.value.asObject?.id ?? "",
@@ -112,15 +113,15 @@ export const EditEntryPage: FC = () => {
           case djangoContext.attrTypeValue.group:
             return {
               id: attrValue.schema.id,
-              value: attrValue.value.asGroup.id,
+              value: attrValue.value.asGroup?.id,
             };
 
           case djangoContext.attrTypeValue.named_object:
             return {
               id: attrValue.schema.id,
               value: {
-                id: Object.values(attrValue.value.asNamedObject)[0]?.id,
-                name: Object.keys(attrValue.value.asNamedObject)[0],
+                id: Object.values(attrValue.value.asNamedObject ?? {})[0]?.id,
+                name: Object.keys(attrValue.value.asNamedObject ?? {})[0],
               },
             };
 
@@ -131,21 +132,23 @@ export const EditEntryPage: FC = () => {
             };
 
           case djangoContext.attrTypeValue.array_object:
+            console.log("[onix/handleSubmit(array_object)] ", attrValue);
             return {
               id: attrValue.schema.id,
-              value: attrValue.value.asArrayObject.map((x) => x.id),
+              value: attrValue.value.asArrayObject?.map((x) => x.id),
             };
 
           case djangoContext.attrTypeValue.array_group:
+            console.log("[onix/handleSubmit(array_group)] ", attrValue);
             return {
               id: attrValue.schema.id,
-              value: attrValue.value.asArrayGroup.map((x) => x.id),
+              value: attrValue.value.asArrayGroup?.map((x) => x.id),
             };
 
           case djangoContext.attrTypeValue.array_named_object:
             return {
               id: attrValue.schema.id,
-              value: attrValue.value.asArrayNamedObject.map((x) => {
+              value: attrValue.value.asArrayNamedObject?.map((x) => {
                 return {
                   id: Object.values(x)[0]?.id,
                   name: Object.keys(x)[0],
