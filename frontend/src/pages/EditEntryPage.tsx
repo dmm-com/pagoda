@@ -103,9 +103,10 @@ export const EditEntryPage: FC = () => {
             };
 
           case djangoContext.attrTypeValue.object:
+            console.log("[onix/handleSubmit.object]", attrValue);
             return {
               id: attrValue.schema.id,
-              value: attrValue.value.asObject.id ?? "",
+              value: attrValue.value.asObject?.id ?? "",
             };
 
           case djangoContext.attrTypeValue.group:
