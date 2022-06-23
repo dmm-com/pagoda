@@ -114,7 +114,6 @@ const ElemObject: FC<
 }) => {
   // FIXME Implement and use API V2
   // TODO call it reactively to avoid loading API???
-  // NOTE it causes a runtime warning on AutoCompletedField
   const referrals = useAsync(async () => {
     const resp = await getAttrReferrals(attrId ?? schemaId);
     const data = await resp.json();
@@ -125,7 +124,6 @@ const ElemObject: FC<
     if (attrValue == null) {
       return undefined;
     }
-
     const matched = referrals.value?.filter((e) =>
       multiple
         ? (attrValue as Array<EntryRetrieveValueAsObject>)
@@ -134,7 +132,7 @@ const ElemObject: FC<
         : (attrValue as EntryRetrieveValueAsObject).id === e.id
     );
     return matched ? (multiple ? matched : matched[0]) : undefined;
-  }, [referrals.value, attrValue]);
+  }, [referrals.value]);
 
   return (
     <Box>
@@ -246,7 +244,6 @@ const ElemGroup: FC<
     if (attrValue == null) {
       return undefined;
     }
-
     const matched = groups.value?.filter((e) =>
       multiple
         ? (attrValue as Array<EntryRetrieveValueAsObjectSchema>)
@@ -255,7 +252,7 @@ const ElemGroup: FC<
         : (attrValue as EntryRetrieveValueAsObjectSchema).id === e.id
     );
     return matched ? (multiple ? matched : matched[0]) : undefined;
-  }, [groups.value, attrValue]);
+  }, [groups.value]);
 
   return (
     <Box>
