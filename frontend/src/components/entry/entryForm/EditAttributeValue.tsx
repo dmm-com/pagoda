@@ -8,6 +8,7 @@ import {
   ListItem,
   Typography,
   TextField,
+  Autocomplete,
 } from "@mui/material";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
@@ -47,32 +48,32 @@ const ElemString: FC<
   handleChange,
   handleClickDeleteListItem,
 }) => {
-  return (
-    <Box display="flex">
-      <Input
-        type="text"
-        value={attrValue}
-        onChange={(e) =>
-          handleChange(attrName, attrType, {
-            index: index,
-            value: e.target.value,
-          })
-        }
-        fullWidth
-      />
-      {index !== undefined && (
-        <Grid item>
-          <Button
-            variant="outlined"
-            onClick={() => handleClickDeleteListItem(attrName, index)}
-          >
-            del
-          </Button>
-        </Grid>
-      )}
-    </Box>
-  );
-};
+    return (
+      <Box display="flex">
+        <Input
+          type="text"
+          value={attrValue}
+          onChange={(e) =>
+            handleChange(attrName, attrType, {
+              index: index,
+              value: e.target.value,
+            })
+          }
+          fullWidth
+        />
+        {index !== undefined && (
+          <Grid item>
+            <Button
+              variant="outlined"
+              onClick={() => handleClickDeleteListItem(attrName, index)}
+            >
+              del
+            </Button>
+          </Grid>
+        )}
+      </Box>
+    );
+  };
 
 const ElemBool: FC<CommonProps & { attrValue: boolean }> = ({
   attrName,
@@ -112,70 +113,80 @@ const ElemObject: FC<
   handleClickDeleteListItem,
   multiple,
 }) => {
-  // FIXME Implement and use API V2
-  // TODO call it reactively to avoid loading API???
-  const referrals = useAsync(async () => {
-    const resp = await getAttrReferrals(attrId ?? schemaId);
-    const data = await resp.json();
-    return data.results;
-  });
+    // FIXME Implement and use API V2
+    // TODO call it reactively to avoid loading API???
+    const referrals = useAsync(async () => {
+      const resp = await getAttrReferrals(attrId ?? schemaId);
+      const data = await resp.json();
+      return data.results;
+    });
 
-  const defaultValue = useMemo(() => {
-    if (attrValue == null) {
-      return undefined;
-    }
-    const matched = referrals.value?.filter((e) =>
-      multiple
-        ? (attrValue as Array<EntryRetrieveValueAsObject>)
+    const defaultValue = useMemo(() => {
+      if (attrValue == null) {
+        return undefined;
+      }
+      const matched = referrals.value?.filter((e) =>
+        multiple
+          ? (attrValue as Array<EntryRetrieveValueAsObject>)
             .map((v) => v.id)
             .includes(e.id)
-        : (attrValue as EntryRetrieveValueAsObject).id === e.id
-    );
-    return matched ? (multiple ? matched : matched[0]) : undefined;
-  }, [referrals.value]);
+          : (attrValue as EntryRetrieveValueAsObject).id === e.id
+      );
+      return matched ? (multiple ? matched : matched[0]) : undefined;
+    }, [referrals.value]);
 
-  return (
-    <Box>
-      <Typography>エントリを選択</Typography>
-      <Box display="flex" alignItems="center">
-        {!referrals.loading && (
-          <AutoCompletedField
-            options={referrals.value ?? []}
-            getOptionLabel={(option: { id: number; name: string }) =>
-              option.name
-            }
-            defaultValue={defaultValue}
-            handleChangeSelectedValue={(
-              value:
-                | { id: number; name: string }
-                | { id: number; name: string }[]
-            ) => {
-              if (Array.isArray(value)) {
-                handleChange(attrName, attrType, value);
-              } else {
-                handleChange(attrName, attrType, {
-                  index: index,
-                  id: value.id,
-                  name: value.name,
-                  checked: true,
-                });
-              }
-            }}
-            multiple={multiple}
-          />
-        )}
-        {index !== undefined && (
-          <Button
-            variant="outlined"
-            onClick={() => handleClickDeleteListItem(attrName, index)}
-          >
-            del
-          </Button>
-        )}
+    // console.log("defaultValue", defaultValue)
+
+    return (
+      <Box>
+        <Typography>エントリを選択</Typography>
+        <Box display="flex" alignItems="center">
+          {!referrals.loading && (
+            <Autocomplete
+              multiple={multiple}
+              options={referrals.value ?? []}
+              getOptionLabel={(option) => option.name}
+              defaultValue={defaultValue}
+              onChange={(e, value) => {
+                if (multiple) {
+                  handleChange(attrName, attrType, value);
+                } else {
+                  handleChange(
+                    attrName,
+                    attrType,
+                    value
+                      ? {
+                        index: index,
+                        id: value.id,
+                        name: value.name,
+                        checked: true,
+                      }
+                      : undefined
+                  );
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="standard"
+                  label="Multiple values"
+                  placeholder="Favorites"
+                />
+              )}
+            />
+          )}
+          {index !== undefined && (
+            <Button
+              variant="outlined"
+              onClick={() => handleClickDeleteListItem(attrName, index)}
+            >
+              del
+            </Button>
+          )}
+        </Box>
       </Box>
-    </Box>
-  );
-};
+    );
+  };
 
 const ElemNamedObject: FC<
   CommonProps & {
@@ -194,42 +205,42 @@ const ElemNamedObject: FC<
   handleChange,
   handleClickDeleteListItem,
 }) => {
-  const key = attrValue ? Object.keys(attrValue)[0] : "";
-  return (
-    <Box display="flex">
-      <Box>
-        <Typography>name</Typography>
-        <Input
-          type="text"
-          value={key}
-          onChange={(e) =>
-            handleChange(attrName, attrType, {
-              index: index,
-              key: e.target.value,
-              ...attrValue[key],
-            })
-          }
+    const key = attrValue ? Object.keys(attrValue)[0] : "";
+    return (
+      <Box display="flex">
+        <Box>
+          <Typography>name</Typography>
+          <Input
+            type="text"
+            value={key}
+            onChange={(e) =>
+              handleChange(attrName, attrType, {
+                index: index,
+                key: e.target.value,
+                ...attrValue[key],
+              })
+            }
+          />
+        </Box>
+        <ElemObject
+          attrId={attrId}
+          schemaId={schemaId}
+          attrName={attrName}
+          attrValue={attrValue ? attrValue[key] : undefined}
+          attrType={attrType}
+          index={index}
+          handleChange={handleChange}
+          handleClickDeleteListItem={handleClickDeleteListItem}
         />
       </Box>
-      <ElemObject
-        attrId={attrId}
-        schemaId={schemaId}
-        attrName={attrName}
-        attrValue={attrValue ? attrValue[key] : undefined}
-        attrType={attrType}
-        index={index}
-        handleChange={handleChange}
-        handleClickDeleteListItem={handleClickDeleteListItem}
-      />
-    </Box>
-  );
-};
+    );
+  };
 
 const ElemGroup: FC<
   CommonProps & {
     attrValue:
-      | EntryRetrieveValueAsObjectSchema
-      | Array<EntryRetrieveValueAsObjectSchema>;
+    | EntryRetrieveValueAsObjectSchema
+    | Array<EntryRetrieveValueAsObjectSchema>;
     multiple?: boolean;
   }
 > = ({ attrName, attrValue, attrType, index, handleChange, multiple }) => {
@@ -247,8 +258,8 @@ const ElemGroup: FC<
     const matched = groups.value?.filter((e) =>
       multiple
         ? (attrValue as Array<EntryRetrieveValueAsObjectSchema>)
-            .map((v) => v.id)
-            .includes(e.id)
+          .map((v) => v.id)
+          .includes(e.id)
         : (attrValue as EntryRetrieveValueAsObjectSchema).id === e.id
     );
     return matched ? (multiple ? matched : matched[0]) : undefined;
@@ -303,9 +314,8 @@ const ElemDate: FC<
         value={new Date(attrValue)}
         onChange={(date: Date) => {
           handleChange(attrName, attrType, {
-            value: `${date.getFullYear()}/${
-              date.getMonth() + 1
-            }/${date.getDate()}`,
+            value: `${date.getFullYear()}/${date.getMonth() + 1
+              }/${date.getDate()}`,
           });
         }}
         renderInput={(params) => <TextField {...params} />}
