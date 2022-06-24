@@ -176,9 +176,9 @@ class ModelTest(TestCase):
                  └──group3 (member: user1)
         """
         group0 = Group.objects.create(name="group0")
-        group1 = Group.objects.create(name="group1", parent_group=group0)
         group2 = Group.objects.create(name="group2", parent_group=group0)
         group3 = Group.objects.create(name="group3", parent_group=group2)
+        Group.objects.create(name="group1", parent_group=group0)
         user = User.objects.create(username="user1")
         user.groups.add(group3)
 

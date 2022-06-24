@@ -35,7 +35,9 @@ class ModelTest(TestCase):
         self.assertEqual(self.group1.name.find("group1_deleted_"), 0)
 
     def test_delete_parent_group(self):
-        """This try to delete Group that has subordinates. This expects to fail to delete parent one."""
+        """This try to delete Group that has subordinates.
+        This expects to fail to delete parent one.
+        """
         for group in [self.group0, self.group2]:
             with self.assertRaises(GroupOperationException) as cm:
                 group.delete()
@@ -43,7 +45,9 @@ class ModelTest(TestCase):
             self.assertEqual(cm.exception.args[0], "You can't delete group that has subordinates")
 
     def test_delete_parent_lonely_group(self):
-        """This try to delete Group that all subordinates have already been deleted. This expects to success to delete parent one."""
+        """This try to delete Group that all subordinates have already been deleted.
+        This expects to success to delete parent one.
+        """
         deleting_groups = [self.group1, self.group3]
         for group in deleting_groups:
             group.delete()
