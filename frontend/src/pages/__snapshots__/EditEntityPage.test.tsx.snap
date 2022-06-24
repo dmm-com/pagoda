@@ -9,13 +9,13 @@ Object {
         class="MuiBox-root css-0"
       >
         <div
-          class="MuiBox-root css-1l11j2j"
+          class="makeStyles-frame-3 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-wrapper-3 MuiBox-root css-0"
+            class="makeStyles-fixed-4 MuiBox-root css-0"
           >
             <div
-              class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
+              class="makeStyles-breadcrumb-5 MuiBox-root css-0"
             >
               <nav
                 aria-label="breadcrumb"
@@ -70,9 +70,6 @@ Object {
             </div>
           </div>
         </div>
-        <div
-          class="MuiBox-root css-ca23fy"
-        />
         <div
           class="MuiBox-root css-1l11j2j"
         >
@@ -425,6 +422,12 @@ Object {
                           class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
                           scope="col"
                         >
+                          並び替え
+                        </th>
+                        <th
+                          class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                          scope="col"
+                        >
                           削除
                         </th>
                         <th
@@ -445,8 +448,11 @@ Object {
                       class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
                     >
                       <tr
-                        class="MuiTableRow-root css-1lwfqbm-MuiTableRow-root"
+                        class="MuiTableRow-root makeStyles-highlightedTableRow-14 css-1q1u3t4-MuiTableRow-root"
                       >
+                        <td
+                          class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                        />
                         <td
                           class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                         />
@@ -466,7 +472,7 @@ Object {
                           class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                         >
                           <button
-                            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-11 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-12 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                             tabindex="0"
                             type="button"
                           >
@@ -505,13 +511,13 @@ Object {
       class="MuiBox-root css-0"
     >
       <div
-        class="MuiBox-root css-1l11j2j"
+        class="makeStyles-frame-3 MuiBox-root css-0"
       >
         <div
-          class="makeStyles-wrapper-3 MuiBox-root css-0"
+          class="makeStyles-fixed-4 MuiBox-root css-0"
         >
           <div
-            class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
+            class="makeStyles-breadcrumb-5 MuiBox-root css-0"
           >
             <nav
               aria-label="breadcrumb"
@@ -566,9 +572,6 @@ Object {
           </div>
         </div>
       </div>
-      <div
-        class="MuiBox-root css-ca23fy"
-      />
       <div
         class="MuiBox-root css-1l11j2j"
       >
@@ -921,6 +924,12 @@ Object {
                         class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
                         scope="col"
                       >
+                        並び替え
+                      </th>
+                      <th
+                        class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                        scope="col"
+                      >
                         削除
                       </th>
                       <th
@@ -941,8 +950,11 @@ Object {
                     class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
                   >
                     <tr
-                      class="MuiTableRow-root css-1lwfqbm-MuiTableRow-root"
+                      class="MuiTableRow-root makeStyles-highlightedTableRow-14 css-1q1u3t4-MuiTableRow-root"
                     >
+                      <td
+                        class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                      />
                       <td
                         class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                       />
@@ -962,7 +974,7 @@ Object {
                         class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                       >
                         <button
-                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-11 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-12 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                           tabindex="0"
                           type="button"
                         >

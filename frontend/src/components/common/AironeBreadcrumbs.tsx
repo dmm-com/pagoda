@@ -1,13 +1,27 @@
 import { Box, Breadcrumbs, Theme } from "@mui/material";
-import { Toolbar } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 
-const useStyles = makeStyles<Theme>(() => ({
-  wrapper: {
-    paddingLeft: "10%",
-    paddingRight: "10%",
-    width: "80%",
+const useStyles = makeStyles<Theme>((theme) => ({
+  frame: {
+    width: "100%",
+    height: "56px",
+  },
+  fixed: {
+    position: "fixed",
+    zIndex: 1,
+    width: "100%",
+    backgroundColor: "white",
+    display: "flex",
+    justifyContent: "center",
+  },
+  breadcrumb: {
+    width: theme.breakpoints.values.lg,
+    "& nav": {
+      display: "flex",
+      height: "56px",
+      padding: "0px 24px",
+    },
   },
 }));
 
@@ -15,25 +29,12 @@ export const AironeBreadcrumbs: FC = ({ children }) => {
   const classes = useStyles();
 
   return (
-    <>
-      <Box
-        sx={{
-          position: "fixed",
-          width: "100%",
-          zIndex: 1,
-          backgroundColor: "white",
-        }}
-      >
-        <Box className={classes.wrapper}>
-          {/* to align paddings with above AppBar */}
-          <Toolbar>
-            <Breadcrumbs aria-label="breadcrumb">{children}</Breadcrumbs>
-          </Toolbar>
+    <Box className={classes.frame}>
+      <Box className={classes.fixed}>
+        <Box className={classes.breadcrumb}>
+          <Breadcrumbs aria-label="breadcrumb">{children}</Breadcrumbs>
         </Box>
       </Box>
-
-      {/* This component is a virtual component for above fixed component */}
-      <Box sx={{ width: "100%", height: "64px" }} />
-    </>
+    </Box>
   );
 };

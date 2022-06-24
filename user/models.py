@@ -167,6 +167,8 @@ class User(AbstractUser):
             datetime.now().strftime("%Y%m%d_%H%M%S"),
         )
         self.email = "deleted__%s" % (self.email)
+        for social_auth in self.social_auth.all():
+            social_auth.delete()
         self.save()
 
     # operations for registering History

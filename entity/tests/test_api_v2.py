@@ -1899,6 +1899,41 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
+    def test_delete_entity(self):
+        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
+        self.assertEqual(resp.status_code, 204)
+
+        self.entity.refresh_from_db()
+        self.assertFalse(self.entity.is_active)
+        self.assertFalse(self.entity.attrs.filter(is_active=True).exists())
+        history: History = History.objects.get(target_obj=self.entity)
+        self.assertEqual(history.user, self.user)
+        self.assertEqual(history.operation, History.DEL_ENTITY)
+        self.assertEqual(history.details.count(), self.entity.attrs.count())
+        self.assertEqual(history.details.first().target_obj, self.entity.attrs.first().aclbase_ptr)
+
+    def test_delete_entity_with_invalid_param(self):
+        resp = self.client.delete("/entity/api/v2/%s/" % "hoge", None, "application/json")
+        self.assertEqual(resp.status_code, 404)
+
+        resp = self.client.delete("/entity/api/v2/%d/" % 9999, None, "application/json")
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json(), {"detail": "Not found."})
+
+        self.entity.delete()
+        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json(), {"detail": "Not found."})
+
+    def test_delete_entity_with_exist_entry(self):
+        self.add_entry(self.user, "entry", self.entity)
+        resp = self.client.delete("/entity/api/v2/%s/" % self.entity.id, None, "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            ["cannot delete Entity because one or more Entries are not deleted"],
+        )
+
     def test_list_entry(self):
         entries = []
         for index in range(2):
@@ -2289,7 +2324,9 @@ class ViewTest(AironeViewTest):
             self.assertEqual(user, self.user)
 
             if handler_name == "before_create_entry":
-                self.assertEqual(args[0], {**params, "schema": self.entity})
+                self.assertEqual(
+                    args[0], {**params, "schema": self.entity, "created_user": self.user}
+                )
 
             if handler_name == "after_create_entry":
                 entry = Entry.objects.get(name="hoge", is_active=True)
