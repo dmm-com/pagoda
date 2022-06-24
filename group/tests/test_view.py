@@ -18,7 +18,6 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse("group:index"))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.context["groups"], [])
 
     def test_index_with_objects(self):
         self.admin_login()
@@ -30,10 +29,6 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse("group:index"))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.context["groups"]), 1)
-        self.assertEqual(resp.context["groups"][0]["id"], group.id)
-        self.assertEqual(resp.context["groups"][0]["name"], group.name)
-        self.assertEqual(list(resp.context["groups"][0]["members"]), [user])
 
     def test_index_with_inactive_user(self):
         self.admin_login()
@@ -50,10 +45,6 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse("group:index"))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.context["groups"]), 1)
-        self.assertEqual(resp.context["groups"][0]["id"], group.id)
-        self.assertEqual(resp.context["groups"][0]["name"], group.name)
-        self.assertEqual(list(resp.context["groups"][0]["members"]), [user1])
 
     def test_create_get(self):
         self.admin_login()
@@ -136,19 +127,21 @@ class ViewTest(AironeViewTest):
         self.assertEqual(created_group.name, "test-group")
         self.assertEqual(created_group.parent_group, parent_group)
 
-    def test_create_port_without_mandatory_params(self):
+    def test_create_without_users(self):
         self.admin_login()
 
         group_count = self._get_group_count()
-
         params = {
             "name": "test-group",
             "users": [],
         }
         resp = self.client.post(reverse("group:do_create"), json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(self._get_group_count(), group_count + 1)
 
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(self._get_group_count(), group_count, "group should not be created")
+        created_group = Group.objects.last()
+        self.assertEqual(created_group.name, "test-group")
+        self.assertFalse(User.objects.filter(groups__name="test-group").exists())
 
     def test_create_port_with_invalid_params(self):
         self.admin_login()
