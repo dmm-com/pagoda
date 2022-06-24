@@ -379,7 +379,6 @@ class ViewTest(AironeViewTest):
             json.dumps(params),
             "application/json",
         )
-        print("[onix-test(10)] %s" % str(resp.content.decode("utf-8")))
         self.assertEqual(resp.status_code, 200)
 
         # get updated group object from database

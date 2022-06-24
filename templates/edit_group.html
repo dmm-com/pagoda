@@ -207,11 +207,9 @@ $(document).ready(function() {
 
     /* initialize event handlers for bootstrap treeview */
     $('#groupTree').on('nodeSelected', function(e, data) {
-      console.log('[onix/groupTree.nodeSelected(10)] ', data);
       $('#edit-form input[name="parent_group"]').val(data.groupId);
     });
     $('#groupTree').on('nodeUnselected', function(e, data) {
-      console.log('[onix/groupTree.nodeUnselected(20)] ', data);
       $('#edit-form input[name="parent_group"]').val(0);
     });
   }).fail(function(data) {
