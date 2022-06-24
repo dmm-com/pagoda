@@ -17,19 +17,7 @@ from user.models import User
 
 @http_get
 def index(request):
-    context = {}
-    context["groups"] = [
-        {
-            "id": x.id,
-            "name": x.name,
-            "members": User.objects.filter(groups__name=x.name, is_active=True).order_by(
-                "username"
-            ),
-        }
-        for x in Group.objects.filter(is_active=True)
-    ]
-
-    return render(request, "list_group.html", context)
+    return render(request, "list_group.html", {})
 
 
 @http_get

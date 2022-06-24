@@ -12,13 +12,13 @@
 {% endblock %}
 
 {% block head %}
+<link rel="stylesheet" href="/static/css/group.css" />
 <style type="text/css"><!--
   {% include 'edit_group.css' %}
 --></style>
 {% endblock %}
 
 {% block content %}
-<script src="/static/js/bootstrap-treeview.js"></script>
 <div class="container">
 <form id="edit-form" name="edit-form" url='{{ submit_ref }}' method='post'>
   {% csrf_token %}
@@ -90,7 +90,7 @@
 
     <div class='collapse' id='collapseConfigureParentGroup'>
       <div class="row">
-        <div class="col-6">
+        <div class="col-6 overflowContainer">
 
           <!-- Command to run on creating VM -->
           <div id='groupTree'>
@@ -112,6 +112,7 @@
 {% endblock %}
 
 {% block script %}
+<script src="/static/js/group.js"></script>
 <script>
 $('#edit-form').submit(function(){
   var selected_users = [];
@@ -176,24 +177,6 @@ $('#group').change(function() {
   });
 });
 
-function convert_hierarchical_groups_to_tree_data(groups) {
-  return groups.map(function(x) {
-    children = convert_hierarchical_groups_to_tree_data(x.children);
-    if (children.length > 0) {
-      return {
-        text: x.name,
-        groupId: x.id,
-        nodes: children,
-      }
-    } else {
-      return {
-        text: x.name,
-        groupId: x.id,
-      }
-    }
-  });
-}
-
 $(document).ready(function() {
   /* Initialize hierarchical group tree table */
   $.ajax({ type: 'GET',
@@ -209,14 +192,18 @@ $(document).ready(function() {
 
     /* select configure parent node */
     const allNodes = $('#groupTree').treeview('getEnabled');
+    {% if parent_group_id %}
     allNodes.filter(g => g.groupId == {{ parent_group_id }}).forEach(function(group) {
       $('#groupTree').treeview('selectNode', group.nodeId);
     });
+    {% endif %}
 
     /* disable current node */
+    {% if default_group_id %}
     allNodes.filter(g => g.groupId == {{ default_group_id }}).forEach(function(group) {
       $('#groupTree').treeview('disableNode', group.nodeId);
     });
+    {% endif %}
 
     /* initialize event handlers for bootstrap treeview */
     $('#groupTree').on('nodeSelected', function(e, data) {
