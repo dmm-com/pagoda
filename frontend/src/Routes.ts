@@ -27,6 +27,8 @@ export const importEntriesPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries/import`;
 export const entityEntriesPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries`;
+export const restoreEntryPath = (entityId: number | string) =>
+  basePath + `entities/${entityId}/restore`;
 export const showEntryHistoryPath = (entryId: number | string) =>
   basePath + `entries/${entryId}/history`;
 export const entryPath = (entryId: number | string) =>

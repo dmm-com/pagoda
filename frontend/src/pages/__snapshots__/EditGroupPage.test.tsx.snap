@@ -80,7 +80,7 @@ Object {
               グループ名
             </p>
             <div
-              class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-a88p61-MuiInputBase-root-MuiInput-root"
+              class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-1tcs2i1-MuiInputBase-root-MuiInput-root"
               required=""
             >
               <input
@@ -101,7 +101,7 @@ Object {
               ユーザ管理
             </p>
             <div
-              class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+              class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary  css-1yk1gt9-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
             >
               <select
                 class="MuiNativeSelect-select MuiNativeSelect-outlined MuiNativeSelect-multiple MuiOutlinedInput-input MuiInputBase-input css-ffg8md-MuiNativeSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
@@ -123,7 +123,7 @@ Object {
                 class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
               >
                 <legend
-                  class="css-nnbavb"
+                  class="css-hdw1oc"
                 >
                   <span
                     class="notranslate"
@@ -224,7 +224,7 @@ Object {
             グループ名
           </p>
           <div
-            class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-a88p61-MuiInputBase-root-MuiInput-root"
+            class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-1tcs2i1-MuiInputBase-root-MuiInput-root"
             required=""
           >
             <input
@@ -245,7 +245,7 @@ Object {
             ユーザ管理
           </p>
           <div
-            class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+            class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary  css-1yk1gt9-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
           >
             <select
               class="MuiNativeSelect-select MuiNativeSelect-outlined MuiNativeSelect-multiple MuiOutlinedInput-input MuiInputBase-input css-ffg8md-MuiNativeSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
@@ -267,7 +267,7 @@ Object {
               class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
             >
               <legend
-                class="css-nnbavb"
+                class="css-hdw1oc"
               >
                 <span
                   class="notranslate"

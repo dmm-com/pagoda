@@ -6,16 +6,16 @@ Object {
   "baseElement": <body>
     <div>
       <div
-        class="container-fluid MuiBox-root css-0"
+        class="MuiBox-root css-0"
       >
         <div
-          class="makeStyles-frame-1 MuiBox-root css-0"
+          class="makeStyles-frame-3 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-fixed-2 MuiBox-root css-0"
+            class="makeStyles-fixed-4 MuiBox-root css-0"
           >
             <div
-              class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+              class="makeStyles-breadcrumb-5 MuiBox-root css-0"
             >
               <nav
                 aria-label="breadcrumb"
@@ -43,10 +43,44 @@ Object {
                   <li
                     class="MuiBreadcrumbs-li"
                   >
-                    <p
-                      class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                    <a
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      href="/new-ui/entities"
                     >
                       エンティティ一覧
+                    </a>
+                  </li>
+                  <li
+                    aria-hidden="true"
+                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                  >
+                    /
+                  </li>
+                  <li
+                    class="MuiBreadcrumbs-li"
+                  >
+                    <a
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      href="/new-ui/entities/1/entries"
+                    >
+                      aaa
+                       エントリ一覧
+                    </a>
+                  </li>
+                  <li
+                    aria-hidden="true"
+                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                  >
+                    /
+                  </li>
+                  <li
+                    class="MuiBreadcrumbs-li"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    >
+                      aaa
+                       削除エントリの復旧
                     </p>
                   </li>
                 </ol>
@@ -58,13 +92,49 @@ Object {
           class="MuiContainer-root MuiContainer-maxWidthLg css-18vyexx-MuiContainer-root"
         >
           <div
-            class="MuiBox-root css-19h5ycu"
+            class="MuiBox-root css-1y4fa2p"
           >
-            <h2
-              class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter css-icizyq-MuiTypography-root"
+            <div
+              class="MuiBox-root css-kgitkj"
+            />
+            <div
+              class="MuiBox-root css-i9gxme"
             >
-              エンティティ一覧
-            </h2>
+              <h2
+                class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter css-icizyq-MuiTypography-root"
+              >
+                aaa
+              </h2>
+              <h4
+                class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
+              >
+                削除エントリの復旧
+              </h4>
+            </div>
+            <div
+              class="MuiBox-root css-kgitkj"
+            >
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                  data-testid="AppsIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </button>
+            </div>
           </div>
           <div
             class="MuiBox-root css-0"
@@ -105,7 +175,7 @@ Object {
                       aria-invalid="false"
                       class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                       id="mui-1"
-                      placeholder="エンティティ名で絞り込む"
+                      placeholder="エントリを絞り込む"
                       type="text"
                       value=""
                     />
@@ -126,28 +196,6 @@ Object {
                   </div>
                 </div>
               </div>
-              <a
-                aria-label="add"
-                class="MuiButtonBase-root MuiFab-root MuiFab-extended MuiFab-sizeLarge MuiFab-secondary css-1l9vhk9-MuiButtonBase-root-MuiFab-root"
-                href="/new-ui/entities/new"
-                tabindex="0"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                  data-testid="AddIcon"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                  />
-                </svg>
-                新規作成
-                <span
-                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                />
-              </a>
             </div>
             <div
               class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-mhc70k-MuiGrid-root"
@@ -169,7 +217,7 @@ Object {
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/1/entries"
+                          href="/new-ui/entities/undefined/entries/1/details"
                           tabindex="0"
                         >
                           <h6
@@ -189,34 +237,31 @@ Object {
                     <div
                       class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
                     >
-                      <button
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-                        tabindex="0"
-                        type="button"
+                      <div
+                        class="MuiBox-root css-0"
                       >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                          data-testid="MoreVertIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
+                        <button
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                          tabindex="0"
+                          type="button"
                         >
-                          <path
-                            d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="RestoreIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                            />
+                          </svg>
+                          <span
+                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                           />
-                        </svg>
-                        <span
-                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                        />
-                      </button>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div
-                    class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
-                  >
-                    <p
-                      class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-8 css-ahj2mt-MuiTypography-root"
-                    />
                   </div>
                 </div>
               </div>
@@ -237,7 +282,7 @@ Object {
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/2/entries"
+                          href="/new-ui/entities/undefined/entries/2/details"
                           tabindex="0"
                         >
                           <h6
@@ -257,34 +302,31 @@ Object {
                     <div
                       class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
                     >
-                      <button
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-                        tabindex="0"
-                        type="button"
+                      <div
+                        class="MuiBox-root css-0"
                       >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                          data-testid="MoreVertIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
+                        <button
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                          tabindex="0"
+                          type="button"
                         >
-                          <path
-                            d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="RestoreIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                            />
+                          </svg>
+                          <span
+                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                           />
-                        </svg>
-                        <span
-                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                        />
-                      </button>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div
-                    class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
-                  >
-                    <p
-                      class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-8 css-ahj2mt-MuiTypography-root"
-                    />
                   </div>
                 </div>
               </div>
@@ -305,7 +347,7 @@ Object {
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/3/entries"
+                          href="/new-ui/entities/undefined/entries/3/details"
                           tabindex="0"
                         >
                           <h6
@@ -325,34 +367,31 @@ Object {
                     <div
                       class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
                     >
-                      <button
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-                        tabindex="0"
-                        type="button"
+                      <div
+                        class="MuiBox-root css-0"
                       >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                          data-testid="MoreVertIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
+                        <button
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                          tabindex="0"
+                          type="button"
                         >
-                          <path
-                            d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="RestoreIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                            />
+                          </svg>
+                          <span
+                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                           />
-                        </svg>
-                        <span
-                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                        />
-                      </button>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div
-                    class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
-                  >
-                    <p
-                      class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-8 css-ahj2mt-MuiTypography-root"
-                    />
                   </div>
                 </div>
               </div>
@@ -425,16 +464,16 @@ Object {
   </body>,
   "container": <div>
     <div
-      class="container-fluid MuiBox-root css-0"
+      class="MuiBox-root css-0"
     >
       <div
-        class="makeStyles-frame-1 MuiBox-root css-0"
+        class="makeStyles-frame-3 MuiBox-root css-0"
       >
         <div
-          class="makeStyles-fixed-2 MuiBox-root css-0"
+          class="makeStyles-fixed-4 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+            class="makeStyles-breadcrumb-5 MuiBox-root css-0"
           >
             <nav
               aria-label="breadcrumb"
@@ -462,10 +501,44 @@ Object {
                 <li
                   class="MuiBreadcrumbs-li"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/new-ui/entities"
                   >
                     エンティティ一覧
+                  </a>
+                </li>
+                <li
+                  aria-hidden="true"
+                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                >
+                  /
+                </li>
+                <li
+                  class="MuiBreadcrumbs-li"
+                >
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/new-ui/entities/1/entries"
+                  >
+                    aaa
+                     エントリ一覧
+                  </a>
+                </li>
+                <li
+                  aria-hidden="true"
+                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                >
+                  /
+                </li>
+                <li
+                  class="MuiBreadcrumbs-li"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  >
+                    aaa
+                     削除エントリの復旧
                   </p>
                 </li>
               </ol>
@@ -477,13 +550,49 @@ Object {
         class="MuiContainer-root MuiContainer-maxWidthLg css-18vyexx-MuiContainer-root"
       >
         <div
-          class="MuiBox-root css-19h5ycu"
+          class="MuiBox-root css-1y4fa2p"
         >
-          <h2
-            class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter css-icizyq-MuiTypography-root"
+          <div
+            class="MuiBox-root css-kgitkj"
+          />
+          <div
+            class="MuiBox-root css-i9gxme"
           >
-            エンティティ一覧
-          </h2>
+            <h2
+              class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter css-icizyq-MuiTypography-root"
+            >
+              aaa
+            </h2>
+            <h4
+              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
+            >
+              削除エントリの復旧
+            </h4>
+          </div>
+          <div
+            class="MuiBox-root css-kgitkj"
+          >
+            <button
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+              tabindex="0"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                data-testid="AppsIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
+                />
+              </svg>
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </button>
+          </div>
         </div>
         <div
           class="MuiBox-root css-0"
@@ -524,7 +633,7 @@ Object {
                     aria-invalid="false"
                     class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                     id="mui-1"
-                    placeholder="エンティティ名で絞り込む"
+                    placeholder="エントリを絞り込む"
                     type="text"
                     value=""
                   />
@@ -545,28 +654,6 @@ Object {
                 </div>
               </div>
             </div>
-            <a
-              aria-label="add"
-              class="MuiButtonBase-root MuiFab-root MuiFab-extended MuiFab-sizeLarge MuiFab-secondary css-1l9vhk9-MuiButtonBase-root-MuiFab-root"
-              href="/new-ui/entities/new"
-              tabindex="0"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                data-testid="AddIcon"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                />
-              </svg>
-              新規作成
-              <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
-            </a>
           </div>
           <div
             class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-mhc70k-MuiGrid-root"
@@ -588,7 +675,7 @@ Object {
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/1/entries"
+                        href="/new-ui/entities/undefined/entries/1/details"
                         tabindex="0"
                       >
                         <h6
@@ -608,34 +695,31 @@ Object {
                   <div
                     class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
                   >
-                    <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-                      tabindex="0"
-                      type="button"
+                    <div
+                      class="MuiBox-root css-0"
                     >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                        data-testid="MoreVertIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
                       >
-                        <path
-                          d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="RestoreIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                          />
+                        </svg>
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                         />
-                      </svg>
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
-                    </button>
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div
-                  class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
-                >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-8 css-ahj2mt-MuiTypography-root"
-                  />
                 </div>
               </div>
             </div>
@@ -656,7 +740,7 @@ Object {
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/2/entries"
+                        href="/new-ui/entities/undefined/entries/2/details"
                         tabindex="0"
                       >
                         <h6
@@ -676,34 +760,31 @@ Object {
                   <div
                     class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
                   >
-                    <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-                      tabindex="0"
-                      type="button"
+                    <div
+                      class="MuiBox-root css-0"
                     >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                        data-testid="MoreVertIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
                       >
-                        <path
-                          d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="RestoreIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                          />
+                        </svg>
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                         />
-                      </svg>
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
-                    </button>
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div
-                  class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
-                >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-8 css-ahj2mt-MuiTypography-root"
-                  />
                 </div>
               </div>
             </div>
@@ -724,7 +805,7 @@ Object {
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/3/entries"
+                        href="/new-ui/entities/undefined/entries/3/details"
                         tabindex="0"
                       >
                         <h6
@@ -744,34 +825,31 @@ Object {
                   <div
                     class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
                   >
-                    <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-                      tabindex="0"
-                      type="button"
+                    <div
+                      class="MuiBox-root css-0"
                     >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                        data-testid="MoreVertIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
                       >
-                        <path
-                          d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="RestoreIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                          />
+                        </svg>
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                         />
-                      </svg>
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
-                    </button>
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div
-                  class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
-                >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-8 css-ahj2mt-MuiTypography-root"
-                  />
                 </div>
               </div>
             </div>
