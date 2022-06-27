@@ -364,6 +364,10 @@ def restore_entry(self, job_id):
         # remove status flag which is set before calling this
         entry.del_status(Entry.STATUS_CREATING)
 
+        # Send notification to the webhook URL
+        job_notify = Job.new_notify_create_entry(job.user, entry)
+        job_notify.run()
+
         # calling custom view processing if necessary
         if custom_view.is_custom("after_restore_entry", entry.schema.name):
             custom_view.call_custom("after_restore_entry", entry.schema.name, job.user, entry)

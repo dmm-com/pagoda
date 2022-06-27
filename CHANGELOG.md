@@ -11,6 +11,10 @@
   Contributed by @hinashi
 * Fixed an issue where None was displayed in array_named_entry attribute
   Contributed by @hinashi
+* Fixed the header of webhook is not set
+  Contributed by @hinashi
+* Fixed entry recovery and attribute value revert not sending webhooks
+  Contributed by @hinashi
 
 ## v3.11.0
 
