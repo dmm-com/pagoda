@@ -142,6 +142,7 @@ def create(request):
             "members": User.objects.filter(is_active=True),
         },
     )
+    context["parent_group_id"] = 0
 
     return render(request, "edit_group.html", context)
 

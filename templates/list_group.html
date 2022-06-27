@@ -22,6 +22,7 @@
     <div class="col">
       <div class="float-left">
         <button name="button_new" type="button" class="btn btn-primary" onclick="location.href='/group/create'">新規作成</button>
+        <button name="button_delete" type="button" class="btn btn-danger" id="deleteGroup" disabled>削除</button>
         <button name="button_export" type="button" class="btn btn-secondary" onclick="location.href='/group/export/'">エクスポート</button>
         <button name="button_import" type="button" class="btn btn-secondary" onclick="location.href='/group/import/'">インポート</button>
       </div>
@@ -50,7 +51,31 @@
 <script src="/static/js/group.js"></script>
 <script>
 
+function handleDeleteGroup(e) {
+  if (window.confirm(CHECK_PHRASE)) {
+      SendHttpPost(`/group/do_delete/${ selectedGroup.id }`).done(function(data) {
+      MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, `Success to delete ${ selectedGroup.name }`);
+
+      location.reload();
+    }).fail(function(data) {
+      MessageBox.error(data.responseText);
+    });
+  }
+}
+
+var selectedGroup = null;
+function handleUnselectNode(e, data) {
+  selectedGroup = null;
+  $("#deleteGroup").prop("disabled", true);
+  $('#memberList').prop("hidden", true);
+}
 function handleSelectNode(e, data) {
+  selectedGroup = {
+    name: data.text,
+    id: data.groupId,
+  };
+  $("#deleteGroup").prop("disabled", false);
+  $('#memberList').prop("hidden", false);
   $.ajax({ type: 'GET',
     url: `/group/api/v2/groups/${ data.groupId }`,
     data: {},
@@ -73,7 +98,8 @@ function handleSelectNode(e, data) {
 }
 
 $(document).ready(function() {
-  $('.del-item').on('click', confirm_delete_table_item);
+  //$('.del-item').on('click', confirm_delete_table_item);
+  $('#deleteGroup').on('click', handleDeleteGroup);
 
   $.ajax({ type: 'GET',
     url: "/group/api/v1/tree",
@@ -89,6 +115,7 @@ $(document).ready(function() {
 
     /* register event handler when user select group item */
     $('#groupTree').on('nodeSelected', handleSelectNode);
+    $('#groupTree').on('nodeUnselected', handleUnselectNode);
 
   }).fail(function(data) {
     MessageBox.error(data.responseText);

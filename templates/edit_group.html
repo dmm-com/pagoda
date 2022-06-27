@@ -80,7 +80,7 @@
 
   <!-- Input items for advanced guest settings -->
   <div class='config_advance'>
-    <div class="row toggle">
+    <div class="row toggle select_parent_group">
       <div class="col-12">
         <h6 href='#collapseConfigureParentGroup' data-toggle='collapse' aria-expanded="false">
           Select parent group (Optional)
@@ -105,7 +105,7 @@
     <button type="submit" class="btn btn-primary">更新</button>
   {% endif %}
 
-  <input type='hidden' name="parent_group" value="0" />
+  <input type='hidden' name="parent_group" value="{{ parent_group_id }}" />
 </form>
 </div>
 
