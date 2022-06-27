@@ -769,6 +769,10 @@ def revert_attrv(request, recv_data):
         # register update to the Elasticsearch
         attr.parent_entry.register_es()
 
+        # Send notification to the webhook URL
+        job_notify = Job.new_notify_update_entry(request.user, attr.parent_entry)
+        job_notify.run()
+
         # call custom-view if it exists
         if custom_view.is_custom("revert_attrv", attr.parent_entry.schema.name):
             return custom_view.call_custom(
