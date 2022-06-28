@@ -1,4 +1,3 @@
-from airone.exceptions.group import GroupOperationException
 from django.db import models
 from django.contrib.auth.models import Group as DjangoGroup
 from datetime import datetime
@@ -14,8 +13,10 @@ class Group(DjangoGroup):
         """
         Override Model.delete method of Django
         """
-        if self.subordinates.filter(is_active=True).exists():
-            raise GroupOperationException("You can't delete group that has subordinates")
+        # replace parent_group of subordinates instances
+        for child_group in self.subordinates.filter(is_active=True):
+            child_group.parent_group = self.parent_group
+            child_group.save(update_fields=["parent_group"])
 
         self.is_active = False
         self.name = "%s_deleted_%s" % (

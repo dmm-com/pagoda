@@ -1,4 +1,3 @@
-from airone.exceptions.group import GroupOperationException
 from django.test import TestCase
 from group.models import Group
 from user.models import User
@@ -36,13 +35,11 @@ class ModelTest(TestCase):
 
     def test_delete_parent_group(self):
         """This try to delete Group that has subordinates.
-        This expects to fail to delete parent one.
+        This expects to replace parent_group member of subordinates
         """
-        for group in [self.group0, self.group2]:
-            with self.assertRaises(GroupOperationException) as cm:
-                group.delete()
-
-            self.assertEqual(cm.exception.args[0], "You can't delete group that has subordinates")
+        self.group2.delete()
+        self.group3.refresh_from_db()
+        self.assertEqual(self.group3.parent_group, self.group0)
 
     def test_delete_parent_lonely_group(self):
         """This try to delete Group that all subordinates have already been deleted.
