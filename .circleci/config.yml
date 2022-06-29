@@ -44,7 +44,7 @@ jobs:
       - run:
           name: Install additional dependencies
           command: |
-            sudo apt-get install -y libldap2-dev libsasl2-dev
+            sudo apt-get install -y libldap2-dev libsasl2-dev libxmlsec1-dev
       - run:
           name: Testing
           command: |
@@ -79,7 +79,7 @@ jobs:
           name: Install additional dependencies
           command: |
             sudo apt-get update
-            sudo apt-get install -y libldap2-dev libsasl2-dev
+            sudo apt-get install -y libldap2-dev libsasl2-dev libxmlsec1-dev
       - run:
           name: flake8
           command: |
@@ -103,7 +103,7 @@ jobs:
           name: Install additional dependencies
           command: |
             sudo apt-get update
-            sudo apt-get install -y libldap2-dev libsasl2-dev
+            sudo apt-get install -y libldap2-dev libsasl2-dev libxmlsec1-dev
       - run:
           name: mypy
           command: |

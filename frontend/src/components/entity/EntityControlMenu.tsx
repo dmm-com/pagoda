@@ -14,10 +14,12 @@ import {
   aclPath,
   entityHistoryPath,
   entityPath,
+  entitiesPath,
   importEntriesPath,
-} from "../../Routes";
-import { deleteEntity, exportEntries } from "../../utils/AironeAPIClient";
-import { Confirmable } from "../common/Confirmable";
+} from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
+import { Confirmable } from "components/common/Confirmable";
+import { exportEntries } from "utils/AironeAPIClient";
 
 type ExportFormatType = "YAML" | "CSV";
 
@@ -36,12 +38,19 @@ export const EntityControlMenu: FC<Props> = ({
   const history = useHistory();
 
   const handleDelete = async (event, entityId: number) => {
-    const resp = await deleteEntity(entityId);
-    if (resp.ok) {
-      history.go(0);
-    } else {
-      enqueueSnackbar("エンティティの削除が失敗しました", { variant: "error" });
-    }
+    await aironeApiClientV2
+      .deleteEntity(entityId)
+      .then((resp) => {
+        enqueueSnackbar("エンティティの削除が完了しました", {
+          variant: "success",
+        });
+        history.replace(entitiesPath());
+      })
+      .catch((e) => {
+        enqueueSnackbar("エンティティの削除が失敗しました", {
+          variant: "error",
+        });
+      });
   };
   const handleExport = async (entityId: number, format: ExportFormatType) => {
     const resp = await exportEntries(entityId, format);

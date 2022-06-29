@@ -19,7 +19,7 @@ class EventNotificationTest(AironeViewTest):
         self.webhook = Webhook.objects.create(
             **{
                 "url": "https://example.com",
-                "headers": json.dumps({"Content-Type": "application/json"}),
+                "headers": [{"header_key": "Content-Type", "header_value": "application/json"}],
                 "is_enabled": True,
                 "is_verified": True,
             }

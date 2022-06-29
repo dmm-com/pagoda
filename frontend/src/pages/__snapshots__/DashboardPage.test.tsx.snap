@@ -9,13 +9,13 @@ Object {
         class="MuiBox-root css-0"
       >
         <div
-          class="MuiBox-root css-1l11j2j"
+          class="makeStyles-frame-4 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-wrapper-4 MuiBox-root css-0"
+            class="makeStyles-fixed-5 MuiBox-root css-0"
           >
             <div
-              class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
+              class="makeStyles-breadcrumb-6 MuiBox-root css-0"
             >
               <nav
                 aria-label="breadcrumb"
@@ -38,9 +38,6 @@ Object {
             </div>
           </div>
         </div>
-        <div
-          class="MuiBox-root css-ca23fy"
-        />
         <div
           class="makeStyles-container-1 MuiBox-root css-0"
         >
@@ -110,13 +107,13 @@ Object {
       class="MuiBox-root css-0"
     >
       <div
-        class="MuiBox-root css-1l11j2j"
+        class="makeStyles-frame-4 MuiBox-root css-0"
       >
         <div
-          class="makeStyles-wrapper-4 MuiBox-root css-0"
+          class="makeStyles-fixed-5 MuiBox-root css-0"
         >
           <div
-            class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular css-1t29gy6-MuiToolbar-root"
+            class="makeStyles-breadcrumb-6 MuiBox-root css-0"
           >
             <nav
               aria-label="breadcrumb"
@@ -139,9 +136,6 @@ Object {
           </div>
         </div>
       </div>
-      <div
-        class="MuiBox-root css-ca23fy"
-      />
       <div
         class="makeStyles-container-1 MuiBox-root css-0"
       >

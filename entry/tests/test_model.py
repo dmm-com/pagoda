@@ -1389,13 +1389,11 @@ class ModelTest(AironeTestCase):
             if attr["name"] == "obj":
                 self.assertIsNone(attr["last_value"])
             elif attr["name"] == "name":
-                self.assertEqual(attr["last_value"]["value"], "hoge")
-                self.assertFalse(any([x in attr["last_value"] for x in ["id", "name"]]))
+                self.assertEqual(attr["last_value"], {"value": "hoge"})
             elif attr["name"] == "arr_obj":
                 self.assertEqual(attr["last_value"], [])
             elif attr["name"] == "arr_name":
-                self.assertEqual([x["value"] for x in attr["last_value"]], ["hoge"])
-                self.assertFalse(any([x in attr["last_value"] for x in ["id", "name"]]))
+                self.assertEqual(attr["last_value"], [{"value": "hoge"}])
 
     def test_get_value_of_attrv(self):
         user = User.objects.create(username="hoge")
@@ -2129,7 +2127,7 @@ class ModelTest(AironeTestCase):
             "arr_ref": {
                 "type": AttrTypeValue["array_object"],
                 "value": [ref_entries[2]],
-                "expected_value": [{"name": "", "id": ""}],
+                "expected_value": [],
             },
             "arr_name": {
                 "type": AttrTypeValue["array_named_object"],

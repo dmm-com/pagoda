@@ -178,6 +178,18 @@ class AironeApiClientV2 {
     );
   }
 
+  async deleteEntity(id: number): Promise<void> {
+    return await this.entity.entityApiV2Destroy(
+      { id },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
   async getEntry(id: number): Promise<EntryRetrieve> {
     return await this.entry.entryApiV2Retrieve({ id });
   }

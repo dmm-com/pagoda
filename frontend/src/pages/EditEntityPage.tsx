@@ -1,7 +1,7 @@
 import { Box, Typography, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -185,6 +185,7 @@ export const EditEntityPage: FC = () => {
           setSubmittable={setSubmittable}
         />
       </Box>
+      <Prompt message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？" />
     </Box>
   );
 };
