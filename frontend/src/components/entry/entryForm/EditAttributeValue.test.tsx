@@ -10,8 +10,6 @@ import { DjangoContext } from "../../../utils/DjangoContext";
 import { EditAttributeValue } from "./EditAttributeValue";
 
 const mockHandleChangeAttribute = (e) => undefined;
-const mockHandleNarrowDownEntries = (e) => undefined;
-const mockHandleNarrowDownGroups = (e) => undefined;
 const mockHandleClickDeleteListItem = (e) => undefined;
 
 beforeAll(() => {
@@ -49,19 +47,19 @@ const attributes = [
     elem: "ElemBool",
   },
   {
-    value: { asObject: [{ id: 100, name: "hoge", checked: false }] },
+    value: { asObject: { id: 100, name: "hoge", checked: false } },
     type: "object",
     elem: "ElemObject",
   },
   {
     value: {
-      asNamedObject: { foo: [{ id: 100, name: "hoge", checked: false }] },
+      asNamedObject: { foo: { id: 100, name: "hoge", checked: false } },
     },
     type: "named_object",
     elem: "ElemNamedObject",
   },
   {
-    value: { asGroup: [{ id: 100, name: "hoge", checked: false }] },
+    value: { asGroup: { id: 100, name: "hoge", checked: false } },
     type: "group",
     elem: "ElemGroup",
   },
@@ -76,8 +74,8 @@ const arrayAttributes = [
   {
     value: {
       asArrayObject: [
-        [{ id: 100, name: "hoge", checked: false }],
-        [{ id: 200, name: "fuge", checked: false }],
+        { id: 100, name: "hoge", checked: false },
+        { id: 200, name: "fuge", checked: false },
       ],
     },
     type: "array_object",
@@ -86,8 +84,8 @@ const arrayAttributes = [
   {
     value: {
       asArrayNamedObject: [
-        { foo: [{ id: 100, name: "hoge", checked: false }] },
-        { bar: [{ id: 200, name: "fuga", checked: false }] },
+        { foo: { id: 100, name: "hoge", checked: false } },
+        { bar: { id: 200, name: "fuga", checked: false } },
       ],
     },
     type: "array_named_object",
@@ -96,8 +94,8 @@ const arrayAttributes = [
   {
     value: {
       asArrayGroup: [
-        [{ id: 100, name: "hoge", checked: false }],
-        [{ id: 200, name: "fuge", checked: false }],
+        { id: 100, name: "hoge", checked: false },
+        { id: 200, name: "fuge", checked: false },
       ],
     },
     type: "array_group",
@@ -111,6 +109,7 @@ attributes.forEach((attribute) => {
     const attrName = "hoge";
     const attrValue = attribute.value;
     const attrType = djangoContext.attrTypeValue[attribute.type];
+    console.log('[onix-test/EditAttributeValue(00)] attrValue', attrValue);
     const wrapper = shallow(
       <EditAttributeValue
         attrName={attrName}
@@ -119,8 +118,6 @@ attributes.forEach((attribute) => {
           type: attrType,
         }}
         handleChangeAttribute={mockHandleChangeAttribute}
-        handleNarrowDownEntries={mockHandleNarrowDownEntries}
-        handleNarrowDownGroups={mockHandleNarrowDownGroups}
         handleClickDeleteListItem={mockHandleClickDeleteListItem}
       />
     );
@@ -148,8 +145,6 @@ arrayAttributes.forEach((arrayAttribute) => {
           type: attrType,
         }}
         handleChangeAttribute={mockHandleChangeAttribute}
-        handleNarrowDownEntries={mockHandleNarrowDownEntries}
-        handleNarrowDownGroups={mockHandleNarrowDownGroups}
         handleClickDeleteListItem={mockHandleClickDeleteListItem}
       />
     );
