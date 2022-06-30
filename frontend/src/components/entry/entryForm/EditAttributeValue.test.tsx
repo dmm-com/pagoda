@@ -109,7 +109,7 @@ attributes.forEach((attribute) => {
     const attrName = "hoge";
     const attrValue = attribute.value;
     const attrType = djangoContext.attrTypeValue[attribute.type];
-    console.log('[onix-test/EditAttributeValue(00)] attrValue', attrValue);
+    console.log("[onix-test/EditAttributeValue(00)] attrValue", attrValue);
     const wrapper = shallow(
       <EditAttributeValue
         attrName={attrName}
