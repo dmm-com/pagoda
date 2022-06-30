@@ -71,28 +71,41 @@ Object {
           </div>
         </div>
         <div
-          class="MuiBox-root css-1l11j2j"
+          class="makeStyles-frame-6 MuiBox-root css-0"
         >
           <div
-            class="MuiBox-root css-tihedn"
+            class="makeStyles-fixed-7 MuiBox-root css-0"
           >
             <div
-              class="MuiGrid-root MuiGrid-container css-11lq3yg-MuiGrid-root"
+              class="makeStyles-headerTop-8 MuiBox-root css-0"
             >
               <div
-                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-10 css-1uzrzkv-MuiGrid-root"
+                class="makeStyles-titleBox-10 MuiBox-root css-0"
               >
                 <h2
-                  class="MuiTypography-root MuiTypography-h2 css-1sra7t5-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-h2 makeStyles-title-11 css-1l0a44s-MuiTypography-root"
                 >
                   新規エンティティの作成
                 </h2>
+                <h4
+                  class="MuiTypography-root MuiTypography-h4 css-1yvpk5c-MuiTypography-root"
+                />
               </div>
               <div
-                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-2 css-a0vo9r-MuiGrid-root"
+                class="MuiBox-root css-zdpt2t"
+              />
+            </div>
+            <div
+              class="makeStyles-headerBottom-9 MuiBox-root css-0"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+              />
+              <div
+                class="MuiBox-root css-zdpt2t"
               >
                 <div
-                  class="MuiBox-root css-17772hy"
+                  class="MuiBox-root css-1l4w6pd"
                 >
                   <div
                     class="MuiBox-root css-qbrse1"
@@ -123,14 +136,11 @@ Object {
                 </div>
               </div>
             </div>
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-ez40jo-MuiDivider-root"
+            />
           </div>
-          <hr
-            class="MuiDivider-root MuiDivider-fullWidth css-1x1mjen-MuiDivider-root"
-          />
         </div>
-        <div
-          class="MuiBox-root css-8xc5va"
-        />
         <div
           class="MuiBox-root css-ao096t"
         >
@@ -448,7 +458,7 @@ Object {
                       class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
                     >
                       <tr
-                        class="MuiTableRow-root makeStyles-highlightedTableRow-14 css-1q1u3t4-MuiTableRow-root"
+                        class="MuiTableRow-root makeStyles-highlightedTableRow-20 css-1q1u3t4-MuiTableRow-root"
                       >
                         <td
                           class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -472,7 +482,7 @@ Object {
                           class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                         >
                           <button
-                            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-12 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-18 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                             tabindex="0"
                             type="button"
                           >
@@ -573,28 +583,41 @@ Object {
         </div>
       </div>
       <div
-        class="MuiBox-root css-1l11j2j"
+        class="makeStyles-frame-6 MuiBox-root css-0"
       >
         <div
-          class="MuiBox-root css-tihedn"
+          class="makeStyles-fixed-7 MuiBox-root css-0"
         >
           <div
-            class="MuiGrid-root MuiGrid-container css-11lq3yg-MuiGrid-root"
+            class="makeStyles-headerTop-8 MuiBox-root css-0"
           >
             <div
-              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-10 css-1uzrzkv-MuiGrid-root"
+              class="makeStyles-titleBox-10 MuiBox-root css-0"
             >
               <h2
-                class="MuiTypography-root MuiTypography-h2 css-1sra7t5-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h2 makeStyles-title-11 css-1l0a44s-MuiTypography-root"
               >
                 新規エンティティの作成
               </h2>
+              <h4
+                class="MuiTypography-root MuiTypography-h4 css-1yvpk5c-MuiTypography-root"
+              />
             </div>
             <div
-              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-2 css-a0vo9r-MuiGrid-root"
+              class="MuiBox-root css-zdpt2t"
+            />
+          </div>
+          <div
+            class="makeStyles-headerBottom-9 MuiBox-root css-0"
+          >
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+            />
+            <div
+              class="MuiBox-root css-zdpt2t"
             >
               <div
-                class="MuiBox-root css-17772hy"
+                class="MuiBox-root css-1l4w6pd"
               >
                 <div
                   class="MuiBox-root css-qbrse1"
@@ -625,14 +648,11 @@ Object {
               </div>
             </div>
           </div>
+          <hr
+            class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-ez40jo-MuiDivider-root"
+          />
         </div>
-        <hr
-          class="MuiDivider-root MuiDivider-fullWidth css-1x1mjen-MuiDivider-root"
-        />
       </div>
-      <div
-        class="MuiBox-root css-8xc5va"
-      />
       <div
         class="MuiBox-root css-ao096t"
       >
@@ -950,7 +970,7 @@ Object {
                     class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
                   >
                     <tr
-                      class="MuiTableRow-root makeStyles-highlightedTableRow-14 css-1q1u3t4-MuiTableRow-root"
+                      class="MuiTableRow-root makeStyles-highlightedTableRow-20 css-1q1u3t4-MuiTableRow-root"
                     >
                       <td
                         class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -974,7 +994,7 @@ Object {
                         class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                       >
                         <button
-                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-12 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-18 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                           tabindex="0"
                           type="button"
                         >

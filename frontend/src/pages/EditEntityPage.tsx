@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
 import { Link, Prompt } from "react-router-dom";
@@ -53,7 +53,6 @@ export const EditEntityPage: FC = () => {
     history.replace(entitiesPath());
   };
   const handleSubmit = async () => {
-    console.log("handleSubmit");
     const createMode = entityId === undefined;
     // Adjusted attributes for the API
     const attrs = entityInfo.attrs.map((attr, index) => {
@@ -149,16 +148,31 @@ export const EditEntityPage: FC = () => {
         </Typography>
       </AironeBreadcrumbs>
 
-      {/* TODO z-index, position: fixed, margin-top, background-color */}
       <PageHeader
-        isSubmittable={submittable}
-        handleSubmit={handleSubmit}
-        handleCancel={handleCancel}
-      >
-        {entity?.value != null
-          ? entity.value.name + "の編集"
-          : "新規エンティティの作成"}
-      </PageHeader>
+        title={
+          entity?.value != null ? entity.value.name : "新規エンティティの作成"
+        }
+        subTitle={entity?.value && "エンティテイティ詳細 / 編集"}
+        componentSubmits={
+          <Box display="flex" justifyContent="center">
+            <Box mx="4px">
+              <Button
+                variant="contained"
+                color="secondary"
+                disabled={!submittable}
+                onClick={handleSubmit}
+              >
+                保存
+              </Button>
+            </Box>
+            <Box mx="4px">
+              <Button variant="outlined" color="primary" onClick={handleCancel}>
+                キャンセル
+              </Button>
+            </Box>
+          </Box>
+        }
+      />
 
       <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
         <EntityForm
