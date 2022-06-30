@@ -13,7 +13,7 @@ import {
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import React, { FC, useMemo } from "react";
+import React, { FC, useMemo, useState } from "react";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../../../apiclient/AironeApiClientV2";
@@ -40,7 +40,10 @@ const AirOneReferralBox: FC<any> = ({
   options,
   defaultValue,
   onChange,
+  onInputChange,
+  keyword,
 }) => {
+
   return (
     <Autocomplete
       sx={{ width: "50%" }}
@@ -49,12 +52,16 @@ const AirOneReferralBox: FC<any> = ({
       getOptionLabel={(option) => option.name}
       defaultValue={defaultValue}
       onChange={onChange}
+      onInputChange={onInputChange}
       renderInput={(params) => (
         <TextField
+          // {console.log('[onix/AirOneReferralBox(10)]', params)}
           {...params}
           variant="standard"
           label="Multiple values"
           placeholder="Favorites"
+          // inputProps={{ defaultValue: keyword }}
+          // inputProps={{...params.inputProps, value="hoge"}}
         />
       )}
     />
@@ -137,10 +144,12 @@ const ElemObjects: FC<
   handleChange,
   handleClickDeleteListItem,
 }) => {
+  const [keyword, setKeyword] = useState("");
+
   // FIXME Implement and use API V2
   // TODO call it reactively to avoid loading API???
   const referrals = useAsync(async () => {
-    const resp = await getAttrReferrals(attrId ?? schemaId);
+    const resp = await getAttrReferrals(attrId ?? schemaId, keyword);
     const data = await resp.json();
 
     attrValue.forEach((v) => {
@@ -150,7 +159,8 @@ const ElemObjects: FC<
     });
 
     return data.results;
-  });
+
+  }, [keyword]);
 
   const defaultValue = useMemo(() => {
     if (attrValue == null) {
@@ -176,6 +186,11 @@ const ElemObjects: FC<
             onChange={(e, value) => {
               handleChange(attrName, attrType, value);
             }}
+            onInputChange={(e, value) => {
+              console.log("onInputChange", value);
+              setKeyword(value);
+            }}
+            keyword={keyword}
           />
         )}
         {index !== undefined && (
