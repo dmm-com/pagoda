@@ -1,7 +1,8 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, IconButton, Typography, Button } from "@mui/material";
+import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { EntryControlMenu } from "../components/entry/EntryControlMenu";
@@ -21,11 +22,14 @@ import { CopyForm } from "components/entry/CopyForm";
 import { FailedToGetEntry } from "utils/Exceptions";
 
 export const CopyEntryPage: FC = () => {
+  const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
   const { entityId, entryId } =
     useTypedParams<{ entityId: number; entryId: number }>();
-
   const [entryAnchorEl, setEntryAnchorEl] =
     useState<HTMLButtonElement | null>();
+  // newline delimited string value, not string[]
+  const [entries, setEntries] = useState<string>("");
 
   const entry = useAsync(async () => {
     return await aironeApiClientV2.getEntry(entryId);
@@ -40,6 +44,26 @@ export const CopyEntryPage: FC = () => {
   if (entry.loading) {
     return <Loading />;
   }
+
+  const handleCopy = async () => {
+    await aironeApiClientV2
+      .copyEntry(entryId, entries.split("\n"))
+      .then((resp) => {
+        enqueueSnackbar("エントリコピーのジョブ登録が成功しました", {
+          variant: "success",
+        });
+        history.replace(entityEntriesPath(entityId));
+      })
+      .catch((error) => {
+        enqueueSnackbar("エントリコピーのジョブ登録が失敗しました", {
+          variant: "error",
+        });
+      });
+  };
+
+  const handleCancel = () => {
+    history.replace(entryDetailsPath(entry.value.schema.id, entry.value.id));
+  };
 
   return (
     <Box>
@@ -66,15 +90,27 @@ export const CopyEntryPage: FC = () => {
       </AironeBreadcrumbs>
 
       <PageHeader
+        title={entry.value.name}
+        subTitle="エントリのコピーを作成"
+        description={
+          "入力した各行ごとに " +
+          entry.value.name.substring(0, 50) +
+          " と同じ属性を持つ別のエントリを作成"
+        }
         componentSubmits={
-          <Box display="flex" justifyContent="center" my="32px">
+          <Box display="flex" justifyContent="center">
             <Box mx="4px">
-              <Button variant="contained" color="secondary">
-                コピー
+              <Button
+                variant="contained"
+                color="secondary"
+                disabled={!entries}
+                onClick={handleCopy}
+              >
+                コピーを作成
               </Button>
             </Box>
             <Box mx="4px">
-              <Button variant="outlined" color="primary">
+              <Button variant="outlined" color="primary" onClick={handleCancel}>
                 キャンセル
               </Button>
             </Box>
@@ -97,47 +133,10 @@ export const CopyEntryPage: FC = () => {
             />
           </Box>
         }
-      >
-        (TBD)
-      </PageHeader>
+      />
 
-      {/*
-      <Container maxWidth="lg" sx={{ pt: "112px" }}>
-        <Box display="flex">
-          <Box width="50px" />
-          <Box flexGrow="1">
-            <Typography variant="h2" align="center">
-              {entry.value.name}
-            </Typography>
-            <Typography variant="h4" align="center">
-              エントリのコピーを作成
-            </Typography>
-            <Typography align="center" mt="16px" mb="60px">
-              入力した各行ごとに{entry.value.name}
-              と同じ属性を持つ別のエントリを作成
-            </Typography>
-          </Box>
-          <Box width="50px">
-            <IconButton
-              onClick={(e) => {
-                setEntryAnchorEl(e.currentTarget);
-              }}
-            >
-              <AppsIcon />
-            </IconButton>
-            <EntryControlMenu
-              entityId={entityId}
-              entryId={entryId}
-              anchorElem={entryAnchorEl}
-              handleClose={() => setEntryAnchorEl(null)}
-            />
-          </Box>
-        </Box>
-      </Container>
-      */}
-
-      <Box sx={{ borderTop: 1, borderColor: "#0000008A" }}>
-        <CopyForm entityId={entry.value.schema.id} entryId={entry.value.id} />
+      <Box>
+        <CopyForm entries={entries} setEntries={setEntries} />
       </Box>
     </Box>
   );

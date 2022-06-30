@@ -53,7 +53,6 @@ export const EditEntityPage: FC = () => {
     history.replace(entitiesPath());
   };
   const handleSubmit = async () => {
-    console.log("handleSubmit");
     const createMode = entityId === undefined;
     // Adjusted attributes for the API
     const attrs = entityInfo.attrs.map((attr, index) => {
@@ -149,10 +148,13 @@ export const EditEntityPage: FC = () => {
         </Typography>
       </AironeBreadcrumbs>
 
-      {/* TODO z-index, position: fixed, margin-top, background-color */}
       <PageHeader
+        title={
+          entity?.value != null ? entity.value.name : "新規エンティティの作成"
+        }
+        subTitle={entity?.value && "エンティテイティ詳細 / 編集"}
         componentSubmits={
-          <Box display="flex" justifyContent="center" my="32px">
+          <Box display="flex" justifyContent="center">
             <Box mx="4px">
               <Button
                 variant="contained"
@@ -170,11 +172,7 @@ export const EditEntityPage: FC = () => {
             </Box>
           </Box>
         }
-      >
-        {entity?.value != null
-          ? entity.value.name + "の編集"
-          : "新規エンティティの作成"}
-      </PageHeader>
+      />
 
       <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
         <EntityForm
