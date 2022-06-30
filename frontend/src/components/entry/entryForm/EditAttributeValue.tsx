@@ -13,7 +13,7 @@ import {
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../../../apiclient/AironeApiClientV2";
@@ -38,35 +38,26 @@ interface CommonProps {
 const AirOneReferralBox: FC<any> = ({
   multiple,
   options,
-  defaultValue,
+  value,
   onChange,
   onInputChange,
-  onKeyPress,
-  keyword,
 }) => {
-  console.log("keyword", keyword);
-
   return (
     <Autocomplete
       sx={{ width: "50%" }}
       multiple={multiple}
       options={options}
       getOptionLabel={(option) => option.name}
-      defaultValue={defaultValue}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
+      value={value}
       onChange={onChange}
       onInputChange={onInputChange}
-      onKeyPress={onKeyPress}
       renderInput={(params) => (
         <TextField
-          //{console.log(params.inputProps)}
-          // {console.log('[onix/AirOneReferralBox(10)]', params)}
           {...params}
           variant="standard"
           label="Multiple values"
           placeholder="Favorites"
-          // inputProps={{ defaultValue: keyword }}
-          inputProps={{...params.inputProps, value: keyword}}
-          // autoFocus={keyword}
         />
       )}
     />
@@ -150,63 +141,39 @@ const ElemObjects: FC<
   handleClickDeleteListItem,
 }) => {
   const [keyword, setKeyword] = useState("");
-  const [toggle, setToggle] = useState(false);
 
   // FIXME Implement and use API V2
   // TODO call it reactively to avoid loading API???
-  const referrals = useAsync(async () => {
-    const resp = await getAttrReferrals(attrId ?? schemaId, keyword);
-    const data = await resp.json();
+  const [referrals, setReferrals] = useState([]);
 
-    attrValue.forEach((v) => {
-      if (!data.results.map((r) => r.id).includes(v.id)) {
-        data.results.push({ id: v.id, name: v.name });
-      }
+  useEffect(() => {
+    getAttrReferrals(attrId ?? schemaId, keyword).then((resp) => {
+      resp.json().then((data) => {
+        attrValue.forEach((v) => {
+          if (!data.results.map((r) => r.id).includes(v.id)) {
+            data.results.push({ id: v.id, name: v.name });
+          }
+        });
+        setReferrals(data.results);
+      });
     });
-
-    return data.results;
-
-  }, [toggle]);
-
-  const defaultValue = useMemo(() => {
-    if (attrValue == null) {
-      return undefined;
-    }
-    const matched = referrals.value?.filter((e) =>
-      (attrValue as Array<EntryRetrieveValueAsObject>)
-        .map((v) => v.id)
-        .includes(e.id)
-    );
-    return matched ? matched : undefined;
-  }, [referrals.value]);
+  }, [keyword]);
 
   return (
     <Box>
       <Typography>エントリを選択</Typography>
       <Box display="flex" alignItems="center">
-        {!referrals.loading && (
+        {referrals && (
           <AirOneReferralBox
             multiple={true}
-            options={referrals.value ?? []}
-            defaultValue={defaultValue}
+            options={referrals}
+            value={attrValue}
             onChange={(e, value) => {
               handleChange(attrName, attrType, value);
             }}
             onInputChange={(e, value) => {
-              console.log("onInputChange", e);
               setKeyword(value);
-              if (e.key === "Enter") {
-                console.log("onInputChange", "enter");
-                setToggle(!toggle);
-              }
             }}
-            onKeyPress={(e) =>{
-              console.log("onKeyPress", "enter");
-              if (e.key === "Enter") {
-                setToggle(!toggle);
-              }
-            }}
-            keyword={keyword}
           />
         )}
         {index !== undefined && (

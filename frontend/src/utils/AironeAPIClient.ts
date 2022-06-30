@@ -57,8 +57,9 @@ export function getEntrySearch(query: string): Promise<Response> {
 }
 
 export function getAttrReferrals(attr_id, keyword?: string) {
-
-  return fetch(`/entry/api/v1/get_attr_referrals/${attr_id}/?keyword=${keyword ?? ''}`);
+  return fetch(
+    `/entry/api/v1/get_attr_referrals/${attr_id}/?keyword=${keyword ?? ""}`
+  );
 }
 
 export function importEntries(
