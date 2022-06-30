@@ -41,8 +41,10 @@ const AirOneReferralBox: FC<any> = ({
   defaultValue,
   onChange,
   onInputChange,
+  onKeyPress,
   keyword,
 }) => {
+  console.log("keyword", keyword);
 
   return (
     <Autocomplete
@@ -53,15 +55,18 @@ const AirOneReferralBox: FC<any> = ({
       defaultValue={defaultValue}
       onChange={onChange}
       onInputChange={onInputChange}
+      onKeyPress={onKeyPress}
       renderInput={(params) => (
         <TextField
+          //{console.log(params.inputProps)}
           // {console.log('[onix/AirOneReferralBox(10)]', params)}
           {...params}
           variant="standard"
           label="Multiple values"
           placeholder="Favorites"
           // inputProps={{ defaultValue: keyword }}
-          // inputProps={{...params.inputProps, value="hoge"}}
+          inputProps={{...params.inputProps, value: keyword}}
+          // autoFocus={keyword}
         />
       )}
     />
@@ -145,6 +150,7 @@ const ElemObjects: FC<
   handleClickDeleteListItem,
 }) => {
   const [keyword, setKeyword] = useState("");
+  const [toggle, setToggle] = useState(false);
 
   // FIXME Implement and use API V2
   // TODO call it reactively to avoid loading API???
@@ -160,7 +166,7 @@ const ElemObjects: FC<
 
     return data.results;
 
-  }, [keyword]);
+  }, [toggle]);
 
   const defaultValue = useMemo(() => {
     if (attrValue == null) {
@@ -187,8 +193,18 @@ const ElemObjects: FC<
               handleChange(attrName, attrType, value);
             }}
             onInputChange={(e, value) => {
-              console.log("onInputChange", value);
+              console.log("onInputChange", e);
               setKeyword(value);
+              if (e.key === "Enter") {
+                console.log("onInputChange", "enter");
+                setToggle(!toggle);
+              }
+            }}
+            onKeyPress={(e) =>{
+              console.log("onKeyPress", "enter");
+              if (e.key === "Enter") {
+                setToggle(!toggle);
+              }
             }}
             keyword={keyword}
           />
