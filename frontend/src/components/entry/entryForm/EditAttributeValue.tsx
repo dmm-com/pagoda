@@ -123,7 +123,7 @@ const ElemBool: FC<CommonProps & { attrValue: boolean }> = ({
 const ElemObjects: FC<
   CommonProps & {
     attrId?: number;
-    attrValue: EntryRetrieveValueAsObject | Array<EntryRetrieveValueAsObject>;
+    attrValue: Array<EntryRetrieveValueAsObject>;
     schemaId: number;
     handleClickDeleteListItem: (attrName: string, index?: number) => void;
   }
@@ -142,6 +142,13 @@ const ElemObjects: FC<
   const referrals = useAsync(async () => {
     const resp = await getAttrReferrals(attrId ?? schemaId);
     const data = await resp.json();
+
+    attrValue.forEach((v) => {
+      if (!data.results.map((r) => r.id).includes(v.id)) {
+        data.results.push({ id: v.id, name: v.name });
+      }
+    });
+
     return data.results;
   });
 
@@ -187,7 +194,7 @@ const ElemObjects: FC<
 const ElemObject: FC<
   CommonProps & {
     attrId?: number;
-    attrValue: EntryRetrieveValueAsObject | Array<EntryRetrieveValueAsObject>;
+    attrValue: EntryRetrieveValueAsObject;
     schemaId: number;
     handleClickDeleteListItem: (attrName: string, index?: number) => void;
   }
@@ -206,6 +213,11 @@ const ElemObject: FC<
   const referrals = useAsync(async () => {
     const resp = await getAttrReferrals(attrId ?? schemaId);
     const data = await resp.json();
+
+    if (!data.results.map((r) => r.id).includes(attrValue.id)) {
+      data.results.push({ id: attrValue.id, name: attrValue.name });
+    }
+
     return data.results;
   });
 
@@ -314,7 +326,15 @@ const ElemGroups: FC<
   // TODO call it reactively to avoid loading API???
   // NOTE it causes a runtime warning on AutoCompletedField
   const groups = useAsync(async () => {
-    return await aironeApiClientV2.getGroups();
+    const _groups = await aironeApiClientV2.getGroups();
+
+    attrValue.forEach((v) => {
+      if (!_groups.map((r) => r.id).includes(v.id)) {
+        _groups.push({ id: v.id, name: v.name, members: [] });
+      }
+    });
+
+    return _groups;
   });
 
   const defaultValue = useMemo(() => {
@@ -350,17 +370,20 @@ const ElemGroups: FC<
 
 const ElemGroup: FC<
   CommonProps & {
-    attrValue:
-      | EntryRetrieveValueAsObjectSchema
-      | Array<EntryRetrieveValueAsObjectSchema>;
-    multiple?: boolean;
+    attrValue: EntryRetrieveValueAsObjectSchema;
   }
 > = ({ attrName, attrValue, attrType, index, handleChange }) => {
   // FIXME Implement and use API V2
   // TODO call it reactively to avoid loading API???
   // NOTE it causes a runtime warning on AutoCompletedField
   const groups = useAsync(async () => {
-    return await aironeApiClientV2.getGroups();
+    const _groups = await aironeApiClientV2.getGroups();
+
+    if (!_groups.map((r) => r.id).includes(attrValue.id)) {
+      _groups.push({ id: attrValue.id, name: attrValue.name, members: [] });
+    }
+
+    return _groups;
   });
 
   const defaultValue = useMemo(() => {
