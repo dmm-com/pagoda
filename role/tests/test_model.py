@@ -2,6 +2,7 @@ from .base import RoleTestBase
 
 from airone.lib.acl import ACLType
 from entity.models import Entity
+from group.models import Group
 from role.models import Role
 
 
@@ -40,6 +41,32 @@ class ModelTest(RoleTestBase):
         self.assertTrue(self.role.is_belonged_to(self.users["userA"]))
         self.assertFalse(self.role.is_belonged_to(self.users["userB"]))
 
+    def test_is_belonged_to_parent_group(self):
+        """This test create Role (role1) that belongs following hierarchical groups
+        === Group ===
+        * Parent
+            └──groupA (member: userA)
+                 └──groupB (member: userB)
+        === Role ===
+        * test_role
+          - groups: groupA
+          - admin_groups: groupB
+        """
+        parent_group = Group.objects.create(name="Parent")
+        self.groups["groupA"].parent_group = parent_group
+        self.groups["groupA"].save(update_fields=["parent_group"])
+        self.groups["groupB"].parent_group = self.groups["groupA"]
+        self.groups["groupB"].save(update_fields=["parent_group"])
+        self.users["userA"].groups.add(self.groups["groupA"])
+        self.users["userB"].groups.add(self.groups["groupB"])
+
+        # set "parent_group" to member of the test_role
+        self.role.groups.add(parent_group)
+
+        # check both userA and userB belong to the test_role
+        for user in self.users.values():
+            self.assertTrue(self.role.is_belonged_to(user))
+
     def test_is_editable_registered_by_user(self):
         # set userA belongs to groupA as admin_groups member
         self.users["userA"].groups.add(self.groups["groupA"])
@@ -73,6 +100,22 @@ class ModelTest(RoleTestBase):
             )
         )
         self.assertTrue(self.role.is_editable(super_user))
+
+    def test_is_editable_when_parent_group_is_set(self):
+        """This test creates following group tree
+        * Parent
+            └──groupA (member: userA)
+        """
+        parent_group = Group.objects.create(name="Parent")
+        self.users["userA"].groups.add(self.groups["groupA"])
+        self.groups["groupA"].parent_group = parent_group
+        self.groups["groupA"].save(update_fields=["parent_group"])
+
+        # set parent group as an administrative one
+        self.role.admin_groups.add(parent_group)
+
+        # check subordinates group member can edit its role
+        self.assertTrue(self.role.is_editable(self.users["userA"]))
 
     def test_to_create_role_that_has_same_name_with_group(self):
         role = Role.objects.create(name="groupA")

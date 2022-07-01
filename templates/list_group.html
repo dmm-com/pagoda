@@ -11,6 +11,10 @@
 </div>
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/group.css"></link>
+{% endblock %}
+
 {% block content %}
 {% csrf_token %}
 <div class="container-fluid">
@@ -18,6 +22,7 @@
     <div class="col">
       <div class="float-left">
         <button name="button_new" type="button" class="btn btn-primary" onclick="location.href='/group/create'">新規作成</button>
+        <button name="button_delete" type="button" class="btn btn-danger" id="deleteGroup" disabled>削除</button>
         <button name="button_export" type="button" class="btn btn-secondary" onclick="location.href='/group/export/'">エクスポート</button>
         <button name="button_import" type="button" class="btn btn-secondary" onclick="location.href='/group/import/'">インポート</button>
       </div>
@@ -25,40 +30,97 @@
   </div>
 
   <div class="row">
-    <div class="col">
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <td>名前</td>
-            <td>メンバー</td>
-            <td></td>
-          </tr>
-        </thead>
-        <tbody>
-          {% for group in groups %}
-          <tr class='group-{{ group.id }}'>
-            <td class='group_name'><a href="/group/edit/{{ group.id }}">{{ group.name }}</a></td>
-            <td class='group_member'>
-              <ul>
-                {% for member in group.members %}
-                <li>{{ member.username }}</li>
-                {% endfor %}
-              </ul>
-            </td>
-            <td class='group_delete'><button name="button_delete" type="button" class="btn btn-danger btn-sm del-item" url="/group/do_delete/{{ group.id }}">del</button></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <div class="col-7 overflowContainer">
+
+      <!-- Show hierarchical group tree -->
+      <div id='groupTree'></div>
+
+    </div>
+
+    <div class="col-5 overflowContainer">
+
+			<!-- show members -->
+      <div id='memberList'></div>
+
     </div>
   </div>
 </div>
 {% endblock %}
 
 {% block script %}
+<script src="/static/js/group.js"></script>
 <script>
+
+function handleDeleteGroup(e) {
+  if (window.confirm(CHECK_PHRASE)) {
+      SendHttpPost(`/group/do_delete/${ selectedGroup.id }`).done(function(data) {
+      MessageBox.setNextOnLoadMessage(MessageBox.SUCCESS, `Success to delete ${ selectedGroup.name }`);
+
+      location.reload();
+    }).fail(function(data) {
+      MessageBox.error(data.responseText);
+    });
+  }
+}
+
+var selectedGroup = null;
+function handleUnselectNode(e, data) {
+  selectedGroup = null;
+  $("#deleteGroup").prop("disabled", true);
+  $('#memberList').prop("hidden", true);
+}
+function handleSelectNode(e, data) {
+  selectedGroup = {
+    name: data.text,
+    id: data.groupId,
+  };
+  $("#deleteGroup").prop("disabled", false);
+  $('#memberList').prop("hidden", false);
+  $.ajax({ type: 'GET',
+    url: `/group/api/v2/groups/${ data.groupId }`,
+    data: {},
+    headers: {
+      'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+    }
+  }).done(function(groupInfo) {
+    $('#memberList').treeview({
+      data: groupInfo.members.map(function(u) {
+        return {
+          selectable: false,
+          text: u.username,
+        }
+      }),
+    });
+
+  }).fail(function(data) {
+    MessageBox.error(data.responseText);
+  });
+}
+
 $(document).ready(function() {
-  $('.del-item').on('click', confirm_delete_table_item);
+  //$('.del-item').on('click', confirm_delete_table_item);
+  $('#deleteGroup').on('click', handleDeleteGroup);
+
+  $.ajax({ type: 'GET',
+    url: "/group/api/v1/tree",
+    data: {},
+    headers: {
+      'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+    }
+  }).done(function(groups) {
+    $('#groupTree').treeview({
+      data: convert_hierarchical_groups_to_tree_data(groups),
+      enableLinks: true,
+    });
+
+    /* register event handler when user select group item */
+    $('#groupTree').on('nodeSelected', handleSelectNode);
+    $('#groupTree').on('nodeUnselected', handleUnselectNode);
+
+  }).fail(function(data) {
+    MessageBox.error(data.responseText);
+  });
+
 });
 </script>
 {% endblock %}

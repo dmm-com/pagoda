@@ -3,6 +3,9 @@
 ## In development
 
 ### Added
+* Added a new feature for Group, that can represent parent Group.
+  This feature enables to make hierarchical tree Group construction.
+  Contributed by @userlocalhost
 
 ### Changed
 

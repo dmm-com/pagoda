@@ -18,7 +18,6 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse("group:index"))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.context["groups"], [])
 
     def test_index_with_objects(self):
         self.admin_login()
@@ -30,10 +29,6 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse("group:index"))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.context["groups"]), 1)
-        self.assertEqual(resp.context["groups"][0]["id"], group.id)
-        self.assertEqual(resp.context["groups"][0]["name"], group.name)
-        self.assertEqual(list(resp.context["groups"][0]["members"]), [user])
 
     def test_index_with_inactive_user(self):
         self.admin_login()
@@ -50,10 +45,6 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse("group:index"))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.context["groups"]), 1)
-        self.assertEqual(resp.context["groups"][0]["id"], group.id)
-        self.assertEqual(resp.context["groups"][0]["name"], group.name)
-        self.assertEqual(list(resp.context["groups"][0]["members"]), [user1])
 
     def test_create_get(self):
         self.admin_login()
@@ -92,25 +83,65 @@ class ViewTest(AironeViewTest):
             group_count + 1,
             "group should be created after post",
         )
+        created_group = Group.objects.last()
         self.assertEqual(
-            Group.objects.last().name,
+            created_group.name,
             "test-group",
             "name of created group should be 'test-group'",
         )
+        self.assertIsNone(created_group.parent_group)
+        self.assertTrue(user1.groups.filter(pk=created_group.id).exists())
+        self.assertTrue(user2.groups.filter(pk=created_group.id).exists())
 
-    def test_create_port_without_mandatory_params(self):
+    def test_create_post_without_users(self):
         self.admin_login()
-
-        group_count = self._get_group_count()
 
         params = {
             "name": "test-group",
             "users": [],
         }
         resp = self.client.post(reverse("group:do_create"), json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
 
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(self._get_group_count(), group_count, "group should not be created")
+        created_group = Group.objects.last()
+        self.assertEqual(
+            created_group.name,
+            "test-group",
+            "name of created group should be 'test-group'",
+        )
+        self.assertIsNone(created_group.parent_group)
+
+    def test_create_post_with_parent_group_param(self):
+        self.admin_login()
+
+        parent_group = self._create_group("parent_group")
+        params = {
+            "name": "test-group",
+            "users": [self._create_user("hoge").id],
+            "parent_group": str(parent_group.id),
+        }
+        resp = self.client.post(reverse("group:do_create"), json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+
+        created_group = Group.objects.last()
+        self.assertEqual(created_group.name, "test-group")
+        self.assertEqual(created_group.parent_group, parent_group)
+
+    def test_create_without_users(self):
+        self.admin_login()
+
+        group_count = self._get_group_count()
+        params = {
+            "name": "test-group",
+            "users": [],
+        }
+        resp = self.client.post(reverse("group:do_create"), json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(self._get_group_count(), group_count + 1)
+
+        created_group = Group.objects.last()
+        self.assertEqual(created_group.name, "test-group")
+        self.assertFalse(User.objects.filter(groups__name="test-group").exists())
 
     def test_create_port_with_invalid_params(self):
         self.admin_login()
@@ -292,18 +323,61 @@ class ViewTest(AironeViewTest):
             json.dumps(params),
             "application/json",
         )
-
         self.assertEqual(resp.status_code, 200)
 
         # get updated group object from database
-        group = Group.objects.get(id=group.id)
+        group.refresh_from_db()
         self.assertEqual(group.name, "testg-update")
+        self.assertIsNone(group.parent_group)
 
         # checks being have added/deleted group from user and user1 information
         self.assertEqual(user.groups.count(), 1)
         self.assertEqual(user1.groups.count(), 0)
         self.assertTrue(user.groups.filter(id=group.id).exists())
         self.assertFalse(user1.groups.filter(id=group.id).exists())
+
+    def test_post_edit_without_users(self):
+        user = self.admin_login()
+
+        # initialize group and user
+        group = self._create_group("testg")
+        user.groups.add(group)
+
+        params = {
+            "name": "testg-update",
+            "users": [],
+        }
+        resp = self.client.post(
+            reverse("group:do_edit", args=[group.id]),
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # get updated group object from database
+        group.refresh_from_db()
+        self.assertEqual(group.name, "testg-update")
+        self.assertIsNone(group.parent_group)
+        self.assertFalse(user.groups.filter(pk=group.id).exists())
+
+    def test_post_edit_with_parent_group_param(self):
+        user = self.admin_login()
+
+        # initialize group and user
+        parent_group = self._create_group("parent_group")
+        group = self._create_group("testg")
+        params = {"name": "testg-update", "users": [user.id], "parent_group": str(parent_group.id)}
+        resp = self.client.post(
+            reverse("group:do_edit", args=[group.id]),
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # get updated group object from database
+        group.refresh_from_db()
+        self.assertEqual(group.name, "testg-update")
+        self.assertEqual(group.parent_group, parent_group)
 
     def test_post_edit_to_duplicate_name(self):
         self.admin_login()
@@ -378,14 +452,10 @@ class ViewTest(AironeViewTest):
 
     # utility functions
     def _create_user(self, name):
-        user = User(username=name)
-        user.save()
-        return user
+        return User.objects.create(username=name)
 
     def _create_group(self, name):
-        group = Group(name=name)
-        group.save()
-        return group
+        return Group.objects.create(name=name)
 
     def _get_user_count(self):
         return User.objects.count()
