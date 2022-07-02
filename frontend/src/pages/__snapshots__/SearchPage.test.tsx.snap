@@ -99,7 +99,7 @@ Object {
                   class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                 >
                   <legend
-                    class="css-hdw1oc"
+                    class="css-nnbavb"
                   >
                     <span
                       class="notranslate"
@@ -176,7 +176,7 @@ Object {
               class="MuiTablePagination-root css-jtlhu6-MuiTablePagination-root"
             >
               <div
-                class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular MuiTablePagination-toolbar css-78c6dr-MuiToolbar-root-MuiTablePagination-toolbar"
+                class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular MuiTablePagination-toolbar css-11bfvty-MuiToolbar-root-MuiTablePagination-toolbar"
               >
                 <div
                   class="MuiTablePagination-spacer css-1psng7p-MuiTablePagination-spacer"
@@ -189,7 +189,6 @@ Object {
                 </p>
                 <div
                   class="MuiInputBase-root MuiInputBase-colorPrimary css-16c50h-MuiInputBase-root-MuiTablePagination-select"
-                  variant="standard"
                 >
                   <div
                     aria-expanded="false"
@@ -371,7 +370,7 @@ Object {
                 class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
               >
                 <legend
-                  class="css-hdw1oc"
+                  class="css-nnbavb"
                 >
                   <span
                     class="notranslate"
@@ -448,7 +447,7 @@ Object {
             class="MuiTablePagination-root css-jtlhu6-MuiTablePagination-root"
           >
             <div
-              class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular MuiTablePagination-toolbar css-78c6dr-MuiToolbar-root-MuiTablePagination-toolbar"
+              class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular MuiTablePagination-toolbar css-11bfvty-MuiToolbar-root-MuiTablePagination-toolbar"
             >
               <div
                 class="MuiTablePagination-spacer css-1psng7p-MuiTablePagination-spacer"
@@ -461,7 +460,6 @@ Object {
               </p>
               <div
                 class="MuiInputBase-root MuiInputBase-colorPrimary css-16c50h-MuiInputBase-root-MuiTablePagination-select"
-                variant="standard"
               >
                 <div
                   aria-expanded="false"

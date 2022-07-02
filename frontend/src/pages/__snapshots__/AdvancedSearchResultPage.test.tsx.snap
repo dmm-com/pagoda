@@ -135,7 +135,7 @@ Object {
                       Name
                     </p>
                     <div
-                      class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-1tcs2i1-MuiInputBase-root-MuiInput-root"
+                      class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-a88p61-MuiInputBase-root-MuiInput-root"
                     >
                       <input
                         class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
@@ -155,7 +155,7 @@ Object {
                       attr1
                     </p>
                     <div
-                      class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-1tcs2i1-MuiInputBase-root-MuiInput-root"
+                      class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-a88p61-MuiInputBase-root-MuiInput-root"
                     >
                       <input
                         class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
@@ -175,7 +175,7 @@ Object {
                       attr2
                     </p>
                     <div
-                      class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-1tcs2i1-MuiInputBase-root-MuiInput-root"
+                      class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-a88p61-MuiInputBase-root-MuiInput-root"
                     >
                       <input
                         class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
@@ -240,7 +240,7 @@ Object {
             class="MuiTablePagination-root css-jtlhu6-MuiTablePagination-root"
           >
             <div
-              class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular MuiTablePagination-toolbar css-78c6dr-MuiToolbar-root-MuiTablePagination-toolbar"
+              class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular MuiTablePagination-toolbar css-11bfvty-MuiToolbar-root-MuiTablePagination-toolbar"
             >
               <div
                 class="MuiTablePagination-spacer css-1psng7p-MuiTablePagination-spacer"
@@ -253,7 +253,6 @@ Object {
               </p>
               <div
                 class="MuiInputBase-root MuiInputBase-colorPrimary css-16c50h-MuiInputBase-root-MuiTablePagination-select"
-                variant="standard"
               >
                 <div
                   aria-expanded="false"
@@ -470,7 +469,7 @@ Object {
                     Name
                   </p>
                   <div
-                    class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-1tcs2i1-MuiInputBase-root-MuiInput-root"
+                    class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-a88p61-MuiInputBase-root-MuiInput-root"
                   >
                     <input
                       class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
@@ -490,7 +489,7 @@ Object {
                     attr1
                   </p>
                   <div
-                    class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-1tcs2i1-MuiInputBase-root-MuiInput-root"
+                    class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-a88p61-MuiInputBase-root-MuiInput-root"
                   >
                     <input
                       class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
@@ -510,7 +509,7 @@ Object {
                     attr2
                   </p>
                   <div
-                    class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-1tcs2i1-MuiInputBase-root-MuiInput-root"
+                    class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-a88p61-MuiInputBase-root-MuiInput-root"
                   >
                     <input
                       class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
@@ -575,7 +574,7 @@ Object {
           class="MuiTablePagination-root css-jtlhu6-MuiTablePagination-root"
         >
           <div
-            class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular MuiTablePagination-toolbar css-78c6dr-MuiToolbar-root-MuiTablePagination-toolbar"
+            class="MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular MuiTablePagination-toolbar css-11bfvty-MuiToolbar-root-MuiTablePagination-toolbar"
           >
             <div
               class="MuiTablePagination-spacer css-1psng7p-MuiTablePagination-spacer"
@@ -588,7 +587,6 @@ Object {
             </p>
             <div
               class="MuiInputBase-root MuiInputBase-colorPrimary css-16c50h-MuiInputBase-root-MuiTablePagination-select"
-              variant="standard"
             >
               <div
                 aria-expanded="false"
