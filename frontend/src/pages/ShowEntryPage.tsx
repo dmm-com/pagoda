@@ -9,7 +9,6 @@ import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { ACLForm } from "components/common/ACLForm";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { CopyForm } from "components/entry/CopyForm";
 import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryForm } from "components/entry/EntryForm";
 import { EntryHistory } from "components/entry/EntryHistory";
@@ -96,11 +95,7 @@ export const ShowEntryPage: FC = () => {
         )}
       </Box>
 
-      <Box hidden={tabValue !== 4}>
-        {!entry.loading && (
-          <CopyForm entityId={entry.value.schema.id} entryId={entryId} />
-        )}
-      </Box>
+      <Box hidden={tabValue !== 4}></Box>
 
       <Box hidden={tabValue !== 5}>
         {!acl.loading && <ACLForm objectId={entryId} acl={acl.value} />}

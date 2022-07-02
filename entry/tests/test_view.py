@@ -3978,7 +3978,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
 
     @patch("entry.tasks.restore_entry.delay", Mock(side_effect=tasks.restore_entry))
-    def test_restore_entry(self):
+    @patch("entry.tasks.notify_create_entry.delay")
+    def test_restore_entry(self, mock_task):
         # initialize entries to test
         user = self.guest_login()
         entity = Entity.objects.create(name="entity", created_user=user)
@@ -4037,6 +4038,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp["ret_values"][0]["entry"]["id"], entry.id)
         self.assertEqual(resp["ret_values"][0]["entry"]["name"], entry.name)
 
+        self.assertTrue(mock_task.called)
+
     def test_restore_when_duplicate_entry_exist(self):
         # initialize entries to test
         user = self.guest_login()
@@ -4060,7 +4063,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(obj["entry_id"], dup_entry.id)
         self.assertEqual(obj["entry_name"], dup_entry.name)
 
-    def test_revert_attrv(self):
+    @patch("entry.tasks.notify_update_entry.delay")
+    def test_revert_attrv(self, mock_task):
         user = self.guest_login()
 
         # initialize referred objects
@@ -4189,6 +4193,8 @@ class ViewTest(AironeViewTest):
 
             else:
                 self.assertEqual(data["value"], value)
+
+        self.assertEqual(mock_task.call_count, len(attr_info))
 
     def test_revert_attrv_with_invalid_value(self):
         user = self.guest_login()

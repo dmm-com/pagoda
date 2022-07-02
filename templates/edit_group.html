@@ -11,6 +11,13 @@
 </div>
 {% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/group.css" />
+<style type="text/css"><!--
+  {% include 'edit_group.css' %}
+--></style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
 <form id="edit-form" name="edit-form" url='{{ submit_ref }}' method='post'>
@@ -70,17 +77,42 @@
     <div class="form-group col-md-4">
     </div>
   </div>
+
+  <!-- Input items for advanced guest settings -->
+  <div class='config_advance'>
+    <div class="row toggle select_parent_group">
+      <div class="col-12">
+        <h6 href='#collapseConfigureParentGroup' data-toggle='collapse' aria-expanded="false">
+          Select parent group (Optional)
+        </h6>
+      </div>
+    </div>
+
+    <div class='collapse' id='collapseConfigureParentGroup'>
+      <div class="row">
+        <div class="col-6 overflowContainer">
+
+          <!-- Command to run on creating VM -->
+          <div id='groupTree'>
+        </div>
+      </div>
+    </div>
+  </div>
+
   {% if 'create' in submit_ref %}
     <button type="submit" class="btn btn-primary">作成</button>
   {% else %}
     <button type="submit" class="btn btn-primary">更新</button>
   {% endif %}
+
+  <input type='hidden' name="parent_group" value="{{ parent_group_id }}" />
 </form>
 </div>
 
 {% endblock %}
 
 {% block script %}
+<script src="/static/js/group.js"></script>
 <script>
 $('#edit-form').submit(function(){
   var selected_users = [];
@@ -95,6 +127,13 @@ $('#edit-form').submit(function(){
   });
 
   return false;
+});
+
+/* ignore to submit when user input Enter key at text boxes in this form */
+$('#edit-form').on('keypress', function(e) {
+  if(e.code === 'Enter') {
+    return false;
+  }
 });
 
 $('#append_users').on('click', function() {
@@ -113,7 +152,7 @@ $('#delete_users').on('click', function() {
   });
 });
 
-$('#search_user').keyup(function() {
+$('#search_user').keyup(function(e) {
   var input_str = $(this).val();
   $(".listed_users option").each(function(i, elem){
     if($(elem).text().indexOf(input_str) >= 0) {
@@ -137,6 +176,47 @@ $('#group').change(function() {
     }
   });
 });
+
+$(document).ready(function() {
+  /* Initialize hierarchical group tree table */
+  $.ajax({ type: 'GET',
+    url: "/group/api/v1/tree",
+    data: {},
+    headers: {
+      'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+    }
+  }).done(function(groups) {
+    $('#groupTree').treeview({
+      data: convert_hierarchical_groups_to_tree_data(groups),
+    });
+
+    /* select configure parent node */
+    const allNodes = $('#groupTree').treeview('getEnabled');
+    {% if parent_group_id %}
+    allNodes.filter(g => g.groupId == {{ parent_group_id }}).forEach(function(group) {
+      $('#groupTree').treeview('selectNode', group.nodeId);
+    });
+    {% endif %}
+
+    /* disable current node */
+    {% if default_group_id %}
+    allNodes.filter(g => g.groupId == {{ default_group_id }}).forEach(function(group) {
+      $('#groupTree').treeview('disableNode', group.nodeId);
+    });
+    {% endif %}
+
+    /* initialize event handlers for bootstrap treeview */
+    $('#groupTree').on('nodeSelected', function(e, data) {
+      $('#edit-form input[name="parent_group"]').val(data.groupId);
+    });
+    $('#groupTree').on('nodeUnselected', function(e, data) {
+      $('#edit-form input[name="parent_group"]').val(0);
+    });
+  }).fail(function(data) {
+    MessageBox.error(data.responseText);
+  });
+});
+
 
 </script>
 {% endblock %}

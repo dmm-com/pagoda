@@ -103,152 +103,207 @@ Object {
           </div>
         </div>
         <div
-          class="MuiContainer-root MuiContainer-maxWidthLg css-m0xtue-MuiContainer-root"
+          class="makeStyles-frame-6 MuiBox-root css-0"
         >
           <div
-            class="MuiBox-root css-k008qs"
+            class="makeStyles-fixed-7 MuiBox-root css-0"
           >
             <div
-              class="MuiBox-root css-kgitkj"
-            />
-            <div
-              class="MuiBox-root css-i9gxme"
+              class="makeStyles-headerTop-8 MuiBox-root css-0"
             >
-              <h2
-                class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter css-icizyq-MuiTypography-root"
+              <div
+                class="makeStyles-titleBox-10 MuiBox-root css-0"
               >
-                aaa
-              </h2>
-              <h4
-                class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
-              >
-                エントリのコピーを作成
-              </h4>
-              <p
-                class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-11kuf95-MuiTypography-root"
-              >
-                入力した各行ごとに
-                aaa
-                と同じ属性を持つ別のエントリを作成
-              </p>
-            </div>
-            <div
-              class="MuiBox-root css-kgitkj"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-                tabindex="0"
-                type="button"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                  data-testid="AppsIcon"
-                  focusable="false"
-                  viewBox="0 0 24 24"
+                <h2
+                  class="MuiTypography-root MuiTypography-h2 makeStyles-title-11 css-1l0a44s-MuiTypography-root"
                 >
-                  <path
-                    d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
-                  />
-                </svg>
-                <span
-                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                />
-              </button>
+                  aaa
+                </h2>
+                <h4
+                  class="MuiTypography-root MuiTypography-h4 css-1yvpk5c-MuiTypography-root"
+                >
+                  エントリのコピーを作成
+                </h4>
+              </div>
+              <div
+                class="MuiBox-root css-zdpt2t"
+              >
+                <div
+                  class="MuiBox-root css-0"
+                >
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      data-testid="AppsIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
+                      />
+                    </svg>
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </button>
+                </div>
+              </div>
             </div>
+            <div
+              class="makeStyles-headerBottom-9 MuiBox-root css-0"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+              >
+                入力した各行ごとに aaa と同じ属性を持つ別のエントリを作成
+              </p>
+              <div
+                class="MuiBox-root css-zdpt2t"
+              >
+                <div
+                  class="MuiBox-root css-1l4w6pd"
+                >
+                  <div
+                    class="MuiBox-root css-qbrse1"
+                  >
+                    <button
+                      class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root Mui-disabled  css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                      disabled=""
+                      tabindex="-1"
+                      type="button"
+                    >
+                      コピーを作成
+                    </button>
+                  </div>
+                  <div
+                    class="MuiBox-root css-qbrse1"
+                  >
+                    <button
+                      class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                      tabindex="0"
+                      type="button"
+                    >
+                      キャンセル
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-ez40jo-MuiDivider-root"
+            />
           </div>
         </div>
         <div
-          class="MuiBox-root css-1ir2n9m"
+          class="MuiBox-root css-0"
         >
           <div
             class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
           >
-            <textarea
-              placeholder="コピーするエントリ名"
-              rows="2"
-              style="width: 100%; margin-top: 60px; height: 0px; overflow: hidden;"
-            />
-            <textarea
-              aria-hidden="true"
-              readonly=""
-              style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); width: 100%; margin-top: 60px; padding: 0px;"
-              tabindex="-1"
-            />
             <div
-              class="MuiBox-root css-kl1xo3"
+              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1yfsu71-MuiFormControl-root-MuiTextField-root"
             >
               <div
-                class="MuiBox-root css-ibnnmb"
+                class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-8ewcdo-MuiInputBase-root-MuiOutlinedInput-root"
               >
-                <button
-                  class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                  tabindex="0"
-                  type="submit"
+                <textarea
+                  aria-invalid="false"
+                  class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputMultiline css-1sqnrkk-MuiInputBase-input-MuiOutlinedInput-input"
+                  id="mui-1"
+                  placeholder="コピーするエントリ名"
+                  style="height: 0px; overflow: hidden;"
+                />
+                <textarea
+                  aria-hidden="true"
+                  class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputMultiline css-1sqnrkk-MuiInputBase-input-MuiOutlinedInput-input"
+                  readonly=""
+                  style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding: 0px; width: 100%;"
+                  tabindex="-1"
+                />
+                <fieldset
+                  aria-hidden="true"
+                  class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                 >
-                  コピー
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
-                </button>
-              </div>
-              <div
-                class="MuiBox-root css-ibnnmb"
-              >
-                <button
-                  class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
-                  tabindex="0"
-                  type="button"
-                >
-                  キャンセル
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
-                </button>
+                  <legend
+                    class="css-hdw1oc"
+                  >
+                    <span
+                      class="notranslate"
+                    >
+                      ​
+                    </span>
+                  </legend>
+                </fieldset>
               </div>
             </div>
             <div
-              class="MuiBox-root css-8s50e6"
+              class="makeStyles-sampleBox-12 MuiBox-root css-k008qs"
             >
-              <div
-                class="MuiBox-root css-19n8dai"
+              <h6
+                class="MuiTypography-root MuiTypography-h6 css-41zwy8-MuiTypography-root"
               >
-                <h6
-                  class="MuiTypography-root MuiTypography-h6 css-121dmmo-MuiTypography-root"
-                >
-                  SAMPLE
-                </h6>
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-1ma1smh-MuiTypography-root"
-                >
-                  (Vm0001、vm0002、…vm006の6エントリを作成する場合）
-                </p>
-              </div>
-              <div
-                class="MuiBox-root css-gajhq5"
+                SAMPLE
+              </h6>
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-vkc4v8-MuiTypography-root"
               >
+                (Vm0001、vm0002、…vm006の6エントリを作成する場合）
+              </p>
+              <div
+                class="MuiFormControl-root MuiTextField-root css-p2l10m-MuiFormControl-root-MuiTextField-root"
+              >
+                <label
+                  class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary Mui-disabled MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
+                  data-shrink="true"
+                  for="mui-2"
+                  id="mui-2-label"
+                >
+                  コピーするエントリ名
+                </label>
                 <div
-                  class="MuiBox-root css-1g2597p"
+                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-formControl MuiInputBase-multiline css-dpjnhs-MuiInputBase-root-MuiOutlinedInput-root"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-1sree81-MuiTypography-root"
+                  <textarea
+                    aria-invalid="false"
+                    class="MuiOutlinedInput-input MuiInputBase-input Mui-disabled MuiInputBase-inputMultiline css-1sqnrkk-MuiInputBase-input-MuiOutlinedInput-input"
+                    disabled=""
+                    id="mui-2"
+                    style="height: 0px; overflow: hidden;"
                   >
-                    コピーするエントリ名
-                  </p>
-                  <div
-                    class="MuiBox-root css-11jzykg"
-                  >
-                    <pre
-                      class="makeStyles-sampleBox-6"
-                    >
-                      vm0001
+                    vm0001
 vm0002
 vm0003
 vm0004
 vm0005
 vm0006
-                    </pre>
-                  </div>
+                  </textarea>
+                  <textarea
+                    aria-hidden="true"
+                    class="MuiOutlinedInput-input MuiInputBase-input Mui-disabled MuiInputBase-inputMultiline css-1sqnrkk-MuiInputBase-input-MuiOutlinedInput-input"
+                    readonly=""
+                    style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding: 0px; width: 100%;"
+                    tabindex="-1"
+                  />
+                  <fieldset
+                    aria-hidden="true"
+                    class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                  >
+                    <legend
+                      class="css-1in441m"
+                    >
+                      <span>
+                        コピーするエントリ名
+                      </span>
+                    </legend>
+                  </fieldset>
                 </div>
               </div>
             </div>
@@ -356,152 +411,207 @@ vm0006
         </div>
       </div>
       <div
-        class="MuiContainer-root MuiContainer-maxWidthLg css-m0xtue-MuiContainer-root"
+        class="makeStyles-frame-6 MuiBox-root css-0"
       >
         <div
-          class="MuiBox-root css-k008qs"
+          class="makeStyles-fixed-7 MuiBox-root css-0"
         >
           <div
-            class="MuiBox-root css-kgitkj"
-          />
-          <div
-            class="MuiBox-root css-i9gxme"
+            class="makeStyles-headerTop-8 MuiBox-root css-0"
           >
-            <h2
-              class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter css-icizyq-MuiTypography-root"
+            <div
+              class="makeStyles-titleBox-10 MuiBox-root css-0"
             >
-              aaa
-            </h2>
-            <h4
-              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
-            >
-              エントリのコピーを作成
-            </h4>
-            <p
-              class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-11kuf95-MuiTypography-root"
-            >
-              入力した各行ごとに
-              aaa
-              と同じ属性を持つ別のエントリを作成
-            </p>
-          </div>
-          <div
-            class="MuiBox-root css-kgitkj"
-          >
-            <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-              tabindex="0"
-              type="button"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                data-testid="AppsIcon"
-                focusable="false"
-                viewBox="0 0 24 24"
+              <h2
+                class="MuiTypography-root MuiTypography-h2 makeStyles-title-11 css-1l0a44s-MuiTypography-root"
               >
-                <path
-                  d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
-                />
-              </svg>
-              <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
-            </button>
+                aaa
+              </h2>
+              <h4
+                class="MuiTypography-root MuiTypography-h4 css-1yvpk5c-MuiTypography-root"
+              >
+                エントリのコピーを作成
+              </h4>
+            </div>
+            <div
+              class="MuiBox-root css-zdpt2t"
+            >
+              <div
+                class="MuiBox-root css-0"
+              >
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                    data-testid="AppsIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </div>
+            </div>
           </div>
+          <div
+            class="makeStyles-headerBottom-9 MuiBox-root css-0"
+          >
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+            >
+              入力した各行ごとに aaa と同じ属性を持つ別のエントリを作成
+            </p>
+            <div
+              class="MuiBox-root css-zdpt2t"
+            >
+              <div
+                class="MuiBox-root css-1l4w6pd"
+              >
+                <div
+                  class="MuiBox-root css-qbrse1"
+                >
+                  <button
+                    class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root Mui-disabled  css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
+                  >
+                    コピーを作成
+                  </button>
+                </div>
+                <div
+                  class="MuiBox-root css-qbrse1"
+                >
+                  <button
+                    class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                    tabindex="0"
+                    type="button"
+                  >
+                    キャンセル
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr
+            class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-ez40jo-MuiDivider-root"
+          />
         </div>
       </div>
       <div
-        class="MuiBox-root css-1ir2n9m"
+        class="MuiBox-root css-0"
       >
         <div
           class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
         >
-          <textarea
-            placeholder="コピーするエントリ名"
-            rows="2"
-            style="width: 100%; margin-top: 60px; height: 0px; overflow: hidden;"
-          />
-          <textarea
-            aria-hidden="true"
-            readonly=""
-            style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); width: 100%; margin-top: 60px; padding: 0px;"
-            tabindex="-1"
-          />
           <div
-            class="MuiBox-root css-kl1xo3"
+            class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1yfsu71-MuiFormControl-root-MuiTextField-root"
           >
             <div
-              class="MuiBox-root css-ibnnmb"
+              class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-8ewcdo-MuiInputBase-root-MuiOutlinedInput-root"
             >
-              <button
-                class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                tabindex="0"
-                type="submit"
+              <textarea
+                aria-invalid="false"
+                class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputMultiline css-1sqnrkk-MuiInputBase-input-MuiOutlinedInput-input"
+                id="mui-1"
+                placeholder="コピーするエントリ名"
+                style="height: 0px; overflow: hidden;"
+              />
+              <textarea
+                aria-hidden="true"
+                class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputMultiline css-1sqnrkk-MuiInputBase-input-MuiOutlinedInput-input"
+                readonly=""
+                style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding: 0px; width: 100%;"
+                tabindex="-1"
+              />
+              <fieldset
+                aria-hidden="true"
+                class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
               >
-                コピー
-                <span
-                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-            <div
-              class="MuiBox-root css-ibnnmb"
-            >
-              <button
-                class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
-                tabindex="0"
-                type="button"
-              >
-                キャンセル
-                <span
-                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                />
-              </button>
+                <legend
+                  class="css-hdw1oc"
+                >
+                  <span
+                    class="notranslate"
+                  >
+                    ​
+                  </span>
+                </legend>
+              </fieldset>
             </div>
           </div>
           <div
-            class="MuiBox-root css-8s50e6"
+            class="makeStyles-sampleBox-12 MuiBox-root css-k008qs"
           >
-            <div
-              class="MuiBox-root css-19n8dai"
+            <h6
+              class="MuiTypography-root MuiTypography-h6 css-41zwy8-MuiTypography-root"
             >
-              <h6
-                class="MuiTypography-root MuiTypography-h6 css-121dmmo-MuiTypography-root"
-              >
-                SAMPLE
-              </h6>
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-1ma1smh-MuiTypography-root"
-              >
-                (Vm0001、vm0002、…vm006の6エントリを作成する場合）
-              </p>
-            </div>
-            <div
-              class="MuiBox-root css-gajhq5"
+              SAMPLE
+            </h6>
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-vkc4v8-MuiTypography-root"
             >
+              (Vm0001、vm0002、…vm006の6エントリを作成する場合）
+            </p>
+            <div
+              class="MuiFormControl-root MuiTextField-root css-p2l10m-MuiFormControl-root-MuiTextField-root"
+            >
+              <label
+                class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary Mui-disabled MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
+                data-shrink="true"
+                for="mui-2"
+                id="mui-2-label"
+              >
+                コピーするエントリ名
+              </label>
               <div
-                class="MuiBox-root css-1g2597p"
+                class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-formControl MuiInputBase-multiline css-dpjnhs-MuiInputBase-root-MuiOutlinedInput-root"
               >
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-1sree81-MuiTypography-root"
+                <textarea
+                  aria-invalid="false"
+                  class="MuiOutlinedInput-input MuiInputBase-input Mui-disabled MuiInputBase-inputMultiline css-1sqnrkk-MuiInputBase-input-MuiOutlinedInput-input"
+                  disabled=""
+                  id="mui-2"
+                  style="height: 0px; overflow: hidden;"
                 >
-                  コピーするエントリ名
-                </p>
-                <div
-                  class="MuiBox-root css-11jzykg"
-                >
-                  <pre
-                    class="makeStyles-sampleBox-6"
-                  >
-                    vm0001
+                  vm0001
 vm0002
 vm0003
 vm0004
 vm0005
 vm0006
-                  </pre>
-                </div>
+                </textarea>
+                <textarea
+                  aria-hidden="true"
+                  class="MuiOutlinedInput-input MuiInputBase-input Mui-disabled MuiInputBase-inputMultiline css-1sqnrkk-MuiInputBase-input-MuiOutlinedInput-input"
+                  readonly=""
+                  style="visibility: hidden; position: absolute; overflow: hidden; height: 0px; top: 0px; left: 0px; transform: translateZ(0); padding: 0px; width: 100%;"
+                  tabindex="-1"
+                />
+                <fieldset
+                  aria-hidden="true"
+                  class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                >
+                  <legend
+                    class="css-1in441m"
+                  >
+                    <span>
+                      コピーするエントリ名
+                    </span>
+                  </legend>
+                </fieldset>
               </div>
             </div>
           </div>

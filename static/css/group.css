@@ -1,0 +1,16 @@
+.icon.glyphicon {
+  padding-left: 20px;
+  background-repeat: no-repeat;
+}
+.icon.glyphicon-plus {
+  background-image: url('/static/images/plus.svg');
+}
+
+.icon.glyphicon-minus {
+  background-image: url('/static/images/dash.svg');
+}
+
+.overflowContainer {
+  height: 500px;
+  overflow: auto;
+}

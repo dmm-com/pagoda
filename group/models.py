@@ -5,11 +5,19 @@ from datetime import datetime
 
 class Group(DjangoGroup):
     is_active = models.BooleanField(default=True)
+    parent_group = models.ForeignKey(
+        "Group", on_delete=models.DO_NOTHING, related_name="subordinates", null=True
+    )
 
     def delete(self):
         """
         Override Model.delete method of Django
         """
+        # replace parent_group of subordinates instances
+        for child_group in self.subordinates.filter(is_active=True):
+            child_group.parent_group = self.parent_group
+            child_group.save(update_fields=["parent_group"])
+
         self.is_active = False
         self.name = "%s_deleted_%s" % (
             self.name,
