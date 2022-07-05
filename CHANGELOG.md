@@ -8,6 +8,7 @@
   Contributed by @userlocalhost
 
 ### Changed
+* Upgrade flower version from v1.0.0 to v1.1.0
 
 ### Fixed
 * Fixed empty display of array type in advanced search result

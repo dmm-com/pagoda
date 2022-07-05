@@ -7,7 +7,7 @@ django==3.2.13
 mock==2.0.0
 coverage>=4.4.1
 celery==5.2.2
-flower==1.0.0
+flower==1.1.0
 pyyaml==5.4
 kombu==5.2.2
 python-memcached==1.59
