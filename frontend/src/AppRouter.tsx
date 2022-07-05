@@ -28,7 +28,7 @@ import {
   usersPath,
   loginPath,
   showEntryHistoryPath,
-  entryPath,
+  entryEditPath,
   entryDetailsPath,
   copyEntryPath,
 } from "Routes";
@@ -100,6 +100,10 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               component={EntryDetailsPage}
             />
             <Route
+              path={entryEditPath(":entityId", ":entryId")}
+              component={EditEntryPage}
+            />
+            <Route
               path={importEntriesPath(":entityId")}
               component={ImportEntryPage}
             />
@@ -107,7 +111,6 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               path={showEntryHistoryPath(":entryId")}
               component={ShowEntryHistoryPage}
             />
-            <Route path={entryPath(":entryId")} component={EditEntryPage} />
             <Route
               path={entityEntriesPath(":entityId")}
               component={EntryListPage}
