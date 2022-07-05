@@ -1,16 +1,16 @@
-import SearchIcon from "@mui/icons-material/Search";
-import { Box, InputAdornment, Typography } from "@mui/material";
-import { alpha, TextField, Theme } from "@mui/material";
+import { Box, Typography } from "@mui/material";
+import { Theme } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { FC, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import React, { FC } from "react";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 
-import { entityEntriesPath, searchPath } from "Routes";
+import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
+import { SearchBox } from "components/common/SearchBox";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -19,38 +19,56 @@ const useStyles = makeStyles<Theme>((theme) => ({
     flexDirection: "column",
     alignItems: "center",
   },
-  search: {
-    display: "flex",
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
-    "&:hover": {
-      backgroundColor: alpha(theme.palette.common.white, 0.25),
-    },
-    margin: theme.spacing(0, 1),
+  dashboard: {
+    width: theme.breakpoints.values.lg,
+    marginTop: "256px",
   },
-  searchTextFieldInput: {
-    background: "#0000000B",
-    "&::placeholder": {
-      color: "white",
-    },
+  resultBox: {
+    marginTop: "80px",
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "32px",
+  },
+  result: {
+    color: theme.palette.primary.main,
+    textDecoration: "none",
+    flexGrow: 1,
+    maxWidth: theme.breakpoints.values.lg,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
 }));
 
 export const DashboardPage: FC = () => {
   const classes = useStyles();
   const history = useHistory();
+  const location = useLocation();
 
-  const [entryQuery, setEntryQuery] = useState("");
+  const params = new URLSearchParams(location.search);
+
+  const entries = useAsync(async () => {
+    if (params.get("query")) {
+      return await aironeApiClientV2.getSearchEntries(params.get("query"));
+    }
+  }, [location]);
 
   const entities = useAsync(async () => {
-    // TODO get only top level entities with server-side filters
-    const entities = await aironeApiClientV2.getEntities(1, undefined, true);
-    return entities.results.filter((e) => e.isToplevel);
+    return await aironeApiClientV2.getEntities(undefined, undefined, true);
   });
+
+  // If there is only one search result, move to entry details page.
+  if (!entries.loading && entries.value?.length === 1) {
+    history.push(
+      entryDetailsPath(entries.value[0].schema.id, entries.value[0].id)
+    );
+  }
 
   const handleSearchQuery = (event) => {
     if (event.key === "Enter") {
-      history.push(`${searchPath()}?query=${entryQuery}`);
+      history.push({
+        pathname: location.pathname,
+        search: "query=" + event.target.value,
+      });
     }
   };
 
@@ -61,51 +79,44 @@ export const DashboardPage: FC = () => {
       </AironeBreadcrumbs>
 
       <Box className={classes.container}>
-        <Box className={classes.search} mt="200px" width="600px">
-          <TextField
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            variant="outlined"
-            size="small"
+        <Box className={classes.dashboard}>
+          <SearchBox
             placeholder="Search"
-            sx={{
-              background: "#0000000B",
-            }}
-            fullWidth={true}
-            onChange={(e) => setEntryQuery(e.target.value)}
             onKeyPress={handleSearchQuery}
+            defaultValue={params.get("query") ?? ""}
           />
+          {entries.loading ? (
+            <Loading />
+          ) : entries.value ? (
+            <Box className={classes.resultBox}>
+              {entries.value.map((entry) => (
+                <Typography
+                  key={entry.id}
+                  className={classes.result}
+                  component={Link}
+                  to={entryDetailsPath(entry.schema.id, entry.id)}
+                >
+                  {entry.name}
+                </Typography>
+              ))}
+            </Box>
+          ) : entities.loading ? (
+            <Loading />
+          ) : (
+            <Box className={classes.resultBox}>
+              {entities.value.results.map((entity) => (
+                <Typography
+                  key={entity.id}
+                  className={classes.result}
+                  component={Link}
+                  to={entityEntriesPath(entity.id)}
+                >
+                  {entity.name}
+                </Typography>
+              ))}
+            </Box>
+          )}
         </Box>
-
-        {entities.loading ? (
-          <Loading />
-        ) : (
-          <Box
-            mt="80px"
-            width="600px"
-            display="flex"
-            flexWrap="wrap"
-            gap="25px 40px"
-          >
-            {entities.value.map((entity, index) => (
-              <Typography
-                key={index}
-                color="primary"
-                component={Link}
-                to={entityEntriesPath(entity.id)}
-                style={{ textDecoration: "none" }}
-                flexGrow="1"
-              >
-                {entity.name}
-              </Typography>
-            ))}
-          </Box>
-        )}
       </Box>
     </Box>
   );

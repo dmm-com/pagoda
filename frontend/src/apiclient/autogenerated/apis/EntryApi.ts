@@ -26,9 +26,6 @@ import {
   EntryUpdate,
   EntryUpdateFromJSON,
   EntryUpdateToJSON,
-  GetEntrySimple,
-  GetEntrySimpleFromJSON,
-  GetEntrySimpleToJSON,
   PaginatedGetEntrySimpleList,
   PaginatedGetEntrySimpleListFromJSON,
   PaginatedGetEntrySimpleListToJSON,
@@ -57,6 +54,10 @@ export interface EntryApiV2RestoreCreateRequest {
 
 export interface EntryApiV2RetrieveRequest {
   id: number;
+}
+
+export interface EntryApiV2SearchListRequest {
+  query?: string;
 }
 
 export interface EntryApiV2UpdateRequest {
@@ -403,9 +404,14 @@ export class EntryApi extends runtime.BaseAPI {
   /**
    */
   async entryApiV2SearchListRaw(
+    requestParameters: EntryApiV2SearchListRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<Array<GetEntrySimple>>> {
+  ): Promise<runtime.ApiResponse<Array<EntryBase>>> {
     const queryParameters: any = {};
+
+    if (requestParameters.query !== undefined) {
+      queryParameters["query"] = requestParameters.query;
+    }
 
     const headerParameters: runtime.HTTPHeaders = {};
 
@@ -434,16 +440,20 @@ export class EntryApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      jsonValue.map(GetEntrySimpleFromJSON)
+      jsonValue.map(EntryBaseFromJSON)
     );
   }
 
   /**
    */
   async entryApiV2SearchList(
+    requestParameters: EntryApiV2SearchListRequest = {},
     initOverrides?: RequestInit
-  ): Promise<Array<GetEntrySimple>> {
-    const response = await this.entryApiV2SearchListRaw(initOverrides);
+  ): Promise<Array<EntryBase>> {
+    const response = await this.entryApiV2SearchListRaw(
+      requestParameters,
+      initOverrides
+    );
     return await response.value();
   }
 

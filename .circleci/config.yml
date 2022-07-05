@@ -126,7 +126,7 @@ jobs:
 
   frontend:
     docker:
-      - image: circleci/node
+      - image: circleci/node:17.2
     steps:
       - checkout
       - run:

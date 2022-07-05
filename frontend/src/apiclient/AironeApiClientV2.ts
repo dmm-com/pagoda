@@ -309,6 +309,12 @@ class AironeApiClientV2 {
     });
   }
 
+  async getSearchEntries(query: string): Promise<Array<EntryBase>> {
+    return await this.entry.entryApiV2SearchList({
+      query: query,
+    });
+  }
+
   async getUser(userId: number): Promise<UserRetrieve> {
     return await this.user.userApiV2UsersRetrieve({
       id: userId,
