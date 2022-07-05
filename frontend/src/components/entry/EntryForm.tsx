@@ -3,6 +3,7 @@ import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRound
 import {
   Box,
   Button,
+  Container,
   Fab,
   Input,
   Table,
@@ -151,9 +152,9 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
   };
 
   return (
-    <Box sx={{ mb: "100px" }}>
-      <Box mb="40px" display="flex" flexWrap="wrap">
-        <Box mx="4px" my="4px">
+    <Container sx={{ mb: "100px" }}>
+      <Box my="40px" display="flex" flexWrap="wrap">
+        <Box m="8px">
           <Button
             href="#name"
             sx={{
@@ -167,7 +168,7 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
           </Button>
         </Box>
         {Object.keys(entryInfo.attrs).map((attributeName) => (
-          <Box key={attributeName} mx="4px" my="4px">
+          <Box key={attributeName} m="8px">
             <Button
               href={`#attrs-${attributeName}`}
               sx={{
@@ -187,8 +188,12 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
       <Table>
         <TableHead>
           <TableRow sx={{ backgroundColor: "#455A64" }} id="name">
-            <TableCell sx={{ color: "#FFFFFF" }}>項目</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>内容</TableCell>
+            <TableCell sx={{ color: "#FFFFFF", width: "384px" }}>
+              項目
+            </TableCell>
+            <TableCell sx={{ color: "#FFFFFF", width: "768px" }}>
+              内容
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -255,6 +260,6 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
           <KeyboardArrowUpRoundedIcon />
         </Fab>
       </Box>
-    </Box>
+    </Container>
   );
 };

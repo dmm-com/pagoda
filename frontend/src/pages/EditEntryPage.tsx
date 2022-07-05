@@ -1,4 +1,5 @@
-import { Box, Button, Typography } from "@mui/material";
+import AppsIcon from "@mui/icons-material/Apps";
+import { Box, Button, IconButton, Typography } from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
@@ -21,6 +22,7 @@ import {
 } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryForm } from "components/entry/EntryForm";
 
 export const EditEntryPage: FC = () => {
@@ -29,6 +31,8 @@ export const EditEntryPage: FC = () => {
 
   const history = useHistory();
 
+  const [entryAnchorEl, setEntryAnchorEl] =
+    useState<HTMLButtonElement | null>();
   const [entryInfo, setEntryInfo] = useState<EditableEntry>();
   const [submittable, setSubmittable] = useState<boolean>(true); // FIXME
 
@@ -236,9 +240,26 @@ export const EditEntryPage: FC = () => {
             </Box>
           </Box>
         }
+        componentControl={
+          <Box>
+            <IconButton
+              onClick={(e) => {
+                setEntryAnchorEl(e.currentTarget);
+              }}
+            >
+              <AppsIcon />
+            </IconButton>
+            <EntryControlMenu
+              entityId={entityId}
+              entryId={entryId}
+              anchorElem={entryAnchorEl}
+              handleClose={() => setEntryAnchorEl(null)}
+            />
+          </Box>
+        }
       />
 
-      <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
+      <Box>
         {entryInfo && (
           <EntryForm entryInfo={entryInfo} setEntryInfo={setEntryInfo} />
         )}
