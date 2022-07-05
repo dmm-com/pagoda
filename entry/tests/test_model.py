@@ -3844,6 +3844,7 @@ class ModelTest(AironeTestCase):
             {
                 "id": str(self._entry.id),
                 "name": self._entry.name,
+                "schema": {"id": self._entry.schema.id, "name": self._entry.schema.name},
             },
         )
 
@@ -3855,6 +3856,7 @@ class ModelTest(AironeTestCase):
             {
                 "id": str(self._entry.id),
                 "name": self._entry.name,
+                "schema": {"id": self._entry.schema.id, "name": self._entry.schema.name},
                 "attr": self._attr.schema.name,
             },
         )

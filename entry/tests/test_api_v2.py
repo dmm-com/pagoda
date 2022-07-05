@@ -1345,6 +1345,7 @@ class ViewTest(AironeViewTest):
         entry.attrs.get(name="vals").add_value(self.user, ["fuga"])
         entry.attrs.get(name="ref").add_value(self.user, ref_entry2.id)
         entry.attrs.get(name="refs").add_value(self.user, [ref_entry2.id])
+        entry.register_es()
 
         resp = self.client.get("/entry/api/v2/search/?query=hoge")
         self.assertEqual(resp.status_code, 200)

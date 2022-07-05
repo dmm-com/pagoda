@@ -289,7 +289,7 @@ class ElasticSearchTest(TestCase):
                         ]
                     }
                 },
-                "_source": ["name"],
+                "_source": ["name", "entity"],
                 "sort": [{"_score": {"order": "desc"}, "name.keyword": {"order": "asc"}}],
                 "from": 0,
             },
@@ -399,7 +399,13 @@ class ElasticSearchTest(TestCase):
                     {
                         "_type": "entry",
                         "_id": entry.id,
-                        "_source": {"name": entry.name},
+                        "_source": {
+                            "name": entry.name,
+                            "entity": {
+                                "id": entry.schema.id,
+                                "name": entry.schema.name,
+                            },
+                        },
                         "inner_hits": {
                             "attr": {
                                 "hits": {
@@ -428,6 +434,10 @@ class ElasticSearchTest(TestCase):
                 {
                     "id": entry.id,
                     "name": entry.name,
+                    "schema": {
+                        "id": entry.schema.id,
+                        "name": entry.schema.name,
+                    },
                     "attr": attr.name,
                 }
             ],

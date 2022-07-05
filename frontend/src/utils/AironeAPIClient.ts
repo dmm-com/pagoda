@@ -52,10 +52,6 @@ export function getEntityAttrs(entityIds: number[]): Promise<Response> {
   return fetch(`/api/v1/entity/attrs/${entityIds.join(",")}`);
 }
 
-export function getEntrySearch(query: string): Promise<Response> {
-  return fetch(`/entry/api/v2/search?query=${query}`);
-}
-
 export function getAttrReferrals(attr_id) {
   return fetch(`/entry/api/v1/get_attr_referrals/${attr_id}/`);
 }
