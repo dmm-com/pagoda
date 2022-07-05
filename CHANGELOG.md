@@ -3,12 +3,38 @@
 ## In development
 
 ### Added
+* Added a new feature for Group, that can represent parent Group.
+  This feature enables to make hierarchical tree Group construction.
+  Contributed by @userlocalhost
+
+### Changed
+* Upgrade flower version from v1.0.0 to v1.1.0
+
+### Fixed
+* Fixed empty display of array type in advanced search result
+  Contributed by @hinashi
+* Fixed an issue where None was displayed in array_named_entry attribute
+  Contributed by @hinashi
+* Fixed the header of webhook is not set
+  Contributed by @hinashi
+* Fixed entry recovery and attribute value revert not sending webhooks
+  Contributed by @hinashi
+
+## v3.11.0
+
+### Changed
+* (New-UI) Added movable Atttribute button at editing Entity page
+  Contributed by @hinashi, @syucream, @userlocalhost
+
+## v3.10.0
+
+### Added
 * (New-UI) Implemented a new page that shows referral Entries
   Contributed by @syucream
 
-### Changed
-
 ### Fixed
+* Fixed raising exception on validating URL
+  Contributed by @syucream
 
 ## v3.9.0
 

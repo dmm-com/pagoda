@@ -24,7 +24,6 @@ import {
   newGroupPath,
   newUserPath,
   passwordPath,
-  searchPath,
   userPath,
   usersPath,
   loginPath,
@@ -53,7 +52,6 @@ import { ImportGroupPage } from "pages/ImportGroupPage";
 import { ImportUserPage } from "pages/ImportUserPage";
 import { JobPage } from "pages/JobPage";
 import { LoginPage } from "pages/LoginPage";
-import { SearchPage } from "pages/SearchPage";
 import { ShowEntryHistoryPage } from "pages/ShowEntryHistoryPage";
 import { UserPage } from "pages/UserPage";
 
@@ -128,7 +126,6 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             <Route path={groupsPath()} component={GroupPage} />
             <Route path={jobsPath()} component={JobPage} />
             <Route path={aclPath(":objectId")} component={ACLPage} />
-            <Route path={searchPath()} component={SearchPage} />
             <Route path={newUserPath()} component={EditUserPage} />
             <Route path={importUsersPath()} component={ImportUserPage} />
             <Route

@@ -24,7 +24,7 @@ class Role(models.Model):
         if user.id in [u.id for u in admin_users]:
             return True
 
-        if bool(set([g.id for g in user.groups.all()]) & set([g.id for g in admin_groups])):
+        if bool(set([g.id for g in user.belonging_groups()]) & set([g.id for g in admin_groups])):
             return True
 
         return False
@@ -41,7 +41,7 @@ class Role(models.Model):
             return True
 
         if bool(
-            set([g.id for g in user.groups.all()])
+            set([g.id for g in user.belonging_groups()])
             & set(
                 [
                     g.id

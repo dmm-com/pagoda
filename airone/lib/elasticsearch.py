@@ -240,7 +240,7 @@ def make_query_for_simple(hint_string: str, hint_entity_name: str, offset: int) 
     """
     query: Dict = {
         "query": {"bool": {"must": []}},
-        "_source": ["name"],
+        "_source": ["name", "entity"],
         "sort": [{"_score": {"order": "desc"}, "name.keyword": {"order": "asc"}}],
         "from": offset,
     }
@@ -869,6 +869,8 @@ def make_search_results(
                 }
 
             elif attrinfo["type"] == AttrTypeValue["named_object"]:
+                if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == "":
+                    continue
                 ret_attrinfo["value"] = {
                     attrinfo["key"]: {
                         "id": attrinfo["referral_id"],
@@ -879,6 +881,11 @@ def make_search_results(
             elif attrinfo["type"] & AttrTypeValue["array"]:
                 if "value" not in ret_attrinfo:
                     ret_attrinfo["value"] = []
+
+                # If there is no value, it will be skipped.
+                if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == "":
+                    if "date_value" not in attrinfo:
+                        continue
 
                 if attrinfo["type"] & AttrTypeValue["named"]:
                     ret_attrinfo["value"].append(
@@ -917,6 +924,7 @@ def make_search_results_for_simple(res: Dict[str, Any]) -> Dict[str, str]:
         ret_value = {
             "id": resp_entry["_id"],
             "name": resp_entry["_source"]["name"],
+            "schema": resp_entry["_source"]["entity"],
         }
 
         for resp_entry_attr in resp_entry["inner_hits"]["attr"]["hits"]["hits"]:

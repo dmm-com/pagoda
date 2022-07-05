@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
@@ -215,21 +215,28 @@ export const EditEntryPage: FC = () => {
       </AironeBreadcrumbs>
 
       <PageHeader
-        isSubmittable={submittable}
-        handleSubmit={handleSubmit}
-        handleCancel={handleCancel}
-      >
-        {entry?.value != null ? (
-          <Box display="flex" alignItems="flex-end">
-            <Typography variant="h2" mr="32px">
-              {entry.value.name}
-            </Typography>
-            <Typography variant="h4">エントリ編集</Typography>
+        title={entry?.value != null ? entry.value.name : "新規エントリの作成"}
+        subTitle={entry?.value != null && "エントリ編集"}
+        componentSubmits={
+          <Box display="flex" justifyContent="center">
+            <Box mx="4px">
+              <Button
+                variant="contained"
+                color="secondary"
+                disabled={!submittable}
+                onClick={handleSubmit}
+              >
+                保存
+              </Button>
+            </Box>
+            <Box mx="4px">
+              <Button variant="outlined" color="primary" onClick={handleCancel}>
+                キャンセル
+              </Button>
+            </Box>
           </Box>
-        ) : (
-          <Typography variant="h2">新規エントリの作成</Typography>
-        )}
-      </PageHeader>
+        }
+      />
 
       <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
         {entryInfo && (

@@ -17,19 +17,24 @@ import {
   EntryBase,
   EntryBaseFromJSON,
   EntryBaseToJSON,
+  EntryCopy,
+  EntryCopyFromJSON,
+  EntryCopyToJSON,
   EntryRetrieve,
   EntryRetrieveFromJSON,
   EntryRetrieveToJSON,
   EntryUpdate,
   EntryUpdateFromJSON,
   EntryUpdateToJSON,
-  GetEntrySimple,
-  GetEntrySimpleFromJSON,
-  GetEntrySimpleToJSON,
   PaginatedGetEntrySimpleList,
   PaginatedGetEntrySimpleListFromJSON,
   PaginatedGetEntrySimpleListToJSON,
 } from "../models";
+
+export interface EntryApiV2CopyCreateRequest {
+  id: number;
+  entryCopy: EntryCopy;
+}
 
 export interface EntryApiV2DestroyRequest {
   id: number;
@@ -51,6 +56,10 @@ export interface EntryApiV2RetrieveRequest {
   id: number;
 }
 
+export interface EntryApiV2SearchListRequest {
+  query?: string;
+}
+
 export interface EntryApiV2UpdateRequest {
   id: number;
   entryUpdate?: EntryUpdate;
@@ -60,6 +69,81 @@ export interface EntryApiV2UpdateRequest {
  *
  */
 export class EntryApi extends runtime.BaseAPI {
+  /**
+   */
+  async entryApiV2CopyCreateRaw(
+    requestParameters: EntryApiV2CopyCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<EntryCopy>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling entryApiV2CopyCreate."
+      );
+    }
+
+    if (
+      requestParameters.entryCopy === null ||
+      requestParameters.entryCopy === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "entryCopy",
+        "Required parameter requestParameters.entryCopy was null or undefined when calling entryApiV2CopyCreate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/{id}/copy/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+        body: EntryCopyToJSON(requestParameters.entryCopy),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      EntryCopyFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async entryApiV2CopyCreate(
+    requestParameters: EntryApiV2CopyCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<EntryCopy> {
+    const response = await this.entryApiV2CopyCreateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
   /**
    */
   async entryApiV2DestroyRaw(
@@ -320,9 +404,14 @@ export class EntryApi extends runtime.BaseAPI {
   /**
    */
   async entryApiV2SearchListRaw(
+    requestParameters: EntryApiV2SearchListRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<Array<GetEntrySimple>>> {
+  ): Promise<runtime.ApiResponse<Array<EntryBase>>> {
     const queryParameters: any = {};
+
+    if (requestParameters.query !== undefined) {
+      queryParameters["query"] = requestParameters.query;
+    }
 
     const headerParameters: runtime.HTTPHeaders = {};
 
@@ -351,16 +440,20 @@ export class EntryApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      jsonValue.map(GetEntrySimpleFromJSON)
+      jsonValue.map(EntryBaseFromJSON)
     );
   }
 
   /**
    */
   async entryApiV2SearchList(
+    requestParameters: EntryApiV2SearchListRequest = {},
     initOverrides?: RequestInit
-  ): Promise<Array<GetEntrySimple>> {
-    const response = await this.entryApiV2SearchListRaw(initOverrides);
+  ): Promise<Array<EntryBase>> {
+    const response = await this.entryApiV2SearchListRaw(
+      requestParameters,
+      initOverrides
+    );
     return await response.value();
   }
 

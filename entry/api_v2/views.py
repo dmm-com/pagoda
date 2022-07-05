@@ -15,7 +15,9 @@ from entry.api_v2.serializers import GetEntrySimpleSerializer
 from entry.api_v2.serializers import EntryBaseSerializer
 from entry.api_v2.serializers import EntryRetrieveSerializer
 from entry.api_v2.serializers import EntryUpdateSerializer
+from entry.api_v2.serializers import EntryCopySerializer
 from entry.models import AttributeValue, Entry
+from entry.settings import CONFIG as ENTRY_CONFIG
 from job.models import Job
 from user.models import User
 
@@ -28,6 +30,7 @@ class EntryPermission(BasePermission):
             "update": ACLType.Writable,
             "destroy": ACLType.Full,
             "restore": ACLType.Full,
+            "copy": ACLType.Full,
         }
 
         if not user.has_permission(obj, permisson.get(view.action)):
@@ -44,6 +47,7 @@ class EntryAPI(viewsets.ModelViewSet):
         serializer = {
             "retrieve": EntryRetrieveSerializer,
             "update": EntryUpdateSerializer,
+            "copy": EntryCopySerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -106,9 +110,36 @@ class EntryAPI(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_201_CREATED)
 
+    def copy(self, request, pk):
+        src_entry: Entry = self.get_object()
 
+        if not src_entry.is_active:
+            raise ValidationError("specified entry is not active")
+
+        # validate post parameter
+        serializer = self.get_serializer(src_entry, data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # TODO Conversion to support the old UI
+        params = {
+            "new_name_list": request.data["copy_entry_names"],
+            "post_data": request.data,
+        }
+
+        # run copy job
+        job = Job.new_copy(request.user, src_entry, text="Preparing to copy entry", params=params)
+        job.run()
+
+        return Response({}, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter("query", OpenApiTypes.STR, OpenApiParameter.QUERY),
+    ],
+)
 class searchAPI(viewsets.ReadOnlyModelViewSet):
-    serializer_class = GetEntrySimpleSerializer
+    serializer_class = EntryBaseSerializer
 
     def get_queryset(self):
         queryset = []
@@ -117,34 +148,8 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
         if not query:
             return queryset
 
-        name_results = list(
-            Entry.objects.filter(name__iregex=r"%s" % query, is_active=True).order_by("name")
-        )
-        value_results = [
-            x.parent_attr.parent_entry
-            for x in AttributeValue.objects.select_related("parent_attr__parent_entry")
-            .filter(
-                Q(value__iregex=r"%s" % query),
-                Q(is_latest=True) | Q(parent_attrv__is_latest=True),
-                Q(parent_attr__parent_entry__is_active=True),
-            )
-            .order_by("parent_attr__parent_entry__name")
-        ]
-        ref_results = [
-            x.parent_attr.parent_entry
-            for x in AttributeValue.objects.select_related("parent_attr__parent_entry", "referral")
-            .filter(
-                Q(referral__is_active=True),
-                Q(referral__name__iregex=r"%s" % query),
-                Q(is_latest=True) | Q(parent_attrv__is_latest=True),
-                Q(parent_attr__parent_entry__is_active=True),
-            )
-            .order_by("parent_attr__parent_entry__name")
-        ]
-        results = name_results + value_results + ref_results
-        queryset = sorted(set(results), key=results.index)
-
-        return queryset
+        results = Entry.search_entries_for_simple(query, limit=ENTRY_CONFIG.MAX_SEARCH_ENTRIES)
+        return results["ret_values"]
 
 
 @extend_schema(
@@ -162,7 +167,7 @@ class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
 
         entry = Entry.objects.filter(pk=entry_id).first()
         if not entry:
-            return None
+            return []
 
         ids = AttributeValue.objects.filter(
             Q(referral=entry, is_latest=True) | Q(referral=entry, parent_attrv__is_latest=True)

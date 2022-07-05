@@ -217,17 +217,12 @@ function register_checkbox_event_handler() {
 
           // toggle opposite (e.g. clear admin checkbox when member is set, vise versa)
           if ($(e.target).is(':checked')) {
-            console.log('[onix/_do_register_handler(90)]');
             if ($(e.target).hasClass('member')) {
-              console.log('[onix/_do_register_handler(91)]');
               obj.is_checked_admin = false;
             } else {
-              console.log('[onix/_do_register_handler(92)]');
               obj.is_checked_member = false;
             }
           }
-
-          console.log('[onix/_do_register_handler(99)] obj: ', obj);
 
           return true;
         }

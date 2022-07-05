@@ -52,10 +52,6 @@ export function getEntityAttrs(entityIds: number[]): Promise<Response> {
   return fetch(`/api/v1/entity/attrs/${entityIds.join(",")}`);
 }
 
-export function getEntrySearch(query: string): Promise<Response> {
-  return fetch(`/entry/api/v2/search?query=${query}`);
-}
-
 export function getAttrReferrals(attr_id, keyword?: string) {
   return fetch(
     `/entry/api/v1/get_attr_referrals/${attr_id}/?keyword=${keyword ?? ""}`
@@ -93,75 +89,6 @@ export function searchEntries(
       entry_name: entryName,
       attrinfo: attrInfo,
       entry_limit: entryLimit,
-    }),
-  });
-}
-
-// NOTE it calls non-API endpoint
-// FIXME implement internal API then call it
-export function createEntity(
-  name: string,
-  note: string,
-  isToplevel: boolean,
-  attrs: object[]
-): Promise<Response> {
-  return fetch(`/entity/do_create`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({
-      name: name,
-      note: note,
-      is_toplevel: isToplevel,
-      attrs: attrs,
-    }),
-  });
-}
-
-// NOTE it calls non-API endpoint
-// FIXME implement internal API then call it
-export function updateEntity(
-  entityId: number,
-  name: string,
-  note: string,
-  isToplevel: boolean,
-  attrs: object[]
-): Promise<Response> {
-  return fetch(`/entity/do_edit/${entityId}`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({
-      name: name,
-      note: note,
-      is_toplevel: isToplevel,
-      attrs: attrs,
-    }),
-  });
-}
-
-// NOTE it calls non-API endpoint
-// FIXME implement internal API then call it
-export function deleteEntity(entityId: number): Promise<Response> {
-  return fetch(`/entity/do_delete/${entityId}`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({}),
-  });
-}
-
-export function copyEntry(entryId: number, entries: string): Promise<Response> {
-  return fetch(`/entry/do_copy/${entryId}`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({
-      entries: entries,
     }),
   });
 }
@@ -411,31 +338,5 @@ export function cancelJob(jobId: number): Promise<Response> {
     body: JSON.stringify({
       job_id: jobId,
     }),
-  });
-}
-
-export function getWebhooks(entityId: number): Promise<Response> {
-  return fetch(`/webhook/api/v2/${entityId}`);
-}
-
-export function setWebhook(
-  entityId: number,
-  request_parameter: object
-): Promise<Response> {
-  return fetch(`/webhook/api/v1/set/${entityId}`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify(request_parameter),
-  });
-}
-
-export function deleteWebhook(webhookId: number): Promise<Response> {
-  return fetch(`/webhook/api/v1/del/${webhookId}`, {
-    method: "DELETE",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
   });
 }

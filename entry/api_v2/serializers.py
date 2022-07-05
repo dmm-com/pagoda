@@ -76,7 +76,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
         # In create case, check attrs mandatory attribute
         if not self.instance:
-            user: User = User.objects.get(id=self.context["request"].user.id)
+            user: User = self.context["request"].user
             for mandatory_attr in schema.attrs.filter(is_mandatory=True, is_active=True):
                 if not user.has_permission(mandatory_attr, ACLType.Writable):
                     raise ValidationError(
@@ -118,29 +118,25 @@ class EntryCreateSerializer(EntryBaseSerializer):
         queryset=Entity.objects.all(), write_only=True, required=True
     )
     attrs = serializers.ListField(child=AttributeSerializer(), write_only=True, required=False)
-    # created_user = serializers.HiddenField(
-    #     default=serializers.CurrentUserDefault()
-    # )
+    created_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Entry
-        fields = ["id", "name", "schema", "attrs"]
+        fields = ["id", "name", "schema", "attrs", "created_user"]
 
     def validate(self, params):
         self._validate(params["name"], params["schema"], params.get("attrs", []))
         return params
 
     def create(self, validated_data):
-        user: User = User.objects.get(id=self.context["request"].user.id)
+        user: User = self.context["request"].user
 
         entity_name = validated_data["schema"].name
         if custom_view.is_custom("before_create_entry", entity_name):
             custom_view.call_custom("before_create_entry", entity_name, user, validated_data)
 
         attrs_data = validated_data.pop("attrs", [])
-        entry: Entry = Entry.objects.create(
-            **validated_data, status=Entry.STATUS_CREATING, created_user=user
-        )
+        entry: Entry = Entry.objects.create(**validated_data, status=Entry.STATUS_CREATING)
 
         for entity_attr in entry.schema.attrs.filter(is_active=True):
             attr: Attribute = entry.add_attribute_from_base(entity_attr, user)
@@ -187,7 +183,7 @@ class EntryUpdateSerializer(EntryBaseSerializer):
 
     def update(self, entry: Entry, validated_data):
         entry.set_status(Entry.STATUS_EDITING)
-        user: User = User.objects.get(id=self.context["request"].user.id)
+        user: User = self.context["request"].user
 
         entity_name = entry.schema.name
         if custom_view.is_custom("before_update_entry", entity_name):
@@ -432,6 +428,26 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
             attrinfo = custom_view.call_custom("get_entry_attr", obj.schema.name, obj, attrinfo)
 
         return attrinfo
+
+
+class EntryCopySerializer(serializers.Serializer):
+    copy_entry_names = serializers.ListField(
+        child=serializers.CharField(),
+        write_only=True,
+        required=True,
+        allow_empty=False,
+    )
+
+    class Meta:
+        fields = "copy_entry_names"
+
+    def validate_copy_entry_names(self, copy_entry_names):
+        entry: Entry = self.instance
+        for copy_entry_name in copy_entry_names:
+            if Entry.objects.filter(
+                name=copy_entry_name, schema=entry.schema, is_active=True
+            ).exists():
+                raise ValidationError("specified name(%s) already exists" % copy_entry_name)
 
 
 class GetEntrySimpleSerializer(serializers.ModelSerializer):

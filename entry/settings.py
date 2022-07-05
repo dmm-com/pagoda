@@ -4,6 +4,7 @@ CONFIG = Settings(
     {
         "MAX_LIST_ENTRIES": 100,
         "MAX_LIST_REFERRALS": 50,
+        "MAX_SEARCH_ENTRIES": 20,
         "TEMPLATE_CONFIG": {
             "MAX_LABEL_STRING": 45,
         },

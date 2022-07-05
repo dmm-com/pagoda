@@ -1,4 +1,5 @@
 from django.test import TestCase
+from social_django.models import UserSocialAuth
 from rest_framework.authtoken.models import Token
 
 from airone.lib.acl import ACLType
@@ -15,6 +16,7 @@ class ModelTest(TestCase):
         self.user = User(username="ほげ", email="hoge@example.com")
         self.user.set_password("fuga")
         self.user.save()
+        self.user_social_auth = UserSocialAuth.objects.create(user=self.user)
 
     def test_get_token(self):
         # if not have token
@@ -40,6 +42,7 @@ class ModelTest(TestCase):
         self.assertEqual(user.authorized_type, 0)
         self.assertIsNotNone(user.date_joined)
         self.assertFalse(user.is_active)
+        self.assertFalse(user.social_auth.exists())
 
     def test_set_history(self):
         entity = Entity.objects.create(name="test-entity", created_user=self.user)
@@ -167,3 +170,22 @@ class ModelTest(TestCase):
         role.users.clear()
         role.admin_users.add(user)
         self.assertTrue(user.has_permission(entity, ACLType.Full))
+
+    def test_get_all_hierarchical_groups_when_they_are_looped(self):
+        """This test try to get hierarchical groups when those are looped like this
+        * group0
+            └──group1 (member: user1)
+                 └──group0
+                       └──group1 (member: user1)
+                            ....
+        """
+        group0 = Group.objects.create(name="group0")
+        group1 = Group.objects.create(name="group1", parent_group=group0)
+        group0.parent_group = group1
+        group0.save(update_fields=["parent_group"])
+        user = User.objects.create(username="user1")
+        user.groups.add(group1)
+
+        self.assertEqual(
+            sorted([g.name for g in user.belonging_groups()]), sorted(["group0", "group1"])
+        )

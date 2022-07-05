@@ -10,6 +10,14 @@ import { TestWrapper } from "utils/TestWrapper";
 
 test("should render a component with essential props", function () {
   expect(() =>
-    render(<CopyForm entityId={1} entryId={1} />, { wrapper: TestWrapper })
+    render(
+      <CopyForm
+        entries=""
+        setEntries={() => {
+          /* nothing */
+        }}
+      />,
+      { wrapper: TestWrapper }
+    )
   ).not.toThrow();
 });

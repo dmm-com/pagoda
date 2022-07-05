@@ -1,7 +1,6 @@
 import PersonIcon from "@mui/icons-material/Person";
 import TaskIcon from "@mui/icons-material/Task";
 import {
-  alpha,
   AppBar,
   Badge,
   Box,
@@ -14,7 +13,6 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import { grey } from "@mui/material/colors";
 import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
@@ -33,34 +31,47 @@ import { getRecentJobs, postLogout } from "utils/AironeAPIClient";
 import { DjangoContext } from "utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  centeritem: {
-    paddingLeft: "10%",
-    paddingRight: "10%",
+  frame: {
+    width: "100%",
+    height: "56px",
   },
-  menu: {
-    margin: theme.spacing(0, 1),
+  fixed: {
+    position: "fixed",
+    zIndex: 1,
+    width: "100%",
+    backgroundColor: theme.palette.primary.main,
+    display: "flex",
+    justifyContent: "center",
+  },
+  appBar: {
+    maxWidth: theme.breakpoints.values.lg,
+  },
+  toolBar: {
+    height: "56px",
+  },
+  titleBox: {
+    display: "flex",
+    alignItems: "center",
   },
   title: {
     color: "white",
   },
-  version_description: {
+  version: {
     color: "#FFFFFF8A",
+    padding: "0px 24px",
   },
-  search: {
+  menuBox: {
+    flexGrow: 1,
     display: "flex",
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
-    "&:hover": {
-      backgroundColor: alpha(theme.palette.common.white, 0.25),
+    color: "white",
+    marginLeft: "24px",
+    "& a": {
+      color: "inherit",
+      margin: "0px 4px",
     },
-    margin: theme.spacing(0, 1),
-    [theme.breakpoints.up("sm")]: {
-      width: "auto",
-    },
-  },
-  searchTextFieldInput: {
-    "&::placeholder": {
-      color: "white",
+    "& button": {
+      color: "inherit",
+      margin: "0px 4px",
     },
   },
 }));
@@ -86,58 +97,55 @@ export const Header: FC = () => {
   };
 
   return (
-    <>
-      <Box sx={{ position: "fixed", width: "100%", zIndex: 1 }}>
-        <AppBar position="static" className={classes.centeritem}>
-          <Toolbar>
-            {/* FIX ME. I want to remove this style coding in component */}
-            <Box
-              sx={{ alignItems: "flex-end", display: "flex", color: "white" }}
-            >
-              <Typography
-                // make margin with title and version description
-                sx={{ mr: "10px" }}
-                variant="h5"
-                color="inherit"
-                className={classes.title}
-              >
+    <Box className={classes.frame}>
+      <Box className={classes.fixed}>
+        <AppBar position="static" elevation={0} className={classes.appBar}>
+          <Toolbar variant="dense" className={classes.toolBar}>
+            <Box className={classes.titleBox}>
+              <Typography fontSize="24px" className={classes.title}>
                 AirOne
               </Typography>
-
-              <Typography
-                className={classes.version_description}
-                ml={"20px"}
-                mr={"30px"}
-                fontSize={"16px"}
-              >
+              <Typography fontSize="16px" className={classes.version}>
                 {djangoContext.version}
               </Typography>
             </Box>
 
-            <Box
-              className={classes.menu}
-              sx={{ flexGrow: 1, display: "flex", color: "white" }}
-            >
-              <Button color="inherit" href={entitiesPath()}>
-                エンティティ一覧
-              </Button>
-              <Button color="inherit" href={advancedSearchPath()}>
-                高度な検索
-              </Button>
-              <Button color="inherit" href={usersPath()}>
-                ユーザ管理
-              </Button>
-              <Button color="inherit" href={groupsPath()}>
-                グループ管理
-              </Button>
+            <Box className={classes.menuBox}>
+              <Button href={entitiesPath()}>エンティティ一覧</Button>
+              <Button href={advancedSearchPath()}>高度な検索</Button>
+              <Button href={usersPath()}>ユーザ管理</Button>
+              <Button href={groupsPath()}>グループ管理</Button>
             </Box>
 
-            <Box className={classes.menu}>
+            <Box justifyContent="flex-end" className={classes.menuBox}>
+              <IconButton
+                aria-controls="user-menu"
+                aria-haspopup="true"
+                onClick={(e) => setUserAnchorEl(e.currentTarget)}
+              >
+                <PersonIcon />
+              </IconButton>
+              <Menu
+                id="user-menu"
+                anchorEl={userAnchorEl}
+                open={Boolean(userAnchorEl)}
+                onClose={() => setUserAnchorEl(null)}
+                keepMounted
+                disableScrollLock
+              >
+                <MenuItem>
+                  <Link to={userPath(djangoContext.user.id)}>ユーザ設定</Link>
+                </MenuItem>
+                <MenuItem>
+                  <Link to="#" onClick={() => handleLogout()}>
+                    ログアウト
+                  </Link>
+                </MenuItem>
+              </Menu>
               <IconButton
                 aria-controls="job-menu"
                 aria-haspopup="true"
                 onClick={(e) => setJobAnchorEl(e.currentTarget)}
-                style={{ color: grey[50] }}
               >
                 {!recentJobs.loading && (
                   <Badge
@@ -154,6 +162,7 @@ export const Header: FC = () => {
                 open={Boolean(jobAnchorEl)}
                 onClose={() => setJobAnchorEl(null)}
                 keepMounted
+                disableScrollLock
               >
                 {!recentJobs.loading && recentJobs.value.length > 0 ? (
                   recentJobs.value.map((recentJob) => (
@@ -175,37 +184,10 @@ export const Header: FC = () => {
                   </Typography>
                 </MenuItem>
               </Menu>
-              <IconButton
-                aria-controls="user-menu"
-                aria-haspopup="true"
-                onClick={(e) => setUserAnchorEl(e.currentTarget)}
-                style={{ color: grey[50] }}
-              >
-                <PersonIcon />
-              </IconButton>
-              <Menu
-                id="user-menu"
-                anchorEl={userAnchorEl}
-                open={Boolean(userAnchorEl)}
-                onClose={() => setUserAnchorEl(null)}
-                keepMounted
-              >
-                <MenuItem>
-                  <Link to={userPath(djangoContext.user.id)}>ユーザ設定</Link>
-                </MenuItem>
-                <MenuItem>
-                  <Link to="#" onClick={() => handleLogout()}>
-                    ログアウト
-                  </Link>
-                </MenuItem>
-              </Menu>
             </Box>
           </Toolbar>
         </AppBar>
       </Box>
-
-      {/* This component is a virtual component for above fixed component */}
-      <Box sx={{ width: "100%", height: "64px" }} />
-    </>
+    </Box>
   );
 };

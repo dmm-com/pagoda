@@ -25,6 +25,8 @@ class User(AbstractUser):
 
     @property
     def airone_groups(self):
+        """This returns groups that current user just belongs to (not include hierarchical parent groups)
+        """
         return Group.objects.filter(id__in=[g.id for g in self.groups.all()], is_active=True)
 
     # to make a polymorphism between the Group model
@@ -35,6 +37,23 @@ class User(AbstractUser):
     @property
     def token(self):
         return Token.objects.filter(user=self).first()
+
+    def belonging_groups(self, is_direct_belonging=False):
+        """This returns groups that include hierarchical superior groups"""
+
+        def _scan_superior_groups(group, parent_groups):
+            if group.parent_group and group.parent_group not in parent_groups:
+                parent_groups.append(group.parent_group)
+                _scan_superior_groups(group.parent_group, parent_groups)
+
+        if is_direct_belonging:
+            return self.airone_groups
+        else:
+            parent_groups = []
+            for group in self.airone_groups:
+                _scan_superior_groups(group, parent_groups)
+
+            return set(list(self.airone_groups) + parent_groups)
 
     def has_permission(self, target_obj, permission_level):
         # A bypass processing to rapidly return.
@@ -76,7 +95,7 @@ class User(AbstractUser):
                         list(g.role.filter(is_active=True))
                         + list(g.admin_role.filter(is_active=True))
                     )
-                    for g in self.airone_groups
+                    for g in self.belonging_groups()
                 ],
                 [],
             )
@@ -148,6 +167,8 @@ class User(AbstractUser):
             datetime.now().strftime("%Y%m%d_%H%M%S"),
         )
         self.email = "deleted__%s" % (self.email)
+        for social_auth in self.social_auth.all():
+            social_auth.delete()
         self.save()
 
     # operations for registering History
@@ -196,11 +217,10 @@ class History(models.Model):
     target_obj = models.ForeignKey(
         import_module("acl.models").ACLBase,
         related_name="referred_target_obj",
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.DO_NOTHING,
     )
     time = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     operation = models.IntegerField(default=0)
     text = models.CharField(max_length=512)
     is_detail = models.BooleanField(default=False)
