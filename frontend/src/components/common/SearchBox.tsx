@@ -4,16 +4,18 @@ import React, { FC } from "react";
 
 interface Props {
   placeholder: string;
-  onChange: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>;
+  onChange?: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>;
   onKeyPress?: (e: any) => void;
-  value: string;
+  value?: string;
+  defaultValue?: string;
 }
 
 export const SearchBox: FC<Props> = ({
   placeholder,
   onChange,
+  onKeyPress,
   value,
-  onKeyPress = undefined,
+  defaultValue,
 }) => {
   return (
     <TextField
@@ -32,6 +34,7 @@ export const SearchBox: FC<Props> = ({
         },
       }}
       fullWidth={true}
+      defaultValue={defaultValue}
       value={value}
       onChange={onChange}
       onKeyPress={onKeyPress}
