@@ -1,9 +1,11 @@
-from django.test import TestCase
 from group.models import Group
 from user.models import User
+from airone.lib.test import AironeTestCase
+from airone.lib.types import AttrTypeValue
+from entry.models import Entry
 
 
-class ModelTest(TestCase):
+class ModelTest(AironeTestCase):
     # helper methods to craete User and Group
     def _create_user(self, name):
         return User.objects.create(username=name)
@@ -51,3 +53,64 @@ class ModelTest(TestCase):
 
             self.assertFalse(group.is_active)
             self.assertGreater(group.name.find("_deleted_"), 0)
+
+    def test_get_referred_entries_through_group_attr(self):
+        for index in range(3):
+            entity = self.create_entity(
+                **{
+                    "user": self.user1,
+                    "name": "Entity%d" % index,
+                    "attrs": [{"name": "group", "type": AttrTypeValue["group"]}],
+                }
+            )
+            self.add_entry(
+                self.user1,
+                "e-%d" % index,
+                entity,
+                values={
+                    "group": self.group1,
+                },
+            )
+
+        # check Group.get_referred_entries()
+        self.assertFalse(self.group0.get_referred_entries().exists())
+        self.assertEqual(
+            [e.name for e in self.group1.get_referred_entries()], ["e-0", "e-1", "e-2"]
+        )
+
+        # check Group.get_referred_entries() with entity-name
+        self.assertEqual(
+            [e.name for e in self.group1.get_referred_entries(entity_name="Entity1")], ["e-1"]
+        )
+
+        # check Group.get_referred_entries() after deleting Entry
+        entry = Entry.objects.filter(schema__name="Entity1", is_active=True).first()
+        entry.delete()
+        self.assertFalse(self.group1.get_referred_entries(entity_name="Entity1").exists())
+
+    def test_get_referred_entries_through_array_group_attr(self):
+        for index in range(3):
+            entity = self.create_entity(
+                **{
+                    "user": self.user1,
+                    "name": "Entity%d" % index,
+                    "attrs": [{"name": "groups", "type": AttrTypeValue["array_group"]}],
+                }
+            )
+            self.add_entry(
+                self.user1,
+                "e-%d" % index,
+                entity,
+                values={
+                    "groups": [self.group1, self.group2],
+                },
+            )
+
+        for group in [self.group1, self.group2]:
+            # check Group.get_referred_entries()
+            self.assertEqual([e.name for e in group.get_referred_entries()], ["e-0", "e-1", "e-2"])
+
+            # check Group.get_referred_entries() with entity-name
+            self.assertEqual(
+                [e.name for e in group.get_referred_entries(entity_name="Entity1")], ["e-1"]
+            )
