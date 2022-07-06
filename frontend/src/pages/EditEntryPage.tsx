@@ -10,6 +10,7 @@ import { PageHeader } from "../components/common/PageHeader";
 import {
   EditableEntry,
   EditableEntryAttrs,
+  EditableEntryAttrValue,
 } from "../components/entry/entryForm/EditableEntry";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { DjangoContext } from "../utils/DjangoContext";
@@ -65,33 +66,74 @@ export const EditEntryPage: FC = () => {
           ])
         ),
       });
-    } else if (!entity.loading && entity.value !== undefined) {
+    } else if (
+      !entry.loading &&
+      !entity.loading &&
+      entity.value !== undefined
+    ) {
       setEntryInfo({
         name: "",
         attrs: Object.fromEntries(
-          entity.value.attrs.map((attr): [string, EditableEntryAttrs] => [
-            attr.name,
-            {
-              type: attr.type,
-              isMandatory: attr.isMandatory,
-              schema: {
-                id: attr.id,
-                name: attr.name,
+          entity.value.attrs.map((attr): [string, EditableEntryAttrs] => {
+            const attrValue: EditableEntryAttrValue = {};
+            switch (attr.type) {
+              case djangoContext.attrTypeValue.string:
+              case djangoContext.attrTypeValue.text:
+                attrValue["asString"] = "";
+                break;
+              case djangoContext.attrTypeValue.date:
+                attrValue["asString"] = null;
+                break;
+              case djangoContext.attrTypeValue.boolean:
+                attrValue["asBoolean"] = false;
+                break;
+              case djangoContext.attrTypeValue.object:
+                attrValue["asObject"] = null;
+                break;
+              case djangoContext.attrTypeValue.group:
+                attrValue["asGroup"] = null;
+                break;
+              case djangoContext.attrTypeValue.named_object:
+                attrValue["asNamedObject"] = { "": null };
+                break;
+              case djangoContext.attrTypeValue.array_string:
+                attrValue["asArrayString"] = [];
+                break;
+              case djangoContext.attrTypeValue.array_object:
+                attrValue["asArrayObject"] = [];
+                break;
+              case djangoContext.attrTypeValue.array_group:
+                attrValue["asArrayGroup"] = [];
+                break;
+              case djangoContext.attrTypeValue.array_named_object:
+                attrValue["asArrayNamedObject"] = [];
+                break;
+            }
+            return [
+              attr.name,
+              {
+                type: attr.type,
+                isMandatory: attr.isMandatory,
+                schema: {
+                  id: attr.id,
+                  name: attr.name,
+                },
+                value: attrValue,
               },
-              value: {},
-            },
-          ])
+            ];
+          })
         ),
       });
     }
   }, [entity, entry]);
+
+  console.log("entryInfo", entryInfo);
 
   const djangoContext = DjangoContext.getInstance();
 
   const handleSubmit = async () => {
     const updatedAttr = Object.entries(entryInfo.attrs).map(
       ([{}, attrValue]) => {
-        console.log("[onix/handleSubmit] ", attrValue);
         switch (attrValue.type) {
           case djangoContext.attrTypeValue.string:
           case djangoContext.attrTypeValue.text:
@@ -108,7 +150,6 @@ export const EditEntryPage: FC = () => {
             };
 
           case djangoContext.attrTypeValue.object:
-            console.log("[onix/handleSubmit(object)] ", attrValue);
             return {
               id: attrValue.schema.id,
               value: attrValue.value.asObject?.id ?? "",
@@ -136,14 +177,12 @@ export const EditEntryPage: FC = () => {
             };
 
           case djangoContext.attrTypeValue.array_object:
-            console.log("[onix/handleSubmit(array_object)] ", attrValue);
             return {
               id: attrValue.schema.id,
               value: attrValue.value.asArrayObject?.map((x) => x.id),
             };
 
           case djangoContext.attrTypeValue.array_group:
-            console.log("[onix/handleSubmit(array_group)] ", attrValue);
             return {
               id: attrValue.schema.id,
               value: attrValue.value.asArrayGroup?.map((x) => x.id),
@@ -215,7 +254,9 @@ export const EditEntryPage: FC = () => {
             {entry.value.name}
           </Typography>
         )}
-        <Typography color="textPrimary">編集</Typography>
+        <Typography color="textPrimary">
+          {entry.value ? "編集" : "作成"}
+        </Typography>
       </AironeBreadcrumbs>
 
       <PageHeader

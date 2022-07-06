@@ -57,26 +57,29 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         break;
 
       case djangoContext.attrTypeValue.object:
-        entryInfo.attrs[name].value.asObject = valueInfo;
+        entryInfo.attrs[name].value.asObject = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
       case djangoContext.attrTypeValue.group:
-        entryInfo.attrs[name].value.asGroup = valueInfo;
+        entryInfo.attrs[name].value.asGroup = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
       case djangoContext.attrTypeValue.named_object:
-        const namedObjectKey = valueInfo.key
-          ? valueInfo.key
-          : Object.keys(entryInfo.attrs[name].value.asNamedObject ?? {})[0] ??
-            "";
-        entryInfo.attrs[name].value.asNamedObject = {
-          [namedObjectKey]: {
-            id: valueInfo.id,
-            name: valueInfo.name,
-          },
-        };
+        if (valueInfo?.key !== undefined) {
+          entryInfo.attrs[name].value.asNamedObject = {
+            [valueInfo.key]:
+              Object.values(
+                entryInfo.attrs[name].value.asNamedObject ?? {}
+              )[0] ?? null,
+          };
+        } else {
+          entryInfo.attrs[name].value.asNamedObject = {
+            [Object.keys(entryInfo.attrs[name].value.asNamedObject ?? {})[0] ??
+            ""]: valueInfo.value,
+          };
+        }
         changeAttributes({ ...entryInfo.attrs });
         break;
 
@@ -90,32 +93,40 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         break;
 
       case djangoContext.attrTypeValue.array_object:
-        entryInfo.attrs[name].value.asArrayObject = valueInfo;
+        entryInfo.attrs[name].value.asArrayObject = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
       case djangoContext.attrTypeValue.array_group:
-        entryInfo.attrs[name].value.asArrayGroup = valueInfo;
+        entryInfo.attrs[name].value.asArrayGroup = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
       case djangoContext.attrTypeValue.array_named_object:
-        if (entryInfo.attrs[name].value?.asArrayNamedObject == null) {
-          entryInfo.attrs[name].value.asArrayNamedObject = [{ "": {} }];
+        if (
+          entryInfo.attrs[name].value.asArrayNamedObject.length <=
+          valueInfo.index
+        ) {
+          entryInfo.attrs[name].value.asArrayNamedObject.push({ "": null });
+          changeAttributes({ ...entryInfo.attrs });
+          break;
         }
-        const arrayNamedObjectKey = valueInfo.key
-          ? valueInfo.key
-          : Object.keys(
-              entryInfo.attrs[name].value.asArrayNamedObject?.[
-                valueInfo.index
-              ] ?? {}
-            )[0] ?? "";
-        entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index] = {
-          [arrayNamedObjectKey]: {
-            id: valueInfo.id,
-            name: valueInfo.name,
-          },
-        };
+
+        if (valueInfo?.key !== undefined) {
+          entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index] = {
+            [valueInfo.key]:
+              Object.values(
+                entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index]
+              )[0] ?? null,
+          };
+        } else {
+          entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index] = {
+            [Object.keys(
+              entryInfo.attrs[name].value.asArrayNamedObject[valueInfo.index]
+            )[0] ?? ""]: valueInfo.value,
+          };
+        }
+
         changeAttributes({ ...entryInfo.attrs });
         break;
     }

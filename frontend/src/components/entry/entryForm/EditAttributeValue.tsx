@@ -12,8 +12,7 @@ import {
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import React, { FC, useEffect, useMemo, useState } from "react";
-import { useAsync } from "react-use";
+import React, { FC, useEffect, useState } from "react";
 
 import { EditableEntryAttrs } from "./EditableEntry";
 
@@ -31,30 +30,6 @@ interface CommonProps {
   index?: number;
   handleChange: (attrName: string, attrType: number, valueInfo: any) => void;
 }
-
-const AirOneReferralBox: FC<any> = ({
-  multiple,
-  options,
-  value,
-  onChange,
-  onInputChange,
-}) => {
-  return (
-    <Autocomplete
-      sx={{ width: "280px" }}
-      multiple={multiple}
-      options={options}
-      getOptionLabel={(option) => option.name}
-      isOptionEqualToValue={(option, value) => option.id === value.id}
-      value={value}
-      onChange={onChange}
-      onInputChange={onInputChange}
-      renderInput={(params) => (
-        <TextField {...params} size="small" placeholder="-NOT SET-" />
-      )}
-    />
-  );
-};
 
 const ElemString: FC<
   CommonProps & {
@@ -117,15 +92,19 @@ const ElemBool: FC<CommonProps & { attrValue: boolean }> = ({
   );
 };
 
-const ElemObjects: FC<
+const ElemRefferal: FC<
   CommonProps & {
-    attrId?: number;
-    attrValue: Array<EntryRetrieveValueAsObject>;
-    schemaId: number;
-    handleClickDeleteListItem: (attrName: string, index?: number) => void;
+    multiple?: boolean;
+    attrValue:
+      | EntryRetrieveValueAsObject
+      | Array<EntryRetrieveValueAsObject>
+      | EntryRetrieveValueAsObjectSchema
+      | Array<EntryRetrieveValueAsObjectSchema>;
+    schemaId?: number;
+    handleClickDeleteListItem?: (attrName: string, index?: number) => void;
   }
 > = ({
-  attrId,
+  multiple = false,
   attrName,
   attrValue,
   attrType,
@@ -135,124 +114,114 @@ const ElemObjects: FC<
   handleClickDeleteListItem,
 }) => {
   const [keyword, setKeyword] = useState("");
-
-  // FIXME Implement and use API V2
-  // TODO call it reactively to avoid loading API???
   const [referrals, setReferrals] = useState([]);
 
+  const djangoContext = DjangoContext.getInstance();
+
   useEffect(() => {
-    getAttrReferrals(attrId ?? schemaId, keyword).then((resp) => {
-      resp.json().then((data) => {
-        attrValue.forEach((v) => {
-          if (!data.results.map((r) => r.id).includes(v.id)) {
-            data.results.push({ id: v.id, name: v.name });
+    if (Number(attrType) & Number(djangoContext.attrTypeValue.object)) {
+      // FIXME Implement and use API V2
+      // TODO call it reactively to avoid loading API???
+      getAttrReferrals(schemaId, keyword).then((resp) => {
+        resp.json().then((data) => {
+          const addReferrals = [];
+
+          // Filter duplicate referrals.
+          data.results.forEach((result) => {
+            if (!referrals.map((referral) => referral.id).includes(result.id)) {
+              addReferrals.push(result);
+            }
+          });
+
+          // Add current attr value to referrals.
+          if (multiple) {
+            (attrValue as Array<EntryRetrieveValueAsObject>).forEach(
+              (value) => {
+                if (
+                  !referrals.map((referral) => referral.id).includes(value.id)
+                ) {
+                  addReferrals.push(value);
+                }
+              }
+            );
+          } else {
+            if (attrValue) {
+              if (
+                !referrals
+                  .map((referral) => referral.id)
+                  .includes((attrValue as EntryRetrieveValueAsObject).id)
+              ) {
+                addReferrals.push(attrValue);
+              }
+            }
+          }
+
+          setReferrals(referrals.concat(addReferrals));
+        });
+      });
+    } else {
+      aironeApiClientV2.getGroups().then((resp) => {
+        const addReferrals = [];
+
+        // Filter duplicate referrals.
+        resp.forEach((result) => {
+          if (!referrals.map((referral) => referral.id).includes(result.id)) {
+            addReferrals.push(result);
           }
         });
-        setReferrals(data.results);
+
+        setReferrals(referrals.concat(addReferrals));
       });
-    });
+    }
   }, [keyword]);
 
+  console.log("referrals", referrals);
+
   return (
     <Box>
       <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
-        エントリを選択
+        {Number(attrType) & Number(djangoContext.attrTypeValue.object)
+          ? "エントリを選択"
+          : "グループを選択"}
       </Typography>
       <Box display="flex" alignItems="center">
-        {referrals && (
-          <AirOneReferralBox
-            multiple={true}
-            options={referrals}
-            value={attrValue}
-            onChange={(e, value) => {
-              handleChange(attrName, attrType, value);
-            }}
-            onInputChange={(e, value) => {
+        <Autocomplete
+          sx={{ width: "280px" }}
+          multiple={multiple}
+          options={referrals}
+          getOptionLabel={(option) => option.name}
+          isOptionEqualToValue={(option, value) => option.id === value?.id}
+          value={attrValue ?? null}
+          onChange={(e, value) => {
+            console.log("value", value);
+            handleChange(attrName, attrType, {
+              index: index,
+              value: value,
+            });
+          }}
+          onInputChange={(e, value) => {
+            // To run only if the user changes
+            if (e) {
               setKeyword(value);
-            }}
-          />
-        )}
-        {index !== undefined && (
-          <Button
-            sx={{ ml: "16px" }}
-            variant="outlined"
-            onClick={() => handleClickDeleteListItem(attrName, index)}
-          >
-            del
-          </Button>
-        )}
-      </Box>
-    </Box>
-  );
-};
-
-const ElemObject: FC<
-  CommonProps & {
-    attrId?: number;
-    attrValue: EntryRetrieveValueAsObject;
-    schemaId: number;
-    handleClickDeleteListItem: (attrName: string, index?: number) => void;
-  }
-> = ({
-  attrId,
-  attrName,
-  attrValue,
-  attrType,
-  schemaId,
-  index,
-  handleChange,
-  handleClickDeleteListItem,
-}) => {
-  // FIXME Implement and use API V2
-  // TODO call it reactively to avoid loading API???
-  const referrals = useAsync(async () => {
-    const resp = await getAttrReferrals(attrId ?? schemaId);
-    const data = await resp.json();
-
-    if (!data.results.map((r) => r.id).includes(attrValue.id)) {
-      data.results.push({ id: attrValue.id, name: attrValue.name });
-    }
-
-    return data.results;
-  });
-
-  const defaultValue = useMemo(() => {
-    if (attrValue == null) {
-      return undefined;
-    }
-    const matched = referrals.value?.filter(
-      (e) => (attrValue as EntryRetrieveValueAsObject).id === e.id
-    );
-    return matched ? matched[0] : undefined;
-  }, [referrals.value]);
-
-  return (
-    <Box>
-      <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
-        エントリを選択
-      </Typography>
-      <Box display="flex" alignItems="center">
-        {!referrals.loading && (
-          <AirOneReferralBox
-            multiple={false}
-            options={referrals.value ?? []}
-            defaultValue={defaultValue}
-            onChange={(e, value) => {
-              handleChange(
-                attrName,
-                attrType,
-                value
-                  ? {
-                      index: index,
-                      id: value.id,
-                      name: value.name,
-                      checked: true,
-                    }
-                  : undefined
-              );
-            }}
-          />
-        )}
+            }
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              size="small"
+              placeholder={
+                multiple &&
+                (
+                  attrValue as
+                    | Array<EntryRetrieveValueAsObject>
+                    | Array<EntryRetrieveValueAsObjectSchema>
+                ).length
+                  ? ""
+                  : "-NOT SET-"
+              }
+            />
+          )}
+        />
         {index !== undefined && (
           <Button
             sx={{ ml: "16px" }}
@@ -269,13 +238,11 @@ const ElemObject: FC<
 
 const ElemNamedObject: FC<
   CommonProps & {
-    attrId?: number;
     attrValue?: { [key: string]: EntryRetrieveValueAsObject };
     schemaId: number;
-    handleClickDeleteListItem: (attrName: string, index?: number) => void;
+    handleClickDeleteListItem?: (attrName: string, index?: number) => void;
   }
 > = ({
-  attrId,
   attrName,
   attrValue,
   attrType,
@@ -287,22 +254,25 @@ const ElemNamedObject: FC<
   const key = attrValue ? Object.keys(attrValue)[0] : "";
   return (
     <Box display="flex" alignItems="flex-end">
-      <Box width="280px" mr="32px">
-        <TextField
-          variant="standard"
-          label="name"
-          value={key}
-          onChange={(e) =>
-            handleChange(attrName, attrType, {
-              index: index,
-              key: e.target.value,
-              ...attrValue[key],
-            })
-          }
-        />
+      <Box display="flex" flexDirection="column">
+        <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
+          name
+        </Typography>
+        <Box width="280px" mr="32px">
+          <TextField
+            variant="standard"
+            value={key}
+            onChange={(e) =>
+              handleChange(attrName, attrType, {
+                index: index,
+                key: e.target.value,
+                ...attrValue[key],
+              })
+            }
+          />
+        </Box>
       </Box>
-      <ElemObject
-        attrId={attrId}
+      <ElemRefferal
         schemaId={schemaId}
         attrName={attrName}
         attrValue={attrValue ? attrValue[key] : undefined}
@@ -311,113 +281,6 @@ const ElemNamedObject: FC<
         handleChange={handleChange}
         handleClickDeleteListItem={handleClickDeleteListItem}
       />
-    </Box>
-  );
-};
-
-const ElemGroups: FC<
-  CommonProps & {
-    attrValue: Array<EntryRetrieveValueAsObjectSchema>;
-  }
-> = ({ attrName, attrValue, attrType, index, handleChange }) => {
-  // FIXME Implement and use API V2
-  // TODO call it reactively to avoid loading API???
-  // NOTE it causes a runtime warning on AutoCompletedField
-  const groups = useAsync(async () => {
-    const _groups = await aironeApiClientV2.getGroups();
-
-    attrValue.forEach((v) => {
-      if (!_groups.map((r) => r.id).includes(v.id)) {
-        _groups.push({ id: v.id, name: v.name, members: [] });
-      }
-    });
-
-    return _groups;
-  });
-
-  const defaultValue = useMemo(() => {
-    if (attrValue == null) {
-      return undefined;
-    }
-    const matched = groups.value?.filter((e) =>
-      (attrValue as Array<EntryRetrieveValueAsObjectSchema>)
-        .map((v) => v.id)
-        .includes(e.id)
-    );
-    return matched ? matched : undefined;
-  }, [groups.value]);
-
-  return (
-    <Box>
-      <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
-        グループを選択
-      </Typography>
-      <Box display="flex" alignItems="center">
-        {!groups.loading && (
-          <AirOneReferralBox
-            multiple={true}
-            options={groups.value ?? []}
-            defaultValue={defaultValue}
-            onChange={(e, value) => {
-              handleChange(attrName, attrType, value);
-            }}
-          />
-        )}
-      </Box>
-    </Box>
-  );
-};
-
-const ElemGroup: FC<
-  CommonProps & {
-    attrValue: EntryRetrieveValueAsObjectSchema;
-  }
-> = ({ attrName, attrValue, attrType, index, handleChange }) => {
-  // FIXME Implement and use API V2
-  // TODO call it reactively to avoid loading API???
-  // NOTE it causes a runtime warning on AutoCompletedField
-  const groups = useAsync(async () => {
-    const _groups = await aironeApiClientV2.getGroups();
-
-    if (!_groups.map((r) => r.id).includes(attrValue.id)) {
-      _groups.push({ id: attrValue.id, name: attrValue.name, members: [] });
-    }
-
-    return _groups;
-  });
-
-  const defaultValue = useMemo(() => {
-    if (attrValue == null) {
-      return undefined;
-    }
-    const matched = groups.value?.filter(
-      (e) => (attrValue as EntryRetrieveValueAsObjectSchema).id === e.id
-    );
-    return matched ? matched[0] : undefined;
-  }, [groups.value]);
-
-  return (
-    <Box>
-      <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
-        グループを選択
-      </Typography>
-      <Box display="flex" alignItems="center">
-        {!groups.loading && (
-          <AirOneReferralBox
-            multiple={false}
-            options={groups.value ?? []}
-            defaultValue={defaultValue}
-            onChange={(e, value) => {
-              handleChange(attrName, attrType, {
-                index: index,
-                id: value.id,
-                name: value.name,
-                checked: true,
-              });
-            }}
-          />
-        )}
-      </Box>
     </Box>
   );
 };
@@ -436,9 +299,9 @@ const ElemDate: FC<
         value={new Date(attrValue)}
         onChange={(date: Date) => {
           handleChange(attrName, attrType, {
-            value: `${date.getFullYear()}/${
+            value: `${date.getFullYear()}-${
               date.getMonth() + 1
-            }/${date.getDate()}`,
+            }-${date.getDate()}`,
           });
         }}
         renderInput={(params) => <TextField {...params} />}
@@ -467,6 +330,7 @@ export const EditAttributeValue: FC<Props> = ({
   const djangoContext = DjangoContext.getInstance();
 
   const handleClickAddListItem = (e, value) => {
+    console.log("value", value);
     const index = (() => {
       switch (attrInfo.type) {
         case djangoContext.attrTypeValue.array_string:
@@ -488,29 +352,6 @@ export const EditAttributeValue: FC<Props> = ({
   };
 
   switch (attrInfo.type) {
-    case djangoContext.attrTypeValue.object:
-      return (
-        <ElemObject
-          attrId={attrInfo.id}
-          attrName={attrName}
-          attrValue={attrInfo.value.asObject}
-          attrType={attrInfo.type}
-          schemaId={attrInfo.schema.id}
-          handleChange={handleChangeAttribute}
-          handleClickDeleteListItem={handleClickDeleteListItem}
-        />
-      );
-
-    case djangoContext.attrTypeValue.boolean:
-      return (
-        <ElemBool
-          attrName={attrName}
-          attrValue={attrInfo.value.asBoolean}
-          attrType={attrInfo.type}
-          handleChange={handleChangeAttribute}
-        />
-      );
-
     case djangoContext.attrTypeValue.string:
       return (
         <ElemString
@@ -545,29 +386,68 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
+    case djangoContext.attrTypeValue.boolean:
+      return (
+        <ElemBool
+          attrName={attrName}
+          attrValue={attrInfo.value.asBoolean}
+          attrType={attrInfo.type}
+          handleChange={handleChangeAttribute}
+        />
+      );
+
+    case djangoContext.attrTypeValue.object:
+      return (
+        <ElemRefferal
+          attrName={attrName}
+          attrValue={attrInfo.value.asObject}
+          attrType={attrInfo.type}
+          schemaId={attrInfo.schema.id}
+          handleChange={handleChangeAttribute}
+        />
+      );
+
+    case djangoContext.attrTypeValue.group:
+      return (
+        <ElemRefferal
+          attrName={attrName}
+          attrValue={attrInfo.value.asGroup}
+          attrType={attrInfo.type}
+          handleChange={handleChangeAttribute}
+        />
+      );
+
     case djangoContext.attrTypeValue.named_object:
       return (
         <ElemNamedObject
-          attrId={attrInfo.id}
           attrName={attrName}
           attrValue={attrInfo.value.asNamedObject}
           attrType={attrInfo.type}
           schemaId={attrInfo.schema.id}
           handleChange={handleChangeAttribute}
-          handleClickDeleteListItem={handleClickDeleteListItem}
         />
       );
 
     case djangoContext.attrTypeValue.array_object:
       return (
-        <ElemObjects
-          attrId={attrInfo.id}
+        <ElemRefferal
+          multiple={true}
           attrName={attrName}
           attrValue={attrInfo.value.asArrayObject}
           attrType={attrInfo.type}
           schemaId={attrInfo.schema.id}
           handleChange={handleChangeAttribute}
-          handleClickDeleteListItem={handleClickDeleteListItem}
+        />
+      );
+
+    case djangoContext.attrTypeValue.array_group:
+      return (
+        <ElemRefferal
+          multiple={true}
+          attrName={attrName}
+          attrValue={attrInfo.value.asArrayGroup}
+          attrType={attrInfo.type}
+          handleChange={handleChangeAttribute}
         />
       );
 
@@ -604,7 +484,7 @@ export const EditAttributeValue: FC<Props> = ({
           <Button
             variant="contained"
             color="primary"
-            onClick={(e) => handleClickAddListItem(e, { "": [] })}
+            onClick={(e) => handleClickAddListItem(e, { "": null })}
           >
             add
           </Button>
@@ -612,7 +492,6 @@ export const EditAttributeValue: FC<Props> = ({
             {attrInfo.value.asArrayNamedObject?.map((info, n) => (
               <ListItem key={n}>
                 <ElemNamedObject
-                  attrId={attrInfo.id}
                   attrName={attrName}
                   attrValue={info}
                   attrType={attrInfo.type}
@@ -625,26 +504,6 @@ export const EditAttributeValue: FC<Props> = ({
             ))}
           </List>
         </Box>
-      );
-
-    case djangoContext.attrTypeValue.array_group:
-      return (
-        <ElemGroups
-          attrName={attrName}
-          attrValue={attrInfo.value.asArrayGroup}
-          attrType={attrInfo.type}
-          handleChange={handleChangeAttribute}
-        />
-      );
-
-    case djangoContext.attrTypeValue.group:
-      return (
-        <ElemGroup
-          attrName={attrName}
-          attrValue={attrInfo.value.asGroup}
-          attrType={attrInfo.type}
-          handleChange={handleChangeAttribute}
-        />
       );
   }
 };
