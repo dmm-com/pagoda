@@ -175,8 +175,6 @@ const ElemRefferal: FC<
     }
   }, [keyword]);
 
-  console.log("referrals", referrals);
-
   return (
     <Box>
       <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
@@ -193,7 +191,6 @@ const ElemRefferal: FC<
           isOptionEqualToValue={(option, value) => option.id === value?.id}
           value={attrValue ?? null}
           onChange={(e, value) => {
-            console.log("value", value);
             handleChange(attrName, attrType, {
               index: index,
               value: value,
@@ -330,7 +327,6 @@ export const EditAttributeValue: FC<Props> = ({
   const djangoContext = DjangoContext.getInstance();
 
   const handleClickAddListItem = (e, value) => {
-    console.log("value", value);
     const index = (() => {
       switch (attrInfo.type) {
         case djangoContext.attrTypeValue.array_string:

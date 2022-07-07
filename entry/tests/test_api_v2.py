@@ -80,6 +80,7 @@ class ViewTest(AironeViewTest):
                 "type": AttrTypeValue["string"],
                 "value": {"as_string": "hoge"},
                 "id": entry.attrs.get(schema__name="val").id,
+                "is_mandatory": False,
                 "schema": {
                     "id": entry.attrs.get(schema__name="val").schema.id,
                     "name": "val",

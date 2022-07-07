@@ -10,7 +10,6 @@ import { PageHeader } from "../components/common/PageHeader";
 import {
   EditableEntry,
   EditableEntryAttrs,
-  EditableEntryAttrValue,
 } from "../components/entry/entryForm/EditableEntry";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { DjangoContext } from "../utils/DjangoContext";
@@ -35,7 +34,7 @@ export const EditEntryPage: FC = () => {
   const [entryAnchorEl, setEntryAnchorEl] =
     useState<HTMLButtonElement | null>();
   const [entryInfo, setEntryInfo] = useState<EditableEntry>();
-  const [submittable, setSubmittable] = useState<boolean>(true); // FIXME
+  const [submittable, setSubmittable] = useState<boolean>(false); // FIXME
 
   const entity = useAsync(async () => {
     return entityId != undefined
@@ -48,6 +47,8 @@ export const EditEntryPage: FC = () => {
       ? await aironeApiClientV2.getEntry(entryId)
       : undefined;
   });
+
+  const djangoContext = DjangoContext.getInstance();
 
   useEffect(() => {
     if (!entry.loading && entry.value !== undefined) {
@@ -74,62 +75,61 @@ export const EditEntryPage: FC = () => {
       setEntryInfo({
         name: "",
         attrs: Object.fromEntries(
-          entity.value.attrs.map((attr): [string, EditableEntryAttrs] => {
-            const attrValue: EditableEntryAttrValue = {};
-            switch (attr.type) {
-              case djangoContext.attrTypeValue.string:
-              case djangoContext.attrTypeValue.text:
-                attrValue["asString"] = "";
-                break;
-              case djangoContext.attrTypeValue.date:
-                attrValue["asString"] = null;
-                break;
-              case djangoContext.attrTypeValue.boolean:
-                attrValue["asBoolean"] = false;
-                break;
-              case djangoContext.attrTypeValue.object:
-                attrValue["asObject"] = null;
-                break;
-              case djangoContext.attrTypeValue.group:
-                attrValue["asGroup"] = null;
-                break;
-              case djangoContext.attrTypeValue.named_object:
-                attrValue["asNamedObject"] = { "": null };
-                break;
-              case djangoContext.attrTypeValue.array_string:
-                attrValue["asArrayString"] = [];
-                break;
-              case djangoContext.attrTypeValue.array_object:
-                attrValue["asArrayObject"] = [];
-                break;
-              case djangoContext.attrTypeValue.array_group:
-                attrValue["asArrayGroup"] = [];
-                break;
-              case djangoContext.attrTypeValue.array_named_object:
-                attrValue["asArrayNamedObject"] = [];
-                break;
-            }
-            return [
-              attr.name,
-              {
-                type: attr.type,
-                isMandatory: attr.isMandatory,
-                schema: {
-                  id: attr.id,
-                  name: attr.name,
-                },
-                value: attrValue,
+          entity.value.attrs.map((attr): [string, EditableEntryAttrs] => [
+            attr.name,
+            {
+              type: attr.type,
+              isMandatory: attr.is_mandatory,
+              schema: {
+                id: attr.id,
+                name: attr.name,
               },
-            ];
-          })
+              value: {
+                asString: "",
+                asBoolean: false,
+                asObject: null,
+                asGroup: null,
+                asNamedObject: { "": null },
+                asArrayString: [],
+                asArrayObject: [],
+                asArrayGroup: [],
+                asArrayNamedObject: [],
+              },
+            },
+          ])
         ),
       });
     }
   }, [entity, entry]);
 
+  useEffect(() => {
+    if (entryInfo?.name) {
+      setSubmittable(
+        Object.entries(entryInfo?.attrs ?? {})
+          .filter(([{}, attrValue]) => attrValue.isMandatory)
+          .map((attr) =>
+            [
+              attr[1].type === djangoContext.attrTypeValue.boolean,
+              attr[1].value.asString !== "",
+              attr[1].value.asObject,
+              attr[1].value.asGroup,
+              Object.keys(attr[1].value.asNamedObject ?? {})[0] &&
+                Object.values(attr[1].value.asNamedObject ?? {})[0],
+              attr[1].value.asArrayString?.filter((v) => v).length,
+              attr[1].value.asArrayObject?.filter((v) => v).length,
+              attr[1].value.asArrayGroup?.filter((v) => v).length,
+              attr[1].value.asArrayNamedObject?.filter(
+                (v) => Object.keys(v)[0] && Object.values(v)[0]
+              ).length,
+            ].some((value) => value)
+          )
+          .every((value) => value)
+      );
+    } else {
+      setSubmittable(false);
+    }
+  }, [entryInfo]);
   console.log("entryInfo", entryInfo);
-
-  const djangoContext = DjangoContext.getInstance();
 
   const handleSubmit = async () => {
     const updatedAttr = Object.entries(entryInfo.attrs).map(
@@ -158,15 +158,15 @@ export const EditEntryPage: FC = () => {
           case djangoContext.attrTypeValue.group:
             return {
               id: attrValue.schema.id,
-              value: attrValue.value.asGroup?.id,
+              value: attrValue.value.asGroup?.id ?? "",
             };
 
           case djangoContext.attrTypeValue.named_object:
             return {
               id: attrValue.schema.id,
               value: {
-                id: Object.values(attrValue.value.asNamedObject ?? {})[0]?.id,
-                name: Object.keys(attrValue.value.asNamedObject ?? {})[0],
+                id: Object.values(attrValue.value.asNamedObject)[0]?.id ?? "",
+                name: Object.keys(attrValue.value.asNamedObject)[0],
               },
             };
 
@@ -193,7 +193,7 @@ export const EditEntryPage: FC = () => {
               id: attrValue.schema.id,
               value: attrValue.value.asArrayNamedObject?.map((x) => {
                 return {
-                  id: Object.values(x)[0]?.id,
+                  id: Object.values(x)[0]?.id ?? "",
                   name: Object.keys(x)[0],
                 };
               }),
@@ -211,7 +211,7 @@ export const EditEntryPage: FC = () => {
       history.push(entityEntriesPath(entityId));
     } else {
       await aironeApiClientV2.updateEntry(entryId, entryInfo.name, updatedAttr);
-      history.go(0);
+      history.push(entryDetailsPath(entityId, entryId));
     }
   };
 
