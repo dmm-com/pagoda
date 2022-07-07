@@ -231,6 +231,7 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
                 defaultValue={entryInfo.name}
                 onChange={(e) => changeName(e.target.value)}
                 fullWidth
+                error={entryInfo.name === ""}
               />
             </TableCell>
           </TableRow>

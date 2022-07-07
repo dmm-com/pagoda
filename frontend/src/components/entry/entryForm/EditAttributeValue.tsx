@@ -27,6 +27,7 @@ import { DjangoContext } from "utils/DjangoContext";
 interface CommonProps {
   attrName: string;
   attrType: number;
+  isMandatory: boolean;
   index?: number;
   handleChange: (attrName: string, attrType: number, valueInfo: any) => void;
 }
@@ -41,6 +42,7 @@ const ElemString: FC<
   attrName,
   attrValue,
   attrType,
+  isMandatory,
   index,
   handleChange,
   handleClickDeleteListItem,
@@ -59,6 +61,7 @@ const ElemString: FC<
         }
         fullWidth
         multiline={multiline}
+        error={isMandatory && attrValue === ""}
       />
       {index !== undefined && (
         <Button
@@ -77,6 +80,7 @@ const ElemBool: FC<CommonProps & { attrValue: boolean }> = ({
   attrName,
   attrValue,
   attrType,
+  isMandatory,
   handleChange,
 }) => {
   return (
@@ -108,6 +112,7 @@ const ElemRefferal: FC<
   attrName,
   attrValue,
   attrType,
+  isMandatory,
   schemaId,
   index,
   handleChange,
@@ -205,6 +210,15 @@ const ElemRefferal: FC<
           renderInput={(params) => (
             <TextField
               {...params}
+              error={
+                isMandatory && multiple
+                  ? (
+                      attrValue as
+                        | Array<EntryRetrieveValueAsObject>
+                        | Array<EntryRetrieveValueAsObjectSchema>
+                    )?.length === 0
+                  : !attrValue
+              }
               size="small"
               placeholder={
                 multiple &&
@@ -243,6 +257,7 @@ const ElemNamedObject: FC<
   attrName,
   attrValue,
   attrType,
+  isMandatory,
   schemaId,
   index,
   handleChange,
@@ -274,6 +289,7 @@ const ElemNamedObject: FC<
         attrName={attrName}
         attrValue={attrValue ? attrValue[key] : undefined}
         attrType={attrType}
+        isMandatory={isMandatory}
         index={index}
         handleChange={handleChange}
         handleClickDeleteListItem={handleClickDeleteListItem}
@@ -287,15 +303,14 @@ const ElemDate: FC<
     attrValue: string;
     handleClickDeleteListItem: (attrName: string, index?: number) => void;
   }
-> = ({ attrName, attrValue, attrType, handleChange }) => {
-  console.log("attrValue", attrValue);
+> = ({ attrName, attrValue, attrType, isMandatory, handleChange }) => {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <DesktopDatePicker
         label="月日を選択"
         inputFormat="yyyy/MM/dd"
         value={attrValue ? attrValue : null}
-        onChange={(date: Date, inputValue) => {
+        onChange={(date: Date) => {
           let settingDateValue = "";
           if (date !== null) {
             settingDateValue = `${date.getFullYear()}-${
@@ -307,7 +322,9 @@ const ElemDate: FC<
             value: settingDateValue,
           });
         }}
-        renderInput={(params) => <TextField {...params} />}
+        renderInput={(params) => (
+          <TextField {...params} error={isMandatory && attrValue === ""} />
+        )}
       />
     </LocalizationProvider>
   );
@@ -360,6 +377,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrName={attrName}
           attrValue={attrInfo.value.asString}
           attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}
           handleClickDeleteListItem={handleClickDeleteListItem}
         />
@@ -371,6 +389,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrName={attrName}
           attrValue={attrInfo.value.asString}
           attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}
           handleClickDeleteListItem={handleClickDeleteListItem}
           multiline
@@ -383,6 +402,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrName={attrName}
           attrValue={attrInfo.value.asString}
           attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}
           handleClickDeleteListItem={handleClickDeleteListItem}
         />
@@ -394,6 +414,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrName={attrName}
           attrValue={attrInfo.value.asBoolean}
           attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}
         />
       );
@@ -404,6 +425,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrName={attrName}
           attrValue={attrInfo.value.asObject}
           attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
           schemaId={attrInfo.schema.id}
           handleChange={handleChangeAttribute}
         />
@@ -415,6 +437,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrName={attrName}
           attrValue={attrInfo.value.asGroup}
           attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}
         />
       );
@@ -425,6 +448,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrName={attrName}
           attrValue={attrInfo.value.asNamedObject}
           attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
           schemaId={attrInfo.schema.id}
           handleChange={handleChangeAttribute}
         />
@@ -437,6 +461,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrName={attrName}
           attrValue={attrInfo.value.asArrayObject}
           attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
           schemaId={attrInfo.schema.id}
           handleChange={handleChangeAttribute}
         />
@@ -449,6 +474,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrName={attrName}
           attrValue={attrInfo.value.asArrayGroup}
           attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}
         />
       );
@@ -470,6 +496,7 @@ export const EditAttributeValue: FC<Props> = ({
                   attrName={attrName}
                   attrValue={info}
                   attrType={attrInfo.type}
+                  isMandatory={attrInfo.isMandatory}
                   index={n}
                   handleChange={handleChangeAttribute}
                   handleClickDeleteListItem={handleClickDeleteListItem}
@@ -497,6 +524,7 @@ export const EditAttributeValue: FC<Props> = ({
                   attrName={attrName}
                   attrValue={info}
                   attrType={attrInfo.type}
+                  isMandatory={attrInfo.isMandatory}
                   schemaId={attrInfo.schema.id}
                   index={n}
                   handleChange={handleChangeAttribute}
