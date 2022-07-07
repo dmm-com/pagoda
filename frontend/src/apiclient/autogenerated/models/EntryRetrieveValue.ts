@@ -116,8 +116,8 @@ export function EntryRetrieveValueFromJSONTyped(
     asArrayObject: !exists(json, "as_array_object")
       ? undefined
       : (json["as_array_object"] as Array<any>).map(
-        EntryRetrieveValueAsObjectFromJSON
-      ),
+          EntryRetrieveValueAsObjectFromJSON
+        ),
     asArrayString: !exists(json, "as_array_string")
       ? undefined
       : json["as_array_string"],
@@ -127,8 +127,8 @@ export function EntryRetrieveValueFromJSONTyped(
     asArrayGroup: !exists(json, "as_array_group")
       ? undefined
       : (json["as_array_group"] as Array<any>).map(
-        EntryRetrieveValueAsObjectSchemaFromJSON
-      ),
+          EntryRetrieveValueAsObjectSchemaFromJSON
+        ),
     asBoolean: !exists(json, "as_boolean") ? undefined : json["as_boolean"],
     asGroup: !exists(json, "as_group")
       ? undefined
@@ -156,16 +156,16 @@ export function EntryRetrieveValueToJSON(
       value.asArrayObject === undefined
         ? undefined
         : (value.asArrayObject as Array<any>).map(
-          EntryRetrieveValueAsObjectToJSON
-        ),
+            EntryRetrieveValueAsObjectToJSON
+          ),
     as_array_string: value.asArrayString,
     as_array_named_object: value.asArrayNamedObject,
     as_array_group:
       value.asArrayGroup === undefined
         ? undefined
         : (value.asArrayGroup as Array<any>).map(
-          EntryRetrieveValueAsObjectSchemaToJSON
-        ),
+            EntryRetrieveValueAsObjectSchemaToJSON
+          ),
     as_boolean: value.asBoolean,
     as_group: EntryRetrieveValueAsGroupToJSON(value.asGroup),
   };

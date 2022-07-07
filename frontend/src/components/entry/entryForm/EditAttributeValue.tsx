@@ -288,18 +288,20 @@ const ElemDate: FC<
     handleClickDeleteListItem: (attrName: string, index?: number) => void;
   }
 > = ({ attrName, attrValue, attrType, handleChange }) => {
+  console.log("attrValue", attrValue);
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <DesktopDatePicker
         label="月日を選択"
         inputFormat="yyyy/MM/dd"
-        value={new Date(attrValue)}
+        value={attrValue ? new Date(attrValue) : null}
         onChange={(date: Date) => {
-          handleChange(attrName, attrType, {
-            value: `${date.getFullYear()}-${
-              date.getMonth() + 1
-            }-${date.getDate()}`,
-          });
+          date !== null &&
+            handleChange(attrName, attrType, {
+              value: `${date.getFullYear()}-${
+                date.getMonth() + 1
+              }-${date.getDate()}`,
+            });
         }}
         renderInput={(params) => <TextField {...params} />}
       />
