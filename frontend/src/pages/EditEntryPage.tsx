@@ -58,16 +58,33 @@ export const EditEntryPage: FC = () => {
       setEntryInfo({
         name: entry.value.name,
         attrs: Object.fromEntries(
-          entry.value.attrs.map((attr): [string, EditableEntryAttrs] => [
-            attr.schema.name,
-            {
-              id: attr.id,
-              type: attr.type,
-              isMandatory: attr.isMandatory,
-              schema: attr.schema,
-              value: attr.value,
-            },
-          ])
+          entry.value.attrs.map((attr): [string, EditableEntryAttrs] => {
+            function getAttrValue(attr) {
+              switch (attr.type) {
+                case djangoContext.attrTypeValue.array_string:
+                  return attr.value?.asArrayString?.length > 0
+                    ? attr.value
+                    : { asArrayString: [""] };
+                case djangoContext.attrTypeValue.array_named_object:
+                  return attr.value?.asArrayNamedObject?.length > 0
+                    ? attr.value
+                    : { asArrayNamedObject: [{ "": null }] };
+                default:
+                  return attr.value;
+              }
+            }
+
+            return [
+              attr.schema.name,
+              {
+                id: attr.id,
+                type: attr.type,
+                isMandatory: attr.isMandatory,
+                schema: attr.schema,
+                value: getAttrValue(attr),
+              },
+            ];
+          })
         ),
       });
     } else if (
@@ -93,10 +110,10 @@ export const EditEntryPage: FC = () => {
                 asObject: null,
                 asGroup: null,
                 asNamedObject: { "": null },
-                asArrayString: [],
+                asArrayString: [""],
                 asArrayObject: [],
                 asArrayGroup: [],
-                asArrayNamedObject: [],
+                asArrayNamedObject: [{ "": null }],
               },
             },
           ])
