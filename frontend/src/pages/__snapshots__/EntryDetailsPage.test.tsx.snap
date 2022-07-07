@@ -139,7 +139,7 @@ Object {
           class="css-1p01se3-MuiStack-root"
         >
           <div
-            class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-1n5jo98-MuiButtonBase-root-MuiChip-root"
+            class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-1rvrchu-MuiButtonBase-root-MuiChip-root"
             role="button"
             tabindex="0"
           >
@@ -168,7 +168,7 @@ Object {
           class="MuiGrid-root MuiGrid-container css-3g06bi-MuiGrid-root"
         >
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-fpette-MuiGrid-root"
+            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-ppf315-MuiGrid-root"
           >
             <div
               class="MuiBox-root css-0"
@@ -222,7 +222,7 @@ Object {
                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-nnbavb"
+                        class="css-hdw1oc"
                       >
                         <span
                           class="notranslate"
@@ -314,7 +314,7 @@ Object {
                   class="MuiListItem-root MuiListItem-gutters MuiListItem-divider css-1wa7a4p-MuiListItem-root"
                 >
                   <a
-                    class="MuiListItemButton-root MuiListItemButton-gutters MuiButtonBase-root css-cvhtoe-MuiButtonBase-root-MuiListItemButton-root"
+                    class="MuiListItemButton-root MuiListItemButton-gutters MuiButtonBase-root css-16ac5r2-MuiButtonBase-root-MuiListItemButton-root"
                     href="/new-ui/entities/undefined/entries/1/details"
                     tabindex="0"
                   >
@@ -336,7 +336,7 @@ Object {
             </div>
           </div>
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-12dpnmv-MuiGrid-root"
+            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-vok43g-MuiGrid-root"
           >
             <div
               class="MuiBox-root css-1wcaknn"
@@ -383,7 +383,7 @@ Object {
             </div>
           </div>
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-a0vo9r-MuiGrid-root"
+            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1o7apob-MuiGrid-root"
           />
         </div>
       </div>
@@ -524,7 +524,7 @@ Object {
         class="css-1p01se3-MuiStack-root"
       >
         <div
-          class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-1n5jo98-MuiButtonBase-root-MuiChip-root"
+          class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-1rvrchu-MuiButtonBase-root-MuiChip-root"
           role="button"
           tabindex="0"
         >
@@ -553,7 +553,7 @@ Object {
         class="MuiGrid-root MuiGrid-container css-3g06bi-MuiGrid-root"
       >
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-fpette-MuiGrid-root"
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-ppf315-MuiGrid-root"
         >
           <div
             class="MuiBox-root css-0"
@@ -607,7 +607,7 @@ Object {
                     class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                   >
                     <legend
-                      class="css-nnbavb"
+                      class="css-hdw1oc"
                     >
                       <span
                         class="notranslate"
@@ -699,7 +699,7 @@ Object {
                 class="MuiListItem-root MuiListItem-gutters MuiListItem-divider css-1wa7a4p-MuiListItem-root"
               >
                 <a
-                  class="MuiListItemButton-root MuiListItemButton-gutters MuiButtonBase-root css-cvhtoe-MuiButtonBase-root-MuiListItemButton-root"
+                  class="MuiListItemButton-root MuiListItemButton-gutters MuiButtonBase-root css-16ac5r2-MuiButtonBase-root-MuiListItemButton-root"
                   href="/new-ui/entities/undefined/entries/1/details"
                   tabindex="0"
                 >
@@ -721,7 +721,7 @@ Object {
           </div>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-12dpnmv-MuiGrid-root"
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-vok43g-MuiGrid-root"
         >
           <div
             class="MuiBox-root css-1wcaknn"
@@ -768,7 +768,7 @@ Object {
           </div>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-a0vo9r-MuiGrid-root"
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1o7apob-MuiGrid-root"
         />
       </div>
     </div>

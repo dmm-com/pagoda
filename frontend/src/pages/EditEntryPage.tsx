@@ -149,7 +149,6 @@ export const EditEntryPage: FC = () => {
       setSubmittable(false);
     }
   }, [entryInfo]);
-  console.log("entryInfo", entryInfo);
 
   const handleSubmit = async () => {
     const updatedAttr = Object.entries(entryInfo.attrs).map(

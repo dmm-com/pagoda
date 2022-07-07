@@ -39,7 +39,7 @@ const attributes = [
   {
     value: { asString: "2022-01-01" },
     type: "date",
-    elem: "ElemString",
+    elem: "ElemDate",
   },
   {
     value: { asBoolean: true },
@@ -49,7 +49,7 @@ const attributes = [
   {
     value: { asObject: { id: 100, name: "hoge", checked: false } },
     type: "object",
-    elem: "ElemObject",
+    elem: "ElemReferral",
   },
   {
     value: {
@@ -61,7 +61,7 @@ const attributes = [
   {
     value: { asGroup: { id: 100, name: "hoge", checked: false } },
     type: "group",
-    elem: "ElemGroup",
+    elem: "ElemReferral",
   },
 ];
 
@@ -79,7 +79,7 @@ const arrayAttributes = [
       ],
     },
     type: "array_object",
-    elem: "ElemObject",
+    elem: "ElemReferral",
   },
   {
     value: {
@@ -99,7 +99,7 @@ const arrayAttributes = [
       ],
     },
     type: "array_group",
-    elem: "ElemGroup",
+    elem: "ElemReferral",
   },
 ];
 
@@ -109,13 +109,17 @@ attributes.forEach((attribute) => {
     const attrName = "hoge";
     const attrValue = attribute.value;
     const attrType = djangoContext.attrTypeValue[attribute.type];
-    console.log("[onix-test/EditAttributeValue(00)] attrValue", attrValue);
     const wrapper = shallow(
       <EditAttributeValue
         attrName={attrName}
         attrInfo={{
           value: attrValue,
           type: attrType,
+          isMandatory: false,
+          schema: {
+            id: 9999,
+            name: "hoge",
+          },
         }}
         handleChangeAttribute={mockHandleChangeAttribute}
         handleClickDeleteListItem={mockHandleClickDeleteListItem}
@@ -143,19 +147,35 @@ arrayAttributes.forEach((arrayAttribute) => {
         attrInfo={{
           value: attrValue,
           type: attrType,
+          isMandatory: false,
+          schema: {
+            id: 9999,
+            name: "hoge",
+          },
         }}
         handleChangeAttribute={mockHandleChangeAttribute}
         handleClickDeleteListItem={mockHandleClickDeleteListItem}
       />
     );
 
-    expect(wrapper.find(arrayAttribute.elem).length).toEqual(2);
-    wrapper.find(arrayAttribute.elem).forEach((arrayAttributeElem, i) => {
-      expect(arrayAttributeElem.prop("attrName")).toEqual(attrName);
-      expect(arrayAttributeElem.prop("attrType")).toEqual(attrType);
-      expect(arrayAttributeElem.prop("attrValue")).toEqual(
-        Object.values(attrValue)[0][i]
-      );
-    });
+    if (
+      arrayAttribute.type == "array_group" ||
+      arrayAttribute.type == "array_object"
+    ) {
+      expect(wrapper.find(arrayAttribute.elem).length).toEqual(1);
+      wrapper.find(arrayAttribute.elem).forEach((arrayAttributeElem, i) => {
+        expect(arrayAttributeElem.prop("attrName")).toEqual(attrName);
+        expect(arrayAttributeElem.prop("attrType")).toEqual(attrType);
+      });
+    } else {
+      expect(wrapper.find(arrayAttribute.elem).length).toEqual(2);
+      wrapper.find(arrayAttribute.elem).forEach((arrayAttributeElem, i) => {
+        expect(arrayAttributeElem.prop("attrName")).toEqual(attrName);
+        expect(arrayAttributeElem.prop("attrType")).toEqual(attrType);
+        expect(arrayAttributeElem.prop("attrValue")).toEqual(
+          Object.values(attrValue)[0][i]
+        );
+      });
+    }
   });
 });
