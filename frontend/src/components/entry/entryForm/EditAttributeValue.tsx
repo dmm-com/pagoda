@@ -96,7 +96,7 @@ const ElemBool: FC<CommonProps & { attrValue: boolean }> = ({
   );
 };
 
-const ElemRefferal: FC<
+const ElemReferral: FC<
   CommonProps & {
     multiple?: boolean;
     attrValue:
@@ -211,13 +211,14 @@ const ElemRefferal: FC<
             <TextField
               {...params}
               error={
-                isMandatory && multiple
+                isMandatory &&
+                (multiple
                   ? (
                       attrValue as
                         | Array<EntryRetrieveValueAsObject>
                         | Array<EntryRetrieveValueAsObjectSchema>
                     )?.length === 0
-                  : !attrValue
+                  : !attrValue)
               }
               size="small"
               placeholder={
@@ -281,15 +282,16 @@ const ElemNamedObject: FC<
                 ...attrValue[key],
               })
             }
+            error={isMandatory && !key && !attrValue[key]}
           />
         </Box>
       </Box>
-      <ElemRefferal
+      <ElemReferral
         schemaId={schemaId}
         attrName={attrName}
         attrValue={attrValue ? attrValue[key] : undefined}
         attrType={attrType}
-        isMandatory={isMandatory}
+        isMandatory={isMandatory && !key}
         index={index}
         handleChange={handleChange}
         handleClickDeleteListItem={handleClickDeleteListItem}
@@ -421,7 +423,7 @@ export const EditAttributeValue: FC<Props> = ({
 
     case djangoContext.attrTypeValue.object:
       return (
-        <ElemRefferal
+        <ElemReferral
           attrName={attrName}
           attrValue={attrInfo.value.asObject}
           attrType={attrInfo.type}
@@ -433,7 +435,7 @@ export const EditAttributeValue: FC<Props> = ({
 
     case djangoContext.attrTypeValue.group:
       return (
-        <ElemRefferal
+        <ElemReferral
           attrName={attrName}
           attrValue={attrInfo.value.asGroup}
           attrType={attrInfo.type}
@@ -456,7 +458,7 @@ export const EditAttributeValue: FC<Props> = ({
 
     case djangoContext.attrTypeValue.array_object:
       return (
-        <ElemRefferal
+        <ElemReferral
           multiple={true}
           attrName={attrName}
           attrValue={attrInfo.value.asArrayObject}
@@ -469,7 +471,7 @@ export const EditAttributeValue: FC<Props> = ({
 
     case djangoContext.attrTypeValue.array_group:
       return (
-        <ElemRefferal
+        <ElemReferral
           multiple={true}
           attrName={attrName}
           attrValue={attrInfo.value.asArrayGroup}
