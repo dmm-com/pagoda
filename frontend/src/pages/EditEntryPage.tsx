@@ -1,5 +1,6 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Button, IconButton, Typography } from "@mui/material";
+import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
@@ -30,6 +31,8 @@ export const EditEntryPage: FC = () => {
     useTypedParams<{ entityId: number; entryId: number }>();
 
   const history = useHistory();
+
+  const { enqueueSnackbar } = useSnackbar();
 
   const [entryAnchorEl, setEntryAnchorEl] =
     useState<HTMLButtonElement | null>();
@@ -203,15 +206,33 @@ export const EditEntryPage: FC = () => {
     );
 
     if (entryId == undefined) {
-      await aironeApiClientV2.createEntry(
-        entityId,
-        entryInfo.name,
-        updatedAttr
-      );
-      history.push(entityEntriesPath(entityId));
+      await aironeApiClientV2
+        .createEntry(entityId, entryInfo.name, updatedAttr)
+        .then((resp) => {
+          enqueueSnackbar("エントリの作成が完了しました", {
+            variant: "success",
+          });
+          history.push(entityEntriesPath(entityId));
+        })
+        .catch((e) => {
+          enqueueSnackbar("エントリの作成が失敗しました", {
+            variant: "error",
+          });
+        });
     } else {
-      await aironeApiClientV2.updateEntry(entryId, entryInfo.name, updatedAttr);
-      history.push(entryDetailsPath(entityId, entryId));
+      await aironeApiClientV2
+        .updateEntry(entryId, entryInfo.name, updatedAttr)
+        .then((resp) => {
+          enqueueSnackbar("エントリの更新が完了しました", {
+            variant: "success",
+          });
+          history.push(entryDetailsPath(entityId, entryId));
+        })
+        .catch((e) => {
+          enqueueSnackbar("エントリの更新が失敗しました", {
+            variant: "error",
+          });
+        });
     }
   };
 
