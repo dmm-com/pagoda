@@ -2,7 +2,7 @@ version: 2
 jobs:
   python38:
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.8.0
       - image: rabbitmq:3.8.19-management
       - image: bitnami/memcached:1.6.9
       - image: docker.elastic.co/elasticsearch/elasticsearch:6.8.16
@@ -24,7 +24,7 @@ jobs:
           name: Wait for ElasticSearch
           command: dockerize -wait tcp://127.0.0.1:9200 -timeout 120s
       - restore_cache:
-          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}
+          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}-20220702
       - run:
           name: Install tox tox-pyenv coverage
           command: |
@@ -51,7 +51,7 @@ jobs:
             . venv/bin/activate
             tox
       - save_cache:
-          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}
+          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}-20220702
           paths:
             - venv
             - .tox/py38
@@ -63,7 +63,7 @@ jobs:
 
   pep8:
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.8.0
     environment:
       TOXENV: "pep8"
     steps:
@@ -88,7 +88,7 @@ jobs:
 
   mypy:
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.8.0
     environment:
       TOXENV: "mypy"
     steps:
@@ -126,7 +126,7 @@ jobs:
 
   frontend:
     docker:
-      - image: circleci/node:17.2
+      - image: cimg/node:17.2
     steps:
       - checkout
       - run:
