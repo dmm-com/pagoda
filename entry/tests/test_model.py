@@ -521,6 +521,17 @@ class ModelTest(AironeTestCase):
 
         # Checks attitude of is_update
         self.assertTrue(attr.is_updated(date(9999, 12, 31)))
+        self.assertTrue(attr.is_updated("9999-12-31"))
+
+        # Checks is_updated() return False when current value is empty
+        # and empty string "" was specified
+        self.assertFalse(attr.is_updated(""))
+        self.assertFalse(attr.is_updated("2022-01-99"))
+
+        # Checks is_updated() return True when current value is NOT empty
+        # and empty string "" was specified
+        attr.add_value(self._user, date(2022, 7, 7))
+        self.assertTrue(attr.is_updated(""))
 
     def test_for_group_attr_and_value(self):
         test_group = Group.objects.create(name="g0")

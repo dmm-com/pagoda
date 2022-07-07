@@ -294,14 +294,18 @@ const ElemDate: FC<
       <DesktopDatePicker
         label="月日を選択"
         inputFormat="yyyy/MM/dd"
-        value={attrValue ? new Date(attrValue) : null}
-        onChange={(date: Date) => {
-          date !== null &&
-            handleChange(attrName, attrType, {
-              value: `${date.getFullYear()}-${
-                date.getMonth() + 1
-              }-${date.getDate()}`,
-            });
+        value={attrValue ? attrValue : null}
+        onChange={(date: Date, inputValue) => {
+          let settingDateValue = "";
+          if (date !== null) {
+            settingDateValue = `${date.getFullYear()}-${
+              date.getMonth() + 1
+            }-${date.getDate()}`;
+          }
+
+          handleChange(attrName, attrType, {
+            value: settingDateValue,
+          });
         }}
         renderInput={(params) => <TextField {...params} />}
       />

@@ -44,8 +44,8 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
 
   const handleChangeAttribute = (name: string, attrType: number, valueInfo) => {
     switch (attrType) {
-      case djangoContext.attrTypeValue.string:
       case djangoContext.attrTypeValue.date:
+      case djangoContext.attrTypeValue.string:
       case djangoContext.attrTypeValue.text:
         entryInfo.attrs[name].value.asString = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });

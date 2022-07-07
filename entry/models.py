@@ -469,7 +469,11 @@ class Attribute(ACLBase):
 
         elif self.schema.type == AttrTypeValue["date"]:
             if isinstance(recv_value, str):
-                return last_value.date != datetime.strptime(recv_value, "%Y-%m-%d").date()
+                try:
+                    return last_value.date != datetime.strptime(recv_value, "%Y-%m-%d").date()
+                except ValueError:
+                    return last_value.date is not None
+
             return last_value.date != recv_value
 
         elif self.schema.type == AttrTypeValue["named_object"]:
