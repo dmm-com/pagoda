@@ -73,9 +73,7 @@ class Group(DjangoGroup):
 
         # get Entries that has AttributeValues, which specify this Group instance.
         return entry_model.Entry.objects.filter(
-            Q(
-                pk__in=entry_model.AttributeValue.objects.filter(query).values_list(
-                    "parent_attr__parent_entry", flat=True
-                )
+            pk__in=entry_model.AttributeValue.objects.filter(query).values_list(
+                "parent_attr__parent_entry", flat=True
             )
         )
