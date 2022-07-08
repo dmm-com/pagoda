@@ -233,7 +233,7 @@ Object {
                   class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                 >
                   <legend
-                    class="css-nnbavb"
+                    class="css-hdw1oc"
                   >
                     <span
                       class="notranslate"
@@ -261,7 +261,7 @@ Object {
                 class="MuiFormControl-root MuiTextField-root css-p2l10m-MuiFormControl-root-MuiTextField-root"
               >
                 <label
-                  class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary Mui-disabled MuiFormLabel-filled css-1kty9di-MuiFormLabel-root-MuiInputLabel-root"
+                  class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary Mui-disabled MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
                   data-shrink="true"
                   for="mui-2"
                   id="mui-2-label"
@@ -297,7 +297,7 @@ vm0006
                     class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                   >
                     <legend
-                      class="css-1z7n62"
+                      class="css-1in441m"
                     >
                       <span>
                         コピーするエントリ名
@@ -541,7 +541,7 @@ vm0006
                 class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
               >
                 <legend
-                  class="css-nnbavb"
+                  class="css-hdw1oc"
                 >
                   <span
                     class="notranslate"
@@ -569,7 +569,7 @@ vm0006
               class="MuiFormControl-root MuiTextField-root css-p2l10m-MuiFormControl-root-MuiTextField-root"
             >
               <label
-                class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary Mui-disabled MuiFormLabel-filled css-1kty9di-MuiFormLabel-root-MuiInputLabel-root"
+                class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary Mui-disabled MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
                 data-shrink="true"
                 for="mui-2"
                 id="mui-2-label"
@@ -605,7 +605,7 @@ vm0006
                   class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                 >
                   <legend
-                    class="css-1z7n62"
+                    class="css-1in441m"
                   >
                     <span>
                       コピーするエントリ名

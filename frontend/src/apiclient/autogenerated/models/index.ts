@@ -15,6 +15,7 @@ export * from "./EntryCreate";
 export * from "./EntryRetrieve";
 export * from "./EntryRetrieveAttrs";
 export * from "./EntryRetrieveValue";
+export * from "./EntryRetrieveValueAsGroup";
 export * from "./EntryRetrieveValueAsObject";
 export * from "./EntryRetrieveValueAsObjectSchema";
 export * from "./EntryUpdate";

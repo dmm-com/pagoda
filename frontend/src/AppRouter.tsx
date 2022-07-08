@@ -24,12 +24,11 @@ import {
   newGroupPath,
   newUserPath,
   passwordPath,
-  showEntryPath,
   userPath,
   usersPath,
   loginPath,
   showEntryHistoryPath,
-  entryPath,
+  entryEditPath,
   entryDetailsPath,
   copyEntryPath,
 } from "Routes";
@@ -54,7 +53,6 @@ import { ImportUserPage } from "pages/ImportUserPage";
 import { JobPage } from "pages/JobPage";
 import { LoginPage } from "pages/LoginPage";
 import { ShowEntryHistoryPage } from "pages/ShowEntryHistoryPage";
-import { ShowEntryPage } from "pages/ShowEntryPage";
 import { UserPage } from "pages/UserPage";
 
 interface Props {
@@ -93,7 +91,6 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               component={AdvancedSearchResultsPage}
             />
             <Route path={newEntryPath(":entityId")} component={EditEntryPage} />
-            <Route path={showEntryPath(":entryId")} component={ShowEntryPage} />
             <Route
               path={copyEntryPath(":entityId", ":entryId")}
               component={CopyEntryPage}
@@ -103,6 +100,10 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               component={EntryDetailsPage}
             />
             <Route
+              path={entryEditPath(":entityId", ":entryId")}
+              component={EditEntryPage}
+            />
+            <Route
               path={importEntriesPath(":entityId")}
               component={ImportEntryPage}
             />
@@ -110,7 +111,6 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               path={showEntryHistoryPath(":entryId")}
               component={ShowEntryHistoryPage}
             />
-            <Route path={entryPath(":entryId")} component={EditEntryPage} />
             <Route
               path={entityEntriesPath(":entityId")}
               component={EntryListPage}

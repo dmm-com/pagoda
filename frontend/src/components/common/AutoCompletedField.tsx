@@ -161,8 +161,9 @@ const Listbox = styled("ul")(
 interface Props<T> {
   options: T[];
   getOptionLabel: (option: T) => string;
-  defaultValue?: T[];
-  handleChangeSelectedValue: (value: T[]) => void;
+  defaultValue?: NonNullable<T> | T[];
+  handleChangeSelectedValue: (value: NonNullable<T> | T[]) => void;
+  multiple?: boolean;
 }
 
 export const AutoCompletedField = <T,>({
@@ -170,6 +171,7 @@ export const AutoCompletedField = <T,>({
   getOptionLabel,
   defaultValue,
   handleChangeSelectedValue,
+  multiple = false,
 }: Props<T>) => {
   const {
     getRootProps,
@@ -179,22 +181,28 @@ export const AutoCompletedField = <T,>({
     getOptionProps,
     groupedOptions,
     value,
-    dirty,
     focused,
     setAnchorEl,
   } = useAutocomplete({
-    multiple: true,
+    multiple: multiple,
     options: options,
     defaultValue: defaultValue,
     getOptionLabel: getOptionLabel,
   });
 
   useEffect(() => {
-    if (value[0] instanceof String) {
+    if (
+      (multiple && value[0] instanceof String) ||
+      (!multiple && value instanceof String)
+    ) {
       throw Error(`unsupported value: ${value}`);
     }
 
-    handleChangeSelectedValue(value as T[]);
+    if (multiple && Array.isArray(value)) {
+      handleChangeSelectedValue(value as T[]);
+    } else if (!multiple && value != null && !Array.isArray(value)) {
+      handleChangeSelectedValue(value as NonNullable<T>);
+    }
   }, [value]);
 
   const getClassName = () => {
@@ -202,7 +210,10 @@ export const AutoCompletedField = <T,>({
     if (focused) {
       classNames.push("focused");
     }
-    if (value.length === 0) {
+    if (
+      (multiple && (value as T[]).length === 0) ||
+      (!multiple && value == null)
+    ) {
       classNames.push("error");
     }
 
@@ -213,12 +224,14 @@ export const AutoCompletedField = <T,>({
     <Root>
       <div {...getRootProps()}>
         <InputWrapper ref={setAnchorEl} className={getClassName()}>
-          {value.map((option: T, index: number) => (
-            <StyledTag
-              label={getOptionLabel(option)}
-              {...getTagProps({ index })}
-            />
-          ))}
+          {multiple &&
+            Array.isArray(value) &&
+            (value as T[]).map((option: T, index: number) => (
+              <StyledTag
+                label={getOptionLabel(option)}
+                {...getTagProps({ index })}
+              />
+            ))}
           <input {...getInputProps()} />
         </InputWrapper>
       </div>

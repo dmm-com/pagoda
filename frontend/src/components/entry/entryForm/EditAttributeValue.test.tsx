@@ -5,13 +5,11 @@
 import { shallow } from "enzyme";
 import React from "react";
 
-import { DjangoContext } from "../../utils/DjangoContext";
+import { DjangoContext } from "../../../utils/DjangoContext";
 
 import { EditAttributeValue } from "./EditAttributeValue";
 
 const mockHandleChangeAttribute = (e) => undefined;
-const mockHandleNarrowDownEntries = (e) => undefined;
-const mockHandleNarrowDownGroups = (e) => undefined;
 const mockHandleClickDeleteListItem = (e) => undefined;
 
 beforeAll(() => {
@@ -41,7 +39,7 @@ const attributes = [
   {
     value: { asString: "2022-01-01" },
     type: "date",
-    elem: "ElemString",
+    elem: "ElemDate",
   },
   {
     value: { asBoolean: true },
@@ -49,21 +47,21 @@ const attributes = [
     elem: "ElemBool",
   },
   {
-    value: { asObject: [{ id: 100, name: "hoge", checked: false }] },
+    value: { asObject: { id: 100, name: "hoge", checked: false } },
     type: "object",
-    elem: "ElemObject",
+    elem: "ElemReferral",
   },
   {
     value: {
-      asNamedObject: { foo: [{ id: 100, name: "hoge", checked: false }] },
+      asNamedObject: { foo: { id: 100, name: "hoge", checked: false } },
     },
     type: "named_object",
     elem: "ElemNamedObject",
   },
   {
-    value: { asGroup: [{ id: 100, name: "hoge", checked: false }] },
+    value: { asGroup: { id: 100, name: "hoge", checked: false } },
     type: "group",
-    elem: "ElemGroup",
+    elem: "ElemReferral",
   },
 ];
 
@@ -76,18 +74,18 @@ const arrayAttributes = [
   {
     value: {
       asArrayObject: [
-        [{ id: 100, name: "hoge", checked: false }],
-        [{ id: 200, name: "fuge", checked: false }],
+        { id: 100, name: "hoge", checked: false },
+        { id: 200, name: "fuge", checked: false },
       ],
     },
     type: "array_object",
-    elem: "ElemObject",
+    elem: "ElemReferral",
   },
   {
     value: {
       asArrayNamedObject: [
-        { foo: [{ id: 100, name: "hoge", checked: false }] },
-        { bar: [{ id: 200, name: "fuga", checked: false }] },
+        { foo: { id: 100, name: "hoge", checked: false } },
+        { bar: { id: 200, name: "fuga", checked: false } },
       ],
     },
     type: "array_named_object",
@@ -96,12 +94,12 @@ const arrayAttributes = [
   {
     value: {
       asArrayGroup: [
-        [{ id: 100, name: "hoge", checked: false }],
-        [{ id: 200, name: "fuge", checked: false }],
+        { id: 100, name: "hoge", checked: false },
+        { id: 200, name: "fuge", checked: false },
       ],
     },
     type: "array_group",
-    elem: "ElemGroup",
+    elem: "ElemReferral",
   },
 ];
 
@@ -117,10 +115,13 @@ attributes.forEach((attribute) => {
         attrInfo={{
           value: attrValue,
           type: attrType,
+          isMandatory: false,
+          schema: {
+            id: 9999,
+            name: "hoge",
+          },
         }}
         handleChangeAttribute={mockHandleChangeAttribute}
-        handleNarrowDownEntries={mockHandleNarrowDownEntries}
-        handleNarrowDownGroups={mockHandleNarrowDownGroups}
         handleClickDeleteListItem={mockHandleClickDeleteListItem}
       />
     );
@@ -146,21 +147,35 @@ arrayAttributes.forEach((arrayAttribute) => {
         attrInfo={{
           value: attrValue,
           type: attrType,
+          isMandatory: false,
+          schema: {
+            id: 9999,
+            name: "hoge",
+          },
         }}
         handleChangeAttribute={mockHandleChangeAttribute}
-        handleNarrowDownEntries={mockHandleNarrowDownEntries}
-        handleNarrowDownGroups={mockHandleNarrowDownGroups}
         handleClickDeleteListItem={mockHandleClickDeleteListItem}
       />
     );
 
-    expect(wrapper.find(arrayAttribute.elem).length).toEqual(2);
-    wrapper.find(arrayAttribute.elem).forEach((arrayAttributeElem, i) => {
-      expect(arrayAttributeElem.prop("attrName")).toEqual(attrName);
-      expect(arrayAttributeElem.prop("attrType")).toEqual(attrType);
-      expect(arrayAttributeElem.prop("attrValue")).toEqual(
-        Object.values(attrValue)[0][i]
-      );
-    });
+    if (
+      arrayAttribute.type == "array_group" ||
+      arrayAttribute.type == "array_object"
+    ) {
+      expect(wrapper.find(arrayAttribute.elem).length).toEqual(1);
+      wrapper.find(arrayAttribute.elem).forEach((arrayAttributeElem, i) => {
+        expect(arrayAttributeElem.prop("attrName")).toEqual(attrName);
+        expect(arrayAttributeElem.prop("attrType")).toEqual(attrType);
+      });
+    } else {
+      expect(wrapper.find(arrayAttribute.elem).length).toEqual(2);
+      wrapper.find(arrayAttribute.elem).forEach((arrayAttributeElem, i) => {
+        expect(arrayAttributeElem.prop("attrName")).toEqual(attrName);
+        expect(arrayAttributeElem.prop("attrType")).toEqual(attrType);
+        expect(arrayAttributeElem.prop("attrValue")).toEqual(
+          Object.values(attrValue)[0][i]
+        );
+      });
+    }
   });
 });

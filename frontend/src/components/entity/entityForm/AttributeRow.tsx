@@ -183,6 +183,7 @@ export const AttributeRow: FC<Props> = ({
                       value.map((i) => i.id)
                     );
                   }}
+                  multiple
                 />
               </Box>
             )}

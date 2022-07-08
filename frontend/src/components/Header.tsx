@@ -37,7 +37,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   fixed: {
     position: "fixed",
-    zIndex: 1,
+    zIndex: 2,
     width: "100%",
     backgroundColor: theme.palette.primary.main,
     display: "flex",

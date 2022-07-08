@@ -28,6 +28,7 @@ export const EditEntityPage: FC = () => {
     webhooks: [],
     attrs: [],
   });
+  const [submittable, setSubmittable] = useState<boolean>(false);
 
   const entity = useAsync(async () => {
     if (entityId !== undefined) {
@@ -47,11 +48,10 @@ export const EditEntityPage: FC = () => {
     return entities.results;
   });
 
-  const [submittable, setSubmittable] = useState<boolean>(false);
-
   const handleCancel = () => {
     history.replace(entitiesPath());
   };
+
   const handleSubmit = async () => {
     const createMode = entityId === undefined;
     // Adjusted attributes for the API

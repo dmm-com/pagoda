@@ -13,8 +13,6 @@ export const searchPath = () => basePath + "search";
 // entris
 export const newEntryPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries/new`;
-export const showEntryPath = (entryId: number | string) =>
-  basePath + `entries/${entryId}/show`;
 export const copyEntryPath = (
   entityId: number | string,
   entryId: number | string
@@ -23,14 +21,16 @@ export const entryDetailsPath = (
   entityId: number | string,
   entryId: number | string
 ) => basePath + `entities/${entityId}/entries/${entryId}/details`;
+export const entryEditPath = (
+  entityId: number | string,
+  entryId: number | string
+) => basePath + `entities/${entityId}/entries/${entryId}/edit`;
 export const importEntriesPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries/import`;
 export const entityEntriesPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries`;
 export const showEntryHistoryPath = (entryId: number | string) =>
   basePath + `entries/${entryId}/history`;
-export const entryPath = (entryId: number | string) =>
-  basePath + `entries/${entryId}`;
 
 // entities
 export const entityHistoryPath = (entityId: number | string) =>
