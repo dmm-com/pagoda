@@ -1,4 +1,6 @@
+isort
 flake8
+black
 mypy
 types-six
 types-requests
@@ -6,4 +8,3 @@ types-PyYAML
 types-pytz
 types-mock
 requests-html==0.10.0
-black
