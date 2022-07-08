@@ -2,7 +2,7 @@ version: 2
 jobs:
   python38:
     docker:
-      - image: cimg/python:3.8.0
+      - image: cimg/python:3.8.10
       - image: rabbitmq:3.8.19-management
       - image: bitnami/memcached:1.6.9
       - image: docker.elastic.co/elasticsearch/elasticsearch:6.8.16
@@ -63,7 +63,7 @@ jobs:
 
   pep8:
     docker:
-      - image: cimg/python:3.8.0
+      - image: cimg/python:3.8.10
     environment:
       TOXENV: "pep8"
     steps:
@@ -88,7 +88,7 @@ jobs:
 
   mypy:
     docker:
-      - image: cimg/python:3.8.0
+      - image: cimg/python:3.8.10
     environment:
       TOXENV: "mypy"
     steps:
