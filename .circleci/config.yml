@@ -24,7 +24,7 @@ jobs:
           name: Wait for ElasticSearch
           command: dockerize -wait tcp://127.0.0.1:9200 -timeout 120s
       - restore_cache:
-          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}-20220702
+          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}-20220708
       - run:
           name: Install tox tox-pyenv coverage
           command: |
@@ -51,7 +51,7 @@ jobs:
             . venv/bin/activate
             tox
       - save_cache:
-          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}-20220702
+          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}-20220708
           paths:
             - venv
             - .tox/py38
