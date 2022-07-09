@@ -740,7 +740,7 @@ class ModelTest(AironeTestCase):
         self.assertTrue(res["found"])
 
         # delete an entry that have an attribute which refers to the entry of ReferredEntity
-        self._entry.delete(self._user)
+        self._entry.delete(deleted_user=self._user)
         self.assertFalse(self._entry.is_active)
         self.assertEqual(self._entry.attrs.filter(is_active=True).count(), 0)
         self.assertEqual(self._entry.deleted_user, self._user)
