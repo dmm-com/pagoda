@@ -25,7 +25,8 @@ class User(AbstractUser):
 
     @property
     def airone_groups(self):
-        """This returns groups that current user just belongs to (not include hierarchical parent groups)"""
+        """This returns groups that current user just belongs to (not include hierarchical parent groups)
+        """
         return Group.objects.filter(id__in=[g.id for g in self.groups.all()], is_active=True)
 
     # to make a polymorphism between the Group model

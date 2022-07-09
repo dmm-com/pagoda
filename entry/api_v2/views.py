@@ -65,7 +65,7 @@ class EntryAPI(viewsets.ModelViewSet):
         user.seth_entry_del(entry)
 
         # delete entry
-        entry.delete(user)
+        entry.delete(deleted_user=user)
 
         if custom_view.is_custom("after_delete_entry", entry.schema.name):
             custom_view.call_custom("after_delete_entry", entry.schema.name, user, entry)

@@ -1438,8 +1438,8 @@ class Entry(ACLBase):
             "attrs": returning_attrs,
         }
 
-    def delete(self, user: Optional[User] = None):
-        super(Entry, self).delete(deleted_user=user)
+    def delete(self, *args, **kwargs):
+        super(Entry, self).delete(args, kwargs)
 
         # update Elasticsearch index info which refered this entry not to refer this link
         es_object = ESS()
