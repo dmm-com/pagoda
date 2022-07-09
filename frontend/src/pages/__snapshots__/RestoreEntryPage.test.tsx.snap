@@ -215,10 +215,10 @@ Object {
                       <span
                         class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
                       >
-                        <a
+                        <button
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/undefined/entries/1/details"
                           tabindex="0"
+                          type="button"
                         >
                           <h6
                             class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
@@ -231,7 +231,7 @@ Object {
                           <span
                             class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                           />
-                        </a>
+                        </button>
                       </span>
                     </div>
                     <div
@@ -280,10 +280,10 @@ Object {
                       <span
                         class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
                       >
-                        <a
+                        <button
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/undefined/entries/2/details"
                           tabindex="0"
+                          type="button"
                         >
                           <h6
                             class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
@@ -296,7 +296,7 @@ Object {
                           <span
                             class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                           />
-                        </a>
+                        </button>
                       </span>
                     </div>
                     <div
@@ -345,10 +345,10 @@ Object {
                       <span
                         class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
                       >
-                        <a
+                        <button
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/undefined/entries/3/details"
                           tabindex="0"
+                          type="button"
                         >
                           <h6
                             class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
@@ -361,7 +361,7 @@ Object {
                           <span
                             class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                           />
-                        </a>
+                        </button>
                       </span>
                     </div>
                     <div
@@ -673,10 +673,10 @@ Object {
                     <span
                       class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
                     >
-                      <a
+                      <button
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/undefined/entries/1/details"
                         tabindex="0"
+                        type="button"
                       >
                         <h6
                           class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
@@ -689,7 +689,7 @@ Object {
                         <span
                           class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                         />
-                      </a>
+                      </button>
                     </span>
                   </div>
                   <div
@@ -738,10 +738,10 @@ Object {
                     <span
                       class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
                     >
-                      <a
+                      <button
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/undefined/entries/2/details"
                         tabindex="0"
+                        type="button"
                       >
                         <h6
                           class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
@@ -754,7 +754,7 @@ Object {
                         <span
                           class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                         />
-                      </a>
+                      </button>
                     </span>
                   </div>
                   <div
@@ -803,10 +803,10 @@ Object {
                     <span
                       class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
                     >
-                      <a
+                      <button
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/undefined/entries/3/details"
                         tabindex="0"
+                        type="button"
                       >
                         <h6
                           class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
@@ -819,7 +819,7 @@ Object {
                         <span
                           class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                         />
-                      </a>
+                      </button>
                     </span>
                   </div>
                   <div

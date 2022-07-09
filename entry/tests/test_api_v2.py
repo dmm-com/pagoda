@@ -754,6 +754,8 @@ class ViewTest(AironeViewTest):
         entry.refresh_from_db()
         self.assertRegex(entry.name, "entry_deleted_")
         self.assertFalse(entry.is_active)
+        self.assertEqual(entry.deleted_user, self.user)
+        self.assertIsNotNone(entry.deleted_time)
 
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 400)

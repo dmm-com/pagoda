@@ -13,6 +13,7 @@ from entity.models import Entity
 from entry.models import AttributeValue, Entry, Attribute
 from group.models import Group
 from job.models import Job
+from user.api_v2.serializers import UserBaseSerializer
 from user.models import User
 
 
@@ -56,10 +57,11 @@ class EntryAttributeType(TypedDict):
 
 class EntryBaseSerializer(serializers.ModelSerializer):
     schema = EntitySerializer(read_only=True)
+    deleted_user = UserBaseSerializer(read_only=True)
 
     class Meta:
         model = Entry
-        fields = ["id", "name", "schema", "is_active"]
+        fields = ["id", "name", "schema", "is_active", "deleted_user", "deleted_time"]
         extra_kwargs = {
             "id": {"read_only": True},
             "name": {"read_only": True},
@@ -243,7 +245,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
     class Meta:
         model = Entry
-        fields = ["id", "name", "schema", "is_active", "attrs"]
+        fields = ["id", "name", "schema", "is_active", "deleted_user", "deleted_time", "attrs"]
         read_only_fields = ["is_active"]
 
     def get_attrs(self, obj: Entry) -> List[EntryAttributeType]:

@@ -19,6 +19,12 @@ import {
   EntityFromJSONTyped,
   EntityToJSON,
 } from "./Entity";
+import {
+  UserBase,
+  UserBaseFromJSON,
+  UserBaseFromJSONTyped,
+  UserBaseToJSON,
+} from "./UserBase";
 
 /**
  *
@@ -50,6 +56,18 @@ export interface EntryBase {
    * @memberof EntryBase
    */
   readonly isActive: boolean;
+  /**
+   *
+   * @type {UserBase}
+   * @memberof EntryBase
+   */
+  readonly deletedUser: UserBase | null;
+  /**
+   *
+   * @type {Date}
+   * @memberof EntryBase
+   */
+  deletedTime?: Date | null;
 }
 
 export function EntryBaseFromJSON(json: any): EntryBase {
@@ -68,6 +86,12 @@ export function EntryBaseFromJSONTyped(
     name: json["name"],
     schema: EntityFromJSON(json["schema"]),
     isActive: json["is_active"],
+    deletedUser: UserBaseFromJSON(json["deleted_user"]),
+    deletedTime: !exists(json, "deleted_time")
+      ? undefined
+      : json["deleted_time"] === null
+      ? null
+      : new Date(json["deleted_time"]),
   };
 }
 
@@ -78,5 +102,12 @@ export function EntryBaseToJSON(value?: EntryBase | null): any {
   if (value === null) {
     return null;
   }
-  return {};
+  return {
+    deleted_time:
+      value.deletedTime === undefined
+        ? undefined
+        : value.deletedTime === null
+        ? null
+        : value.deletedTime.toISOString(),
+  };
 }

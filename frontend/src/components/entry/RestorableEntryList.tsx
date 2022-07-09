@@ -9,16 +9,25 @@ import {
   IconButton,
   Modal,
   Pagination,
+  Paper,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Theme,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { restoreEntry } from "../../utils/AironeAPIClient";
+import { formatDate } from "../../utils/DateUtil";
 import { Confirmable } from "../common/Confirmable";
 
 import { EntryAttributes } from "./EntryAttributes";
@@ -45,6 +54,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
     boxShadow: theme.shadows[5],
     padding: theme.spacing(2, 4, 2),
     width: "50%",
+  },
+}));
+
+const StyledTableRow = styled(TableRow)(() => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: "#607D8B0A",
+  },
+  "&:last-child td, &:last-child th": {
+    border: 0,
   },
 }));
 
@@ -174,11 +192,64 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
         onClose={() => setOpenModal(false)}
       >
         <Box className={classes.paper}>
-          <Typography color="primary" my={2}>
-            Attributes & Values
-          </Typography>
-          {!entryDetail.loading && (
+          {!entryDetail.loading && entryDetail.value != null && (
             <>
+              <Typography color="primary" my={2}>
+                Operation Information
+              </Typography>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead sx={{ backgroundColor: "primary.dark" }}>
+                    <TableRow>
+                      <TableCell sx={{ color: "primary.contrastText" }}>
+                        項目
+                      </TableCell>
+                      <TableCell sx={{ color: "primary.contrastText" }}>
+                        内容
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <StyledTableRow>
+                      <TableCell
+                        sx={{ width: "400px", wordBreak: "break-word" }}
+                      >
+                        Deleted by
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          width: "750px",
+                          p: "0px",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {entryDetail.value.deletedUser.username}
+                      </TableCell>
+                    </StyledTableRow>
+                    <StyledTableRow>
+                      <TableCell
+                        sx={{ width: "400px", wordBreak: "break-word" }}
+                      >
+                        Deleted at
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          width: "750px",
+                          p: "0px",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {entryDetail.value?.deletedTime != null
+                          ? formatDate(entryDetail.value.deletedTime)
+                          : null}
+                      </TableCell>
+                    </StyledTableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <Typography color="primary" my={2}>
+                Attributes & Values
+              </Typography>
               {entryDetail.value?.attrs != null && (
                 <EntryAttributes attributes={entryDetail.value.attrs} />
               )}
