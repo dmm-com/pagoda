@@ -1,23 +1,28 @@
 import RestoreIcon from "@mui/icons-material/Restore";
 import {
   Box,
+  Button,
   Card,
   CardActionArea,
   CardHeader,
   Grid,
   IconButton,
+  Modal,
   Pagination,
   Stack,
+  Theme,
   Typography,
 } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { restoreEntry } from "../../utils/AironeAPIClient";
 import { Confirmable } from "../common/Confirmable";
 
-import { entryDetailsPath } from "Routes";
+import { EntryAttributes } from "./EntryAttributes";
+
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
@@ -28,20 +33,40 @@ interface Props {
   entityId: number;
 }
 
+const useStyles = makeStyles<Theme>((theme) => ({
+  modal: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  paper: {
+    backgroundColor: theme.palette.background.paper,
+    border: "1px solid #000",
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 2),
+    width: "50%",
+  },
+}));
+
 export const RestorableEntryList: FC<Props> = ({ entityId }) => {
+  const classes = useStyles();
+
   const history = useHistory();
 
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = React.useState(1);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedEntryId, setSelectedEntryId] = useState<number>();
 
   const entries = useAsync(async () => {
     return await aironeApiClientV2.getEntries(entityId, false, page, keyword);
   }, [page, keyword]);
-  if (!entries.loading && entries.error) {
-    throw new FailedToGetEntity(
-      "Failed to get Entity from AirOne APIv2 endpoint"
-    );
-  }
+  const entryDetail = useAsync(async () => {
+    if (selectedEntryId == null) {
+      return null;
+    }
+    return await aironeApiClientV2.getEntry(selectedEntryId);
+  }, [selectedEntryId]);
 
   const handleChange = (event, value) => {
     setPage(value);
@@ -51,6 +76,17 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
     await restoreEntry(entryId);
     history.go(0);
   };
+
+  if (!entries.loading && entries.error) {
+    throw new FailedToGetEntity(
+      "Failed to get entries from AirOne APIv2 endpoint"
+    );
+  }
+  if (!entryDetail.loading && entryDetail.error) {
+    throw new FailedToGetEntity(
+      "Failed to get entry from AirOne APIv2 endpoint"
+    );
+  }
 
   const totalPageCount = entries.loading
     ? 0
@@ -92,8 +128,10 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
                     }}
                     title={
                       <CardActionArea
-                        component={Link}
-                        to={entryDetailsPath(entityId, entry.id)}
+                        onClick={() => {
+                          setSelectedEntryId(entry.id);
+                          setOpenModal(true);
+                        }}
                       >
                         <Typography variant="h6">{entry.name}</Typography>
                       </CardActionArea>
@@ -128,6 +166,49 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
           />
         </Stack>
       </Box>
+      <Modal
+        aria-labelledby="transition-modal-title"
+        aria-describedby="transition-modal-description"
+        className={classes.modal}
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+      >
+        <Box className={classes.paper}>
+          <Typography color="primary" my={2}>
+            Attributes & Values
+          </Typography>
+          {!entryDetail.loading && (
+            <>
+              {entryDetail.value?.attrs != null && (
+                <EntryAttributes attributes={entryDetail.value.attrs} />
+              )}
+              <Box display="flex" justifyContent="flex-end" my={2}>
+                <Confirmable
+                  componentGenerator={(handleOpen) => (
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      sx={{ margin: "0 4px" }}
+                      onClick={handleOpen}
+                    >
+                      復旧
+                    </Button>
+                  )}
+                  dialogTitle="本当に復旧しますか？"
+                  onClickYes={() => handleRestore(entryDetail.value.id)}
+                />
+                <Button
+                  variant="outlined"
+                  sx={{ margin: "0 4px" }}
+                  onClick={() => setOpenModal(false)}
+                >
+                  キャンセル
+                </Button>
+              </Box>
+            </>
+          )}
+        </Box>
+      </Modal>
     </Box>
   );
 };

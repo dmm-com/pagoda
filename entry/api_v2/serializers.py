@@ -396,7 +396,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
         attr_prefetch = Prefetch(
             "attribute_set",
-            queryset=Attribute.objects.filter(parent_entry=obj, is_active=True),
+            queryset=Attribute.objects.filter(parent_entry=obj),
             to_attr="attr_list",
         )
         entity_attrs = (
