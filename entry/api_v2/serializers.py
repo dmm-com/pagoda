@@ -44,13 +44,14 @@ class EntryAttributeValue(TypedDict, total=False):
     as_array_group: List[EntryAttributeValueGroup]
     # text; use string instead
     as_boolean: bool
-    as_group: EntryAttributeValueGroup
+    as_group: Optional[EntryAttributeValueGroup]
     # date; use string instead
 
 
 class EntryAttributeType(TypedDict):
     id: Optional[int]
     type: int
+    is_mandatory: bool
     value: EntryAttributeValue
     schema: EntityAttributeType
 
@@ -97,7 +98,9 @@ class EntryBaseSerializer(serializers.ModelSerializer):
                 raise ValidationError("attrs id(%s) does not exist" % attr["id"])
 
             # check attrs value
-            (is_valid, msg) = AttributeValue.validate_attr_value(entity_attr.type, attr["value"])
+            (is_valid, msg) = AttributeValue.validate_attr_value(
+                entity_attr.type, attr["value"], entity_attr.is_mandatory
+            )
             if not is_valid:
                 raise ValidationError("attrs id(%s) - %s" % (attr["id"], msg))
 
@@ -110,7 +113,7 @@ class AttributeValueField(serializers.Field):
 
 class AttributeSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    value = AttributeValueField()
+    value = AttributeValueField(allow_null=True)
 
 
 @extend_schema_serializer(exclude_fields=["schema"])
@@ -347,7 +350,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 return {"as_boolean": attrv.boolean}
 
             elif attr.schema.type & AttrTypeValue["date"]:
-                return {"as_string": attrv.date}
+                return {"as_string": attrv.date if attrv.date else ""}
 
             elif attr.schema.type & AttrTypeValue["group"] and attrv.value:
                 group = Group.objects.get(id=attrv.value)
@@ -415,6 +418,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 {
                     "id": attr.id if attr else None,
                     "type": entity_attr.type,
+                    "is_mandatory": entity_attr.is_mandatory,
                     "value": value,
                     "schema": {
                         "id": entity_attr.id,

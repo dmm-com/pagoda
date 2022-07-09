@@ -9,7 +9,14 @@ import { EntryForm } from "components/entry/EntryForm";
 import { TestWrapper } from "utils/TestWrapper";
 
 test("should render a component with essential props", function () {
+  const entryInfo = { name: "test entry", attrs: {} };
+  const setEntryInfo = () => {
+    /* do nothing */
+  };
+
   expect(() =>
-    render(<EntryForm entityId={1} />, { wrapper: TestWrapper })
+    render(<EntryForm entryInfo={entryInfo} setEntryInfo={setEntryInfo} />, {
+      wrapper: TestWrapper,
+    })
   ).not.toThrow();
 });

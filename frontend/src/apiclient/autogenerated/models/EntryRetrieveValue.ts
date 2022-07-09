@@ -14,6 +14,12 @@
 
 import { exists, mapValues } from "../runtime";
 import {
+  EntryRetrieveValueAsGroup,
+  EntryRetrieveValueAsGroupFromJSON,
+  EntryRetrieveValueAsGroupFromJSONTyped,
+  EntryRetrieveValueAsGroupToJSON,
+} from "./EntryRetrieveValueAsGroup";
+import {
   EntryRetrieveValueAsObject,
   EntryRetrieveValueAsObjectFromJSON,
   EntryRetrieveValueAsObjectFromJSONTyped,
@@ -82,10 +88,10 @@ export interface EntryRetrieveValue {
   asBoolean?: boolean;
   /**
    *
-   * @type {EntryRetrieveValueAsObjectSchema}
+   * @type {EntryRetrieveValueAsGroup}
    * @memberof EntryRetrieveValue
    */
-  asGroup?: EntryRetrieveValueAsObjectSchema;
+  asGroup?: EntryRetrieveValueAsGroup | null;
 }
 
 export function EntryRetrieveValueFromJSON(json: any): EntryRetrieveValue {
@@ -126,7 +132,7 @@ export function EntryRetrieveValueFromJSONTyped(
     asBoolean: !exists(json, "as_boolean") ? undefined : json["as_boolean"],
     asGroup: !exists(json, "as_group")
       ? undefined
-      : EntryRetrieveValueAsObjectSchemaFromJSON(json["as_group"]),
+      : EntryRetrieveValueAsGroupFromJSON(json["as_group"]),
   };
 }
 
@@ -161,6 +167,6 @@ export function EntryRetrieveValueToJSON(
             EntryRetrieveValueAsObjectSchemaToJSON
           ),
     as_boolean: value.asBoolean,
-    as_group: EntryRetrieveValueAsObjectSchemaToJSON(value.asGroup),
+    as_group: EntryRetrieveValueAsGroupToJSON(value.asGroup),
   };
 }

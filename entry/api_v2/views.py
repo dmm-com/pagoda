@@ -17,6 +17,7 @@ from entry.api_v2.serializers import EntryRetrieveSerializer
 from entry.api_v2.serializers import EntryUpdateSerializer
 from entry.api_v2.serializers import EntryCopySerializer
 from entry.models import AttributeValue, Entry
+from entry.settings import CONFIG as ENTRY_CONFIG
 from job.models import Job
 from user.models import User
 
@@ -132,8 +133,13 @@ class EntryAPI(viewsets.ModelViewSet):
         return Response({}, status=status.HTTP_200_OK)
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter("query", OpenApiTypes.STR, OpenApiParameter.QUERY),
+    ],
+)
 class searchAPI(viewsets.ReadOnlyModelViewSet):
-    serializer_class = GetEntrySimpleSerializer
+    serializer_class = EntryBaseSerializer
 
     def get_queryset(self):
         queryset = []
@@ -142,34 +148,8 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
         if not query:
             return queryset
 
-        name_results = list(
-            Entry.objects.filter(name__iregex=r"%s" % query, is_active=True).order_by("name")
-        )
-        value_results = [
-            x.parent_attr.parent_entry
-            for x in AttributeValue.objects.select_related("parent_attr__parent_entry")
-            .filter(
-                Q(value__iregex=r"%s" % query),
-                Q(is_latest=True) | Q(parent_attrv__is_latest=True),
-                Q(parent_attr__parent_entry__is_active=True),
-            )
-            .order_by("parent_attr__parent_entry__name")
-        ]
-        ref_results = [
-            x.parent_attr.parent_entry
-            for x in AttributeValue.objects.select_related("parent_attr__parent_entry", "referral")
-            .filter(
-                Q(referral__is_active=True),
-                Q(referral__name__iregex=r"%s" % query),
-                Q(is_latest=True) | Q(parent_attrv__is_latest=True),
-                Q(parent_attr__parent_entry__is_active=True),
-            )
-            .order_by("parent_attr__parent_entry__name")
-        ]
-        results = name_results + value_results + ref_results
-        queryset = sorted(set(results), key=results.index)
-
-        return queryset
+        results = Entry.search_entries_for_simple(query, limit=ENTRY_CONFIG.MAX_SEARCH_ENTRIES)
+        return results["ret_values"]
 
 
 @extend_schema(

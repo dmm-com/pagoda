@@ -27,17 +27,21 @@ export const EntityForm: FC<Props> = ({
     if (entityInfo.name === "") {
       return false;
     }
-    if (entityInfo.attrs.some((a) => a.name === "")) {
+    if (
+      entityInfo.attrs.filter((a) => !a.isDeleted).some((a) => a.name === "")
+    ) {
       return false;
     }
 
     const dc = DjangoContext.getInstance();
     if (
-      entityInfo.attrs.some(
-        (a) =>
-          (Number(a.type) & Number(dc.attrTypeValue.object)) > 0 &&
-          a.referral.length === 0
-      )
+      entityInfo.attrs
+        .filter((a) => !a.isDeleted)
+        .some(
+          (a) =>
+            (Number(a.type) & Number(dc.attrTypeValue.object)) > 0 &&
+            a.referral.length === 0
+        )
     ) {
       return false;
     }

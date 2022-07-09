@@ -7,7 +7,12 @@
   This feature enables to make hierarchical tree Group construction.
   Contributed by @userlocalhost
 
+* (New-UI) Implemented creating/editing an Entry page that comply with
+  new design.
+  Contributed by @hinashi, @syucream, @userlocalhost
+
 ### Changed
+* Upgrade flower version from v1.0.0 to v1.1.0
 
 ### Fixed
 * Fixed empty display of array type in advanced search result

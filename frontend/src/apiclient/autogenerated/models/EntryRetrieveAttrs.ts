@@ -46,6 +46,12 @@ export interface EntryRetrieveAttrs {
   type?: number;
   /**
    *
+   * @type {boolean}
+   * @memberof EntryRetrieveAttrs
+   */
+  isMandatory?: boolean;
+  /**
+   *
    * @type {EntryRetrieveValue}
    * @memberof EntryRetrieveAttrs
    */
@@ -72,6 +78,9 @@ export function EntryRetrieveAttrsFromJSONTyped(
   return {
     id: !exists(json, "id") ? undefined : json["id"],
     type: !exists(json, "type") ? undefined : json["type"],
+    isMandatory: !exists(json, "is_mandatory")
+      ? undefined
+      : json["is_mandatory"],
     value: !exists(json, "value")
       ? undefined
       : EntryRetrieveValueFromJSON(json["value"]),
@@ -93,6 +102,7 @@ export function EntryRetrieveAttrsToJSON(
   return {
     id: value.id,
     type: value.type,
+    is_mandatory: value.isMandatory,
     value: EntryRetrieveValueToJSON(value.value),
     schema: EntryRetrieveValueAsObjectSchemaToJSON(value.schema),
   };

@@ -283,7 +283,9 @@ class AttributeValue(models.Model):
         return str(obj_group.id) if obj_group else ""
 
     @classmethod
-    def validate_attr_value(kls, type: int, input_value: Any) -> Tuple[bool, Optional[str]]:
+    def validate_attr_value(
+        kls, type: int, input_value: Any, is_mandatory: bool
+    ) -> Tuple[bool, Optional[str]]:
         """
         Validate if to add_value is a possible value.
         Returns: (is_valid, msg)
@@ -291,22 +293,28 @@ class AttributeValue(models.Model):
             msg(str): error message(Optional)
         """
 
-        def _validate_attr_str(value):
+        def _is_validate_attr_str(value) -> bool:
             if not isinstance(value, str):
                 raise Exception("value(%s) is not str" % value)
             if len(str(value).encode("utf-8")) > AttributeValue.MAXIMUM_VALUE_SIZE:
                 raise Exception("value(%s) is exceeded the limit" % value)
+            if is_mandatory and value == "":
+                return False
+            return True
 
-        def _validate_attr_object(value):
+        def _is_validate_attr_object(value) -> bool:
             try:
                 if value and not Entry.objects.filter(id=value, is_active=True).exists():
                     raise Exception("value(%s) is not entry id" % value)
+                if is_mandatory and not value:
+                    return False
+                return True
             except (ValueError, TypeError):
                 raise Exception("value(%s) is not int" % value)
 
-        def _validate_attr(value):
+        def _is_validate_attr(value) -> bool:
             if type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
-                return _validate_attr_str(value)
+                return _is_validate_attr_str(value)
 
             if type & AttrTypeValue["object"]:
                 if type & AttrTypeValue["named"]:
@@ -314,15 +322,23 @@ class AttributeValue(models.Model):
                         raise Exception("value(%s) is not dict" % value)
                     if not ("name" in value.keys() and "id" in value.keys()):
                         raise Exception("value(%s) is not key('name', 'id')" % value)
-                    _validate_attr_str(value["name"])
-                    _validate_attr_object(value["id"])
+                    if not any(
+                        [
+                            _is_validate_attr_str(value["name"]),
+                            _is_validate_attr_object(value["id"]),
+                        ]
+                    ):
+                        return False
                 else:
-                    _validate_attr_object(value)
+                    if not _is_validate_attr_object(value):
+                        return False
 
             if type & AttrTypeValue["group"]:
                 try:
-                    if not Group.objects.filter(id=value, is_active=True).exists():
+                    if value and not Group.objects.filter(id=value, is_active=True).exists():
                         raise Exception("value(%s) is not group id" % value)
+                    if is_mandatory and not value:
+                        return False
                 except (ValueError, TypeError):
                     raise Exception("value(%s) is not int" % value)
 
@@ -332,18 +348,30 @@ class AttributeValue(models.Model):
 
             if type & AttrTypeValue["date"]:
                 try:
-                    datetime.strptime(value, "%Y-%m-%d").date()
+                    if value:
+                        datetime.strptime(value, "%Y-%m-%d").date()
+                    if is_mandatory and not value:
+                        return False
                 except (ValueError, TypeError):
                     raise Exception("value(%s) is not format(YYYY-MM-DD)" % value)
+
+            return True
 
         try:
             if type & AttrTypeValue["array"]:
                 if not isinstance(input_value, list):
                     raise Exception("value(%s) is not list" % input_value)
+                if is_mandatory and input_value == []:
+                    raise Exception("mandatory attrs value is not specified")
+                _is_mandatory = False
                 for val in input_value:
-                    _validate_attr(val)
+                    if _is_validate_attr(val):
+                        _is_mandatory = True
+                if is_mandatory and not _is_mandatory:
+                    raise Exception("mandatory attrs value is not specified")
             else:
-                _validate_attr(input_value)
+                if not _is_validate_attr(input_value):
+                    raise Exception("mandatory attrs value is not specified")
         except Exception as e:
             return (False, str(e))
 
@@ -441,7 +469,11 @@ class Attribute(ACLBase):
 
         elif self.schema.type == AttrTypeValue["date"]:
             if isinstance(recv_value, str):
-                return last_value.date != datetime.strptime(recv_value, "%Y-%m-%d").date()
+                try:
+                    return last_value.date != datetime.strptime(recv_value, "%Y-%m-%d").date()
+                except ValueError:
+                    return last_value.date is not None
+
             return last_value.date != recv_value
 
         elif self.schema.type == AttrTypeValue["named_object"]:
@@ -704,12 +736,12 @@ class Attribute(ACLBase):
         if self.schema.type & AttrTypeValue["date"]:
             try:
                 return (
-                    isinstance(value, date)
+                    not value
+                    or isinstance(value, date)
                     or (
                         isinstance(value, str)
                         and isinstance(datetime.strptime(value, "%Y-%m-%d"), date)
                     )
-                    or value is None
                 )
             except ValueError:
                 return False
@@ -760,7 +792,7 @@ class Attribute(ACLBase):
                 attrv.boolean = val
 
             elif attr_type == AttrTypeValue["date"]:
-                if isinstance(val, str):
+                if isinstance(val, str) and val:
                     attrv.date = datetime.strptime(val, "%Y-%m-%d").date()
                 elif isinstance(val, date):
                     attrv.date = val

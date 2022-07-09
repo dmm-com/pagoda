@@ -33,21 +33,21 @@ test("should match snapshot", async () => {
       name: "aaa",
       note: "",
       isToplevel: false,
-      attrs: [],
+      status: 1,
     },
     {
       id: 2,
       name: "aaaaa",
       note: "",
       isToplevel: false,
-      attrs: [],
+      status: 1,
     },
     {
       id: 3,
       name: "bbbbb",
       note: "",
       isToplevel: false,
-      attrs: [],
+      status: 1,
     },
   ];
 

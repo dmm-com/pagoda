@@ -11,7 +11,7 @@ import React, { FC } from "react";
 import { Link, useHistory } from "react-router-dom";
 
 import {
-  entryPath,
+  entryEditPath,
   aclPath,
   showEntryHistoryPath,
   copyEntryPath,
@@ -55,7 +55,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
       }}
     >
       <Box sx={{ width: 150 }}>
-        <MenuItem component={Link} to={entryPath(entryId)}>
+        <MenuItem component={Link} to={entryEditPath(entityId, entryId)}>
           <Typography>編集</Typography>
         </MenuItem>
         <MenuItem component={Link} to={copyEntryPath(entityId, entryId)}>

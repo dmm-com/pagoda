@@ -20,6 +20,7 @@ models/EntryCreate.ts
 models/EntryRetrieve.ts
 models/EntryRetrieveAttrs.ts
 models/EntryRetrieveValue.ts
+models/EntryRetrieveValueAsGroup.ts
 models/EntryRetrieveValueAsObject.ts
 models/EntryRetrieveValueAsObjectSchema.ts
 models/EntryUpdate.ts

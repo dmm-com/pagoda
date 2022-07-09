@@ -36,13 +36,15 @@ const ElemString: FC<{ attrValue: string }> = ({ attrValue }) => {
 const ElemObject: FC<{
   attrValue: EntryRetrieveValueAsObject;
 }> = ({ attrValue }) => {
-  return (
+  return attrValue ? (
     <Box
       component={Link}
       to={entryDetailsPath(attrValue.schema?.id ?? 0, attrValue.id)}
     >
       {attrValue.name}
     </Box>
+  ) : (
+    <Box />
   );
 };
 
@@ -52,26 +54,37 @@ const ElemNamedObject: FC<{
   };
 }> = ({ attrValue }) => {
   const key = Object.keys(attrValue)[0];
-  return (
+  return attrValue ? (
     <Box display="flex">
       <Box>{key}: </Box>
-      <Box
-        component={Link}
-        to={entryDetailsPath(attrValue[key].schema?.id ?? 0, attrValue[key].id)}
-      >
-        {attrValue[key].name}
-      </Box>
+      {attrValue[key] ? (
+        <Box
+          component={Link}
+          to={entryDetailsPath(
+            attrValue[key].schema?.id ?? 0,
+            attrValue[key].id
+          )}
+        >
+          {attrValue[key].name}
+        </Box>
+      ) : (
+        <Box />
+      )}
     </Box>
+  ) : (
+    <Box />
   );
 };
 
 const ElemGroup: FC<{ attrValue: EntryRetrieveValueAsObjectSchema }> = ({
   attrValue,
 }) => {
-  return (
+  return attrValue ? (
     <Box component={Link} to={groupsPath}>
       {attrValue.name}
     </Box>
+  ) : (
+    <Box />
   );
 };
 
