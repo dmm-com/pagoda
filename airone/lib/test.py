@@ -64,20 +64,14 @@ class AironeTestCase(TestCase):
           - is_mandatory : same parameter of EntityAttr [False by default]
         """
 
-        def _get_entity_attr_params(attr_info, attr_param, default_value):
-            if attr_param in attr_info and attr_info[attr_param]:
-                return attr_info[attr_param]
-            else:
-                return default_value
-
         entity: Entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
         for index, attr_info in enumerate(attrs):
             entity_attr: EntityAttr = EntityAttr.objects.create(
                 **{
                     "index": index,
                     "name": attr_info["name"],
-                    "type": _get_entity_attr_params(attr_info, "type", AttrTypeValue["string"]),
-                    "is_mandatory": _get_entity_attr_params(attr_info, "is_mandatory", False),
+                    "type": attr_info.get("type", AttrTypeValue["string"]),
+                    "is_mandatory": attr_info.get("is_mandatory", False),
                     "parent_entity": entity,
                     "created_user": user,
                 }
