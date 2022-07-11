@@ -16,6 +16,7 @@ import {
   entityPath,
   entitiesPath,
   importEntriesPath,
+  restoreEntryPath,
 } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Confirmable } from "components/common/Confirmable";
@@ -89,6 +90,9 @@ export const EntityControlMenu: FC<Props> = ({
       </MenuItem>
       <MenuItem component={Link} to={entityHistoryPath(entityId)}>
         <Typography>変更履歴</Typography>
+      </MenuItem>
+      <MenuItem component={Link} to={restoreEntryPath(entityId)}>
+        <Typography>削除エントリの復旧</Typography>
       </MenuItem>
       <Confirmable
         componentGenerator={(handleOpen) => (

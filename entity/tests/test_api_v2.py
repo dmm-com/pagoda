@@ -1949,12 +1949,16 @@ class ViewTest(AironeViewTest):
                     "name": "e-0",
                     "schema": {"id": self.entity.id, "name": "test-entity"},
                     "is_active": True,
+                    "deleted_time": None,
+                    "deleted_user": None,
                 },
                 {
                     "id": entries[1].id,
                     "name": "e-1",
                     "schema": {"id": self.entity.id, "name": "test-entity"},
                     "is_active": True,
+                    "deleted_time": None,
+                    "deleted_user": None,
                 },
             ],
         )

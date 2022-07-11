@@ -111,7 +111,7 @@ export const AdvancedSearchPage: FC = () => {
           {!entities.loading && (
             <Autocomplete
               options={entities.value}
-              getOptionLabel={(option) => option.name}
+              getOptionLabel={(option: EntityList) => option.name}
               value={selectedEntities}
               onChange={(_, value: Array<EntityList>) =>
                 setSelectedEntities(value)

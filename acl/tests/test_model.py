@@ -174,10 +174,12 @@ class ModelTest(TestCase):
     def test_delete(self):
         aclobj = ACLBase.objects.create(name="obj", created_user=self.user)
 
-        aclobj.delete()
+        aclobj.delete(deleted_user=self.user)
 
         self.assertFalse(aclobj.is_active)
         self.assertEqual(aclobj.name.find("obj_deleted_"), 0)
+        self.assertEqual(aclobj.deleted_user, self.user)
+        self.assertIsNotNone(aclobj.deleted_time)
 
     def test_could_access_by_superuser(self):
         superuser = User.objects.create(

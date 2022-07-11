@@ -5,6 +5,7 @@ from datetime import datetime
 
 from django.db import models
 from django.contrib.auth.models import Permission
+from django.utils.timezone import make_aware
 
 from user.models import User
 
@@ -38,6 +39,10 @@ class ACLBase(models.Model):
     status = models.IntegerField(default=0)
     default_permission = models.IntegerField(default=ACLType.Nothing().id)
     updated_time = models.DateTimeField(auto_now=True)
+    deleted_user = models.ForeignKey(
+        User, null=True, on_delete=models.DO_NOTHING, related_name="deleted_user"
+    )
+    deleted_time = models.DateTimeField(null=True)
 
     # This fields describes the sub-class of this object
     objtype = models.IntegerField(default=0)
@@ -59,11 +64,15 @@ class ACLBase(models.Model):
             self.name,
             datetime.now().strftime("%Y%m%d_%H%M%S"),
         )
+        self.deleted_time = make_aware(datetime.now())
+        self.deleted_user = kwargs.get("deleted_user")
         self.save()
 
     def restore(self, *args, **kwargs):
         self.is_active = True
         self.name = re.sub(r"_deleted_[0-9_]*$", "", self.name)
+        self.deleted_user = None
+        self.deleted_time = None
         self.save()
 
     def inherit_acl(self, aclobj):

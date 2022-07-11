@@ -25,6 +25,12 @@ import {
   EntryRetrieveAttrsFromJSONTyped,
   EntryRetrieveAttrsToJSON,
 } from "./EntryRetrieveAttrs";
+import {
+  UserBase,
+  UserBaseFromJSON,
+  UserBaseFromJSONTyped,
+  UserBaseToJSON,
+} from "./UserBase";
 
 /**
  *
@@ -58,6 +64,18 @@ export interface EntryRetrieve {
   readonly isActive: boolean;
   /**
    *
+   * @type {UserBase}
+   * @memberof EntryRetrieve
+   */
+  readonly deletedUser: UserBase | null;
+  /**
+   *
+   * @type {Date}
+   * @memberof EntryRetrieve
+   */
+  deletedTime?: Date | null;
+  /**
+   *
    * @type {Array<EntryRetrieveAttrs>}
    * @memberof EntryRetrieve
    */
@@ -80,6 +98,12 @@ export function EntryRetrieveFromJSONTyped(
     name: json["name"],
     schema: EntityFromJSON(json["schema"]),
     isActive: json["is_active"],
+    deletedUser: UserBaseFromJSON(json["deleted_user"]),
+    deletedTime: !exists(json, "deleted_time")
+      ? undefined
+      : json["deleted_time"] === null
+      ? null
+      : new Date(json["deleted_time"]),
     attrs: (json["attrs"] as Array<any>).map(EntryRetrieveAttrsFromJSON),
   };
 }
@@ -93,5 +117,11 @@ export function EntryRetrieveToJSON(value?: EntryRetrieve | null): any {
   }
   return {
     name: value.name,
+    deleted_time:
+      value.deletedTime === undefined
+        ? undefined
+        : value.deletedTime === null
+        ? null
+        : value.deletedTime.toISOString(),
   };
 }

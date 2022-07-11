@@ -24,6 +24,7 @@ export * from "./Group";
 export * from "./PaginatedEntityListList";
 export * from "./PaginatedEntryBaseList";
 export * from "./PaginatedGetEntrySimpleList";
+export * from "./UserBase";
 export * from "./UserList";
 export * from "./UserRetrieve";
 export * from "./UserRetrieveToken";

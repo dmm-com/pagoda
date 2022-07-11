@@ -129,6 +129,16 @@ export function exportEntries(
   });
 }
 
+export function restoreEntry(entryId: number): Promise<Response> {
+  return fetch(`/entry/do_restore/${entryId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+    },
+    body: JSON.stringify({}),
+  });
+}
+
 // NOTE it calls non-API endpoint
 // FIXME implement internal API then call it
 export function createUser(
