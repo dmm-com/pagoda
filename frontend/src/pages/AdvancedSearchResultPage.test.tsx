@@ -46,7 +46,10 @@ test("should match snapshot", async () => {
 
   /* eslint-disable */
   jest
-    .spyOn(require("../utils/AironeAPIClient"), "searchEntries")
+    .spyOn(
+      require("apiclient/AironeApiClientV2").aironeApiClientV2,
+      "advancedSearchEntries"
+    )
     .mockResolvedValue({
       json() {
         return Promise.resolve({

@@ -1,24 +1,18 @@
 import SettingsIcon from "@mui/icons-material/Settings";
-import { Box, Button, Theme, Typography } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { Box, Button, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+import { PageHeader } from "../components/common/PageHeader";
 
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { SearchResults } from "components/entry/SearchResults";
-import { searchEntries } from "utils/AironeAPIClient";
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-}));
 
 export const AdvancedSearchResultsPage: FC = () => {
-  const classes = useStyles();
   const location = useLocation();
 
   const params = new URLSearchParams(location.search);
@@ -29,7 +23,11 @@ export const AdvancedSearchResultsPage: FC = () => {
     : [];
 
   const results = useAsync(async () => {
-    const resp = await searchEntries(entityIds, entryName, attrInfo);
+    const resp = await aironeApiClientV2.advancedSearchEntries(
+      entityIds,
+      entryName,
+      attrInfo
+    );
     const data = await resp.json();
     return data.result.ret_values;
   });
@@ -48,36 +46,37 @@ export const AdvancedSearchResultsPage: FC = () => {
         <Typography color="textPrimary">検索結果</Typography>
       </AironeBreadcrumbs>
 
-      <Box m={1}>
-        {!results.loading && (
-          <Typography>検索結果: ({results.value.length} 件)</Typography>
-        )}
-        <Button
-          className={classes.button}
-          variant="outlined"
-          startIcon={<SettingsIcon />}
-        >
-          高度な検索
-        </Button>
-        <Button className={classes.button} variant="outlined">
-          YAML 出力
-        </Button>
-        <Button className={classes.button} variant="outlined">
-          CSV 出力
-        </Button>
-      </Box>
+      <PageHeader
+        title="検索結果"
+        subTitle={`${results.value?.length ?? 0} 件`}
+        componentSubmits={
+          <Box display="flex" justifyContent="center">
+            <Button variant="outlined" startIcon={<SettingsIcon />}>
+              高度な検索
+            </Button>
+            <Button sx={{ marginLeft: "40px" }} variant="outlined">
+              YAML 出力
+            </Button>
+            <Button sx={{ marginLeft: "16px" }} variant="outlined">
+              CSV 出力
+            </Button>
+          </Box>
+        }
+      />
 
-      {!results.loading ? (
-        <SearchResults
-          results={results.value}
-          defaultEntryFilter={entryName}
-          defaultAttrsFilter={Object.fromEntries(
-            attrInfo.map((i) => [i["name"], i["keyword"] || ""])
-          )}
-        />
-      ) : (
-        <Loading />
-      )}
+      <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
+        {!results.loading ? (
+          <SearchResults
+            results={results.value}
+            defaultEntryFilter={entryName}
+            defaultAttrsFilter={Object.fromEntries(
+              attrInfo.map((i) => [i["name"], i["keyword"] || ""])
+            )}
+          />
+        ) : (
+          <Loading />
+        )}
+      </Box>
     </Box>
   );
 };

@@ -1,9 +1,26 @@
-import { Input, TableCell, TableRow, Typography } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import {
+  InputAdornment,
+  TableCell,
+  TableRow,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC, useReducer } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
 import { PaginatedTable } from "components/common/PaginatedTable";
 import { AttributeValue } from "components/entry/AttributeValue";
+
+const StyledTableRow = styled(TableRow)(() => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: "#607D8B0A",
+  },
+  "&:last-child td, &:last-child th": {
+    border: 0,
+  },
+}));
 
 interface Props {
   results: {
@@ -63,20 +80,74 @@ export const SearchResults: FC<Props> = ({
       rows={results}
       tableHeadRow={
         <TableRow>
-          <TableCell>
-            <Typography>Name</Typography>
-            <Input
-              placeholder="絞り込む"
+          {/* FIXME avoid overlapping elements when scrolling */}
+          <TableCell
+            sx={{
+              color: "primary.contrastText",
+              minWidth: "300px",
+              position: "sticky",
+              left: 0,
+              zIndex: 1,
+            }}
+          >
+            <Typography>エントリ名</Typography>
+            <TextField
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: "white" }} />
+                  </InputAdornment>
+                ),
+                sx: {
+                  color: "#FFFFFF",
+                  "&.Mui-focused": {
+                    background: "#00000061",
+                  },
+                },
+              }}
+              inputProps={{
+                style: {
+                  padding: "8px 0 8px 4px",
+                },
+              }}
+              sx={{
+                background: "#0000001F",
+                margin: "8px 0",
+              }}
               defaultValue={defaultEntryFilter}
               onChange={entryFilterDispatcher}
               onKeyPress={handleKeyPress}
             />
           </TableCell>
           {attrNames.map((attrName) => (
-            <TableCell key={attrName}>
+            <TableCell
+              sx={{ color: "primary.contrastText", minWidth: "300px" }}
+              key={attrName}
+            >
               <Typography>{attrName}</Typography>
-              <Input
-                placeholder="絞り込む"
+              <TextField
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: "white" }} />
+                    </InputAdornment>
+                  ),
+                  sx: {
+                    color: "#FFFFFF",
+                    "&.Mui-focused": {
+                      background: "#00000061",
+                    },
+                  },
+                }}
+                inputProps={{
+                  style: {
+                    padding: "8px 0 8px 4px",
+                  },
+                }}
+                sx={{
+                  background: "#0000001F",
+                  margin: "8px 0",
+                }}
                 defaultValue={defaultAttrsFilter[attrName] || ""}
                 onChange={(e) =>
                   attrsFilterDispatcher({ event: e, name: attrName })
@@ -88,18 +159,19 @@ export const SearchResults: FC<Props> = ({
         </TableRow>
       }
       tableBodyRowGenerator={(result, index) => (
-        <TableRow key={index}>
-          <TableCell>
+        <StyledTableRow key={index}>
+          {/* FIXME avoid overlapping elements when scrolling */}
+          <TableCell sx={{ minWidth: "300px", position: "sticky", left: 0 }}>
             <Typography>{result.entry.name}</Typography>
           </TableCell>
           {attrNames.map((attrName) => (
-            <TableCell key={attrName}>
+            <TableCell sx={{ minWidth: "300px" }} key={attrName}>
               {result.attrs[attrName] && (
                 <AttributeValue attrInfo={result.attrs[attrName]} />
               )}
             </TableCell>
           ))}
-        </TableRow>
+        </StyledTableRow>
       )}
       rowsPerPageOptions={[100, 250, 1000]}
     />

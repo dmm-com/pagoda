@@ -71,28 +71,6 @@ export function importEntries(
   });
 }
 
-// FIXME it should be better to implement a new internal API than this
-export function searchEntries(
-  entityIds: number[] = [],
-  entryName = "",
-  attrInfo: object[] = [],
-  entryLimit = 99999
-): Promise<Response> {
-  return fetch(`/api/v1/entry/search`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-      "Content-Type": "application/json;charset=utf-8",
-    },
-    body: JSON.stringify({
-      entities: entityIds,
-      entry_name: entryName,
-      attrinfo: attrInfo,
-      entry_limit: entryLimit,
-    }),
-  });
-}
-
 // FIXME unimplemented
 export function getEntryHistory({}: number): Promise<object> {
   return new Promise((resolve) => {

@@ -39,7 +39,9 @@ export const PaginatedTable = <T,>({
     <Paper>
       <TableContainer component={Paper}>
         <Table>
-          <TableHead>{tableHeadRow}</TableHead>
+          <TableHead sx={{ backgroundColor: "primary.dark" }}>
+            {tableHeadRow}
+          </TableHead>
           <TableBody>
             {rows
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
