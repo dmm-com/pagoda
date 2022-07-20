@@ -29,6 +29,7 @@ export const EditEntityPage: FC = () => {
     attrs: [],
   });
   const [submittable, setSubmittable] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState<boolean>(false);
 
   const entity = useAsync(async () => {
     if (entityId !== undefined) {
@@ -89,6 +90,7 @@ export const EditEntityPage: FC = () => {
           attrs,
           webhooks
         );
+        setSubmitted(true);
         history.replace(entitiesPath());
       } else {
         await aironeApiClientV2.updateEntity(
@@ -99,6 +101,7 @@ export const EditEntityPage: FC = () => {
           attrs,
           webhooks
         );
+        setSubmitted(true);
         history.replace(entityEntriesPath(entityId));
       }
     } catch (e) {
@@ -183,7 +186,10 @@ export const EditEntityPage: FC = () => {
           setSubmittable={setSubmittable}
         />
       </Box>
-      <Prompt message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？" />
+      <Prompt
+        when={!submitted}
+        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+      />
     </Box>
   );
 };
