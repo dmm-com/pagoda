@@ -15,7 +15,10 @@ import { AttributeValue } from "components/entry/AttributeValue";
 
 const StyledTableRow = styled(TableRow)(() => ({
   "&:nth-of-type(odd)": {
-    backgroundColor: "#607D8B0A",
+    backgroundColor: "#F9FAFA",
+  },
+  "&:nth-of-type(even)": {
+    backgroundColor: "#FFFFFF",
   },
   "&:last-child td, &:last-child th": {
     border: 0,
@@ -79,7 +82,7 @@ export const SearchResults: FC<Props> = ({
     <PaginatedTable
       rows={results}
       tableHeadRow={
-        <TableRow>
+        <TableRow sx={{ backgroundColor: "primary.dark" }}>
           {/* FIXME avoid overlapping elements when scrolling */}
           <TableCell
             sx={{
@@ -88,6 +91,8 @@ export const SearchResults: FC<Props> = ({
               position: "sticky",
               left: 0,
               zIndex: 1,
+              backgroundColor: "inherit",
+              outline: "1px solid #FFFFFF",
             }}
           >
             <Typography>エントリ名</Typography>
@@ -161,7 +166,15 @@ export const SearchResults: FC<Props> = ({
       tableBodyRowGenerator={(result, index) => (
         <StyledTableRow key={index}>
           {/* FIXME avoid overlapping elements when scrolling */}
-          <TableCell sx={{ minWidth: "300px", position: "sticky", left: 0 }}>
+          <TableCell
+            sx={{
+              backgroundColor: "inherit",
+              minWidth: "300px",
+              position: "sticky",
+              left: 0,
+              zIndex: 1,
+            }}
+          >
             <Typography>{result.entry.name}</Typography>
           </TableCell>
           {attrNames.map((attrName) => (
