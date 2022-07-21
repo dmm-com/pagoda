@@ -9,7 +9,10 @@ import {
   Button,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { Dispatch, FC, SetStateAction } from "react";
+import React, { Dispatch, FC, useMemo, useState, SetStateAction } from "react";
+import { Link } from "react-router-dom";
+
+import { advancedSearchResultPath } from "Routes";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   modal: {
@@ -29,10 +32,46 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface Props {
   openModal: boolean;
   setOpenModal: Dispatch<SetStateAction<boolean>>;
+  attrNames: string[];
+  initialAttrNames: string[];
 }
 
-export const AdvancedSearchModal: FC<Props> = ({ openModal, setOpenModal }) => {
+export const AdvancedSearchModal: FC<Props> = ({
+  openModal,
+  setOpenModal,
+  attrNames,
+  initialAttrNames,
+}) => {
   const classes = useStyles();
+  const [selectedAttrNames, setSelectedAttrNames] = useState(initialAttrNames);
+
+  const searchParams = useMemo(() => {
+    console.log(
+      "[onix/AdvancedSearchModal(00)] selectedAttrNames: ",
+      selectedAttrNames
+    );
+    const params = new URLSearchParams(location.search);
+
+    // ToDo: We have to do work it!!
+    /*
+    const entityIds = params.getAll("entity").map((id) => Number(id));
+    const entryName = params.has("entry_name") ? params.get("entry_name") : "";
+    const hasReferral = params.has("has_referral") ? params.get("has_referral") : "";
+
+    entityIds.forEach((e) => {
+      params.append("entity", e.toString());
+    });
+    params.append("has_referral", hasReferral);
+
+    // TODO: The current implementation eliminate current keyword
+    params.append(
+      "attrinfo",
+      JSON.stringify(selectedAttrNames.map((attr) => ({ name: attr })))
+    );
+    */
+
+    return params;
+  }, [selectedAttrNames]);
 
   return (
     <Modal
@@ -46,9 +85,9 @@ export const AdvancedSearchModal: FC<Props> = ({ openModal, setOpenModal }) => {
         <Typography color="primary">検索属性の再設定</Typography>
 
         <Autocomplete
-          options={["hoge"]}
-          //value={selectedAttrs}
-          //onChange={(_, value: Array<string>) => setSelectedAttrs(value)}
+          options={attrNames}
+          defaultValue={initialAttrNames}
+          onChange={(_, value: Array<string>) => setSelectedAttrNames(value)}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -73,8 +112,8 @@ export const AdvancedSearchModal: FC<Props> = ({ openModal, setOpenModal }) => {
             variant="contained"
             color="secondary"
             sx={{ mx: "4px" }}
-            //disabled={!entries}
-            //onClick={handleCopy}
+            component={Link}
+            to={`${advancedSearchResultPath()}?${searchParams}`}
           >
             保存
           </Button>

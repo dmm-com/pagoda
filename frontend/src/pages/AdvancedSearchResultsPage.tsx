@@ -12,6 +12,7 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
+import { getEntityAttrs } from "utils/AironeAPIClient";
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
@@ -20,9 +21,34 @@ export const AdvancedSearchResultsPage: FC = () => {
   const params = new URLSearchParams(location.search);
   const entityIds = params.getAll("entity").map((id) => Number(id));
   const entryName = params.has("entry_name") ? params.get("entry_name") : "";
+  const hasReferral = params.has("has_referral")
+    ? params.get("has_referral")
+    : "";
   const attrInfo = params.has("attrinfo")
     ? JSON.parse(params.get("attrinfo"))
     : [];
+
+  const entityAttrs = useAsync(async () => {
+    const resp = await getEntityAttrs(entityIds);
+    const data = await resp.json();
+
+    console.log(
+      "[onix/AdvancedSearchResultsPage(00)] entityAttrs: ",
+      data.result
+    );
+    return data.result;
+  });
+
+  console.log(
+    "[onix/AdvancedSearchResultsPage(10)] isLoading: ",
+    entityAttrs.loading
+  );
+  if (entityAttrs.loading == false) {
+    console.log(
+      "[onix/AdvancedSearchResultsPage(11)] entityAttrs: ",
+      entityAttrs
+    );
+  }
 
   const results = useAsync(async () => {
     const resp = await aironeApiClientV2.advancedSearchEntries(
@@ -56,6 +82,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             <Button
               variant="outlined"
               startIcon={<SettingsIcon />}
+              disabled={entityAttrs.loading}
               onClick={() => {
                 setOpenModal(true);
               }}
@@ -87,6 +114,8 @@ export const AdvancedSearchResultsPage: FC = () => {
         <AdvancedSearchModal
           openModal={openModal}
           setOpenModal={setOpenModal}
+          attrNames={entityAttrs.loading ? [] : entityAttrs.value}
+          initialAttrNames={attrInfo.map((e) => e.name)}
         />
       </Box>
     </Box>
