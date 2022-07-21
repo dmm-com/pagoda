@@ -11,6 +11,7 @@ import { EditAttributeValue } from "./EditAttributeValue";
 
 const mockHandleChangeAttribute = (e) => undefined;
 const mockHandleClickDeleteListItem = (e) => undefined;
+const mockHandleClickAddListItem = (e) => undefined;
 
 beforeAll(() => {
   Object.defineProperty(window, "django_context", {
@@ -123,6 +124,7 @@ attributes.forEach((attribute) => {
         }}
         handleChangeAttribute={mockHandleChangeAttribute}
         handleClickDeleteListItem={mockHandleClickDeleteListItem}
+        handleClickAddListItem={mockHandleClickAddListItem}
       />
     );
 
@@ -155,6 +157,7 @@ arrayAttributes.forEach((arrayAttribute) => {
         }}
         handleChangeAttribute={mockHandleChangeAttribute}
         handleClickDeleteListItem={mockHandleClickDeleteListItem}
+        handleClickAddListItem={mockHandleClickAddListItem}
       />
     );
 

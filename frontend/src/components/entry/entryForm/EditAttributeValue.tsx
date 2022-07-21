@@ -1,7 +1,9 @@
+import AddIcon from "@mui/icons-material/Add";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
-  Button,
   Box,
   Checkbox,
+  IconButton,
   Input,
   List,
   ListItem,
@@ -35,8 +37,10 @@ interface CommonProps {
 const ElemString: FC<
   CommonProps & {
     attrValue: string;
-    handleClickDeleteListItem: (attrName: string, index?: number) => void;
+    handleClickDeleteListItem?: (attrName: string, index?: number) => void;
+    handleClickAddListItem?: (attrName: string, index: number) => void;
     multiline?: boolean;
+    disabled?: boolean;
   }
 > = ({
   attrName,
@@ -46,7 +50,9 @@ const ElemString: FC<
   index,
   handleChange,
   handleClickDeleteListItem,
+  handleClickAddListItem,
   multiline,
+  disabled,
 }) => {
   return (
     <Box display="flex" width="100%">
@@ -64,13 +70,18 @@ const ElemString: FC<
         error={isMandatory && attrValue === ""}
       />
       {index !== undefined && (
-        <Button
-          sx={{ ml: "16px" }}
-          variant="outlined"
-          onClick={() => handleClickDeleteListItem(attrName, index)}
-        >
-          del
-        </Button>
+        <>
+          <IconButton
+            disabled={disabled}
+            sx={{ mx: "20px" }}
+            onClick={() => handleClickDeleteListItem(attrName, index)}
+          >
+            <DeleteOutlineIcon />
+          </IconButton>
+          <IconButton onClick={() => handleClickAddListItem(attrName, index)}>
+            <AddIcon />
+          </IconButton>
+        </>
       )}
     </Box>
   );
@@ -105,7 +116,9 @@ const ElemReferral: FC<
       | EntryRetrieveValueAsObjectSchema
       | Array<EntryRetrieveValueAsObjectSchema>;
     schemaId?: number;
+    disabled?: boolean;
     handleClickDeleteListItem?: (attrName: string, index?: number) => void;
+    handleClickAddListItem?: (attrName: string, index: number) => void;
   }
 > = ({
   multiple = false,
@@ -115,8 +128,10 @@ const ElemReferral: FC<
   isMandatory,
   schemaId,
   index,
+  disabled,
   handleChange,
   handleClickDeleteListItem,
+  handleClickAddListItem,
 }) => {
   const [keyword, setKeyword] = useState("");
   const [referrals, setReferrals] = useState([]);
@@ -235,13 +250,18 @@ const ElemReferral: FC<
           )}
         />
         {index !== undefined && (
-          <Button
-            sx={{ ml: "16px" }}
-            variant="outlined"
-            onClick={() => handleClickDeleteListItem(attrName, index)}
-          >
-            del
-          </Button>
+          <>
+            <IconButton
+              disabled={disabled}
+              sx={{ mx: "20px" }}
+              onClick={() => handleClickDeleteListItem(attrName, index)}
+            >
+              <DeleteOutlineIcon />
+            </IconButton>
+            <IconButton onClick={() => handleClickAddListItem(attrName, index)}>
+              <AddIcon />
+            </IconButton>
+          </>
         )}
       </Box>
     </Box>
@@ -252,7 +272,9 @@ const ElemNamedObject: FC<
   CommonProps & {
     attrValue?: { [key: string]: EntryRetrieveValueAsObject };
     schemaId: number;
+    disabled?: boolean;
     handleClickDeleteListItem?: (attrName: string, index?: number) => void;
+    handleClickAddListItem?: (attrName: string, index: number) => void;
   }
 > = ({
   attrName,
@@ -261,8 +283,10 @@ const ElemNamedObject: FC<
   isMandatory,
   schemaId,
   index,
+  disabled,
   handleChange,
   handleClickDeleteListItem,
+  handleClickAddListItem,
 }) => {
   const key = attrValue ? Object.keys(attrValue)[0] : "";
   return (
@@ -293,8 +317,10 @@ const ElemNamedObject: FC<
         attrType={attrType}
         isMandatory={isMandatory && !key}
         index={index}
+        disabled={disabled}
         handleChange={handleChange}
         handleClickDeleteListItem={handleClickDeleteListItem}
+        handleClickAddListItem={handleClickAddListItem}
       />
     </Box>
   );
@@ -341,6 +367,7 @@ interface Props {
     valueInfo: any
   ) => void;
   handleClickDeleteListItem: (attrName: string, index?: number) => void;
+  handleClickAddListItem: (attrName: string, index: number) => void;
 }
 
 export const EditAttributeValue: FC<Props> = ({
@@ -348,29 +375,9 @@ export const EditAttributeValue: FC<Props> = ({
   attrInfo,
   handleChangeAttribute,
   handleClickDeleteListItem,
+  handleClickAddListItem,
 }) => {
   const djangoContext = DjangoContext.getInstance();
-
-  const handleClickAddListItem = (e, value) => {
-    const index = (() => {
-      switch (attrInfo.type) {
-        case djangoContext.attrTypeValue.array_string:
-          return attrInfo.value?.asArrayString?.length;
-        case djangoContext.attrTypeValue.array_object:
-          return attrInfo.value?.asArrayObject?.length;
-        case djangoContext.attrTypeValue.array_named_object:
-          return attrInfo.value?.asArrayNamedObject?.length;
-        case djangoContext.attrTypeValue.array_group:
-          return attrInfo.value?.asArrayGroup?.length;
-        default:
-          throw new Error(`${attrInfo.type} is not array-like type`);
-      }
-    })();
-    handleChangeAttribute(attrName, attrInfo.type, {
-      index: index ?? 0,
-      value: value,
-    });
-  };
 
   switch (attrInfo.type) {
     case djangoContext.attrTypeValue.string:
@@ -381,7 +388,6 @@ export const EditAttributeValue: FC<Props> = ({
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}
-          handleClickDeleteListItem={handleClickDeleteListItem}
         />
       );
 
@@ -393,7 +399,6 @@ export const EditAttributeValue: FC<Props> = ({
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}
-          handleClickDeleteListItem={handleClickDeleteListItem}
           multiline
         />
       );
@@ -484,13 +489,6 @@ export const EditAttributeValue: FC<Props> = ({
     case djangoContext.attrTypeValue.array_string:
       return (
         <Box>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={(e) => handleClickAddListItem(e, "")}
-          >
-            add
-          </Button>
           <List>
             {attrInfo.value.asArrayString?.map((info, n) => (
               <ListItem key={n}>
@@ -502,6 +500,8 @@ export const EditAttributeValue: FC<Props> = ({
                   index={n}
                   handleChange={handleChangeAttribute}
                   handleClickDeleteListItem={handleClickDeleteListItem}
+                  handleClickAddListItem={handleClickAddListItem}
+                  disabled={attrInfo.value.asArrayString?.length == 1}
                 />
               </ListItem>
             ))}
@@ -512,13 +512,6 @@ export const EditAttributeValue: FC<Props> = ({
     case djangoContext.attrTypeValue.array_named_object:
       return (
         <Box>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={(e) => handleClickAddListItem(e, { "": null })}
-          >
-            add
-          </Button>
           <List>
             {attrInfo.value.asArrayNamedObject?.map((info, n) => (
               <ListItem key={n}>
@@ -529,8 +522,10 @@ export const EditAttributeValue: FC<Props> = ({
                   isMandatory={attrInfo.isMandatory}
                   schemaId={attrInfo.schema.id}
                   index={n}
+                  disabled={attrInfo.value.asArrayNamedObject?.length == 1}
                   handleChange={handleChangeAttribute}
                   handleClickDeleteListItem={handleClickDeleteListItem}
+                  handleClickAddListItem={handleClickAddListItem}
                 />
               </ListItem>
             ))}
