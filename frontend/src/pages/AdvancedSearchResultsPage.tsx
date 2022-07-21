@@ -1,6 +1,6 @@
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, Button, Typography } from "@mui/material";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -10,10 +10,12 @@ import { PageHeader } from "../components/common/PageHeader";
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
+import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
+  const [openModal, setOpenModal] = useState(false);
 
   const params = new URLSearchParams(location.search);
   const entityIds = params.getAll("entity").map((id) => Number(id));
@@ -51,7 +53,13 @@ export const AdvancedSearchResultsPage: FC = () => {
         subTitle={`${results.value?.length ?? 0} 件`}
         componentSubmits={
           <Box display="flex" justifyContent="center">
-            <Button variant="outlined" startIcon={<SettingsIcon />}>
+            <Button
+              variant="outlined"
+              startIcon={<SettingsIcon />}
+              onClick={() => {
+                setOpenModal(true);
+              }}
+            >
               高度な検索
             </Button>
             <Button sx={{ marginLeft: "40px" }} variant="outlined">
@@ -76,6 +84,10 @@ export const AdvancedSearchResultsPage: FC = () => {
         ) : (
           <Loading />
         )}
+        <AdvancedSearchModal
+          openModal={openModal}
+          setOpenModal={setOpenModal}
+        />
       </Box>
     </Box>
   );
