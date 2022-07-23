@@ -56,19 +56,21 @@ export const EditEntityPage: FC = () => {
   const handleSubmit = async () => {
     const createMode = entityId === undefined;
     // Adjusted attributes for the API
-    const attrs = entityInfo.attrs.map((attr, index) => {
-      return {
-        id: attr.id,
-        name: attr.name,
-        type: attr.type,
-        index: index,
-        isMandatory: attr.isMandatory,
-        isDeleteInChain: attr.isDeleteInChain,
-        isSummarized: attr.isSummarized,
-        referral: attr.referral,
-        isDeleted: attr.isDeleted,
-      };
-    });
+    const attrs = entityInfo.attrs
+      .filter((attr) => !(attr.id == null && attr.isDeleted))
+      .map((attr, index) => {
+        return {
+          id: attr.id,
+          name: attr.name,
+          type: attr.type,
+          index: index,
+          isMandatory: attr.isMandatory,
+          isDeleteInChain: attr.isDeleteInChain,
+          isSummarized: attr.isSummarized,
+          referral: attr.referral,
+          isDeleted: attr.isDeleted,
+        };
+      });
     const webhooks = entityInfo.webhooks.map((webhook): Webhook => {
       return {
         id: webhook.id,
