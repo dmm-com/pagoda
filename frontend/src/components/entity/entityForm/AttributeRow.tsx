@@ -63,7 +63,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface Props {
   index?: number;
-  currentAttr?: { [key: string]: any };
+  currentAttr?: EntityAttrUpdate;
   allAttrs: EntityAttrUpdate[];
   referralEntities: Entity[];
   entityInfo: EntityUpdate;
@@ -199,13 +199,9 @@ export const AttributeRow: FC<Props> = ({
       <TableCell>
         {index !== undefined && (
           <Checkbox
-            checked={currentAttr.is_mandatory}
+            checked={currentAttr.isMandatory}
             onChange={(e) =>
-              handleChangeAttributeValue(
-                index,
-                "is_mandatory",
-                e.target.checked
-              )
+              handleChangeAttributeValue(index, "isMandatory", e.target.checked)
             }
           />
         )}
@@ -214,11 +210,11 @@ export const AttributeRow: FC<Props> = ({
       <TableCell>
         {index !== undefined && (
           <Checkbox
-            checked={currentAttr.is_delete_in_chain}
+            checked={currentAttr.isDeleteInChain}
             onChange={(e) =>
               handleChangeAttributeValue(
                 index,
-                "is_delete_in_chain",
+                "isDeleteInChain",
                 e.target.checked
               )
             }
