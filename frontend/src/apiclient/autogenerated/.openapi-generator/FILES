@@ -12,6 +12,7 @@ models/EntityAttrCreate.ts
 models/EntityAttrUpdate.ts
 models/EntityCreate.ts
 models/EntityDetail.ts
+models/EntityDetailAttrs.ts
 models/EntityList.ts
 models/EntityUpdate.ts
 models/EntryBase.ts

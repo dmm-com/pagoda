@@ -1,6 +1,6 @@
 import collections
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypedDict
 
 import requests
 from django.core.validators import URLValidator
@@ -374,6 +374,16 @@ class EntityListSerializer(EntitySerializer):
         return (obj.status & Entity.STATUS_TOP_LEVEL) != 0
 
 
+class EntityDetailAttribute(TypedDict):
+    id: int
+    index: int
+    name: str
+    type: int
+    is_mandatory: bool
+    is_delete_in_chain: bool
+    referral: List[Dict[str, Any]]
+
+
 class EntityDetailSerializer(EntityListSerializer):
     attrs = serializers.SerializerMethodField(method_name="get_attrs")
     webhooks = WebhookSerializer(many=True)
@@ -382,7 +392,7 @@ class EntityDetailSerializer(EntityListSerializer):
         model = Entity
         fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks"]
 
-    def get_attrs(self, obj: Entity) -> List[Dict[str, Any]]:
+    def get_attrs(self, obj: Entity) -> List[EntityDetailAttribute]:
         user = User.objects.get(id=self.context["request"].user.id)
         return [
             {
