@@ -129,6 +129,12 @@ export const AttributeRow: FC<Props> = ({
     setEntityInfo({ ...entityInfo, attrs: [...allAttrs] });
   };
 
+  const initialSelectedReferrals = useMemo(() => {
+    return referralEntities.filter((e) =>
+      currentAttr?.referral?.includes(e.id)
+    );
+  }, [referralEntities]);
+
   return (
     <TableRow
       className={
@@ -175,9 +181,7 @@ export const AttributeRow: FC<Props> = ({
                 <AutoCompletedField
                   options={referralEntities}
                   getOptionLabel={(option: Entity) => option.name}
-                  defaultValue={referralEntities.filter((e) =>
-                    currentAttr.referral.includes(e.id)
-                  )}
+                  defaultValue={initialSelectedReferrals}
                   handleChangeSelectedValue={(value: Entity[]) => {
                     handleChangeAttributeValue(
                       index,
