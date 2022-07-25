@@ -38,21 +38,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
     },
   },
   highlightedTableRow: {
-    backgroundColor: "yellow",
-
-    // TODO reset the animation with considering rerendering
-    // animation: `$highlighted ease 1s 1`,
-    // "&:nth-of-type(odd)": {
-    //   backgroundColor: "white",
-    // },
-    // "&:nth-of-type(even)": {
-    //   backgroundColor: "#607D8B0A",
-    // },
+    animation: `$highlighted ease 1s 1`,
+    "&:nth-of-type(odd)": {
+      backgroundColor: "white",
+    },
+    "&:nth-of-type(even)": {
+      backgroundColor: "#607D8B0A",
+    },
   },
-
   "@keyframes highlighted": {
     "0%": {
-      backgroundColor: "yellow",
+      backgroundColor: "#6B8998",
     },
   },
 }));
@@ -131,10 +127,11 @@ export const AttributeRow: FC<Props> = ({
   return (
     <TableRow
       className={
-        index === latestChangedIndex
+        index != null && index === latestChangedIndex
           ? classes.highlightedTableRow
           : classes.tableRow
       }
+      onAnimationEnd={() => setLatestChangedIndex(undefined)}
     >
       <TableCell>
         {index !== undefined && (
