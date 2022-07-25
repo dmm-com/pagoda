@@ -1,35 +1,36 @@
 import errno
 import json
 import logging
-import yaml
-
-from django.http import HttpResponse
-from django.urls import reverse
-from django.core.cache import cache
-from django.conf import settings
-from group.models import Group
 from datetime import date
+from unittest import skip
+from unittest.mock import Mock, patch
 
-from entity.models import Entity, EntityAttr
-from entry.models import Entry, Attribute, AttributeValue
-from user.models import User
-
+import yaml
 from airone.lib.acl import ACLType
 from airone.lib.log import Logger
-from airone.lib.test import AironeViewTest
-from airone.lib.test import DisableStderr
-from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeText
-from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
-from airone.lib.types import AttrTypeNamedObj, AttrTypeArrNamedObj
-from airone.lib.types import AttrTypeValue
-
-
-from unittest.mock import patch
-from unittest.mock import Mock
-from unittest import skip
-from entry import tasks
-from job.models import Job, JobOperation
+from airone.lib.test import AironeViewTest, DisableStderr
+from airone.lib.types import (
+    AttrTypeArrNamedObj,
+    AttrTypeArrObj,
+    AttrTypeArrStr,
+    AttrTypeNamedObj,
+    AttrTypeObj,
+    AttrTypeStr,
+    AttrTypeText,
+    AttrTypeValue,
+)
+from django.conf import settings
+from django.core.cache import cache
+from django.http import HttpResponse
 from django.http.response import JsonResponse
+from django.urls import reverse
+from entity.models import Entity, EntityAttr
+from entry import tasks
+from entry.models import Attribute, AttributeValue, Entry
+from group.models import Group
+from job.models import Job, JobOperation
+from role.models import Role
+from user.models import User
 
 
 class ViewTest(AironeViewTest):
@@ -3045,14 +3046,32 @@ class ViewTest(AironeViewTest):
             entity.attrs.add(attr)
 
         # try to import data which has invalid data structure
-        for index in range(6):
+        for index in range(3):
             fp = self.open_fixture_file("invalid_import_data%d.yaml" % index)
             resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
+            fp.close()
             self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.content, b"Uploaded file has invalid data structure to import")
+
+        # invalid data couldn't scan
+        for index in range(2):
+            fp = self.open_fixture_file("invalid_import_data_scan%d.yaml" % index)
+            resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
+            fp.close()
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.content, b"Couldn't scan uploaded file")
+
+        # invalid data date format
+        fp = self.open_fixture_file("invalid_import_data_date.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"Invalid value is found: month must be in 1..12")
 
         # import data from test file
         fp = self.open_fixture_file("import_data01.yaml")
         resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
+        fp.close()
 
         # check the import is success
         self.assertEqual(resp.status_code, 303)
@@ -3107,21 +3126,137 @@ class ViewTest(AironeViewTest):
         res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
         self.assertTrue(res["found"])
 
-        # set permission to prohibit update and check the result of job
-        entity.is_public = False
-        entity.save(update_fields=["is_public"])
+    def test_import_entry_invalid_param(self):
+        user: User = self.guest_login()
+        role: Role = Role.objects.create(name="Role")
+        role.users.add(user)
+        entity: Entity = Entity.objects.create(name="Entity", created_user=user, is_active=False)
 
-        # check the import is success but job was failed
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[9999]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"Failed to get entity of specified id")
+
         fp = self.open_fixture_file("import_data01.yaml")
         resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"Failed to get entity of specified id")
 
+        # nothing permisson
+        entity.is_active = True
+        entity.is_public = False
+        entity.save()
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"You don't have permission to access this object")
+
+        # readable permission
+        role.permissions.add(entity.readable)
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"You don't have permission to access this object")
+
+        # writable permission
+        role.permissions.add(entity.writable)
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
+        fp.close()
         self.assertEqual(resp.status_code, 303)
-        job = Job.objects.filter(target=entity).last()
-        self.assertEqual(job.status, Job.STATUS["ERROR"])
-        self.assertEqual(
-            job.text,
-            'Permission denied to import. You need Writable permission for "%s"' % entity.name,
-        )
+
+    def test_import_entry_invalid_param_other_entity(self):
+        user: User = self.guest_login()
+        role: Role = Role.objects.create(name="Role")
+        role.users.add(user)
+        entity: Entity = Entity.objects.create(name="Entity", created_user=user, is_active=False)
+        entity2: Entity = Entity.objects.create(name="Entity2", created_user=user)
+
+        fp = self.open_fixture_file("import_data02.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity2.id]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"Specified entity does not exist (hoge)")
+
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity2.id]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"Specified entity does not exist (Entity)")
+
+        # nothing permisson
+        entity.is_active = True
+        entity.is_public = False
+        entity.save()
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity2.id]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"You don't have permission to access (Entity)")
+
+        # readable permission
+        role.permissions.add(entity.readable)
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity2.id]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"You don't have permission to access (Entity)")
+
+        # writable permission
+        role.permissions.add(entity.writable)
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity2.id]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 303)
+
+    @patch("custom_view.is_custom", Mock(return_value=True))
+    @patch("custom_view.call_custom")
+    def test_import_entry_with_custom_view(self, mock_call_custom):
+        user: User = self.guest_login()
+        entity: Entity = Entity.objects.create(name="Entity", created_user=user)
+
+        def side_effect(handler_name, entity_name, user, import_entity, import_data):
+            # Check specified parameters are expected
+            self.assertEqual(handler_name, "import_entry")
+            self.assertEqual(entity_name, entity.name)
+            self.assertEqual(import_entity, entity)
+            data = yaml.safe_load(self.open_fixture_file("import_data01.yaml"))
+            self.assertEqual(import_data, data[entity.name])
+
+            return (import_data, None)
+
+        mock_call_custom.side_effect = side_effect
+
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 303)
+        self.assertTrue(mock_call_custom.called)
+
+        # specified other entity
+        entity2: Entity = Entity.objects.create(name="Entity2", created_user=user)
+        mock_call_custom.called = False
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity2.id]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 303)
+        self.assertTrue(mock_call_custom.called)
+
+    @patch("custom_view.is_custom", Mock(return_value=True))
+    @patch("custom_view.call_custom", Mock(return_value=(None, "error message")))
+    def test_import_entry_with_custom_view_error(self):
+        user: User = self.guest_login()
+        entity: Entity = Entity.objects.create(name="Entity", created_user=user)
+
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"error message")
 
     @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
     def test_import_entry_with_changing_entity_attr(self):
@@ -4571,7 +4706,9 @@ class ViewTest(AironeViewTest):
 
     @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
     def test_importing_entries_on_multiple_entities(self):
-        self.admin_login()
+        user = self.admin_login()
+
+        Entity.objects.create(name="fuga", created_user=user)
 
         fp = self.open_fixture_file("import_data04.yaml")
         resp = self.client.post(reverse("entry:do_import", args=[self._entity.id]), {"file": fp})
@@ -4579,6 +4716,17 @@ class ViewTest(AironeViewTest):
 
         # check the import is success
         self.assertEqual(resp.status_code, 303)
+        for entity_name in ["hoge", "fuga"]:
+            self.assertTrue(
+                Job.objects.filter(
+                    target__name=entity_name, operation=JobOperation.IMPORT_ENTRY.value
+                ).exists()
+            )
+            self.assertTrue(
+                Entry.objects.filter(
+                    name="entry1", schema__name=entity_name, is_active=True
+                ).exists()
+            )
 
     @patch(
         "entry.tasks.register_referrals.delay",

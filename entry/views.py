@@ -1,28 +1,33 @@
-import yaml
 import re
+from datetime import datetime
+from urllib.parse import urlencode
 
 import custom_view
-
+import yaml
+from airone.lib.acl import ACLType
+from airone.lib.elasticsearch import prepend_escape_character
+from airone.lib.http import (
+    HttpResponseSeeOther,
+    get_obj_with_check_perm,
+    http_file_upload,
+    http_get,
+    http_post,
+    render,
+)
+from airone.lib.types import AttrTypeValue
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Q
 from django.http import HttpResponse
 from django.http.response import JsonResponse
-from django.db.models import Q
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import redirect
 from django.urls import reverse
-from urllib.parse import urlencode
-from datetime import datetime
-
-from airone.lib.elasticsearch import prepend_escape_character
-from airone.lib.http import http_get, http_post, get_obj_with_check_perm, render
-from airone.lib.http import http_file_upload
-from airone.lib.http import HttpResponseSeeOther
-from airone.lib.types import AttrTypeValue
-from airone.lib.acl import ACLType
-
 from entity.models import Entity
-from entry.models import Entry, Attribute, AttributeValue
-from job.models import Job
 from group.models import Group
+from job.models import Job
+from user.models import User
+
+from entry.models import Attribute, AttributeValue, Entry
+
 from .settings import CONFIG
 
 
@@ -458,9 +463,13 @@ def import_data(request, entity_id):
 
 @http_file_upload
 def do_import_data(request, entity_id, context):
-    entity = Entity.objects.filter(id=entity_id, is_active=True).first()
-    if not entity:
-        return HttpResponse("Couldn't parse uploaded file", status=400)
+    user: User = request.user
+    entity: Entity
+    entity, error = get_obj_with_check_perm(user, Entity, entity_id, ACLType.Writable)
+    if error:
+        return error
+    if not entity.is_active:
+        return HttpResponse("Failed to get entity of specified id", status=400)
 
     try:
         data = yaml.load(context, Loader=yaml.FullLoader)
@@ -476,18 +485,33 @@ def do_import_data(request, entity_id, context):
     if not Entry.is_importable_data(data):
         return HttpResponse("Uploaded file has invalid data structure to import", status=400)
 
-    if custom_view.is_custom("import_entry", entity.name):
-        # import custom view
-        resp = custom_view.call_custom("import_entry", entity.name, request.user, entity, data)
+    for entity_name in data.keys():
+        import_entity: Entity = Entity.objects.filter(name=entity_name, is_active=True).first()
+        if not import_entity:
+            return HttpResponse("Specified entity does not exist (%s)" % entity_name, status=400)
+        if not user.has_permission(import_entity, ACLType.Writable):
+            return HttpResponse(
+                "You don't have permission to access (%s)" % entity_name, status=400
+            )
 
-        # If custom_view returns available response this returns it to user,
-        # or continues default processing.
-        if resp:
-            return resp
+        import_data = data[entity_name]
 
-    # create job to import data to create or update entries and run it
-    job = Job.new_import(request.user, entity, text="Preparing to import data", params=data)
-    job.run()
+        if custom_view.is_custom("import_entry", entity_name):
+            # import custom view
+            import_data, err_msg = custom_view.call_custom(
+                "import_entry", entity_name, user, import_entity, import_data
+            )
+
+            # If custom_view returns available response this returns it to user,
+            # or continues default processing.
+            if err_msg:
+                return HttpResponse(err_msg, status=400)
+
+        # create job to import data to create or update entries and run it
+        job = Job.new_import(
+            user, import_entity, text="Preparing to import data", params=import_data
+        )
+        job.run()
 
     return HttpResponseSeeOther("/entry/%s/" % entity_id)
 
