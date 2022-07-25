@@ -6,7 +6,23 @@
 
 ### Changed
 
+* (New-UI) Show a shorten name if entity name is too long
+  at Entity list view.
+  Contributed by @syucream
+
 ### Fixed
+
+* (New-UI) Perform animation when reordering entity attribute
+  to highlight moved attribute on the form.
+  Contributed by @syucream
+
+* (New-UI) Fix bugs that failed to delete unsubmitted attribute.
+  Contributed by @syucream
+
+* (New-UI) Fix not to occur a warning on entity referral auto
+  complete field.
+  Contributed by @syucream
+  
 
 ## v3.13.0
 
