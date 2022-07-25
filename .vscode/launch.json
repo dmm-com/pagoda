@@ -37,5 +37,51 @@
                 "info",
             ]
         },
+        {
+            "name": "Gunicorn",
+            "type": "python",
+            "justMyCode": false,
+            "request": "launch",
+            "program": "${workspaceFolder}/virtualenv/bin/gunicorn",
+            "args": [
+                "airone.wsgi:application",
+                "--bind=0.0.0.0:8080",
+            ],
+        },
+        {
+            "name": "spectacular",
+            "type": "python",
+            "justMyCode": false,
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "spectacular",
+                "--configuration",
+                "DRFSpectacularCustomView",
+            ],
+            "django": true,
+        },
+        {
+            "name": "Shell",
+            "type": "python",
+            "justMyCode": false,
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "shell"
+            ],
+            "django": true,
+        },
+        {
+            "name": "DebugSQLShell",
+            "type": "python",
+            "justMyCode": false,
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "debugsqlshell"
+            ],
+            "django": true,
+        },
     ]
 }

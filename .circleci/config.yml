@@ -26,12 +26,12 @@ jobs:
       - restore_cache:
           key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}-20220708
       - run:
-          name: Install tox tox-pyenv coverage
+          name: Install tox tox-pyenv codecov
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
+            python3 -m venv virtualenv
+            . virtualenv/bin/activate
             pip install --upgrade pip
-            pip install tox coverage codecov
+            pip install tox codecov
       - run:
           name: Wait for MySQL is available
           command: dockerize -wait tcp://127.0.0.1:3306 -timeout 120s
@@ -48,17 +48,17 @@ jobs:
       - run:
           name: Testing
           command: |
-            . venv/bin/activate
+            . virtualenv/bin/activate
             tox
       - save_cache:
           key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}-20220708
           paths:
-            - venv
+            - virtualenv
             - .tox/py38
       - run:
           name: Coverage
           command: |
-            . venv/bin/activate
+            . virtualenv/bin/activate
             codecov
 
   pep8:
@@ -71,8 +71,8 @@ jobs:
       - run:
           name: Install tox tox-pyenv
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
+            python3 -m venv virtualenv
+            . virtualenv/bin/activate
             pip install --upgrade pip
             pip install tox
       - run:
@@ -83,7 +83,7 @@ jobs:
       - run:
           name: flake8
           command: |
-            . venv/bin/activate
+            . virtualenv/bin/activate
             tox
 
   mypy:
@@ -96,8 +96,8 @@ jobs:
       - run:
           name: Install tox tox-pyenv
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
+            python3 -m venv virtualenv
+            . virtualenv/bin/activate
             pip install tox
       - run:
           name: Install additional dependencies
@@ -107,7 +107,7 @@ jobs:
       - run:
           name: mypy
           command: |
-            . venv/bin/activate
+            . virtualenv/bin/activate
             tox
 
   build_gh_page:
