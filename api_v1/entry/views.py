@@ -1,14 +1,13 @@
-import pytz
 from datetime import datetime
 
-from airone.lib.acl import ACLType
+import pytz
 from django.conf import settings
 from django.db.models import Q
-
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from airone.lib.acl import ACLType
 from entity.models import Entity
 from entry.models import Entry
 from entry.settings import CONFIG as CONFIG_ENTRY

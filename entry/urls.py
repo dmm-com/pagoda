@@ -1,7 +1,8 @@
-from django.conf.urls import url, include
+from django.conf.urls import include, url
+
+from acl import views as acl_views
 
 from . import views
-from acl import views as acl_views
 
 urlpatterns = [
     url(r"^(\d+)/$", views.index, name="index"),

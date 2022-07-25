@@ -1,7 +1,8 @@
 import json
 
-from .base import RoleTestBase
 from role.models import Role
+
+from .base import RoleTestBase
 
 
 class ViewTest(RoleTestBase):

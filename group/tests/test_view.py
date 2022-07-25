@@ -1,11 +1,11 @@
 import json
+
 import yaml
-
 from django.urls import reverse
-from group.models import Group
 
-from user.models import User
 from airone.lib.test import AironeViewTest
+from group.models import Group
+from user.models import User
 
 
 class ViewTest(AironeViewTest):

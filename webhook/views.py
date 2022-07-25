@@ -1,8 +1,5 @@
 from airone.lib.acl import ACLType
-from airone.lib.http import get_obj_with_check_perm
-from airone.lib.http import http_get
-from airone.lib.http import render
-
+from airone.lib.http import get_obj_with_check_perm, http_get, render
 from entity.models import Entity
 
 

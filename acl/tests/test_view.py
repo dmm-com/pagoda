@@ -2,15 +2,14 @@ import json
 
 from django.urls import reverse
 
-from user.models import User
 from acl.models import ACLBase
-from entity.models import Entity, EntityAttr
-from entry.models import Entry, Attribute
-from role.models import Role
-
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
+from entity.models import Entity, EntityAttr
+from entry.models import Attribute, Entry
+from role.models import Role
+from user.models import User
 
 
 class ViewTest(AironeViewTest):

@@ -1,8 +1,9 @@
-import django
-import configurations
 import os
 import sys
 from optparse import OptionParser
+
+import configurations
+import django
 
 # append airone directory to the default path
 sys.path.append("./")
@@ -14,9 +15,10 @@ os.environ.setdefault("DJANGO_CONFIGURATION", "Dev")
 # load AirOne application
 configurations.setup()
 
+from django.db.models import Q  # NOQA
+
 from airone.lib.elasticsearch import ESS  # NOQA
 from entry.models import Entry  # NOQA
-from django.db.models import Q  # NOQA
 
 ES_INDEX = django.conf.settings.ES_CONFIG["INDEX"]
 

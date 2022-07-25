@@ -1,11 +1,11 @@
-import custom_view
-
-from import_export import fields, widgets
 from django.contrib import admin
-from .models import EntityAttr
-from .models import Entity
-from user.models import User
+from import_export import fields, widgets
+
+import custom_view
 from airone.lib.resources import AironeModelResource
+from user.models import User
+
+from .models import Entity, EntityAttr
 
 admin.site.register(EntityAttr)
 admin.site.register(Entity)

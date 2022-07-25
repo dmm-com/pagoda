@@ -1,22 +1,20 @@
-import json
+import codecs
 import importlib
+import json
 import urllib.parse
 from urllib.parse import quote
-import codecs
 
-from django.http import HttpResponseRedirect
-from django.http import HttpResponse
+from django.conf import settings
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render as django_render
 from django.utils.encoding import smart_str
 
+from airone.lib.acl import ACLObjType
+from airone.lib.types import AttrTypes, AttrTypeValue
 from entity import models as entity_models
 from entry import models as entry_models
-from user.models import History
 from job.models import Job, JobOperation
-
-from airone.lib.types import AttrTypes, AttrTypeValue
-from airone.lib.acl import ACLObjType
-from django.conf import settings
+from user.models import History
 
 
 class HttpResponseSeeOther(HttpResponseRedirect):

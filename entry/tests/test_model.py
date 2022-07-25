@@ -1,18 +1,19 @@
-from group.models import Group
 from datetime import date
-from django.core.cache import cache
-from django.conf import settings
-from entity.models import Entity, EntityAttr
-from entry.models import Entry, Attribute, AttributeValue
-from entry.settings import CONFIG
-from user.models import User
-from acl.models import ACLBase
-from role.models import Role
-from airone.lib.acl import ACLObjType, ACLType
-from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeArrStr, AttrTypeArrObj
-from airone.lib.types import AttrTypeValue
-from airone.lib.test import AironeTestCase
 from unittest import skip
+
+from django.conf import settings
+from django.core.cache import cache
+
+from acl.models import ACLBase
+from airone.lib.acl import ACLObjType, ACLType
+from airone.lib.test import AironeTestCase
+from airone.lib.types import AttrTypeArrObj, AttrTypeArrStr, AttrTypeObj, AttrTypeStr, AttrTypeValue
+from entity.models import Entity, EntityAttr
+from entry.models import Attribute, AttributeValue, Entry
+from entry.settings import CONFIG
+from group.models import Group
+from role.models import Role
+from user.models import User
 
 
 class ModelTest(AironeTestCase):

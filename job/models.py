@@ -1,22 +1,20 @@
 import json
 import pickle
-import pytz
 import time
+from datetime import date, datetime, timedelta
+from enum import Enum
+from importlib import import_module
+
+import pytz
+from django.conf import settings
+from django.db import models
 
 from acl.models import ACLBase
 from airone.lib.log import Logger
-from datetime import date
 from entity.models import Entity
 from entry.models import Entry
-
-from datetime import datetime, timedelta
-from django.conf import settings
-from django.db import models
-from enum import Enum
-from importlib import import_module
-from user.models import User
-
 from job.settings import CONFIG as JOB_CONFIG
+from user.models import User
 
 
 def _support_time_default(o):

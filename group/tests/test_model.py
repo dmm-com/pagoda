@@ -1,8 +1,8 @@
-from group.models import Group
-from user.models import User
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrTypeValue
 from entry.models import Entry
+from group.models import Group
+from user.models import User
 
 
 class ModelTest(AironeTestCase):

@@ -1,11 +1,11 @@
-from django.test import TestCase
 from django.contrib.auth.models import Permission
+from django.test import TestCase
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
-from entry.models import Entry, Attribute
+from entry.models import Attribute, Entry
 from user.models import User
 
 

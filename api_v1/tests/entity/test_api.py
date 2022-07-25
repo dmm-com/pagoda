@@ -1,7 +1,7 @@
+from django.conf import settings
+
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
-
-from django.conf import settings
 from entity.models import Entity, EntityAttr
 
 

@@ -1,8 +1,8 @@
-from pathlib import Path
-from django.http import HttpResponse
-
 import importlib.util
 import os
+from pathlib import Path
+
+from django.http import HttpResponse
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -40,11 +40,11 @@ def is_custom(handler_name, entity_name=None):
     # But it tries to load Entity's custom_view when 'entity_name' parameter doesn't specified.
     if entity_name:
         spec_name = entity_name
-        filepath = '%s/views/%s.py' % (BASE_DIR, entity_name)
+        filepath = "%s/views/%s.py" % (BASE_DIR, entity_name)
         if not Path(filepath).is_file():
             return False
     else:
-        spec_name = 'entity'
+        spec_name = "entity"
         filepath = "%s/entity.py" % BASE_DIR
         if not Path(filepath).is_file():
             return False
@@ -56,7 +56,7 @@ def call_custom(handler_name, spec_name=None, *args, **kwargs):
     if not spec_name:
         filepath = "%s/entity.py" % BASE_DIR
     else:
-        filepath = '%s/views/%s.py' % (BASE_DIR, spec_name)
+        filepath = "%s/views/%s.py" % (BASE_DIR, spec_name)
 
     if _isin_cache(filepath, handler_name):
         return CUSTOM_VIEW[filepath][handler_name](*args, **kwargs)
