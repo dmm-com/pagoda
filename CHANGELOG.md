@@ -22,7 +22,8 @@
 * (New-UI) Fix not to occur a warning on entity referral auto
   complete field.
   Contributed by @syucream
-  
+* Fixed custom_view not applied when importing multiple entities
+  Contributed by @hinashi
 
 ## v3.13.0
 
