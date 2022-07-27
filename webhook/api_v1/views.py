@@ -1,19 +1,17 @@
 import json
+
 import requests
 import urllib3
-from requests.exceptions import ConnectionError
-from urllib3.exceptions import InsecureRequestWarning
-
-from airone.lib.acl import ACLType
-from airone.lib.http import get_obj_with_check_perm
-from airone.lib.http import http_post
-
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import HttpResponse
 from django.http.response import JsonResponse
-from entity.models import Entity
+from requests.exceptions import ConnectionError
+from urllib3.exceptions import InsecureRequestWarning
 
+from airone.lib.acl import ACLType
+from airone.lib.http import get_obj_with_check_perm, http_post
+from entity.models import Entity
 from webhook.models import Webhook
 
 urllib3.disable_warnings(InsecureRequestWarning)

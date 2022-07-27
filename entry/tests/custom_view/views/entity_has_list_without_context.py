@@ -1,5 +1,6 @@
-from airone.lib.http import render
 from django.http import HttpResponse
+
+from airone.lib.http import render
 
 
 def list_entry_without_context(request, entity):

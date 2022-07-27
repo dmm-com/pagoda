@@ -1,20 +1,24 @@
 import json
-import yaml
+from unittest import mock
 
+import yaml
 from django.contrib.auth.models import Permission
 from django.urls import reverse
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeText
-from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
-from airone.lib.types import AttrTypeValue
-
+from airone.lib.types import (
+    AttrTypeArrObj,
+    AttrTypeArrStr,
+    AttrTypeObj,
+    AttrTypeStr,
+    AttrTypeText,
+    AttrTypeValue,
+)
+from entity import tasks
 from entity.models import Entity, EntityAttr
 from entity.settings import CONFIG
-from entry.models import Entry, Attribute
-from user.models import User, History
-from unittest import mock
-from entity import tasks
+from entry.models import Attribute, Entry
+from user.models import History, User
 
 
 class ViewTest(AironeViewTest):

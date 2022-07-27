@@ -1,10 +1,10 @@
 from django.conf import settings
-from django.conf.urls import url, include
+from django.conf.urls import include, url
 from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 
-from api_v1.urls import urlpatterns as api_v1_urlpatterns
 from airone.auth import view as auth_view
+from api_v1.urls import urlpatterns as api_v1_urlpatterns
 
 urlpatterns = [
     url(r"^$", RedirectView.as_view(url="dashboard/")),

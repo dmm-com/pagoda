@@ -1,24 +1,21 @@
 import json
+
 import yaml
-
-from airone.lib.acl import ACLType
-from airone.lib.http import render
-from airone.lib.http import http_get, http_post
-from airone.lib.http import http_file_upload
-from airone.lib.http import HttpResponseSeeOther
-from airone.lib.log import Logger
-
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.shortcuts import redirect
 
-from entity.admin import EntityResource, EntityAttrResource
-from entry.admin import EntryResource, AttrResource, AttrValueResource
+from airone.lib.acl import ACLType
+from airone.lib.http import HttpResponseSeeOther, http_file_upload, http_get, http_post, render
+from airone.lib.log import Logger
+from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr
-from entry.models import Entry, AttributeValue
+from entry.admin import AttrResource, AttrValueResource, EntryResource
+from entry.models import AttributeValue, Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
 from job.models import Job
+
 from .settings import CONFIG
 
 IMPORT_INFOS = [

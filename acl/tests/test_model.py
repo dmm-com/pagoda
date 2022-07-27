@@ -1,12 +1,14 @@
-from django.test import TestCase
+from importlib import import_module
+
 from django.contrib.auth.models import Permission
-from group.models import Group
+from django.test import TestCase
+
 from acl.models import ACLBase
+from airone.lib.acl import ACLType
+from airone.lib.types import AttrTypeValue
+from group.models import Group
 from role.models import Role
 from user.models import User
-from importlib import import_module
-from airone.lib.types import AttrTypeValue
-from airone.lib.acl import ACLType
 
 
 class ModelTest(TestCase):

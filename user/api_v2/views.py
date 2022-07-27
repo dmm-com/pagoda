@@ -1,5 +1,5 @@
-from rest_framework.generics import RetrieveAPIView, ListAPIView
-from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
 from user.api_v2.serializers import UserListSerializer, UserRetrieveSerializer
 from user.models import User

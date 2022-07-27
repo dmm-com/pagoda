@@ -1,28 +1,32 @@
-import yaml
 import re
+from datetime import datetime
+from urllib.parse import urlencode
 
-import custom_view
-
+import yaml
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Q
 from django.http import HttpResponse
 from django.http.response import JsonResponse
-from django.db.models import Q
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import redirect
 from django.urls import reverse
-from urllib.parse import urlencode
-from datetime import datetime
 
-from airone.lib.elasticsearch import prepend_escape_character
-from airone.lib.http import http_get, http_post, get_obj_with_check_perm, render
-from airone.lib.http import http_file_upload
-from airone.lib.http import HttpResponseSeeOther
-from airone.lib.types import AttrTypeValue
+import custom_view
 from airone.lib.acl import ACLType
-
+from airone.lib.elasticsearch import prepend_escape_character
+from airone.lib.http import (
+    HttpResponseSeeOther,
+    get_obj_with_check_perm,
+    http_file_upload,
+    http_get,
+    http_post,
+    render,
+)
+from airone.lib.types import AttrTypeValue
 from entity.models import Entity
-from entry.models import Entry, Attribute, AttributeValue
-from job.models import Job
+from entry.models import Attribute, AttributeValue, Entry
 from group.models import Group
+from job.models import Job
+
 from .settings import CONFIG
 
 

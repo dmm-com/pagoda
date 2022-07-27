@@ -1,5 +1,4 @@
-from airone.lib.http import http_get
-from airone.lib.http import render
+from airone.lib.http import http_get, render
 
 
 @http_get

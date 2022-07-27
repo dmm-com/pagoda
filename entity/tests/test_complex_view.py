@@ -1,21 +1,16 @@
 import json
-
-from airone.lib.acl import ACLType
-from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeStr
-from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
-from airone.lib.types import AttrTypeValue
+from unittest.mock import Mock, patch
 
 from django.urls import reverse
 
-from entity.models import Entity, EntityAttr
-from entry.models import Entry, AttributeValue
-from entry import tasks as entry_tasks
+from airone.lib.acl import ACLType
+from airone.lib.test import AironeViewTest
+from airone.lib.types import AttrTypeArrObj, AttrTypeArrStr, AttrTypeStr, AttrTypeValue
 from entity import tasks as entity_tasks
+from entity.models import Entity, EntityAttr
+from entry import tasks as entry_tasks
+from entry.models import AttributeValue, Entry
 from role.models import Role
-
-from unittest.mock import patch
-from unittest.mock import Mock
 
 
 class ComplexViewTest(AironeViewTest):

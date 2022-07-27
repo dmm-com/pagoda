@@ -1,15 +1,15 @@
-from unittest import mock
-import json
 import datetime
+import json
+from unittest import mock
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue, AttrTypeStr
+from airone.lib.types import AttrTypeStr, AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry import tasks
 from entry.models import Entry
 from group.models import Group
-from user.models import User
 from role.models import Role
+from user.models import User
 
 
 class ViewTest(AironeViewTest):

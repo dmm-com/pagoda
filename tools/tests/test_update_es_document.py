@@ -1,12 +1,9 @@
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrTypeValue
-
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
+from tools.update_es_document import delete_unnecessary_documents, register_documents
 from user.models import User
-
-from tools.update_es_document import register_documents
-from tools.update_es_document import delete_unnecessary_documents
 
 
 class UpdateESDocuemntlTest(AironeTestCase):

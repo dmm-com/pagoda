@@ -1,11 +1,11 @@
-import os
-import logging
-import subprocess
 import errno
+import logging
+import os
+import subprocess
 from typing import Any, Dict
 
-from django_replicated import settings
 from configurations import Configuration
+from django_replicated import settings
 
 
 class Common(Configuration):

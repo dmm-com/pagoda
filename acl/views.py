@@ -1,14 +1,13 @@
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 
-from airone.lib.acl import ACLType, ACLObjType
-from airone.lib.http import http_get, http_post, render
-from airone.lib.http import get_obj_with_check_perm
+from airone.lib.acl import ACLObjType, ACLType
+from airone.lib.http import get_obj_with_check_perm, http_get, http_post, render
 from airone.lib.log import Logger
-
 from entity.models import Entity, EntityAttr
-from entry.models import Entry, Attribute
+from entry.models import Attribute, Entry
 from role.models import Role
+
 from .models import ACLBase
 
 

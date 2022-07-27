@@ -1,16 +1,15 @@
 import json
+from unittest.mock import Mock, patch
+
+from django.urls import reverse
+from requests_html import HTML
 
 from airone.lib.test import AironeViewTest
-from django.urls import reverse
+from entity.models import Entity
 from entry import tasks
 from entry.models import Entry
-from entity.models import Entity
-from job.settings import CONFIG
 from job.models import Job, JobOperation
-
-from requests_html import HTML
-from unittest.mock import patch
-from unittest.mock import Mock
+from job.settings import CONFIG
 
 # constants using this tests
 _TEST_MAX_LIST_VIEW = 2

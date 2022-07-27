@@ -1,13 +1,12 @@
-import io
 import errno
-
+import io
 from datetime import datetime, timezone
-from django.http import HttpResponse
+
 from django.db.models import Q
+from django.http import HttpResponse
 
 # libraries of AirOne
-from airone.lib.http import get_download_response
-from airone.lib.http import http_get, render
+from airone.lib.http import get_download_response, http_get, render
 
 # related models in AirOne
 from job.models import Job, JobOperation

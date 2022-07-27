@@ -1,9 +1,9 @@
 import json
 
 from acl.models import ACLBase
-from role.models import Role
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
+from role.models import Role
 
 
 class ACLAPITest(AironeViewTest):

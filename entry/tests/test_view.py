@@ -1,35 +1,36 @@
 import errno
 import json
 import logging
-import yaml
-
-from django.http import HttpResponse
-from django.urls import reverse
-from django.core.cache import cache
-from django.conf import settings
-from group.models import Group
 from datetime import date
+from unittest import skip
+from unittest.mock import Mock, patch
 
-from entity.models import Entity, EntityAttr
-from entry.models import Entry, Attribute, AttributeValue
-from user.models import User
+import yaml
+from django.conf import settings
+from django.core.cache import cache
+from django.http import HttpResponse
+from django.http.response import JsonResponse
+from django.urls import reverse
 
 from airone.lib.acl import ACLType
 from airone.lib.log import Logger
-from airone.lib.test import AironeViewTest
-from airone.lib.test import DisableStderr
-from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeText
-from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
-from airone.lib.types import AttrTypeNamedObj, AttrTypeArrNamedObj
-from airone.lib.types import AttrTypeValue
-
-
-from unittest.mock import patch
-from unittest.mock import Mock
-from unittest import skip
+from airone.lib.test import AironeViewTest, DisableStderr
+from airone.lib.types import (
+    AttrTypeArrNamedObj,
+    AttrTypeArrObj,
+    AttrTypeArrStr,
+    AttrTypeNamedObj,
+    AttrTypeObj,
+    AttrTypeStr,
+    AttrTypeText,
+    AttrTypeValue,
+)
+from entity.models import Entity, EntityAttr
 from entry import tasks
+from entry.models import Attribute, AttributeValue, Entry
+from group.models import Group
 from job.models import Job, JobOperation
-from django.http.response import JsonResponse
+from user.models import User
 
 
 class ViewTest(AironeViewTest):

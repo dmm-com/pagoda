@@ -1,22 +1,25 @@
 import csv
-import custom_view
 import io
 import json
+from datetime import datetime
+
 import yaml
 
+import custom_view
+from airone.celery import app
 from airone.lib.acl import ACLType
-from airone.lib.event_notification import notify_entry_create
-from airone.lib.event_notification import notify_entry_update
-from airone.lib.event_notification import notify_entry_delete
+from airone.lib.event_notification import (
+    notify_entry_create,
+    notify_entry_delete,
+    notify_entry_update,
+)
 from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.log import Logger
 from airone.lib.types import AttrTypeValue
-from airone.celery import app
 from entity.models import Entity, EntityAttr
-from entry.models import Entry, Attribute
-from user.models import User
-from datetime import datetime
+from entry.models import Attribute, Entry
 from job.models import Job
+from user.models import User
 
 
 def _merge_referrals_by_index(ref_list, name_list):
