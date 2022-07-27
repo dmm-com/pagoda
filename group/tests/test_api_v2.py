@@ -1,6 +1,6 @@
 from airone.lib.test import AironeViewTest
-from user.models import User
 from group.models import Group
+from user.models import User
 
 
 class GroupAPITest(AironeViewTest):

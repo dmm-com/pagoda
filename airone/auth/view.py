@@ -1,6 +1,6 @@
 from django.contrib.auth import logout as django_logout
-from django.views.decorators.csrf import csrf_protect
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_protect
 
 from airone.lib.http import render
 

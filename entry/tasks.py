@@ -3,8 +3,9 @@ import io
 import json
 from datetime import datetime
 
-import custom_view
 import yaml
+
+import custom_view
 from airone.celery import app
 from airone.lib.acl import ACLType
 from airone.lib.event_notification import (
@@ -16,10 +17,9 @@ from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.log import Logger
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
+from entry.models import Attribute, Entry
 from job.models import Job
 from user.models import User
-
-from entry.models import Attribute, Entry
 
 
 def _merge_referrals_by_index(ref_list, name_list):

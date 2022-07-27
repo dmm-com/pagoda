@@ -1,19 +1,17 @@
 import datetime
 import json
+from unittest import mock
+
+from django.urls import reverse
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeStr, AttrTypeText
-from airone.lib.types import AttrTypeArrStr
-from airone.lib.types import AttrTypeValue
-from django.urls import reverse
+from airone.lib.types import AttrTypeArrStr, AttrTypeStr, AttrTypeText, AttrTypeValue
 from entity import tasks
 from entity.models import Entity, EntityAttr
-
-from unittest import mock
 from entry.models import Entry
 from group.models import Group
-from user.models import History, User
 from role.models import Role
+from user.models import History, User
 from webhook.models import Webhook
 
 

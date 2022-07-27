@@ -1,10 +1,11 @@
-import os
 import importlib
+import os
+
 import configurations
 from celery import Celery
 from celery.signals import task_failure
-from django.core.mail import mail_admins
 from django.conf import settings
+from django.core.mail import mail_admins
 
 from airone.lib.log import Logger
 

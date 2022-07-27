@@ -1,5 +1,4 @@
 from airone.lib.test import AironeViewTest
-
 from entity.models import Entity
 from user.models import User
 from webhook.models import Webhook

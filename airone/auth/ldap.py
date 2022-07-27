@@ -1,6 +1,6 @@
 import ldap
-
 from django.conf import settings
+
 from airone.lib.log import Logger
 from user.models import User
 

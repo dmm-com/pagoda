@@ -1,5 +1,5 @@
-from airone.lib.test import AironeTestCase
 from airone.lib.concurrent import ConcurrentExec
+from airone.lib.test import AironeTestCase
 
 
 class ModelTest(AironeTestCase):

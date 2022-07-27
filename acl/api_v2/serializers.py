@@ -1,10 +1,11 @@
 from typing import Any, Dict, List, Optional
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase
-from airone.lib.acl import ACLType, ACLObjType
-from entity.models import EntityAttr, Entity
+from airone.lib.acl import ACLObjType, ACLType
+from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from group.models import Group
 from role.models import Role

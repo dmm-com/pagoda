@@ -1,6 +1,7 @@
-from django.db import models
 from datetime import datetime
+
 from django.contrib.auth.models import Permission
+from django.db import models
 
 
 class Role(models.Model):

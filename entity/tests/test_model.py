@@ -1,11 +1,11 @@
-from airone.lib.types import AttrTypeValue
 from copy import copy
 
 from django.test import TestCase
+
+from airone.lib.types import AttrTypeValue
+from entity.admin import EntityAttrResource, EntityResource
+from entity.models import Entity, EntityAttr
 from user.models import User
-from entity.models import Entity
-from entity.models import EntityAttr
-from entity.admin import EntityResource, EntityAttrResource
 
 
 class ModelTest(TestCase):

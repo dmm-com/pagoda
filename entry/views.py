@@ -2,8 +2,15 @@ import re
 from datetime import datetime
 from urllib.parse import urlencode
 
-import custom_view
 import yaml
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Q
+from django.http import HttpResponse
+from django.http.response import JsonResponse
+from django.shortcuts import redirect
+from django.urls import reverse
+
+import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import prepend_escape_character
 from airone.lib.http import (
@@ -15,18 +22,11 @@ from airone.lib.http import (
     render,
 )
 from airone.lib.types import AttrTypeValue
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.db.models import Q
-from django.http import HttpResponse
-from django.http.response import JsonResponse
-from django.shortcuts import redirect
-from django.urls import reverse
 from entity.models import Entity
+from entry.models import Attribute, AttributeValue, Entry
 from group.models import Group
 from job.models import Job
 from user.models import User
-
-from entry.models import Attribute, AttributeValue, Entry
 
 from .settings import CONFIG
 

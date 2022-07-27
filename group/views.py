@@ -1,17 +1,19 @@
 import io
-import yaml
 
+import yaml
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 
+from airone.lib.http import (
+    HttpResponseSeeOther,
+    check_superuser,
+    get_download_response,
+    http_file_upload,
+    http_get,
+    http_post,
+    render,
+)
 from group.models import Group
-
-from airone.lib.http import HttpResponseSeeOther
-from airone.lib.http import http_get, http_post, http_file_upload
-from airone.lib.http import render
-from airone.lib.http import get_download_response
-from airone.lib.http import check_superuser
-
 from user.models import User
 
 

@@ -1,14 +1,15 @@
 import csv
 import io
 import json
+
 import yaml
+from django.conf import settings
+from natsort import natsorted
 
 from airone.celery import app
 from airone.lib.types import AttrTypeValue
-from django.conf import settings
 from entry.models import Entry
 from job.models import Job
-from natsort import natsorted
 
 
 def _csv_export(job, values, recv_data, has_referral):

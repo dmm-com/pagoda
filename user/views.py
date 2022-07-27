@@ -1,5 +1,4 @@
 import re
-
 from datetime import timedelta
 
 from django.contrib.auth import views as auth_views
@@ -8,11 +7,8 @@ from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.urls import reverse_lazy
 
-from airone.lib.http import HttpResponseSeeOther
-from airone.lib.http import http_get, http_post
-from airone.lib.http import render
-from airone.lib.http import check_superuser
 from airone.auth.ldap import LDAPBackend
+from airone.lib.http import HttpResponseSeeOther, check_superuser, http_get, http_post, render
 from user.forms import UsernameBasedPasswordResetForm
 
 from .models import User
@@ -62,7 +58,11 @@ def do_create(request, recv_data):
     if "is_superuser" in recv_data:
         is_superuser = True
 
-    user = User(username=recv_data["name"], email=recv_data["email"], is_superuser=is_superuser)
+    user = User(
+        username=recv_data["name"],
+        email=recv_data["email"],
+        is_superuser=is_superuser,
+    )
 
     # store encrypted password in the database
     user.set_password(recv_data["passwd"])
@@ -187,8 +187,16 @@ def edit_passwd(request, user_id):
 @http_post(
     [
         {"name": "old_passwd", "type": str, "omittable": False},
-        {"name": "new_passwd", "type": str, "checker": lambda x: x["new_passwd"]},
-        {"name": "chk_passwd", "type": str, "checker": lambda x: x["chk_passwd"]},
+        {
+            "name": "new_passwd",
+            "type": str,
+            "checker": lambda x: x["new_passwd"],
+        },
+        {
+            "name": "chk_passwd",
+            "type": str,
+            "checker": lambda x: x["chk_passwd"],
+        },
     ]
 )
 def do_edit_passwd(request, user_id, recv_data):
@@ -224,8 +232,16 @@ def do_edit_passwd(request, user_id, recv_data):
 
 @http_post(
     [
-        {"name": "new_passwd", "type": str, "checker": lambda x: x["new_passwd"]},
-        {"name": "chk_passwd", "type": str, "checker": lambda x: x["chk_passwd"]},
+        {
+            "name": "new_passwd",
+            "type": str,
+            "checker": lambda x: x["new_passwd"],
+        },
+        {
+            "name": "chk_passwd",
+            "type": str,
+            "checker": lambda x: x["chk_passwd"],
+        },
     ]
 )
 @check_superuser
@@ -265,7 +281,15 @@ def do_delete(request, user_id, recv_data):
     return JsonResponse(ret)
 
 
-@http_post([{"name": "ldap_password", "type": str, "checker": lambda x: x["ldap_password"]}])
+@http_post(
+    [
+        {
+            "name": "ldap_password",
+            "type": str,
+            "checker": lambda x: x["ldap_password"],
+        }
+    ]
+)
 def change_ldap_auth(request, recv_data):
     if LDAPBackend.is_authenticated(request.user.username, recv_data["ldap_password"]):
         # When LDAP authentication is passed with current username and specified password,
@@ -276,7 +300,8 @@ def change_ldap_auth(request, recv_data):
         return HttpResponse("Succeeded")
     else:
         return HttpResponse(
-            "LDAP authentication was Failed of user %s" % request.user.username, status=400
+            "LDAP authentication was Failed of user %s" % request.user.username,
+            status=400,
         )
 
 

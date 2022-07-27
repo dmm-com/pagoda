@@ -1,26 +1,23 @@
 import copy
 import json
+from datetime import date, datetime, timedelta
+from unittest import mock
+
 import pytz
-
 from django.conf import settings
+from rest_framework.authtoken.models import Token
 
+from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
-from airone.lib.acl import ACLType
-
 from entity.models import Entity, EntityAttr
-from entry.models import Entry, Attribute, AttributeValue
 from entry import tasks
+from entry.models import Attribute, AttributeValue, Entry
+from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
 from job.models import Job, JobOperation
 from role.models import Role
 from user.models import User
-
-from entry.settings import CONFIG as ENTRY_CONFIG
-
-from unittest import mock
-from datetime import date, datetime, timedelta
-from rest_framework.authtoken.models import Token
 
 
 class APITest(AironeViewTest):

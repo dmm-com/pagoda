@@ -1,9 +1,9 @@
 import mock
+from django.test import override_settings
 from ldap import LDAPError
 from ldap.ldapobject import LDAPObject
 
 from airone.lib.test import AironeTestCase
-from django.test import override_settings
 from user.models import User
 
 

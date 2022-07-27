@@ -5,11 +5,10 @@ from typing import Any, Dict, List, Optional, TypedDict
 import requests
 from django.core.validators import URLValidator
 from requests.exceptions import ConnectionError
-import custom_view
-
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError, PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
+import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr

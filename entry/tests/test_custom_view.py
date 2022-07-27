@@ -1,10 +1,10 @@
-import custom_view
 import os
 
-from airone.lib.test import AironeViewTest
 from django.urls import reverse
-from entity.models import Entity
 
+import custom_view
+from airone.lib.test import AironeViewTest
+from entity.models import Entity
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 

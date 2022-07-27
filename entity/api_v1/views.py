@@ -1,7 +1,7 @@
 from django.http.response import JsonResponse
 
-from airone.lib.http import http_get
 from airone.lib.acl import ACLType
+from airone.lib.http import http_get
 from entity.models import Entity
 
 

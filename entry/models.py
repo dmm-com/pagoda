@@ -1,31 +1,36 @@
 from collections.abc import Iterable
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import Any, Optional, Tuple
 
-from django.db import models
-from django.db.models import Q, Prefetch
-from django.core.cache import cache
 from django.conf import settings
-
-from entity.models import EntityAttr, Entity
-from user.models import User
-from group.models import Group
+from django.core.cache import cache
+from django.db import models
+from django.db.models import Prefetch, Q
 
 from acl.models import ACLBase
+from airone.lib import auto_complement
 from airone.lib.acl import ACLObjType, ACLType
-from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeText
-from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
-from airone.lib.types import AttrTypeValue, AttrDefaultValue
 from airone.lib.elasticsearch import (
     ESS,
+    execute_query,
+    is_date_check,
     make_query,
     make_query_for_simple,
-    execute_query,
     make_search_results,
     make_search_results_for_simple,
-    is_date_check,
 )
-from airone.lib import auto_complement
+from airone.lib.types import (
+    AttrDefaultValue,
+    AttrTypeArrObj,
+    AttrTypeArrStr,
+    AttrTypeObj,
+    AttrTypeStr,
+    AttrTypeText,
+    AttrTypeValue,
+)
+from entity.models import Entity, EntityAttr
+from group.models import Group
+from user.models import User
 
 from .settings import CONFIG
 

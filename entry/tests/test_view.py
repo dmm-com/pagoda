@@ -6,6 +6,12 @@ from unittest import skip
 from unittest.mock import Mock, patch
 
 import yaml
+from django.conf import settings
+from django.core.cache import cache
+from django.http import HttpResponse
+from django.http.response import JsonResponse
+from django.urls import reverse
+
 from airone.lib.acl import ACLType
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest, DisableStderr
@@ -19,11 +25,6 @@ from airone.lib.types import (
     AttrTypeText,
     AttrTypeValue,
 )
-from django.conf import settings
-from django.core.cache import cache
-from django.http import HttpResponse
-from django.http.response import JsonResponse
-from django.urls import reverse
 from entity.models import Entity, EntityAttr
 from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
