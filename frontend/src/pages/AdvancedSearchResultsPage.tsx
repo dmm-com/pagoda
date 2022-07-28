@@ -23,7 +23,10 @@ export const AdvancedSearchResultsPage: FC = () => {
   const entityIds = params.getAll("entity").map((id) => Number(id));
   const entryName = params.has("entry_name") ? params.get("entry_name") : "";
   const hasReferral = params.has("has_referral")
-    ? params.get("has_referral")
+    ? params.get("has_referral") === "true"
+    : false;
+  const referralName = params.has("referral_name")
+    ? params.get("referral_name")
     : "";
   const attrInfo = params.has("attrinfo")
     ? JSON.parse(params.get("attrinfo"))
@@ -40,7 +43,9 @@ export const AdvancedSearchResultsPage: FC = () => {
     const resp = await aironeApiClientV2.advancedSearchEntries(
       entityIds,
       entryName,
-      attrInfo
+      attrInfo,
+      hasReferral,
+      referralName
     );
     const data = await resp.json();
     return data.result.ret_values;
