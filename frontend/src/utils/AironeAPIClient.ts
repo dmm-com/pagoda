@@ -328,3 +328,26 @@ export function cancelJob(jobId: number): Promise<Response> {
     }),
   });
 }
+
+export function exportAdvancedSearchResults(
+  entities: number[],
+  attrinfo: object[],
+  entryName: string,
+  hasReferral: boolean,
+  exportStyle: "yaml" | "csv"
+): Promise<Response> {
+  return fetch(`/dashboard/advanced_search_export`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify({
+      entities: entities,
+      attrinfo: attrinfo,
+      entry_name: entryName,
+      has_referral: hasReferral,
+      export_style: exportStyle,
+    }),
+  });
+}

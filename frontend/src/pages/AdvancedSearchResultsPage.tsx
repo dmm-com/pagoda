@@ -1,5 +1,6 @@
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, Button, Typography } from "@mui/material";
+import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -12,19 +13,23 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
-import { getEntityAttrs } from "utils/AironeAPIClient";
+import {
+  exportAdvancedSearchResults,
+  getEntityAttrs,
+} from "utils/AironeAPIClient";
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
   const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
   const [openModal, setOpenModal] = useState(false);
 
   const params = new URLSearchParams(location.search);
   const entityIds = params.getAll("entity").map((id) => Number(id));
   const entryName = params.has("entry_name") ? params.get("entry_name") : "";
   const hasReferral = params.has("has_referral")
-    ? params.get("has_referral")
-    : "";
+    ? params.get("has_referral") === "true"
+    : false;
   const attrInfo = params.has("attrinfo")
     ? JSON.parse(params.get("attrinfo"))
     : [];
@@ -45,6 +50,25 @@ export const AdvancedSearchResultsPage: FC = () => {
     const data = await resp.json();
     return data.result.ret_values;
   });
+
+  const handleExport = async (exportStyle: "yaml" | "csv") => {
+    const resp = await exportAdvancedSearchResults(
+      entityIds,
+      attrInfo,
+      entryName,
+      hasReferral,
+      exportStyle
+    );
+    if (resp.ok) {
+      enqueueSnackbar("エクスポートジョブの登録に成功しました", {
+        variant: "success",
+      });
+    } else {
+      enqueueSnackbar("エクスポートジョブの登録に失敗しました", {
+        variant: "error",
+      });
+    }
+  };
 
   return (
     <Box className="container-fluid">
@@ -73,12 +97,20 @@ export const AdvancedSearchResultsPage: FC = () => {
                 setOpenModal(true);
               }}
             >
-              高度な検索
+              属性の再設定
             </Button>
-            <Button sx={{ marginLeft: "40px" }} variant="outlined">
+            <Button
+              sx={{ marginLeft: "40px" }}
+              variant="outlined"
+              onClick={() => handleExport("yaml")}
+            >
               YAML 出力
             </Button>
-            <Button sx={{ marginLeft: "16px" }} variant="outlined">
+            <Button
+              sx={{ marginLeft: "16px" }}
+              variant="outlined"
+              onClick={() => handleExport("csv")}
+            >
               CSV 出力
             </Button>
           </Box>
