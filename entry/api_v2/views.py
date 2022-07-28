@@ -8,7 +8,6 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Q
 
 
 import custom_view
