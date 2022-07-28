@@ -1,17 +1,18 @@
 import json
 import re
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from datetime import datetime
 from django.conf import settings
 from django.db.models import Q
 from elasticsearch import Elasticsearch
+
 from airone.lib.acl import ACLType
-from airone.lib.types import AttrTypeValue
 from airone.lib.log import Logger
+from airone.lib.types import AttrTypeValue
 from entity.models import Entity
-from user.models import User
 from entry.settings import CONFIG
+from user.models import User
 
 
 class ESS(Elasticsearch):
@@ -707,7 +708,7 @@ def make_search_results(
             that was hit in the search
 
     """
-    from entry.models import Entry, AttributeValue
+    from entry.models import AttributeValue, Entry
 
     # set numbers of found entries
     results = {

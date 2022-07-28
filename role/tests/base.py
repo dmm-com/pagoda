@@ -1,8 +1,7 @@
 from airone.lib.test import AironeViewTest
-
+from group.models import Group
 from role.models import Role
 from user.models import User
-from group.models import Group
 
 
 class RoleTestBase(AironeViewTest):

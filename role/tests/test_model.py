@@ -1,9 +1,9 @@
-from .base import RoleTestBase
-
 from airone.lib.acl import ACLType
 from entity.models import Entity
 from group.models import Group
 from role.models import Role
+
+from .base import RoleTestBase
 
 
 class ModelTest(RoleTestBase):

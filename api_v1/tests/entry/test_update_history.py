@@ -1,10 +1,10 @@
-import pytz
+from datetime import date, datetime, timedelta
 
+import pytz
 from django.conf import settings
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
-from datetime import date, datetime, timedelta
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from entry.settings import CONFIG as CONFIG_ENTRY

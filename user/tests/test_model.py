@@ -1,6 +1,6 @@
 from django.test import TestCase
-from social_django.models import UserSocialAuth
 from rest_framework.authtoken.models import Token
+from social_django.models import UserSocialAuth
 
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
@@ -8,7 +8,7 @@ from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from group.models import Group
 from role.models import Role
-from user.models import User, History
+from user.models import History, User
 
 
 class ModelTest(TestCase):

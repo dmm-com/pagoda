@@ -111,7 +111,17 @@ export const EntityList: FC<Props> = ({
                     component={Link}
                     to={entityEntriesPath(entity.id)}
                   >
-                    <Typography variant="h6">{entity.name}</Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        width: "300px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {entity.name}
+                    </Typography>
                   </CardActionArea>
                 }
                 action={

@@ -1,10 +1,9 @@
 import base64
-from airone.lib.test import AironeViewTest
 
-from rest_framework import status
-from rest_framework import HTTP_HEADER_ENCODING
+from rest_framework import HTTP_HEADER_ENCODING, status
 from rest_framework.authtoken.models import Token
 
+from airone.lib.test import AironeViewTest
 from user.models import User
 
 

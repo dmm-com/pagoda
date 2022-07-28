@@ -29,6 +29,7 @@ export const EditEntityPage: FC = () => {
     attrs: [],
   });
   const [submittable, setSubmittable] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState<boolean>(false);
 
   const entity = useAsync(async () => {
     if (entityId !== undefined) {
@@ -55,19 +56,21 @@ export const EditEntityPage: FC = () => {
   const handleSubmit = async () => {
     const createMode = entityId === undefined;
     // Adjusted attributes for the API
-    const attrs = entityInfo.attrs.map((attr, index) => {
-      return {
-        id: attr.id,
-        name: attr.name,
-        type: attr.type,
-        index: index,
-        isMandatory: attr.isMandatory,
-        isDeleteInChain: attr.isDeleteInChain,
-        isSummarized: attr.isSummarized,
-        referral: attr.referral,
-        isDeleted: attr.isDeleted,
-      };
-    });
+    const attrs = entityInfo.attrs
+      .filter((attr) => !(attr.id == null && attr.isDeleted))
+      .map((attr, index) => {
+        return {
+          id: attr.id,
+          name: attr.name,
+          type: attr.type,
+          index: index,
+          isMandatory: attr.isMandatory,
+          isDeleteInChain: attr.isDeleteInChain,
+          isSummarized: attr.isSummarized,
+          referral: attr.referral,
+          isDeleted: attr.isDeleted,
+        };
+      });
     const webhooks = entityInfo.webhooks.map((webhook): Webhook => {
       return {
         id: webhook.id,
@@ -89,6 +92,7 @@ export const EditEntityPage: FC = () => {
           attrs,
           webhooks
         );
+        setSubmitted(true);
         history.replace(entitiesPath());
       } else {
         await aironeApiClientV2.updateEntity(
@@ -99,6 +103,7 @@ export const EditEntityPage: FC = () => {
           attrs,
           webhooks
         );
+        setSubmitted(true);
         history.replace(entityEntriesPath(entityId));
       }
     } catch (e) {
@@ -183,7 +188,10 @@ export const EditEntityPage: FC = () => {
           setSubmittable={setSubmittable}
         />
       </Box>
-      <Prompt message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？" />
+      <Prompt
+        when={!submitted}
+        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+      />
     </Box>
   );
 };

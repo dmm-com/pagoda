@@ -3,13 +3,44 @@
 ## In development
 
 ### Added
-* Added a new feature for Group, that can represent parent Group.
-  This feature enables to make hierarchical tree Group construction.
-  Contributed by @userlocalhost
 
+### Changed
+
+* (New-UI) Show a shorten name if entity name is too long
+  at Entity list view.
+  Contributed by @syucream
+
+### Fixed
+
+* (New-UI) Perform animation when reordering entity attribute
+  to highlight moved attribute on the form.
+  Contributed by @syucream
+
+* (New-UI) Fix bugs that failed to delete unsubmitted attribute.
+  Contributed by @syucream
+
+* (New-UI) Fix not to occur a warning on entity referral auto
+  complete field.
+  Contributed by @syucream
+* Fixed custom_view not applied when importing multiple entities
+  Contributed by @hinashi
+
+## v3.13.0
+
+### Added
 * (New-UI) Implemented creating/editing an Entry page that comply with
   new design.
   Contributed by @hinashi, @syucream, @userlocalhost
+
+### Changed
+* Upgrade django version from 3.2.13 to 3.2.14
+
+## v3.12.0
+
+### Added
+* Added a new feature for Group, that can represent parent Group.
+  This feature enables to make hierarchical tree Group construction.
+  Contributed by @userlocalhost
 
 ### Changed
 * Upgrade flower version from v1.0.0 to v1.1.0

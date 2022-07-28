@@ -1,5 +1,6 @@
-from airone.lib.test import AironeViewTest
 from django.conf import settings
+
+from airone.lib.test import AironeViewTest
 
 # set test extension settings before initialization of extension is started
 settings.AIRONE["EXTENSIONS"] = ["airone.tests.fixtures.example_extension1"]

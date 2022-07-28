@@ -3,10 +3,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from .models import ACLBase
-from entity.models import Entity, EntityAttr
-from entry.models import Entry, Attribute
 from airone.lib.acl import ACLType
+from entity.models import Entity, EntityAttr
+from entry.models import Attribute, Entry
+
+from .models import ACLBase
 
 
 def create_permission(instance):

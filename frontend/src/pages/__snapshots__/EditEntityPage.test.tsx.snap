@@ -458,7 +458,7 @@ Object {
                       class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
                     >
                       <tr
-                        class="MuiTableRow-root makeStyles-highlightedTableRow-20 css-1q1u3t4-MuiTableRow-root"
+                        class="MuiTableRow-root makeStyles-tableRow-19 css-1q1u3t4-MuiTableRow-root"
                       >
                         <td
                           class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -970,7 +970,7 @@ Object {
                     class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
                   >
                     <tr
-                      class="MuiTableRow-root makeStyles-highlightedTableRow-20 css-1q1u3t4-MuiTableRow-root"
+                      class="MuiTableRow-root makeStyles-tableRow-19 css-1q1u3t4-MuiTableRow-root"
                     >
                       <td
                         class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"

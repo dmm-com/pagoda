@@ -1,6 +1,7 @@
-from airone.celery import celery_task_failure_email
 from django.core import mail
 from django.test import TestCase
+
+from airone.celery import celery_task_failure_email
 
 
 class CeleryTest(TestCase):

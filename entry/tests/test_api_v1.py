@@ -1,10 +1,8 @@
 import json
+from datetime import date
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
-
-from datetime import date
-
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from entry.settings import CONFIG

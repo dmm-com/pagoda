@@ -1,29 +1,32 @@
-import mock
-import json
-import yaml
 import errno
+import json
+from datetime import date
+from unittest.mock import Mock, patch
+
+import mock
+import yaml
+from django.urls import reverse
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeStr, AttrTypeObj, AttrTypeText
-from airone.lib.types import AttrTypeArrStr, AttrTypeArrObj
-from airone.lib.types import AttrTypeNamedObj, AttrTypeArrNamedObj
-from airone.lib.types import AttrTypeValue
-from django.urls import reverse
-from user.models import User
+from airone.lib.types import (
+    AttrTypeArrNamedObj,
+    AttrTypeArrObj,
+    AttrTypeArrStr,
+    AttrTypeNamedObj,
+    AttrTypeObj,
+    AttrTypeStr,
+    AttrTypeText,
+    AttrTypeValue,
+)
+from dashboard import tasks as dashboard_tasks
+from dashboard.settings import CONFIG
+from entity.models import Entity, EntityAttr
+from entry import tasks as entry_tasks
+from entry.models import Attribute, AttributeValue, Entry
 from group.models import Group
 from job.models import Job, JobOperation
-from datetime import date
-
-from entity.models import Entity, EntityAttr
-from entry.models import Entry, Attribute, AttributeValue
 from role.models import Role
-from entry import tasks as entry_tasks
-from dashboard import tasks as dashboard_tasks
-
-from unittest.mock import patch
-from unittest.mock import Mock
-
-from dashboard.settings import CONFIG
+from user.models import User
 
 
 class ViewTest(AironeViewTest):

@@ -1,14 +1,13 @@
+from datetime import datetime
 from importlib import import_module
 
-from airone.lib.acl import ACLTypeBase, ACLType
-from django.db import models
 from django.contrib.auth.models import AbstractUser
-from group.models import Group
-from role.models import Role
-
+from django.db import models
 from rest_framework.authtoken.models import Token
 
-from datetime import datetime
+from airone.lib.acl import ACLType, ACLTypeBase
+from group.models import Group
+from role.models import Role
 
 
 class User(AbstractUser):
@@ -25,7 +24,9 @@ class User(AbstractUser):
 
     @property
     def airone_groups(self):
-        """This returns groups that current user just belongs to (not include hierarchical parent groups)
+        """
+        This returns groups that current user just belongs to
+        (not include hierarchical parent groups)
         """
         return Group.objects.filter(id__in=[g.id for g in self.groups.all()], is_active=True)
 

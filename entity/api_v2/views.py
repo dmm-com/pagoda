@@ -1,25 +1,30 @@
 from distutils.util import strtobool
+
 from django.db.models import F
 from django.http import Http404
-from django.http.response import JsonResponse, HttpResponse
+from django.http.response import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import filters, viewsets, status
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import filters, status, viewsets
 from rest_framework.exceptions import ValidationError
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
-from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 from rest_framework.response import Response
 
+import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.http import http_get
-from entity.api_v2.serializers import EntityDetailSerializer, EntityListSerializer
-from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
+from entity.api_v2.serializers import (
+    EntityCreateSerializer,
+    EntityDetailSerializer,
+    EntityListSerializer,
+    EntityUpdateSerializer,
+)
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
 from user.models import History, User
-import custom_view
 
 
 @http_get

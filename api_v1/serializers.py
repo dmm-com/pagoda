@@ -1,10 +1,12 @@
-from airone.lib.types import AttrTypeValue
-from entity.models import Entity
-from entry.models import Entry, AttributeValue
-from group.models import Group
+from datetime import datetime
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from datetime import datetime
+
+from airone.lib.types import AttrTypeValue
+from entity.models import Entity
+from entry.models import AttributeValue, Entry
+from group.models import Group
 
 
 class GetEntrySerializer(serializers.ModelSerializer):

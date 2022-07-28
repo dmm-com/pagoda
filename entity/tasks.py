@@ -1,10 +1,10 @@
 import json
 
-from airone.lib.types import AttrTypeValue
 from airone.celery import app
+from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
-from user.models import User
 from job.models import Job
+from user.models import User
 
 
 @app.task(bind=True)

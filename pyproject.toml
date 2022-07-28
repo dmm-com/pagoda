@@ -1,2 +1,13 @@
 [tool.black]
 line-length = 100
+
+[tool.isort]
+line_length = 100
+profile = "black"
+skip_glob = "*/migrations/*.py"
+skip = "virtualenv, .tox"
+
+[tool.mypy]
+allow_untyped_globals = true
+follow_imports = "silent"
+ignore_missing_imports = true

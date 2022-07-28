@@ -1,9 +1,12 @@
 import json
+
 import mock
 
-from airone.lib.event_notification import notify_entry_create
-from airone.lib.event_notification import notify_entry_update
-from airone.lib.event_notification import notify_entry_delete
+from airone.lib.event_notification import (
+    notify_entry_create,
+    notify_entry_delete,
+    notify_entry_update,
+)
 from airone.lib.test import AironeViewTest
 from entity.models import Entity
 from entry.models import Entry

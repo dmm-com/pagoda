@@ -14,6 +14,12 @@
 
 import { exists, mapValues } from "../runtime";
 import {
+  EntityDetailAttrs,
+  EntityDetailAttrsFromJSON,
+  EntityDetailAttrsFromJSONTyped,
+  EntityDetailAttrsToJSON,
+} from "./EntityDetailAttrs";
+import {
   Webhook,
   WebhookFromJSON,
   WebhookFromJSONTyped,
@@ -58,10 +64,10 @@ export interface EntityDetail {
   readonly isToplevel: boolean;
   /**
    *
-   * @type {Array<{ [key: string]: any; }>}
+   * @type {Array<EntityDetailAttrs>}
    * @memberof EntityDetail
    */
-  readonly attrs: Array<{ [key: string]: any }>;
+  readonly attrs: Array<EntityDetailAttrs>;
   /**
    *
    * @type {Array<Webhook>}
@@ -87,7 +93,7 @@ export function EntityDetailFromJSONTyped(
     note: !exists(json, "note") ? undefined : json["note"],
     status: !exists(json, "status") ? undefined : json["status"],
     isToplevel: json["is_toplevel"],
-    attrs: json["attrs"],
+    attrs: (json["attrs"] as Array<any>).map(EntityDetailAttrsFromJSON),
     webhooks: (json["webhooks"] as Array<any>).map(WebhookFromJSON),
   };
 }

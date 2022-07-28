@@ -1,4 +1,5 @@
 import functools
+
 from job.models import Job
 
 

@@ -1,14 +1,15 @@
-from airone.lib.resources import AironeModelResource
-from airone.lib.types import AttrTypeValue
 from django.contrib import admin
 from import_export import fields, widgets
-from import_export.instance_loaders import CachedInstanceLoader
 from import_export.admin import ImportExportModelAdmin
-from user.models import User
-from .models import Entry
-from .models import Attribute, AttributeValue
+from import_export.instance_loaders import CachedInstanceLoader
+
 from acl.models import ACLBase
+from airone.lib.resources import AironeModelResource
+from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
+from user.models import User
+
+from .models import Attribute, AttributeValue, Entry
 
 admin.site.register(Entry)
 admin.site.register(Attribute)

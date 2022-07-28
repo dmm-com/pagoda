@@ -2,7 +2,6 @@ import json
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
-
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 

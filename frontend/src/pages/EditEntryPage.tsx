@@ -99,7 +99,7 @@ export const EditEntryPage: FC = () => {
             attr.name,
             {
               type: attr.type,
-              isMandatory: attr.is_mandatory,
+              isMandatory: attr.isMandatory,
               schema: {
                 id: attr.id,
                 name: attr.name,

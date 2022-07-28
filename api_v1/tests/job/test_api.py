@@ -1,13 +1,11 @@
 import json
+from datetime import timedelta
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
-from datetime import timedelta
-
-from job.models import Job, JobOperation
-from entry.models import Entry
 from entity.models import Entity, EntityAttr
-
+from entry.models import Entry
+from job.models import Job, JobOperation
 from job.settings import CONFIG
 
 # constants using this tests

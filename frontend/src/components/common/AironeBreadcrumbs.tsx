@@ -22,6 +22,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
       height: "56px",
       padding: "0px 24px",
     },
+    "& li": {
+      maxWidth: "300px",
+      textOverflow: "ellipsis",
+      overflow: "hidden",
+      whiteSpace: "nowrap",
+    },
   },
 }));
 

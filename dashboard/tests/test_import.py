@@ -1,15 +1,16 @@
 import logging
-import mock
 import re
 
+import mock
+from django.conf import settings
+from django.urls import reverse
+
 from acl.models import ACLBase
-from airone.lib.test import AironeViewTest
 from airone.lib import types as atype
 from airone.lib.log import Logger
-from django.urls import reverse
-from django.conf import settings
+from airone.lib.test import AironeViewTest
 from entity.models import Entity, EntityAttr
-from entry.models import Entry, Attribute, AttributeValue
+from entry.models import Attribute, AttributeValue, Entry
 from user.models import User
 
 
