@@ -1,7 +1,7 @@
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, Button, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
@@ -16,6 +16,7 @@ import { getEntityAttrs } from "utils/AironeAPIClient";
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
+  const history = useHistory();
   const [openModal, setOpenModal] = useState(false);
 
   const params = new URLSearchParams(location.search);
@@ -32,23 +33,8 @@ export const AdvancedSearchResultsPage: FC = () => {
     const resp = await getEntityAttrs(entityIds);
     const data = await resp.json();
 
-    console.log(
-      "[onix/AdvancedSearchResultsPage(00)] entityAttrs: ",
-      data.result
-    );
     return data.result;
   });
-
-  console.log(
-    "[onix/AdvancedSearchResultsPage(10)] isLoading: ",
-    entityAttrs.loading
-  );
-  if (entityAttrs.loading == false) {
-    console.log(
-      "[onix/AdvancedSearchResultsPage(11)] entityAttrs: ",
-      entityAttrs
-    );
-  }
 
   const results = useAsync(async () => {
     const resp = await aironeApiClientV2.advancedSearchEntries(

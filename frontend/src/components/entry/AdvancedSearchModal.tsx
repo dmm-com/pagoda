@@ -9,10 +9,8 @@ import {
   Button,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { Dispatch, FC, useMemo, useState, SetStateAction } from "react";
-import { Link } from "react-router-dom";
-
-import { advancedSearchResultPath } from "Routes";
+import React, { Dispatch, FC, useState, SetStateAction } from "react";
+import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   modal: {
@@ -43,35 +41,54 @@ export const AdvancedSearchModal: FC<Props> = ({
   initialAttrNames,
 }) => {
   const classes = useStyles();
+  const history = useHistory();
+  const params = new URLSearchParams(location.search);
+
   const [selectedAttrNames, setSelectedAttrNames] = useState(initialAttrNames);
+  const [hasReferral, setHasReferral] = useState(
+    params.get("has_referral") === "true"
+  );
 
-  const searchParams = useMemo(() => {
-    console.log(
-      "[onix/AdvancedSearchModal(00)] selectedAttrNames: ",
-      selectedAttrNames
-    );
+  const handleUpdatePageURL = (event) => {
     const params = new URLSearchParams(location.search);
+    const attrinfo = JSON.parse(params.get("attrinfo"));
 
-    // ToDo: We have to do work it!!
-    /*
-    const entityIds = params.getAll("entity").map((id) => Number(id));
-    const entryName = params.has("entry_name") ? params.get("entry_name") : "";
-    const hasReferral = params.has("has_referral") ? params.get("has_referral") : "";
+    // chnage has_referral flag if it's necessary
+    if (hasReferral) {
+      params.set("has_referral", "true");
+    } else {
+      params.delete("has_referral");
+    }
 
-    entityIds.forEach((e) => {
-      params.append("entity", e.toString());
-    });
-    params.append("has_referral", hasReferral);
-
-    // TODO: The current implementation eliminate current keyword
-    params.append(
+    // Added attribute name which is not registered in this page
+    params.set(
       "attrinfo",
-      JSON.stringify(selectedAttrNames.map((attr) => ({ name: attr })))
-    );
-    */
+      JSON.stringify(
+        selectedAttrNames.map((attrname) => {
+          const currAttrInfo = attrinfo.filter((x) => x.name == attrname);
 
-    return params;
-  }, [selectedAttrNames]);
+          if (currAttrInfo.length > 0) {
+            return {
+              name: attrname,
+              keyword: currAttrInfo[0]?.keyword ?? "",
+            };
+          } else {
+            return {
+              name: attrname,
+              keyword: "",
+            };
+          }
+        })
+      )
+    );
+
+    // Update Page URL parameters
+    history.push({
+      pathname: location.pathname,
+      search: "?" + params.toString(),
+    });
+    history.go(0);
+  };
 
   return (
     <Modal
@@ -102,8 +119,8 @@ export const AdvancedSearchModal: FC<Props> = ({
           <Box>
             参照エントリも含める
             <Checkbox
-              checked
-              //onChange={(e) => setHasReferral(e.target.checked)}
+              checked={hasReferral}
+              onChange={(e) => setHasReferral(e.target.checked)}
             ></Checkbox>
           </Box>
         </Box>
@@ -112,8 +129,7 @@ export const AdvancedSearchModal: FC<Props> = ({
             variant="contained"
             color="secondary"
             sx={{ mx: "4px" }}
-            component={Link}
-            to={`${advancedSearchResultPath()}?${searchParams}`}
+            onClick={handleUpdatePageURL}
           >
             保存
           </Button>
