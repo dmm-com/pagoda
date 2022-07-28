@@ -124,7 +124,7 @@ export const SearchResults: FC<Props> = ({
               onKeyPress={handleKeyPress}
             />
           </TableCell>
-          {attrNames.map((attrName) => (
+          {Object.keys(attrsFilter).map((attrName) => (
             <TableCell
               sx={{ color: "primary.contrastText", minWidth: "300px" }}
               key={attrName}
@@ -177,7 +177,7 @@ export const SearchResults: FC<Props> = ({
           >
             <Typography>{result.entry.name}</Typography>
           </TableCell>
-          {attrNames.map((attrName) => (
+          {Object.keys(attrsFilter).map((attrName) => (
             <TableCell sx={{ minWidth: "300px" }} key={attrName}>
               {result.attrs[attrName] && (
                 <AttributeValue attrInfo={result.attrs[attrName]} />
