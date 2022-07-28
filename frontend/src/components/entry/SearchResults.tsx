@@ -38,12 +38,14 @@ interface Props {
     }[];
   }[];
   defaultEntryFilter?: string;
+  defaultReferralFilter?: string;
   defaultAttrsFilter?: any;
 }
 
 export const SearchResults: FC<Props> = ({
   results,
   defaultEntryFilter,
+  defaultReferralFilter,
   defaultAttrsFilter,
 }) => {
   const location = useLocation();
@@ -52,6 +54,9 @@ export const SearchResults: FC<Props> = ({
   const [entryFilter, entryFilterDispatcher] = useReducer((_, event) => {
     return event.target.value;
   }, defaultEntryFilter ?? "");
+  const [referralFilter, referralFilterDispatcher] = useReducer((_, event) => {
+    return event.target.value;
+  }, defaultReferralFilter ?? "");
   const [attrsFilter, attrsFilterDispatcher] = useReducer(
     (state, { event, name }) => {
       return { ...state, [name]: event.target.value };
@@ -66,6 +71,7 @@ export const SearchResults: FC<Props> = ({
     if (event.key === "Enter") {
       const params = new URLSearchParams(location.search);
       params.set("entry_name", entryFilter);
+      params.set("referral_name", referralFilter);
       params.set(
         "attrinfo",
         JSON.stringify(
@@ -195,11 +201,9 @@ export const SearchResults: FC<Props> = ({
                   background: "#0000001F",
                   margin: "8px 0",
                 }}
-                // defaultValue={defaultAttrsFilter[attrName] || ""}
-                //onChange={(e) =>
-                //  attrsFilterDispatcher({ event: e, name: attrName })
-                //}
-                //onKeyPress={handleKeyPress}
+                defaultValue={defaultReferralFilter}
+                onChange={referralFilterDispatcher}
+                onKeyPress={handleKeyPress}
               />
             </TableCell>
           )}

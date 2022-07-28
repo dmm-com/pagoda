@@ -95,6 +95,7 @@ export const AdvancedSearchResultsPage: FC = () => {
           <SearchResults
             results={results.value}
             defaultEntryFilter={entryName}
+            defaultReferralFilter={referralName}
             defaultAttrsFilter={Object.fromEntries(
               attrInfo.map((i) => [i["name"], i["keyword"] || ""])
             )}
