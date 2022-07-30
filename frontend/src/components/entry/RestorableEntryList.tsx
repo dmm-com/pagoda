@@ -151,7 +151,17 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
                           setOpenModal(true);
                         }}
                       >
-                        <Typography variant="h6">{entry.name}</Typography>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            width: "300px",
+                            textOverflow: "ellipsis",
+                            overflow: "hidden",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {entry.name.replace(/_deleted_.*/, "")}
+                        </Typography>
                       </CardActionArea>
                     }
                     action={

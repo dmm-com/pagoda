@@ -28,6 +28,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
       overflow: "hidden",
       whiteSpace: "nowrap",
     },
+    "& li > p": {
+      textOverflow: "ellipsis",
+      overflow: "hidden",
+    },
   },
 }));
 

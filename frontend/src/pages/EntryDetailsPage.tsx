@@ -7,8 +7,10 @@ import {
   Grid,
   IconButton,
   Stack,
+  Theme,
   Typography,
 } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 import { Element, scroller } from "react-scroll";
@@ -25,7 +27,18 @@ import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
 import { FailedToGetEntry } from "utils/Exceptions";
 
+const useStyles = makeStyles<Theme>((theme) => ({
+  title: {
+    height: "72px",
+    maxWidth: "700px",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+}));
+
 export const EntryDetailsPage: FC = () => {
+  const classes = useStyles();
+
   const { entityId, entryId } =
     useTypedParams<{ entityId: number; entryId: number }>();
 
@@ -67,9 +80,14 @@ export const EntryDetailsPage: FC = () => {
       <Container maxWidth="lg" sx={{ pt: "112px" }}>
         <Box display="flex">
           <Box width="50px" />
-          <Box flexGrow="1">
+          <Box
+            flexGrow="1"
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+          >
             {!entry.loading && (
-              <Typography variant="h2" align="center">
+              <Typography variant="h2" align="center" className={classes.title}>
                 {entry.value.name}
               </Typography>
             )}

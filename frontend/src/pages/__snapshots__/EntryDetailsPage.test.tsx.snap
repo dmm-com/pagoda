@@ -9,13 +9,13 @@ Object {
         class="MuiBox-root css-1ylu0bo"
       >
         <div
-          class="makeStyles-frame-1 MuiBox-root css-0"
+          class="makeStyles-frame-2 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-fixed-2 MuiBox-root css-0"
+            class="makeStyles-fixed-3 MuiBox-root css-0"
           >
             <div
-              class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+              class="makeStyles-breadcrumb-4 MuiBox-root css-0"
             >
               <nav
                 aria-label="breadcrumb"
@@ -96,10 +96,10 @@ Object {
               class="MuiBox-root css-kgitkj"
             />
             <div
-              class="MuiBox-root css-i9gxme"
+              class="MuiBox-root css-1xanpi5"
             >
               <h2
-                class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter css-icizyq-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter makeStyles-title-1 css-icizyq-MuiTypography-root"
               >
                 aaa
               </h2>
@@ -394,13 +394,13 @@ Object {
       class="MuiBox-root css-1ylu0bo"
     >
       <div
-        class="makeStyles-frame-1 MuiBox-root css-0"
+        class="makeStyles-frame-2 MuiBox-root css-0"
       >
         <div
-          class="makeStyles-fixed-2 MuiBox-root css-0"
+          class="makeStyles-fixed-3 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+            class="makeStyles-breadcrumb-4 MuiBox-root css-0"
           >
             <nav
               aria-label="breadcrumb"
@@ -481,10 +481,10 @@ Object {
             class="MuiBox-root css-kgitkj"
           />
           <div
-            class="MuiBox-root css-i9gxme"
+            class="MuiBox-root css-1xanpi5"
           >
             <h2
-              class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter css-icizyq-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter makeStyles-title-1 css-icizyq-MuiTypography-root"
             >
               aaa
             </h2>
