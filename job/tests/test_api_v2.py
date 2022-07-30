@@ -1,9 +1,7 @@
 from airone.lib.test import AironeViewTest
-
-from job.models import Job, JobOperation
-from entry.models import Entry
 from entity.models import Entity
-
+from entry.models import Entry
+from job.models import Job, JobOperation
 from job.settings import CONFIG
 
 # constants using this tests

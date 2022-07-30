@@ -1,11 +1,12 @@
-from django.conf.urls import url, include
+from django.conf.urls import include, url
+
+from airone.lib.log import Logger
 
 from . import views
-from .user import views as user_views
 from .entity.urls import urlpatterns as entity_urlpatterns
 from .entry.urls import urlpatterns as entry_urlpatterns
 from .job.urls import urlpatterns as job_urlpatterns
-from airone.lib.log import Logger
+from .user import views as user_views
 
 urlpatterns = [
     url(r"^user/access_token$", user_views.AccessTokenAPI.as_view()),

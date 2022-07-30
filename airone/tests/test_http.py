@@ -1,12 +1,12 @@
 import unittest
 
-from airone.lib.http import http_get, get_obj_with_check_perm
-from airone.lib.test import AironeViewTest
-from airone.lib.acl import ACLType
-from entry.models import Entry
-
 from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory
+
+from airone.lib.acl import ACLType
+from airone.lib.http import get_obj_with_check_perm, http_get
+from airone.lib.test import AironeViewTest
+from entry.models import Entry
 
 
 class AirOneHTTPTest(unittest.TestCase):

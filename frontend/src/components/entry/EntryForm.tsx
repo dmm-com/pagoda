@@ -132,6 +132,25 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
     }
   };
 
+  const handleClickAddListItem = (attrName: string, index: number) => {
+    const attrType = entryInfo.attrs[attrName].type;
+    switch (attrType) {
+      case djangoContext.attrTypeValue.array_string:
+        entryInfo.attrs[attrName].value.asArrayString.splice(index + 1, 0, "");
+        break;
+      case djangoContext.attrTypeValue.array_named_object:
+        entryInfo.attrs[attrName].value.asArrayNamedObject.splice(
+          index + 1,
+          0,
+          { "": null }
+        );
+        break;
+      default:
+        throw new Error(`${attrType} is not array-like type`);
+    }
+    changeAttributes({ ...entryInfo.attrs });
+  };
+
   const handleClickDeleteListItem = (attrName: string, index?: number) => {
     const attrType = entryInfo.attrs[attrName].type;
     if (index !== undefined) {
@@ -139,14 +158,8 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         case djangoContext.attrTypeValue.array_string:
           entryInfo.attrs[attrName].value.asArrayString.splice(index, 1);
           break;
-        case djangoContext.attrTypeValue.array_object:
-          entryInfo.attrs[attrName].value.asArrayObject.splice(index, 1);
-          break;
         case djangoContext.attrTypeValue.array_named_object:
           entryInfo.attrs[attrName].value.asArrayNamedObject.splice(index, 1);
-          break;
-        case djangoContext.attrTypeValue.array_group:
-          entryInfo.attrs[attrName].value.asArrayGroup.splice(index, 1);
           break;
         default:
           throw new Error(`${attrType} is not array-like type`);
@@ -261,6 +274,7 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
                   attrInfo={entryInfo.attrs[attributeName]}
                   handleChangeAttribute={handleChangeAttribute}
                   handleClickDeleteListItem={handleClickDeleteListItem}
+                  handleClickAddListItem={handleClickAddListItem}
                 />
               </TableCell>
             </TableRow>

@@ -1,8 +1,7 @@
 from django.conf import settings
 
-from airone.lib.test import AironeTestCase
 from airone.lib import auto_complement
-
+from airone.lib.test import AironeTestCase
 from user.models import User
 
 

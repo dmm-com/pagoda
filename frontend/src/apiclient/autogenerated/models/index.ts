@@ -7,6 +7,7 @@ export * from "./EntityAttrCreate";
 export * from "./EntityAttrUpdate";
 export * from "./EntityCreate";
 export * from "./EntityDetail";
+export * from "./EntityDetailAttrs";
 export * from "./EntityList";
 export * from "./EntityUpdate";
 export * from "./EntryBase";

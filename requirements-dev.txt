@@ -1,10 +1,11 @@
-isort
-flake8
 black
+coverage
+flake8
+isort
 mypy
+requests-html==0.10.0
 types-six
 types-requests
 types-PyYAML
 types-pytz
 types-mock
-requests-html==0.10.0

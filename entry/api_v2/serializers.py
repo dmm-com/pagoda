@@ -1,16 +1,16 @@
-from typing import Any, Dict, TypedDict, Optional, List
+from typing import Any, Dict, List, Optional, TypedDict
 
 from django.db.models import Prefetch
+from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 
 import custom_view
 from airone.lib.acl import ACLType
-from airone.lib.types import AttrTypeValue, AttrDefaultValue
+from airone.lib.types import AttrDefaultValue, AttrTypeValue
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity
-from entry.models import AttributeValue, Entry, Attribute
+from entry.models import Attribute, AttributeValue, Entry
 from group.models import Group
 from job.models import Job
 from user.api_v2.serializers import UserBaseSerializer

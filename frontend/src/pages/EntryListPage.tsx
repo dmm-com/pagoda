@@ -55,7 +55,17 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
           <Box width="50px" />
           <Box flexGrow="1">
             {!entity.loading && (
-              <Typography variant="h2" align="center">
+              <Typography
+                variant="h2"
+                align="center"
+                sx={{
+                  margin: "auto",
+                  maxWidth: "md",
+                  textOverflow: "ellipsis",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {entity.value.name}
               </Typography>
             )}

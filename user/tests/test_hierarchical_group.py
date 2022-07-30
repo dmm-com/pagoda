@@ -1,9 +1,10 @@
 from django.test import TestCase
-from group.models import Group
-from user.models import User
+
 from airone.lib.acl import ACLType
 from entity.models import Entity
+from group.models import Group
 from role.models import Role
+from user.models import User
 
 
 class ModelTest(TestCase):

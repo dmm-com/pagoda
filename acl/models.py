@@ -1,15 +1,13 @@
 import importlib
 import re
-
 from datetime import datetime
 
-from django.db import models
 from django.contrib.auth.models import Permission
+from django.db import models
 from django.utils.timezone import make_aware
 
+from airone.lib.acl import ACLObjType, ACLType
 from user.models import User
-
-from airone.lib.acl import ACLType, ACLObjType
 
 
 # Add comparison operations to the Permission model

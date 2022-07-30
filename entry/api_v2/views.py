@@ -1,24 +1,27 @@
 import re
 
+from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import viewsets, status
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Q
+
 
 import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity
 from entry.api_v2.pagination import EntryReferralPagination
-from entry.api_v2.serializers import GetEntrySimpleSerializer
-from entry.api_v2.serializers import EntryBaseSerializer
-from entry.api_v2.serializers import EntryRetrieveSerializer
-from entry.api_v2.serializers import EntryUpdateSerializer
-from entry.api_v2.serializers import EntryCopySerializer
+from entry.api_v2.serializers import (
+    EntryBaseSerializer,
+    EntryCopySerializer,
+    EntryRetrieveSerializer,
+    EntryUpdateSerializer,
+    GetEntrySimpleSerializer,
+)
 from entry.models import AttributeValue, Entry
 from entry.settings import CONFIG as ENTRY_CONFIG
 from job.models import Job

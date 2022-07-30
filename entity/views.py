@@ -1,28 +1,27 @@
 import collections
-import re
 import io
+import re
+
 import yaml
-
-import custom_view
-
+from django.db.models import Q
 from django.http import HttpResponse
 from django.http.response import JsonResponse
-from django.db.models import Q
 
-from .models import Entity
-from .models import EntityAttr
-from user.models import History
-from entry.models import Entry, AttributeValue
-from job.models import Job
-
+import custom_view
+from airone.lib.acl import ACLType, get_permitted_objects
+from airone.lib.http import (
+    get_download_response,
+    get_obj_with_check_perm,
+    http_get,
+    http_post,
+    render,
+)
 from airone.lib.types import AttrTypes, AttrTypeValue
-from airone.lib.http import http_get, http_post
-from airone.lib.http import get_obj_with_check_perm
-from airone.lib.http import render
-from airone.lib.http import get_download_response
-from airone.lib.acl import get_permitted_objects
-from airone.lib.acl import ACLType
+from entry.models import AttributeValue, Entry
+from job.models import Job
+from user.models import History
 
+from .models import Entity, EntityAttr
 from .settings import CONFIG
 
 

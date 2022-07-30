@@ -1,13 +1,13 @@
 import json
+
 import mock
-
-from airone.lib.test import AironeTestCase
-from airone.celery import app
-
 from django.conf import settings
-from job.models import Job, JobOperation
-from entry.models import Entry
+
+from airone.celery import app
+from airone.lib.test import AironeTestCase
 from entity.models import Entity
+from entry.models import Entry
+from job.models import Job, JobOperation
 from user.models import User
 
 

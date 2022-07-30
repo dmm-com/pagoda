@@ -1,7 +1,6 @@
-from .serializers import PostEntrySerializer
-
 from copy import deepcopy
 
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,11 +8,10 @@ from rest_framework.views import APIView
 from airone.lib.acl import ACLType
 from entity.models import Entity
 from entry.models import Entry
+from entry.settings import CONFIG as ENTRY_CONFIG
 from job.models import Job
 
-from entry.settings import CONFIG as ENTRY_CONFIG
-
-from django.db.models import Q
+from .serializers import PostEntrySerializer
 
 
 class EntryAPI(APIView):

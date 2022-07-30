@@ -1,6 +1,7 @@
 from django.db import models
-from airone.lib.acl import ACLObjType
+
 from acl.models import ACLBase
+from airone.lib.acl import ACLObjType
 from webhook.models import Webhook
 
 

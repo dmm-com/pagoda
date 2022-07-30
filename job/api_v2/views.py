@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
-from django.http import JsonResponse
+
 from django.db.models import Q
+from django.http import JsonResponse
 
 # libraries of AirOne
 from airone.lib.http import http_get

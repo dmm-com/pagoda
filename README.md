@@ -13,7 +13,7 @@ These are the features of this software.
 Here is the documentation to setup the development environment of AirOne.
 
 ## Installation of AirOne
-You have to install Python3.5+ to run AirOne like below (for the case of `ubuntu`).
+You have to install Python3.8+ to run AirOne like below (for the case of `ubuntu`).
 ```
 user@hostname:~$ sudo apt-get install python3 python3-pip virtualenv
 ```
@@ -25,7 +25,7 @@ user@hostname:~$ sudo apt-get install rabbitmq-server memcached mysql-server pyt
 
 You have to install OpenLDAP library if you use LDAP.
 ```
-user@hostname:~$ sudo apt-get install libldap2-dev  libsasl2-dev
+user@hostname:~$ sudo apt-get install libldap2-dev  libsasl2-dev libxmlsec1-dev
 ```
 
 Then, you can install libraries on which AieOne depends by following after cloning this repository. But we recommand you to setup airone on the separated environment using virtualenv not to pollute system-wide python environment.
@@ -271,8 +271,8 @@ Python 3.6.9
 ## Setup virtualenv
 
 ```
-$ python -mvenv .venv
-$ source .venv/bin/activate
+$ python -mvenv virtualenv
+$ source virtualenv/bin/activate
 $ pip install --upgrade pip
 $ pip install -r requirements.txt
 ```
@@ -288,12 +288,12 @@ $ mysql -uairone -h127.0.0.1 -ppassword -e 'create database airone'
 ```
 
 ```
-$ source .venv/bin/activate
+$ source virtualenv/bin/activate
 $ ./tools/clear_and_initdb.sh
 ```
 
 ```
-$ source .venv/bin/activate
+$ source virtualenv/bin/activate
 $ ./tools/register_user.sh --superuser admin
 Password:
 Succeed in register user (admin)
@@ -302,7 +302,7 @@ Succeed in register user (admin)
 ## Run Celery
 
 ```
-$ source .venv/bin/activate
+$ source virtualenv/bin/activate
 $ celery -A airone worker -l info
 ```
 
@@ -311,7 +311,7 @@ $ celery -A airone worker -l info
 Use [WhiteNose](http://whitenoise.evans.io/) for serving static files.
 
 ```
-$ source .venv/bin/activate
+$ source virtualenv/bin/activate
 $ python manage.py collectstatic
  
 You have requested to collect static files at the destination
@@ -328,20 +328,21 @@ Type 'yes' to continue, or 'no' to cancel: yes
 ## Run AirOne
 
 ```
-$ source .venv/bin/activate
+$ source virtualenv/bin/activate
 $ gunicorn airone.wsgi:application --bind=0.0.0.0:8080 --workers=3
 ```
 ```
 (In development)
-$ source .venv/bin/activate
+$ source virtualenv/bin/activate
 $ python manage.py runserver
 ```
 
 ## Auto-format
 
 ```
-$ source .venv/bin/activate
+$ source virtualenv/bin/activate
 $ black .
+$ isort .
 ```
 
 ## [Experimental] Build the new UI with React

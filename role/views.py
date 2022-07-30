@@ -1,11 +1,10 @@
-from airone.lib.http import http_get, http_post
-from airone.lib.http import render
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 
+from airone.lib.http import http_get, http_post, render
 from group.models import Group
-from user.models import User
 from role.models import Role
+from user.models import User
 
 
 def set_role_members(role, recv_data):

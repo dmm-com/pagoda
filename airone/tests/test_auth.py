@@ -1,6 +1,7 @@
-from airone.lib.test import AironeViewTest
-from airone.auth.social_auth import create_user
 from django.conf import settings
+
+from airone.auth.social_auth import create_user
+from airone.lib.test import AironeViewTest
 from user.models import User
 
 settings.AIRONE["TITLE"] = "TITLE"

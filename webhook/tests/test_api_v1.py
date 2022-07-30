@@ -1,10 +1,10 @@
 import json
+from unittest import mock
+
 from requests.exceptions import ConnectionError
 
 from airone.lib.test import AironeViewTest
 from entity.models import Entity
-
-from unittest import mock
 from webhook.models import Webhook
 
 

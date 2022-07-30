@@ -1,14 +1,16 @@
 import inspect
-import sys
 import os
+import sys
+
+from django.conf import settings
+from django.test import Client, TestCase, override_settings
 
 from airone.lib.types import AttrTypeValue
-from django.test import TestCase, Client, override_settings
-from django.conf import settings
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from user.models import User
 from webhook.models import Webhook
+
 from .elasticsearch import ESS
 
 

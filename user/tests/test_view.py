@@ -1,11 +1,11 @@
 import json
 from datetime import timedelta
+from unittest.mock import Mock, patch
 
 from django.conf import settings
-from django.test import TestCase, Client
+from django.test import Client, TestCase
 from django.urls import reverse
-from unittest.mock import patch
-from unittest.mock import Mock
+
 from user.forms import UsernameBasedPasswordResetForm
 from user.models import User
 from user.views import PasswordReset

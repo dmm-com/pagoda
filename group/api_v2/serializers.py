@@ -1,4 +1,5 @@
 from typing import Any, Dict, List
+
 from rest_framework import serializers
 
 from group.models import Group

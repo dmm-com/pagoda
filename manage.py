@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
+import importlib
 import os
 import sys
-import importlib
+
 from django.conf import settings
 
 from airone.lib.log import Logger

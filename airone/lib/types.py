@@ -1,4 +1,5 @@
 from typing import Any
+
 from six import with_metaclass
 
 _ATTR_OBJECT_TYPE = 1 << 0

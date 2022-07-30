@@ -1,11 +1,12 @@
 import importlib
 import sys
+from datetime import datetime
 
-from airone.lib.types import AttrTypeValue
+from django.contrib.auth.models import Group as DjangoGroup
 from django.db import models
 from django.db.models import Q
-from django.contrib.auth.models import Group as DjangoGroup
-from datetime import datetime
+
+from airone.lib.types import AttrTypeValue
 
 
 class Group(DjangoGroup):
