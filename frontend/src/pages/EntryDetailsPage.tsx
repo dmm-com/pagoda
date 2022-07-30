@@ -10,13 +10,18 @@ import {
   Typography,
 } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { Element, scroller } from "react-scroll";
 import { useAsync } from "react-use";
 
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import { entitiesPath, entityEntriesPath, topPath } from "Routes";
+import {
+  entitiesPath,
+  entityEntriesPath,
+  restoreEntryPath,
+  topPath,
+} from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
@@ -28,6 +33,7 @@ import { FailedToGetEntry } from "utils/Exceptions";
 export const EntryDetailsPage: FC = () => {
   const { entityId, entryId } =
     useTypedParams<{ entityId: number; entryId: number }>();
+  const history = useHistory();
 
   const [entryAnchorEl, setEntryAnchorEl] =
     useState<HTMLButtonElement | null>();
@@ -40,6 +46,11 @@ export const EntryDetailsPage: FC = () => {
     throw new FailedToGetEntry(
       "Failed to get Entry from AirOne APIv2 endpoint"
     );
+  }
+
+  // If it'd been deleted, show restore-entry page instead
+  if (!entry.loading && !entry.value.isActive) {
+    history.replace(restoreEntryPath(entry.value.schema.id, entry.value.name));
   }
 
   return (
