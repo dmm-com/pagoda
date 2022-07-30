@@ -137,7 +137,7 @@ export const AdvancedSearchModal: FC<Props> = ({
             variant="outlined"
             color="primary"
             sx={{ mx: "4px" }}
-            //onClick={handleCancel}
+            onClick={() => setOpenModal(false)}
           >
             キャンセル
           </Button>
