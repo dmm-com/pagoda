@@ -31,14 +31,21 @@ interface Props {
     entry: {
       name: string;
     };
+    referrals: {
+      id: number;
+      name: string;
+      schema: string;
+    }[];
   }[];
   defaultEntryFilter?: string;
+  defaultReferralFilter?: string;
   defaultAttrsFilter?: any;
 }
 
 export const SearchResults: FC<Props> = ({
   results,
   defaultEntryFilter,
+  defaultReferralFilter,
   defaultAttrsFilter,
 }) => {
   const location = useLocation();
@@ -47,6 +54,9 @@ export const SearchResults: FC<Props> = ({
   const [entryFilter, entryFilterDispatcher] = useReducer((_, event) => {
     return event.target.value;
   }, defaultEntryFilter ?? "");
+  const [referralFilter, referralFilterDispatcher] = useReducer((_, event) => {
+    return event.target.value;
+  }, defaultReferralFilter ?? "");
   const [attrsFilter, attrsFilterDispatcher] = useReducer(
     (state, { event, name }) => {
       return { ...state, [name]: event.target.value };
@@ -55,11 +65,13 @@ export const SearchResults: FC<Props> = ({
   );
 
   const attrNames = results.length > 0 ? Object.keys(results[0].attrs) : [];
+  const hasReferral = results.length > 0 ? results[0].referrals : false;
 
   const handleKeyPress = (event) => {
     if (event.key === "Enter") {
       const params = new URLSearchParams(location.search);
       params.set("entry_name", entryFilter);
+      params.set("referral_name", referralFilter);
       params.set(
         "attrinfo",
         JSON.stringify(
@@ -161,6 +173,40 @@ export const SearchResults: FC<Props> = ({
               />
             </TableCell>
           ))}
+          {hasReferral && (
+            <TableCell
+              sx={{ color: "primary.contrastText", minWidth: "300px" }}
+            >
+              <Typography>参照エントリ</Typography>
+              <TextField
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: "white" }} />
+                    </InputAdornment>
+                  ),
+                  sx: {
+                    color: "#FFFFFF",
+                    "&.Mui-focused": {
+                      background: "#00000061",
+                    },
+                  },
+                }}
+                inputProps={{
+                  style: {
+                    padding: "8px 0 8px 4px",
+                  },
+                }}
+                sx={{
+                  background: "#0000001F",
+                  margin: "8px 0",
+                }}
+                defaultValue={defaultReferralFilter}
+                onChange={referralFilterDispatcher}
+                onKeyPress={handleKeyPress}
+              />
+            </TableCell>
+          )}
         </TableRow>
       }
       tableBodyRowGenerator={(result, index) => (
@@ -184,6 +230,15 @@ export const SearchResults: FC<Props> = ({
               )}
             </TableCell>
           ))}
+          {hasReferral && (
+            <TableCell sx={{ minWidth: "300px" }}>
+              {result.referrals.map((referral) => {
+                return (
+                  <Typography key={referral.id}>{referral.name}</Typography>
+                );
+              })}
+            </TableCell>
+          )}
         </StyledTableRow>
       )}
       rowsPerPageOptions={[100, 250, 1000]}

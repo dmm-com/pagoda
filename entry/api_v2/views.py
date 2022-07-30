@@ -9,7 +9,6 @@ from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-
 import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
@@ -171,9 +170,14 @@ class AdvancedSearchAPI(APIView):
         hint_entities = request.data.get("entities")
         hint_entry_name = request.data.get("entry_name", "")
         hint_attrs = request.data.get("attrinfo")
-        hint_referral = request.data.get("referral", False)
+        hint_has_referral = request.data.get("has_referral", False)
+        hint_referral_name = request.data.get("referral_name", "")
         is_output_all = request.data.get("is_output_all", True)
         entry_limit = request.data.get("entry_limit", self.MAX_LIST_ENTRIES)
+
+        hint_referral = False
+        if hint_has_referral:
+            hint_referral = hint_referral_name
 
         if (
             not isinstance(hint_entities, list)
