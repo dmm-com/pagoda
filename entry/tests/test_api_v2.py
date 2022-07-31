@@ -1,13 +1,27 @@
 import datetime
+import errno
 import json
 from unittest import mock
+from unittest.mock import Mock, patch
+
+import yaml
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeStr, AttrTypeValue
+from airone.lib.types import (
+    AttrTypeArrNamedObj,
+    AttrTypeArrObj,
+    AttrTypeArrStr,
+    AttrTypeNamedObj,
+    AttrTypeObj,
+    AttrTypeStr,
+    AttrTypeText,
+    AttrTypeValue,
+)
 from entity.models import Entity, EntityAttr
 from entry import tasks
-from entry.models import Entry
+from entry.models import Attribute, AttributeValue, Entry
 from group.models import Group
+from job.models import Job, JobOperation
 from role.models import Role
 from user.models import User
 
@@ -1414,3 +1428,219 @@ class ViewTest(AironeViewTest):
         resp_data = resp.json()
         results = resp_data["results"]
         self.assertEqual(len(results), 0)
+
+    @patch("entry.tasks.export_entries.delay", Mock(side_effect=tasks.export_entries))
+    def test_post_export(self):
+        user = self.admin_login()
+
+        entity = Entity.objects.create(name="ほげ", created_user=user)
+        for name in ["foo", "bar"]:
+            entity.attrs.add(
+                EntityAttr.objects.create(
+                    **{
+                        "name": name,
+                        "type": AttrTypeValue["string"],
+                        "created_user": user,
+                        "parent_entity": entity,
+                    }
+                )
+            )
+
+        entry = Entry.objects.create(name="fuga", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        for attr in entry.attrs.all():
+            [attr.add_value(user, x) for x in ["hoge", "fuga"]]
+
+        resp = self.client.post(
+            "/entry/api/v2/%d/export/" % entity.id,
+            json.dumps({}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json(),
+            {"result": "Succeed in registering export processing. Please check Job list."},
+        )
+
+        job = Job.objects.last()
+        self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY.value)
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.text, "entry_ほげ.yaml")
+
+        obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
+        self.assertTrue(entity.name in obj)
+
+        self.assertEqual(len(obj[entity.name]), 1)
+        entry_data = obj[entity.name][0]
+        self.assertTrue(all(["name" in entry_data and "attrs" in entry_data]))
+
+        self.assertEqual(entry_data["name"], entry.name)
+        self.assertEqual(len(entry_data["attrs"]), entry.attrs.count())
+        self.assertEqual(entry_data["attrs"]["foo"], "fuga")
+        self.assertEqual(entry_data["attrs"]["bar"], "fuga")
+
+        resp = self.client.post(
+            "/entry/api/v2/%d/export/" % entity.id,
+            json.dumps({"format": "CSV"}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # append an unpermitted Attribute
+        entity.attrs.add(
+            EntityAttr.objects.create(
+                **{
+                    "name": "new_attr",
+                    "type": AttrTypeValue["string"],
+                    "created_user": user,
+                    "parent_entity": entity,
+                    "is_public": False,
+                }
+            )
+        )
+
+        # re-login with guest user
+        self.guest_login("guest2")
+
+        resp = self.client.post(
+            "/entry/api/v2/%d/export/" % entity.id,
+            json.dumps({}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        obj = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
+
+        # check permitted attributes exist in the result
+        self.assertTrue(all([x in obj["ほげ"][0]["attrs"] for x in ["foo", "bar"]]))
+
+        # check unpermitted attribute doesn't exist in the result
+        self.assertFalse("new_attr" in obj["ほげ"][0]["attrs"])
+
+        ###
+        # Check the case of canceling job
+        ###
+        with patch.object(Job, "is_canceled", return_value=True):
+            resp = self.client.post(
+                "/entry/api/v2/%d/export/" % entity.id,
+                json.dumps({}),
+                "application/json",
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json(),
+            {"result": "Succeed in registering export processing. Please check Job list."},
+        )
+
+        job = Job.objects.last()
+        self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY.value)
+        self.assertEqual(job.text, "entry_ほげ.yaml")
+        with self.assertRaises(OSError) as e:
+            raise OSError
+
+        if e.exception.errno == errno.ENOENT:
+            job.get_cache()
+
+    @patch("entry.tasks.export_entries.delay", Mock(side_effect=tasks.export_entries))
+    def test_get_export_csv_escape(self):
+        user = self.admin_login()
+
+        dummy_entity = Entity.objects.create(name="Dummy", created_user=user)
+        dummy_entry = Entry(name='D,U"MM"Y', schema=dummy_entity, created_user=user)
+        dummy_entry.save()
+
+        CASES = [
+            [AttrTypeStr, 'raison,de"tre', '"raison,de""tre"'],
+            [AttrTypeObj, dummy_entry, '"D,U""MM""Y"'],
+            [AttrTypeText, "1st line\r\n2nd line", '"1st line' + "\r\n" + '2nd line"'],
+            [AttrTypeNamedObj, {"key": dummy_entry}, '"{\'key\': \'D,U""MM""Y\'}"'],
+            [AttrTypeArrStr, ["one", "two", "three"], "\"['one', 'two', 'three']\""],
+            [AttrTypeArrObj, [dummy_entry], '"[\'D,U""MM""Y\']"'],
+            [
+                AttrTypeArrNamedObj,
+                [{"key1": dummy_entry}],
+                '"[{\'key1\': \'D,U""MM""Y\'}]"',
+            ],
+        ]
+
+        for case in CASES:
+            type_name = case[0].__name__  # AttrTypeStr -> 'AttrTypeStr'
+            attr_name = type_name + ',"ATTR"'
+
+            test_entity = Entity.objects.create(name="TestEntity_" + type_name, created_user=user)
+
+            test_entity_attr = EntityAttr.objects.create(
+                name=attr_name,
+                type=case[0],
+                created_user=user,
+                parent_entity=test_entity,
+            )
+
+            test_entity.attrs.add(test_entity_attr)
+            test_entity.save()
+
+            test_entry = Entry.objects.create(
+                name=type_name + ',"ENTRY"', schema=test_entity, created_user=user
+            )
+            test_entry.save()
+
+            test_attr = Attribute.objects.create(
+                name=attr_name,
+                schema=test_entity_attr,
+                created_user=user,
+                parent_entry=test_entry,
+            )
+
+            test_attr.save()
+            test_entry.attrs.add(test_attr)
+            test_entry.save()
+
+            test_val = None
+
+            if case[0].TYPE & AttrTypeValue["array"] == 0:
+                if case[0] == AttrTypeStr:
+                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
+                elif case[0] == AttrTypeObj:
+                    test_val = AttributeValue.create(user=user, attr=test_attr, referral=case[1])
+                elif case[0] == AttrTypeText:
+                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
+                elif case[0] == AttrTypeNamedObj:
+                    [(k, v)] = case[1].items()
+                    test_val = AttributeValue.create(user=user, attr=test_attr, value=k, referral=v)
+            else:
+                test_val = AttributeValue.create(user=user, attr=test_attr)
+                test_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
+                for child in case[1]:
+                    test_val_child = None
+                    if case[0] == AttrTypeArrStr:
+                        test_val_child = AttributeValue.create(
+                            user=user, attr=test_attr, value=child
+                        )
+                    elif case[0] == AttrTypeArrObj:
+                        test_val_child = AttributeValue.create(
+                            user=user, attr=test_attr, referral=child
+                        )
+                    elif case[0] == AttrTypeArrNamedObj:
+                        [(k, v)] = child.items()
+                        test_val_child = AttributeValue.create(
+                            user=user, attr=test_attr, value=k, referral=v
+                        )
+                    test_val.data_array.add(test_val_child)
+
+            test_val.save()
+            test_attr.values.add(test_val)
+            test_attr.save()
+
+            resp = self.client.post(
+                "/entry/api/v2/%d/export/" % test_entity.id,
+                json.dumps({"format": "CSV"}),
+                "application/json",
+            )
+            self.assertEqual(resp.status_code, 200)
+
+            content = Job.objects.last().get_cache()
+            header = content.splitlines()[0]
+            self.assertEqual(header, 'Name,"%s,""ATTR"""' % type_name)
+
+            data = content.replace(header, "", 1).strip()
+            self.assertEqual(data, '"%s,""ENTRY""",' % type_name + case[2])

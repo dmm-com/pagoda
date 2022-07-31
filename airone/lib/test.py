@@ -135,8 +135,8 @@ class AironeViewTest(AironeTestCase):
     def admin_login(self):
         return self._do_login("admin", True)
 
-    def guest_login(self):
-        return self._do_login("guest")
+    def guest_login(self, uname="guest"):
+        return self._do_login(uname)
 
     def open_fixture_file(self, fname):
         test_file_path = inspect.getfile(self.__class__)

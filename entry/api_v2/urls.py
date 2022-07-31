@@ -45,4 +45,8 @@ urlpatterns = [
             }
         ),
     ),
+    path(
+        "<int:entity_id>/export/",
+        views.EntryExportAPI.as_view(),
+    ),
 ]

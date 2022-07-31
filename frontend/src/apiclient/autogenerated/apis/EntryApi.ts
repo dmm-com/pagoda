@@ -20,6 +20,9 @@ import {
   EntryCopy,
   EntryCopyFromJSON,
   EntryCopyToJSON,
+  EntryExport,
+  EntryExportFromJSON,
+  EntryExportToJSON,
   EntryRetrieve,
   EntryRetrieveFromJSON,
   EntryRetrieveToJSON,
@@ -38,6 +41,11 @@ export interface EntryApiV2CopyCreateRequest {
 
 export interface EntryApiV2DestroyRequest {
   id: number;
+}
+
+export interface EntryApiV2ExportCreateRequest {
+  entityId: number;
+  entryExport: EntryExport;
 }
 
 export interface EntryApiV2ReferralListRequest {
@@ -198,6 +206,84 @@ export class EntryApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<void> {
     await this.entryApiV2DestroyRaw(requestParameters, initOverrides);
+  }
+
+  /**
+   */
+  async entryApiV2ExportCreateRaw(
+    requestParameters: EntryApiV2ExportCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<EntryExport>> {
+    if (
+      requestParameters.entityId === null ||
+      requestParameters.entityId === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "entityId",
+        "Required parameter requestParameters.entityId was null or undefined when calling entryApiV2ExportCreate."
+      );
+    }
+
+    if (
+      requestParameters.entryExport === null ||
+      requestParameters.entryExport === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "entryExport",
+        "Required parameter requestParameters.entryExport was null or undefined when calling entryApiV2ExportCreate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/{entity_id}/export/`.replace(
+          `{${"entity_id"}}`,
+          encodeURIComponent(String(requestParameters.entityId))
+        ),
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+        body: EntryExportToJSON(requestParameters.entryExport),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      EntryExportFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async entryApiV2ExportCreate(
+    requestParameters: EntryApiV2ExportCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<EntryExport> {
+    const response = await this.entryApiV2ExportCreateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
   }
 
   /**

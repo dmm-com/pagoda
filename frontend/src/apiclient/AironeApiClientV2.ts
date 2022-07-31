@@ -315,6 +315,23 @@ class AironeApiClientV2 {
     });
   }
 
+  async exportEntries(entityId: number, format: string): Promise<void> {
+    await this.entry.entryApiV2ExportCreate(
+      {
+        entityId,
+        entryExport: {
+          format,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
   async getUser(userId: number): Promise<UserRetrieve> {
     return await this.user.userApiV2UsersRetrieve({
       id: userId,
