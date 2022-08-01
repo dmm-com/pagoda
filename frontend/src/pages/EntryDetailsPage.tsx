@@ -7,16 +7,23 @@ import {
   Grid,
   IconButton,
   Stack,
+  Theme,
   Typography,
 } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { Element, scroller } from "react-scroll";
 import { useAsync } from "react-use";
 
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import { entitiesPath, entityEntriesPath, topPath } from "Routes";
+import {
+  entitiesPath,
+  entityEntriesPath,
+  restoreEntryPath,
+  topPath,
+} from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
@@ -25,9 +32,21 @@ import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
 import { FailedToGetEntry } from "utils/Exceptions";
 
+const useStyles = makeStyles<Theme>((theme) => ({
+  title: {
+    height: "72px",
+    maxWidth: "700px",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+}));
+
 export const EntryDetailsPage: FC = () => {
+  const classes = useStyles();
+
   const { entityId, entryId } =
     useTypedParams<{ entityId: number; entryId: number }>();
+  const history = useHistory();
 
   const [entryAnchorEl, setEntryAnchorEl] =
     useState<HTMLButtonElement | null>();
@@ -40,6 +59,11 @@ export const EntryDetailsPage: FC = () => {
     throw new FailedToGetEntry(
       "Failed to get Entry from AirOne APIv2 endpoint"
     );
+  }
+
+  // If it'd been deleted, show restore-entry page instead
+  if (!entry.loading && !entry.value.isActive) {
+    history.replace(restoreEntryPath(entry.value.schema.id, entry.value.name));
   }
 
   return (
@@ -67,9 +91,14 @@ export const EntryDetailsPage: FC = () => {
       <Container maxWidth="lg" sx={{ pt: "112px" }}>
         <Box display="flex">
           <Box width="50px" />
-          <Box flexGrow="1">
+          <Box
+            flexGrow="1"
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+          >
             {!entry.loading && (
-              <Typography variant="h2" align="center">
+              <Typography variant="h2" align="center" className={classes.title}>
                 {entry.value.name}
               </Typography>
             )}

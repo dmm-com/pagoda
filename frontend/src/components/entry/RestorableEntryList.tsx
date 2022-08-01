@@ -40,6 +40,7 @@ import { FailedToGetEntity } from "utils/Exceptions";
 
 interface Props {
   entityId: number;
+  initialKeyword?: string | null;
 }
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -66,12 +67,15 @@ const StyledTableRow = styled(TableRow)(() => ({
   },
 }));
 
-export const RestorableEntryList: FC<Props> = ({ entityId }) => {
+export const RestorableEntryList: FC<Props> = ({
+  entityId,
+  initialKeyword,
+}) => {
   const classes = useStyles();
 
   const history = useHistory();
 
-  const [keyword, setKeyword] = useState("");
+  const [keyword, setKeyword] = useState(initialKeyword ?? "");
   const [page, setPage] = React.useState(1);
   const [openModal, setOpenModal] = useState(false);
   const [selectedEntryId, setSelectedEntryId] = useState<number>();
@@ -151,7 +155,17 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
                           setOpenModal(true);
                         }}
                       >
-                        <Typography variant="h6">{entry.name}</Typography>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            width: "300px",
+                            textOverflow: "ellipsis",
+                            overflow: "hidden",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {entry.name.replace(/_deleted_.*/, "")}
+                        </Typography>
                       </CardActionArea>
                     }
                     action={

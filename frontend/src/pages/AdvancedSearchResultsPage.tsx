@@ -1,38 +1,79 @@
 import SettingsIcon from "@mui/icons-material/Settings";
-import { Box, Button, Theme, Typography } from "@mui/material";
-import { makeStyles } from "@mui/styles";
-import React, { FC } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Box, Button, Typography } from "@mui/material";
+import { useSnackbar } from "notistack";
+import React, { FC, useState } from "react";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+import { PageHeader } from "../components/common/PageHeader";
 
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
+import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
-import { searchEntries } from "utils/AironeAPIClient";
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-}));
+import {
+  exportAdvancedSearchResults,
+  getEntityAttrs,
+} from "utils/AironeAPIClient";
 
 export const AdvancedSearchResultsPage: FC = () => {
-  const classes = useStyles();
   const location = useLocation();
+  const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
+  const [openModal, setOpenModal] = useState(false);
 
   const params = new URLSearchParams(location.search);
   const entityIds = params.getAll("entity").map((id) => Number(id));
   const entryName = params.has("entry_name") ? params.get("entry_name") : "";
+  const hasReferral = params.has("has_referral")
+    ? params.get("has_referral") === "true"
+    : false;
+  const referralName = params.has("referral_name")
+    ? params.get("referral_name")
+    : "";
   const attrInfo = params.has("attrinfo")
     ? JSON.parse(params.get("attrinfo"))
     : [];
 
+  const entityAttrs = useAsync(async () => {
+    const resp = await getEntityAttrs(entityIds);
+    const data = await resp.json();
+
+    return data.result;
+  });
+
   const results = useAsync(async () => {
-    const resp = await searchEntries(entityIds, entryName, attrInfo);
+    const resp = await aironeApiClientV2.advancedSearchEntries(
+      entityIds,
+      entryName,
+      attrInfo,
+      hasReferral,
+      referralName
+    );
     const data = await resp.json();
     return data.result.ret_values;
   });
+
+  const handleExport = async (exportStyle: "yaml" | "csv") => {
+    const resp = await exportAdvancedSearchResults(
+      entityIds,
+      attrInfo,
+      entryName,
+      hasReferral,
+      exportStyle
+    );
+    if (resp.ok) {
+      enqueueSnackbar("エクスポートジョブの登録に成功しました", {
+        variant: "success",
+      });
+    } else {
+      enqueueSnackbar("エクスポートジョブの登録に失敗しました", {
+        variant: "error",
+      });
+    }
+  };
 
   return (
     <Box className="container-fluid">
@@ -48,36 +89,59 @@ export const AdvancedSearchResultsPage: FC = () => {
         <Typography color="textPrimary">検索結果</Typography>
       </AironeBreadcrumbs>
 
-      <Box m={1}>
-        {!results.loading && (
-          <Typography>検索結果: ({results.value.length} 件)</Typography>
-        )}
-        <Button
-          className={classes.button}
-          variant="outlined"
-          startIcon={<SettingsIcon />}
-        >
-          高度な検索
-        </Button>
-        <Button className={classes.button} variant="outlined">
-          YAML 出力
-        </Button>
-        <Button className={classes.button} variant="outlined">
-          CSV 出力
-        </Button>
-      </Box>
+      <PageHeader
+        title="検索結果"
+        subTitle={`${results.value?.length ?? 0} 件`}
+        componentSubmits={
+          <Box display="flex" justifyContent="center">
+            <Button
+              variant="outlined"
+              startIcon={<SettingsIcon />}
+              disabled={entityAttrs.loading}
+              onClick={() => {
+                setOpenModal(true);
+              }}
+            >
+              属性の再設定
+            </Button>
+            <Button
+              sx={{ marginLeft: "40px" }}
+              variant="outlined"
+              onClick={() => handleExport("yaml")}
+            >
+              YAML 出力
+            </Button>
+            <Button
+              sx={{ marginLeft: "16px" }}
+              variant="outlined"
+              onClick={() => handleExport("csv")}
+            >
+              CSV 出力
+            </Button>
+          </Box>
+        }
+      />
 
-      {!results.loading ? (
-        <SearchResults
-          results={results.value}
-          defaultEntryFilter={entryName}
-          defaultAttrsFilter={Object.fromEntries(
-            attrInfo.map((i) => [i["name"], i["keyword"] || ""])
-          )}
+      <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
+        {!results.loading ? (
+          <SearchResults
+            results={results.value}
+            defaultEntryFilter={entryName}
+            defaultReferralFilter={referralName}
+            defaultAttrsFilter={Object.fromEntries(
+              attrInfo.map((i) => [i["name"], i["keyword"] || ""])
+            )}
+          />
+        ) : (
+          <Loading />
+        )}
+        <AdvancedSearchModal
+          openModal={openModal}
+          setOpenModal={setOpenModal}
+          attrNames={entityAttrs.loading ? [] : entityAttrs.value}
+          initialAttrNames={attrInfo.map((e) => e.name)}
         />
-      ) : (
-        <Loading />
-      )}
+      </Box>
     </Box>
   );
 };

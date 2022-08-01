@@ -20,6 +20,7 @@ test("should match snapshot", async () => {
   const entry = {
     id: 1,
     name: "aaa",
+    isActive: true,
     schema: {
       id: 2,
       name: "bbb",
