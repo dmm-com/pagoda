@@ -104,7 +104,17 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
                         component={Link}
                         to={entryDetailsPath(entityId, entry.id)}
                       >
-                        <Typography variant="h6">{entry.name}</Typography>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            width: "300px",
+                            textOverflow: "ellipsis",
+                            overflow: "hidden",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {entry.name}
+                        </Typography>
                       </CardActionArea>
                     }
                     action={
