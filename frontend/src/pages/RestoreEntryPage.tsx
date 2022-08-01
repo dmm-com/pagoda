@@ -16,6 +16,9 @@ import { Loading } from "components/common/Loading";
 export const RestoreEntryPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
 
+  const params = new URLSearchParams(location.search);
+  const keyword = params.get("keyword");
+
   const [entityAnchorEl, setEntityAnchorEl] =
     useState<HTMLButtonElement | null>();
 
@@ -75,7 +78,7 @@ export const RestoreEntryPage: FC = () => {
           </Box>
         </Box>
 
-        <RestorableEntryList entityId={entityId} />
+        <RestorableEntryList entityId={entityId} initialKeyword={keyword} />
       </Container>
     </Box>
   );
