@@ -24,7 +24,7 @@ export interface EntryExport {
    * @type {string}
    * @memberof EntryExport
    */
-  format: string;
+  format?: string;
 }
 
 export function EntryExportFromJSON(json: any): EntryExport {
@@ -39,7 +39,7 @@ export function EntryExportFromJSONTyped(
     return json;
   }
   return {
-    format: json["format"],
+    format: !exists(json, "format") ? undefined : json["format"],
   };
 }
 

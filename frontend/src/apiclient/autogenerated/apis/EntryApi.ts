@@ -45,7 +45,7 @@ export interface EntryApiV2DestroyRequest {
 
 export interface EntryApiV2ExportCreateRequest {
   entityId: number;
-  entryExport: EntryExport;
+  entryExport?: EntryExport;
 }
 
 export interface EntryApiV2ReferralListRequest {
@@ -77,6 +77,52 @@ export interface EntryApiV2UpdateRequest {
  *
  */
 export class EntryApi extends runtime.BaseAPI {
+  /**
+   * NOTE for now it\'s just copied from /api/v1/entry/search, but it should be rewritten with DRF components.
+   */
+  async entryApiV2AdvancedSearchCreateRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/advanced_search/`,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   * NOTE for now it\'s just copied from /api/v1/entry/search, but it should be rewritten with DRF components.
+   */
+  async entryApiV2AdvancedSearchCreate(
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.entryApiV2AdvancedSearchCreateRaw(initOverrides);
+  }
+
   /**
    */
   async entryApiV2CopyCreateRaw(
@@ -221,16 +267,6 @@ export class EntryApi extends runtime.BaseAPI {
       throw new runtime.RequiredError(
         "entityId",
         "Required parameter requestParameters.entityId was null or undefined when calling entryApiV2ExportCreate."
-      );
-    }
-
-    if (
-      requestParameters.entryExport === null ||
-      requestParameters.entryExport === undefined
-    ) {
-      throw new runtime.RequiredError(
-        "entryExport",
-        "Required parameter requestParameters.entryExport was null or undefined when calling entryApiV2ExportCreate."
       );
     }
 

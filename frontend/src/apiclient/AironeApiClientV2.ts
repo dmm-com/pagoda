@@ -331,7 +331,7 @@ class AironeApiClientV2 {
       }
     );
   }
-  
+
   // FIXME replace with auto-generated client code
   async advancedSearchEntries(
     entityIds: number[] = [],
