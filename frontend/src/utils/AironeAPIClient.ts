@@ -71,28 +71,6 @@ export function importEntries(
   });
 }
 
-// FIXME it should be better to implement a new internal API than this
-export function searchEntries(
-  entityIds: number[] = [],
-  entryName = "",
-  attrInfo: object[] = [],
-  entryLimit = 99999
-): Promise<Response> {
-  return fetch(`/api/v1/entry/search`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-      "Content-Type": "application/json;charset=utf-8",
-    },
-    body: JSON.stringify({
-      entities: entityIds,
-      entry_name: entryName,
-      attrinfo: attrInfo,
-      entry_limit: entryLimit,
-    }),
-  });
-}
-
 // FIXME unimplemented
 export function getEntryHistory({}: number): Promise<object> {
   return new Promise((resolve) => {
@@ -347,6 +325,29 @@ export function cancelJob(jobId: number): Promise<Response> {
     },
     body: JSON.stringify({
       job_id: jobId,
+    }),
+  });
+}
+
+export function exportAdvancedSearchResults(
+  entities: number[],
+  attrinfo: object[],
+  entryName: string,
+  hasReferral: boolean,
+  exportStyle: "yaml" | "csv"
+): Promise<Response> {
+  return fetch(`/dashboard/advanced_search_export`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": getCsrfToken(),
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify({
+      entities: entities,
+      attrinfo: attrinfo,
+      entry_name: entryName,
+      has_referral: hasReferral,
+      export_style: exportStyle,
     }),
   });
 }

@@ -45,4 +45,5 @@ urlpatterns = [
             }
         ),
     ),
+    path("advanced_search/", views.AdvancedSearchAPI.as_view()),
 ]

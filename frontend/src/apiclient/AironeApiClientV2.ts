@@ -315,6 +315,33 @@ class AironeApiClientV2 {
     });
   }
 
+  // FIXME replace with auto-generated client code
+  async advancedSearchEntries(
+    entityIds: number[] = [],
+    entryName = "",
+    attrInfo: object[] = [],
+    hasReferral = false,
+    referralName = "",
+    entryLimit = 99999
+  ): Promise<Response> {
+    return fetch(`/entry/api/v2/advanced_search/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCsrfToken(),
+        "Content-Type": "application/json;charset=utf-8",
+      },
+      body: JSON.stringify({
+        entities: entityIds,
+        entry_name: entryName,
+        attrinfo: attrInfo,
+        has_referral: hasReferral,
+        referral_name: referralName,
+        entry_limit: entryLimit,
+        is_output_all: false,
+      }),
+    });
+  }
+
   async getUser(userId: number): Promise<UserRetrieve> {
     return await this.user.userApiV2UsersRetrieve({
       id: userId,

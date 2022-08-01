@@ -7,9 +7,12 @@ from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 import custom_view
 from airone.lib.acl import ACLType
+from airone.lib.types import AttrTypeValue
+from entity.models import Entity
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
     EntryBaseSerializer,
@@ -152,6 +155,126 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
 
         results = Entry.search_entries_for_simple(query, limit=ENTRY_CONFIG.MAX_SEARCH_ENTRIES)
         return results["ret_values"]
+
+
+class AdvancedSearchAPI(APIView):
+    """
+    NOTE for now it's just copied from /api/v1/entry/search, but it should be
+    rewritten with DRF components.
+    """
+
+    MAX_LIST_ENTRIES = 100
+    MAX_QUERY_SIZE = 64
+
+    def post(self, request, format=None):
+        hint_entities = request.data.get("entities")
+        hint_entry_name = request.data.get("entry_name", "")
+        hint_attrs = request.data.get("attrinfo")
+        hint_has_referral = request.data.get("has_referral", False)
+        hint_referral_name = request.data.get("referral_name", "")
+        is_output_all = request.data.get("is_output_all", True)
+        entry_limit = request.data.get("entry_limit", self.MAX_LIST_ENTRIES)
+
+        hint_referral = False
+        if hint_has_referral:
+            hint_referral = hint_referral_name
+
+        if (
+            not isinstance(hint_entities, list)
+            or not isinstance(hint_entry_name, str)
+            or not isinstance(hint_attrs, list)
+            or not isinstance(is_output_all, bool)
+            or not isinstance(hint_referral, (str, bool))
+            or not isinstance(entry_limit, int)
+        ):
+            return Response(
+                "The type of parameter is incorrect", status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # forbid to input large size request
+        if len(hint_entry_name) > self.MAX_QUERY_SIZE:
+            return Response("Sending parameter is too large", status=400)
+
+        # check attribute params
+        for hint_attr in hint_attrs:
+            if "name" not in hint_attr:
+                return Response("The name key is required for attrinfo parameter", status=400)
+            if not isinstance(hint_attr["name"], str):
+                return Response("Invalid value for attrinfo parameter", status=400)
+            if hint_attr.get("keyword"):
+                if not isinstance(hint_attr["keyword"], str):
+                    return Response("Invalid value for attrinfo parameter", status=400)
+                # forbid to input large size request
+                if len(hint_attr["keyword"]) > self.MAX_QUERY_SIZE:
+                    return Response("Sending parameter is too large", status=400)
+
+        # check entities params
+        if not hint_entities:
+            return Response("The entities parameters are required", status=400)
+        hint_entity_ids = []
+        for hint_entity in hint_entities:
+            entity = None
+            if isinstance(hint_entity, int):
+                entity = Entity.objects.filter(id=hint_entity, is_active=True).first()
+            elif isinstance(hint_entity, str):
+                if hint_entity.isnumeric():
+                    entity = Entity.objects.filter(
+                        Q(id=hint_entity) | Q(name=hint_entity), Q(is_active=True)
+                    ).first()
+                else:
+                    entity = Entity.objects.filter(name=hint_entity, is_active=True).first()
+
+            if entity and request.user.has_permission(entity, ACLType.Readable):
+                hint_entity_ids.append(entity.id)
+
+        resp = Entry.search_entries(
+            request.user,
+            hint_entity_ids,
+            hint_attrs,
+            entry_limit,
+            hint_entry_name,
+            hint_referral,
+            is_output_all,
+        )
+
+        # convert field values to fit entry retrieve API data type, as a workaround.
+        # FIXME should be replaced with DRF serializer etc
+        for entry in resp["ret_values"]:
+            for name, attr in entry["attrs"].items():
+
+                def _get_typed_value(type: int) -> str:
+                    if type & AttrTypeValue["array"]:
+                        if type & AttrTypeValue["string"]:
+                            return "asArrayString"
+                        elif type & AttrTypeValue["named"]:
+                            return "asArrayNamedObject"
+                        elif type & AttrTypeValue["object"]:
+                            return "asArrayObject"
+                        elif type & AttrTypeValue["group"]:
+                            return "asArrayGroup"
+                    elif type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
+                        return "asString"
+                    elif type & AttrTypeValue["named"]:
+                        return "asNamedObject"
+                    elif type & AttrTypeValue["object"]:
+                        return "asObject"
+                    elif type & AttrTypeValue["boolean"]:
+                        return "asBoolean"
+                    elif type & AttrTypeValue["date"]:
+                        return "asString"
+                    elif type & AttrTypeValue["group"]:
+                        return "asGroup"
+                    raise ValidationError(f"unexpected type: {type}")
+
+                entry["attrs"][name] = {
+                    "is_readble": attr["is_readble"],
+                    "type": attr["type"],
+                    "value": {
+                        _get_typed_value(attr["type"]): attr["value"],
+                    },
+                }
+
+        return Response({"result": resp})
 
 
 @extend_schema(
