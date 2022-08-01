@@ -7,6 +7,7 @@ import {
   MenuItem,
   Typography,
 } from "@mui/material";
+import { useSnackbar } from "notistack";
 import React, { FC } from "react";
 import { Link, useHistory } from "react-router-dom";
 
@@ -15,6 +16,8 @@ import {
   aclPath,
   showEntryHistoryPath,
   copyEntryPath,
+  entityEntriesPath,
+  topPath,
 } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Confirmable } from "components/common/Confirmable";
@@ -32,11 +35,22 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
   anchorElem,
   handleClose,
 }) => {
+  const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
 
   const handleDelete = async (event, entryId) => {
-    await aironeApiClientV2.destroyEntry(entryId);
-    history.go(0);
+    try {
+      await aironeApiClientV2.destroyEntry(entryId);
+      enqueueSnackbar("エントリの削除が完了しました", {
+        variant: "success",
+      });
+      history.replace(topPath());
+      history.replace(entityEntriesPath(entityId));
+    } catch (e) {
+      enqueueSnackbar("エントリの削除が失敗しました", {
+        variant: "error",
+      });
+    }
   };
 
   return (
