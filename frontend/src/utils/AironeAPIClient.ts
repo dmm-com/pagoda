@@ -92,21 +92,6 @@ export function getEntryHistory({}: number): Promise<object> {
   });
 }
 
-export function exportEntries(
-  entityId: number,
-  format: string
-): Promise<Response> {
-  return fetch(`/entry/export/${entityId}/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: JSON.stringify({
-      format: format,
-    }),
-  });
-}
-
 export function restoreEntry(entryId: number): Promise<Response> {
   return fetch(`/entry/do_restore/${entryId}/`, {
     method: "POST",

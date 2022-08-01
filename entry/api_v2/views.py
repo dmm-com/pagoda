@@ -3,7 +3,7 @@ import re
 from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import status, viewsets
+from rest_framework import generics, status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
@@ -17,6 +17,7 @@ from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
     EntryBaseSerializer,
     EntryCopySerializer,
+    EntryExportSerializer,
     EntryRetrieveSerializer,
     EntryUpdateSerializer,
     GetEntrySimpleSerializer,
@@ -304,3 +305,57 @@ class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
             query &= Q(name__iregex=r"%s" % keyword)
 
         return Entry.objects.filter(query)
+
+
+class EntryExportAPI(generics.GenericAPIView):
+    serializer_class = EntryExportSerializer
+
+    def post(self, request, entity_id: int):
+        if not Entity.objects.filter(id=entity_id).exists():
+            return Response(
+                "Failed to get entity of specified id", status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = EntryExportSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                "Parameters in post body is invalid", status=status.HTTP_400_BAD_REQUEST
+            )
+
+        job_params = {
+            "export_format": serializer.validated_data["format"],
+            "target_id": entity_id,
+        }
+
+        # check whether same job is sent
+        job_status_not_finished = [Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"]]
+        if (
+            Job.get_job_with_params(request.user, job_params)
+            .filter(status__in=job_status_not_finished)
+            .exists()
+        ):
+            return Response(
+                "Same export processing is under execution", status=status.HTTP_400_BAD_REQUEST
+            )
+
+        entity = Entity.objects.get(id=entity_id)
+        if not request.user.has_permission(entity, ACLType.Readable):
+            return Response(
+                'Permission denied to _value "%s"' % entity.name, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # create a job to export search result and run it
+        job = Job.new_export(
+            request.user,
+            **{
+                "text": "entry_%s.%s" % (entity.name, job_params["export_format"]),
+                "target": entity,
+                "params": job_params,
+            },
+        )
+        job.run()
+
+        return Response(
+            {"result": "Succeed in registering export processing. " + "Please check Job list."},
+            status=status.HTTP_200_OK,
+        )

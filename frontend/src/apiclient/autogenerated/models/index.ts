@@ -13,6 +13,7 @@ export * from "./EntityUpdate";
 export * from "./EntryBase";
 export * from "./EntryCopy";
 export * from "./EntryCreate";
+export * from "./EntryExport";
 export * from "./EntryRetrieve";
 export * from "./EntryRetrieveAttrs";
 export * from "./EntryRetrieveValue";

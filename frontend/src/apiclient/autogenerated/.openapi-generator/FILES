@@ -18,6 +18,7 @@ models/EntityUpdate.ts
 models/EntryBase.ts
 models/EntryCopy.ts
 models/EntryCreate.ts
+models/EntryExport.ts
 models/EntryRetrieve.ts
 models/EntryRetrieveAttrs.ts
 models/EntryRetrieveValue.ts

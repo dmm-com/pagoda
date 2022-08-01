@@ -458,3 +458,12 @@ class GetEntrySimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Entry
         fields = ("id", "name")
+
+
+class EntryExportSerializer(serializers.Serializer):
+    format = serializers.CharField(default="yaml")
+
+    def validate_format(self, data: str) -> str:
+        if data.lower() == "csv":
+            return "csv"
+        return "yaml"

@@ -315,6 +315,23 @@ class AironeApiClientV2 {
     });
   }
 
+  async exportEntries(entityId: number, format: string): Promise<void> {
+    await this.entry.entryApiV2ExportCreate(
+      {
+        entityId,
+        entryExport: {
+          format,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
   // FIXME replace with auto-generated client code
   async advancedSearchEntries(
     entityIds: number[] = [],

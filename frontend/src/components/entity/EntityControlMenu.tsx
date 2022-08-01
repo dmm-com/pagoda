@@ -21,7 +21,6 @@ import {
 } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Confirmable } from "components/common/Confirmable";
-import { exportEntries } from "utils/AironeAPIClient";
 
 type ExportFormatType = "YAML" | "CSV";
 
@@ -57,12 +56,12 @@ export const EntityControlMenu: FC<Props> = ({
       });
   };
   const handleExport = async (entityId: number, format: ExportFormatType) => {
-    const resp = await exportEntries(entityId, format);
-    if (resp.ok) {
+    try {
+      await aironeApiClientV2.exportEntries(entityId, format);
       enqueueSnackbar("エンティティのエクスポートのジョブ登録が成功しました", {
         variant: "success",
       });
-    } else {
+    } catch (e) {
       enqueueSnackbar("エンティティのエクスポートのジョブ登録が失敗しました", {
         variant: "error",
       });
