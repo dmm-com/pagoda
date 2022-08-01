@@ -17,6 +17,7 @@ import {
   entitiesPath,
   importEntriesPath,
   restoreEntryPath,
+  topPath,
 } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Confirmable } from "components/common/Confirmable";
@@ -45,6 +46,8 @@ export const EntityControlMenu: FC<Props> = ({
         enqueueSnackbar("エンティティの削除が完了しました", {
           variant: "success",
         });
+        // A magic to reload the entity list with keeping snackbar
+        history.replace(topPath());
         history.replace(entitiesPath());
       })
       .catch((e) => {
