@@ -109,6 +109,7 @@ class ModelTest(AironeTestCase):
             Job.STATUS["ERROR"],
             Job.STATUS["TIMEOUT"],
             Job.STATUS["CANCELED"],
+            Job.STATUS["WARNING"],
         ]:
             job.status = status
             job.save(update_fields=["status"])
