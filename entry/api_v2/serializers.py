@@ -429,7 +429,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
         # add and remove attributes depending on entity
         if custom_view.is_custom("get_entry_attr", obj.schema.name):
-            attrinfo = custom_view.call_custom("get_entry_attr", obj.schema.name, obj, attrinfo)
+            attrinfo = custom_view.call_custom(
+                "get_entry_attr", obj.schema.name, obj, attrinfo, True
+            )
 
         return attrinfo
 

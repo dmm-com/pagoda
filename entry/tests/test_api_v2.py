@@ -354,11 +354,12 @@ class ViewTest(AironeViewTest):
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_retrieve_entry_with_customview(self, mock_call_custom):
-        def side_effect(handler_name, entity_name, entry, entry_attrs):
+        def side_effect(handler_name, entity_name, entry, entry_attrs, is_v2):
             self.assertEqual(handler_name, "get_entry_attr")
             self.assertEqual(entity_name, "test-entity")
             self.assertEqual(entry.name, "test-entry")
             self.assertEqual(len(entry_attrs), len(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY))
+            self.assertEqual(is_v2, True)
 
             # add attribute
             entry_attrs.append(
