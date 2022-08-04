@@ -1,14 +1,10 @@
 import {
   Box,
-  Button,
-  Checkbox,
   MenuItem,
-  Paper,
   Select,
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   Theme,
@@ -73,71 +69,58 @@ export const ACLForm: FC<Props> = ({ objectId, acl }) => {
   };
 
   return (
-    <form>
-      <Box className="container">
-        <Box className="row">
-          <Box className="col">
-            <span className="float-left">
-              公開：
-              <Checkbox
-                checked={isPublic}
-                onChange={(e) => setIsPublic(e.target.checked)}
-              />
-            </span>
-            <span className="float-right">
-              <Button
-                className={classes.button}
-                variant="contained"
-                color="secondary"
-                onClick={handleSubmit}
+    <Box>
+      <Table className="table table-bordered">
+        <TableHead>
+          <TableRow sx={{ backgroundColor: "#455A64" }}>
+            <TableCell sx={{ color: "#FFFFFF" }}>項目</TableCell>
+            <TableCell sx={{ color: "#FFFFFF" }}>内容</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            <TableCell>公開設定</TableCell>
+            <TableCell>
+              {/* TODO fix width */}
+              <Select
+                fullWidth={true}
+                value={isPublic ? 1 : 0}
+                onChange={(e) => setIsPublic(e.target.value === 1)}
               >
-                保存
-              </Button>
-            </span>
-          </Box>
-        </Box>
-      </Box>
+                <MenuItem value={1}>公開</MenuItem>
+                <MenuItem value={0}>限定公開</MenuItem>
+              </Select>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
 
-      <TableContainer component={Paper}>
-        <Table>
+      <Box>
+        <Box my="32px">
+          <Typography variant="h4" align="center">
+            公開制限設定
+          </Typography>
+        </Box>
+
+        <Table className="table table-bordered">
           <TableHead>
-            <TableRow>
-              <TableCell>
-                <Typography>ユーザ or グループ</Typography>
-              </TableCell>
-              <TableCell align="left">
-                <Typography>権限</Typography>
-              </TableCell>
+            <TableRow sx={{ backgroundColor: "#455A64" }}>
+              <TableCell sx={{ color: "#FFFFFF" }}>ロール</TableCell>
+              <TableCell sx={{ color: "#FFFFFF" }}>備考</TableCell>
+              <TableCell />
             </TableRow>
           </TableHead>
           <TableBody>
-            {acl.members.map((member) => (
-              <TableRow key={member.name}>
-                <TableCell>
-                  <Typography>{member.name}</Typography>
-                </TableCell>
-                <TableCell align="left">
-                  <Select
-                    value={permissions[member.name]}
-                    onChange={(e) =>
-                      setPermissions({
-                        ...permissions,
-                        [member.name]: e.target.value,
-                      })
-                    }
-                  >
-                    {acl.acltypes.map((acltype) => (
-                      <MenuItem key={acltype.id} value={acltype.id}>
-                        {acltype.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </TableCell>
+            {(acl as any)?.roles?.map((role) => (
+              <TableRow>
+                <TableCell>role.name</TableCell>
+                <TableCell>role.description</TableCell>
+                <TableCell>{/* FIXME select a permission */}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
-    </form>
+      </Box>
+    </Box>
   );
 };

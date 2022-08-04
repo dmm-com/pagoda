@@ -1,8 +1,9 @@
-import { Box, Typography } from "@mui/material";
-import React, { FC } from "react";
+import { Box, Button, Typography } from "@mui/material";
+import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { PageHeader } from "../components/common/PageHeader";
 import { useTypedParams } from "../hooks/useTypedParams";
 
 import { topPath } from "Routes";
@@ -13,10 +14,14 @@ import { Loading } from "components/common/Loading";
 
 export const ACLPage: FC = () => {
   const { objectId } = useTypedParams<{ objectId: number }>();
+  const [submittable, setSubmittable] = useState<boolean>(false); // FIXME
 
   const acl = useAsync(async () => {
     return await aironeApiClientV2.getAcl(objectId);
   });
+
+  const handleSubmit = async () => {};
+  const handleCancel = async () => {};
 
   return (
     <Box className="container-fluid">
@@ -27,13 +32,38 @@ export const ACLPage: FC = () => {
         <Typography color="textPrimary">ACL</Typography>
       </AironeBreadcrumbs>
 
+      <PageHeader
+        title={acl.value?.name}
+        subTitle="ACL設定"
+        componentSubmits={
+          <Box display="flex" justifyContent="center">
+            <Box mx="4px">
+              <Button
+                variant="contained"
+                color="secondary"
+                disabled={!submittable}
+                onClick={handleSubmit}
+              >
+                保存
+              </Button>
+            </Box>
+            <Box mx="4px">
+              <Button variant="outlined" color="primary" onClick={handleCancel}>
+                キャンセル
+              </Button>
+            </Box>
+          </Box>
+        }
+      />
+
       {acl.loading ? (
         <Loading />
       ) : (
-        <>
-          <Typography>{acl.value.name} の ACL 設定</Typography>
+        <Box
+          sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}
+        >
           <ACLForm objectId={objectId} acl={acl.value} />
-        </>
+        </Box>
       )}
     </Box>
   );
