@@ -1,5 +1,6 @@
 import SearchIcon from "@mui/icons-material/Search";
 import {
+  Box,
   InputAdornment,
   TableCell,
   TableRow,
@@ -8,8 +9,9 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useReducer } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation, Link } from "react-router-dom";
 
+import { entryDetailsPath } from "Routes";
 import { PaginatedTable } from "components/common/PaginatedTable";
 import { AttributeValue } from "components/entry/AttributeValue";
 
@@ -29,6 +31,7 @@ interface Props {
   results: {
     attrs: Map<string, { type: number; value: any }>;
     entry: {
+      id: number;
       name: string;
     };
     referrals: {
@@ -89,6 +92,8 @@ export const SearchResults: FC<Props> = ({
       history.go(0);
     }
   };
+
+  console.log("results", results);
 
   return (
     <PaginatedTable
@@ -221,7 +226,9 @@ export const SearchResults: FC<Props> = ({
               zIndex: 1,
             }}
           >
-            <Typography>{result.entry.name}</Typography>
+            <Box component={Link} to={entryDetailsPath(0, result.entry.id)}>
+              {result.entry.name}
+            </Box>
           </TableCell>
           {Object.keys(attrsFilter).map((attrName) => (
             <TableCell sx={{ minWidth: "300px" }} key={attrName}>
@@ -234,7 +241,13 @@ export const SearchResults: FC<Props> = ({
             <TableCell sx={{ minWidth: "300px" }}>
               {result.referrals.map((referral) => {
                 return (
-                  <Typography key={referral.id}>{referral.name}</Typography>
+                  <Box
+                    key={referral.id}
+                    component={Link}
+                    to={entryDetailsPath(0, referral.id)}
+                  >
+                    {referral.name}
+                  </Box>
                 );
               })}
             </TableCell>
