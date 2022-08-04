@@ -93,8 +93,6 @@ export const SearchResults: FC<Props> = ({
     }
   };
 
-  console.log("results", results);
-
   return (
     <PaginatedTable
       rows={results}
