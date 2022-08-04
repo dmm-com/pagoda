@@ -35,15 +35,15 @@ export const ACLForm: FC<Props> = ({ objectId, acl }) => {
 
   const djangoContext = DjangoContext.getInstance();
   const [isPublic, setIsPublic] = useState(acl.isPublic);
+  const [defaultPermission, setDefaultPermission] = useState(
+    acl.defaultPermission
+  );
   // TODO correct way to collect member permissions?
   const [permissions, setPermissions] = useState(
-    acl.members.reduce((obj, m) => {
+    acl.roles.reduce((obj, role) => {
       return {
         ...obj,
-        [m.name]:
-          m.current_permission > 0
-            ? m.current_permission
-            : acl.defaultPermission,
+        [role.id]: role,
       };
     }, {})
   );
@@ -70,7 +70,7 @@ export const ACLForm: FC<Props> = ({ objectId, acl }) => {
     history.go(0);
   };
 
-  console.log("[onix(10)] djangoContext: ", djangoContext);
+  console.log("[onix(10)] permissions: ", permissions);
 
   return (
     <Box>
@@ -115,26 +115,47 @@ export const ACLForm: FC<Props> = ({ objectId, acl }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {acl.roles?.map((role) => (
-              <TableRow key={role.id}>
-                <TableCell>{role.name}</TableCell>
-                <TableCell>{role.description}</TableCell>
+            <TableRow>
+              <TableCell>全員</TableCell>
+              <TableCell></TableCell>
+              <TableCell>
+                <Select
+                  fullWidth={true}
+                  value={defaultPermission}
+                  onChange={(e) => setDefaultPermission(Number(e.target.value))}
+                >
+                  {djangoContext.aclTypes.map((acltype, index) => (
+                    <MenuItem key={index} value={acltype.value}>
+                      {acltype.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </TableCell>
+            </TableRow>
+            {Object.keys(permissions).map((key, index) => (
+              <TableRow key={index}>
+                <TableCell>{permissions[key].name}</TableCell>
+                <TableCell>{permissions[key].description}</TableCell>
                 <TableCell>
                   <Select
                     fullWidth={true}
-                    value={role.current_permission}
-                    onChange={(e) => setIsPublic(e.target.value === 1)}
+                    value={permissions[key].current_permission}
+                    onChange={(e) =>
+                      setPermissions({
+                        ...permissions,
+                        [key]: {
+                          ...permissions[key],
+                          current_permission: e.target.value,
+                        },
+                      })
+                    }
                   >
-                    {djangoContext.aclTypes.map((acltype, index) => {
-                      {
-                        console.log("[onix(11)] djangoContext: ", acltype);
-                      }
-                      return (
-                        <MenuItem key={index} value={acltype.value}>
-                          {acltype.name}
-                        </MenuItem>
-                      );
-                    })}
+                    <MenuItem value={0}>(未設定)</MenuItem>
+                    {djangoContext.aclTypes.map((acltype, index) => (
+                      <MenuItem key={index} value={acltype.value}>
+                        {acltype.name}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </TableCell>
               </TableRow>

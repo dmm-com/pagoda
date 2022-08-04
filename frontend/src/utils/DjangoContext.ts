@@ -46,7 +46,6 @@ export class DjangoContext {
     };
 
     this.aclTypes = [
-      { value: 0, name: "　" },
       { value: 1, name: "権限なし" },
       { value: 2, name: "閲覧" },
       { value: 4, name: "閲覧・編集" },
