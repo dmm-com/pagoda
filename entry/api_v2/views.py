@@ -271,7 +271,7 @@ class AdvancedSearchAPI(APIView):
                     "is_readble": attr["is_readble"],
                     "type": attr["type"],
                     "value": {
-                        _get_typed_value(attr["type"]): attr["value"],
+                        _get_typed_value(attr["type"]): attr.get("value", ""),
                     },
                 }
 
