@@ -235,11 +235,13 @@ Object {
                     <td
                       class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-ball5i-MuiTableCell-root"
                     >
-                      <p
-                        class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      <a
+                        class="MuiBox-root css-0"
+                        href="/new-ui/entities/0/entries/undefined/details"
+                        sx="[object Object]"
                       >
                         entry1
-                      </p>
+                      </a>
                     </td>
                   </tr>
                 </tbody>
@@ -580,11 +582,13 @@ Object {
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-ball5i-MuiTableCell-root"
                   >
-                    <p
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    <a
+                      class="MuiBox-root css-0"
+                      href="/new-ui/entities/0/entries/undefined/details"
+                      sx="[object Object]"
                     >
                       entry1
-                    </p>
+                    </a>
                   </td>
                 </tr>
               </tbody>

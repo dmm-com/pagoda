@@ -21,6 +21,7 @@ import { useTypedParams } from "../hooks/useTypedParams";
 import {
   entitiesPath,
   entityEntriesPath,
+  entryDetailsPath,
   restoreEntryPath,
   topPath,
 } from "Routes";
@@ -59,6 +60,11 @@ export const EntryDetailsPage: FC = () => {
     throw new FailedToGetEntry(
       "Failed to get Entry from AirOne APIv2 endpoint"
     );
+  }
+
+  // When user specifies invalid entityId, redirect to the page that is correct entityId
+  if (!entry.loading && entry.value.schema.id != entityId) {
+    history.replace(entryDetailsPath(entry.value.schema.id, entryId));
   }
 
   // If it'd been deleted, show restore-entry page instead
