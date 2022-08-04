@@ -16,6 +16,7 @@ class ACLSerializer(serializers.ModelSerializer):
     parent = serializers.SerializerMethodField(method_name="get_parent", read_only=True)
     acltypes = serializers.SerializerMethodField(method_name="get_acltypes", read_only=True)
     members = serializers.SerializerMethodField(method_name="get_members", read_only=True)
+    roles = serializers.SerializerMethodField(method_name="get_roles", read_only=True)
     # TODO better name?
     acl = serializers.ListField(write_only=True)
 
@@ -31,6 +32,7 @@ class ACLSerializer(serializers.ModelSerializer):
             "acltypes",
             "members",
             "acl",
+            "roles",
         ]
 
     def get_parent(self, obj: ACLBase) -> Optional[Any]:
@@ -69,6 +71,20 @@ class ACLSerializer(serializers.ModelSerializer):
                 "type": "group",
             }
             for x in Group.objects.filter(is_active=True)
+        ]
+
+    def get_roles(self, obj: ACLBase) -> List[Dict[str, Any]]:
+        user = self.context["request"].user
+
+        return [
+            {
+                "id": x.id,
+                "name": x.name,
+                "description": x.description,
+                "current_permission": x.get_current_permission(obj),
+            }
+            for x in Role.objects.filter(is_active=True)
+            if user.is_superuser or x.is_belonged_to(user)
         ]
 
     def validate_default_permission(self, default_permission: int):

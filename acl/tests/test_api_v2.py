@@ -9,6 +9,10 @@ from role.models import Role
 class ACLAPITest(AironeViewTest):
     def test_retrieve(self):
         user = self.admin_login()
+        role = Role.objects.create(name="role")
+        role.users.add(user)
+        role.description = "for Test"
+        role.save()
 
         acl = ACLBase.objects.create(name="test", created_user=user)
 
@@ -17,6 +21,17 @@ class ACLAPITest(AironeViewTest):
         body = resp.json()
         self.assertEqual(body["id"], acl.id)
         self.assertEqual(body["name"], acl.name)
+        self.assertEqual(
+            body["roles"],
+            [
+                {
+                    "id": role.id,
+                    "name": role.name,
+                    "description": role.description,
+                    "current_permission": 0,
+                }
+            ],
+        )
 
     def test_retrieve_by_others(self):
         user = self.admin_login()

@@ -85,6 +85,7 @@ class AironeApiClientV2 {
           parent: undefined,
           acltypes: undefined,
           members: undefined,
+          roles: undefined,
         },
       },
       {

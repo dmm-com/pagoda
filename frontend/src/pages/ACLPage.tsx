@@ -20,8 +20,12 @@ export const ACLPage: FC = () => {
     return await aironeApiClientV2.getAcl(objectId);
   });
 
-  const handleSubmit = async () => {};
-  const handleCancel = async () => {};
+  const handleSubmit = async () => {
+    return undefined;
+  };
+  const handleCancel = async () => {
+    return undefined;
+  };
 
   return (
     <Box className="container-fluid">
