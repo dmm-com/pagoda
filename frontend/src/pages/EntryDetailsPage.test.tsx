@@ -8,7 +8,9 @@ import {
   screen,
 } from "@testing-library/react";
 import React from "react";
+import { MemoryRouter, Route } from "react-router-dom";
 
+import { entryDetailsPath } from "Routes";
 import { EntryDetailsPage } from "pages/EntryDetailsPage";
 import { TestWrapper } from "utils/TestWrapper";
 
@@ -55,9 +57,17 @@ test("should match snapshot", async () => {
   /* eslint-enable */
 
   // wait async calls and get rendered fragment
-  const result = render(<EntryDetailsPage />, {
-    wrapper: TestWrapper,
-  });
+  const result = render(
+    <MemoryRouter initialEntries={["/new-ui/entities/2/entries/1/details"]}>
+      <Route
+        path={entryDetailsPath(":entityId", ":entryId")}
+        component={EntryDetailsPage}
+      />
+    </MemoryRouter>,
+    {
+      wrapper: TestWrapper,
+    }
+  );
   await waitForElementToBeRemoved(screen.getByTestId("loading"));
 
   expect(result).toMatchSnapshot();
