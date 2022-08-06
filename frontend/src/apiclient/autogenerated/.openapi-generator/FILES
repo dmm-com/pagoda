@@ -26,6 +26,7 @@ models/EntryRetrieveValueAsGroup.ts
 models/EntryRetrieveValueAsObject.ts
 models/EntryRetrieveValueAsObjectSchema.ts
 models/EntryUpdate.ts
+models/GetEntryAttrReferral.ts
 models/GetEntrySimple.ts
 models/Group.ts
 models/PaginatedEntityListList.ts

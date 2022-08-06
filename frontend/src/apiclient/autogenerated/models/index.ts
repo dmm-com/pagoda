@@ -21,6 +21,7 @@ export * from "./EntryRetrieveValueAsGroup";
 export * from "./EntryRetrieveValueAsObject";
 export * from "./EntryRetrieveValueAsObjectSchema";
 export * from "./EntryUpdate";
+export * from "./GetEntryAttrReferral";
 export * from "./GetEntrySimple";
 export * from "./Group";
 export * from "./PaginatedEntityListList";

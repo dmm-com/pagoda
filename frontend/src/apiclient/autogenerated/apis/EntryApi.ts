@@ -29,10 +29,18 @@ import {
   EntryUpdate,
   EntryUpdateFromJSON,
   EntryUpdateToJSON,
+  GetEntryAttrReferral,
+  GetEntryAttrReferralFromJSON,
+  GetEntryAttrReferralToJSON,
   PaginatedGetEntrySimpleList,
   PaginatedGetEntrySimpleListFromJSON,
   PaginatedGetEntrySimpleListToJSON,
 } from "../models";
+
+export interface EntryApiV2AttrReferralsListRequest {
+  attrId: number;
+  keyword?: string;
+}
 
 export interface EntryApiV2CopyCreateRequest {
   id: number;
@@ -121,6 +129,75 @@ export class EntryApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<void> {
     await this.entryApiV2AdvancedSearchCreateRaw(initOverrides);
+  }
+
+  /**
+   */
+  async entryApiV2AttrReferralsListRaw(
+    requestParameters: EntryApiV2AttrReferralsListRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<Array<GetEntryAttrReferral>>> {
+    if (
+      requestParameters.attrId === null ||
+      requestParameters.attrId === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "attrId",
+        "Required parameter requestParameters.attrId was null or undefined when calling entryApiV2AttrReferralsList."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters.keyword !== undefined) {
+      queryParameters["keyword"] = requestParameters.keyword;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/{attr_id}/attr_referrals/`.replace(
+          `{${"attr_id"}}`,
+          encodeURIComponent(String(requestParameters.attrId))
+        ),
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      jsonValue.map(GetEntryAttrReferralFromJSON)
+    );
+  }
+
+  /**
+   */
+  async entryApiV2AttrReferralsList(
+    requestParameters: EntryApiV2AttrReferralsListRequest,
+    initOverrides?: RequestInit
+  ): Promise<Array<GetEntryAttrReferral>> {
+    const response = await this.entryApiV2AttrReferralsListRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
   }
 
   /**

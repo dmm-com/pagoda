@@ -4,7 +4,7 @@ from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
-from entity.models import Entity
+from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
     EntryBaseSerializer,
@@ -20,10 +20,13 @@ from entry.api_v2.serializers import (
     EntryExportSerializer,
     EntryRetrieveSerializer,
     EntryUpdateSerializer,
+    GetEntryAttrReferralSerializer,
     GetEntrySimpleSerializer,
 )
-from entry.models import AttributeValue, Entry
+from entry.models import Attribute, AttributeValue, Entry
+from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
+from group.models import Group
 from job.models import Job
 from user.models import User
 
@@ -359,3 +362,40 @@ class EntryExportAPI(generics.GenericAPIView):
             {"result": "Succeed in registering export processing. " + "Please check Job list."},
             status=status.HTTP_200_OK,
         )
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter("keyword", OpenApiTypes.STR, OpenApiParameter.QUERY),
+    ],
+)
+class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = GetEntryAttrReferralSerializer
+
+    def get_queryset(self):
+        attr_id = self.kwargs["attr_id"]
+        keyword = self.request.query_params.get("keyword", None)
+
+        attr = Attribute.objects.filter(id=attr_id).first()
+        if attr:
+            entity_attr = attr.schema
+        else:
+            entity_attr = EntityAttr.objects.filter(id=attr_id).first()
+        if not entity_attr:
+            raise NotFound(f"not found matched attribute or entity attr: {attr_id}")
+
+        conditions = {"is_active": True}
+        if keyword:
+            conditions["name__icontains"] = keyword
+
+        # TODO support natural sort?
+        if entity_attr.type & AttrTypeValue["object"]:
+            return Entry.objects.filter(
+                **conditions, schema__in=entity_attr.referral.all()
+            ).order_by("name")[0 : CONFIG.MAX_LIST_REFERRALS]
+        elif entity_attr.type & AttrTypeValue["group"]:
+            return Group.objects.filter(**conditions).order_by("name")[
+                0 : CONFIG.MAX_LIST_REFERRALS
+            ]
+        else:
+            raise ValidationError(f"unsupported attr type: {entity_attr.type}")

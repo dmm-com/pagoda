@@ -20,6 +20,7 @@ from airone.lib.types import (
 from entity.models import Entity, EntityAttr
 from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
+from entry.settings import CONFIG
 from group.models import Group
 from job.models import Job, JobOperation
 from role.models import Role
@@ -1645,3 +1646,155 @@ class ViewTest(AironeViewTest):
 
             data = content.replace(header, "", 1).strip()
             self.assertEqual(data, '"%s,""ENTRY""",' % type_name + case[2])
+
+    def test_get_attr_referrals_of_group(self):
+        user = self.guest_login("guest2")
+
+        # initialize instances to be used in this test case
+        groups = [Group.objects.create(name=x) for x in ["g-foo", "g-bar", "g-baz"]]
+        entity = Entity.objects.create(name="Entity", created_user=user)
+        for (name, type_index) in [("grp", "group"), ("arr_group", "array_group")]:
+            entity.attrs.add(
+                EntityAttr.objects.create(
+                    **{
+                        "name": name,
+                        "type": AttrTypeValue[type_index],
+                        "created_user": user,
+                        "parent_entity": entity,
+                    }
+                )
+            )
+
+        # test to get groups through API calling of get_attr_referrals
+        for attr in entity.attrs.all():
+            resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id)
+            self.assertEqual(resp.status_code, 200)
+
+            # This expects results has all groups information.
+            self.assertEqual(
+                sorted(resp.json(), key=lambda x: x["id"]),
+                sorted(
+                    [{"id": g.id, "name": g.name} for g in Group.objects.all()],
+                    key=lambda x: x["id"],
+                ),
+            )
+
+        # test to get groups which are only active and matched with keyword
+        groups[2].delete()
+        for attr in entity.attrs.all():
+            resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id, {"keyword": "ba"})
+            self.assertEqual(resp.status_code, 200)
+
+            # This expects results has only information of 'g-bar' because 'g-foo' is
+            # not matched with keyword and 'g-baz' has already been deleted.
+            self.assertEqual(resp.json(), [{"id": groups[1].id, "name": groups[1].name}])
+
+    def test_get_attr_referrals_of_entry(self):
+        admin = self.admin_login()
+
+        # create Entity&Entries
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=admin)
+
+        entity = Entity.objects.create(name="Entity", created_user=admin)
+        entity_attr = EntityAttr.objects.create(
+            **{
+                "name": "Refer",
+                "type": AttrTypeValue["object"],
+                "created_user": admin,
+                "parent_entity": entity,
+            }
+        )
+
+        entity_attr.referral.add(ref_entity)
+        entity.attrs.add(entity_attr)
+
+        for index in range(CONFIG.MAX_LIST_REFERRALS, -1, -1):
+            Entry.objects.create(name="e-%s" % index, schema=ref_entity, created_user=admin)
+
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=admin)
+
+        # get Attribute object after complement them in the entry
+        entry.complement_attrs(admin)
+        attr = entry.attrs.get(name="Refer")
+
+        # try to get entries without keyword
+        resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()), CONFIG.MAX_LIST_REFERRALS)
+
+        # specify invalid Attribute ID
+        resp = self.client.get("/entry/api/v2/9999/attr_referrals/")
+        self.assertEqual(resp.status_code, 404)
+
+        # speify valid Attribute ID and a enalbed keyword
+        resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id, {"keyword": "e-1"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "application/json")
+
+        # This means e-1 and 'e-10' to 'e-19' are returned
+        self.assertEqual(len(resp.json()), 11)
+
+        # speify valid Attribute ID and a unabailabe keyword
+        resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id, {"keyword": "hoge"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()), 0)
+
+        # Add new data
+        for index in [101, 111, 100, 110]:
+            Entry.objects.create(name="e-%s" % index, schema=ref_entity, created_user=admin)
+
+        # Run with 'e-1' as keyword
+        resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id, {"keyword": "e-1"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "application/json")
+
+        # Check the number of return values
+        self.assertEqual(len(resp.json()), 15)
+
+        # TODO support natural sort?
+        # Check if it is sorted in the expected order
+        # targets = [1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 100, 101, 110, 111]
+        # for i, res in enumerate(resp.json()):
+        #     self.assertEqual(res["name"], "e-%s" % targets[i])
+
+        # send request with keywords that hit more than MAX_LIST_REFERRALS
+        Entry.objects.create(name="e", schema=ref_entity, created_user=admin)
+
+        resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id, {"keyword": "e"})
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual(resp.json()[0]["name"], "e")
+
+    def test_get_attr_referrals_with_entity_attr(self):
+        """
+        This test is needed because the get_attr_referrals API will receive an ID
+        of Attribute from entry.edit view, but also receive an EntityAttr's one
+        from entry.create view.
+        """
+        admin = self.admin_login()
+
+        # create Entity&Entries
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=admin)
+        for index in range(0, CONFIG.MAX_LIST_REFERRALS + 1):
+            Entry.objects.create(name="e-%s" % index, schema=ref_entity, created_user=admin)
+
+        entity = Entity.objects.create(name="Entity", created_user=admin)
+        entity_attr = EntityAttr.objects.create(
+            **{
+                "name": "Refer",
+                "type": AttrTypeValue["named_object"],
+                "created_user": admin,
+                "parent_entity": entity,
+            }
+        )
+        entity_attr.referral.add(ref_entity)
+        entity.attrs.add(entity_attr)
+
+        resp = self.client.get(
+            "/entry/api/v2/%d/attr_referrals/" % entity_attr.id, {"keyword": "e-1"}
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "application/json")
+
+        # This means e-1 and 'e-10' to 'e-19' are returned
+        self.assertEqual(len(resp.json()), 11)
