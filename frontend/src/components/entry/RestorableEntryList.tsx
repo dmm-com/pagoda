@@ -48,6 +48,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    margin: "5% 0",
   },
   paper: {
     backgroundColor: theme.palette.background.paper,
@@ -55,6 +56,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     boxShadow: theme.shadows[5],
     padding: theme.spacing(2, 4, 2),
     width: "50%",
+    maxHeight: "100%",
+    overflowY: "scroll",
   },
 }));
 
