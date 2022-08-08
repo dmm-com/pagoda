@@ -104,9 +104,9 @@
 
             <!-- set status -->
             {% if job.status == JOB.STATUS.PROCESSING %}
-            <td class='status table-warning'>処理中</td>
+            <td class='status table-light'>処理中</td>
             {% elif job.status == JOB.STATUS.PREPARING %}
-            <td class='status table-warning'>処理前</td>
+            <td class='status table-light'>処理前</td>
             {% elif job.status == JOB.STATUS.DONE %}
             <td class='status table-success'>完了</td>
             {% elif job.status == JOB.STATUS.ERROR %}
@@ -115,6 +115,8 @@
             <td class='status table-danger'>タイムアウト</td>
             {% elif job.status == JOB.STATUS.CANCELED %}
             <td class='status table-success'>キャンセル</td>
+            {% elif job.status == JOB.STATUS.WARNING %}
+            <td class='status table-warning'>警告</td>
             {% else %}
             <td class='status'></td>
             {% endif %}

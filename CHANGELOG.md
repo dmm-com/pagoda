@@ -10,6 +10,10 @@
   at Entity list view.
   Contributed by @syucream
 
+* Introduced new Job's status WARNING, that is intermediate
+  status between succeed and error.
+  Contributed by @userlocalhost
+
 ### Fixed
 
 * (New-UI) Perform animation when reordering entity attribute

@@ -77,6 +77,7 @@ class Job(models.Model):
         "TIMEOUT": 4,
         "PROCESSING": 5,
         "CANCELED": 6,
+        "WARNING": 7,
     }
 
     # In some jobs sholdn't make user aware of existence because of user experience
@@ -148,6 +149,7 @@ class Job(models.Model):
             Job.STATUS["ERROR"],
             Job.STATUS["TIMEOUT"],
             Job.STATUS["CANCELED"],
+            Job.STATUS["WARNING"],
         ]
 
         return self.status in finished_status or self.is_timeout()
