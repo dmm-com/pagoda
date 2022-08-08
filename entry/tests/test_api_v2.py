@@ -5,6 +5,7 @@ from unittest import mock
 from unittest.mock import Mock, patch
 
 import yaml
+from rest_framework.exceptions import ValidationError
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
@@ -689,20 +690,6 @@ class ViewTest(AironeViewTest):
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_update_entry_with_customview(self, mock_call_custom):
-        def side_effect(handler_name, entity_name, user, *args):
-            self.assertEqual(entity_name, self.entity.name)
-            self.assertEqual(user, self.user)
-            self.assertEqual(args[1], entry)
-
-            # Check specified parameters are expected
-            if handler_name == "before_update_entry":
-                self.assertEqual(args[0], params)
-
-            if handler_name == "after_update_entry":
-                self.assertEqual(args[0], params["attrs"])
-
-        mock_call_custom.side_effect = side_effect
-
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
         attr = {}
         for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
@@ -713,8 +700,34 @@ class ViewTest(AironeViewTest):
                 {"id": attr["val"].id, "value": "fuga"},
             ],
         }
-        self.client.put("/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json")
 
+        def side_effect(handler_name, entity_name, user, *args):
+            raise ValidationError("update error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), ["update error"])
+
+        def side_effect(handler_name, entity_name, user, *args):
+            self.assertEqual(entity_name, self.entity.name)
+            self.assertEqual(user, self.user)
+
+            # Check specified parameters are expected
+            if handler_name == "before_update_entry_v2":
+                self.assertEqual(args[0], params)
+                return args[0]
+
+            if handler_name == "after_update_entry_v2":
+                self.assertEqual(args[0], entry)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
         self.assertTrue(mock_call_custom.called)
 
     def test_update_entry_with_no_update(self):
@@ -864,16 +877,25 @@ class ViewTest(AironeViewTest):
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_destroy_entry_with_custom_view(self, mock_call_custom):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+
         def side_effect(handler_name, entity_name, user, entry):
-            self.assertTrue(handler_name in ["before_delete_entry", "after_delete_entry"])
+            raise ValidationError("delete error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), ["delete error"])
+
+        def side_effect(handler_name, entity_name, user, entry):
+            self.assertTrue(handler_name in ["before_delete_entry_v2", "after_delete_entry_v2"])
             self.assertEqual(entity_name, self.entity.name)
             self.assertEqual(user, self.user)
             self.assertEqual(entry, entry)
 
         mock_call_custom.side_effect = side_effect
-
-        entry: Entry = self.add_entry(self.user, "entry", self.entity)
-        self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
+        resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
+        self.assertEqual(resp.status_code, 204)
         self.assertTrue(mock_call_custom.called)
 
     @mock.patch("entry.tasks.notify_delete_entry.delay")
@@ -985,17 +1007,26 @@ class ViewTest(AironeViewTest):
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_restore_entry_with_custom_view(self, mock_call_custom):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+        entry.delete()
+
         def side_effect(handler_name, entity_name, user, entry):
-            self.assertTrue(handler_name in ["before_restore_entry", "after_restore_entry"])
+            raise ValidationError("restore error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), ["restore error"])
+
+        def side_effect(handler_name, entity_name, user, entry):
+            self.assertTrue(handler_name in ["before_restore_entry_v2", "after_restore_entry_v2"])
             self.assertEqual(entity_name, self.entity.name)
             self.assertEqual(user, self.user)
             self.assertEqual(entry, entry)
 
         mock_call_custom.side_effect = side_effect
-
-        entry: Entry = self.add_entry(self.user, "entry", self.entity)
-        entry.delete()
-        self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
+        resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
+        self.assertEqual(resp.status_code, 201)
         self.assertTrue(mock_call_custom.called)
 
     @mock.patch("entry.tasks.notify_create_entry.delay")

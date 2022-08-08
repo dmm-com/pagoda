@@ -3,6 +3,7 @@ import json
 from unittest import mock
 
 from django.urls import reverse
+from rest_framework.exceptions import ValidationError
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeArrStr, AttrTypeStr, AttrTypeText, AttrTypeValue
@@ -925,28 +926,41 @@ class ViewTest(AironeViewTest):
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_create_entity_with_customview(self, mock_call_custom):
-        def side_effect(handler_name, entity_name, validated_data):
-            # Check specified parameters are expected
-            self.assertEqual(handler_name, "before_create_entity")
-            self.assertIsNone(entity_name)
-            self.assertEqual(
-                validated_data,
-                {
-                    "name": "hoge",
-                    "is_toplevel": False,
-                    "attrs": [],
-                    "webhooks": [],
-                    "created_user": self.user,
-                },
-            )
+        params = {"name": "hoge"}
+
+        def side_effect(handler_name, entity_name, user, *args):
+            raise ValidationError("create error")
 
         mock_call_custom.side_effect = side_effect
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), ["create error"])
 
-        params = {
-            "name": "hoge",
-        }
-        self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        def side_effect(handler_name, entity_name, user, *args):
+            # Check specified parameters are expected
+            self.assertIsNone(entity_name)
+            self.assertEqual(user, self.user)
 
+            if handler_name == "before_create_entity_v2":
+                self.assertEqual(
+                    args[0],
+                    {
+                        "name": "hoge",
+                        "is_toplevel": False,
+                        "attrs": [],
+                        "webhooks": [],
+                        "created_user": self.user,
+                    },
+                )
+                return args[0]
+
+            if handler_name == "after_create_entity_v2":
+                entity = Entity.objects.get(name="hoge", is_active=True)
+                self.assertEqual(args[0], entity)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 201)
         self.assertTrue(mock_call_custom.called)
 
     def test_update_entity(self):
@@ -1772,23 +1786,39 @@ class ViewTest(AironeViewTest):
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_update_entity_with_customview(self, mock_call_custom):
-        def side_effect(handler_name, entity_name, validated_data, entity):
-            # Check specified parameters are expected
-            self.assertEqual(handler_name, "before_update_entity")
-            self.assertIsNone(entity_name)
-            self.assertEqual(
-                validated_data,
-                {
-                    "name": "hoge",
-                    "attrs": [],
-                    "webhooks": [],
-                },
-            )
-            self.assertEqual(entity, self.entity)
+        params = {"name": "hoge"}
+
+        def side_effect(handler_name, entity_name, user, *args):
+            raise ValidationError("update error")
 
         mock_call_custom.side_effect = side_effect
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), ["update error"])
 
-        params = {"name": "hoge"}
+        def side_effect(handler_name, entity_name, user, *args):
+            # Check specified parameters are expected
+            self.assertIsNone(entity_name)
+            self.assertEqual(user, self.user)
+
+            if handler_name == "before_update_entity_v2":
+                self.assertEqual(
+                    args[0],
+                    {
+                        "name": "hoge",
+                        "attrs": [],
+                        "webhooks": [],
+                    },
+                )
+                self.assertEqual(args[1], self.entity)
+                return args[0]
+
+            if handler_name == "after_update_entity_v2":
+                self.assertEqual(args[0], self.entity)
+
+        mock_call_custom.side_effect = side_effect
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
@@ -1909,6 +1939,28 @@ class ViewTest(AironeViewTest):
         self.assertEqual(history.operation, History.DEL_ENTITY)
         self.assertEqual(history.details.count(), self.entity.attrs.count())
         self.assertEqual(history.details.first().target_obj, self.entity.attrs.first().aclbase_ptr)
+
+    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("custom_view.call_custom")
+    def test_delete_entity_with_customview(self, mock_call_custom):
+        def side_effect(handler_name, entity_name, user, entity):
+            raise ValidationError("delete error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
+        self.assertEqual(resp.status_code, 400)
+
+        def side_effect(handler_name, entity_name, user, entity):
+            # Check specified parameters are expected
+            self.assertTrue(handler_name in ["before_delete_entity_v2", "after_delete_entity_v2"])
+            self.assertIsNone(entity_name)
+            self.assertEqual(user, self.user)
+            self.assertEqual(entity, self.entity)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
+        self.assertEqual(resp.status_code, 204)
+        self.assertTrue(mock_call_custom.called)
 
     def test_delete_entity_with_invalid_param(self):
         resp = self.client.delete("/entity/api/v2/%s/" % "hoge", None, "application/json")
@@ -2320,23 +2372,6 @@ class ViewTest(AironeViewTest):
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_create_entry_with_customview(self, mock_call_custom):
-        def side_effect(handler_name, entity_name, user, *args):
-            # Check specified parameters are expected
-            self.assertEqual(entity_name, self.entity.name)
-            self.assertEqual(user, self.user)
-
-            if handler_name == "before_create_entry":
-                self.assertEqual(
-                    args[0], {**params, "schema": self.entity, "created_user": self.user}
-                )
-
-            if handler_name == "after_create_entry":
-                entry = Entry.objects.get(name="hoge", is_active=True)
-                self.assertEqual(args[0], params["attrs"])
-                self.assertEqual(args[1], entry)
-
-        mock_call_custom.side_effect = side_effect
-
         attr = {}
         for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
             attr[attr_name] = self.entity.attrs.get(name=attr_name)
@@ -2346,10 +2381,37 @@ class ViewTest(AironeViewTest):
                 {"id": attr["val"].id, "value": "fuga"},
             ],
         }
-        self.client.post(
+
+        def side_effect(handler_name, entity_name, user, *args):
+            raise ValidationError("create error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), ["create error"])
 
+        def side_effect(handler_name, entity_name, user, *args):
+            # Check specified parameters are expected
+            self.assertEqual(entity_name, self.entity.name)
+            self.assertEqual(user, self.user)
+
+            if handler_name == "before_create_entry_v2":
+                self.assertEqual(
+                    args[0], {**params, "schema": self.entity, "created_user": self.user}
+                )
+                return args[0]
+
+            if handler_name == "after_create_entry":
+                entry = Entry.objects.get(name="hoge", is_active=True)
+                self.assertEqual(args[0], entry)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post(
+            "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 201)
         self.assertTrue(mock_call_custom.called)
 
     @mock.patch("entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity))

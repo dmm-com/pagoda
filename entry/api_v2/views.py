@@ -64,8 +64,8 @@ class EntryAPI(viewsets.ModelViewSet):
 
         user: User = request.user
 
-        if custom_view.is_custom("before_delete_entry", entry.schema.name):
-            custom_view.call_custom("before_delete_entry", entry.schema.name, user, entry)
+        if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
+            custom_view.call_custom("before_delete_entry_v2", entry.schema.name, user, entry)
 
         # register operation History for deleting entry
         user.seth_entry_del(entry)
@@ -73,8 +73,8 @@ class EntryAPI(viewsets.ModelViewSet):
         # delete entry
         entry.delete(deleted_user=user)
 
-        if custom_view.is_custom("after_delete_entry", entry.schema.name):
-            custom_view.call_custom("after_delete_entry", entry.schema.name, user, entry)
+        if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
+            custom_view.call_custom("after_delete_entry_v2", entry.schema.name, user, entry)
 
         # Send notification to the webhook URL
         job_notify: Job = Job.new_notify_delete_entry(user, entry)
@@ -96,16 +96,16 @@ class EntryAPI(viewsets.ModelViewSet):
 
         user: User = request.user
 
-        if custom_view.is_custom("before_restore_entry", entry.schema.name):
-            custom_view.call_custom("before_restore_entry", entry.schema.name, user, entry)
+        if custom_view.is_custom("before_restore_entry_v2", entry.schema.name):
+            custom_view.call_custom("before_restore_entry_v2", entry.schema.name, user, entry)
 
         entry.set_status(Entry.STATUS_CREATING)
 
         # restore entry
         entry.restore()
 
-        if custom_view.is_custom("after_restore_entry", entry.schema.name):
-            custom_view.call_custom("after_restore_entry", entry.schema.name, user, entry)
+        if custom_view.is_custom("after_restore_entry_v2", entry.schema.name):
+            custom_view.call_custom("after_restore_entry_v2", entry.schema.name, user, entry)
 
         # remove status flag which is set before calling this
         entry.del_status(Entry.STATUS_CREATING)
