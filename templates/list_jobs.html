@@ -115,6 +115,8 @@
             <td class='status table-danger'>タイムアウト</td>
             {% elif job.status == JOB.STATUS.CANCELED %}
             <td class='status table-success'>キャンセル</td>
+            {% elif job.status == JOB.STATUS.WARNING %}
+            <td class='status table-success'>警告</td>
             {% else %}
             <td class='status'></td>
             {% endif %}
