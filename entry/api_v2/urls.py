@@ -49,5 +49,13 @@ urlpatterns = [
         "<int:entity_id>/export/",
         views.EntryExportAPI.as_view(),
     ),
+    path(
+        "<int:attr_id>/attr_referrals/",
+        views.EntryAttrReferralsAPI.as_view(
+            {
+                "get": "list",
+            }
+        ),
+    ),
     path("advanced_search/", views.AdvancedSearchAPI.as_view()),
 ]

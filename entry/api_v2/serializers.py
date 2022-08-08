@@ -6,6 +6,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 import custom_view
+from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrDefaultValue, AttrTypeValue
 from entity.api_v2.serializers import EntitySerializer
@@ -469,3 +470,9 @@ class EntryExportSerializer(serializers.Serializer):
         if data.lower() == "csv":
             return "csv"
         return "yaml"
+
+
+class GetEntryAttrReferralSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ACLBase
+        fields = ("id", "name")
