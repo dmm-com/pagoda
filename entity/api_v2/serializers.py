@@ -1,6 +1,6 @@
 import collections
 import json
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional, TypedDict, Union
 
 import requests
 from django.core.validators import URLValidator
@@ -159,24 +159,54 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
         return attr
 
 
+class EntityCreateData(TypedDict, total=False):
+    name: str
+    note: str
+    is_toplevel: bool
+    attrs: List[EntityAttrCreateSerializer]
+    webhooks: WebhookUpdateSerializer
+    created_user: User
+
+
+class EntityUpdateData(TypedDict, total=False):
+    id: int
+    name: str
+    note: str
+    is_toplevel: bool
+    attrs: List[EntityAttrUpdateSerializer]
+    webhooks: WebhookUpdateSerializer
+
+
 class EntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Entity
         fields = ["id", "name"]
 
-    def _update_or_create(self, user, validated_data, is_toplevel_data, attrs_data, webhooks_data):
+    def _update_or_create(
+        self,
+        user: User,
+        entity_id: Optional[int],
+        validated_data: Union[EntityCreateData, EntityUpdateData],
+    ):
+        is_toplevel_data = validated_data.pop("is_toplevel", None)
+        attrs_data = validated_data.pop("attrs")
+        webhooks_data = validated_data.pop("webhooks")
         entity: Entity
         entity, is_created_entity = Entity.objects.update_or_create(
-            id=validated_data.get("id", None), defaults={**validated_data}
+            id=entity_id, defaults={**validated_data}
         )
 
+        if is_toplevel_data is None:
+            is_toplevel_data = (entity.status & Entity.STATUS_TOP_LEVEL) != 0
+
         # register history to create, update Entity
+        history: History
         if is_created_entity:
             entity.set_status(Entity.STATUS_CREATING)
-            history: History = user.seth_entity_add(entity)
+            history = user.seth_entity_add(entity)
         else:
             entity.set_status(Entity.STATUS_EDITING)
-            history: History = user.seth_entity_mod(entity)
+            history = user.seth_entity_mod(entity)
 
         # set status parameters
         if is_toplevel_data:
@@ -224,13 +254,13 @@ class EntitySerializer(serializers.ModelSerializer):
             webhook_id = webhook_data.get("id")
             is_deleted = webhook_data.pop("is_deleted", False)
 
+            webhook: Webhook
             if is_deleted:
                 if webhook_id:
-                    webhook: Webhook = Webhook.objects.get(id=webhook_id)
+                    webhook = Webhook.objects.get(id=webhook_id)
                     webhook.delete()
                 continue
 
-            webhook: Webhook
             webhook, is_created_webhook = Webhook.objects.update_or_create(
                 id=webhook_data.get("id", None), defaults={**webhook_data}
             )
@@ -238,11 +268,9 @@ class EntitySerializer(serializers.ModelSerializer):
             try:
                 resp = requests.post(
                     webhook.url,
-                    **{
-                        "headers": {x["header_key"]: x["header_value"] for x in webhook.headers},
-                        "data": json.dumps({}),
-                        "verify": False,
-                    },
+                    json.dumps({}),
+                    headers={x["header_key"]: x["header_value"] for x in webhook.headers},
+                    verify=False,
                 )
                 # The is_verified parameter will be set True,
                 # when requests received HTTP 200 from specifying endpoint.
@@ -255,8 +283,12 @@ class EntitySerializer(serializers.ModelSerializer):
         # unset Editing MODE
         if is_created_entity:
             entity.del_status(Entity.STATUS_CREATING)
+            if custom_view.is_custom("after_create_entity_v2"):
+                custom_view.call_custom("after_create_entity_v2", None, user, entity)
         else:
             entity.del_status(Entity.STATUS_EDITING)
+            if custom_view.is_custom("after_update_entity_v2"):
+                custom_view.call_custom("after_update_entity_v2", None, user, entity)
 
         return entity
 
@@ -280,7 +312,7 @@ class EntityCreateSerializer(EntitySerializer):
 
         return name
 
-    def validate_attrs(self, attrs):
+    def validate_attrs(self, attrs: List[EntityAttrCreateSerializer]):
         # duplication checks
         counter = collections.Counter([attr["name"] for attr in attrs])
         if len([v for v, count in counter.items() if count > 1]):
@@ -288,19 +320,15 @@ class EntityCreateSerializer(EntitySerializer):
 
         return attrs
 
-    def create(self, validated_data):
+    def create(self, validated_data: EntityCreateData):
         user: User = self.context["request"].user
 
-        if custom_view.is_custom("before_create_entity"):
-            custom_view.call_custom("before_create_entity", None, validated_data)
+        if custom_view.is_custom("before_create_entity_V2"):
+            validated_data = custom_view.call_custom(
+                "before_create_entity_v2", None, user, validated_data
+            )
 
-        is_toplevel_data = validated_data.pop("is_toplevel")
-        attrs_data = validated_data.pop("attrs")
-        webhooks_data = validated_data.pop("webhooks")
-
-        return self._update_or_create(
-            user, validated_data, is_toplevel_data, attrs_data, webhooks_data
-        )
+        return self._update_or_create(user, None, validated_data)
 
 
 class EntityUpdateSerializer(EntitySerializer):
@@ -321,7 +349,7 @@ class EntityUpdateSerializer(EntitySerializer):
 
         return name
 
-    def validate_attrs(self, attrs):
+    def validate_attrs(self, attrs: List[EntityAttrUpdateSerializer]):
         entity: Entity = self.instance
 
         # duplication checks
@@ -344,22 +372,15 @@ class EntityUpdateSerializer(EntitySerializer):
 
         return attrs
 
-    def update(self, entity: Entity, validated_data):
+    def update(self, entity: Entity, validated_data: EntityUpdateData):
         user: User = self.context["request"].user
 
-        if custom_view.is_custom("before_update_entity"):
-            custom_view.call_custom("before_update_entity", None, validated_data, entity)
+        if custom_view.is_custom("before_update_entity_v2"):
+            validated_data = custom_view.call_custom(
+                "before_update_entity_v2", None, user, validated_data, entity
+            )
 
-        validated_data["id"] = entity.id
-        is_toplevel_data = validated_data.pop(
-            "is_toplevel", (entity.status & Entity.STATUS_TOP_LEVEL) != 0
-        )
-        attrs_data = validated_data.pop("attrs")
-        webhooks_data = validated_data.pop("webhooks")
-
-        return self._update_or_create(
-            user, validated_data, is_toplevel_data, attrs_data, webhooks_data
-        )
+        return self._update_or_create(user, entity.id, validated_data)
 
 
 class EntityListSerializer(EntitySerializer):

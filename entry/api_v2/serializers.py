@@ -117,6 +117,13 @@ class AttributeSerializer(serializers.Serializer):
     value = AttributeValueField(allow_null=True)
 
 
+class EntryCreateData(TypedDict, total=False):
+    name: str
+    schema: Entity
+    attrs: List[AttributeSerializer]
+    created_user: User
+
+
 @extend_schema_serializer(exclude_fields=["schema"])
 class EntryCreateSerializer(EntryBaseSerializer):
     schema = serializers.PrimaryKeyRelatedField(
@@ -133,12 +140,14 @@ class EntryCreateSerializer(EntryBaseSerializer):
         self._validate(params["name"], params["schema"], params.get("attrs", []))
         return params
 
-    def create(self, validated_data):
+    def create(self, validated_data: EntryCreateData):
         user: User = self.context["request"].user
 
         entity_name = validated_data["schema"].name
-        if custom_view.is_custom("before_create_entry", entity_name):
-            custom_view.call_custom("before_create_entry", entity_name, user, validated_data)
+        if custom_view.is_custom("before_create_entry_v2", entity_name):
+            validated_data = custom_view.call_custom(
+                "before_create_entry_v2", entity_name, user, validated_data
+            )
 
         attrs_data = validated_data.pop("attrs", [])
         entry: Entry = Entry.objects.create(**validated_data, status=Entry.STATUS_CREATING)
@@ -156,8 +165,8 @@ class EntryCreateSerializer(EntryBaseSerializer):
                 continue
             attr.add_value(user, attr_data[0]["value"])
 
-        if custom_view.is_custom("after_create_entry", entity_name):
-            custom_view.call_custom("after_create_entry", entity_name, user, attrs_data, entry)
+        if custom_view.is_custom("after_create_entry_v2", entity_name):
+            custom_view.call_custom("after_create_entry_v2", entity_name, user, entry)
 
         # register entry information to Elasticsearch
         entry.register_es()
@@ -170,6 +179,11 @@ class EntryCreateSerializer(EntryBaseSerializer):
         job_notify_event.run()
 
         return entry
+
+
+class EntryUpdateData(TypedDict, total=False):
+    name: str
+    attrs: List[AttributeSerializer]
 
 
 class EntryUpdateSerializer(EntryBaseSerializer):
@@ -186,13 +200,15 @@ class EntryUpdateSerializer(EntryBaseSerializer):
         self._validate(params.get("name", None), self.instance.schema, params.get("attrs", []))
         return params
 
-    def update(self, entry: Entry, validated_data):
+    def update(self, entry: Entry, validated_data: EntryUpdateData):
         entry.set_status(Entry.STATUS_EDITING)
         user: User = self.context["request"].user
 
         entity_name = entry.schema.name
-        if custom_view.is_custom("before_update_entry", entity_name):
-            custom_view.call_custom("before_update_entry", entity_name, user, validated_data, entry)
+        if custom_view.is_custom("before_update_entry_v2", entity_name):
+            validated_data = custom_view.call_custom(
+                "before_update_entry_v2", entity_name, user, validated_data, entry
+            )
 
         attrs_data = validated_data.pop("attrs", [])
 
@@ -224,8 +240,8 @@ class EntryUpdateSerializer(EntryBaseSerializer):
 
             attr.add_value(user, attr_data[0]["value"])
 
-        if custom_view.is_custom("after_update_entry", entity_name):
-            custom_view.call_custom("after_update_entry", entity_name, user, attrs_data, entry)
+        if custom_view.is_custom("after_update_entry_v2", entity_name):
+            custom_view.call_custom("after_update_entry_v2", entity_name, user, entry)
 
         # update entry information to Elasticsearch
         entry.register_es()

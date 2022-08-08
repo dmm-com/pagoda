@@ -136,8 +136,8 @@ class EntityAPI(viewsets.ModelViewSet):
                 "cannot delete Entity because one or more Entries are not deleted"
             )
 
-        if custom_view.is_custom("before_delete_entity"):
-            custom_view.call_custom("before_delete_entity", None, entity)
+        if custom_view.is_custom("before_delete_entity_v2"):
+            custom_view.call_custom("before_delete_entity_v2", None, user, entity)
 
         # register operation History for deleting entity
         history: History = user.seth_entity_del(entity)
@@ -149,6 +149,9 @@ class EntityAPI(viewsets.ModelViewSet):
         for entity_attr in entity.attrs.filter(is_active=True):
             history.del_attr(entity_attr)
             entity_attr.delete()
+
+        if custom_view.is_custom("after_delete_entity_v2"):
+            custom_view.call_custom("after_delete_entity_v2", None, user, entity)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
