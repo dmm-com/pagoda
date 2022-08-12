@@ -24,6 +24,7 @@ export * from "./EntryUpdate";
 export * from "./GetEntryAttrReferral";
 export * from "./GetEntrySimple";
 export * from "./Group";
+export * from "./JobSerializers";
 export * from "./PaginatedEntityListList";
 export * from "./PaginatedEntryBaseList";
 export * from "./PaginatedGetEntrySimpleList";
