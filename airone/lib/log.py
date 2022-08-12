@@ -54,6 +54,8 @@ full traceback:
 
         # Print for DEBUG because email is not sent in dev environment
         print(message)
+
+        # Send an email so that admins can receive errors
         mail_admins(subject, message)
         if not settings.DEBUG:
             return HttpResponseServerError("Internal Server Error")

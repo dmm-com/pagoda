@@ -55,4 +55,9 @@ full traceback:
 
     # Logger for DEBUG because email is not sent in dev environment
     Logger.error(message)
+
+    # Logger for Alert because long texts usually cannot be parsed by log server
+    Logger.error("An exception error has occurred")
+
+    # Send an email so that admins can receive errors
     mail_admins(subject, message)
