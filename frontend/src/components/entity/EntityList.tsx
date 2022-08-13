@@ -2,11 +2,11 @@ import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
   Box,
+  Button,
   Card,
   CardActionArea,
   CardContent,
   CardHeader,
-  Fab,
   Grid,
   IconButton,
   Pagination,
@@ -82,16 +82,16 @@ export const EntityList: FC<Props> = ({
             }}
           />
         </Box>
-        <Fab
+        <Button
           color="secondary"
-          aria-label="add"
-          variant="extended"
+          variant="contained"
           component={Link}
           to={newEntityPath()}
+          sx={{ borderRadius: "24px" }}
         >
           <AddIcon />
           新規作成
-        </Fab>
+        </Button>
       </Box>
 
       {/* This box shows each entity Cards */}
