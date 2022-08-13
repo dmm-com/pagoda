@@ -253,7 +253,11 @@ export const EditEntryPage: FC = () => {
   };
 
   const handleCancel = () => {
-    history.replace(entryDetailsPath(entityId, entryId));
+    if (entryId != null) {
+      history.replace(entryDetailsPath(entityId, entryId));
+    } else {
+      history.replace(entityEntriesPath(entityId));
+    }
   };
 
   if (entity.loading || entry.loading) {
