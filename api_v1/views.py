@@ -42,6 +42,22 @@ class EntryAPI(APIView):
             # processing
         }
 
+        # This variable indicates whether NOTIFY UPDATE ENTRY Job will be created.
+        # This is necessary to create minimum necessary NOTIFY_UPDATE_ENTRY Job.
+        will_notify_update_entry = False
+
+        # Common processing to update Entry's name and set will_notify_update_entry variable
+        def _update_entry_name(entry):
+            # Set Entry status that indicates target Entry is under editing processing
+            # to prevent to updating this entry from others.
+            entry.set_status(Entry.STATUS_EDITING)
+
+            # Set will_notify_update_entry when name parameter is different with target Entry's name
+            if entry.name != sel.validated_data["name"]:
+                entry.name = sel.validated_data["name"]
+                entry.save(update_fields=["name"])
+                will_notify_update_entry = True
+
         entry_condition = {
             "schema": sel.validated_data["entity"],
             "name": sel.validated_data["name"],
@@ -58,19 +74,11 @@ class EntryAPI(APIView):
                 )
 
             entry = Entry.objects.get(id=sel.validated_data["id"])
-            entry.name = sel.validated_data["name"]
-            entry.save(update_fields=["name"])
-            entry.set_status(Entry.STATUS_EDITING)
-
-            # create job to notify entry event to the registered WebHook
-            job_notify = Job.new_notify_update_entry(request.user, entry)
+            _update_entry_name(entry)
 
         elif Entry.objects.filter(**entry_condition).exists():
             entry = Entry.objects.get(**entry_condition)
-            entry.set_status(Entry.STATUS_EDITING)
-
-            # create job to notify entry event to the registered WebHook
-            job_notify = Job.new_notify_update_entry(request.user, entry)
+            _update_entry_name(entry)
 
         else:
             entry = Entry.objects.create(
@@ -79,7 +87,7 @@ class EntryAPI(APIView):
             resp_data["is_created"] = True
 
             # create job to notify entry event to the registered WebHook
-            job_notify = Job.new_notify_create_entry(request.user, entry)
+            Job.new_notify_create_entry(request.user, entry).run()
 
         entry.complement_attrs(request.user)
         for name, value in sel.validated_data["attrs"].items():
@@ -92,15 +100,18 @@ class EntryAPI(APIView):
                 value
             ):
                 attr.add_value(request.user, value)
+                will_notify_update_entry = True
 
                 # This enables to let user know what attributes are changed in this request
                 resp_data["updated_attrs"][name] = raw_request_data["attrs"][name]
 
+        if will_notify_update_entry:
+            # Create job to notify event, which indicates target entry is updated,
+            # to the registered WebHook.
+            Job.new_notify_update_entry(request.user, entry).run()
+
         # register target Entry to the Elasticsearch
         entry.register_es()
-
-        # run notification job
-        job_notify.run()
 
         entry.del_status(Entry.STATUS_CREATING | Entry.STATUS_EDITING)
 
