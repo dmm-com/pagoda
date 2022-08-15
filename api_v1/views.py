@@ -87,7 +87,7 @@ class EntryAPI(APIView):
             resp_data["is_created"] = True
 
             # create job to notify entry event to the registered WebHook
-            job_notify = Job.new_notify_create_entry(request.user, entry)
+            Job.new_notify_create_entry(request.user, entry).run()
 
         entry.complement_attrs(request.user)
         for name, value in sel.validated_data["attrs"].items():
@@ -108,13 +108,10 @@ class EntryAPI(APIView):
         if will_notify_update_entry:
             # Create job to notify event, which indicates target entry is updated,
             # to the registered WebHook.
-            job_notify = Job.new_notify_update_entry(request.user, entry)
+            Job.new_notify_update_entry(request.user, entry).run()
 
         # register target Entry to the Elasticsearch
         entry.register_es()
-
-        # run notification job
-        job_notify.run()
 
         entry.del_status(Entry.STATUS_CREATING | Entry.STATUS_EDITING)
 
