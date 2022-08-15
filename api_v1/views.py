@@ -53,10 +53,13 @@ class EntryAPI(APIView):
             entry.set_status(Entry.STATUS_EDITING)
 
             # Set will_notify_update_entry when name parameter is different with target Entry's name
+            _will_notify_update_entry = False
             if entry.name != sel.validated_data["name"]:
                 entry.name = sel.validated_data["name"]
                 entry.save(update_fields=["name"])
-                will_notify_update_entry = True
+                _will_notify_update_entry = True
+
+            return _will_notify_update_entry
 
         entry_condition = {
             "schema": sel.validated_data["entity"],
@@ -74,11 +77,11 @@ class EntryAPI(APIView):
                 )
 
             entry = Entry.objects.get(id=sel.validated_data["id"])
-            _update_entry_name(entry)
+            will_notify_update_entry = _update_entry_name(entry)
 
         elif Entry.objects.filter(**entry_condition).exists():
             entry = Entry.objects.get(**entry_condition)
-            _update_entry_name(entry)
+            will_notify_update_entry = _update_entry_name(entry)
 
         else:
             entry = Entry.objects.create(

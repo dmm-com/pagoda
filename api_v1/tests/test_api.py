@@ -251,7 +251,7 @@ class APITest(AironeViewTest):
         entry = entries[1]
         params = {
             "id": entry.id,
-            "name": entry.name,
+            "name": "Changing Entry name",
             "entity": entity.name,
             "attrs": {},
         }
@@ -260,7 +260,7 @@ class APITest(AironeViewTest):
         self.assertTrue(self._test_data["notify_update_entry_is_called"])
 
         entry.refresh_from_db()
-        self.assertEqual(entry.name, "e-1")
+        self.assertEqual(entry.name, "Changing Entry name")
 
         # checks that entry won't be updated because it specifies duplicate name with other entry
         params = {"id": entry.id, "name": "e-0", "entity": entity.name, "attrs": {}}
@@ -270,7 +270,7 @@ class APITest(AironeViewTest):
         # checks to be able to set referral attribute value by entry-id
         params = {
             "id": entry.id,
-            "name": entry.id,
+            "name": entry.name,
             "entity": entity.name,
             "attrs": {
                 "ref": entry_ref.id,
@@ -1029,7 +1029,7 @@ class APITest(AironeViewTest):
         "entry.tasks.notify_update_entry.delay",
         mock.Mock(side_effect=tasks.notify_update_entry),
     )
-    def test_notify_event_of_updating_entry(self):
+    def test_notify_event_of_updating_entry_without_changing(self):
         user = self.guest_login()
         entity = Entity.objects.create(name="Entity", created_user=user)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -1039,9 +1039,11 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # check notification event was invoked
-        entry = Entry.objects.get(id=resp.json()["result"])
-        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
-        self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+        updated_entry = Entry.objects.get(id=resp.json()["result"])
+
+        # check creating NOTIFY_UPDATE_ENTRY is restricted because entry is not actually changed
+        self.assertEqual(updated_entry.id, entry.id)
+        self.assertFalse(Job.objects.filter(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value).exists())
 
     @mock.patch("entry.tasks.notify_entry_update", mock.Mock(return_value=mock.Mock()))
     @mock.patch(
@@ -1063,7 +1065,10 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # check notification event was invoked
-        entry = Entry.objects.get(id=resp.json()["result"])
+        updated_entry = Entry.objects.get(id=resp.json()["result"])
+        self.assertEqual(updated_entry.id, entry.id)
+
+        # check creating NOTIFY_UPDATE_ENTRY is created because of changing Entry name
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
         self.assertEqual(job_notify.status, Job.STATUS["DONE"])
 
