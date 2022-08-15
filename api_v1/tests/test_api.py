@@ -1043,7 +1043,11 @@ class APITest(AironeViewTest):
 
         # check creating NOTIFY_UPDATE_ENTRY is restricted because entry is not actually changed
         self.assertEqual(updated_entry.id, entry.id)
-        self.assertFalse(Job.objects.filter(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value).exists())
+        self.assertFalse(
+            Job.objects.filter(
+                target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value
+            ).exists()
+        )
 
     @mock.patch("entry.tasks.notify_entry_update", mock.Mock(return_value=mock.Mock()))
     @mock.patch(
