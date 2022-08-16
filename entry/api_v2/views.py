@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 import custom_view
 from airone.lib.acl import ACLType
+from airone.lib.drf import YAMLParser
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
@@ -18,6 +19,7 @@ from entry.api_v2.serializers import (
     EntryBaseSerializer,
     EntryCopySerializer,
     EntryExportSerializer,
+    EntryImportSerializer,
     EntryRetrieveSerializer,
     EntryUpdateSerializer,
     GetEntryAttrReferralSerializer,
@@ -399,3 +401,36 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
             ]
         else:
             raise ValidationError(f"unsupported attr type: {entity_attr.type}")
+
+
+class EntryImportAPI(generics.GenericAPIView):
+    parser_classes = [YAMLParser]
+    serializer_class = EntryImportSerializer
+
+    def post(self, request):
+        import_datas = request.data
+        user: User = request.user
+        serializer = EntryImportSerializer(data=import_datas)
+        serializer.is_valid(raise_exception=True)
+
+        job_ids = []
+        error_list = []
+        for import_data in import_datas:
+            entity = Entity.objects.filter(name=import_data["entity"], is_active=True).first()
+            if not entity:
+                error_list.append("%s: Entity does not exists." % import_data["entity"])
+                continue
+
+            if not user.has_permission(entity, ACLType.Writable):
+                error_list.append("%s: Entity is permission denied." % import_data["entity"])
+                continue
+
+            job = Job.new_import_v2(
+                user, entity, text="Preparing to import data", params=import_data
+            )
+            job.run()
+            job_ids.append(job.id)
+
+        return Response(
+            {"result": {"job_ids": job_ids, "error": error_list}}, status=status.HTTP_200_OK
+        )

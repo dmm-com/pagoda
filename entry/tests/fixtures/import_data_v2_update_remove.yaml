@@ -1,0 +1,27 @@
+- entity: test-entity
+  entries:
+  - name: test-entry
+    attrs:
+      - name: val
+        value: ""
+      - name: vals
+        value: []
+      - name: ref
+        value: ""
+      - name: refs
+        value: []
+      - name: name
+        value:
+          "": ""
+      - name: names
+        value: []
+      - name: group
+        value: ""
+      - name: groups
+        value: []
+      - name: bool
+        value: False
+      - name: text
+        value: ""
+      - name: date
+        value: "" 

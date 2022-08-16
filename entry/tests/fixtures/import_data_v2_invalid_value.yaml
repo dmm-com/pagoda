@@ -1,0 +1,89 @@
+- entity: test-entity
+  entries:
+  - name: e1
+    attrs:
+    - name: val
+      value:
+      - hoge
+  - name: e2
+    attrs:
+    - name: vals
+      value: hoge
+  - name: e3
+    attrs:
+    - name: refs
+      value:
+      - hoge
+  - name: e4
+    attrs:
+    - name: refs
+      value: hoge
+  - name: e5
+    attrs:
+    - name: name
+      value:
+      - hoge
+  - name: e6
+    attrs:
+    - name: names
+      value: hoge
+  - name: e7
+    attrs:
+    - name: group
+      value:
+      - hoge
+  - name: e8
+    attrs:
+    - name: groups
+      value: hoge
+  - name: e9
+    attrs:
+    - name: bool
+      value:
+      - hoge
+  - name: e10
+    attrs:
+    - name: text
+      value:
+      - hoge
+  - name: e11
+    attrs:
+    - name: date
+      value:
+      - hoge
+  - name: e12
+    attrs:
+    - name: vals
+      value:
+      -
+        - hoge
+  - name: e13
+    attrs:
+    - name: refs
+      value:
+      -
+        - hoge
+  - name: e14
+    attrs:
+    - name: names
+      value:
+      -
+        - hoge
+  - name: e15
+    attrs:
+    - name: groups
+      value:
+      -
+        - hoge
+  - name: e16
+    attrs:
+    - name: name
+      value:
+        hoge:
+        - hoge
+  - name: e17
+    attrs:
+    - name: names
+      value:
+      - hoge:
+        - hoge
