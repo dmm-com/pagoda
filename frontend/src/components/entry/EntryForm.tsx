@@ -6,6 +6,7 @@ import {
   Container,
   Fab,
   Input,
+  Link,
   Table,
   TableBody,
   TableCell,
@@ -211,7 +212,7 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
       </Box>
       <Table>
         <TableHead>
-          <TableRow sx={{ backgroundColor: "#455A64" }} id="name">
+          <TableRow sx={{ backgroundColor: "#455A64" }}>
             <TableCell sx={{ color: "#FFFFFF", width: "384px" }}>
               項目
             </TableCell>
@@ -224,6 +225,11 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
           <TableRow>
             <TableCell>
               <Box display="flex" alignItems="center">
+                {/* an anchor link adjusted fixed headers etc. */}
+                <Link
+                  id="name"
+                  sx={{ marginTop: "-500px", paddingTop: "500px" }}
+                />
                 <Typography flexGrow={1}>エントリ名</Typography>
                 <Typography
                   sx={{
@@ -249,9 +255,14 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
             </TableCell>
           </TableRow>
           {Object.keys(entryInfo.attrs).map((attributeName, index) => (
-            <TableRow key={index} id={`attrs-${attributeName}`}>
+            <TableRow key={index}>
               <TableCell>
                 <Box display="flex" alignItems="center">
+                  {/* an anchor link adjusted fixed headers etc. */}
+                  <Link
+                    id={`attrs-${attributeName}`}
+                    sx={{ marginTop: "-500px", paddingTop: "500px" }}
+                  />
                   <Typography flexGrow={1}>{attributeName}</Typography>
                   {entryInfo.attrs[attributeName]?.isMandatory && (
                     <Typography
