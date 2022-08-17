@@ -40,11 +40,16 @@ class ViewTest(AironeViewTest):
         self.ref_entry: Entry = self.add_entry(self.user, "r-0", self.ref_entity)
         self.group: Group = Group.objects.create(name="group0")
 
+        attrs = []
+        for attr_info in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY:
+            if attr_info["type"] & AttrTypeValue["object"]:
+                attr_info["ref"] = self.ref_entity
+            attrs.append(attr_info)
         self.entity: Entity = self.create_entity(
             **{
                 "user": self.user,
                 "name": "test-entity",
-                "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+                "attrs": attrs,
             }
         )
 
@@ -784,6 +789,12 @@ class ViewTest(AironeViewTest):
         self.assertEqual(ret["ret_count"], 1)
         self.assertEqual(ret["ret_values"][0]["entry"]["name"], "Entry")
         self.assertEqual(ret["ret_values"][0]["attrs"]["ref"]["value"]["name"], "ref-change")
+
+    def test_update_entry_without_attrs(self):
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % self.ref_entry.id, json.dumps({}), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
 
     def test_destroy_entry(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
@@ -1829,3 +1840,328 @@ class ViewTest(AironeViewTest):
 
         # This means e-1 and 'e-10' to 'e-19' are returned
         self.assertEqual(len(resp.json()), 11)
+
+    @patch("entry.tasks.notify_create_entry.delay", Mock(side_effect=tasks.notify_create_entry))
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_create_entry(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job = Job.objects.get(operation=JobOperation.IMPORT_ENTRY_V2.value)
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.text, "Imported Entry count: 1")
+        self.assertEqual(
+            resp.json(),
+            {
+                "result": {
+                    "error": [],
+                    "job_ids": [job.id],
+                }
+            },
+        )
+
+        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        self.assertEqual(result["ret_count"], 1)
+        self.assertEqual(result["ret_values"][0]["entry"]["name"], "test-entry")
+        self.assertEqual(result["ret_values"][0]["entity"]["name"], "test-entity")
+        attrs = {
+            "bool": "True",
+            "date": "2018-12-31",
+            "group": {"id": self.group.id, "name": "group0"},
+            "groups": [{"id": self.group.id, "name": "group0"}],
+            "name": {"foo": {"id": self.ref_entry.id, "name": "r-0"}},
+            "names": [{"foo": {"id": self.ref_entry.id, "name": "r-0"}}],
+            "ref": {"id": self.ref_entry.id, "name": "r-0"},
+            "refs": [{"id": self.ref_entry.id, "name": "r-0"}],
+            "text": "foo\nbar",
+            "val": "foo",
+            "vals": ["foo"],
+        }
+        for attr_name in result["ret_values"][0]["attrs"]:
+            self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
+
+        entry = Entry.objects.get(name="test-entry")
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
+        self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+
+    @patch("entry.tasks.notify_update_entry.delay", Mock(side_effect=tasks.notify_update_entry))
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_update_entry(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity)
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job = Job.objects.get(operation=JobOperation.IMPORT_ENTRY_V2.value)
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+
+        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        self.assertEqual(result["ret_count"], 1)
+        self.assertEqual(result["ret_values"][0]["entry"], {"id": entry.id, "name": "test-entry"})
+        attrs = {
+            "val": "foo",
+            "vals": ["foo"],
+            "ref": {"id": self.ref_entry.id, "name": "r-0"},
+            "refs": [{"id": self.ref_entry.id, "name": "r-0"}],
+            "name": {"foo": {"id": self.ref_entry.id, "name": "r-0"}},
+            "names": [{"foo": {"id": self.ref_entry.id, "name": "r-0"}}],
+            "group": {"id": self.group.id, "name": "group0"},
+            "groups": [{"id": self.group.id, "name": "group0"}],
+            "bool": "True",
+            "text": "foo\nbar",
+            "date": "2018-12-31",
+        }
+        for attr_name in result["ret_values"][0]["attrs"]:
+            self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
+
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
+        self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+
+        # Update only some attributes
+        fp = self.open_fixture_file("import_data_v2_update_some.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2.value).last()
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+
+        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        attrs["val"] = "bar"
+        for attr_name in result["ret_values"][0]["attrs"]:
+            self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
+
+        # Update remove attribute value
+        fp = self.open_fixture_file("import_data_v2_update_remove.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2.value).last()
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+
+        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        attrs = {
+            # "val": None,
+            "vals": [],
+            "ref": {"id": "", "name": ""},
+            "refs": [],
+            # "name": None,
+            "names": [],
+            "group": {"id": "", "name": ""},
+            "groups": [],
+            "bool": "False",
+            # "text": None,
+            "date": None,
+        }
+        for attr_name in result["ret_values"][0]["attrs"]:
+            if "value" in result["ret_values"][0]["attrs"][attr_name]:
+                self.assertEqual(
+                    result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name]
+                )
+
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_multi_entity(self):
+        entity1 = self.create_entity(self.user, "test-entity1")
+        entity2 = self.create_entity(self.user, "test-entity2")
+        fp = self.open_fixture_file("import_data_v2_multi_entity.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job1 = Job.objects.get(target=entity1, operation=JobOperation.IMPORT_ENTRY_V2.value)
+        job2 = Job.objects.get(target=entity2, operation=JobOperation.IMPORT_ENTRY_V2.value)
+        self.assertEqual(job1.text, "Imported Entry count: 1")
+        self.assertEqual(job2.text, "Imported Entry count: 1")
+        self.assertEqual(
+            resp.json(),
+            {
+                "result": {
+                    "error": [],
+                    "job_ids": [job1.id, job2.id],
+                }
+            },
+        )
+
+        result = Entry.search_entries(self.user, [entity1.id, entity2.id])
+        self.assertEqual(result["ret_count"], 2)
+        self.assertEqual(result["ret_values"][0]["entry"]["name"], "test-entry1")
+        self.assertEqual(result["ret_values"][0]["entity"]["name"], "test-entity1")
+        self.assertEqual(result["ret_values"][1]["entry"]["name"], "test-entry2")
+        self.assertEqual(result["ret_values"][1]["entity"]["name"], "test-entity2")
+
+    def test_import_invalid_data(self):
+        # nothing data
+        resp = self.client.post("/entry/api/v2/import/", None, "application/yaml")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), {"non_field_errors": ['Expected a list of items but got type "dict".']}
+        )
+
+        # wrong content-type
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/json")
+        fp.close()
+        self.assertEqual(resp.status_code, 415)
+        self.assertEqual(
+            resp.json(), {"detail": 'Unsupported media type "application/json" in request.'}
+        )
+
+        # faild parse yaml
+        fp = self.open_fixture_file("import_data_v2_failed_parse.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertTrue("YAML parse error" in resp.json()["detail"])
+
+        # faild scan yaml
+        fp = self.open_fixture_file("import_data_v2_failed_scan.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertTrue("YAML parse error" in resp.json()["detail"])
+
+        # invalid param
+        fp = self.open_fixture_file("import_data_v2_invalid_param.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+
+        # invalid required param (entity, entries)
+        self.assertEqual(
+            resp.json()[0],
+            {"entity": ["This field is required."], "entries": ["This field is required."]},
+        )
+
+        # invalid type param (entity, entries)
+        self.assertEqual(
+            resp.json()[1],
+            {
+                "entity": ["Not a valid string."],
+                "entries": ['Expected a list of items but got type "str".'],
+            },
+        )
+
+        # invalid type param (entries)
+        self.assertEqual(
+            resp.json()[2]["entries"]["0"],
+            {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]},
+        )
+
+        # invalid required param (entries)
+        self.assertEqual(
+            resp.json()[2]["entries"]["1"],
+            {"name": ["This field is required."]},
+        )
+
+        # invalid type param (name, attrs)
+        self.assertEqual(
+            resp.json()[2]["entries"]["2"],
+            {
+                "attrs": ['Expected a list of items but got type "str".'],
+                "name": ["Not a valid string."],
+            },
+        )
+
+        # invalid type param (attrs)
+        self.assertEqual(
+            resp.json()[2]["entries"]["3"]["attrs"]["0"],
+            {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]},
+        )
+
+        # invalid required param (name, value)
+        self.assertEqual(
+            resp.json()[2]["entries"]["3"]["attrs"]["1"],
+            {"name": ["This field is required."], "value": ["This field is required."]},
+        )
+
+        # invalid type param (name)
+        self.assertEqual(
+            resp.json()[2]["entries"]["3"]["attrs"]["2"]["name"],
+            ["Not a valid string."],
+        )
+
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_invalid_data_value(self):
+        fp = self.open_fixture_file("import_data_v2_invalid_value.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        job_id = resp.json()["result"]["job_ids"][0]
+        job = Job.objects.get(id=job_id)
+        self.assertEqual(job.status, Job.STATUS["WARNING"])
+        self.assertTrue("Imported Entry count: 17" in job.text)
+
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_invalid_data_entity(self):
+        # not exsits entity
+        fp = self.open_fixture_file("import_data_v2_invalid_entity.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json()["result"], {"job_ids": [], "error": ["no-entity: Entity does not exists."]}
+        )
+
+        # permission nothing entity
+        self.entity.is_public = False
+        self.entity.save()
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json()["result"],
+            {"job_ids": [], "error": ["test-entity: Entity is permission denied."]},
+        )
+
+        # permission readble entity
+        self.role.users.add(self.user)
+        self.role.permissions.add(self.entity.readable)
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json()["result"],
+            {"job_ids": [], "error": ["test-entity: Entity is permission denied."]},
+        )
+
+        # permission writable entity
+        self.role.users.add(self.user)
+        self.role.permissions.add(self.entity.writable)
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 200)
+        job = Job.objects.get(target=self.entity, operation=JobOperation.IMPORT_ENTRY_V2.value)
+        self.assertEqual(resp.json()["result"], {"job_ids": [job.id], "error": []})
+
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_warning(self):
+        fp = self.open_fixture_file("import_data_v2_warning.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job_id = resp.json()["result"]["job_ids"][0]
+        job = Job.objects.get(id=job_id)
+        self.assertEqual(job.status, Job.STATUS["WARNING"])
+        self.assertEqual(job.text, "Imported Entry count: 2, Failed import Entry: ['test-entry1']")
+        self.assertTrue(Entry.objects.filter(name="test-entry2").exists())
+
+    @patch.object(Job, "is_canceled", Mock(return_value=True))
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_cancel(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job_id = resp.json()["result"]["job_ids"][0]
+        job = Job.objects.get(id=job_id)
+        self.assertEqual(job.status, Job.STATUS["CANCELED"])
+        self.assertEqual(job.text, "Now importing... (progress: [    1/    1])")
+        self.assertFalse(Entry.objects.filter(name="test-entry").exists())

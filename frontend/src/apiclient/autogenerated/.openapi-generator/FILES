@@ -20,6 +20,9 @@ models/EntryBase.ts
 models/EntryCopy.ts
 models/EntryCreate.ts
 models/EntryExport.ts
+models/EntryImportAttribute.ts
+models/EntryImportEntity.ts
+models/EntryImportEntries.ts
 models/EntryRetrieve.ts
 models/EntryRetrieveAttrs.ts
 models/EntryRetrieveValue.ts

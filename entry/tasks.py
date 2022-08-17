@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 
 import yaml
+from rest_framework.exceptions import ValidationError
 
 import custom_view
 from airone.celery import app
@@ -13,10 +14,16 @@ from airone.lib.event_notification import (
     notify_entry_delete,
     notify_entry_update,
 )
+from airone.lib.http import DRFRequest
 from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.log import Logger
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
+from entry.api_v2.serializers import (
+    EntryCreateSerializer,
+    EntryImportEntitySerializer,
+    EntryUpdateSerializer,
+)
 from entry.models import Attribute, Entry
 from job.models import Job
 from user.models import User
@@ -175,6 +182,45 @@ def _do_import_entries(job: Job):
         job_notify.run()
 
     job.update(status=Job.STATUS["DONE"], text="")
+
+
+def _do_import_entries_v2(job: Job):
+    user: User = job.user
+    entity: Entity = Entity.objects.get(id=job.target.id)
+    import_serializer = EntryImportEntitySerializer(data=json.loads(job.params))
+    import_serializer.is_valid()
+    context = {"request": DRFRequest(user)}
+
+    total_count = len(import_serializer.validated_data["entries"])
+    err_msg = []
+    for index, entry_data in enumerate(import_serializer.validated_data["entries"]):
+        job.text = "Now importing... (progress: [%5d/%5d])" % (index + 1, total_count)
+        job.save(update_fields=["text"])
+
+        # abort processing when job is canceled
+        if job.is_canceled():
+            job.status = Job.STATUS["CANCELED"]
+            job.save(update_fields=["status"])
+            return
+
+        entry_data["schema"] = entity
+        entry = Entry.objects.filter(name=entry_data["name"], schema=entity, is_active=True).first()
+        if entry:
+            serializer = EntryUpdateSerializer(instance=entry, data=entry_data, context=context)
+        else:
+            serializer = EntryCreateSerializer(data=entry_data, context=context)
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        except ValidationError:
+            err_msg.append(entry_data["name"])
+
+    if err_msg:
+        text = "Imported Entry count: %d, Failed import Entry: %s" % (total_count, err_msg)
+        job.update(status=Job.STATUS["WARNING"], text=text)
+    else:
+        text = "Imported Entry count: %d" % total_count
+        job.update(status=Job.STATUS["DONE"], text=text)
 
 
 @app.task(bind=True)
@@ -429,6 +475,15 @@ def import_entries(self, job_id):
                 status=Job.STATUS["ERROR"],
                 text="[task.import] [job:%d] %s" % (job.id, str(e)),
             )
+
+
+@app.task(bind=True)
+def import_entries_v2(self, job_id):
+    job: Job = Job.objects.get(id=job_id)
+
+    if job.proceed_if_ready():
+        job.update(Job.STATUS["PROCESSING"])
+        _do_import_entries_v2(job)
 
 
 @app.task(bind=True)

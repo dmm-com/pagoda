@@ -1,0 +1,6 @@
+- entity: test-entity1
+  entries:
+  - name: test-entry1
+- entity: test-entity2
+  entries:
+  - name: test-entry2
