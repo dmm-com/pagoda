@@ -732,7 +732,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(mock_call_custom.called)
 
-    def test_update_entry_with_no_update(self):
+    @mock.patch("entry.tasks.notify_update_entry.delay")
+    def test_update_entry_with_no_update(self, mock_task):
         entry: Entry = self.add_entry(
             self.user,
             "Entry",
@@ -760,6 +761,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(attr["val"].values.count(), 1)
         self.assertEqual(attr["vals"].values.count(), 2)
+        self.assertFalse(mock_task.called)
 
     @mock.patch(
         "entry.tasks.register_referrals.delay", mock.Mock(side_effect=tasks.register_referrals)
