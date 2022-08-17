@@ -2,6 +2,7 @@ apis/AclApi.ts
 apis/EntityApi.ts
 apis/EntryApi.ts
 apis/GroupApi.ts
+apis/JobApi.ts
 apis/UserApi.ts
 apis/index.ts
 index.ts
@@ -29,6 +30,7 @@ models/EntryUpdate.ts
 models/GetEntryAttrReferral.ts
 models/GetEntrySimple.ts
 models/Group.ts
+models/JobSerializers.ts
 models/PaginatedEntityListList.ts
 models/PaginatedEntryBaseList.ts
 models/PaginatedGetEntrySimpleList.ts

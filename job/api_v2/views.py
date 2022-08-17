@@ -2,15 +2,19 @@ from datetime import datetime, timezone
 
 from django.db.models import Q
 from django.http import JsonResponse
+from rest_framework import viewsets
 
-# libraries of AirOne
 from airone.lib.http import http_get
-
-# related models in AirOne
+from job.api_v2.serializers import JobSerializers
 from job.models import Job, JobOperation
-
-# configuration of this app
 from job.settings import CONFIG
+
+
+class JobAPI(viewsets.ModelViewSet):
+    serializer_class = JobSerializers
+
+    def get_queryset(self):
+        return Job.objects.filter(user=self.request.user)
 
 
 @http_get
