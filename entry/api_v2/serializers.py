@@ -212,12 +212,14 @@ class EntryUpdateSerializer(EntryBaseSerializer):
 
         attrs_data = validated_data.pop("attrs", [])
 
+        is_updated = False
         # update name of Entry object. If name would be updated, the elasticsearch data of entries
         # that refers this entry also be updated by creating REGISTERED_REFERRALS task.
         job_register_referrals: Optional[Job] = None
         if "name" in validated_data and entry.name != validated_data["name"]:
             entry.name = validated_data["name"]
             entry.save(update_fields=["name"])
+            is_updated = True
             job_register_referrals = Job.new_register_referrals(user, entry)
 
         for entity_attr in entry.schema.attrs.filter(is_active=True):
@@ -239,12 +241,14 @@ class EntryUpdateSerializer(EntryBaseSerializer):
                 continue
 
             attr.add_value(user, attr_data[0]["value"])
+            is_updated = True
 
         if custom_view.is_custom("after_update_entry_v2", entity_name):
             custom_view.call_custom("after_update_entry_v2", entity_name, user, entry)
 
         # update entry information to Elasticsearch
-        entry.register_es()
+        if is_updated:
+            entry.register_es()
 
         # clear flag to specify this entry has been completed to edit
         entry.del_status(Entry.STATUS_EDITING)
@@ -254,8 +258,9 @@ class EntryUpdateSerializer(EntryBaseSerializer):
             job_register_referrals.run()
 
         # running job to notify changing entry event
-        job_notify_event: Job = Job.new_notify_update_entry(user, entry)
-        job_notify_event.run()
+        if is_updated:
+            job_notify_event: Job = Job.new_notify_update_entry(user, entry)
+            job_notify_event.run()
 
         return entry
 
