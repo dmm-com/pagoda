@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -27,9 +27,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface Props {
   objectId: number;
   acl: ACL;
+  setSubmittable: (isSubmittable: boolean) => void;
 }
 
-export const ACLForm: FC<Props> = ({ objectId, acl }) => {
+export const ACLForm: FC<Props> = ({ objectId, acl, setSubmittable }) => {
   const classes = useStyles();
   const history = useHistory();
 
@@ -47,6 +48,28 @@ export const ACLForm: FC<Props> = ({ objectId, acl }) => {
       };
     }, {})
   );
+
+  const checkSubmittable = () => {
+    if (isPublic) {
+      return true;
+    }
+    if (defaultPermission & djangoContext.aclTypes.full.value) {
+      return true;
+    }
+    if (
+      Object.values(permissions).some(
+        (permission) =>
+          permission.current_permission & djangoContext.aclTypes.full.value
+      )
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    setSubmittable(checkSubmittable());
+  });
 
   const handleSubmit = async () => {
     // TODO better name?
@@ -124,9 +147,12 @@ export const ACLForm: FC<Props> = ({ objectId, acl }) => {
                   value={defaultPermission}
                   onChange={(e) => setDefaultPermission(Number(e.target.value))}
                 >
-                  {djangoContext.aclTypes.map((acltype, index) => (
-                    <MenuItem key={index} value={acltype.value}>
-                      {acltype.name}
+                  {Object.keys(djangoContext.aclTypes).map((key, index) => (
+                    <MenuItem
+                      key={index}
+                      value={djangoContext.aclTypes[key].value}
+                    >
+                      {djangoContext.aclTypes[key].name}
                     </MenuItem>
                   ))}
                 </Select>
@@ -151,9 +177,12 @@ export const ACLForm: FC<Props> = ({ objectId, acl }) => {
                     }
                   >
                     <MenuItem value={0}>(未設定)</MenuItem>
-                    {djangoContext.aclTypes.map((acltype, index) => (
-                      <MenuItem key={index} value={acltype.value}>
-                        {acltype.name}
+                    {Object.keys(djangoContext.aclTypes).map((key, index) => (
+                      <MenuItem
+                        key={index}
+                        value={djangoContext.aclTypes[key].value}
+                      >
+                        {djangoContext.aclTypes[key].name}
                       </MenuItem>
                     ))}
                   </Select>

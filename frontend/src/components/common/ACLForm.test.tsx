@@ -40,6 +40,15 @@ test("should render a component with essential props", function () {
   };
 
   expect(() =>
-    render(<ACLForm acl={acl} objectId={1} />, { wrapper: TestWrapper })
+    render(
+      <ACLForm
+        acl={acl}
+        objectId={1}
+        setSubmittable={(b) => {
+          /* no operation */
+        }}
+      />,
+      { wrapper: TestWrapper }
+    )
   ).not.toThrow();
 });

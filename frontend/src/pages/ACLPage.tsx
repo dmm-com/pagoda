@@ -14,7 +14,7 @@ import { Loading } from "components/common/Loading";
 
 export const ACLPage: FC = () => {
   const { objectId } = useTypedParams<{ objectId: number }>();
-  const [submittable, setSubmittable] = useState<boolean>(false); // FIXME
+  const [submittable, setSubmittable] = useState<boolean>(false);
 
   const acl = useAsync(async () => {
     return await aironeApiClientV2.getAcl(objectId);
@@ -66,7 +66,11 @@ export const ACLPage: FC = () => {
         <Box
           sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}
         >
-          <ACLForm objectId={objectId} acl={acl.value} />
+          <ACLForm
+            objectId={objectId}
+            acl={acl.value}
+            setSubmittable={setSubmittable}
+          />
         </Box>
       )}
     </Box>
