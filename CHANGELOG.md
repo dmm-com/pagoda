@@ -8,28 +8,37 @@
 * Changed to update job status to error when celery exception error
   Contributed by @hinashi
 
-* (New-UI) Show a shorten name if entity name is too long
-  at Entity list view.
-  Contributed by @syucream
+### Fixed
 
+## v3.16.0
+
+### Changed
 * Introduced new Job's status WARNING, that is intermediate
   status between succeed and error.
   Contributed by @userlocalhost
 
-### Fixed
+## v3.15.0
 
+### Fixed
+* Fixed custom_view not applied when importing multiple entities
+  Contributed by @hinashi
+
+## v3.14.0
+
+### Changed
+* (New-UI) Show a shorten name if entity name is too long
+  at Entity list view.
+  Contributed by @syucream
+
+### Fixed
 * (New-UI) Perform animation when reordering entity attribute
   to highlight moved attribute on the form.
   Contributed by @syucream
-
 * (New-UI) Fix bugs that failed to delete unsubmitted attribute.
   Contributed by @syucream
-
 * (New-UI) Fix not to occur a warning on entity referral auto
   complete field.
   Contributed by @syucream
-* Fixed custom_view not applied when importing multiple entities
-  Contributed by @hinashi
 
 ## v3.13.0
 
