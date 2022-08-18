@@ -88,7 +88,9 @@ class ACLSerializer(serializers.ModelSerializer):
         ]
 
     def validate_default_permission(self, default_permission: int):
-        return default_permission in ACLType.all()
+        if default_permission not in ACLType.all():
+            raise ValidationError('invalid default_permission parameter')
+        return default_permission
 
     def validate(self, attrs: Dict[str, Any]):
         # validate acl paramter

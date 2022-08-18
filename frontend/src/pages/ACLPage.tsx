@@ -1,7 +1,7 @@
 import { Box, Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { PageHeader } from "../components/common/PageHeader";
@@ -14,6 +14,7 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 
 export const ACLPage: FC = () => {
+  const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { objectId } = useTypedParams<{ objectId: number }>();
   const [submittable, setSubmittable] = useState<boolean>(false);
@@ -37,9 +38,6 @@ export const ACLPage: FC = () => {
         };
       });
 
-      console.log("[onix/handleSubmit(10)] aclSettings: ", aclSettings);
-      console.log("[onix/handleSubmit(10)] aclInfo: ", aclInfo);
-
       await aironeApiClientV2.updateAcl(
         objectId,
         acl.value.name,
@@ -48,17 +46,15 @@ export const ACLPage: FC = () => {
         aclInfo.defaultPermission,
         aclSettings
       );
+
+      enqueueSnackbar("ACL 設定の更新が成功しました", { variant: "success" });
+      history.goBack();
     }
-
-    enqueueSnackbar("ACL の更新処理完了(仮)");
   };
+
   const handleCancel = async () => {
-    return undefined;
+    history.goBack();
   };
-
-  if (!acl.loading) {
-    console.log("[onix/handleSubmit(10)] acl: ", acl);
-  }
 
   /* initialize permissions and isPublic variables from acl parameter */
   useEffect(() => {
@@ -117,7 +113,6 @@ export const ACLPage: FC = () => {
         >
           <ACLForm
             objectId={objectId}
-            //acl={acl.value}
             aclInfo={aclInfo}
             setACLInfo={setACLInfo}
             setSubmittable={setSubmittable}

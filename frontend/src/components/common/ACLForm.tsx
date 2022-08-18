@@ -7,20 +7,11 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Theme,
   Typography,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
 import React, { FC, useEffect } from "react";
-import { useHistory } from "react-router-dom";
 
 import { DjangoContext } from "utils/DjangoContext";
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-}));
 
 interface Props {
   objectId: number;
@@ -39,9 +30,6 @@ export const ACLForm: FC<Props> = ({
   aclInfo,
   setACLInfo,
 }) => {
-  const classes = useStyles();
-  const history = useHistory();
-
   const djangoContext = DjangoContext.getInstance();
 
   const checkSubmittable = () => {
@@ -99,92 +87,90 @@ export const ACLForm: FC<Props> = ({
       </Table>
 
       <Box>
-        <Box my="32px">
-          <Typography variant="h4" align="center">
-            公開制限設定
-          </Typography>
-        </Box>
+        {!aclInfo.isPublic && (
+          <>
+            <Box my="32px">
+              <Typography variant="h4" align="center">
+                公開制限設定
+              </Typography>
+            </Box>
 
-        <Table className="table table-bordered">
-          <TableHead>
-            <TableRow sx={{ backgroundColor: "#455A64" }}>
-              <TableCell sx={{ color: "#FFFFFF" }}>ロール</TableCell>
-              <TableCell sx={{ color: "#FFFFFF" }}>備考</TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            <TableRow>
-              <TableCell>全員</TableCell>
-              <TableCell></TableCell>
-              <TableCell>
-                <Select
-                  fullWidth={true}
-                  value={aclInfo.defaultPermission}
-                  onChange={(e) =>
-                    setACLInfo({
-                      ...aclInfo,
-                      defaultPermission: Number(e.target.value),
-                    })
-                  }
-                >
-                  {Object.keys(djangoContext.aclTypes).map((key, index) => (
-                    <MenuItem
-                      key={index}
-                      value={djangoContext.aclTypes[key].value}
-                    >
-                      {djangoContext.aclTypes[key].name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </TableCell>
-            </TableRow>
-            {Object.keys(aclInfo.permissions).map((key, index) => (
-              <TableRow key={index}>
-                <TableCell>{aclInfo.permissions[key].name}</TableCell>
-                <TableCell>{aclInfo.permissions[key].description}</TableCell>
-                <TableCell>
-                  <Select
-                    fullWidth={true}
-                    value={aclInfo.permissions[key].current_permission}
-                    onChange={
-                      (e) =>
+            <Table className="table table-bordered">
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#455A64" }}>
+                  <TableCell sx={{ color: "#FFFFFF" }}>ロール</TableCell>
+                  <TableCell sx={{ color: "#FFFFFF" }}>備考</TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>全員</TableCell>
+                  <TableCell></TableCell>
+                  <TableCell>
+                    <Select
+                      fullWidth={true}
+                      value={aclInfo.defaultPermission}
+                      onChange={(e) =>
                         setACLInfo({
                           ...aclInfo,
-                          permissions: {
-                            ...aclInfo.permissions,
-                            [key]: {
-                              ...aclInfo.permissions[key],
-                              current_permission: e.target.value,
-                            },
-                          },
+                          defaultPermission: Number(e.target.value),
                         })
-                      /*
-                      setACLInfo({
-                        ...aclInfo.permissions,
-                        [key]: {
-                          ...aclInfo.permissions[key],
-                          current_permission: e.target.value,
-                        },
-                      })
-                      */
-                    }
-                  >
-                    <MenuItem value={0}>(未設定)</MenuItem>
-                    {Object.keys(djangoContext.aclTypes).map((key, index) => (
-                      <MenuItem
-                        key={index}
-                        value={djangoContext.aclTypes[key].value}
+                      }
+                    >
+                      {Object.keys(djangoContext.aclTypes).map((key, index) => (
+                        <MenuItem
+                          key={index}
+                          value={djangoContext.aclTypes[key].value}
+                        >
+                          {djangoContext.aclTypes[key].name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </TableCell>
+                </TableRow>
+                {Object.keys(aclInfo.permissions).map((key, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{aclInfo.permissions[key].name}</TableCell>
+                    <TableCell>
+                      {aclInfo.permissions[key].description}
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        fullWidth={true}
+                        value={aclInfo.permissions[key].current_permission}
+                        onChange={(e) =>
+                          setACLInfo({
+                            ...aclInfo,
+                            permissions: {
+                              ...aclInfo.permissions,
+                              [key]: {
+                                ...aclInfo.permissions[key],
+                                current_permission: e.target.value,
+                              },
+                            },
+                          })
+                        }
                       >
-                        {djangoContext.aclTypes[key].name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                        <MenuItem value={0}>(未設定)</MenuItem>
+                        {Object.keys(djangoContext.aclTypes).map(
+                          (key, index) => (
+                            <MenuItem
+                              key={index}
+                              value={djangoContext.aclTypes[key].value}
+                            >
+                              {djangoContext.aclTypes[key].name}
+                            </MenuItem>
+                          )
+                        )}
+                      </Select>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </>
+        )}
       </Box>
     </Box>
   );
