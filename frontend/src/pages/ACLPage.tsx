@@ -1,5 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
-import React, { FC, useState } from "react";
+import { useSnackbar } from "notistack";
+import React, { FC, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -13,19 +14,67 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 
 export const ACLPage: FC = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const { objectId } = useTypedParams<{ objectId: number }>();
   const [submittable, setSubmittable] = useState<boolean>(false);
+  const [aclInfo, setACLInfo] = useState({
+    isPublic: false,
+    defaultPermission: 1,
+    permissions: {},
+  });
 
   const acl = useAsync(async () => {
     return await aironeApiClientV2.getAcl(objectId);
   });
 
   const handleSubmit = async () => {
-    return undefined;
+    // TODO better name?
+    if (!acl.loading) {
+      const aclSettings = acl.value.roles.map((role) => {
+        return {
+          member_id: role.id,
+          value: aclInfo.permissions[role.id]?.current_permission,
+        };
+      });
+
+      console.log("[onix/handleSubmit(10)] aclSettings: ", aclSettings);
+      console.log("[onix/handleSubmit(10)] aclInfo: ", aclInfo);
+
+      await aironeApiClientV2.updateAcl(
+        objectId,
+        acl.value.name,
+        acl.value.objtype,
+        aclInfo.isPublic,
+        aclInfo.defaultPermission,
+        aclSettings
+      );
+    }
+
+    enqueueSnackbar("ACL の更新処理完了(仮)");
   };
   const handleCancel = async () => {
     return undefined;
   };
+
+  if (!acl.loading) {
+    console.log("[onix/handleSubmit(10)] acl: ", acl);
+  }
+
+  /* initialize permissions and isPublic variables from acl parameter */
+  useEffect(() => {
+    if (!acl.loading) {
+      setACLInfo({
+        isPublic: acl.value.isPublic,
+        defaultPermission: acl.value.defaultPermission,
+        permissions: acl.value.roles.reduce((obj, role) => {
+          return {
+            ...obj,
+            [role.id]: role,
+          };
+        }, {}),
+      });
+    }
+  }, [acl]);
 
   return (
     <Box className="container-fluid">
@@ -68,7 +117,9 @@ export const ACLPage: FC = () => {
         >
           <ACLForm
             objectId={objectId}
-            acl={acl.value}
+            //acl={acl.value}
+            aclInfo={aclInfo}
+            setACLInfo={setACLInfo}
             setSubmittable={setSubmittable}
           />
         </Box>

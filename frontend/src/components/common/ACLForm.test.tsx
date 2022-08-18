@@ -42,8 +42,15 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(
       <ACLForm
-        acl={acl}
         objectId={1}
+        aclInfo={{
+          isPublic: true,
+          defaultPermission: 0,
+          permissions: {},
+        }}
+        setACLInfo={(d) => {
+          /* no operation */
+        }}
         setSubmittable={(b) => {
           /* no operation */
         }}
