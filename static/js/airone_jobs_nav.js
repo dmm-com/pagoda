@@ -53,6 +53,7 @@ $(document).ready(function() {
               operation = 'コピー';
               break;
             case data['constant']['operation']['import']:
+            case data['constant']['operation']['import_v2']:
               target_name = jobinfo['target']['name'];
               operation = 'インポート';
               break;

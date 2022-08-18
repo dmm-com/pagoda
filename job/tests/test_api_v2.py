@@ -93,3 +93,40 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/job/api/v2/jobs")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()), 2)
+
+    def test_get_job(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
+        job = Job.new_create(user, entry, "hoge")
+
+        resp = self.client.get("/job/api/v2/%d/" % job.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json(),
+            {
+                "id": job.id,
+                "status": Job.STATUS["PREPARING"],
+                "text": "hoge",
+            },
+        )
+
+    def test_get_job_with_invalid_param(self):
+        user = self.guest_login()
+        resp = self.client.get("/job/api/v2/%d/" % 9999)
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json(), {"detail": "Not found."})
+
+        resp = self.client.get("/job/api/v2/%s/" % "hoge")
+        self.assertEqual(resp.status_code, 404)
+
+        # other user job
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
+        job = Job.new_create(user, entry)
+
+        self.admin_login()
+        resp = self.client.get("/job/api/v2/%d/" % job.id)
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json(), {"detail": "Not found."})

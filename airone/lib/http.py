@@ -14,11 +14,16 @@ from airone.lib.types import AttrTypes, AttrTypeValue
 from entity import models as entity_models
 from entry import models as entry_models
 from job.models import Job, JobOperation
-from user.models import History
+from user.models import History, User
 
 
 class HttpResponseSeeOther(HttpResponseRedirect):
     status_code = 303
+
+
+class DRFRequest(dict):
+    def __init__(self, user: User):
+        self.user = user
 
 
 def http_get(func):
@@ -157,6 +162,7 @@ def render(request, template, context={}):
             "COPY": JobOperation.COPY_ENTRY.value,
             "DO_COPY": JobOperation.DO_COPY_ENTRY.value,
             "IMPORT": JobOperation.IMPORT_ENTRY.value,
+            "IMPORT_V2": JobOperation.IMPORT_ENTRY_V2.value,
             "EXPORT": JobOperation.EXPORT_ENTRY.value,
             "RESTORE": JobOperation.RESTORE_ENTRY.value,
             "EXPORT_SEARCH_RESULT": JobOperation.EXPORT_SEARCH_RESULT.value,

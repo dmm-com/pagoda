@@ -55,4 +55,20 @@ full traceback:
 
     # Logger for DEBUG because email is not sent in dev environment
     Logger.error(message)
+
+    # Logger for Alert because long texts usually cannot be parsed by log server
+    Logger.error("An exception error has occurred")
+
+    # Send an email so that admins can receive errors
     mail_admins(subject, message)
+
+
+@task_failure.connect()
+def celery_task_failure_update_job_status(**kwargs):
+    """This event handler is update job status when an exception error in celery."""
+    from job.models import Job
+
+    job_id = kwargs["args"][0]
+    job = Job.objects.get(id=job_id)
+    job.status = Job.STATUS["ERROR"]
+    job.save(update_fields=["status"])

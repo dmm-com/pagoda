@@ -1,0 +1,27 @@
+# 0
+- hoge: fuga
+# 1
+- entity: [test]
+  entries: test
+# 2
+- entity: test-entity
+  entries: 
+  # 0
+  - test
+  # 1
+  - test: hoge
+  # 2
+  - name: []
+    attrs: test
+  # 3
+  - name: test-entry
+    attrs:
+    # 0
+    - test
+    # 1
+    - test: test
+    # 2
+    - name: []
+      value:
+      - test: test
+    

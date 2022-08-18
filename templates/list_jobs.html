@@ -87,6 +87,8 @@
               コピー
             {% elif job.operation|divmod:100 == JOB.OPERATION.IMPORT %}
               インポート
+            {% elif job.operation|divmod:100 == JOB.OPERATION.IMPORT_V2 %}
+              インポート
             {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT %}
               エクスポート
             {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT_SEARCH_RESULT %}

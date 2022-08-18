@@ -1,0 +1,11 @@
+- entity: test-entity
+  entries:
+  - name: test-entry1
+    attrs:
+      - name: val
+        value:
+        - foo
+  - name: test-entry2
+    attrs:
+      - name: val
+        value: hoge

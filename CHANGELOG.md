@@ -8,6 +8,9 @@
 * Changed to allow parallel execution some job.
   Contributed by @hinashi
 
+* Changed to update job status to error when celery exception error
+  Contributed by @hinashi
+
 * (New-UI) Show a shorten name if entity name is too long
   at Entity list view.
   Contributed by @syucream
