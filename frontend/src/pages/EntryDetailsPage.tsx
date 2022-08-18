@@ -1,5 +1,6 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import LockIcon from "@mui/icons-material/Lock";
 import {
   Box,
   Chip,
@@ -76,15 +77,21 @@ export const EntryDetailsPage: FC = () => {
           エンティティ一覧
         </Typography>
         {!entry.loading && (
-          <Typography
-            component={Link}
-            to={entityEntriesPath(entry.value.schema.id)}
-          >
-            {entry.value.schema.name}
-          </Typography>
+          <Box sx={{ display: "flex" }}>
+            <Typography
+              component={Link}
+              to={entityEntriesPath(entry.value.schema.id)}
+            >
+              {entry.value.schema.name}
+            </Typography>
+            {!entry.value.schema.isPublic && <LockIcon />}
+          </Box>
         )}
         {!entry.loading && (
-          <Typography color="textPrimary">{entry.value.name}</Typography>
+          <Box sx={{ display: "flex" }}>
+            <Typography color="textPrimary">{entry.value.name}</Typography>
+            {!entry.value.isPublic && <LockIcon />}
+          </Box>
         )}
       </AironeBreadcrumbs>
 

@@ -17,6 +17,7 @@ class ACLSerializer(serializers.ModelSerializer):
     acltypes = serializers.SerializerMethodField(method_name="get_acltypes", read_only=True)
     members = serializers.SerializerMethodField(method_name="get_members", read_only=True)
     roles = serializers.SerializerMethodField(method_name="get_roles", read_only=True)
+    entity = serializers.SerializerMethodField(method_name="get_entity", read_only=True)
     # TODO better name?
     acl = serializers.ListField(write_only=True)
 
@@ -33,6 +34,7 @@ class ACLSerializer(serializers.ModelSerializer):
             "members",
             "acl",
             "roles",
+            "entity",
         ]
 
     def get_parent(self, obj: ACLBase) -> Optional[Any]:
@@ -87,9 +89,19 @@ class ACLSerializer(serializers.ModelSerializer):
             if user.is_superuser or x.is_belonged_to(user)
         ]
 
+    def get_entity(self, obj: ACLBase) -> Dict[str, Any]:
+        if obj.objtype & ACLObjType.Entry:
+            entry = Entry.objects.filter(id=obj.id).first()
+            if entry is not None:
+                return {
+                    "id": entry.schema.id,
+                    "name": entry.schema.name,
+                    "is_public": entry.schema.is_public,
+                }
+
     def validate_default_permission(self, default_permission: int):
         if default_permission not in ACLType.all():
-            raise ValidationError('invalid default_permission parameter')
+            raise ValidationError("invalid default_permission parameter")
         return default_permission
 
     def validate(self, attrs: Dict[str, Any]):

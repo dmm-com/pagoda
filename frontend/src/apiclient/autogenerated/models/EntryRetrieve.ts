@@ -80,6 +80,12 @@ export interface EntryRetrieve {
    * @memberof EntryRetrieve
    */
   readonly attrs: Array<EntryRetrieveAttrs>;
+  /**
+   *
+   * @type {boolean}
+   * @memberof EntryRetrieve
+   */
+  isPublic?: boolean;
 }
 
 export function EntryRetrieveFromJSON(json: any): EntryRetrieve {
@@ -105,6 +111,7 @@ export function EntryRetrieveFromJSONTyped(
       ? null
       : new Date(json["deleted_time"]),
     attrs: (json["attrs"] as Array<any>).map(EntryRetrieveAttrsFromJSON),
+    isPublic: !exists(json, "is_public") ? undefined : json["is_public"],
   };
 }
 
@@ -123,5 +130,6 @@ export function EntryRetrieveToJSON(value?: EntryRetrieve | null): any {
         : value.deletedTime === null
         ? null
         : value.deletedTime.toISOString(),
+    is_public: value.isPublic,
   };
 }

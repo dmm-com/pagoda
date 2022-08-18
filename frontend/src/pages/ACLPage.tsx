@@ -1,3 +1,4 @@
+import LockIcon from "@mui/icons-material/Lock";
 import { Box, Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
@@ -12,8 +13,10 @@ import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { ACLForm } from "components/common/ACLForm";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
+import { DjangoContext } from "utils/DjangoContext";
 
 export const ACLPage: FC = () => {
+  const djangoContext = DjangoContext.getInstance();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { objectId } = useTypedParams<{ objectId: number }>();
@@ -72,12 +75,44 @@ export const ACLPage: FC = () => {
     }
   }, [acl]);
 
+  if (!acl.loading) {
+    console.log(acl);
+  }
+
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
         <Typography component={Link} to={topPath()}>
           Top
         </Typography>
+
+        {/* This is a statement for Entity */}
+        {!acl.loading &&
+          acl.value.objtype & djangoContext.aclObjectType.entity && (
+            <Box sx={{ display: "flex" }}>
+              <Typography color="textPrimary">{acl.value.name}</Typography>
+              {!acl.value.isPublic && <LockIcon />}
+            </Box>
+          )}
+
+        {/* This is a statement for Entry */}
+        {!acl.loading && acl.value.objtype & djangoContext.aclObjectType.entry && (
+          <Box sx={{ display: "flex" }}>
+            <Typography color="textPrimary">{acl.value.entity.name}</Typography>
+            {!acl.value.entity.isPublic && <LockIcon />}
+          </Box>
+        )}
+        {!acl.loading && acl.value.objtype & djangoContext.aclObjectType.entry && (
+          <Box sx={{ display: "flex" }}>
+            <Typography color="textPrimary">{acl.value.name}</Typography>
+            {!acl.value.isPublic && <LockIcon />}
+          </Box>
+        )}
+
+        {/* This is a statement for EntityAttr */}
+
+        {/* This is a statement for EntryAttr */}
+
         <Typography color="textPrimary">ACL</Typography>
       </AironeBreadcrumbs>
 

@@ -248,7 +248,16 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
     class Meta:
         model = Entry
-        fields = ["id", "name", "schema", "is_active", "deleted_user", "deleted_time", "attrs"]
+        fields = [
+            "id",
+            "name",
+            "schema",
+            "is_active",
+            "deleted_user",
+            "deleted_time",
+            "attrs",
+            "is_public",
+        ]
         read_only_fields = ["is_active"]
 
     def get_attrs(self, obj: Entry) -> List[EntryAttributeType]:

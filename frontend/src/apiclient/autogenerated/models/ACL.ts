@@ -79,6 +79,12 @@ export interface ACL {
    * @memberof ACL
    */
   readonly roles: Array<{ [key: string]: any }>;
+  /**
+   *
+   * @type {{ [key: string]: any; }}
+   * @memberof ACL
+   */
+  readonly entity: { [key: string]: any };
 }
 
 export function ACLFromJSON(json: any): ACL {
@@ -102,6 +108,7 @@ export function ACLFromJSONTyped(json: any, ignoreDiscriminator: boolean): ACL {
     members: json["members"],
     acl: json["acl"],
     roles: json["roles"],
+    entity: json["entity"],
   };
 }
 

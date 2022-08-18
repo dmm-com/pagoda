@@ -162,7 +162,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
 class EntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Entity
-        fields = ["id", "name"]
+        fields = ["id", "name", "is_public"]
 
     def _update_or_create(self, user, validated_data, is_toplevel_data, attrs_data, webhooks_data):
         entity: Entity
