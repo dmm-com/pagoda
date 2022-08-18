@@ -230,6 +230,12 @@ class ModelTest(AironeTestCase):
             self.assertFalse(job2.proceed_if_ready())
             self.assertEqual(self.test_data, 2)
 
+    def test_may_schedule_with_parallelizable_operation(self):
+        [job1, job2] = [Job.new_notify_update_entry(self.guest, self.entry) for _ in range(2)]
+        self.assertEqual(job2.dependent_job, job1)
+        self.assertEqual(job1.status, Job.STATUS["PREPARING"])
+        self.assertTrue(job2.proceed_if_ready())
+
     @mock.patch("job.models.import_module")
     def test_task_module(self, mock_import_module):
         # This initializes test data that describes how many times does import_module is called

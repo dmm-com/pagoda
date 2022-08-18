@@ -99,6 +99,16 @@ class Job(models.Model):
         JobOperation.EXPORT_SEARCH_RESULT.value,
     ]
 
+    PARALLELIZABLE_OPERATIONS = [
+        JobOperation.NOTIFY_CREATE_ENTRY.value,
+        JobOperation.NOTIFY_UPDATE_ENTRY.value,
+        JobOperation.NOTIFY_DELETE_ENTRY.value,
+        JobOperation.COPY_ENTRY.value,
+        JobOperation.DO_COPY_ENTRY.value,
+        JobOperation.IMPORT_ENTRY.value,
+        JobOperation.EXPORT_ENTRY.value,
+    ]
+
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -118,6 +128,10 @@ class Job(models.Model):
     dependent_job = models.ForeignKey("Job", null=True, on_delete=models.SET_NULL)
 
     def may_schedule(self):
+        # Operations that can run in parallel exclude checking for dependent jobs
+        if self.operation in self.PARALLELIZABLE_OPERATIONS:
+            return False
+
         # When there is dependent job, this re-send a request to run same job
         if self.dependent_job and not self.dependent_job.is_finished():
             # This delay is needed to prevent sending excessive message to MQ
