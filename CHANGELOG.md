@@ -5,6 +5,9 @@
 ### Added
 
 ### Changed
+* Changed to allow parallel execution some job.
+  Contributed by @hinashi
+
 * Changed to update job status to error when celery exception error
   Contributed by @hinashi
 
