@@ -133,7 +133,7 @@ export const AttributeRow: FC<Props> = ({
     return referralEntities.filter((e) =>
       currentAttr?.referral?.includes(e.id)
     );
-  }, [referralEntities]);
+  }, [referralEntities, currentAttr?.referral]);
 
   return (
     <TableRow
