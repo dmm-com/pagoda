@@ -70,13 +70,18 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             "is_active": {"read_only": True},
         }
 
-    def _validate(self, name: str, schema: Entity, attrs: List[Dict[str, Any]]):
-        # check name
+    def validate_name(self, name: str):
+        if self.instance:
+            schema = self.instance.schema
+        else:
+            schema = self.get_initial()["schema"]
         if name and Entry.objects.filter(name=name, schema=schema, is_active=True).exists():
             # In update case, there is no problem with the same name
             if not (self.instance and self.instance.name == name):
                 raise ValidationError("specified name(%s) already exists" % name)
+        return name
 
+    def _validate(self, schema: Entity, attrs: List[Dict[str, Any]]):
         # In create case, check attrs mandatory attribute
         if not self.instance:
             user: User = self.context["request"].user
@@ -137,7 +142,7 @@ class EntryCreateSerializer(EntryBaseSerializer):
         fields = ["id", "name", "schema", "attrs", "created_user"]
 
     def validate(self, params):
-        self._validate(params["name"], params["schema"], params.get("attrs", []))
+        self._validate(params["schema"], params.get("attrs", []))
         return params
 
     def create(self, validated_data: EntryCreateData):
@@ -197,7 +202,7 @@ class EntryUpdateSerializer(EntryBaseSerializer):
         }
 
     def validate(self, params):
-        self._validate(params.get("name", None), self.instance.schema, params.get("attrs", []))
+        self._validate(self.instance.schema, params.get("attrs", []))
         return params
 
     def update(self, entry: Entry, validated_data: EntryUpdateData):

@@ -2243,7 +2243,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"non_field_errors": ["specified name(hoge) already exists"]})
+        self.assertEqual(resp.json(), {"name": ["specified name(hoge) already exists"]})
 
         entry.delete()
         resp = self.client.post(
