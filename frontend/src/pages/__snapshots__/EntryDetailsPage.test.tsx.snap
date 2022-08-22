@@ -383,8 +383,12 @@ Object {
             </div>
           </div>
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1o7apob-MuiGrid-root"
-          />
+            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1dlt83p-MuiGrid-root"
+          >
+            <div
+              class="MuiBox-root css-0"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -768,8 +772,12 @@ Object {
           </div>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1o7apob-MuiGrid-root"
-        />
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1dlt83p-MuiGrid-root"
+        >
+          <div
+            class="MuiBox-root css-0"
+          />
+        </div>
       </div>
     </div>
   </div>,
