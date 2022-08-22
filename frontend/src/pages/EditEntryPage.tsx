@@ -1,4 +1,5 @@
 import AppsIcon from "@mui/icons-material/Apps";
+import LockIcon from "@mui/icons-material/Lock";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
@@ -279,17 +280,26 @@ export const EditEntryPage: FC = () => {
           エンティティ一覧
         </Typography>
         {entity.value && (
-          <Typography component={Link} to={entityEntriesPath(entity.value.id)}>
-            {entity.value.name}
-          </Typography>
+          <Box sx={{ display: "flex" }}>
+            <Typography
+              component={Link}
+              to={entityEntriesPath(entity.value.id)}
+            >
+              {entity.value.name}
+            </Typography>
+            {!entity.value.isPublic && <LockIcon />}
+          </Box>
         )}
         {entry.value && (
-          <Typography
-            component={Link}
-            to={entryDetailsPath(entry.value.schema.id, entry.value.id)}
-          >
-            {entry.value.name}
-          </Typography>
+          <Box sx={{ display: "flex" }}>
+            <Typography
+              component={Link}
+              to={entryDetailsPath(entry.value.schema.id, entry.value.id)}
+            >
+              {entry.value.name}
+            </Typography>
+            {!entry.value.isPublic && <LockIcon />}
+          </Box>
         )}
         <Typography color="textPrimary">
           {entry.value ? "編集" : "作成"}

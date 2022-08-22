@@ -1,4 +1,5 @@
 import AppsIcon from "@mui/icons-material/Apps";
+import LockIcon from "@mui/icons-material/Lock";
 import { Box, Container, IconButton, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
@@ -32,6 +33,10 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
     );
   }
 
+  if (!entity.loading) {
+    console.log("[onix(10)] entity: ", entity);
+  }
+
   return (
     <Box>
       <AironeBreadcrumbs>
@@ -41,9 +46,12 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
         <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
-        <Typography color="textPrimary">
-          {entity.loading ? "" : entity.value.name}
-        </Typography>
+        <Box sx={{ display: "flex" }}>
+          <Typography color="textPrimary">
+            {entity.loading ? "" : entity.value.name}
+          </Typography>
+          {!entity.loading && !entity.value.isPublic && <LockIcon />}
+        </Box>
       </AironeBreadcrumbs>
 
       <Container maxWidth="lg" sx={{ marginTop: "111px" }}>

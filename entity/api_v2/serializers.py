@@ -389,7 +389,7 @@ class EntityDetailSerializer(EntityListSerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks"]
+        fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks", "is_public"]
 
     def get_attrs(self, obj: Entity) -> List[EntityDetailAttribute]:
         user = User.objects.get(id=self.context["request"].user.id)

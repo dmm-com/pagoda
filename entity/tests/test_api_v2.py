@@ -51,6 +51,7 @@ class ViewTest(AironeViewTest):
                 "status": 0,
                 "attrs": [],
                 "webhooks": [],
+                "is_public": True,
             },
         )
 
