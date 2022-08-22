@@ -15,41 +15,46 @@ Here is the documentation to setup the development environment of AirOne.
 ## Installation of AirOne
 You have to install Python3.8+ to run AirOne like below (for the case of `ubuntu`).
 ```
-user@hostname:~$ sudo apt-get install python3 python3-pip virtualenv
+user@hostname:~$ sudo apt-get update
+user@hostname:~$ sudo apt-get install python3 python3-pip python3-venv
 ```
+
+You have to install libraries.
+```
+user@hostname:~$ sudo apt-get install libldap2-dev  libsasl2-dev libxmlsec1-dev libmysqlclient-dev pkg-config
+```
+
+Then, you can install libraries on which AieOne depends by following after cloning this repository. But we recommand you to setup airone on the separated environment using virtualenv not to pollute system-wide python environment.
+```
+user@hostname:~$ git clone https://github.com/dmm-com/airone.git
+user@hostname:~$ cd airone
+user@hostname:~/airone$ python3 -m venv virtualenv
+user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone$ pip install pip --upgrade
+(virtualenv) user@hostname:~/airone$ pip install -r requirements.txt
+# or, during development 
+(virtualenv) user@hostname:~/airone$ pip install -r requirements-dev.txt
+```
+
+## Setting-up Backend with docker-compose
+
+Install docker-compose command.  
+Run middlewares with docker-compose.
+
+```
+user@hostname:~/airone$ docker-compose up
+```
+
+## (Setting-up Backend with manual)
 
 And you have to install RabbitMQ for executing heavy processing as background task using [Celery](http://docs.celeryproject.org/) and Memcached for caching backend.
 ```
 user@hostname:~$ sudo apt-get install rabbitmq-server memcached mysql-server python-dev libmysqlclient-dev
 ```
 
-You have to install OpenLDAP library if you use LDAP.
-```
-user@hostname:~$ sudo apt-get install libldap2-dev  libsasl2-dev libxmlsec1-dev
-```
-
-Then, you can install libraries on which AieOne depends by following after cloning this repository. But we recommand you to setup airone on the separated environment using virtualenv not to pollute system-wide python environment.
-```
-user@hostname:~$ cd airone
-user@hostname:~/airone$ virtualenv -p python3 virtualenv
-user@hostname:~/airone$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/airone$ sudo pip install -r requirements.txt
-# or, during development 
-(virtualenv) user@hostname:~/airone$ sudo pip install -r requirements-dev.txt
-```
-
 ### Setting-up MySQL configuration
 
-You should cerate database and user for airone in MySQL.
-```
-user@hostname:~/airone$ sudo mysql -uroot
-
-mysql> create database airone;
-mysql> CREATE USER 'airone'@'localhost' IDENTIFIED BY 'password';
-mysql> GRANT ALL ON airone.* to airone@'localhost' IDENTIFIED BY 'password';
-```
-
-And specifying character set of database is necessary. Please add following setting in the `mysqld.cnf` at `mysqld` section.
+Specifying character set of database is necessary. Please add following setting in the `mysqld.cnf` at `mysqld` section.
 ```
 [mysqld]
 ...
@@ -65,6 +70,46 @@ Iincrease the number of Slave databases with the MySQL replication function.
 You can set database slave, with like this config:
 ```
 REPLICATED_DATABASE_SLAVES = ['slave1', 'slave2']
+```
+
+### Setting-up Elasticsearch
+
+You have to setup JRE for executing elasticsearch.
+```
+user@hostname:~$ sudo add-apt-repository ppa:linuxuprising/java
+user@hostname:~$ sudo apt-get update
+user@hostname:~$ sudo apt-get install -y oracle-java13-installer
+```
+
+The way to install elasticsearch is quite easy like that.
+```
+user@hostname:~$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.8.16.tar.gz
+user@hostname:~$ tar -xvf elasticsearch-6.8.16.tar.gz
+```
+
+After installing it, you have to change configuration to accept connecting from AirOne nodes.
+```diff
+--- elasticsearch-6.8.16/config/elasticsearch.yml.old        2020-01-29 10:19:40.511687943 +0900
++++ elasticsearch-6.8.16/config/elasticsearch.yml            2020-01-29 10:41:23.103687943 +0900
+@@ -52,7 +52,7 @@
+ #
+ # Set the bind address to a specific IP (IPv4 or IPv6):
+ #
+-#network.host: 192.168.0.1
++network.host: 0.0.0.0
+ #
+ # Set a custom port for HTTP:
+ #
+```
+
+You should set sysctl as below because Elasticsearch requires to expand virtual memory area.
+```
+user@hostname:~$ sudo sysctl vm.max_map_count=262144
+```
+
+Finally, you can run ElasticSearch service like that.
+```
+user@hostname:~$ elasticsearch-6.8.16/bin/elasticsearch
 ```
 
 ### Setting-up Email configuration
@@ -88,93 +133,7 @@ If you hope to just try it in your local environment, you can use stdout instead
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ```
 
-### Initialize AirOne configuratoin
-This command makes database schema using the [django Migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/), and makes default user account.
-```
-user@hostname:~$ cd airone
-user@hostname:~/airone$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/airone$ tools/clear_and_initdb.sh
-```
-
-Finally, you should create an initial user to login the system using `tools/register_user.sh`.
-```
-(virtualenv) user@hostname:~/airone$ tools/register_user.sh demo
-Password:   ## input password of this user
-Succeed in register user (demo)
-```
-
-This creates following user.
-
-| Username | Password |
-|:---------|:---------|
-| demo     | demo     |
-
-If you want to create an administrative user who can access all information regardless of ACL (Please refer the [User-Manual(TBD)](#)), you can do it with `-s, --superuser` option. This creates another user who takes privilege of this system.
-```
-(virtualenv) user@hostname:~/airone$ tools/register_user.sh -s admin
-Password:   ## input password of this user
-Succeed in register user (admin)
-```
-
-## Run AirOne
-You can start AirOne as following and can browse from `http://hostname:8080/` (Please change the `hostname` to the appropriate one on which you installed AirOne).
-
-```
-user@hostname:~/$ cd airone
-user@hostname:~/airone$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/airone/$ python3 manage.py collectstatic
-(virtualenv) user@hostname:~/airone/$ python3 manage.py runserver 0:8080
-```
-
-## Run Celery
-
-In addition, you have to run Celery worker to execute background task as following.
-```
-user@hostname:~/$ cd airone
-user@hostname:~/airone$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/airone$ celery -A airone worker -l info
-```
-
-## Run ElasticSearch
-You have to setup JRE for executing elasticsearch.
-```
-user@hostname:~$ sudo add-apt-repository ppa:linuxuprising/java
-user@hostname:~$ sudo apt-get update
-user@hostname:~$ sudo apt-get install -y oracle-java13-installer
-```
-
-The way to install elasticsearch is quite easy like that.
-```
-user@hostname:~$ wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.8.12.tar.gz
-user@hostname:~$ tar -xvf elasticsearch-6.8.12.tar.gz
-```
-
-After installing it, you have to change configuration to accept connecting from AirOne nodes.
-```diff
---- elasticsearch-6.8.12/config/elasticsearch.yml.old        2020-01-29 10:19:40.511687943 +0900
-+++ elasticsearch-6.8.12/config/elasticsearch.yml            2020-01-29 10:41:23.103687943 +0900
-@@ -52,7 +52,7 @@
- #
- # Set the bind address to a specific IP (IPv4 or IPv6):
- #
--#network.host: 192.168.0.1
-+network.host: 0.0.0.0
- #
- # Set a custom port for HTTP:
- #
-```
-
-You should set sysctl as below because Elasticsearch requires to expand virtual memory area.
-```
-user@hostname:~$ sudo sysctl vm.max_map_count=262144
-```
-
-Finally, you can run ElasticSearch service like that.
-```
-user@hostname:~$ elasticsearch-6.8.12/bin/elasticsearch
-```
-
-## Run Nginx (Optional)
+## Setting-up Nginx (Optional)
 Install Nginx by package manager like this.
 ```
 user@hostname:~$ sudo apt-get install nginx
@@ -205,19 +164,16 @@ server {
 
   proxy_set_header    Host    $host;
   proxy_set_header    X-Real-IP    $remote_addr;
-  proxy_set_header    X-Forwarded-Host       $host;
+  proxy_set_header    X-Forwarded-Host    $host;
   proxy_set_header    X-Forwarded-Server    $host;
   proxy_set_header    X-Forwarded-For    $proxy_add_x_forwarded_for;
+  proxy_set_header    X-Forwarded-Proto    $scheme;
+  proxy_set_header    X-Forwarded-Port    443;
 
   location / {
     rewrite ^/(.*) /$1 break;
 
     proxy_pass    http://airone/;
-  }
-
-  location /static {
-    # Please change this appropriate path on your environment
-    alias /home/ubuntu/airone/static;
   }
 
   access_log /var/log/nginx/airone.ssl.access.log combined;
@@ -230,167 +186,132 @@ server {
 
 This includes the configuration to proxy HTTP request to AirOne and cache static files. The static file path indicates the static directory which is in the top of AirOne local repository. If necessary, please fix this value depending on your environment.
 
-## Tools
-There are some heler scripts about AirOne in the `tools` directory.
+## Initialize AirOne configuratoin
 
-### register_es_documnt.py
-This regists all entries which has been created in the database to the Elasticsearch.
+You should cerate database and user for airone in MySQL.
+```
+user@hostname:~$ mysql -u root -h 127.0.0.1
 
-#### Usage
+mysql> create database airone;
+mysql> CREATE USER 'airone'@'%' IDENTIFIED BY 'password';
+mysql> GRANT ALL ON airone.* to airone@'%';
+```
+
+This command makes database schema using the [django Migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/), and makes default user account.
+```
+user@hostname:~$ cd airone
+user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone$ tools/clear_and_initdb.sh
+```
+
+Finally, you should create an initial user to login the system using `tools/register_user.sh`.
+```
+(virtualenv) user@hostname:~/airone$ tools/register_user.sh demo
+Password:   ## input password of this user
+Succeed in register user (demo)
+```
+
+This creates following user.
+
+| Username | Password |
+|:---------|:---------|
+| demo     | demo     |
+
+If you want to create an administrative user who can access all information regardless of ACL (Please refer the [User-Manual(TBD)](#)), you can do it with `-s, --superuser` option. This creates another user who takes privilege of this system.
+```
+(virtualenv) user@hostname:~/airone$ tools/register_user.sh -s admin
+Password:   ## input password of this user
+Succeed in register user (admin)
+```
+
+This regists all entries which has been created in the database to the Elasticsearch.  
 You can do it just by following command. The configurations about the database to read and Elasticsearch to register are referred from airone/settings.py.
 
 ```
-user@hostname:~/airone/$ tools/register_es_document.py
+(virtualenv) user@hostname:~/airone$ python tools/register_es_document.py
 ```
 
-# Run with docker-compose
-
-Install Packages for mysqlclient
-
-```
-$ sudo apt-get install -y libmysqlclient-dev
-```
-
-Run middlewares with docker-compose
+## Run AirOne
+You can start AirOne as following and can browse from `http://hostname:8080/`  
+(Please change the `hostname` to the appropriate one on which you installed AirOne).
+e.g. 
 
 ```
-$ docker-compose up
-```
-
-## Confirm Python version
-
-```
-$ pyenv versions
-  system
-* 3.6.9 (set by /home/ubuntu/airone/.python-version)
-  3.8.2
-$ python -V
-Python 3.6.9
-```
-
-## Setup virtualenv
-
-```
-$ python -mvenv virtualenv
-$ source virtualenv/bin/activate
-$ pip install --upgrade pip
-$ pip install -r requirements.txt
-```
-
-## Setup database
-
-```
-$ mysql -uroot -h127.0.0.1 -e "GRANT ALL ON *.* to airone@'%' IDENTIFIED BY 'password'"
-```
-
-```
-$ mysql -uairone -h127.0.0.1 -ppassword -e 'create database airone'
-```
-
-```
-$ source virtualenv/bin/activate
-$ ./tools/clear_and_initdb.sh
-```
-
-```
-$ source virtualenv/bin/activate
-$ ./tools/register_user.sh --superuser admin
-Password:
-Succeed in register user (admin)
+user@hostname:~$ cd airone
+user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone$ python manage.py runserver 0:8080
 ```
 
 ## Run Celery
 
+In addition, you have to run Celery worker to execute background task as following.
 ```
-$ source virtualenv/bin/activate
-$ celery -A airone worker -l info
-```
-
-## Setup Static files
-
-Use [WhiteNose](http://whitenoise.evans.io/) for serving static files.
-
-```
-$ source virtualenv/bin/activate
-$ python manage.py collectstatic
- 
-You have requested to collect static files at the destination
-location as specified in your settings:
- 
-    /home/ubuntu/GitHub/airone/static_root
- 
-This will overwrite existing files!
-Are you sure you want to do this?
- 
-Type 'yes' to continue, or 'no' to cancel: yes
-```
-
-## Run AirOne
-
-```
-$ source virtualenv/bin/activate
-$ gunicorn airone.wsgi:application --bind=0.0.0.0:8080 --workers=3
-```
-```
-(In development)
-$ source virtualenv/bin/activate
-$ python manage.py runserver
-```
-
-## Auto-format
-
-```
-$ source virtualenv/bin/activate
-$ black .
-$ isort .
+user@hostname:~$ cd airone
+user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone$ celery -A airone worker -l info
 ```
 
 ## [Experimental] Build the new UI with React
 
 `/new-ui/` serves React-based new UI. Before you try it, you need to build `main.js`:
 
+Install nvm command.  
+
+Install npm packages.
 ```
-$ npm install
-$ npm run build
+user@hostname:~$ nvm install 17.2
+user@hostname:~$ cd airone
+user@hostname:~/airone$ npm install
 ```
+
+Build
 ```
+user@hostname:~/airone$ npm run build
+
 (In development)
-$ npm install
-$ npm run watch
+user@hostname:~/airone$ npm run watch
 ```
 
 If you have any change on API V2, you need to run this command before you build:
 
 ```
-$ npm run generate:client
-```
-```
+user@hostname:~/airone$ npm run generate:client
+
 (For Customview)
-$ npm run generate:custom_client
-```
-
-You can also auto-format .js files with [prettier](https://prettier.io/):
-
-```
-$ npm run fix
-```
-
-To execute test written in [Jest](https://jestjs.io/):
-
-```
-$ npm run test
-```
-
-If you have any change on a page component, please re-build snapshots along with current implementaion as below.
-
-```
-$ npm run test:update
+user@hostname:~/airone$ npm run generate:custom_client
 ```
 
 To customize UI:
 
 ```
-$ cp -pi ./frontend/src/App.tsx ./frontend/src/customview/CustomApp.tsx
+user@hostname:~/airone$ cp -pi ./frontend/src/App.tsx ./frontend/src/customview/CustomApp.tsx
 (edit CustomApp.tsx)
-$ npm run build:custom
+user@hostname:~/airone$ npm run build:custom
+```
+
+## Auto-format
+
+```
+user@hostname:~$ cd airone
+user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone$ black .
+(virtualenv) user@hostname:~/airone$ isort .
+
+user@hostname:~/airone$ npm run fix
+```
+
+## Test
+
+```
+user@hostname:~$ cd airone
+user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone$ python manage.py test
+
+user@hostname:~/airone$ npm run test
+```
+
+If you have any change on a page component, please re-build snapshots along with current implementaion as below.
+
+```
+user@hostname:~/airone$ npm run test:update
 ```
