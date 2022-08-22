@@ -339,7 +339,7 @@ Object {
             class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-vok43g-MuiGrid-root"
           >
             <div
-              class="MuiBox-root css-1wcaknn"
+              class="MuiBox-root css-19midj6"
             >
               <div
                 name="attr_list"
@@ -728,7 +728,7 @@ Object {
           class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-vok43g-MuiGrid-root"
         >
           <div
-            class="MuiBox-root css-1wcaknn"
+            class="MuiBox-root css-19midj6"
           >
             <div
               name="attr_list"
