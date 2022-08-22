@@ -42,7 +42,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const EntryDetailsPage: FC = () => {
+interface Props {
+  sideContent: JSX.Element;
+}
+
+export const EntryDetailsPage: FC<Props> = ({ sideContent = <Box /> }) => {
   const classes = useStyles();
 
   const { entityId, entryId } =
@@ -182,7 +186,17 @@ export const EntryDetailsPage: FC = () => {
             )}
           </Box>
         </Grid>
-        <Grid item xs={1} />
+        <Grid
+          item
+          xs={1}
+          sx={{
+            py: "64px",
+            borderLeft: 1,
+            borderColor: "#0000008A",
+          }}
+        >
+          {sideContent}
+        </Grid>
       </Grid>
     </Box>
   );
