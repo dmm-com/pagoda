@@ -73,6 +73,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
         <Button
           color="secondary"
           variant="contained"
+          disabled={!canCreateEntry}
           component={Link}
           to={newEntryPath(entityId)}
           sx={{ borderRadius: "24px" }}
