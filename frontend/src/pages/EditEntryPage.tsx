@@ -222,33 +222,51 @@ export const EditEntryPage: FC = () => {
     );
 
     if (entryId == undefined) {
-      await aironeApiClientV2
-        .createEntry(entityId, entryInfo.name, updatedAttr)
-        .then((resp) => {
-          enqueueSnackbar("エントリの作成が完了しました", {
-            variant: "success",
-          });
-          history.push(entityEntriesPath(entityId));
-        })
-        .catch((e) => {
-          enqueueSnackbar("エントリの作成が失敗しました", {
-            variant: "error",
-          });
+      try {
+        await aironeApiClientV2.createEntry(
+          entityId,
+          entryInfo.name,
+          updatedAttr
+        );
+        enqueueSnackbar("エントリの作成が完了しました", {
+          variant: "success",
         });
+        history.push(entityEntriesPath(entityId));
+      } catch (e) {
+        if (e instanceof Response) {
+          if (!e.ok) {
+            const text = await e.text();
+            enqueueSnackbar(`エントリの作成が失敗しました。詳細: ${text}`, {
+              variant: "error",
+            });
+          }
+        } else {
+          throw e;
+        }
+      }
     } else {
-      await aironeApiClientV2
-        .updateEntry(entryId, entryInfo.name, updatedAttr)
-        .then((resp) => {
-          enqueueSnackbar("エントリの更新が完了しました", {
-            variant: "success",
-          });
-          history.push(entryDetailsPath(entityId, entryId));
-        })
-        .catch((e) => {
-          enqueueSnackbar("エントリの更新が失敗しました", {
-            variant: "error",
-          });
+      try {
+        await aironeApiClientV2.updateEntry(
+          entryId,
+          entryInfo.name,
+          updatedAttr
+        );
+        enqueueSnackbar("エントリの更新が完了しました", {
+          variant: "success",
         });
+        history.push(entryDetailsPath(entityId, entryId));
+      } catch (e) {
+        if (e instanceof Response) {
+          if (!e.ok) {
+            const text = await e.text();
+            enqueueSnackbar(`エントリの更新が失敗しました。詳細: ${text}`, {
+              variant: "error",
+            });
+          }
+        } else {
+          throw e;
+        }
+      }
     }
   };
 
