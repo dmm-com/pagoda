@@ -1543,6 +1543,7 @@ class Entry(ACLBase):
                 "type": entity_attr.type,
                 "key": "",
                 "value": "",
+                "date_value": None,
                 "referral_id": "",
                 "is_readble": True
                 if (not attr or attr.is_public or attr.default_permission >= ACLType.Readable.id)
