@@ -103,6 +103,8 @@ class EntryReferredAPI(APIView):
         if param_entity:
             query &= Q(schema__name=param_entity)
 
+        filter_entities = [param_target_entity] if param_target_entity else []
+
         ret_data = []
         for entry in Entry.objects.filter(query):
             ret_data.append(
@@ -117,7 +119,7 @@ class EntryReferredAPI(APIView):
                             if param_quiet
                             else {"id": x.schema.id, "name": x.schema.name},
                         }
-                        for x in entry.get_referred_objects(filter_entities=[param_target_entity])
+                        for x in entry.get_referred_objects(filter_entities=filter_entities)
                     ],
                 }
             )

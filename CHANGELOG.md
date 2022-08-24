@@ -3,9 +3,9 @@
 ## In development
 
 ### Added
-* Added exclude entity parama in search_entries_for_simple.
+* Added exclude entity parameter in search_entries_for_simple.
   Contributed by @hinashi
-* Added exclude entity parama in get_referred_objects.
+* Added exclude entity parameter in get_referred_objects.
   Contributed by @hinashi
 
 ### Changed
