@@ -117,7 +117,7 @@ class EntryReferredAPI(APIView):
                             if param_quiet
                             else {"id": x.schema.id, "name": x.schema.name},
                         }
-                        for x in entry.get_referred_objects(entity_name=param_target_entity)
+                        for x in entry.get_referred_objects(filter_entities=[param_target_entity])
                     ],
                 }
             )
