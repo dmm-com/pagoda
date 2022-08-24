@@ -1810,6 +1810,7 @@ class Entry(ACLBase):
         kls,
         hint_attr_value,
         hint_entity_name=None,
+        exclude_entity_names=[],
         limit=CONFIG.MAX_LIST_ENTRIES,
         offset=0,
     ):
@@ -1822,9 +1823,12 @@ class Entry(ACLBase):
         3. Process the search results, and return. (make_search_results_for_attrv)
 
         Args:
-            hint_attr_value (str): Search string for AttributeValue
+            hint_attr_value (str): Required.
+                Search string for AttributeValue
             hint_entity_name (str): Defaults to None.
                 Search string for Entity Name
+            exclude_entity_names (list[str]): Defaults to [].
+                Entity name string list to exclude from search
             limit (int): Defaults to 100.
                 Maximum number of search results to return
             offset (int): Defaults to 0.
@@ -1850,7 +1854,9 @@ class Entry(ACLBase):
                 "ret_values": [],
             }
 
-        query = make_query_for_simple(hint_attr_value, hint_entity_name, offset)
+        query = make_query_for_simple(
+            hint_attr_value, hint_entity_name, exclude_entity_names, offset
+        )
 
         resp = execute_query(query, limit)
 
