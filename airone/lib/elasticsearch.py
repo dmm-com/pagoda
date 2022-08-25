@@ -851,7 +851,7 @@ def make_search_results(
 
                 if attrinfo["value"]:
                     ret_attrinfo["value"] = attrinfo["value"]
-                elif "date_value" in attrinfo and attrinfo["date_value"]:
+                elif attrinfo["date_value"]:
                     ret_attrinfo["value"] = attrinfo["date_value"].split("T")[0]
 
             elif attrinfo["type"] == AttrTypeValue["boolean"]:
@@ -885,7 +885,7 @@ def make_search_results(
 
                 # If there is no value, it will be skipped.
                 if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == "":
-                    if "date_value" not in attrinfo:
+                    if not attrinfo["date_value"]:
                         continue
 
                 if attrinfo["type"] & AttrTypeValue["named"]:
@@ -899,7 +899,7 @@ def make_search_results(
                     )
 
                 elif attrinfo["type"] & AttrTypeValue["string"]:
-                    if "date_value" in attrinfo:
+                    if attrinfo["date_value"]:
                         ret_attrinfo["value"].append(attrinfo["date_value"].split("T")[0])
                     else:
                         ret_attrinfo["value"].append(attrinfo["value"])

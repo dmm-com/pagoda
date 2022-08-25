@@ -3999,6 +3999,43 @@ class ModelTest(AironeTestCase):
                     )
 
     def test_get_es_document_without_attribute_value(self):
+        entity = self.create_entity_with_all_type_attributes(self._user)
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=self._user)
+
+        entry.register_es()
+        result = Entry.search_entries(
+            self._user, [entity.id], entry_name="entry", is_output_all=True
+        )
+        self.assertEqual(
+            result["ret_values"][0],
+            {
+                "entity": {"id": entity.id, "name": "entity"},
+                "entry": {"id": entry.id, "name": "entry"},
+                "is_readble": True,
+                "attrs": {
+                    "bool": {"is_readble": True, "type": AttrTypeValue["boolean"], "value": ""},
+                    "date": {
+                        "is_readble": True,
+                        "type": AttrTypeValue["date"],
+                        "value": None,
+                    },
+                    "group": {
+                        "is_readble": True,
+                        "type": AttrTypeValue["group"],
+                        "value": {"id": "", "name": ""},
+                    },
+                    "name": {"is_readble": True, "type": AttrTypeValue["named_object"]},
+                    "obj": {
+                        "is_readble": True,
+                        "type": AttrTypeValue["object"],
+                        "value": {"id": "", "name": ""},
+                    },
+                    "str": {"is_readble": True, "type": AttrTypeValue["string"]},
+                    "text": {"is_readble": True, "type": AttrTypeValue["text"]},
+                },
+            },
+        )
+
         # If the AttributeValue does not exist, permission returns the default
         self._entity.attrs.add(self._attr.schema)
         self._entry.attrs.add(self._attr)
@@ -4012,6 +4049,7 @@ class ModelTest(AironeTestCase):
                     "type": self._attr.schema.type,
                     "key": "",
                     "value": "",
+                    "date_value": None,
                     "referral_id": "",
                     "is_readble": True,
                 }
@@ -4047,6 +4085,7 @@ class ModelTest(AironeTestCase):
                     "type": ref_attr.type,
                     "key": "",
                     "value": self._entry.name,
+                    "date_value": None,
                     "referral_id": self._entry.id,
                     "is_readble": True,
                 }
@@ -4067,6 +4106,7 @@ class ModelTest(AironeTestCase):
                     "type": ref_attr.type,
                     "key": "",
                     "value": "",  # expected not to have information about deleted entry
+                    "date_value": None,
                     "referral_id": "",  # expected not to have information about deleted entry
                     "is_readble": True,
                 }

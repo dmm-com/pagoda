@@ -12,6 +12,8 @@
   Contributed by @hinashi
 
 ### Fixed
+* Fixed an error in getting data_value in advanced search.
+  Contributed by @hinashi
 
 ## v3.16.0
 
