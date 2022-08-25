@@ -41,6 +41,7 @@ class JobOperation(Enum):
     NOTIFY_UPDATE_ENTRY = 14
     NOTIFY_DELETE_ENTRY = 15
     DO_COPY_ENTRY = 16
+    IMPORT_ENTRY_V2 = 17
 
 
 class Job(models.Model):
@@ -77,6 +78,7 @@ class Job(models.Model):
         "TIMEOUT": 4,
         "PROCESSING": 5,
         "CANCELED": 6,
+        "WARNING": 7,
     }
 
     # In some jobs sholdn't make user aware of existence because of user experience
@@ -93,9 +95,20 @@ class Job(models.Model):
         JobOperation.CREATE_ENTRY.value,
         JobOperation.COPY_ENTRY.value,
         JobOperation.IMPORT_ENTRY.value,
+        JobOperation.IMPORT_ENTRY_V2.value,
         JobOperation.EXPORT_ENTRY.value,
         JobOperation.REGISTER_REFERRALS.value,
         JobOperation.EXPORT_SEARCH_RESULT.value,
+    ]
+
+    PARALLELIZABLE_OPERATIONS = [
+        JobOperation.NOTIFY_CREATE_ENTRY.value,
+        JobOperation.NOTIFY_UPDATE_ENTRY.value,
+        JobOperation.NOTIFY_DELETE_ENTRY.value,
+        JobOperation.COPY_ENTRY.value,
+        JobOperation.DO_COPY_ENTRY.value,
+        JobOperation.IMPORT_ENTRY.value,
+        JobOperation.EXPORT_ENTRY.value,
     ]
 
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
@@ -117,6 +130,10 @@ class Job(models.Model):
     dependent_job = models.ForeignKey("Job", null=True, on_delete=models.SET_NULL)
 
     def may_schedule(self):
+        # Operations that can run in parallel exclude checking for dependent jobs
+        if self.operation in self.PARALLELIZABLE_OPERATIONS:
+            return False
+
         # When there is dependent job, this re-send a request to run same job
         if self.dependent_job and not self.dependent_job.is_finished():
             # This delay is needed to prevent sending excessive message to MQ
@@ -148,6 +165,7 @@ class Job(models.Model):
             Job.STATUS["ERROR"],
             Job.STATUS["TIMEOUT"],
             Job.STATUS["CANCELED"],
+            Job.STATUS["WARNING"],
         ]
 
         return self.status in finished_status or self.is_timeout()
@@ -224,7 +242,7 @@ class Job(models.Model):
             return method(self.id)
 
     @classmethod
-    def _create_new_job(kls, user, target, operation, text, params):
+    def _create_new_job(kls, user, target, operation, text, params) -> "Job":
         t_type = kls.TARGET_UNKNOWN
         if isinstance(target, Entry):
             t_type = kls.TARGET_ENTRY
@@ -277,6 +295,7 @@ class Job(models.Model):
                 JobOperation.COPY_ENTRY.value: entry_task.copy_entry,
                 JobOperation.DO_COPY_ENTRY.value: entry_task.do_copy_entry,
                 JobOperation.IMPORT_ENTRY.value: entry_task.import_entries,
+                JobOperation.IMPORT_ENTRY_V2.value: entry_task.import_entries_v2,
                 JobOperation.EXPORT_ENTRY.value: entry_task.export_entries,
                 JobOperation.RESTORE_ENTRY.value: entry_task.restore_entry,
                 JobOperation.EXPORT_SEARCH_RESULT.value: dashboard_task.export_search_result,
@@ -353,6 +372,16 @@ class Job(models.Model):
             user,
             entity,
             JobOperation.IMPORT_ENTRY.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_import_v2(kls, user, entity, text="", params={}):
+        return kls._create_new_job(
+            user,
+            entity,
+            JobOperation.IMPORT_ENTRY_V2.value,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )

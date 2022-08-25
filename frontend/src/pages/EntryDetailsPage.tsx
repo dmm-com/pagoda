@@ -22,6 +22,7 @@ import { useTypedParams } from "../hooks/useTypedParams";
 import {
   entitiesPath,
   entityEntriesPath,
+  entryDetailsPath,
   restoreEntryPath,
   topPath,
 } from "Routes";
@@ -42,7 +43,21 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const EntryDetailsPage: FC = () => {
+interface Props {
+  excludeAttrs?: string[];
+  additionalContents?: {
+    name: string;
+    label: string;
+    content: JSX.Element;
+  }[];
+  sideContent?: JSX.Element;
+}
+
+export const EntryDetailsPage: FC<Props> = ({
+  excludeAttrs = [],
+  additionalContents = [],
+  sideContent = <Box />,
+}) => {
   const classes = useStyles();
 
   const { entityId, entryId } =
@@ -60,6 +75,11 @@ export const EntryDetailsPage: FC = () => {
     throw new FailedToGetEntry(
       "Failed to get Entry from AirOne APIv2 endpoint"
     );
+  }
+
+  // When user specifies invalid entityId, redirect to the page that is correct entityId
+  if (!entry.loading && entry.value.schema.id != entityId) {
+    history.replace(entryDetailsPath(entry.value.schema.id, entryId));
   }
 
   // If it'd been deleted, show restore-entry page instead
@@ -135,22 +155,33 @@ export const EntryDetailsPage: FC = () => {
         spacing={1}
         sx={{ justifyContent: "center", pt: "16px", pb: "64px" }}
       >
-        <Chip
-          icon={<ArrowDropDownIcon />}
-          label="項目一覧"
-          clickable={true}
-          variant="outlined"
-          onClick={() => scroller.scrollTo("attr_list", { smooth: true })}
-          sx={{
-            flexDirection: "row-reverse",
-            "& span": {
-              pr: "0px",
-            },
-            "& svg": {
-              pr: "8px",
-            },
-          }}
-        />
+        {[
+          {
+            name: "attr_list",
+            label: "項目一覧",
+          },
+          ...additionalContents,
+        ].map((content) => {
+          return (
+            <Chip
+              key={content.name}
+              icon={<ArrowDropDownIcon />}
+              label={content.label}
+              clickable={true}
+              variant="outlined"
+              onClick={() => scroller.scrollTo(content.name, { smooth: true })}
+              sx={{
+                flexDirection: "row-reverse",
+                "& span": {
+                  pr: "0px",
+                },
+                "& svg": {
+                  pr: "8px",
+                },
+              }}
+            />
+          );
+        })}
       </Stack>
 
       <Grid
@@ -171,19 +202,44 @@ export const EntryDetailsPage: FC = () => {
           <EntryReferral entityId={entityId} entryId={entryId} />
         </Grid>
         <Grid item xs={4}>
-          <Box p="32px">
-            <Element name="attr_list" />
-            <Typography p="32px" fontSize="32px" align="center">
-              項目一覧
-            </Typography>
-            {entry.loading ? (
-              <Loading />
-            ) : (
-              <EntryAttributes attributes={entry.value.attrs} />
-            )}
-          </Box>
+          {[
+            {
+              name: "attr_list",
+              label: "項目一覧",
+              content: entry.loading ? (
+                <Loading />
+              ) : (
+                <EntryAttributes
+                  attributes={entry.value.attrs.filter(
+                    (attr) => !excludeAttrs.includes(attr.schema.name)
+                  )}
+                />
+              ),
+            },
+            ...additionalContents,
+          ].map((content) => {
+            return (
+              <Box key={content.name} p="16px">
+                <Element name={content.name} />
+                <Typography p="32px" fontSize="32px" align="center">
+                  {content.label}
+                </Typography>
+                {content.content}
+              </Box>
+            );
+          })}
         </Grid>
-        <Grid item xs={1} />
+        <Grid
+          item
+          xs={1}
+          sx={{
+            py: "64px",
+            borderLeft: 1,
+            borderColor: "#0000008A",
+          }}
+        >
+          {sideContent}
+        </Grid>
       </Grid>
     </Box>
   );

@@ -81,9 +81,7 @@ export const AdvancedSearchPage: FC = () => {
                 color="secondary"
                 component={Link}
                 to={`${advancedSearchResultPath()}?${searchParams}`}
-                disabled={
-                  selectedEntities.length === 0 || selectedAttrs.length === 0
-                }
+                disabled={selectedEntities.length === 0}
               >
                 検索
               </Button>

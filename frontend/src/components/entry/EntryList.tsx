@@ -2,10 +2,10 @@ import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
   Box,
+  Button,
   Card,
   CardActionArea,
   CardHeader,
-  Fab,
   Grid,
   IconButton,
   Pagination,
@@ -70,17 +70,17 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
             }}
           />
         </Box>
-        <Fab
-          disabled={!canCreateEntry}
+        <Button
           color="secondary"
-          aria-label="add"
-          variant="extended"
+          variant="contained"
+          disabled={!canCreateEntry}
           component={Link}
           to={newEntryPath(entityId)}
+          sx={{ borderRadius: "24px" }}
         >
           <AddIcon />
           新規エントリを作成
-        </Fab>
+        </Button>
       </Box>
 
       {/* This box shows each entry Cards */}

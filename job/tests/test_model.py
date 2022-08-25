@@ -109,6 +109,7 @@ class ModelTest(AironeTestCase):
             Job.STATUS["ERROR"],
             Job.STATUS["TIMEOUT"],
             Job.STATUS["CANCELED"],
+            Job.STATUS["WARNING"],
         ]:
             job.status = status
             job.save(update_fields=["status"])
@@ -228,6 +229,12 @@ class ModelTest(AironeTestCase):
             # This checks proceed_if_ready() method also call rescheduling method
             self.assertFalse(job2.proceed_if_ready())
             self.assertEqual(self.test_data, 2)
+
+    def test_may_schedule_with_parallelizable_operation(self):
+        [job1, job2] = [Job.new_notify_update_entry(self.guest, self.entry) for _ in range(2)]
+        self.assertEqual(job2.dependent_job, job1)
+        self.assertEqual(job1.status, Job.STATUS["PREPARING"])
+        self.assertTrue(job2.proceed_if_ready())
 
     @mock.patch("job.models.import_module")
     def test_task_module(self, mock_import_module):

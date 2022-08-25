@@ -30,6 +30,7 @@ class JobAPI(APIView):
                 "copy": JobOperation.COPY_ENTRY.value,
                 "do_copy": JobOperation.DO_COPY_ENTRY.value,
                 "import": JobOperation.IMPORT_ENTRY.value,
+                "import_v2": JobOperation.IMPORT_ENTRY_V2.value,
                 "export": JobOperation.EXPORT_ENTRY.value,
                 "export_search_result": JobOperation.EXPORT_SEARCH_RESULT.value,
                 "restore": JobOperation.RESTORE_ENTRY.value,

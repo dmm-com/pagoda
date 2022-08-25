@@ -636,7 +636,7 @@ class ModelTest(AironeTestCase):
             self.assertEqual(list(referred_entries), [self._entry])
 
     def test_get_referred_objects_with_entity_param(self):
-        for i in range(3, 5):
+        for i in range(3, 6):
             entity = Entity.objects.create(name="Entity" + str(i), created_user=self._user)
             entry = Entry.objects.create(
                 name="entry" + str(i), created_user=self._user, schema=entity
@@ -661,11 +661,15 @@ class ModelTest(AironeTestCase):
         # This function checks that this get_referred_objects method only get
         # unique reference objects except for the self referred object.
         referred_entries = self._entry.get_referred_objects()
-        self.assertEqual(referred_entries.count(), 2)
+        self.assertEqual(referred_entries.count(), 3)
 
-        referred_entries = self._entry.get_referred_objects(entity_name="Entity3")
+        referred_entries = self._entry.get_referred_objects(filter_entities=["Entity3"])
         self.assertEqual(referred_entries.count(), 1)
         self.assertEqual(referred_entries.first().name, "entry3")
+
+        referred_entries = self._entry.get_referred_objects(exclude_entities=["Entity3"])
+        self.assertEqual(referred_entries.count(), 2)
+        self.assertEqual([x.name for x in referred_entries], ["entry4", "entry5"])
 
     def test_coordinating_attribute_with_dynamically_added_one(self):
         newattr = EntityAttr.objects.create(
@@ -3889,6 +3893,20 @@ class ModelTest(AironeTestCase):
         self.assertEqual(ret["ret_count"], 1)
         self.assertEqual([x["name"] for x in ret["ret_values"]], ["entry"])
 
+    def test_search_entries_for_simple_with_exclude_entity_names(self):
+        self._entry.register_es()
+        entity = Entity.objects.create(name="entity2", created_user=self._user)
+        entry = Entry.objects.create(name="entry2", schema=entity, created_user=self._user)
+        entry.register_es()
+
+        ret = Entry.search_entries_for_simple("entry")
+        self.assertEqual(ret["ret_count"], 2)
+        self.assertEqual([x["name"] for x in ret["ret_values"]], ["entry", "entry2"])
+
+        ret = Entry.search_entries_for_simple("entry", exclude_entity_names=["entity"])
+        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual([x["name"] for x in ret["ret_values"]], ["entry2"])
+
     def test_search_entries_for_simple_with_limit_offset(self):
         for i in range(0, 10):
             entry = Entry.objects.create(
@@ -3999,6 +4017,43 @@ class ModelTest(AironeTestCase):
                     )
 
     def test_get_es_document_without_attribute_value(self):
+        entity = self.create_entity_with_all_type_attributes(self._user)
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=self._user)
+
+        entry.register_es()
+        result = Entry.search_entries(
+            self._user, [entity.id], entry_name="entry", is_output_all=True
+        )
+        self.assertEqual(
+            result["ret_values"][0],
+            {
+                "entity": {"id": entity.id, "name": "entity"},
+                "entry": {"id": entry.id, "name": "entry"},
+                "is_readble": True,
+                "attrs": {
+                    "bool": {"is_readble": True, "type": AttrTypeValue["boolean"], "value": ""},
+                    "date": {
+                        "is_readble": True,
+                        "type": AttrTypeValue["date"],
+                        "value": None,
+                    },
+                    "group": {
+                        "is_readble": True,
+                        "type": AttrTypeValue["group"],
+                        "value": {"id": "", "name": ""},
+                    },
+                    "name": {"is_readble": True, "type": AttrTypeValue["named_object"]},
+                    "obj": {
+                        "is_readble": True,
+                        "type": AttrTypeValue["object"],
+                        "value": {"id": "", "name": ""},
+                    },
+                    "str": {"is_readble": True, "type": AttrTypeValue["string"]},
+                    "text": {"is_readble": True, "type": AttrTypeValue["text"]},
+                },
+            },
+        )
+
         # If the AttributeValue does not exist, permission returns the default
         self._entity.attrs.add(self._attr.schema)
         self._entry.attrs.add(self._attr)
@@ -4012,6 +4067,7 @@ class ModelTest(AironeTestCase):
                     "type": self._attr.schema.type,
                     "key": "",
                     "value": "",
+                    "date_value": None,
                     "referral_id": "",
                     "is_readble": True,
                 }
@@ -4047,6 +4103,7 @@ class ModelTest(AironeTestCase):
                     "type": ref_attr.type,
                     "key": "",
                     "value": self._entry.name,
+                    "date_value": None,
                     "referral_id": self._entry.id,
                     "is_readble": True,
                 }
@@ -4067,6 +4124,7 @@ class ModelTest(AironeTestCase):
                     "type": ref_attr.type,
                     "key": "",
                     "value": "",  # expected not to have information about deleted entry
+                    "date_value": None,
                     "referral_id": "",  # expected not to have information about deleted entry
                     "is_readble": True,
                 }

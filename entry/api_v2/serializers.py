@@ -6,6 +6,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 import custom_view
+from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrDefaultValue, AttrTypeValue
 from entity.api_v2.serializers import EntitySerializer
@@ -69,13 +70,18 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             "is_active": {"read_only": True},
         }
 
-    def _validate(self, name: str, schema: Entity, attrs: List[Dict[str, Any]]):
-        # check name
+    def validate_name(self, name: str):
+        if self.instance:
+            schema = self.instance.schema
+        else:
+            schema = self.get_initial()["schema"]
         if name and Entry.objects.filter(name=name, schema=schema, is_active=True).exists():
             # In update case, there is no problem with the same name
             if not (self.instance and self.instance.name == name):
                 raise ValidationError("specified name(%s) already exists" % name)
+        return name
 
+    def _validate(self, schema: Entity, attrs: List[Dict[str, Any]]):
         # In create case, check attrs mandatory attribute
         if not self.instance:
             user: User = self.context["request"].user
@@ -116,6 +122,13 @@ class AttributeSerializer(serializers.Serializer):
     value = AttributeValueField(allow_null=True)
 
 
+class EntryCreateData(TypedDict, total=False):
+    name: str
+    schema: Entity
+    attrs: List[AttributeSerializer]
+    created_user: User
+
+
 @extend_schema_serializer(exclude_fields=["schema"])
 class EntryCreateSerializer(EntryBaseSerializer):
     schema = serializers.PrimaryKeyRelatedField(
@@ -129,15 +142,17 @@ class EntryCreateSerializer(EntryBaseSerializer):
         fields = ["id", "name", "schema", "attrs", "created_user"]
 
     def validate(self, params):
-        self._validate(params["name"], params["schema"], params.get("attrs", []))
+        self._validate(params["schema"], params.get("attrs", []))
         return params
 
-    def create(self, validated_data):
+    def create(self, validated_data: EntryCreateData):
         user: User = self.context["request"].user
 
         entity_name = validated_data["schema"].name
-        if custom_view.is_custom("before_create_entry", entity_name):
-            custom_view.call_custom("before_create_entry", entity_name, user, validated_data)
+        if custom_view.is_custom("before_create_entry_v2", entity_name):
+            validated_data = custom_view.call_custom(
+                "before_create_entry_v2", entity_name, user, validated_data
+            )
 
         attrs_data = validated_data.pop("attrs", [])
         entry: Entry = Entry.objects.create(**validated_data, status=Entry.STATUS_CREATING)
@@ -155,8 +170,8 @@ class EntryCreateSerializer(EntryBaseSerializer):
                 continue
             attr.add_value(user, attr_data[0]["value"])
 
-        if custom_view.is_custom("after_create_entry", entity_name):
-            custom_view.call_custom("after_create_entry", entity_name, user, attrs_data, entry)
+        if custom_view.is_custom("after_create_entry_v2", entity_name):
+            custom_view.call_custom("after_create_entry_v2", entity_name, user, entry)
 
         # register entry information to Elasticsearch
         entry.register_es()
@@ -171,6 +186,11 @@ class EntryCreateSerializer(EntryBaseSerializer):
         return entry
 
 
+class EntryUpdateData(TypedDict, total=False):
+    name: str
+    attrs: List[AttributeSerializer]
+
+
 class EntryUpdateSerializer(EntryBaseSerializer):
     attrs = serializers.ListField(child=AttributeSerializer(), write_only=True, required=False)
 
@@ -182,25 +202,29 @@ class EntryUpdateSerializer(EntryBaseSerializer):
         }
 
     def validate(self, params):
-        self._validate(params.get("name", None), self.instance.schema, params.get("attrs", []))
+        self._validate(self.instance.schema, params.get("attrs", []))
         return params
 
-    def update(self, entry: Entry, validated_data):
+    def update(self, entry: Entry, validated_data: EntryUpdateData):
         entry.set_status(Entry.STATUS_EDITING)
         user: User = self.context["request"].user
 
         entity_name = entry.schema.name
-        if custom_view.is_custom("before_update_entry", entity_name):
-            custom_view.call_custom("before_update_entry", entity_name, user, validated_data, entry)
+        if custom_view.is_custom("before_update_entry_v2", entity_name):
+            validated_data = custom_view.call_custom(
+                "before_update_entry_v2", entity_name, user, validated_data, entry
+            )
 
         attrs_data = validated_data.pop("attrs", [])
 
+        is_updated = False
         # update name of Entry object. If name would be updated, the elasticsearch data of entries
         # that refers this entry also be updated by creating REGISTERED_REFERRALS task.
         job_register_referrals: Optional[Job] = None
         if "name" in validated_data and entry.name != validated_data["name"]:
             entry.name = validated_data["name"]
             entry.save(update_fields=["name"])
+            is_updated = True
             job_register_referrals = Job.new_register_referrals(user, entry)
 
         for entity_attr in entry.schema.attrs.filter(is_active=True):
@@ -222,12 +246,14 @@ class EntryUpdateSerializer(EntryBaseSerializer):
                 continue
 
             attr.add_value(user, attr_data[0]["value"])
+            is_updated = True
 
-        if custom_view.is_custom("after_update_entry", entity_name):
-            custom_view.call_custom("after_update_entry", entity_name, user, attrs_data, entry)
+        if custom_view.is_custom("after_update_entry_v2", entity_name):
+            custom_view.call_custom("after_update_entry_v2", entity_name, user, entry)
 
         # update entry information to Elasticsearch
-        entry.register_es()
+        if is_updated:
+            entry.register_es()
 
         # clear flag to specify this entry has been completed to edit
         entry.del_status(Entry.STATUS_EDITING)
@@ -237,8 +263,9 @@ class EntryUpdateSerializer(EntryBaseSerializer):
             job_register_referrals.run()
 
         # running job to notify changing entry event
-        job_notify_event: Job = Job.new_notify_update_entry(user, entry)
-        job_notify_event.run()
+        if is_updated:
+            job_notify_event: Job = Job.new_notify_update_entry(user, entry)
+            job_notify_event.run()
 
         return entry
 
@@ -478,3 +505,105 @@ class EntryExportSerializer(serializers.Serializer):
         if data.lower() == "csv":
             return "csv"
         return "yaml"
+
+
+class EntryImportAttributeSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    value = AttributeValueField(allow_null=True)
+
+
+class EntryImportEntriesSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    attrs = serializers.ListField(child=EntryImportAttributeSerializer(), required=False)
+
+
+class EntryImportEntitySerializer(serializers.Serializer):
+    entity = serializers.CharField()
+    entries = serializers.ListField(child=EntryImportEntriesSerializer())
+
+    def validate(self, params):
+        # It runs only in the background, because it takes a long time to process.
+        if self.parent:
+            return params
+
+        def _convert_value_name_to_id(attr_data, entity_attrs):
+            def _object(val, refs):
+                if val:
+                    ref_entry = Entry.objects.filter(name=val, schema__in=refs).first()
+                    return ref_entry.id if ref_entry else "0"
+                return None
+
+            def _group(val):
+                if val:
+                    ref_group = Group.objects.filter(name=val).first()
+                    return ref_group.id if ref_group else "0"
+                return None
+
+            if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["array"]:
+                if not isinstance(attr_data["value"], list):
+                    return
+                for i, child_value in enumerate(attr_data["value"]):
+                    if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["object"]:
+                        if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["named"]:
+                            if not isinstance(child_value, dict):
+                                return
+                            attr_data["value"][i] = {
+                                "name": list(child_value.keys())[0],
+                                "id": _object(
+                                    list(child_value.values())[0],
+                                    entity_attrs[attr_data["name"]]["refs"],
+                                ),
+                            }
+                        else:
+                            attr_data["value"][i] = _object(
+                                child_value, entity_attrs[attr_data["name"]]["refs"]
+                            )
+                    if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["group"]:
+                        attr_data["value"][i] = _group(child_value)
+            else:
+                if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["object"]:
+                    if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["named"]:
+                        if not isinstance(attr_data["value"], dict):
+                            return
+                        attr_data["value"] = {
+                            "name": list(attr_data["value"].keys())[0],
+                            "id": _object(
+                                list(attr_data["value"].values())[0],
+                                entity_attrs[attr_data["name"]]["refs"],
+                            ),
+                        }
+                    else:
+                        attr_data["value"] = _object(
+                            attr_data["value"], entity_attrs[attr_data["name"]]["refs"]
+                        )
+                if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["group"]:
+                    attr_data["value"] = _group(attr_data["value"])
+
+        entity: Entity = Entity.objects.filter(name=params["entity"], is_active=True).first()
+        if not entity:
+            return params
+        entity_attrs = {
+            entity_attr.name: {
+                "id": entity_attr.id,
+                "type": entity_attr.type,
+                "refs": [x for x in entity_attr.referral.filter(is_active=True)],
+            }
+            for entity_attr in entity.attrs.filter(is_active=True)
+        }
+        for entry_data in params["entries"]:
+            for attr_data in entry_data.get("attrs", []):
+                if attr_data["name"] in entity_attrs.keys():
+                    attr_data["id"] = entity_attrs[attr_data["name"]]["id"]
+                    _convert_value_name_to_id(attr_data, entity_attrs)
+
+        return params
+
+
+class EntryImportSerializer(serializers.ListSerializer):
+    child = EntryImportEntitySerializer()
+
+
+class GetEntryAttrReferralSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ACLBase
+        fields = ("id", "name")

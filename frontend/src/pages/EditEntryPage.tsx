@@ -27,7 +27,11 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryForm } from "components/entry/EntryForm";
 
-export const EditEntryPage: FC = () => {
+interface Props {
+  excludeAttrs?: string[];
+}
+
+export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
   const { entityId, entryId } =
     useTypedParams<{ entityId: number; entryId: number }>();
 
@@ -59,33 +63,35 @@ export const EditEntryPage: FC = () => {
       setEntryInfo({
         name: entry.value.name,
         attrs: Object.fromEntries(
-          entry.value.attrs.map((attr): [string, EditableEntryAttrs] => {
-            function getAttrValue(attr) {
-              switch (attr.type) {
-                case djangoContext.attrTypeValue.array_string:
-                  return attr.value?.asArrayString?.length > 0
-                    ? attr.value
-                    : { asArrayString: [""] };
-                case djangoContext.attrTypeValue.array_named_object:
-                  return attr.value?.asArrayNamedObject?.length > 0
-                    ? attr.value
-                    : { asArrayNamedObject: [{ "": null }] };
-                default:
-                  return attr.value;
+          entry.value.attrs
+            .filter((attr) => !excludeAttrs.includes(attr.schema.name))
+            .map((attr): [string, EditableEntryAttrs] => {
+              function getAttrValue(attr) {
+                switch (attr.type) {
+                  case djangoContext.attrTypeValue.array_string:
+                    return attr.value?.asArrayString?.length > 0
+                      ? attr.value
+                      : { asArrayString: [""] };
+                  case djangoContext.attrTypeValue.array_named_object:
+                    return attr.value?.asArrayNamedObject?.length > 0
+                      ? attr.value
+                      : { asArrayNamedObject: [{ "": null }] };
+                  default:
+                    return attr.value;
+                }
               }
-            }
 
-            return [
-              attr.schema.name,
-              {
-                id: attr.id,
-                type: attr.type,
-                isMandatory: attr.isMandatory,
-                schema: attr.schema,
-                value: getAttrValue(attr),
-              },
-            ];
-          })
+              return [
+                attr.schema.name,
+                {
+                  id: attr.id,
+                  type: attr.type,
+                  isMandatory: attr.isMandatory,
+                  schema: attr.schema,
+                  value: getAttrValue(attr),
+                },
+              ];
+            })
         ),
       });
     } else if (
@@ -223,38 +229,60 @@ export const EditEntryPage: FC = () => {
     );
 
     if (entryId == undefined) {
-      await aironeApiClientV2
-        .createEntry(entityId, entryInfo.name, updatedAttr)
-        .then((resp) => {
-          enqueueSnackbar("エントリの作成が完了しました", {
-            variant: "success",
-          });
-          history.push(entityEntriesPath(entityId));
-        })
-        .catch((e) => {
-          enqueueSnackbar("エントリの作成が失敗しました", {
-            variant: "error",
-          });
+      try {
+        await aironeApiClientV2.createEntry(
+          entityId,
+          entryInfo.name,
+          updatedAttr
+        );
+        enqueueSnackbar("エントリの作成が完了しました", {
+          variant: "success",
         });
+        history.push(entityEntriesPath(entityId));
+      } catch (e) {
+        if (e instanceof Response) {
+          if (!e.ok) {
+            const text = await e.text();
+            enqueueSnackbar(`エントリの作成が失敗しました。詳細: ${text}`, {
+              variant: "error",
+            });
+          }
+        } else {
+          throw e;
+        }
+      }
     } else {
-      await aironeApiClientV2
-        .updateEntry(entryId, entryInfo.name, updatedAttr)
-        .then((resp) => {
-          enqueueSnackbar("エントリの更新が完了しました", {
-            variant: "success",
-          });
-          history.push(entryDetailsPath(entityId, entryId));
-        })
-        .catch((e) => {
-          enqueueSnackbar("エントリの更新が失敗しました", {
-            variant: "error",
-          });
+      try {
+        await aironeApiClientV2.updateEntry(
+          entryId,
+          entryInfo.name,
+          updatedAttr
+        );
+        enqueueSnackbar("エントリの更新が完了しました", {
+          variant: "success",
         });
+        history.push(entryDetailsPath(entityId, entryId));
+      } catch (e) {
+        if (e instanceof Response) {
+          if (!e.ok) {
+            const text = await e.text();
+            enqueueSnackbar(`エントリの更新が失敗しました。詳細: ${text}`, {
+              variant: "error",
+            });
+          }
+        } else {
+          throw e;
+        }
+      }
     }
   };
 
   const handleCancel = () => {
-    history.replace(entryDetailsPath(entityId, entryId));
+    if (entryId != null) {
+      history.replace(entryDetailsPath(entityId, entryId));
+    } else {
+      history.replace(entityEntriesPath(entityId));
+    }
   };
 
   if (entity.loading || entry.loading) {

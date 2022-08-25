@@ -93,7 +93,7 @@ def do_import_data(request, context):
 def _search_by_keyword(query, entity_name, per_page, page_num):
     # correct entries that contans query at EntryName or AttributeValue
     search_result = Entry.search_entries_for_simple(
-        query, entity_name, per_page, (page_num - 1) * per_page
+        query, entity_name, [], per_page, (page_num - 1) * per_page
     )
 
     return (search_result["ret_count"], search_result["ret_values"])

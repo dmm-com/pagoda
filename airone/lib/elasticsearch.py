@@ -223,7 +223,9 @@ def make_query(
     return query
 
 
-def make_query_for_simple(hint_string: str, hint_entity_name: str, offset: int) -> Dict[str, str]:
+def make_query_for_simple(
+    hint_string: str, hint_entity_name: str, exclude_entity_names: List[str], offset: int
+) -> Dict[str, str]:
     """Create a search query for Elasticsearch.
 
     Do the following:
@@ -260,6 +262,17 @@ def make_query_for_simple(hint_string: str, hint_entity_name: str, offset: int) 
                 }
             }
         )
+
+    if exclude_entity_names:
+        query["query"]["bool"]["must_not"] = [
+            {
+                "nested": {
+                    "path": "entity",
+                    "query": {"term": {"entity.name": exclude_entity_name}},
+                }
+            }
+            for exclude_entity_name in exclude_entity_names
+        ]
 
     return query
 
@@ -851,7 +864,7 @@ def make_search_results(
 
                 if attrinfo["value"]:
                     ret_attrinfo["value"] = attrinfo["value"]
-                elif "date_value" in attrinfo and attrinfo["date_value"]:
+                elif attrinfo["date_value"]:
                     ret_attrinfo["value"] = attrinfo["date_value"].split("T")[0]
 
             elif attrinfo["type"] == AttrTypeValue["boolean"]:
@@ -885,7 +898,7 @@ def make_search_results(
 
                 # If there is no value, it will be skipped.
                 if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == "":
-                    if "date_value" not in attrinfo:
+                    if not attrinfo["date_value"]:
                         continue
 
                 if attrinfo["type"] & AttrTypeValue["named"]:
@@ -899,7 +912,7 @@ def make_search_results(
                     )
 
                 elif attrinfo["type"] & AttrTypeValue["string"]:
-                    if "date_value" in attrinfo:
+                    if attrinfo["date_value"]:
                         ret_attrinfo["value"].append(attrinfo["date_value"].split("T")[0])
                     else:
                         ret_attrinfo["value"].append(attrinfo["value"])

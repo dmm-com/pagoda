@@ -4,26 +4,31 @@ from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 import custom_view
 from airone.lib.acl import ACLType
+from airone.lib.drf import YAMLParser
 from airone.lib.types import AttrTypeValue
-from entity.models import Entity
+from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
     EntryBaseSerializer,
     EntryCopySerializer,
     EntryExportSerializer,
+    EntryImportSerializer,
     EntryRetrieveSerializer,
     EntryUpdateSerializer,
+    GetEntryAttrReferralSerializer,
     GetEntrySimpleSerializer,
 )
-from entry.models import AttributeValue, Entry
+from entry.models import Attribute, AttributeValue, Entry
+from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
+from group.models import Group
 from job.models import Job
 from user.models import User
 
@@ -64,8 +69,8 @@ class EntryAPI(viewsets.ModelViewSet):
 
         user: User = request.user
 
-        if custom_view.is_custom("before_delete_entry", entry.schema.name):
-            custom_view.call_custom("before_delete_entry", entry.schema.name, user, entry)
+        if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
+            custom_view.call_custom("before_delete_entry_v2", entry.schema.name, user, entry)
 
         # register operation History for deleting entry
         user.seth_entry_del(entry)
@@ -73,8 +78,8 @@ class EntryAPI(viewsets.ModelViewSet):
         # delete entry
         entry.delete(deleted_user=user)
 
-        if custom_view.is_custom("after_delete_entry", entry.schema.name):
-            custom_view.call_custom("after_delete_entry", entry.schema.name, user, entry)
+        if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
+            custom_view.call_custom("after_delete_entry_v2", entry.schema.name, user, entry)
 
         # Send notification to the webhook URL
         job_notify: Job = Job.new_notify_delete_entry(user, entry)
@@ -96,16 +101,16 @@ class EntryAPI(viewsets.ModelViewSet):
 
         user: User = request.user
 
-        if custom_view.is_custom("before_restore_entry", entry.schema.name):
-            custom_view.call_custom("before_restore_entry", entry.schema.name, user, entry)
+        if custom_view.is_custom("before_restore_entry_v2", entry.schema.name):
+            custom_view.call_custom("before_restore_entry_v2", entry.schema.name, user, entry)
 
         entry.set_status(Entry.STATUS_CREATING)
 
         # restore entry
         entry.restore()
 
-        if custom_view.is_custom("after_restore_entry", entry.schema.name):
-            custom_view.call_custom("after_restore_entry", entry.schema.name, user, entry)
+        if custom_view.is_custom("after_restore_entry_v2", entry.schema.name):
+            custom_view.call_custom("after_restore_entry_v2", entry.schema.name, user, entry)
 
         # remove status flag which is set before calling this
         entry.del_status(Entry.STATUS_CREATING)
@@ -271,7 +276,7 @@ class AdvancedSearchAPI(APIView):
                     "is_readble": attr["is_readble"],
                     "type": attr["type"],
                     "value": {
-                        _get_typed_value(attr["type"]): attr["value"],
+                        _get_typed_value(attr["type"]): attr.get("value", ""),
                     },
                 }
 
@@ -358,4 +363,74 @@ class EntryExportAPI(generics.GenericAPIView):
         return Response(
             {"result": "Succeed in registering export processing. " + "Please check Job list."},
             status=status.HTTP_200_OK,
+        )
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter("keyword", OpenApiTypes.STR, OpenApiParameter.QUERY),
+    ],
+)
+class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = GetEntryAttrReferralSerializer
+
+    def get_queryset(self):
+        attr_id = self.kwargs["attr_id"]
+        keyword = self.request.query_params.get("keyword", None)
+
+        attr = Attribute.objects.filter(id=attr_id).first()
+        if attr:
+            entity_attr = attr.schema
+        else:
+            entity_attr = EntityAttr.objects.filter(id=attr_id).first()
+        if not entity_attr:
+            raise NotFound(f"not found matched attribute or entity attr: {attr_id}")
+
+        conditions = {"is_active": True}
+        if keyword:
+            conditions["name__icontains"] = keyword
+
+        # TODO support natural sort?
+        if entity_attr.type & AttrTypeValue["object"]:
+            return Entry.objects.filter(
+                **conditions, schema__in=entity_attr.referral.all()
+            ).order_by("name")[0 : CONFIG.MAX_LIST_REFERRALS]
+        elif entity_attr.type & AttrTypeValue["group"]:
+            return Group.objects.filter(**conditions).order_by("name")[
+                0 : CONFIG.MAX_LIST_REFERRALS
+            ]
+        else:
+            raise ValidationError(f"unsupported attr type: {entity_attr.type}")
+
+
+class EntryImportAPI(generics.GenericAPIView):
+    parser_classes = [YAMLParser]
+    serializer_class = EntryImportSerializer
+
+    def post(self, request):
+        import_datas = request.data
+        user: User = request.user
+        serializer = EntryImportSerializer(data=import_datas)
+        serializer.is_valid(raise_exception=True)
+
+        job_ids = []
+        error_list = []
+        for import_data in import_datas:
+            entity = Entity.objects.filter(name=import_data["entity"], is_active=True).first()
+            if not entity:
+                error_list.append("%s: Entity does not exists." % import_data["entity"])
+                continue
+
+            if not user.has_permission(entity, ACLType.Writable):
+                error_list.append("%s: Entity is permission denied." % import_data["entity"])
+                continue
+
+            job = Job.new_import_v2(
+                user, entity, text="Preparing to import data", params=import_data
+            )
+            job.run()
+            job_ids.append(job.id)
+
+        return Response(
+            {"result": {"job_ids": job_ids, "error": error_list}}, status=status.HTTP_200_OK
         )

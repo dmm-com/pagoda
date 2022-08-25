@@ -5,6 +5,7 @@ from unittest import mock
 from unittest.mock import Mock, patch
 
 import yaml
+from rest_framework.exceptions import ValidationError
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
@@ -20,6 +21,7 @@ from airone.lib.types import (
 from entity.models import Entity, EntityAttr
 from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
+from entry.settings import CONFIG
 from group.models import Group
 from job.models import Job, JobOperation
 from role.models import Role
@@ -38,11 +40,16 @@ class ViewTest(AironeViewTest):
         self.ref_entry: Entry = self.add_entry(self.user, "r-0", self.ref_entity)
         self.group: Group = Group.objects.create(name="group0")
 
+        attrs = []
+        for attr_info in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY:
+            if attr_info["type"] & AttrTypeValue["object"]:
+                attr_info["ref"] = self.ref_entity
+            attrs.append(attr_info)
         self.entity: Entity = self.create_entity(
             **{
                 "user": self.user,
                 "name": "test-entity",
-                "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+                "attrs": attrs,
             }
         )
 
@@ -600,7 +607,7 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/%s/" % entry.id, json.dumps({"name": "hoge"}), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"non_field_errors": ["specified name(hoge) already exists"]})
+        self.assertEqual(resp.json(), {"name": ["specified name(hoge) already exists"]})
 
         hoge_entry.delete()
         resp = self.client.put(
@@ -693,20 +700,6 @@ class ViewTest(AironeViewTest):
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_update_entry_with_customview(self, mock_call_custom):
-        def side_effect(handler_name, entity_name, user, *args):
-            self.assertEqual(entity_name, self.entity.name)
-            self.assertEqual(user, self.user)
-            self.assertEqual(args[1], entry)
-
-            # Check specified parameters are expected
-            if handler_name == "before_update_entry":
-                self.assertEqual(args[0], params)
-
-            if handler_name == "after_update_entry":
-                self.assertEqual(args[0], params["attrs"])
-
-        mock_call_custom.side_effect = side_effect
-
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
         attr = {}
         for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
@@ -717,11 +710,38 @@ class ViewTest(AironeViewTest):
                 {"id": attr["val"].id, "value": "fuga"},
             ],
         }
-        self.client.put("/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json")
 
+        def side_effect(handler_name, entity_name, user, *args):
+            raise ValidationError("update error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), ["update error"])
+
+        def side_effect(handler_name, entity_name, user, *args):
+            self.assertEqual(entity_name, self.entity.name)
+            self.assertEqual(user, self.user)
+
+            # Check specified parameters are expected
+            if handler_name == "before_update_entry_v2":
+                self.assertEqual(args[0], params)
+                return args[0]
+
+            if handler_name == "after_update_entry_v2":
+                self.assertEqual(args[0], entry)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
         self.assertTrue(mock_call_custom.called)
 
-    def test_update_entry_with_no_update(self):
+    @mock.patch("entry.tasks.notify_update_entry.delay")
+    def test_update_entry_with_no_update(self, mock_task):
         entry: Entry = self.add_entry(
             self.user,
             "Entry",
@@ -749,6 +769,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(attr["val"].values.count(), 1)
         self.assertEqual(attr["vals"].values.count(), 2)
+        self.assertFalse(mock_task.called)
 
     @mock.patch(
         "entry.tasks.register_referrals.delay", mock.Mock(side_effect=tasks.register_referrals)
@@ -773,6 +794,12 @@ class ViewTest(AironeViewTest):
         self.assertEqual(ret["ret_count"], 1)
         self.assertEqual(ret["ret_values"][0]["entry"]["name"], "Entry")
         self.assertEqual(ret["ret_values"][0]["attrs"]["ref"]["value"]["name"], "ref-change")
+
+    def test_update_entry_without_attrs(self):
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % self.ref_entry.id, json.dumps({}), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
 
     def test_destroy_entry(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
@@ -868,16 +895,25 @@ class ViewTest(AironeViewTest):
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_destroy_entry_with_custom_view(self, mock_call_custom):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+
         def side_effect(handler_name, entity_name, user, entry):
-            self.assertTrue(handler_name in ["before_delete_entry", "after_delete_entry"])
+            raise ValidationError("delete error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), ["delete error"])
+
+        def side_effect(handler_name, entity_name, user, entry):
+            self.assertTrue(handler_name in ["before_delete_entry_v2", "after_delete_entry_v2"])
             self.assertEqual(entity_name, self.entity.name)
             self.assertEqual(user, self.user)
             self.assertEqual(entry, entry)
 
         mock_call_custom.side_effect = side_effect
-
-        entry: Entry = self.add_entry(self.user, "entry", self.entity)
-        self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
+        resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
+        self.assertEqual(resp.status_code, 204)
         self.assertTrue(mock_call_custom.called)
 
     @mock.patch("entry.tasks.notify_delete_entry.delay")
@@ -989,17 +1025,26 @@ class ViewTest(AironeViewTest):
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_restore_entry_with_custom_view(self, mock_call_custom):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+        entry.delete()
+
         def side_effect(handler_name, entity_name, user, entry):
-            self.assertTrue(handler_name in ["before_restore_entry", "after_restore_entry"])
+            raise ValidationError("restore error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), ["restore error"])
+
+        def side_effect(handler_name, entity_name, user, entry):
+            self.assertTrue(handler_name in ["before_restore_entry_v2", "after_restore_entry_v2"])
             self.assertEqual(entity_name, self.entity.name)
             self.assertEqual(user, self.user)
             self.assertEqual(entry, entry)
 
         mock_call_custom.side_effect = side_effect
-
-        entry: Entry = self.add_entry(self.user, "entry", self.entity)
-        entry.delete()
-        self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
+        resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
+        self.assertEqual(resp.status_code, 201)
         self.assertTrue(mock_call_custom.called)
 
     @mock.patch("entry.tasks.notify_create_entry.delay")
@@ -1648,3 +1693,480 @@ class ViewTest(AironeViewTest):
 
             data = content.replace(header, "", 1).strip()
             self.assertEqual(data, '"%s,""ENTRY""",' % type_name + case[2])
+
+    def test_get_attr_referrals_of_group(self):
+        user = self.guest_login("guest2")
+
+        # initialize instances to be used in this test case
+        groups = [Group.objects.create(name=x) for x in ["g-foo", "g-bar", "g-baz"]]
+        entity = Entity.objects.create(name="Entity", created_user=user)
+        for (name, type_index) in [("grp", "group"), ("arr_group", "array_group")]:
+            entity.attrs.add(
+                EntityAttr.objects.create(
+                    **{
+                        "name": name,
+                        "type": AttrTypeValue[type_index],
+                        "created_user": user,
+                        "parent_entity": entity,
+                    }
+                )
+            )
+
+        # test to get groups through API calling of get_attr_referrals
+        for attr in entity.attrs.all():
+            resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id)
+            self.assertEqual(resp.status_code, 200)
+
+            # This expects results has all groups information.
+            self.assertEqual(
+                sorted(resp.json(), key=lambda x: x["id"]),
+                sorted(
+                    [{"id": g.id, "name": g.name} for g in Group.objects.all()],
+                    key=lambda x: x["id"],
+                ),
+            )
+
+        # test to get groups which are only active and matched with keyword
+        groups[2].delete()
+        for attr in entity.attrs.all():
+            resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id, {"keyword": "ba"})
+            self.assertEqual(resp.status_code, 200)
+
+            # This expects results has only information of 'g-bar' because 'g-foo' is
+            # not matched with keyword and 'g-baz' has already been deleted.
+            self.assertEqual(resp.json(), [{"id": groups[1].id, "name": groups[1].name}])
+
+    def test_get_attr_referrals_of_entry(self):
+        admin = self.admin_login()
+
+        # create Entity&Entries
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=admin)
+
+        entity = Entity.objects.create(name="Entity", created_user=admin)
+        entity_attr = EntityAttr.objects.create(
+            **{
+                "name": "Refer",
+                "type": AttrTypeValue["object"],
+                "created_user": admin,
+                "parent_entity": entity,
+            }
+        )
+
+        entity_attr.referral.add(ref_entity)
+        entity.attrs.add(entity_attr)
+
+        for index in range(CONFIG.MAX_LIST_REFERRALS, -1, -1):
+            Entry.objects.create(name="e-%s" % index, schema=ref_entity, created_user=admin)
+
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=admin)
+
+        # get Attribute object after complement them in the entry
+        entry.complement_attrs(admin)
+        attr = entry.attrs.get(name="Refer")
+
+        # try to get entries without keyword
+        resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()), CONFIG.MAX_LIST_REFERRALS)
+
+        # specify invalid Attribute ID
+        resp = self.client.get("/entry/api/v2/9999/attr_referrals/")
+        self.assertEqual(resp.status_code, 404)
+
+        # speify valid Attribute ID and a enalbed keyword
+        resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id, {"keyword": "e-1"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "application/json")
+
+        # This means e-1 and 'e-10' to 'e-19' are returned
+        self.assertEqual(len(resp.json()), 11)
+
+        # speify valid Attribute ID and a unabailabe keyword
+        resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id, {"keyword": "hoge"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()), 0)
+
+        # Add new data
+        for index in [101, 111, 100, 110]:
+            Entry.objects.create(name="e-%s" % index, schema=ref_entity, created_user=admin)
+
+        # Run with 'e-1' as keyword
+        resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id, {"keyword": "e-1"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "application/json")
+
+        # Check the number of return values
+        self.assertEqual(len(resp.json()), 15)
+
+        # TODO support natural sort?
+        # Check if it is sorted in the expected order
+        # targets = [1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 100, 101, 110, 111]
+        # for i, res in enumerate(resp.json()):
+        #     self.assertEqual(res["name"], "e-%s" % targets[i])
+
+        # send request with keywords that hit more than MAX_LIST_REFERRALS
+        Entry.objects.create(name="e", schema=ref_entity, created_user=admin)
+
+        resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id, {"keyword": "e"})
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual(resp.json()[0]["name"], "e")
+
+    def test_get_attr_referrals_with_entity_attr(self):
+        """
+        This test is needed because the get_attr_referrals API will receive an ID
+        of Attribute from entry.edit view, but also receive an EntityAttr's one
+        from entry.create view.
+        """
+        admin = self.admin_login()
+
+        # create Entity&Entries
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=admin)
+        for index in range(0, CONFIG.MAX_LIST_REFERRALS + 1):
+            Entry.objects.create(name="e-%s" % index, schema=ref_entity, created_user=admin)
+
+        entity = Entity.objects.create(name="Entity", created_user=admin)
+        entity_attr = EntityAttr.objects.create(
+            **{
+                "name": "Refer",
+                "type": AttrTypeValue["named_object"],
+                "created_user": admin,
+                "parent_entity": entity,
+            }
+        )
+        entity_attr.referral.add(ref_entity)
+        entity.attrs.add(entity_attr)
+
+        resp = self.client.get(
+            "/entry/api/v2/%d/attr_referrals/" % entity_attr.id, {"keyword": "e-1"}
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "application/json")
+
+        # This means e-1 and 'e-10' to 'e-19' are returned
+        self.assertEqual(len(resp.json()), 11)
+
+    @patch("entry.tasks.notify_create_entry.delay", Mock(side_effect=tasks.notify_create_entry))
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_create_entry(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job = Job.objects.get(operation=JobOperation.IMPORT_ENTRY_V2.value)
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.text, "Imported Entry count: 1")
+        self.assertEqual(
+            resp.json(),
+            {
+                "result": {
+                    "error": [],
+                    "job_ids": [job.id],
+                }
+            },
+        )
+
+        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        self.assertEqual(result["ret_count"], 1)
+        self.assertEqual(result["ret_values"][0]["entry"]["name"], "test-entry")
+        self.assertEqual(result["ret_values"][0]["entity"]["name"], "test-entity")
+        attrs = {
+            "bool": "True",
+            "date": "2018-12-31",
+            "group": {"id": self.group.id, "name": "group0"},
+            "groups": [{"id": self.group.id, "name": "group0"}],
+            "name": {"foo": {"id": self.ref_entry.id, "name": "r-0"}},
+            "names": [{"foo": {"id": self.ref_entry.id, "name": "r-0"}}],
+            "ref": {"id": self.ref_entry.id, "name": "r-0"},
+            "refs": [{"id": self.ref_entry.id, "name": "r-0"}],
+            "text": "foo\nbar",
+            "val": "foo",
+            "vals": ["foo"],
+        }
+        for attr_name in result["ret_values"][0]["attrs"]:
+            self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
+
+        entry = Entry.objects.get(name="test-entry")
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
+        self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+
+    @patch("entry.tasks.notify_update_entry.delay", Mock(side_effect=tasks.notify_update_entry))
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_update_entry(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity)
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job = Job.objects.get(operation=JobOperation.IMPORT_ENTRY_V2.value)
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+
+        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        self.assertEqual(result["ret_count"], 1)
+        self.assertEqual(result["ret_values"][0]["entry"], {"id": entry.id, "name": "test-entry"})
+        attrs = {
+            "val": "foo",
+            "vals": ["foo"],
+            "ref": {"id": self.ref_entry.id, "name": "r-0"},
+            "refs": [{"id": self.ref_entry.id, "name": "r-0"}],
+            "name": {"foo": {"id": self.ref_entry.id, "name": "r-0"}},
+            "names": [{"foo": {"id": self.ref_entry.id, "name": "r-0"}}],
+            "group": {"id": self.group.id, "name": "group0"},
+            "groups": [{"id": self.group.id, "name": "group0"}],
+            "bool": "True",
+            "text": "foo\nbar",
+            "date": "2018-12-31",
+        }
+        for attr_name in result["ret_values"][0]["attrs"]:
+            self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
+
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
+        self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+
+        # Update only some attributes
+        fp = self.open_fixture_file("import_data_v2_update_some.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2.value).last()
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+
+        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        attrs["val"] = "bar"
+        for attr_name in result["ret_values"][0]["attrs"]:
+            self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
+
+        # Update remove attribute value
+        fp = self.open_fixture_file("import_data_v2_update_remove.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2.value).last()
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+
+        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        attrs = {
+            # "val": None,
+            "vals": [],
+            "ref": {"id": "", "name": ""},
+            "refs": [],
+            # "name": None,
+            "names": [],
+            "group": {"id": "", "name": ""},
+            "groups": [],
+            "bool": "False",
+            # "text": None,
+            "date": None,
+        }
+        for attr_name in result["ret_values"][0]["attrs"]:
+            if "value" in result["ret_values"][0]["attrs"][attr_name]:
+                self.assertEqual(
+                    result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name]
+                )
+
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_multi_entity(self):
+        entity1 = self.create_entity(self.user, "test-entity1")
+        entity2 = self.create_entity(self.user, "test-entity2")
+        fp = self.open_fixture_file("import_data_v2_multi_entity.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job1 = Job.objects.get(target=entity1, operation=JobOperation.IMPORT_ENTRY_V2.value)
+        job2 = Job.objects.get(target=entity2, operation=JobOperation.IMPORT_ENTRY_V2.value)
+        self.assertEqual(job1.text, "Imported Entry count: 1")
+        self.assertEqual(job2.text, "Imported Entry count: 1")
+        self.assertEqual(
+            resp.json(),
+            {
+                "result": {
+                    "error": [],
+                    "job_ids": [job1.id, job2.id],
+                }
+            },
+        )
+
+        result = Entry.search_entries(self.user, [entity1.id, entity2.id])
+        self.assertEqual(result["ret_count"], 2)
+        self.assertEqual(result["ret_values"][0]["entry"]["name"], "test-entry1")
+        self.assertEqual(result["ret_values"][0]["entity"]["name"], "test-entity1")
+        self.assertEqual(result["ret_values"][1]["entry"]["name"], "test-entry2")
+        self.assertEqual(result["ret_values"][1]["entity"]["name"], "test-entity2")
+
+    def test_import_invalid_data(self):
+        # nothing data
+        resp = self.client.post("/entry/api/v2/import/", None, "application/yaml")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), {"non_field_errors": ['Expected a list of items but got type "dict".']}
+        )
+
+        # wrong content-type
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/json")
+        fp.close()
+        self.assertEqual(resp.status_code, 415)
+        self.assertEqual(
+            resp.json(), {"detail": 'Unsupported media type "application/json" in request.'}
+        )
+
+        # faild parse yaml
+        fp = self.open_fixture_file("import_data_v2_failed_parse.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertTrue("YAML parse error" in resp.json()["detail"])
+
+        # faild scan yaml
+        fp = self.open_fixture_file("import_data_v2_failed_scan.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+        self.assertTrue("YAML parse error" in resp.json()["detail"])
+
+        # invalid param
+        fp = self.open_fixture_file("import_data_v2_invalid_param.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+
+        # invalid required param (entity, entries)
+        self.assertEqual(
+            resp.json()[0],
+            {"entity": ["This field is required."], "entries": ["This field is required."]},
+        )
+
+        # invalid type param (entity, entries)
+        self.assertEqual(
+            resp.json()[1],
+            {
+                "entity": ["Not a valid string."],
+                "entries": ['Expected a list of items but got type "str".'],
+            },
+        )
+
+        # invalid type param (entries)
+        self.assertEqual(
+            resp.json()[2]["entries"]["0"],
+            {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]},
+        )
+
+        # invalid required param (entries)
+        self.assertEqual(
+            resp.json()[2]["entries"]["1"],
+            {"name": ["This field is required."]},
+        )
+
+        # invalid type param (name, attrs)
+        self.assertEqual(
+            resp.json()[2]["entries"]["2"],
+            {
+                "attrs": ['Expected a list of items but got type "str".'],
+                "name": ["Not a valid string."],
+            },
+        )
+
+        # invalid type param (attrs)
+        self.assertEqual(
+            resp.json()[2]["entries"]["3"]["attrs"]["0"],
+            {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]},
+        )
+
+        # invalid required param (name, value)
+        self.assertEqual(
+            resp.json()[2]["entries"]["3"]["attrs"]["1"],
+            {"name": ["This field is required."], "value": ["This field is required."]},
+        )
+
+        # invalid type param (name)
+        self.assertEqual(
+            resp.json()[2]["entries"]["3"]["attrs"]["2"]["name"],
+            ["Not a valid string."],
+        )
+
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_invalid_data_value(self):
+        fp = self.open_fixture_file("import_data_v2_invalid_value.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        job_id = resp.json()["result"]["job_ids"][0]
+        job = Job.objects.get(id=job_id)
+        self.assertEqual(job.status, Job.STATUS["WARNING"])
+        self.assertTrue("Imported Entry count: 17" in job.text)
+
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_invalid_data_entity(self):
+        # not exsits entity
+        fp = self.open_fixture_file("import_data_v2_invalid_entity.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json()["result"], {"job_ids": [], "error": ["no-entity: Entity does not exists."]}
+        )
+
+        # permission nothing entity
+        self.entity.is_public = False
+        self.entity.save()
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json()["result"],
+            {"job_ids": [], "error": ["test-entity: Entity is permission denied."]},
+        )
+
+        # permission readble entity
+        self.role.users.add(self.user)
+        self.role.permissions.add(self.entity.readable)
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json()["result"],
+            {"job_ids": [], "error": ["test-entity: Entity is permission denied."]},
+        )
+
+        # permission writable entity
+        self.role.users.add(self.user)
+        self.role.permissions.add(self.entity.writable)
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 200)
+        job = Job.objects.get(target=self.entity, operation=JobOperation.IMPORT_ENTRY_V2.value)
+        self.assertEqual(resp.json()["result"], {"job_ids": [job.id], "error": []})
+
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_warning(self):
+        fp = self.open_fixture_file("import_data_v2_warning.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job_id = resp.json()["result"]["job_ids"][0]
+        job = Job.objects.get(id=job_id)
+        self.assertEqual(job.status, Job.STATUS["WARNING"])
+        self.assertEqual(job.text, "Imported Entry count: 2, Failed import Entry: ['test-entry1']")
+        self.assertTrue(Entry.objects.filter(name="test-entry2").exists())
+
+    @patch.object(Job, "is_canceled", Mock(return_value=True))
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_cancel(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job_id = resp.json()["result"]["job_ids"][0]
+        job = Job.objects.get(id=job_id)
+        self.assertEqual(job.status, Job.STATUS["CANCELED"])
+        self.assertEqual(job.text, "Now importing... (progress: [    1/    1])")
+        self.assertFalse(Entry.objects.filter(name="test-entry").exists())

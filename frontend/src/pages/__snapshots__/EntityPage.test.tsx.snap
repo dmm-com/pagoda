@@ -127,8 +127,7 @@ Object {
                 </div>
               </div>
               <a
-                aria-label="add"
-                class="MuiButtonBase-root MuiFab-root MuiFab-extended MuiFab-sizeLarge MuiFab-secondary css-1l9vhk9-MuiButtonBase-root-MuiFab-root"
+                class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-1rn41qt-MuiButtonBase-root-MuiButton-root"
                 href="/new-ui/entities/new"
                 tabindex="0"
               >
@@ -546,8 +545,7 @@ Object {
               </div>
             </div>
             <a
-              aria-label="add"
-              class="MuiButtonBase-root MuiFab-root MuiFab-extended MuiFab-sizeLarge MuiFab-secondary css-1l9vhk9-MuiButtonBase-root-MuiFab-root"
+              class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-1rn41qt-MuiButtonBase-root-MuiButton-root"
               href="/new-ui/entities/new"
               tabindex="0"
             >

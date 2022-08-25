@@ -345,7 +345,7 @@ Object {
                 >
                   <a
                     class="MuiListItemButton-root MuiListItemButton-gutters MuiButtonBase-root css-16ac5r2-MuiButtonBase-root-MuiListItemButton-root"
-                    href="/new-ui/entities/undefined/entries/1/details"
+                    href="/new-ui/entities/2/entries/1/details"
                     tabindex="0"
                   >
                     <div
@@ -369,7 +369,7 @@ Object {
             class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-vok43g-MuiGrid-root"
           >
             <div
-              class="MuiBox-root css-1wcaknn"
+              class="MuiBox-root css-19midj6"
             >
               <div
                 name="attr_list"
@@ -413,8 +413,12 @@ Object {
             </div>
           </div>
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1o7apob-MuiGrid-root"
-          />
+            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1dlt83p-MuiGrid-root"
+          >
+            <div
+              class="MuiBox-root css-0"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -760,7 +764,7 @@ Object {
               >
                 <a
                   class="MuiListItemButton-root MuiListItemButton-gutters MuiButtonBase-root css-16ac5r2-MuiButtonBase-root-MuiListItemButton-root"
-                  href="/new-ui/entities/undefined/entries/1/details"
+                  href="/new-ui/entities/2/entries/1/details"
                   tabindex="0"
                 >
                   <div
@@ -784,7 +788,7 @@ Object {
           class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-vok43g-MuiGrid-root"
         >
           <div
-            class="MuiBox-root css-1wcaknn"
+            class="MuiBox-root css-19midj6"
           >
             <div
               name="attr_list"
@@ -828,8 +832,12 @@ Object {
           </div>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1o7apob-MuiGrid-root"
-        />
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1dlt83p-MuiGrid-root"
+        >
+          <div
+            class="MuiBox-root css-0"
+          />
+        </div>
       </div>
     </div>
   </div>,

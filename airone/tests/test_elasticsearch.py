@@ -201,7 +201,7 @@ class ElasticSearchTest(TestCase):
         )
 
     def test_make_query_for_simple(self):
-        query = elasticsearch.make_query_for_simple("hoge|fuga&1", None, 0)
+        query = elasticsearch.make_query_for_simple("hoge|fuga&1", None, [], 0)
         self.assertEqual(
             query,
             {
@@ -296,14 +296,21 @@ class ElasticSearchTest(TestCase):
         )
 
         # set hint_entity_name
-        query = elasticsearch.make_query_for_simple("hoge", "fuga", 0)
+        query = elasticsearch.make_query_for_simple("hoge", "fuga", [], 0)
         self.assertEqual(
             query["query"]["bool"]["must"][1],
             {"nested": {"path": "entity", "query": {"term": {"entity.name": "fuga"}}}},
         )
 
+        # set exclude_entity_names
+        query = elasticsearch.make_query_for_simple("hoge", None, ["fuga"], 0)
+        self.assertEqual(
+            query["query"]["bool"]["must_not"][0],
+            {"nested": {"path": "entity", "query": {"term": {"entity.name": "fuga"}}}},
+        )
+
         # set offset
-        query = elasticsearch.make_query_for_simple("hoge", "fuga", 100)
+        query = elasticsearch.make_query_for_simple("hoge", "fuga", [], 100)
         self.assertEqual(query["from"], 100)
 
     def test_make_search_results(self):
