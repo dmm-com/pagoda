@@ -17,7 +17,6 @@ class ACLSerializer(serializers.ModelSerializer):
     acltypes = serializers.SerializerMethodField(method_name="get_acltypes", read_only=True)
     members = serializers.SerializerMethodField(method_name="get_members", read_only=True)
     roles = serializers.SerializerMethodField(method_name="get_roles", read_only=True)
-    entity = serializers.SerializerMethodField(method_name="get_entity", read_only=True)
     # TODO better name?
     acl = serializers.ListField(write_only=True)
 
@@ -29,19 +28,33 @@ class ACLSerializer(serializers.ModelSerializer):
             "is_public",
             "default_permission",
             "objtype",
-            "parent",
             "acltypes",
             "members",
             "acl",
             "roles",
-            "entity",
+            "parent",
         ]
 
     def get_parent(self, obj: ACLBase) -> Optional[Any]:
-        if isinstance(obj, Attribute):
-            return obj.parent_entry
-        elif isinstance(obj, EntityAttr):
-            return obj.parent_entity
+        airone_model = obj.get_subclass_object()
+        if isinstance(airone_model, Entry):
+            return {
+                "id": airone_model.schema.id,
+                "name": airone_model.schema.name,
+                "is_public": airone_model.schema.is_public,
+            }
+        if isinstance(airone_model, Attribute):
+            return {
+                "id": airone_model.parent_entry.id,
+                "name": airone_model.parent_entry.name,
+                "is_public": airone_model.parent_entry.is_public,
+            }
+        elif isinstance(airone_model, EntityAttr):
+            return {
+                "id": airone_model.parent_entity.id,
+                "name": airone_model.parent_entity.name,
+                "is_public": airone_model.parent_entity.is_public,
+            }
         else:
             return None
 
@@ -88,16 +101,6 @@ class ACLSerializer(serializers.ModelSerializer):
             for x in Role.objects.filter(is_active=True)
             if user.is_superuser or x.is_belonged_to(user)
         ]
-
-    def get_entity(self, obj: ACLBase) -> Dict[str, Any]:
-        if obj.objtype & ACLObjType.Entry:
-            entry = Entry.objects.filter(id=obj.id).first()
-            if entry is not None:
-                return {
-                    "id": entry.schema.id,
-                    "name": entry.schema.name,
-                    "is_public": entry.schema.is_public,
-                }
 
     def validate_default_permission(self, default_permission: int):
         if default_permission not in ACLType.all():

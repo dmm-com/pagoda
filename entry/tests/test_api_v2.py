@@ -86,7 +86,10 @@ class ViewTest(AironeViewTest):
         resp_data = resp.json()
         self.assertEqual(resp_data["id"], entry.id)
         self.assertEqual(resp_data["name"], entry.name)
-        self.assertEqual(resp_data["schema"], {"id": entry.schema.id, "name": entry.schema.name})
+        self.assertEqual(
+            resp_data["schema"],
+            {"id": entry.schema.id, "name": entry.schema.name, "is_public": entry.schema.is_public},
+        )
 
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "val", resp_data["attrs"])),

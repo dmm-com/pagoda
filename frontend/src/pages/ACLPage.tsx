@@ -8,7 +8,7 @@ import { useAsync } from "react-use";
 import { PageHeader } from "../components/common/PageHeader";
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import { topPath } from "Routes";
+import { topPath, entityEntriesPath, entryDetailsPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { ACLForm } from "components/common/ACLForm";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -75,10 +75,6 @@ export const ACLPage: FC = () => {
     }
   }, [acl]);
 
-  if (!acl.loading) {
-    console.log(acl);
-  }
-
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
@@ -90,7 +86,9 @@ export const ACLPage: FC = () => {
         {!acl.loading &&
           acl.value.objtype & djangoContext.aclObjectType.entity && (
             <Box sx={{ display: "flex" }}>
-              <Typography color="textPrimary">{acl.value.name}</Typography>
+              <Typography component={Link} to={entityEntriesPath(acl.value.id)}>
+                {acl.value.name}
+              </Typography>
               {!acl.value.isPublic && <LockIcon />}
             </Box>
           )}
@@ -98,18 +96,47 @@ export const ACLPage: FC = () => {
         {/* This is a statement for Entry */}
         {!acl.loading && acl.value.objtype & djangoContext.aclObjectType.entry && (
           <Box sx={{ display: "flex" }}>
-            <Typography color="textPrimary">{acl.value.entity.name}</Typography>
+            <Typography
+              component={Link}
+              to={entityEntriesPath(acl.value.entity.id)}
+            >
+              {acl.value.entity.name}
+            </Typography>
             {!acl.value.entity.isPublic && <LockIcon />}
           </Box>
         )}
         {!acl.loading && acl.value.objtype & djangoContext.aclObjectType.entry && (
           <Box sx={{ display: "flex" }}>
-            <Typography color="textPrimary">{acl.value.name}</Typography>
+            <Typography
+              component={Link}
+              to={entryDetailsPath(acl.value.entity.id, acl.value.id)}
+            >
+              {acl.value.name}
+            </Typography>
             {!acl.value.isPublic && <LockIcon />}
           </Box>
         )}
 
         {/* This is a statement for EntityAttr */}
+        {!acl.loading &&
+          acl.value.objtype & djangoContext.aclObjectType.entityAttr && (
+            <Box sx={{ display: "flex" }}>
+              <Typography
+                component={Link}
+                to={entityEntriesPath(acl.value.parent.id)}
+              >
+                {acl.value.parent.name}
+              </Typography>
+              {!acl.value.parent.isPublic && <LockIcon />}
+            </Box>
+          )}
+        {!acl.loading &&
+          acl.value.objtype & djangoContext.aclObjectType.entityAttr && (
+            <Box sx={{ display: "flex" }}>
+              <Typography color="textPrimary">{acl.value.name}</Typography>
+              {!acl.value.isPublic && <LockIcon />}
+            </Box>
+          )}
 
         {/* This is a statement for EntryAttr */}
 
