@@ -9,6 +9,7 @@ import {
   CardHeader,
   Grid,
   IconButton,
+  Modal,
   Pagination,
   Stack,
   Theme,
@@ -38,6 +39,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
     "-webkit-box-orient": "vertical",
     "-webkit-line-clamp": 2,
   },
+  modal: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  paper: {
+    backgroundColor: theme.palette.background.paper,
+    border: "2px solid #000",
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+    width: "50%",
+  },
 }));
 
 interface Props {
@@ -63,6 +76,7 @@ export const EntityList: FC<Props> = ({
   const [entityAnchorEls, setEntityAnchorEls] = useState<{
     [key: number]: HTMLButtonElement;
   } | null>({});
+  const [openImportModal, setOpenImportModal] = React.useState(false);
 
   return (
     <Box>
@@ -145,6 +159,7 @@ export const EntityList: FC<Props> = ({
                           [entityId]: null,
                         })
                       }
+                      setOpenImportModal={setOpenImportModal}
                     />
                   </>
                 }
@@ -176,6 +191,17 @@ export const EntityList: FC<Props> = ({
           />
         </Stack>
       </Box>
+
+      <Modal
+        aria-labelledby="transition-modal-title"
+        aria-describedby="transition-modal-description"
+        className={classes.modal}
+        open={openImportModal}
+      >
+        <Box className={classes.paper}>
+          (WIP)
+        </Box>
+      </Modal>
     </Box>
   );
 };

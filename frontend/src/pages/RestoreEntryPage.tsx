@@ -21,6 +21,7 @@ export const RestoreEntryPage: FC = () => {
 
   const [entityAnchorEl, setEntityAnchorEl] =
     useState<HTMLButtonElement | null>();
+  const [openImportModal, setOpenImportModal] = React.useState(false);
 
   const entity = useAsync(async () => {
     return await aironeApiClientV2.getEntity(entityId);
@@ -74,6 +75,7 @@ export const RestoreEntryPage: FC = () => {
               entityId={entityId}
               anchorElem={entityAnchorEl}
               handleClose={() => setEntityAnchorEl(null)}
+              setOpenImportModal={setOpenImportModal}
             />
           </Box>
         </Box>
