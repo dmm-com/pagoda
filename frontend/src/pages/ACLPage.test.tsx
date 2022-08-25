@@ -32,8 +32,8 @@ test("should match snapshot", async () => {
     is_public: false,
     default_permission: 1,
     parent: {
-        id: 10,
-        name: "Entity1"
+      id: 10,
+      name: "Entity1",
     },
     acltypes: [
       {
