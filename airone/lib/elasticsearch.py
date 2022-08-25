@@ -223,7 +223,9 @@ def make_query(
     return query
 
 
-def make_query_for_simple(hint_string: str, hint_entity_name: str, offset: int) -> Dict[str, str]:
+def make_query_for_simple(
+    hint_string: str, hint_entity_name: str, exclude_entity_names: List[str], offset: int
+) -> Dict[str, str]:
     """Create a search query for Elasticsearch.
 
     Do the following:
@@ -260,6 +262,17 @@ def make_query_for_simple(hint_string: str, hint_entity_name: str, offset: int) 
                 }
             }
         )
+
+    if exclude_entity_names:
+        query["query"]["bool"]["must_not"] = [
+            {
+                "nested": {
+                    "path": "entity",
+                    "query": {"term": {"entity.name": exclude_entity_name}},
+                }
+            }
+            for exclude_entity_name in exclude_entity_names
+        ]
 
     return query
 

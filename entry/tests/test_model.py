@@ -636,7 +636,7 @@ class ModelTest(AironeTestCase):
             self.assertEqual(list(referred_entries), [self._entry])
 
     def test_get_referred_objects_with_entity_param(self):
-        for i in range(3, 5):
+        for i in range(3, 6):
             entity = Entity.objects.create(name="Entity" + str(i), created_user=self._user)
             entry = Entry.objects.create(
                 name="entry" + str(i), created_user=self._user, schema=entity
@@ -661,11 +661,15 @@ class ModelTest(AironeTestCase):
         # This function checks that this get_referred_objects method only get
         # unique reference objects except for the self referred object.
         referred_entries = self._entry.get_referred_objects()
-        self.assertEqual(referred_entries.count(), 2)
+        self.assertEqual(referred_entries.count(), 3)
 
-        referred_entries = self._entry.get_referred_objects(entity_name="Entity3")
+        referred_entries = self._entry.get_referred_objects(filter_entities=["Entity3"])
         self.assertEqual(referred_entries.count(), 1)
         self.assertEqual(referred_entries.first().name, "entry3")
+
+        referred_entries = self._entry.get_referred_objects(exclude_entities=["Entity3"])
+        self.assertEqual(referred_entries.count(), 2)
+        self.assertEqual([x.name for x in referred_entries], ["entry4", "entry5"])
 
     def test_coordinating_attribute_with_dynamically_added_one(self):
         newattr = EntityAttr.objects.create(
@@ -3888,6 +3892,20 @@ class ModelTest(AironeTestCase):
         ret = Entry.search_entries_for_simple("entry", "entity")
         self.assertEqual(ret["ret_count"], 1)
         self.assertEqual([x["name"] for x in ret["ret_values"]], ["entry"])
+
+    def test_search_entries_for_simple_with_exclude_entity_names(self):
+        self._entry.register_es()
+        entity = Entity.objects.create(name="entity2", created_user=self._user)
+        entry = Entry.objects.create(name="entry2", schema=entity, created_user=self._user)
+        entry.register_es()
+
+        ret = Entry.search_entries_for_simple("entry")
+        self.assertEqual(ret["ret_count"], 2)
+        self.assertEqual([x["name"] for x in ret["ret_values"]], ["entry", "entry2"])
+
+        ret = Entry.search_entries_for_simple("entry", exclude_entity_names=["entity"])
+        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual([x["name"] for x in ret["ret_values"]], ["entry2"])
 
     def test_search_entries_for_simple_with_limit_offset(self):
         for i in range(0, 10):
