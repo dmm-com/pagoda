@@ -6,6 +6,10 @@
 
 ### Changed
 
+* (New-UI) Implemented ACL configuration page for Entity, Entry
+  and EntityAttr.
+  Contributed by @hinashi, @syucream, @userlocalhost
+
 * (New-UI) Show a shorten name if entity name is too long
   at Entity list view.
   Contributed by @syucream
