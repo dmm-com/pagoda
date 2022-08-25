@@ -74,6 +74,12 @@ export interface EntityDetail {
    * @memberof EntityDetail
    */
   webhooks: Array<Webhook>;
+  /**
+   *
+   * @type {boolean}
+   * @memberof EntityDetail
+   */
+  isPublic?: boolean;
 }
 
 export function EntityDetailFromJSON(json: any): EntityDetail {
@@ -95,6 +101,7 @@ export function EntityDetailFromJSONTyped(
     isToplevel: json["is_toplevel"],
     attrs: (json["attrs"] as Array<any>).map(EntityDetailAttrsFromJSON),
     webhooks: (json["webhooks"] as Array<any>).map(WebhookFromJSON),
+    isPublic: !exists(json, "is_public") ? undefined : json["is_public"],
   };
 }
 
@@ -110,5 +117,6 @@ export function EntityDetailToJSON(value?: EntityDetail | null): any {
     note: value.note,
     status: value.status,
     webhooks: (value.webhooks as Array<any>).map(WebhookToJSON),
+    is_public: value.isPublic,
   };
 }

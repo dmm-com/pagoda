@@ -18,14 +18,6 @@ def index(request, obj_id):
         return error
     target_obj = aclbase_obj.get_subclass_object()
 
-    # get ACLTypeID of target_obj if a permission is set
-    def get_current_permission(member):
-        permissions = [x for x in member.permissions.all() if x.get_objid() == target_obj.id]
-        if permissions:
-            return permissions[0].get_aclid()
-        else:
-            return 0
-
     # Some type of objects needs object that refers target_obj (e.g. Attribute)
     # for showing breadcrumb navigation.
     parent_obj = None
@@ -46,7 +38,7 @@ def index(request, obj_id):
                 "id": x.id,
                 "name": x.name,
                 "description": x.description,
-                "current_permission": get_current_permission(x),
+                "current_permission": x.get_current_permission(target_obj),
             }
             for x in Role.objects.filter(is_active=True)
             if request.user.is_superuser or x.is_belonged_to(request.user)

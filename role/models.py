@@ -88,3 +88,10 @@ class Role(models.Model):
             datetime.now().strftime("%Y%m%d_%H%M%S"),
         )
         self.save(update_fields=["is_active", "name"])
+
+    def get_current_permission(self, aclbase):
+        permissions = [x for x in self.permissions.all() if x.get_objid() == aclbase.id]
+        if permissions:
+            return permissions[0].get_aclid()
+        else:
+            return 0

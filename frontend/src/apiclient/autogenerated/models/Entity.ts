@@ -31,6 +31,12 @@ export interface Entity {
    * @memberof Entity
    */
   name: string;
+  /**
+   *
+   * @type {boolean}
+   * @memberof Entity
+   */
+  isPublic?: boolean;
 }
 
 export function EntityFromJSON(json: any): Entity {
@@ -47,6 +53,7 @@ export function EntityFromJSONTyped(
   return {
     id: json["id"],
     name: json["name"],
+    isPublic: !exists(json, "is_public") ? undefined : json["is_public"],
   };
 }
 
@@ -59,5 +66,6 @@ export function EntityToJSON(value?: Entity | null): any {
   }
   return {
     name: value.name,
+    is_public: value.isPublic,
   };
 }

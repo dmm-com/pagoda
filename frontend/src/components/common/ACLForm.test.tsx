@@ -36,9 +36,27 @@ test("should render a component with essential props", function () {
         current_permission: 1,
       },
     ],
+    roles: undefined,
+    entity: undefined,
   };
 
   expect(() =>
-    render(<ACLForm acl={acl} objectId={1} />, { wrapper: TestWrapper })
+    render(
+      <ACLForm
+        objectId={1}
+        aclInfo={{
+          isPublic: true,
+          defaultPermission: 0,
+          permissions: {},
+        }}
+        setACLInfo={(d) => {
+          /* no operation */
+        }}
+        setSubmittable={(b) => {
+          /* no operation */
+        }}
+      />,
+      { wrapper: TestWrapper }
+    )
   ).not.toThrow();
 });

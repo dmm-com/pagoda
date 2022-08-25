@@ -16,6 +16,7 @@ class ACLSerializer(serializers.ModelSerializer):
     parent = serializers.SerializerMethodField(method_name="get_parent", read_only=True)
     acltypes = serializers.SerializerMethodField(method_name="get_acltypes", read_only=True)
     members = serializers.SerializerMethodField(method_name="get_members", read_only=True)
+    roles = serializers.SerializerMethodField(method_name="get_roles", read_only=True)
     # TODO better name?
     acl = serializers.ListField(write_only=True)
 
@@ -27,17 +28,33 @@ class ACLSerializer(serializers.ModelSerializer):
             "is_public",
             "default_permission",
             "objtype",
-            "parent",
             "acltypes",
             "members",
             "acl",
+            "roles",
+            "parent",
         ]
 
     def get_parent(self, obj: ACLBase) -> Optional[Any]:
-        if isinstance(obj, Attribute):
-            return obj.parent_entry
-        elif isinstance(obj, EntityAttr):
-            return obj.parent_entity
+        airone_model = obj.get_subclass_object()
+        if isinstance(airone_model, Entry):
+            return {
+                "id": airone_model.schema.id,
+                "name": airone_model.schema.name,
+                "is_public": airone_model.schema.is_public,
+            }
+        if isinstance(airone_model, Attribute):
+            return {
+                "id": airone_model.parent_entry.id,
+                "name": airone_model.parent_entry.name,
+                "is_public": airone_model.parent_entry.is_public,
+            }
+        elif isinstance(airone_model, EntityAttr):
+            return {
+                "id": airone_model.parent_entity.id,
+                "name": airone_model.parent_entity.name,
+                "is_public": airone_model.parent_entity.is_public,
+            }
         else:
             return None
 
@@ -71,8 +88,24 @@ class ACLSerializer(serializers.ModelSerializer):
             for x in Group.objects.filter(is_active=True)
         ]
 
+    def get_roles(self, obj: ACLBase) -> List[Dict[str, Any]]:
+        user = self.context["request"].user
+
+        return [
+            {
+                "id": x.id,
+                "name": x.name,
+                "description": x.description,
+                "current_permission": x.get_current_permission(obj),
+            }
+            for x in Role.objects.filter(is_active=True)
+            if user.is_superuser or x.is_belonged_to(user)
+        ]
+
     def validate_default_permission(self, default_permission: int):
-        return default_permission in ACLType.all()
+        if default_permission not in ACLType.all():
+            raise ValidationError("invalid default_permission parameter")
+        return default_permission
 
     def validate(self, attrs: Dict[str, Any]):
         # validate acl paramter
