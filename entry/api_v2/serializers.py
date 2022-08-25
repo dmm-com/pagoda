@@ -8,6 +8,7 @@ from rest_framework.exceptions import ValidationError
 import custom_view
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
+from airone.lib.drf import DuplicatedObjectExistsError
 from airone.lib.types import AttrDefaultValue, AttrTypeValue
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity
@@ -78,7 +79,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
         if name and Entry.objects.filter(name=name, schema=schema, is_active=True).exists():
             # In update case, there is no problem with the same name
             if not (self.instance and self.instance.name == name):
-                raise ValidationError("specified name(%s) already exists" % name)
+                raise DuplicatedObjectExistsError("specified name(%s) already exists" % name)
         return name
 
     def _validate(self, schema: Entity, attrs: List[Dict[str, Any]]):
