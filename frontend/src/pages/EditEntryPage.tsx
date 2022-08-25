@@ -27,7 +27,7 @@ import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryForm } from "components/entry/EntryForm";
 
 interface Props {
-  excludeAttrs: string[];
+  excludeAttrs?: string[];
 }
 
 export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
