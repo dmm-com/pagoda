@@ -251,6 +251,13 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
                 )
                 .join();
             }
+            if (json["non_field_errors"]) {
+              reasons = json["non_field_errors"]
+                .map((errorInfo) =>
+                  GetReasonFromCode(errorInfo["airone_error_code"])
+                )
+                .join();
+            }
             enqueueSnackbar(`エントリの作成が失敗しました。詳細: ${reasons}`, {
               variant: "error",
             });
@@ -273,8 +280,23 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       } catch (e) {
         if (e instanceof Response) {
           if (!e.ok) {
-            const text = await e.text();
-            enqueueSnackbar(`エントリの更新が失敗しました。詳細: ${text}`, {
+            const json = await e.json();
+            let reasons = "";
+            if (json["name"]) {
+              reasons = json["name"]
+                .map((errorInfo) =>
+                  GetReasonFromCode(errorInfo["airone_error_code"])
+                )
+                .join();
+            }
+            if (json["non_field_errors"]) {
+              reasons = json["non_field_errors"]
+                .map((errorInfo) =>
+                  GetReasonFromCode(errorInfo["airone_error_code"])
+                )
+                .join();
+            }
+            enqueueSnackbar(`エントリの更新が失敗しました。詳細: ${reasons}`, {
               variant: "error",
             });
           }

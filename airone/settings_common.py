@@ -368,7 +368,7 @@ class Common(Configuration):
             "rest_framework.permissions.IsAuthenticated",
         ],
         "PAGE_SIZE": 30,
-        'EXCEPTION_HANDLER': 'airone.lib.drf.custom_exception_handler'
+        "EXCEPTION_HANDLER": "airone.lib.drf.custom_exception_handler",
     }
 
     SPECTACULAR_SETTINGS = {

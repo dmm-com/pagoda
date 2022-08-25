@@ -7,6 +7,8 @@
   Contributed by @hinashi
 * Added exclude entity parameter in get_referred_objects.
   Contributed by @hinashi
+* Added airone error code to APIv2 for frontend.
+  Contributed by @syucream, @userlocalhost, @hinashi
 
 ### Changed
 * Changed to allow parallel execution some job.

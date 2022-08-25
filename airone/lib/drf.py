@@ -31,9 +31,13 @@ class YAMLParser(BaseParser):
 
 
 class DuplicatedObjectExistsError(ValidationError):
-
     def __init__(self, detail=None):
         super().__init__(detail, "AE-220000")  # duplicated object exists
+
+
+class ExceedLimitError(ValidationError):
+    def __init__(self, detail=None):
+        super().__init__(detail, "AE-122000")  # parameter exceed limit
 
 
 def custom_exception_handler(exc, context):
@@ -46,8 +50,8 @@ def custom_exception_handler(exc, context):
         for key in response.data.keys():
             for i, error in enumerate(response.data[key]):
                 response.data[key][i] = {
-                   'airone_error_code': error.code,
-                   'detail': error,
+                    "airone_error_code": error.code,
+                    "detail": error,
                 }
 
     return response
