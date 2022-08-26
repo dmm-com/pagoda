@@ -3,6 +3,14 @@
 ## In development
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## v3.18.0
+
+### Added
 * (New-UI) Implemented ACL configuration page for Entity, Entry
   and EntityAttr.
   Contributed by @hinashi, @syucream, @userlocalhost
@@ -11,15 +19,16 @@
 * Added exclude entity parameter in get_referred_objects.
   Contributed by @hinashi
 
+### Fixed
+* Fixed an error in getting data_value in advanced search.
+  Contributed by @hinashi
+
+## v3.17.0
+
 ### Changed
 * Changed to allow parallel execution some job.
   Contributed by @hinashi
-
 * Changed to update job status to error when celery exception error
-  Contributed by @hinashi
-
-### Fixed
-* Fixed an error in getting data_value in advanced search.
   Contributed by @hinashi
 
 ## v3.16.0
