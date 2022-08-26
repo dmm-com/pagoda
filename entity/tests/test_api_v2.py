@@ -52,6 +52,7 @@ class ViewTest(AironeViewTest):
                 "status": 0,
                 "attrs": [],
                 "webhooks": [],
+                "is_public": True,
             },
         )
 
@@ -1997,7 +1998,11 @@ class ViewTest(AironeViewTest):
                 {
                     "id": entries[0].id,
                     "name": "e-0",
-                    "schema": {"id": self.entity.id, "name": "test-entity"},
+                    "schema": {
+                        "id": self.entity.id,
+                        "name": "test-entity",
+                        "is_public": self.entity.is_public,
+                    },
                     "is_active": True,
                     "deleted_time": None,
                     "deleted_user": None,
@@ -2005,7 +2010,11 @@ class ViewTest(AironeViewTest):
                 {
                     "id": entries[1].id,
                     "name": "e-1",
-                    "schema": {"id": self.entity.id, "name": "test-entity"},
+                    "schema": {
+                        "id": self.entity.id,
+                        "name": "test-entity",
+                        "is_public": self.entity.is_public,
+                    },
                     "is_active": True,
                     "deleted_time": None,
                     "deleted_user": None,

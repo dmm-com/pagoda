@@ -1,4 +1,5 @@
 import AppsIcon from "@mui/icons-material/Apps";
+import LockIcon from "@mui/icons-material/Lock";
 import { Box, IconButton, Typography, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
@@ -74,18 +75,24 @@ export const CopyEntryPage: FC = () => {
         <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
-        <Typography
-          component={Link}
-          to={entityEntriesPath(entry.value.schema.id)}
-        >
-          {entry.value.schema.name}
-        </Typography>
-        <Typography
-          component={Link}
-          to={entryDetailsPath(entry.value.schema.id, entry.value.id)}
-        >
-          {entry.value.name}
-        </Typography>
+        <Box sx={{ display: "flex" }}>
+          <Typography
+            component={Link}
+            to={entityEntriesPath(entry.value.schema.id)}
+          >
+            {entry.value.schema.name}
+          </Typography>
+          {!entry.value.schema.isPublic && <LockIcon />}
+        </Box>
+        <Box sx={{ display: "flex" }}>
+          <Typography
+            component={Link}
+            to={entryDetailsPath(entry.value.schema.id, entry.value.id)}
+          >
+            {entry.value.name}
+          </Typography>
+          {!entry.value.isPublic && <LockIcon />}
+        </Box>
         <Typography>コピー</Typography>
       </AironeBreadcrumbs>
 

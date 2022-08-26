@@ -3,20 +3,115 @@ import json
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
+from airone.lib.types import AttrTypeValue
 from role.models import Role
 
 
 class ACLAPITest(AironeViewTest):
-    def test_retrieve(self):
-        user = self.admin_login()
+    def initialization_for_retrieve_test(self):
+        self.user = self.admin_login()
+        self.role = Role.objects.create(name="role")
+        self.role.users.add(self.user)
+        self.role.description = "for Test"
+        self.role.save()
 
-        acl = ACLBase.objects.create(name="test", created_user=user)
+    def test_retrieve(self):
+        self.initialization_for_retrieve_test()
+
+        acl = ACLBase.objects.create(name="test", created_user=self.user)
 
         resp = self.client.get("/acl/api/v2/acls/%s" % acl.id)
         self.assertEqual(resp.status_code, 200)
         body = resp.json()
         self.assertEqual(body["id"], acl.id)
         self.assertEqual(body["name"], acl.name)
+        self.assertEqual(
+            body["roles"],
+            [
+                {
+                    "id": self.role.id,
+                    "name": self.role.name,
+                    "description": self.role.description,
+                    "current_permission": 0,
+                }
+            ],
+        )
+
+    def test_retrieve_for_EntityAttr(self):
+        self.initialization_for_retrieve_test()
+
+        # create Enttiy and EntityAttr for test
+        entity = self.create_entity(
+            self.user,
+            "entity",
+            attrs=[
+                {
+                    "name": "attr01",
+                    "type": AttrTypeValue["string"],
+                }
+            ],
+        )
+        entity_attr = entity.attrs.first()
+
+        # check response has expected parent parameter
+        resp = self.client.get("/acl/api/v2/acls/%s" % entity_attr.id)
+        body = resp.json()
+        self.assertEqual(
+            body.get("parent"),
+            {
+                "id": entity.id,
+                "name": entity.name,
+                "is_public": entity.is_public,
+            },
+        )
+
+    def test_retrieve_for_Entry(self):
+        self.initialization_for_retrieve_test()
+
+        # create Enttiy and Entry for test
+        entity = self.create_entity(self.user, "entity")
+        entry = self.add_entry(self.user, "entry", entity)
+
+        # check response has expected parent parameter
+        resp = self.client.get("/acl/api/v2/acls/%s" % entry.id)
+        body = resp.json()
+        self.assertEqual(
+            body.get("parent"),
+            {
+                "id": entity.id,
+                "name": entity.name,
+                "is_public": entity.is_public,
+            },
+        )
+
+    def test_retrieve_for_Attribute(self):
+        self.initialization_for_retrieve_test()
+
+        # create Enttiy, EntityAttr, Entry and Attribute for test
+        entity = self.create_entity(
+            self.user,
+            "entity",
+            attrs=[
+                {
+                    "name": "attr01",
+                    "type": AttrTypeValue["string"],
+                }
+            ],
+        )
+        entry = self.add_entry(self.user, "entry", entity)
+        attr = entry.attrs.first()
+
+        # check response has expected parent parameter
+        resp = self.client.get("/acl/api/v2/acls/%s" % attr.id)
+        body = resp.json()
+        self.assertEqual(
+            body.get("parent"),
+            {
+                "id": entry.id,
+                "name": entry.name,
+                "is_public": entry.is_public,
+            },
+        )
 
     def test_retrieve_by_others(self):
         user = self.admin_login()

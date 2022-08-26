@@ -17,18 +17,31 @@ afterEach(() => {
 });
 
 test("should match snapshot", async () => {
+  Object.defineProperty(window, "django_context", {
+    value: {
+      user: {
+        is_superuser: false,
+      },
+    },
+    writable: false,
+  });
+
   const acl = {
     name: "acl1",
     objtype: "type1",
     is_public: false,
     default_permission: 1,
+    parent: {
+      id: 10,
+      name: "Entity1",
+    },
     acltypes: [
       {
         id: 1,
         name: "type1",
       },
     ],
-    members: [
+    roles: [
       {
         id: 1,
         name: "member1",

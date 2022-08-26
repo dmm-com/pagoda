@@ -3,6 +3,9 @@
 ## In development
 
 ### Added
+* (New-UI) Implemented ACL configuration page for Entity, Entry
+  and EntityAttr.
+  Contributed by @hinashi, @syucream, @userlocalhost
 * Added exclude entity parameter in search_entries_for_simple.
   Contributed by @hinashi
 * Added exclude entity parameter in get_referred_objects.
