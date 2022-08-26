@@ -98,18 +98,18 @@ export const ACLPage: FC = () => {
           <Box sx={{ display: "flex" }}>
             <Typography
               component={Link}
-              to={entityEntriesPath(acl.value.entity.id)}
+              to={entityEntriesPath(acl.value.parent.id)}
             >
-              {acl.value.entity.name}
+              {acl.value.parent.name}
             </Typography>
-            {!acl.value.entity.isPublic && <LockIcon />}
+            {!acl.value.parent.isPublic && <LockIcon />}
           </Box>
         )}
         {!acl.loading && acl.value.objtype & djangoContext.aclObjectType.entry && (
           <Box sx={{ display: "flex" }}>
             <Typography
               component={Link}
-              to={entryDetailsPath(acl.value.entity.id, acl.value.id)}
+              to={entryDetailsPath(acl.value.parent.id, acl.value.id)}
             >
               {acl.value.name}
             </Typography>
