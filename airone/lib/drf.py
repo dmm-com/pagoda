@@ -45,13 +45,7 @@ def custom_exception_handler(exc, context):
     # to get the standard error response.
     response = exception_handler(exc, context)
 
-    # Now add the HTTP status code to the response.
     if response is not None:
-        for key in response.data.keys():
-            for i, error in enumerate(response.data[key]):
-                response.data[key][i] = {
-                    "airone_error_code": error.code,
-                    "detail": error,
-                }
+        response.data = exc.get_full_details()
 
     return response
