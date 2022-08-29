@@ -22,6 +22,10 @@
 * Fixed an error in getting data_value in advanced search.
   Contributed by @hinashi
 
+* Fixed problem that duplicate named Entries might be created
+  when multiple requests were coming at the exact same time.
+  Contributed by @userlocalhost, @hinashi
+
 ## v3.16.0
 
 ### Changed
