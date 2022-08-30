@@ -1976,15 +1976,17 @@ class ModelTest(AironeTestCase):
 
         # check to get Entries that only have substantial Attribute values
         for attr in entity.attrs.filter(is_active=True):
-            result = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": '*'}])
+            result = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "*"}])
 
             # confirm "entry-black" Entry, which doesn't have any substantial Attribute values,
             # doesn't exist on the result.
-            isin_entry_blank = any([x['entry']['name'] == "entry-blank" for x in result['ret_values']])
+            isin_entry_blank = any(
+                [x["entry"]["name"] == "entry-blank" for x in result["ret_values"]]
+            )
             self.assertFalse(isin_entry_blank)
 
             # confirm Entries, which have substantial Attribute values, are returned
-            self.assertEqual(result['ret_count'], 11)
+            self.assertEqual(result["ret_count"], 11)
 
     def test_search_entries_with_hint_referral(self):
         user = User.objects.create(username="hoge")
