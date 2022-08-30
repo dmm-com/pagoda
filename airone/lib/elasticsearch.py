@@ -94,7 +94,7 @@ class ESS(Elasticsearch):
                                         },
                                         "type": {
                                             "type": "integer",
-                                            "index": "false",
+                                            "index": "true",
                                         },
                                         "id": {
                                             "type": "integer",
@@ -633,7 +633,35 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
         hint_keyword_val = _get_hint_keyword_val(keyword)
         cond_val = [{"match": {"attr.value": hint_keyword_val}}]
 
-        if hint_keyword_val:
+        # This is an exceptional bypass processing to be able to search Entries
+        # that has substantial Attribute.
+        if hint_keyword_val == '*':
+            # This query get results that have any substantial values for non boolean attributes
+            query_has_substantial_value = {"bool": {"must": [
+                {"bool": {"must_not": {
+                    "term": {"attr.type": AttrTypeValue['boolean']},
+                }}},
+                {"regexp": {"attr.value": '.+'}},
+            ]}}
+
+            # This query get results that have date value
+            query_has_date_value = {
+                "exists": {"field": "attr.date_value"}
+            }
+
+            # This query get results that have True value for boolean attributes
+            query_has_true_for_boolean = {"bool": {"must": [
+                {"term": {"attr.type": AttrTypeValue['boolean']}},
+                {"term": {"attr.value": "True"}},
+            ]}}
+
+            cond_attr.append({"bool": {"should": [
+                query_has_substantial_value,
+                query_has_date_value,
+                query_has_true_for_boolean,
+            ]}})
+
+        elif hint_keyword_val:
             if "exact_match" not in hint:
                 cond_val.append({"regexp": {"attr.value": _get_regex_pattern(hint_keyword_val)}})
 

@@ -1791,7 +1791,7 @@ class ModelTest(AironeTestCase):
                 "type": AttrTypeValue["named_object"],
                 "value": {"name": "bar", "id": str(ref_entry.id)},
             },
-            "bool": {"type": AttrTypeValue["boolean"], "value": False},
+            "bool": {"type": AttrTypeValue["boolean"], "value": True},
             "group": {"type": AttrTypeValue["group"], "value": str(ref_group.id)},
             "date": {"type": AttrTypeValue["date"], "value": date(2018, 12, 31)},
             "arr_str": {
@@ -1973,6 +1973,18 @@ class ModelTest(AironeTestCase):
         ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "FOO-10"}])
         self.assertEqual(ret["ret_count"], 1)
         self.assertEqual(ret["ret_values"][0]["entry"]["name"], "e-10")
+
+        # check to get Entries that only have substantial Attribute values
+        for attr in entity.attrs.filter(is_active=True):
+            result = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": '*'}])
+
+            # confirm "entry-black" Entry, which doesn't have any substantial Attribute values,
+            # doesn't exist on the result.
+            isin_entry_blank = any([x['entry']['name'] == "entry-blank" for x in result['ret_values']])
+            self.assertFalse(isin_entry_blank)
+
+            # confirm Entries, which have substantial Attribute values, are returned
+            self.assertEqual(result['ret_count'], 11)
 
     def test_search_entries_with_hint_referral(self):
         user = User.objects.create(username="hoge")
