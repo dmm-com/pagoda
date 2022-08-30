@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional, TypedDict, Union
 
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -29,6 +29,10 @@ class EntryAttributeValueObject(TypedDict):
     schema: EntityAttributeType
 
 
+class EntryAttributeValueObjectBoolean(EntryAttributeValueObject, total=False):
+    boolean: bool
+
+
 class EntryAttributeValueGroup(TypedDict):
     id: int
     name: str
@@ -41,7 +45,9 @@ class EntryAttributeValue(TypedDict, total=False):
     as_named_object: Dict[str, Optional[EntryAttributeValueObject]]
     as_array_object: List[Optional[EntryAttributeValueObject]]
     as_array_string: List[str]
-    as_array_named_object: List[Dict[str, Optional[EntryAttributeValueObject]]]
+    as_array_named_object: List[
+        Dict[str, Optional[Union[EntryAttributeValueObject, EntryAttributeValueObjectBoolean]]]
+    ]
     as_array_group: List[EntryAttributeValueGroup]
     # text; use string instead
     as_boolean: bool
