@@ -630,12 +630,12 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
         cond_attr.append(date_cond)
 
     else:
-        hint_kyeword_val = _get_hint_keyword_val(keyword)
-        cond_val = [{"match": {"attr.value": hint_kyeword_val}}]
+        hint_keyword_val = _get_hint_keyword_val(keyword)
+        cond_val = [{"match": {"attr.value": hint_keyword_val}}]
 
-        if hint_kyeword_val:
+        if hint_keyword_val:
             if "exact_match" not in hint:
-                cond_val.append({"regexp": {"attr.value": _get_regex_pattern(hint_kyeword_val)}})
+                cond_val.append({"regexp": {"attr.value": _get_regex_pattern(hint_keyword_val)}})
 
             cond_attr.append({"bool": {"should": cond_val}})
 
