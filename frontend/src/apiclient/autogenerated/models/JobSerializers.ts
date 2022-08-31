@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import {
+  JobSerializersTarget,
+  JobSerializersTargetFromJSON,
+  JobSerializersTargetFromJSONTyped,
+  JobSerializersTargetToJSON,
+} from "./JobSerializersTarget";
+
 /**
  *
  * @export
@@ -27,16 +34,40 @@ export interface JobSerializers {
   readonly id: number;
   /**
    *
+   * @type {string}
+   * @memberof JobSerializers
+   */
+  text: string;
+  /**
+   *
    * @type {number}
    * @memberof JobSerializers
    */
   status?: number;
   /**
    *
-   * @type {string}
+   * @type {number}
    * @memberof JobSerializers
    */
-  text: string;
+  operation?: number;
+  /**
+   *
+   * @type {Date}
+   * @memberof JobSerializers
+   */
+  readonly createdAt: Date;
+  /**
+   *
+   * @type {JobSerializersTarget}
+   * @memberof JobSerializers
+   */
+  target: JobSerializersTarget | null;
+  /**
+   *
+   * @type {number}
+   * @memberof JobSerializers
+   */
+  readonly passedTime: number;
 }
 
 export function JobSerializersFromJSON(json: any): JobSerializers {
@@ -52,8 +83,12 @@ export function JobSerializersFromJSONTyped(
   }
   return {
     id: json["id"],
-    status: !exists(json, "status") ? undefined : json["status"],
     text: json["text"],
+    status: !exists(json, "status") ? undefined : json["status"],
+    operation: !exists(json, "operation") ? undefined : json["operation"],
+    createdAt: new Date(json["created_at"]),
+    target: JobSerializersTargetFromJSON(json["target"]),
+    passedTime: json["passed_time"],
   };
 }
 
@@ -65,7 +100,9 @@ export function JobSerializersToJSON(value?: JobSerializers | null): any {
     return null;
   }
   return {
-    status: value.status,
     text: value.text,
+    status: value.status,
+    operation: value.operation,
+    target: JobSerializersTargetToJSON(value.target),
   };
 }
