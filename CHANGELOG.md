@@ -7,6 +7,9 @@
 ### Changed
 
 ### Fixed
+* Fixed problem that duplicate named Entries might be created
+  when multiple requests were coming at the exact same time.
+  Contributed by @userlocalhost, @hinashi
 
 ## v3.18.0
 
