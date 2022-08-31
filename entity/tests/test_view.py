@@ -109,6 +109,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge",
             "note": "fuga",
             "is_toplevel": True,
+            "is_not_indexed": True,
             "attrs": [
                 {
                     "name": "foo",
@@ -162,6 +163,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.first()
         self.assertEqual(entity.name, "hoge")
         self.assertTrue(entity.status & Entity.STATUS_TOP_LEVEL)
+        self.assertTrue(entity.status & Entity.STATUS_NOT_INDEXED)
 
         # tests for EntityAttribute objects
         self.assertEqual(len(EntityAttr.objects.all()), 6)
@@ -177,6 +179,7 @@ class ViewTest(AironeViewTest):
         params = {
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "foo",
@@ -204,6 +207,7 @@ class ViewTest(AironeViewTest):
             "name": "a" * (Entity._meta.get_field("name").max_length + 1),
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "foo",
@@ -230,6 +234,7 @@ class ViewTest(AironeViewTest):
         params = {
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "foo",
@@ -259,6 +264,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge",
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "",
@@ -277,6 +283,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge",
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "foo",
@@ -297,6 +304,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge",
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "a" * (EntityAttr._meta.get_field("name").max_length + 1),
@@ -319,6 +327,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge",
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": "puyo",
         }
         resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
@@ -355,6 +364,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge",
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "foo",
@@ -379,6 +389,7 @@ class ViewTest(AironeViewTest):
             "name": "a" * (Entity._meta.get_field("name").max_length + 1),
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "foo",
@@ -401,6 +412,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge",
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "a" * (EntityAttr._meta.get_field("name").max_length + 1),
@@ -423,6 +435,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge",
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "foo",
@@ -463,6 +476,7 @@ class ViewTest(AironeViewTest):
             "name": "foo",
             "note": "bar",
             "is_toplevel": True,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "foo",
@@ -487,12 +501,14 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(Entity.objects.get(id=entity.id).name, "foo")
-        self.assertEqual(Entity.objects.get(id=entity.id).note, "bar")
-        self.assertEqual(Entity.objects.get(id=entity.id).attrs.count(), 2)
-        self.assertEqual(Entity.objects.get(id=entity.id).attrs.get(id=attr.id).name, "foo")
-        self.assertEqual(Entity.objects.get(id=entity.id).attrs.last().name, "bar")
-        self.assertTrue(Entity.objects.get(id=entity.id).status & Entity.STATUS_TOP_LEVEL)
+        entity = Entity.objects.get(id=entity.id)
+        self.assertEqual(entity.name, "foo")
+        self.assertEqual(entity.note, "bar")
+        self.assertEqual(entity.attrs.count(), 2)
+        self.assertEqual(entity.attrs.get(id=attr.id).name, "foo")
+        self.assertEqual(entity.attrs.last().name, "bar")
+        self.assertTrue(entity.status & Entity.STATUS_TOP_LEVEL)
+        self.assertFalse(entity.status & Entity.STATUS_NOT_INDEXED)
 
         # tests for operation history is registered correctly
         self.assertEqual(History.objects.count(), 5)
@@ -521,6 +537,7 @@ class ViewTest(AironeViewTest):
             "name": "foo",
             "note": "bar",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "foo",
@@ -562,6 +579,7 @@ class ViewTest(AironeViewTest):
             "name": "foo",
             "note": "bar",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "baz",
@@ -601,6 +619,7 @@ class ViewTest(AironeViewTest):
             "name": "foo",
             "note": "bar",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "baz",
@@ -653,6 +672,7 @@ class ViewTest(AironeViewTest):
             "name": "foo",
             "note": "bar",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "baz",
@@ -693,6 +713,7 @@ class ViewTest(AironeViewTest):
             "name": "foo",
             "note": "bar",
             "is_toplevel": True,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "foo",
@@ -735,6 +756,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge",
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "a",
@@ -760,6 +782,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge",
             "note": "fuga",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "a",
@@ -809,6 +832,7 @@ class ViewTest(AironeViewTest):
             "name": "new-entity",
             "note": "hoge",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "foo",
@@ -1128,6 +1152,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge",
             "note": "fuga",
             "is_toplevel": True,
+            "is_not_indexed": False,
             "attrs": [],
         }
         resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
@@ -1146,6 +1171,7 @@ class ViewTest(AironeViewTest):
             "name": "entity",
             "note": "note",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "attr",
@@ -1194,6 +1220,7 @@ class ViewTest(AironeViewTest):
             "name": "new-entity",
             "note": "hoge",
             "is_toplevel": False,
+            "is_not_indexed": False,
             "attrs": [
                 # change attribute name and mandatory parameter
                 {
@@ -1398,6 +1425,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge",
             "note": "fuga",
             "is_toplevel": True,
+            "is_not_indexed": False,
             "attrs": [
                 {
                     "name": "foo",
@@ -1436,6 +1464,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge-changed",
             "note": "fuga",
             "is_toplevel": True,
+            "is_not_indexed": False,
             "attrs": [],
         }
         resp = self.client.post(
@@ -1467,6 +1496,7 @@ class ViewTest(AironeViewTest):
             "name": "hoge-changed",
             "note": "fuga",
             "is_toplevel": True,
+            "is_not_indexed": False,
             "attrs": [],
         }
         resp = self.client.post(

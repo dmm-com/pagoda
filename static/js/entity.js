@@ -130,7 +130,8 @@ $('#edit-form').submit(function(event){
       }
       return ret;
     }).get(),
-    'is_toplevel': $('input[name=is_toplevel]').is(':checked')
+    'is_not_indexed': $('input[name=is_not_indexed]:checked').val() !== undefined,
+    'is_toplevel': $('input[name=is_toplevel]:checked').val() !== undefined,
   });
 
   // disable all input parameter to specify sending request

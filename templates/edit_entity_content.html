@@ -22,6 +22,14 @@
             <td><input type="checkbox" name="is_toplevel" /></td>
           {% endif %}
         </tr>
+        <tr>
+          <td>エントリを検索結果に表示させない</td>
+          {% if entity.status|bitwise_and:STATUS_ENTITY.NOT_INDEXED %}
+            <td><input type="checkbox" name="is_not_indexed" checked="checked"/></td>
+          {% else %}
+            <td><input type="checkbox" name="is_not_indexed" /></td>
+          {% endif %}
+        </tr>
       </table>
 
       <table class="table table-bordered">

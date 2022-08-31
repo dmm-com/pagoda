@@ -24,6 +24,48 @@ from user.models import History
 from .models import Entity, EntityAttr
 from .settings import CONFIG
 
+REQUEST_PARAMETER_SCHEMA_FOR_EDITING_ENTITY = [
+    {
+        "name": "name",
+        "type": str,
+        "checker": lambda x: (
+            x["name"]
+            and not Entity.objects.filter(name=x["name"]).exists()
+            and len(x["name"]) <= Entity._meta.get_field("name").max_length
+        ),
+    },
+    {"name": "note", "type": str},
+    {"name": "is_toplevel", "type": bool},
+    {"name": "is_not_indexed", "type": bool},
+    {
+        "name": "attrs",
+        "type": list,
+        "meta": [
+            {
+                "name": "name",
+                "type": str,
+                "checker": lambda x: (
+                    x["name"]
+                    and not re.match(r"^\s*$", x["name"])
+                    and len(x["name"]) <= EntityAttr._meta.get_field("name").max_length
+                ),
+            },
+            {
+                "name": "type",
+                "type": str,
+                "checker": lambda x: (any([y == int(x["type"]) for y in AttrTypes])),
+            },
+            {"name": "is_mandatory", "type": bool},
+            {"name": "is_delete_in_chain", "type": bool},
+            {
+                "name": "row_index",
+                "type": str,
+                "checker": lambda x: (re.match(r"^[0-9]*$", x["row_index"])),
+            },
+        ],
+    },
+]
+
 
 @http_get
 def index(request):
@@ -103,6 +145,7 @@ def edit(request, entity_id):
     return render(request, "edit_entity.html", context)
 
 
+# @http_post(REQUEST_PARAMETER_SCHEMA_FOR_EDITING_ENTITY)
 @http_post(
     [
         {
@@ -114,6 +157,7 @@ def edit(request, entity_id):
         },
         {"name": "note", "type": str},
         {"name": "is_toplevel", "type": bool},
+        {"name": "is_not_indexed", "type": bool},
         {
             "name": "attrs",
             "type": list,
@@ -182,11 +226,17 @@ def do_edit(request, entity_id, recv_data):
         if resp:
             return resp
 
-    # update status parameters
+    # update status parameters to indicate this Entity is a first layer Entity.
     if recv_data["is_toplevel"]:
         entity.set_status(Entity.STATUS_TOP_LEVEL)
     else:
         entity.del_status(Entity.STATUS_TOP_LEVEL)
+
+    # update status not to register associated Entries of this to the index service
+    if recv_data["is_not_indexed"]:
+        entity.set_status(Entity.STATUS_NOT_INDEXED)
+    else:
+        entity.del_status(Entity.STATUS_NOT_INDEXED)
 
     # update entity metatada informations to new ones
     entity.set_status(Entity.STATUS_EDITING)
@@ -205,6 +255,7 @@ def do_edit(request, entity_id, recv_data):
     )
 
 
+# @http_post(REQUEST_PARAMETER_SCHEMA_FOR_EDITING_ENTITY)
 @http_post(
     [
         {
@@ -218,6 +269,7 @@ def do_edit(request, entity_id, recv_data):
         },
         {"name": "note", "type": str},
         {"name": "is_toplevel", "type": bool},
+        {"name": "is_not_indexed", "type": bool},
         {
             "name": "attrs",
             "type": list,
@@ -284,9 +336,13 @@ def do_create(request, recv_data):
         status=Entity.STATUS_CREATING,
     )
 
-    # set status parameters
+    # update status parameters to indicate this Entity is a first layer Entity.
     if recv_data["is_toplevel"]:
-        entity.status = Entity.STATUS_TOP_LEVEL
+        entity.status |= Entity.STATUS_TOP_LEVEL
+
+    # update status not to register associated Entries of this to the index service
+    if recv_data["is_not_indexed"]:
+        entity.status |= Entity.STATUS_NOT_INDEXED
 
     entity.save()
 

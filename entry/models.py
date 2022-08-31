@@ -1636,6 +1636,10 @@ class Entry(ACLBase):
         return document
 
     def register_es(self, es=None, skip_refresh=False):
+        # do nothing when "is_not_indexed" parameter is set on the related Entity
+        if self.schema.is_not_indexed:
+            return
+
         if not es:
             es = ESS()
 

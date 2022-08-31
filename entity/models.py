@@ -49,6 +49,10 @@ class Entity(ACLBase):
     STATUS_CREATING = 1 << 1
     STATUS_EDITING = 1 << 2
 
+    # Entries that are related with this Entity won't be registered to the elasticsearch
+    # when this status is set
+    STATUS_NOT_INDEXED = 1 << 3
+
     note = models.CharField(max_length=200, blank=True)
     attrs = models.ManyToManyField(EntityAttr)
 
