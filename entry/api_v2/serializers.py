@@ -24,12 +24,16 @@ class EntityAttributeType(TypedDict):
 
 
 class EntryAttributeValueObject(TypedDict):
-    id: Optional[int]
+    id: int
     name: str
     schema: EntityAttributeType
 
 
-class EntryAttributeValueObjectBoolean(EntryAttributeValueObject, total=False):
+class EntryAttributeValueObjectBoolean(EntryAttributeValueObject):
+    boolean: bool
+
+
+class EntryAttributeValueBoolean(TypedDict):
     boolean: bool
 
 
@@ -46,7 +50,16 @@ class EntryAttributeValue(TypedDict, total=False):
     as_array_object: List[Optional[EntryAttributeValueObject]]
     as_array_string: List[str]
     as_array_named_object: List[
-        Dict[str, Optional[Union[EntryAttributeValueObject, EntryAttributeValueObjectBoolean]]]
+        Dict[
+            str,
+            Optional[
+                Union[
+                    EntryAttributeValueObject,
+                    EntryAttributeValueObjectBoolean,
+                    EntryAttributeValueBoolean,
+                ]
+            ],
+        ]
     ]
     as_array_group: List[EntryAttributeValueGroup]
     # text; use string instead
@@ -307,7 +320,18 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     }
 
                 elif attr.schema.type & AttrTypeValue["named"]:
-                    array_named_object: List[Dict[str, Optional[EntryAttributeValueObject]]] = [
+                    array_named_object: List[
+                        Dict[
+                            str,
+                            Optional[
+                                Union[
+                                    EntryAttributeValueObject,
+                                    EntryAttributeValueObjectBoolean,
+                                    EntryAttributeValueBoolean,
+                                ]
+                            ],
+                        ]
+                    ] = [
                         {
                             x.value: {
                                 "id": x.referral.id if x.referral else None,
