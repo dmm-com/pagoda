@@ -10,6 +10,9 @@
   Contributed by @hinashi
 * Added exclude entity parameter in get_referred_objects.
   Contributed by @hinashi
+* Added special search character to get Entries
+  that have substantial attribute values.
+  Contributed by @userlocalhost
 
 ### Changed
 * Changed to allow parallel execution some job.

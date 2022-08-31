@@ -94,7 +94,7 @@ class ESS(Elasticsearch):
                                         },
                                         "type": {
                                             "type": "integer",
-                                            "index": "true",
+                                            "index": "false",
                                         },
                                         "id": {
                                             "type": "integer",
@@ -636,42 +636,14 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
         # This is an exceptional bypass processing to be able to search Entries
         # that has substantial Attribute.
         if hint_keyword_val == "*":
-            # This query get results that have any substantial values for non boolean attributes
-            query_has_substantial_value = {
-                "bool": {
-                    "must": [
-                        {
-                            "bool": {
-                                "must_not": {
-                                    "term": {"attr.type": AttrTypeValue["boolean"]},
-                                }
-                            }
-                        },
-                        {"regexp": {"attr.value": ".+"}},
-                    ]
-                }
-            }
-
-            # This query get results that have date value
-            query_has_date_value = {"exists": {"field": "attr.date_value"}}
-
-            # This query get results that have True value for boolean attributes
-            query_has_true_for_boolean = {
-                "bool": {
-                    "must": [
-                        {"term": {"attr.type": AttrTypeValue["boolean"]}},
-                        {"term": {"attr.value": "True"}},
-                    ]
-                }
-            }
-
             cond_attr.append(
                 {
                     "bool": {
                         "should": [
-                            query_has_substantial_value,
-                            query_has_date_value,
-                            query_has_true_for_boolean,
+                            # This query get results that have any substantial values
+                            {"regexp": {"attr.value": ".+"}},
+                            # This query get results that have date value
+                            {"exists": {"field": "attr.date_value"}},
                         ]
                     }
                 }
