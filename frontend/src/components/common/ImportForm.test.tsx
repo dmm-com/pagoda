@@ -10,8 +10,11 @@ import { TestWrapper } from "utils/TestWrapper";
 
 test("should render a component with essential props", function () {
   expect(() =>
-    render(<ImportForm importFunc={() => Promise.resolve(new Response())} />, {
-      wrapper: TestWrapper,
-    })
+    render(
+      <ImportForm handleImport={() => Promise.resolve(new Response())} />,
+      {
+        wrapper: TestWrapper,
+      }
+    )
   ).not.toThrow();
 });

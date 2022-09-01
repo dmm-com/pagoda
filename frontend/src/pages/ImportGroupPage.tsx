@@ -20,7 +20,7 @@ export const ImportGroupPage: FC = () => {
         <Typography>インポート</Typography>
       </AironeBreadcrumbs>
 
-      <ImportForm importFunc={importGroups} />
+      <ImportForm handleImport={importGroups} />
     </Box>
   );
 };

@@ -13,10 +13,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   paper: {
     display: "flex",
+    flexDirection: "column",
     backgroundColor: theme.palette.background.paper,
     border: "2px solid #000",
     boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 3),
+    padding: theme.spacing(2, 3, 1),
     width: "50%",
   },
 }));
@@ -41,15 +42,20 @@ export const EntryImportModal: FC<Props> = ({
       onClose={closeImportModal}
     >
       <Box className={classes.paper}>
-        <Typography variant={"h6"}>エントリのインポート</Typography>
-        <Typography variant={"caption"}>
+        <Typography variant={"h6"} my="8px">
+          エントリのインポート
+        </Typography>
+        <Typography variant={"body2"} my="4px">
           インポートするファイルを選択してください。
         </Typography>
-
+        <Typography variant={"caption"} my="4px">
+          ※CVS形式のファイルは選択できません。
+        </Typography>
         <ImportForm
-          importFunc={(formData: FormData) =>
+          handleImport={(formData: FormData) =>
             aironeApiClientV2.importEntries(formData)
           }
+          handleCancel={closeImportModal}
         />
       </Box>
     </Modal>

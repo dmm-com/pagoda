@@ -13,6 +13,9 @@ export const theme = createTheme({
     error: {
       main: "#B00020",
     },
+    info: {
+      main: "#FFFFFF",
+    },
     background: {
       default: "#607D8B",
     },

@@ -27,7 +27,7 @@ export const ImportEntryPage: FC = () => {
         <Typography>インポート</Typography>
       </AironeBreadcrumbs>
 
-      <ImportForm importFunc={importEntries.bind(null, entityId)} />
+      <ImportForm handleImport={importEntries.bind(null, entityId)} />
     </Box>
   );
 };

@@ -73,36 +73,46 @@ Object {
         <div
           class="MuiBox-root css-0"
         >
-          <form>
+          <div
+            class="MuiBox-root css-j7qwjs"
+          >
             <div
-              class="MuiBox-root css-0"
+              class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-1tcs2i1-MuiInputBase-root-MuiInput-root"
             >
-              <div
-                class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-1tcs2i1-MuiInputBase-root-MuiInput-root"
-              >
-                <input
-                  class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                  type="file"
-                  value=""
-                />
-              </div>
+              <input
+                class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                type="file"
+                value=""
+              />
+            </div>
+            <span
+              class="MuiTypography-root MuiTypography-caption css-1kpl0pd-MuiTypography-root"
+            />
+            <div
+              class="MuiBox-root css-1bvc4cc"
+            >
               <button
-                class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-4 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-il74s8-MuiButtonBase-root-MuiButton-root"
                 tabindex="0"
                 type="submit"
               >
-                保存
+                インポート
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </button>
+              <button
+                class="MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-1d41haf-MuiButtonBase-root-MuiButton-root"
+                tabindex="0"
+                type="button"
+              >
+                キャンセル
                 <span
                   class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                 />
               </button>
             </div>
-          </form>
-          <p
-            class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-          >
-            (注：CSV 形式のデータはインポートできません)
-          </p>
+          </div>
         </div>
       </div>
     </div>
@@ -176,36 +186,46 @@ Object {
       <div
         class="MuiBox-root css-0"
       >
-        <form>
+        <div
+          class="MuiBox-root css-j7qwjs"
+        >
           <div
-            class="MuiBox-root css-0"
+            class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-1tcs2i1-MuiInputBase-root-MuiInput-root"
           >
-            <div
-              class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-1tcs2i1-MuiInputBase-root-MuiInput-root"
-            >
-              <input
-                class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                type="file"
-                value=""
-              />
-            </div>
+            <input
+              class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+              type="file"
+              value=""
+            />
+          </div>
+          <span
+            class="MuiTypography-root MuiTypography-caption css-1kpl0pd-MuiTypography-root"
+          />
+          <div
+            class="MuiBox-root css-1bvc4cc"
+          >
             <button
-              class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-4 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+              class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-il74s8-MuiButtonBase-root-MuiButton-root"
               tabindex="0"
               type="submit"
             >
-              保存
+              インポート
+              <span
+                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+              />
+            </button>
+            <button
+              class="MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-1d41haf-MuiButtonBase-root-MuiButton-root"
+              tabindex="0"
+              type="button"
+            >
+              キャンセル
               <span
                 class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
               />
             </button>
           </div>
-        </form>
-        <p
-          class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-        >
-          (注：CSV 形式のデータはインポートできません)
-        </p>
+        </div>
       </div>
     </div>
   </div>,

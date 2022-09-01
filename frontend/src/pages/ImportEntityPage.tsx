@@ -20,7 +20,7 @@ export const ImportEntityPage: FC = () => {
         <Typography>インポート</Typography>
       </AironeBreadcrumbs>
 
-      <ImportForm importFunc={importEntities} />
+      <ImportForm handleImport={importEntities} />
     </Box>
   );
 };
