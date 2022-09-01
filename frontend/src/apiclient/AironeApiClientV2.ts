@@ -381,6 +381,10 @@ class AironeApiClientV2 {
   async getUsers(): Promise<UserList[]> {
     return await this.user.userApiV2UsersList();
   }
+
+  async importEntries(requestParameters): Promise<Array<EntryImportEntity>> {
+    return await this.entry.entryApiV2ImportCreate(requestParameters);
+  }
 }
 
 export const aironeApiClientV2 = new AironeApiClientV2();
