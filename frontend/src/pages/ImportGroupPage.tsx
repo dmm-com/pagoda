@@ -2,7 +2,7 @@ import { Box, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { groupsPath, newGroupPath, topPath } from "Routes";
+import { newGroupPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { ImportForm } from "components/common/ImportForm";
 import { importGroups } from "utils/AironeAPIClient";
@@ -20,7 +20,7 @@ export const ImportGroupPage: FC = () => {
         <Typography>インポート</Typography>
       </AironeBreadcrumbs>
 
-      <ImportForm importFunc={importGroups} redirectPath={groupsPath()} />
+      <ImportForm importFunc={importGroups} />
     </Box>
   );
 };

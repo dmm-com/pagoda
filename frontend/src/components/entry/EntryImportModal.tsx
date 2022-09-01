@@ -3,9 +3,7 @@ import { makeStyles } from "@mui/styles";
 import React, { FC } from "react";
 
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
-import { entitiesPath } from "Routes";
 import { ImportForm } from "components/common/ImportForm";
-import { importEntries } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   modal: {
@@ -25,9 +23,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface Props {
   openImportModal: boolean;
+  closeImportModal: () => void;
 }
 
-export const EntryImportModal: FC<Props> = ({ openImportModal }) => {
+export const EntryImportModal: FC<Props> = ({
+  openImportModal,
+  closeImportModal,
+}) => {
   const classes = useStyles();
 
   return (
@@ -36,6 +38,7 @@ export const EntryImportModal: FC<Props> = ({ openImportModal }) => {
       aria-describedby="transition-modal-description"
       className={classes.modal}
       open={openImportModal}
+      onClose={closeImportModal}
     >
       <Box className={classes.paper}>
         <Typography variant={"h6"}>エントリのインポート</Typography>
@@ -44,8 +47,9 @@ export const EntryImportModal: FC<Props> = ({ openImportModal }) => {
         </Typography>
 
         <ImportForm
-          importFunc={aironeApiClientV2.importEntries}
-          redirectPath={entitiesPath()}
+          importFunc={(formData: FormData) =>
+            aironeApiClientV2.importEntries(formData)
+          }
         />
       </Box>
     </Modal>

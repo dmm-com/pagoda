@@ -1,5 +1,6 @@
 import { Box, Button, Input, Theme, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
+import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -10,47 +11,50 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface Props {
-  importFunc: (formData: FormData) => Promise<any>;
-  redirectPath: string;
+  // FIXME describe concrete types
+  importFunc: (importData: any) => Promise<any>;
 }
 
-export const ImportForm: FC<Props> = ({ importFunc, redirectPath }) => {
+export const ImportForm: FC<Props> = ({ importFunc }) => {
   const classes = useStyles();
   const history = useHistory();
-  const [file, setFile] = useState<string>();
+  const [file, setFile] = useState<File>();
+  const { enqueueSnackbar } = useSnackbar();
 
   const onChange = (event) => {
     setFile(event.target.files[0]);
   };
 
-  const onSubmit = async (event) => {
-    console.log('[onix/ImportForm.onSubmit(00)] file: ', file);
+  const onClick = async () => {
     if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
+      const fileReader = new FileReader();
+      fileReader.readAsText(file);
 
-      await importFunc(formData);
-      // history.push(redirectPath);
+      fileReader.onload = async () => {
+        try {
+          await importFunc(fileReader.result);
+          history.go(0);
+        } catch (e) {
+          enqueueSnackbar(e, { variant: "error" });
+        }
+      };
     }
-
-    event.preventDefault();
   };
 
   return (
     <Box>
-      <form onSubmit={onSubmit}>
-        <Box>
-          <Input type="file" onChange={onChange} />
-          <Button
-            className={classes.button}
-            type="submit"
-            variant="contained"
-            color="secondary"
-          >
-            保存
-          </Button>
-        </Box>
-      </form>
+      <Box>
+        <Input type="file" onChange={onChange} />
+        <Button
+          className={classes.button}
+          type="submit"
+          variant="contained"
+          color="secondary"
+          onClick={onClick}
+        >
+          保存
+        </Button>
+      </Box>
       <Typography>(注：CSV 形式のデータはインポートできません)</Typography>
     </Box>
   );

@@ -21,7 +21,7 @@ export const ImportUserPage: FC = () => {
       </AironeBreadcrumbs>
 
       {/* call the 'groups' exporter, not for 'users' */}
-      <ImportForm importFunc={importGroups} redirectPath={usersPath()} />
+      <ImportForm importFunc={importGroups} />
     </Box>
   );
 };

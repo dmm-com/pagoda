@@ -180,7 +180,10 @@ export const EntityList: FC<Props> = ({
         </Stack>
       </Box>
 
-      <EntryImportModal openImportModal={openImportModal} />
+      <EntryImportModal
+        openImportModal={openImportModal}
+        closeImportModal={() => setOpenImportModal(false)}
+      />
     </Box>
   );
 };

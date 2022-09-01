@@ -2,11 +2,9 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   ListItemIcon,
   ListItemText,
-  Modal,
   Menu,
   MenuItem,
   Typography,
-  Box,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC } from "react";
@@ -17,7 +15,6 @@ import {
   entityHistoryPath,
   entityPath,
   entitiesPath,
-  importEntriesPath,
   restoreEntryPath,
   topPath,
 } from "Routes";

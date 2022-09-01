@@ -13,7 +13,6 @@ import {
   EntryUpdate,
   EntryBase,
   EntryCopy,
-  EntryImportEntity,
   Group,
   GroupApi,
   PaginatedEntryBaseList,
@@ -394,8 +393,14 @@ class AironeApiClientV2 {
     });
   }
 
-  async importEntries(requestParameters): Promise<Array<EntryImportEntity>> {
-    return await this.entry.entryApiV2ImportCreate(requestParameters);
+  async importEntries(formData): Promise<void> {
+    return await this.entry.entryApiV2ImportCreate({
+      headers: {
+        "Content-Type": "application/yaml",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: formData,
+    });
   }
 }
 
