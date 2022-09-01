@@ -31,7 +31,7 @@ export interface EntryRetrieveValueAsObject {
    * @type {number}
    * @memberof EntryRetrieveValueAsObject
    */
-  id?: number | null;
+  id?: number;
   /**
    *
    * @type {string}

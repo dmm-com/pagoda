@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional, TypedDict, Union
 
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -24,9 +24,17 @@ class EntityAttributeType(TypedDict):
 
 
 class EntryAttributeValueObject(TypedDict):
-    id: Optional[int]
+    id: int
     name: str
     schema: EntityAttributeType
+
+
+class EntryAttributeValueObjectBoolean(EntryAttributeValueObject):
+    boolean: bool
+
+
+class EntryAttributeValueBoolean(TypedDict):
+    boolean: bool
 
 
 class EntryAttributeValueGroup(TypedDict):
@@ -41,7 +49,18 @@ class EntryAttributeValue(TypedDict, total=False):
     as_named_object: Dict[str, Optional[EntryAttributeValueObject]]
     as_array_object: List[Optional[EntryAttributeValueObject]]
     as_array_string: List[str]
-    as_array_named_object: List[Dict[str, Optional[EntryAttributeValueObject]]]
+    as_array_named_object: List[
+        Dict[
+            str,
+            Optional[
+                Union[
+                    EntryAttributeValueObject,
+                    EntryAttributeValueObjectBoolean,
+                    EntryAttributeValueBoolean,
+                ]
+            ],
+        ]
+    ]
     as_array_group: List[EntryAttributeValueGroup]
     # text; use string instead
     as_boolean: bool
@@ -301,7 +320,18 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     }
 
                 elif attr.schema.type & AttrTypeValue["named"]:
-                    array_named_object: List[Dict[str, Optional[EntryAttributeValueObject]]] = [
+                    array_named_object: List[
+                        Dict[
+                            str,
+                            Optional[
+                                Union[
+                                    EntryAttributeValueObject,
+                                    EntryAttributeValueObjectBoolean,
+                                    EntryAttributeValueBoolean,
+                                ]
+                            ],
+                        ]
+                    ] = [
                         {
                             x.value: {
                                 "id": x.referral.id if x.referral else None,

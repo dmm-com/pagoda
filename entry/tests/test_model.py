@@ -416,6 +416,13 @@ class ModelTest(AironeTestCase):
             name="referred_entry", created_user=self._user, schema=ref_entity
         )
 
+        r_entries = []
+        for i in range(0, 3):
+            r_entry = Entry.objects.create(
+                name="r_%d" % i, created_user=self._user, schema=ref_entity
+            )
+            r_entries.append({"id": r_entry.id})
+
         entity = Entity.objects.create(name="entity", created_user=self._user)
         new_attr_params = {
             "name": "arr_named_ref",
@@ -432,43 +439,60 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
         entry.complement_attrs(self._user)
 
-        attr = entry.attrs.get(name="arr_named_ref")
+        attr: Attribute = entry.attrs.get(name="arr_named_ref")
+        self.assertFalse(attr.is_updated([]))
+        self.assertTrue(attr.is_updated([{"id": None}]))
+        self.assertTrue(attr.is_updated([{"name": ""}]))
+        self.assertTrue(attr.is_updated([{"boolean": False}]))
         self.assertTrue(attr.is_updated([{"id": ref_entry.id}]))
+        self.assertTrue(attr.is_updated([{"name": "hoge"}]))
+        self.assertTrue(attr.is_updated([{"boolean": True}]))
 
-        # checks that this method also accepts Entry
-        self.assertTrue(attr.is_updated([{"id": ref_entry}]))
+        attr.add_value(self._user, [{"name": "hoge"}])
+        self.assertFalse(attr.is_updated([{"name": "hoge"}]))
+        self.assertFalse(attr.is_updated([{"name": "hoge", "id": ""}]))
+        self.assertFalse(attr.is_updated([{"name": "hoge", "id": None}]))
+        self.assertFalse(attr.is_updated([{"name": "hoge", "boolean": False}]))
+        self.assertTrue(attr.is_updated([{"name": ""}]))
 
-        # Check user id
-        self.assertEqual(attr.created_user_id, self._user.id)
+        attr.add_value(self._user, [{"id": ref_entry.id}])
+        self.assertFalse(attr.is_updated([{"id": ref_entry}]))
+        self.assertFalse(attr.is_updated([{"id": ref_entry.id}]))
+        self.assertFalse(attr.is_updated([{"id": ref_entry.id, "name": ""}]))
+        self.assertFalse(attr.is_updated([{"id": ref_entry.id, "boolean": False}]))
+        self.assertTrue(attr.is_updated([{"id": ""}]))
+        self.assertTrue(attr.is_updated([{"id": None}]))
 
-        attrv = AttributeValue.objects.create(
-            **{
-                "parent_attr": attr,
-                "created_user": self._user,
-                "status": AttributeValue.STATUS_DATA_ARRAY_PARENT,
-            }
+        attr.add_value(self._user, [{"name": "hoge", "boolean": True}])
+        self.assertFalse(attr.is_updated([{"name": "hoge", "boolean": True}]))
+        self.assertFalse(attr.is_updated([{"name": "hoge", "boolean": True, "id": ""}]))
+        self.assertFalse(attr.is_updated([{"name": "hoge", "boolean": True, "id": None}]))
+        self.assertTrue(attr.is_updated([{"name": "hoge", "boolean": False}]))
+
+        attr.add_value(
+            self._user,
+            [
+                {
+                    "name": "key_%d" % x,
+                    "id": r_entries[x]["id"],
+                }
+                for x in range(0, 3)
+            ],
         )
 
-        r_entries = []
-        for i in range(0, 3):
-            r_entry = Entry.objects.create(
-                name="r_%d" % i, created_user=self._user, schema=ref_entity
+        self.assertFalse(
+            attr.is_updated(
+                [{"id": x["id"], "name": y} for x, y in zip(r_entries, ["key_0", "key_1", "key_2"])]
             )
-            r_entries.append({"id": r_entry.id})
-
-            attrv.data_array.add(
-                AttributeValue.objects.create(
-                    **{
-                        "parent_attr": attr,
-                        "created_user": self._user,
-                        "value": "key_%d" % i,
-                        "referral": r_entry,
-                    }
-                )
+        )
+        self.assertFalse(
+            attr.is_updated(
+                [
+                    {"id": x["id"], "name": y, "boolean": False}
+                    for x, y in zip(r_entries, ["key_0", "key_1", "key_2"])
+                ]
             )
-
-        attr.values.add(attrv)
-
+        )
         self.assertTrue(attr.is_updated([{"name": x} for x in ["key_0", "key_1", "key_2"]]))
         self.assertTrue(
             attr.is_updated(
@@ -476,6 +500,14 @@ class ModelTest(AironeTestCase):
             )
         )
         self.assertTrue(attr.is_updated(r_entries))
+        self.assertTrue(
+            attr.is_updated(
+                [
+                    {"id": x["id"], "name": y, "boolean": True}
+                    for x, y in zip(r_entries, ["key_0", "key_1", "key_2"])
+                ]
+            )
+        )
 
     def test_for_boolean_attr_and_value(self):
         attr = self.make_attr("attr_bool", AttrTypeValue["boolean"])

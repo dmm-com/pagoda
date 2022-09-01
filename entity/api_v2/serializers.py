@@ -414,7 +414,8 @@ class EntityDetailSerializer(EntityListSerializer):
 
     def get_attrs(self, obj: Entity) -> List[EntityDetailAttribute]:
         user = User.objects.get(id=self.context["request"].user.id)
-        return [
+
+        attrinfo: List[EntityDetailAttribute] = [
             {
                 "id": x.id,
                 "index": x.index,
@@ -433,3 +434,9 @@ class EntityDetailSerializer(EntityListSerializer):
             for x in obj.attrs.filter(is_active=True).order_by("index")
             if user.has_permission(x, ACLType.Writable)
         ]
+
+        # add and remove attributes depending on entity
+        if custom_view.is_custom("get_entity_attr", obj.name):
+            attrinfo = custom_view.call_custom("get_entity_attr", obj.name, obj, attrinfo)
+
+        return attrinfo

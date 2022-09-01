@@ -508,6 +508,8 @@ class Attribute(ACLBase):
         elif self.schema.type == AttrTypeValue["array_named_object"]:
 
             def get_entry_id(value):
+                if not value:
+                    return None
                 if isinstance(value, Entry):
                     return value.id
                 elif isinstance(value, str):
@@ -521,23 +523,20 @@ class Attribute(ACLBase):
                 # when there are any values in the latest AttributeValue
                 return last_value.data_array.count() > 0
 
-            cmp_curr = []
-            for co_attrv in last_value.data_array.all():
-                if co_attrv.referral:
-                    cmp_curr.append("%s-%s" % (co_attrv.referral.id, co_attrv.value))
-                else:
-                    cmp_curr.append("N-%s" % (co_attrv.value))
+            cmp_curr = last_value.data_array.values("value", "referral_id", "boolean")
 
-            cmp_recv = []
-            for info in recv_value:
-                name = info["name"] if "name" in info and info["name"] else ""
+            cmp_recv = [
+                {
+                    "value": info.get("name", ""),
+                    "referral_id": get_entry_id(info.get("id")),
+                    "boolean": info.get("boolean", False),
+                }
+                for info in recv_value
+            ]
 
-                if "id" in info and info["id"]:
-                    cmp_recv.append("%s-%s" % (get_entry_id(info["id"]), name))
-                else:
-                    cmp_recv.append("N-%s" % (name))
-
-            if sorted(cmp_curr) != sorted(cmp_recv):
+            if sorted(cmp_curr, key=lambda x: x["value"]) != sorted(
+                cmp_recv, key=lambda x: x["value"]
+            ):
                 return True
 
         elif self.schema.type == AttrTypeValue["array_group"]:
