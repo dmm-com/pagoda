@@ -11,8 +11,8 @@ import {
   EntryCreate,
   EntryRetrieve,
   EntryUpdate,
-  EntryCopy,
   EntryBase,
+  EntryCopy,
   Group,
   GroupApi,
   PaginatedEntryBaseList,
@@ -390,6 +390,16 @@ class AironeApiClientV2 {
     return await this.job.jobApiV2JobsList({
       offset: (page - 1) * JobList.MAX_ROW_COUNT,
       limit: JobList.MAX_ROW_COUNT,
+    });
+  }
+
+  async importEntries(formData): Promise<void> {
+    return await this.entry.entryApiV2ImportCreate({
+      headers: {
+        "Content-Type": "application/yaml",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: formData,
     });
   }
 }

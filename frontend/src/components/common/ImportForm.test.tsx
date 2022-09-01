@@ -11,11 +11,10 @@ import { TestWrapper } from "utils/TestWrapper";
 test("should render a component with essential props", function () {
   expect(() =>
     render(
-      <ImportForm
-        importFunc={() => Promise.resolve(new Response())}
-        redirectPath={"/path/to/redirect"}
-      />,
-      { wrapper: TestWrapper }
+      <ImportForm handleImport={() => Promise.resolve(new Response())} />,
+      {
+        wrapper: TestWrapper,
+      }
     )
   ).not.toThrow();
 });

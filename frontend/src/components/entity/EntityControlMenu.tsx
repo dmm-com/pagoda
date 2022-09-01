@@ -15,7 +15,6 @@ import {
   entityHistoryPath,
   entityPath,
   entitiesPath,
-  importEntriesPath,
   restoreEntryPath,
   topPath,
 } from "Routes";
@@ -28,12 +27,14 @@ interface Props {
   entityId: number;
   anchorElem: HTMLButtonElement | null;
   handleClose: (entityId: number) => void;
+  setOpenImportModal: (isOpened: boolean) => void;
 }
 
 export const EntityControlMenu: FC<Props> = ({
   entityId,
   anchorElem,
   handleClose,
+  setOpenImportModal,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
@@ -87,7 +88,7 @@ export const EntityControlMenu: FC<Props> = ({
       <MenuItem onClick={handleExport.bind(null, entityId, "CSV")}>
         <Typography>エクスポート(CSV)</Typography>
       </MenuItem>
-      <MenuItem component={Link} to={importEntriesPath(entityId)}>
+      <MenuItem onClick={() => setOpenImportModal(true)}>
         <Typography>インポート</Typography>
       </MenuItem>
       <MenuItem component={Link} to={entityHistoryPath(entityId)}>

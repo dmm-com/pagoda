@@ -405,7 +405,6 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
 
 class EntryImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
-    serializer_class = EntryImportSerializer
 
     def post(self, request):
         import_datas = request.data

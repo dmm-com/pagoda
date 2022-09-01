@@ -11,6 +11,7 @@ import { useTypedParams } from "../hooks/useTypedParams";
 import { entitiesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { EntryImportModal } from "components/entry/EntryImportModal";
 import { EntryList } from "components/entry/EntryList";
 import { FailedToGetEntity } from "utils/Exceptions";
 
@@ -23,6 +24,7 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
 
   const [entityAnchorEl, setEntityAnchorEl] =
     useState<HTMLButtonElement | null>();
+  const [openImportModal, setOpenImportModal] = React.useState(false);
 
   const entity = useAsync(async () => {
     return await aironeApiClientV2.getEntity(entityId);
@@ -93,6 +95,7 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
               entityId={entityId}
               anchorElem={entityAnchorEl}
               handleClose={() => setEntityAnchorEl(null)}
+              setOpenImportModal={setOpenImportModal}
             />
           </Box>
         </Box>
@@ -100,6 +103,10 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
         {/* This describes all Entries in the rest of this page*/}
         <EntryList entityId={entityId} canCreateEntry={canCreateEntry} />
       </Container>
+      <EntryImportModal
+        openImportModal={openImportModal}
+        closeImportModal={() => setOpenImportModal(false)}
+      />
     </Box>
   );
 };
