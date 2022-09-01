@@ -416,6 +416,13 @@ class ModelTest(AironeTestCase):
             name="referred_entry", created_user=self._user, schema=ref_entity
         )
 
+        r_entries = []
+        for i in range(0, 3):
+            r_entry = Entry.objects.create(
+                name="r_%d" % i, created_user=self._user, schema=ref_entity
+            )
+            r_entries.append({"id": r_entry.id})
+
         entity = Entity.objects.create(name="entity", created_user=self._user)
         new_attr_params = {
             "name": "arr_named_ref",
@@ -432,43 +439,60 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
         entry.complement_attrs(self._user)
 
-        attr = entry.attrs.get(name="arr_named_ref")
+        attr: Attribute = entry.attrs.get(name="arr_named_ref")
+        self.assertFalse(attr.is_updated([]))
+        self.assertTrue(attr.is_updated([{"id": None}]))
+        self.assertTrue(attr.is_updated([{"name": ""}]))
+        self.assertTrue(attr.is_updated([{"boolean": False}]))
         self.assertTrue(attr.is_updated([{"id": ref_entry.id}]))
+        self.assertTrue(attr.is_updated([{"name": "hoge"}]))
+        self.assertTrue(attr.is_updated([{"boolean": True}]))
 
-        # checks that this method also accepts Entry
-        self.assertTrue(attr.is_updated([{"id": ref_entry}]))
+        attr.add_value(self._user, [{"name": "hoge"}])
+        self.assertFalse(attr.is_updated([{"name": "hoge"}]))
+        self.assertFalse(attr.is_updated([{"name": "hoge", "id": ""}]))
+        self.assertFalse(attr.is_updated([{"name": "hoge", "id": None}]))
+        self.assertFalse(attr.is_updated([{"name": "hoge", "boolean": False}]))
+        self.assertTrue(attr.is_updated([{"name": ""}]))
 
-        # Check user id
-        self.assertEqual(attr.created_user_id, self._user.id)
+        attr.add_value(self._user, [{"id": ref_entry.id}])
+        self.assertFalse(attr.is_updated([{"id": ref_entry}]))
+        self.assertFalse(attr.is_updated([{"id": ref_entry.id}]))
+        self.assertFalse(attr.is_updated([{"id": ref_entry.id, "name": ""}]))
+        self.assertFalse(attr.is_updated([{"id": ref_entry.id, "boolean": False}]))
+        self.assertTrue(attr.is_updated([{"id": ""}]))
+        self.assertTrue(attr.is_updated([{"id": None}]))
 
-        attrv = AttributeValue.objects.create(
-            **{
-                "parent_attr": attr,
-                "created_user": self._user,
-                "status": AttributeValue.STATUS_DATA_ARRAY_PARENT,
-            }
+        attr.add_value(self._user, [{"name": "hoge", "boolean": True}])
+        self.assertFalse(attr.is_updated([{"name": "hoge", "boolean": True}]))
+        self.assertFalse(attr.is_updated([{"name": "hoge", "boolean": True, "id": ""}]))
+        self.assertFalse(attr.is_updated([{"name": "hoge", "boolean": True, "id": None}]))
+        self.assertTrue(attr.is_updated([{"name": "hoge", "boolean": False}]))
+
+        attr.add_value(
+            self._user,
+            [
+                {
+                    "name": "key_%d" % x,
+                    "id": r_entries[x]["id"],
+                }
+                for x in range(0, 3)
+            ],
         )
 
-        r_entries = []
-        for i in range(0, 3):
-            r_entry = Entry.objects.create(
-                name="r_%d" % i, created_user=self._user, schema=ref_entity
+        self.assertFalse(
+            attr.is_updated(
+                [{"id": x["id"], "name": y} for x, y in zip(r_entries, ["key_0", "key_1", "key_2"])]
             )
-            r_entries.append({"id": r_entry.id})
-
-            attrv.data_array.add(
-                AttributeValue.objects.create(
-                    **{
-                        "parent_attr": attr,
-                        "created_user": self._user,
-                        "value": "key_%d" % i,
-                        "referral": r_entry,
-                    }
-                )
+        )
+        self.assertFalse(
+            attr.is_updated(
+                [
+                    {"id": x["id"], "name": y, "boolean": False}
+                    for x, y in zip(r_entries, ["key_0", "key_1", "key_2"])
+                ]
             )
-
-        attr.values.add(attrv)
-
+        )
         self.assertTrue(attr.is_updated([{"name": x} for x in ["key_0", "key_1", "key_2"]]))
         self.assertTrue(
             attr.is_updated(
@@ -476,6 +500,14 @@ class ModelTest(AironeTestCase):
             )
         )
         self.assertTrue(attr.is_updated(r_entries))
+        self.assertTrue(
+            attr.is_updated(
+                [
+                    {"id": x["id"], "name": y, "boolean": True}
+                    for x, y in zip(r_entries, ["key_0", "key_1", "key_2"])
+                ]
+            )
+        )
 
     def test_for_boolean_attr_and_value(self):
         attr = self.make_attr("attr_bool", AttrTypeValue["boolean"])
@@ -1791,7 +1823,7 @@ class ModelTest(AironeTestCase):
                 "type": AttrTypeValue["named_object"],
                 "value": {"name": "bar", "id": str(ref_entry.id)},
             },
-            "bool": {"type": AttrTypeValue["boolean"], "value": False},
+            "bool": {"type": AttrTypeValue["boolean"], "value": True},
             "group": {"type": AttrTypeValue["group"], "value": str(ref_group.id)},
             "date": {"type": AttrTypeValue["date"], "value": date(2018, 12, 31)},
             "arr_str": {
@@ -1973,6 +2005,25 @@ class ModelTest(AironeTestCase):
         ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "FOO-10"}])
         self.assertEqual(ret["ret_count"], 1)
         self.assertEqual(ret["ret_values"][0]["entry"]["name"], "e-10")
+
+        # check to get Entries that only have substantial Attribute values
+        for attr in entity.attrs.filter(is_active=True):
+            result = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "*"}])
+
+            if attr.type != AttrTypeValue["boolean"]:
+                # confirm "entry-black" Entry, which doesn't have any substantial Attribute values,
+                # doesn't exist on the result.
+                isin_entry_blank = any(
+                    [x["entry"]["name"] == "entry-blank" for x in result["ret_values"]]
+                )
+                self.assertFalse(isin_entry_blank)
+
+                # confirm Entries, which have substantial Attribute values, are returned
+                self.assertEqual(result["ret_count"], 11)
+
+            else:
+                # both True and False value will be matched for boolean type Attribute
+                self.assertEqual(result["ret_count"], 12)
 
     def test_search_entries_with_hint_referral(self):
         user = User.objects.create(username="hoge")

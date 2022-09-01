@@ -42,7 +42,7 @@ class EntryAPI(APIView):
             # processing
         }
 
-        # This variable indicates whether NOTIFY UPDATE ENTRY Job will be created.
+        # This variable indicates whether NOTIFY_UPDATE_ENTRY Job will be created.
         # This is necessary to create minimum necessary NOTIFY_UPDATE_ENTRY Job.
         will_notify_update_entry = False
 
@@ -84,13 +84,21 @@ class EntryAPI(APIView):
             will_notify_update_entry = _update_entry_name(entry)
 
         else:
-            entry = Entry.objects.create(
+            # This is the processing just in case for safety not to create duplicate Entries
+            # when multiple requests passed through existance check. Even through multiple
+            # requests coming here, Django prevents from creating multiple Entries.
+            entry, is_created = Entry.objects.update_or_create(
                 created_user=request.user, status=Entry.STATUS_CREATING, **entry_condition
             )
             resp_data["is_created"] = True
 
-            # create job to notify entry event to the registered WebHook
-            Job.new_notify_create_entry(request.user, entry).run()
+            if is_created:
+                # create job to notify entry event to the registered WebHook
+                Job.new_notify_create_entry(request.user, entry).run()
+            else:
+                # set flag to create a Job of NOTIFY_UPDATE_ENTRY in later
+                # (Note: This code is rarely run!)
+                will_notify_update_entry = True
 
         entry.complement_attrs(request.user)
         for name, value in sel.validated_data["attrs"].items():

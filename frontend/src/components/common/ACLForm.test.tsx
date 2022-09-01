@@ -37,7 +37,6 @@ test("should render a component with essential props", function () {
       },
     ],
     roles: undefined,
-    entity: undefined,
   };
 
   expect(() =>

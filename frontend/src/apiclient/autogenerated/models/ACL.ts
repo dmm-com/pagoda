@@ -51,12 +51,6 @@ export interface ACL {
   objtype?: number;
   /**
    *
-   * @type {any}
-   * @memberof ACL
-   */
-  readonly parent: any | null;
-  /**
-   *
    * @type {Array<{ [key: string]: any; }>}
    * @memberof ACL
    */
@@ -81,10 +75,10 @@ export interface ACL {
   readonly roles: Array<{ [key: string]: any }>;
   /**
    *
-   * @type {{ [key: string]: any; }}
+   * @type {any}
    * @memberof ACL
    */
-  readonly entity: { [key: string]: any };
+  readonly parent: any | null;
 }
 
 export function ACLFromJSON(json: any): ACL {
@@ -103,12 +97,11 @@ export function ACLFromJSONTyped(json: any, ignoreDiscriminator: boolean): ACL {
       ? undefined
       : json["default_permission"],
     objtype: !exists(json, "objtype") ? undefined : json["objtype"],
-    parent: json["parent"],
     acltypes: json["acltypes"],
     members: json["members"],
     acl: json["acl"],
     roles: json["roles"],
-    entity: json["entity"],
+    parent: json["parent"],
   };
 }
 

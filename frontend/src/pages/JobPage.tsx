@@ -1,14 +1,24 @@
-import { Box, Button, Theme, Typography } from "@mui/material";
+import {
+  Box,
+  Container,
+  Divider,
+  Pagination,
+  Stack,
+  Theme,
+  Typography,
+} from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { FC } from "react";
-import { Link } from "react-router-dom";
+import React, { FC, useMemo, useState } from "react";
+import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+import { JobList as ConstJobList } from "../utils/Constants";
 
 import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { JobList } from "components/job/JobList";
-import { getJobs } from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -20,12 +30,32 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 export const JobPage: FC = () => {
-  const classes = useStyles();
+  const history = useHistory();
+
+  const params = new URLSearchParams(location.search);
+  const [page, setPage] = useState<number>(
+    params.has("page") ? Number(params.get("page")) : 1
+  );
 
   const jobs = useAsync(async () => {
-    const resp = await getJobs();
-    return await resp.json();
-  }, []);
+    return await aironeApiClientV2.getJobs(page);
+  }, [page]);
+
+  const handleChangePage = (newPage: number) => {
+    setPage(newPage);
+
+    history.push({
+      pathname: location.pathname,
+      search: `?page=${newPage}`,
+    });
+  };
+
+  const maxPage = useMemo(() => {
+    if (jobs.loading) {
+      return 0;
+    }
+    return Math.ceil(jobs.value.count / ConstJobList.MAX_ROW_COUNT);
+  }, [jobs.loading, jobs.value?.count]);
 
   return (
     <Box className="container-fluid">
@@ -36,22 +66,36 @@ export const JobPage: FC = () => {
         <Typography color="textPrimary">ジョブ一覧</Typography>
       </AironeBreadcrumbs>
 
-      <Box className="row">
-        <Box className="col">
-          <Box className="float-left">
-            <Button
-              className={classes.button}
-              variant="outlined"
+      <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
+        <Box mb="64px">
+          <Typography variant="h2" align="center">
+            ジョブ一覧
+          </Typography>
+        </Box>
+      </Container>
+
+      <Divider />
+
+      <Box
+        sx={{
+          marginTop: "111px",
+          paddingLeft: "10%",
+          paddingRight: "10%",
+          marginBottom: "10%",
+        }}
+      >
+        {jobs.loading ? <Loading /> : <JobList jobs={jobs.value.results} />}
+        <Box display="flex" justifyContent="center" my="30px">
+          <Stack spacing={2}>
+            <Pagination
+              count={maxPage}
+              page={page}
+              onChange={(e, page) => handleChangePage(page)}
               color="primary"
-            >
-              全件表示
-            </Button>
-          </Box>
-          <Box className="float-right"></Box>
+            />
+          </Stack>
         </Box>
       </Box>
-
-      {jobs.loading ? <Loading /> : <JobList jobs={jobs.value} />}
     </Box>
   );
 };
