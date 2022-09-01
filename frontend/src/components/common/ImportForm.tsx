@@ -10,7 +10,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface Props {
-  importFunc: (formData: FormData) => Promise<Response>;
+  importFunc: (formData: FormData) => Promise<any>;
   redirectPath: string;
 }
 
@@ -24,12 +24,13 @@ export const ImportForm: FC<Props> = ({ importFunc, redirectPath }) => {
   };
 
   const onSubmit = async (event) => {
+    console.log('[onix/ImportForm.onSubmit(00)] file: ', file);
     if (file) {
       const formData = new FormData();
       formData.append("file", file);
 
       await importFunc(formData);
-      history.push(redirectPath);
+      // history.push(redirectPath);
     }
 
     event.preventDefault();
