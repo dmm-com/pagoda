@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypedDict
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -10,6 +10,12 @@ from entry.models import Attribute, Entry
 from group.models import Group
 from role.models import Role
 from user.models import User
+
+
+class ACLParentType(TypedDict):
+    id: int
+    name: str
+    is_public: bool
 
 
 class ACLSerializer(serializers.ModelSerializer):
@@ -35,7 +41,7 @@ class ACLSerializer(serializers.ModelSerializer):
             "parent",
         ]
 
-    def get_parent(self, obj: ACLBase) -> Optional[Any]:
+    def get_parent(self, obj: ACLBase) -> Optional[ACLParentType]:
         airone_model = obj.get_subclass_object()
         if isinstance(airone_model, Entry):
             return {
