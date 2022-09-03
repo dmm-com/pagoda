@@ -98,6 +98,9 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
                       mt: "24px",
                       mx: "16px",
                       mb: "16px",
+                      ".MuiCardHeader-content": {
+                        width: "80%",
+                      },
                     }}
                     title={
                       <CardActionArea
@@ -107,7 +110,6 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
                         <Typography
                           variant="h6"
                           sx={{
-                            width: "300px",
                             textOverflow: "ellipsis",
                             overflow: "hidden",
                             whiteSpace: "nowrap",
