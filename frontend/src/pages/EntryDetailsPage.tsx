@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Element, scroller } from "react-scroll";
 import { useAsync } from "react-use";
@@ -71,20 +71,24 @@ export const EntryDetailsPage: FC<Props> = ({
     return await aironeApiClientV2.getEntry(entryId);
   }, [entryId]);
 
+  useEffect(() => {
+    // When user specifies invalid entityId, redirect to the page that is correct entityId
+    if (!entry.loading && entry.value.schema.id != entityId) {
+      history.replace(entryDetailsPath(entry.value.schema.id, entryId));
+    }
+
+    // If it'd been deleted, show restore-entry page instead
+    if (!entry.loading && !entry.value.isActive) {
+      history.replace(
+        restoreEntryPath(entry.value.schema.id, entry.value.name)
+      );
+    }
+  }, [entry.loading]);
+
   if (!entry.loading && entry.error) {
     throw new FailedToGetEntry(
       "Failed to get Entry from AirOne APIv2 endpoint"
     );
-  }
-
-  // When user specifies invalid entityId, redirect to the page that is correct entityId
-  if (!entry.loading && entry.value.schema.id != entityId) {
-    history.replace(entryDetailsPath(entry.value.schema.id, entryId));
-  }
-
-  // If it'd been deleted, show restore-entry page instead
-  if (!entry.loading && !entry.value.isActive) {
-    history.replace(restoreEntryPath(entry.value.schema.id, entry.value.name));
   }
 
   return (
