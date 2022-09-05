@@ -75,6 +75,7 @@ export const EntityControlMenu: FC<Props> = ({
       open={Boolean(anchorElem)}
       onClose={() => handleClose(entityId)}
       anchorEl={anchorElem}
+      disableScrollLock
     >
       <MenuItem component={Link} to={entityPath(entityId)}>
         <Typography>編集</Typography>
