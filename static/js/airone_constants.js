@@ -58,5 +58,5 @@ function unescapeHtml(safe) {
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/&#x27/g, "'");
+    .replace(/&#x27;/g, "'");
 }
