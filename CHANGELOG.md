@@ -8,6 +8,9 @@
 
 ### Fixed
 
+* Escaped single quote data will be shown at Entry edit page (#603)
+  Contributed by @Ravie403
+
 ## v3.19.0
 
 ### Added
