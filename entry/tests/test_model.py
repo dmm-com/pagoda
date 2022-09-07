@@ -46,7 +46,7 @@ class ModelTest(AironeTestCase):
         self._complement_user.set_password(self._org_auto_complement_user)
         self._complement_user.save()
 
-    def _get_attrinfo_template(self, ref=None, group=None):
+    def _get_attrinfo_template(self, ref=None, group=None, role=None):
         attrinfo = [
             {"name": "str", "set_val": "foo", "exp_val": "foo"},
             {"name": "text", "set_val": "bar", "exp_val": "bar"},
@@ -82,6 +82,9 @@ class ModelTest(AironeTestCase):
         if group:
             attrinfo.append({"name": "group", "set_val": group, "exp_val": group.name})
             attrinfo.append({"name": "arr_group", "set_val": [group], "exp_val": [group.name]})
+        if role:
+            attrinfo.append({"name": "role", "set_val": role, "exp_val": role})
+            attrinfo.append({"name": "arr_role", "set_val": [role], "exp_val": [role]})
 
         return attrinfo
 
@@ -1163,6 +1166,7 @@ class ModelTest(AironeTestCase):
     def test_get_available_attrs(self):
         user = User.objects.create(username="hoge")
         test_group = Group.objects.create(name="test-group")
+        test_role = Role.objects.create(name="test-role")
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
@@ -1175,7 +1179,7 @@ class ModelTest(AironeTestCase):
 
         # set initial values for entry
         attrinfo = {}
-        for info in self._get_attrinfo_template(ref_entry, test_group):
+        for info in self._get_attrinfo_template(ref_entry, test_group, test_role):
             attr = entry.attrs.get(schema__name=info["name"])
             attr.add_value(user, info["set_val"])
 
@@ -4067,6 +4071,7 @@ class ModelTest(AironeTestCase):
     def test_get_es_document(self):
         user = User.objects.create(username="hoge")
         test_group = Group.objects.create(name="test-group")
+        test_role = Role.objects.create(name="test-role")
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
@@ -4076,7 +4081,7 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
 
-        for info in self._get_attrinfo_template(ref_entry, test_group):
+        for info in self._get_attrinfo_template(ref_entry, test_group, test_role):
             attr = entry.attrs.get(schema__name=info["name"])
             attr.add_value(user, info["set_val"])
 
@@ -4101,6 +4106,11 @@ class ModelTest(AironeTestCase):
                 "key": [""],
                 "value": [test_group.name],
                 "referral_id": [test_group.id],
+            },
+            "role": {
+                "key": [""],
+                "value": [test_role.name],
+                "referral_id": [test_role.id],
             },
             "date": {
                 "key": [""],
@@ -4127,6 +4137,11 @@ class ModelTest(AironeTestCase):
                 "key": [""],
                 "value": [test_group.name],
                 "referral_id": [test_group.id],
+            },
+            "arr_role": {
+                "key": [""],
+                "value": [test_role.name],
+                "referral_id": [test_role.id],
             },
         }
         # check all attributes are expected ones
@@ -4173,6 +4188,11 @@ class ModelTest(AironeTestCase):
                     "group": {
                         "is_readble": True,
                         "type": AttrTypeValue["group"],
+                        "value": {"id": "", "name": ""},
+                    },
+                    "role": {
+                        "is_readble": True,
+                        "type": AttrTypeValue["role"],
                         "value": {"id": "", "name": ""},
                     },
                     "name": {"is_readble": True, "type": AttrTypeValue["named_object"]},
@@ -4461,6 +4481,8 @@ class ModelTest(AironeTestCase):
             "arr_obj": [],
             "arr_name": dict().values(),
             "arr_group": [],
+            "role": None,
+            "arr_role": [],
         }
         for attr in entry.attrs.all():
             if attr.name == "arr_name":

@@ -43,6 +43,11 @@ class EntryAttributeValueGroup(TypedDict):
     name: str
 
 
+class EntryAttributeValueRole(TypedDict):
+    id: int
+    name: str
+
+
 # A thin container returns typed value(s)
 class EntryAttributeValue(TypedDict, total=False):
     as_object: Optional[EntryAttributeValueObject]
@@ -67,6 +72,8 @@ class EntryAttributeValue(TypedDict, total=False):
     as_boolean: bool
     as_group: Optional[EntryAttributeValueGroup]
     # date; use string instead
+    as_role: Optional[EntryAttributeValueRole]
+    as_array_role: List[EntryAttributeValueRole]
 
 
 class EntryAttributeType(TypedDict):

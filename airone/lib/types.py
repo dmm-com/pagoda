@@ -109,7 +109,7 @@ class AttrTypeRole(with_metaclass(MetaAttrType)):
 class AttrTypeArrRole(with_metaclass(MetaAttrType)):
     NAME = "array_role"
     TYPE = _ATTR_ROLE_TYPE | _ATTR_ARRAY_TYPE
-    DEFAULT_VALUE = None
+    DEFAULT_VALUE = []
 
 
 AttrTypes = [

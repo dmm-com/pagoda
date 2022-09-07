@@ -380,8 +380,18 @@ class AttributeValue(models.Model):
 
             if type & AttrTypeValue["role"]:
                 try:
-                    if value and not Role.objects.filter(id=value, is_active=True).exists():
+                    if value and (
+                        (
+                            isinstance(value, int)
+                            and not Role.objects.filter(id=value, is_active=True).exists()
+                        )
+                        or (
+                            isinstance(value, str)
+                            and not Role.objects.filter(name=value, is_active=True).exists()
+                        )
+                    ):
                         raise Exception("value(%s) is not Role id" % value)
+
                     if is_mandatory and not value:
                         return False
                 except (ValueError, TypeError):

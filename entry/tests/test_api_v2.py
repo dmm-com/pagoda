@@ -1965,6 +1965,8 @@ class ViewTest(AironeViewTest):
             "text": "foo\nbar",
             "val": "foo",
             "vals": ["foo"],
+            "role": {"id": self.role.id, "name": "role0"},
+            "roles": [{"id": self.role.id, "name": "role0"}],
         }
         for attr_name in result["ret_values"][0]["attrs"]:
             self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
@@ -2000,6 +2002,8 @@ class ViewTest(AironeViewTest):
             "bool": "True",
             "text": "foo\nbar",
             "date": "2018-12-31",
+            "role": {"id": self.role.id, "name": "role0"},
+            "roles": [{"id": self.role.id, "name": "role0"}],
         }
         for attr_name in result["ret_values"][0]["attrs"]:
             self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
@@ -2043,6 +2047,8 @@ class ViewTest(AironeViewTest):
             "bool": "False",
             # "text": None,
             "date": None,
+            "role": {"id": "", "name": ""},
+            "roles": [],
         }
         for attr_name in result["ret_values"][0]["attrs"]:
             if "value" in result["ret_values"][0]["attrs"][attr_name]:
