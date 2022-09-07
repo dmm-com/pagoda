@@ -193,8 +193,10 @@ You should cerate database and user for airone in MySQL.
 user@hostname:~$ mysql -u root -h 127.0.0.1
 
 mysql> create database airone;
+mysql> create database test_airone;
 mysql> CREATE USER 'airone'@'%' IDENTIFIED BY 'password';
 mysql> GRANT ALL ON airone.* to airone@'%';
+mysql> GRANT ALL ON test_airone.* to airone@'%';
 ```
 
 This command makes database schema using the [django Migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/), and makes default user account.
