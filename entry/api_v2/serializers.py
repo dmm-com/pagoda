@@ -13,6 +13,7 @@ from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity
 from entry.models import Attribute, AttributeValue, Entry
 from group.models import Group
+from role.models import Role
 from job.models import Job
 from user.api_v2.serializers import UserBaseSerializer
 from user.models import User
@@ -377,6 +378,18 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                         ]
                     }
 
+                elif attr.schema.type & AttrTypeValue["role"]:
+                    roles = [Role.objects.get(id=x.value) for x in attrv.data_array.all()]
+                    return {
+                        "as_array_role": [
+                            {
+                                "id": role.id,
+                                "name": role.name,
+                            }
+                            for role in roles
+                        ]
+                    }
+
             elif (
                 attr.schema.type & AttrTypeValue["string"]
                 or attr.schema.type & AttrTypeValue["text"]
@@ -427,6 +440,15 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     }
                 }
 
+            elif attr.schema.type & AttrTypeValue["role"] and attrv.value:
+                role = Role.objects.get(id=attrv.value)
+                return {
+                    "as_role": {
+                        "id": role.id,
+                        "name": role.name,
+                    }
+                }
+
             return {}
 
         def get_default_attr_value(type: int) -> EntryAttributeValue:
@@ -445,6 +467,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 elif type & AttrTypeValue["group"]:
                     return {"as_array_group": AttrDefaultValue[type]}
 
+                elif type & AttrTypeValue["role"]:
+                    return {"as_array_role": AttrDefaultValue[type]}
+
             elif type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
                 return {"as_string": AttrDefaultValue[type]}
 
@@ -462,6 +487,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
             elif type & AttrTypeValue["group"]:
                 return {"as_group": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["role"]:
+                return {"as_role": AttrDefaultValue[type]}
 
             raise ValidationError(f"unexpected type: {type}")
 
