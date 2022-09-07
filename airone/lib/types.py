@@ -8,6 +8,7 @@ _ATTR_TEXT_TYPE = 1 << 2
 _ATTR_BOOL_TYPE = 1 << 3
 _ATTR_GROUP_TYPE = 1 << 4
 _ATTR_DATE_TYPE = 1 << 5
+_ATTR_ROLE_TYPE = 1 << 6
 _ATTR_ARRAY_TYPE = 1 << 10
 _ATTR_NAMED_TYPE = 1 << 11
 
@@ -99,6 +100,18 @@ class AttrTypeDate(with_metaclass(MetaAttrType)):
     DEFAULT_VALUE = None
 
 
+class AttrTypeRole(with_metaclass(MetaAttrType)):
+    NAME = "role"
+    TYPE = _ATTR_ROLE_TYPE
+    DEFAULT_VALUE = None
+
+
+class AttrTypeArrRole(with_metaclass(MetaAttrType)):
+    NAME = "array_role"
+    TYPE = _ATTR_ROLE_TYPE | _ATTR_ARRAY_TYPE
+    DEFAULT_VALUE = None
+
+
 AttrTypes = [
     AttrTypeStr,
     AttrTypeObj,
@@ -111,6 +124,8 @@ AttrTypes = [
     AttrTypeBoolean,
     AttrTypeGroup,
     AttrTypeDate,
+    AttrTypeRole,
+    AttrTypeArrRole,
 ]
 AttrTypeValue = {
     "object": AttrTypeObj.TYPE,
@@ -122,10 +137,12 @@ AttrTypeValue = {
     "array_string": AttrTypeArrStr.TYPE,
     "array_named_object": AttrTypeArrNamedObj.TYPE,
     "array_group": AttrTypeArrGroup.TYPE,
+    "array_role": AttrTypeArrRole.TYPE,
     "text": AttrTypeText.TYPE,
     "boolean": AttrTypeBoolean.TYPE,
     "group": AttrTypeGroup.TYPE,
     "date": AttrTypeDate.TYPE,
+    "role": AttrTypeRole.TYPE,
 }
 AttrDefaultValue = {
     AttrTypeValue["object"]: AttrTypeObj.DEFAULT_VALUE,
@@ -135,8 +152,10 @@ AttrDefaultValue = {
     AttrTypeValue["array_string"]: AttrTypeArrStr.DEFAULT_VALUE,
     AttrTypeValue["array_named_object"]: AttrTypeArrNamedObj.DEFAULT_VALUE,
     AttrTypeValue["array_group"]: AttrTypeArrGroup.DEFAULT_VALUE,
+    AttrTypeValue["array_role"]: AttrTypeArrRole.DEFAULT_VALUE,
     AttrTypeValue["text"]: AttrTypeText.DEFAULT_VALUE,
     AttrTypeValue["boolean"]: AttrTypeBoolean.DEFAULT_VALUE,
     AttrTypeValue["group"]: AttrTypeGroup.DEFAULT_VALUE,
     AttrTypeValue["date"]: AttrTypeDate.DEFAULT_VALUE,
+    AttrTypeValue["role"]: AttrTypeRole.DEFAULT_VALUE,
 }
