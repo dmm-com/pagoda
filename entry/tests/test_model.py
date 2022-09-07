@@ -99,10 +99,12 @@ class ModelTest(AironeTestCase):
             "bool": AttrTypeValue["boolean"],
             "group": AttrTypeValue["group"],
             "date": AttrTypeValue["date"],
+            "role": AttrTypeValue["role"],
             "arr_str": AttrTypeValue["array_string"],
             "arr_obj": AttrTypeValue["array_object"],
             "arr_name": AttrTypeValue["array_named_object"],
             "arr_group": AttrTypeValue["array_group"],
+            "arr_role": AttrTypeValue["array_role"],
         }
         for attr_name, attr_type in attr_info.items():
             attr = EntityAttr.objects.create(
@@ -1452,6 +1454,7 @@ class ModelTest(AironeTestCase):
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
         test_ref = Entry.objects.create(name="r0", schema=ref_entity, created_user=user)
         test_grp = Group.objects.create(name="g0")
+        test_role = Role.objects.create(name="test-role")
 
         entity = self.create_entity_with_all_type_attributes(user)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -1520,6 +1523,16 @@ class ModelTest(AironeTestCase):
             },
             {"name": "arr_group", "set_val": [test_grp.id], "exp_val": [test_grp.name]},
             {"name": "arr_group", "set_val": [test_grp], "exp_val": [test_grp.name]},
+            {"name": "role", "set_val": str(test_role.id), "exp_val": test_role.name},
+            {"name": "role", "set_val": test_role.id, "exp_val": test_role.name},
+            {"name": "role", "set_val": test_role, "exp_val": test_role.name},
+            {
+                "name": "arr_role",
+                "set_val": [str(test_role.id)],
+                "exp_val": [test_role.name],
+            },
+            {"name": "arr_role", "set_val": [test_role.id], "exp_val": [test_role.name]},
+            {"name": "arr_role", "set_val": [test_role], "exp_val": [test_role.name]},
         ]
         for info in attr_info:
             attr = entry.attrs.get(name=info["name"])
@@ -1538,6 +1551,8 @@ class ModelTest(AironeTestCase):
                     expected_value["value"] = [{"id": test_ref.id, "name": test_ref.name}]
                 elif attr.schema.type & AttrTypeValue["group"]:
                     expected_value["value"] = [{"id": test_grp.id, "name": test_grp.name}]
+                elif attr.schema.type & AttrTypeValue["role"]:
+                    expected_value["value"] = [{"id": test_role.id, "name": test_role.name}]
 
             elif attr.schema.type & AttrTypeValue["named"]:
                 expected_value["value"] = {"bar": {"id": test_ref.id, "name": test_ref.name}}
@@ -1545,6 +1560,8 @@ class ModelTest(AironeTestCase):
                 expected_value["value"] = {"id": test_ref.id, "name": test_ref.name}
             elif attr.schema.type & AttrTypeValue["group"]:
                 expected_value["value"] = {"id": test_grp.id, "name": test_grp.name}
+            elif attr.schema.type & AttrTypeValue["role"]:
+                expected_value["value"] = {"id": test_role.id, "name": test_role.name}
 
             self.assertEqual(attrv.get_value(with_metainfo=True), expected_value)
 
@@ -1814,6 +1831,7 @@ class ModelTest(AironeTestCase):
             name="referred_entry", schema=ref_entity, created_user=user
         )
         ref_group = Group.objects.create(name="group")
+        ref_role = Role.objects.create(name="role")
 
         attr_info = {
             "str": {"type": AttrTypeValue["string"], "value": "foo-%d"},
@@ -1826,6 +1844,7 @@ class ModelTest(AironeTestCase):
             "bool": {"type": AttrTypeValue["boolean"], "value": True},
             "group": {"type": AttrTypeValue["group"], "value": str(ref_group.id)},
             "date": {"type": AttrTypeValue["date"], "value": date(2018, 12, 31)},
+            "role": {"type": AttrTypeValue["role"], "value": str(ref_role.id)},
             "arr_str": {
                 "type": AttrTypeValue["array_string"],
                 "value": ["foo", "bar", "baz"],
@@ -1839,6 +1858,7 @@ class ModelTest(AironeTestCase):
                 "value": [{"name": "hoge", "id": str(ref_entry.id)}],
             },
             "arr_group": {"type": AttrTypeValue["array_group"], "value": [ref_group]},
+            "arr_role": {"type": AttrTypeValue["array_role"], "value": [ref_role]},
         }
 
         entity = Entity.objects.create(name="entity", created_user=user)
@@ -1882,10 +1902,12 @@ class ModelTest(AironeTestCase):
                 {"name": "bool"},
                 {"name": "group"},
                 {"name": "date"},
+                {"name": "role"},
                 {"name": "arr_str"},
                 {"name": "arr_obj"},
                 {"name": "arr_name"},
                 {"name": "arr_group"},
+                {"name": "arr_role"},
             ],
         )
         self.assertEqual(ret["ret_count"], 11)
@@ -1918,16 +1940,21 @@ class ModelTest(AironeTestCase):
                     self.assertEqual(attrinfo["value"][key]["id"], attrv.referral.id)
                     self.assertEqual(attrinfo["value"][key]["name"], attrv.referral.name)
 
-                if attrname == "bool":
+                elif attrname == "bool":
                     self.assertEqual(attrinfo["value"], str(attrv.boolean))
 
-                if attrname == "date":
+                elif attrname == "date":
                     self.assertEqual(attrinfo["value"], str(attrv.date))
 
                 elif attrname == "group":
                     group = Group.objects.get(id=int(attrv.value))
                     self.assertEqual(attrinfo["value"]["id"], group.id)
                     self.assertEqual(attrinfo["value"]["name"], group.name)
+
+                elif attrname == "role":
+                    role = Role.objects.get(id=int(attrv.value))
+                    self.assertEqual(attrinfo["value"]["id"], role.id)
+                    self.assertEqual(attrinfo["value"]["name"], role.name)
 
                 elif attrname == "arr_str":
                     self.assertEqual(
@@ -1958,8 +1985,14 @@ class ModelTest(AironeTestCase):
                         [{"id": ref_group.id, "name": ref_group.name}],
                     )
 
+                elif attrname == "arr_role":
+                    self.assertEqual(
+                        attrinfo["value"],
+                        [{"id": ref_role.id, "name": ref_role.name}],
+                    )
+
                 else:
-                    assert "Invalid result was happend"
+                    raise "Invalid result was happend (attrname: %s)" % attrname
 
         # search entries with maximum entries to get
         ret = Entry.search_entries(user, [entity.id], [{"name": "str"}], 5)

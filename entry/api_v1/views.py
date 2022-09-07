@@ -211,6 +211,9 @@ def get_attr_referrals(request, attr_id):
     def _get_referral_groups(attr):
         return _get_referral_objects(attr, Group, {"is_active": True})
 
+    def _get_referral_roles(attr):
+        return _get_referral_objects(attr, Role, {"is_active": True})
+
     if (
         not Attribute.objects.filter(id=attr_id).exists()
         and not EntityAttr.objects.filter(id=attr_id).exists()
@@ -227,6 +230,8 @@ def get_attr_referrals(request, attr_id):
         results = _get_referral_entries(attr)
     elif attr.type & AttrTypeValue["group"]:
         results = _get_referral_groups(attr)
+    elif attr.type & AttrTypeValue["role"]:
+        results = _get_referral_roles(attr)
     else:
         return HttpResponse("Target Attribute does not referring type", status=400)
 
