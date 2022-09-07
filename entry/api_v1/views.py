@@ -17,6 +17,7 @@ from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from entry.settings import CONFIG
 from group.models import Group
+from role.models import Role
 
 
 @http_get

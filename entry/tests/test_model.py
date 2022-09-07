@@ -1640,6 +1640,9 @@ class ModelTest(AironeTestCase):
         group = Group.objects.create(name="Group")
         deleted_group = Group.objects.create(name="Deleting Group")
         deleted_group.delete()
+        role = Role.objects.create(name="Role")
+        deleted_role = Role.objects.create(name="Deleted Role")
+        deleted_role.delete()
 
         checklist = [
             {"attr": "str", "input": "foo", "checker": lambda x: x == "foo"},
@@ -1739,6 +1742,35 @@ class ModelTest(AironeTestCase):
                 "attr": "date",
                 "input": "2020-01-01",
                 "checker": lambda x: x == "2020-01-01",
+            },
+            {"attr": "role", "input": role, "checker": lambda x: x == str(role.id)},
+            {"attr": "role", "input": role.id, "checker": lambda x: x == str(role.id)},
+            {"attr": "role", "input": str(role.name), "checker": lambda x: x == str(role.id)},
+            {"attr": "role", "input": deleted_role, "checker": lambda x: x is None},
+            {
+                "attr": "arr_role",
+                "input": ["Role"],
+                "checker": lambda x: x == [str(role.id)],
+            },
+            {
+                "attr": "arr_role",
+                "input": [str(role.id)],
+                "checker": lambda x: x == [str(role.id)],
+            },
+            {
+                "attr": "arr_role",
+                "input": [role.id],
+                "checker": lambda x: x == [str(role.id)],
+            },
+            {
+                "attr": "arr_role",
+                "input": [role],
+                "checker": lambda x: x == [str(role.id)],
+            },
+            {
+                "attr": "arr_role",
+                "input": [deleted_role],
+                "checker": lambda x: x == [],
             },
         ]
         for info in checklist:
@@ -2003,6 +2035,23 @@ class ModelTest(AironeTestCase):
         ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "foo-5"}])
         self.assertEqual(ret["ret_count"], 1)
         self.assertEqual(ret["ret_values"][0]["entry"]["name"], "e-5")
+
+        # search entries with keyword for Role Attribute
+        for role_attrname in ["role", "arr_role"]:
+            # call Entry.search_entries with invalid keyword
+            self.assertEqual(
+                Entry.search_entries(
+                    user, [entity.id], [{"name": "role", "keyword": "invalid-keyword"}]
+                ).get("ret_count"),
+                0,
+            )
+            # call Entry.search_entries with valid keyword
+            self.assertEqual(
+                Entry.search_entries(user, [entity.id], [{"name": "role", "keyword": "rol"}]).get(
+                    "ret_count"
+                ),
+                11,
+            )
 
         # search entries with blank values
         entry = Entry.objects.create(name="entry-blank", schema=entity, created_user=user)
