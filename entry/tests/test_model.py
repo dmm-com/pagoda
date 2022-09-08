@@ -1456,7 +1456,7 @@ class ModelTest(AironeTestCase):
         entity = self.create_entity_with_all_type_attributes(user)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
-
+        # memo
         attr_info = [
             {"name": "str", "set_val": "foo", "exp_val": "foo"},
             {"name": "obj", "set_val": str(test_ref.id), "exp_val": test_ref.name},
@@ -2893,6 +2893,139 @@ class ModelTest(AironeTestCase):
 
         for attr in entry.attrs.all():
             self.assertIsNone(attr.get_latest_value(is_readonly=True))
+
+    def test_get_value_with_is_active_false(self):
+        user = User.objects.create(username="hoge")
+        entity = self.create_entity_with_all_type_attributes(user)
+
+        # create referred Entity and Entries
+        test_ref = Entry.objects.create(name="r0", schema=entity, created_user=user)
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        
+        attr_info = [
+            {"name": "obj", "set_val": str(test_ref.id), "exp_val": test_ref.name},
+            {"name": "obj", "set_val": test_ref.id, "exp_val": test_ref.name},
+            {"name": "obj", "set_val": test_ref, "exp_val": test_ref.name},
+            {
+                "name": "name",
+                "set_val": {"name": "bar", "id": str(test_ref.id)},
+                "exp_val": {"bar": test_ref.name},
+            },
+            {
+                "name": "name",
+                "set_val": {"name": "bar", "id": test_ref.id},
+                "exp_val": {"bar": test_ref.name},
+            },
+            {
+                "name": "name",
+                "set_val": {"name": "bar", "id": test_ref},
+                "exp_val": {"bar": test_ref.name},
+            },
+            {
+                "name": "arr_obj",
+                "set_val": [str(test_ref.id)],
+                "exp_val": [test_ref.name],
+            },
+            
+            {"name": "arr_obj", "set_val": [test_ref.id], "exp_val": [test_ref.name]},
+            {"name": "arr_obj", "set_val": [test_ref], "exp_val": [test_ref.name]},
+            {
+                "name": "arr_name",
+                "set_val": [{"name": "hoge", "id": str(test_ref.id)}],
+                "exp_val": [{"hoge": test_ref.name}],
+            },
+            {
+                "name": "arr_name",
+                "set_val": [{"name": "hoge", "id": test_ref.id}],
+                "exp_val": [{"hoge": test_ref.name}],
+            },
+            {
+                "name": "arr_name",
+                "set_val": [{"name": "hoge", "id": test_ref}],
+                "exp_val": [{"hoge": test_ref.name}],
+            },
+        ]
+
+        for info in attr_info:
+            attr = entry.attrs.get(name=info["name"])
+            attr.add_value(user, info["set_val"])
+            attrv = attr.get_latest_value()
+
+            # test return value of get_value method
+            self.assertEqual(attrv.get_value(is_active=False), info["exp_val"])
+
+            # test return value of get_value method with 'with_metainfo' parameter
+            expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
+            if attr.schema.type & AttrTypeValue["array"]:
+                if attr.schema.type & AttrTypeValue["named"]:
+                    expected_value["value"] = [{"hoge": {"id": test_ref.id, "name": test_ref.name}}]
+                elif attr.schema.type & AttrTypeValue["object"]:
+                    expected_value["value"] = [{"id": test_ref.id, "name": test_ref.name}]
+            elif attr.schema.type & AttrTypeValue["named"]:
+                expected_value["value"] = {"bar": {"id": test_ref.id, "name": test_ref.name}}
+            elif attr.schema.type & AttrTypeValue["object"]:
+                expected_value["value"] = {"id": test_ref.id, "name": test_ref.name}
+
+            self.assertEqual(attrv.get_value(with_metainfo=True, is_active=False), expected_value)
+    
+    def test_get_value_deleted_entry_with_is_active_false(self):
+        user = User.objects.create(username="hoge")
+        entity = self.create_entity_with_all_type_attributes(user)
+
+        # create referred Entity and Entries
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
+        test_ref = Entry.objects.create(name="r0", schema=ref_entity, created_user=user)
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        
+        attr_info = [
+            {"name": "obj", "set_val": str(test_ref.id), "exp_val": test_ref.id},
+            {"name": "obj", "set_val": test_ref.id, "exp_val": test_ref.id},
+            {"name": "obj", "set_val": test_ref, "exp_val": test_ref.id},
+            {
+                "name": "arr_obj",
+                "set_val": [str(test_ref.id)],
+                "exp_val": [test_ref.id],
+            },
+            {"name": "arr_obj", "set_val": [test_ref.id], "exp_val": [test_ref.id]},
+            {"name": "arr_obj", "set_val": [test_ref], "exp_val": [test_ref.id]},
+            {
+                "name": "arr_name",
+                "set_val": [{"name": "hoge", "id": str(test_ref.id)}],
+                "exp_val": [{"hoge": test_ref.id}],
+            },
+            {
+                "name": "arr_name",
+                "set_val": [{"name": "hoge", "id": test_ref.id}],
+                "exp_val": [{"hoge": test_ref.id}],
+            },
+            {
+                "name": "arr_name",
+                "set_val": [{"name": "hoge", "id": test_ref.id}],
+                "exp_val": [{"hoge": test_ref.id}],
+            },
+        ]
+        test_ref.delete()
+        for info in attr_info:
+            attr = entry.attrs.get(name=info["name"])
+            attr.add_value(user, info["set_val"])
+            attrv = attr.get_latest_value()
+
+            # test return value of get_value method with 'with_metainfo', 'is_active=False' parameter
+            print(attrv.referral)
+            expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
+            if attr.schema.type & AttrTypeValue["array"]:
+                if attr.schema.type & AttrTypeValue["named"]:
+                    expected_value["value"] = [{"hoge": {"id": test_ref.id}}]
+                elif attr.schema.type & AttrTypeValue["object"]:
+                    expected_value["value"] = [{"id": test_ref.id}]
+            elif attr.schema.type & AttrTypeValue["named"]:
+                expected_value["value"] = {"bar": {"id": test_ref.id}}
+            elif attr.schema.type & AttrTypeValue["object"]:
+                expected_value["value"] = {"id": test_ref.id}
+
+            self.assertEqual(attrv.get_value(with_metainfo=True, is_active=False)["value"], expected_value["value"])
 
     def test_add_to_attrv(self):
         user = User.objects.create(username="hoge")
