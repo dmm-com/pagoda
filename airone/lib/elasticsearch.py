@@ -906,7 +906,7 @@ def make_search_results(
                             "name": attrinfo["value"],
                         }
                     }
-                    if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == ""
+                    if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] != ""
                     else {}
                 )
 
