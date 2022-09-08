@@ -116,13 +116,13 @@ class AttributeValue(models.Model):
 
         return cloned_value
 
-    def get_value(self, with_metainfo=False, serialize=False):
+    def get_value(self, with_metainfo=False, serialize=False, is_active=True):
         """
         This returns registered value according to the type of Attribute
         """
 
-        def _get_named_value(attrv):
-            if attrv.referral and attrv.referral.is_active:
+        def _get_named_value(attrv, is_active=True):
+            if attrv.referral and (attrv.referral.is_active or not is_active):
                 if with_metainfo:
                     return {
                         attrv.value: {
@@ -135,8 +135,8 @@ class AttributeValue(models.Model):
             else:
                 return {attrv.value: None}
 
-        def _get_object_value(attrv):
-            if attrv.referral and attrv.referral.is_active:
+        def _get_object_value(attrv, is_active=True):
+            if attrv.referral and (attrv.referral.is_active or not is_active):
                 if with_metainfo:
                     return {"id": attrv.referral.id, "name": attrv.referral.name}
                 else:
@@ -171,23 +171,25 @@ class AttributeValue(models.Model):
                 value = self.date
 
         elif self.parent_attr.schema.type == AttrTypeValue["object"]:
-            value = _get_object_value(self)
+            value = _get_object_value(self, is_active)
 
         elif self.parent_attr.schema.type == AttrTypeValue["named_object"]:
-            value = _get_named_value(self)
+            value = _get_named_value(self, is_active)
 
         elif self.parent_attr.schema.type == AttrTypeValue["group"] and self.value:
             value = _get_group_value(self)
 
         elif self.parent_attr.schema.type & AttrTypeValue["array"]:
             if self.parent_attr.schema.type & AttrTypeValue["named"]:
-                value = [_get_named_value(x) for x in self.data_array.all()]
+                value = [_get_named_value(x, is_active) for x in self.data_array.all()]
 
             elif self.parent_attr.schema.type & AttrTypeValue["string"]:
                 value = [x.value for x in self.data_array.all()]
 
             elif self.parent_attr.schema.type & AttrTypeValue["object"]:
-                value = [_get_object_value(x) for x in self.data_array.all() if x.referral]
+                value = [
+                    _get_object_value(x, is_active) for x in self.data_array.all() if x.referral
+                ]
 
             elif self.parent_attr.schema.type & AttrTypeValue["group"]:
                 value = [x for x in [_get_group_value(y) for y in self.data_array.all()] if x]
