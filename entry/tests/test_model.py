@@ -1456,7 +1456,7 @@ class ModelTest(AironeTestCase):
         entity = self.create_entity_with_all_type_attributes(user)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
-        # memo
+
         attr_info = [
             {"name": "str", "set_val": "foo", "exp_val": "foo"},
             {"name": "obj", "set_val": str(test_ref.id), "exp_val": test_ref.name},
@@ -3012,7 +3012,8 @@ class ModelTest(AironeTestCase):
             test_ref.delete()
             attrv = attr.get_latest_value()
 
-            # test return value of get_value method with 'with_metainfo', 'is_active=False' parameter
+            # test return value of get_value method with 
+            # 'with_metainfo, is_active=False' parameter
 
             expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
             if attr.schema.type & AttrTypeValue["array"]:
