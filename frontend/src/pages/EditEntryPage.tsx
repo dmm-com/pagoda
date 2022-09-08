@@ -192,6 +192,12 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
               value: attrValue.value.asGroup?.id ?? "",
             };
 
+          case djangoContext.attrTypeValue.role:
+            return {
+              id: attrValue.schema.id,
+              value: attrValue.value.asRole?.id ?? "",
+            };
+
           case djangoContext.attrTypeValue.named_object:
             return {
               id: attrValue.schema.id,
@@ -217,6 +223,12 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
             return {
               id: attrValue.schema.id,
               value: attrValue.value.asArrayGroup?.map((x) => x.id),
+            };
+
+          case djangoContext.attrTypeValue.array_role:
+            return {
+              id: attrValue.schema.id,
+              value: attrValue.value.asArrayRole?.map((x) => x.id),
             };
 
           case djangoContext.attrTypeValue.array_named_object:

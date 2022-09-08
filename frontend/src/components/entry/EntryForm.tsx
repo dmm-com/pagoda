@@ -120,6 +120,11 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         changeAttributes({ ...entryInfo.attrs });
         break;
 
+      case djangoContext.attrTypeValue.array_role:
+        entryInfo.attrs[attrName].value.asArrayRole = valueInfo.value;
+        changeAttributes({ ...entryInfo.attrs });
+        break;
+
       case djangoContext.attrTypeValue.array_named_object:
         if (
           entryInfo.attrs[attrName].value.asArrayNamedObject.length <=

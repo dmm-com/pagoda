@@ -498,7 +498,7 @@ export const EditAttributeValue: FC<Props> = ({
       return (
         <ElemReferral
           attrName={attrName}
-          attrValue={attrInfo.value.asGroup}
+          attrValue={attrInfo.value.asRole}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}
@@ -542,12 +542,12 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
-    case djangoContext.attrTypeValue.array_group:
+    case djangoContext.attrTypeValue.array_role:
       return (
         <ElemReferral
           multiple={true}
           attrName={attrName}
-          attrValue={attrInfo.value.asArrayGroup}
+          attrValue={attrInfo.value.asArrayRole}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}
