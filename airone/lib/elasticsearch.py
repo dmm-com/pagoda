@@ -899,14 +899,16 @@ def make_search_results(
                 }
 
             elif attrinfo["type"] == AttrTypeValue["named_object"]:
-                if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == "":
-                    continue
-                ret_attrinfo["value"] = {
-                    attrinfo["key"]: {
-                        "id": attrinfo["referral_id"],
-                        "name": attrinfo["value"],
+                ret_attrinfo["value"] = (
+                    {
+                        attrinfo["key"]: {
+                            "id": attrinfo["referral_id"],
+                            "name": attrinfo["value"],
+                        }
                     }
-                }
+                    if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == ""
+                    else {}
+                )
 
             elif attrinfo["type"] & AttrTypeValue["array"]:
                 if "value" not in ret_attrinfo:
