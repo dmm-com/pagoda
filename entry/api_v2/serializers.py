@@ -13,8 +13,8 @@ from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity
 from entry.models import Attribute, AttributeValue, Entry
 from group.models import Group
-from role.models import Role
 from job.models import Job
+from role.models import Role
 from user.api_v2.serializers import UserBaseSerializer
 from user.models import User
 
