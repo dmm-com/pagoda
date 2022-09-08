@@ -3012,7 +3012,7 @@ class ModelTest(AironeTestCase):
             test_ref.delete()
             attrv = attr.get_latest_value()
 
-            # test return value of get_value method with 
+            # test return value of get_value method with
             # 'with_metainfo, is_active=False' parameter
 
             expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
