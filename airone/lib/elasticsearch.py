@@ -900,14 +900,14 @@ def make_search_results(
 
             elif attrinfo["type"] == AttrTypeValue["named_object"]:
                 ret_attrinfo["value"] = (
-                    {
+                    {}
+                    if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == ""
+                    else {
                         attrinfo["key"]: {
                             "id": attrinfo["referral_id"],
                             "name": attrinfo["value"],
                         }
                     }
-                    if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] != ""
-                    else {}
                 )
 
             elif attrinfo["type"] & AttrTypeValue["array"]:
