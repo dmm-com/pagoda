@@ -187,7 +187,9 @@ class AttributeValue(models.Model):
                 value = [x.value for x in self.data_array.all()]
 
             elif self.parent_attr.schema.type & AttrTypeValue["object"]:
-                value = [_get_object_value(x, is_active) for x in self.data_array.all() if x.referral]
+                value = [
+                    _get_object_value(x, is_active) for x in self.data_array.all() if x.referral
+                ]
 
             elif self.parent_attr.schema.type & AttrTypeValue["group"]:
                 value = [x for x in [_get_group_value(y) for y in self.data_array.all()] if x]

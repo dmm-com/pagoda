@@ -2902,7 +2902,7 @@ class ModelTest(AironeTestCase):
         test_ref = Entry.objects.create(name="r0", schema=entity, created_user=user)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
-        
+
         attr_info = [
             {"name": "obj", "set_val": str(test_ref.id), "exp_val": test_ref.name},
             {"name": "obj", "set_val": test_ref.id, "exp_val": test_ref.name},
@@ -2927,7 +2927,6 @@ class ModelTest(AironeTestCase):
                 "set_val": [str(test_ref.id)],
                 "exp_val": [test_ref.name],
             },
-            
             {"name": "arr_obj", "set_val": [test_ref.id], "exp_val": [test_ref.name]},
             {"name": "arr_obj", "set_val": [test_ref], "exp_val": [test_ref.name]},
             {
@@ -2968,7 +2967,7 @@ class ModelTest(AironeTestCase):
                 expected_value["value"] = {"id": test_ref.id, "name": test_ref.name}
 
             self.assertEqual(attrv.get_value(with_metainfo=True, is_active=False), expected_value)
-    
+
     def test_get_value_deleted_entry_with_is_active_false(self):
         user = User.objects.create(username="hoge")
         entity = self.create_entity_with_all_type_attributes(user)
@@ -2978,7 +2977,7 @@ class ModelTest(AironeTestCase):
         test_ref = Entry.objects.create(name="r0", schema=ref_entity, created_user=user)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
-        
+
         attr_info = [
             {"name": "obj", "set_val": str(test_ref.id), "exp_val": test_ref.id},
             {"name": "obj", "set_val": test_ref.id, "exp_val": test_ref.id},
@@ -3006,7 +3005,7 @@ class ModelTest(AironeTestCase):
                 "exp_val": [{"hoge": test_ref.id}],
             },
         ]
-        
+
         for info in attr_info:
             attr = entry.attrs.get(name=info["name"])
             attr.add_value(user, info["set_val"])
