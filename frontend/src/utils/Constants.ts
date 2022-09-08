@@ -12,6 +12,10 @@ export const EntryList = {
   MAX_ROW_COUNT: 30,
 };
 
+export const UserList = {
+  MAX_ROW_COUNT: 30,
+};
+
 export const JobList = {
   MAX_ROW_COUNT: 30,
 };

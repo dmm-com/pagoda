@@ -25,6 +25,7 @@ import { SearchBox } from "../common/SearchBox";
 import { UserControlMenu } from "./UserControlMenu";
 
 import { newUserPath, userPath } from "Routes";
+import { UserList as ConstUserList } from "utils/Constants";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -44,8 +45,7 @@ export const UserList: FC = ({}) => {
   } | null>({});
 
   const users = useAsync(async () => {
-    // FIXME pagination on the backend side
-    return await aironeApiClientV2.getUsers();
+    return await aironeApiClientV2.getUsers(page, keyword);
   }, [page, keyword]);
   if (!users.loading && users.error) {
     throw new Error("Failed to get users from AirOne APIv2 endpoint");
@@ -55,11 +55,9 @@ export const UserList: FC = ({}) => {
     setPage(value);
   };
 
-  const totalPageCount = 2;
-  // FIXME
-  // const totalPageCount = entries.loading
-  //     ? 0
-  //     : Math.ceil(entries.value.count / ConstEntryList.MAX_ROW_COUNT);
+  const totalPageCount = users.loading
+    ? 0
+    : Math.ceil(users.value.count / ConstUserList.MAX_ROW_COUNT);
 
   return (
     <Box>
@@ -92,7 +90,7 @@ export const UserList: FC = ({}) => {
         <Loading />
       ) : (
         <Grid container spacing={2}>
-          {users.value.map((user) => {
+          {users.value.results.map((user) => {
             return (
               <Grid item xs={4} key={user.id}>
                 <Card sx={{ height: "100%" }}>
@@ -133,7 +131,7 @@ export const UserList: FC = ({}) => {
                           <MoreVertIcon />
                         </IconButton>
                         <UserControlMenu
-                          userId={user.id}
+                          user={user}
                           anchorElem={userAnchorEls[user.id]}
                           handleClose={(userId: number) =>
                             setUserAnchorEls({
