@@ -122,7 +122,7 @@ class AttributeValue(models.Model):
         """
 
         def _get_named_value(attrv, is_active=True):
-            if attrv.referral and (attrv.referral.is_active or ~is_active):
+            if attrv.referral and (attrv.referral.is_active or not is_active):
                 if with_metainfo:
                     return {
                         attrv.value: {
@@ -136,7 +136,7 @@ class AttributeValue(models.Model):
                 return {attrv.value: None}
 
         def _get_object_value(attrv, is_active=True):
-            if attrv.referral and (attrv.referral.is_active or ~is_active):
+            if attrv.referral and (attrv.referral.is_active or not is_active):
                 if with_metainfo:
                     return {"id": attrv.referral.id, "name": attrv.referral.name}
                 else:

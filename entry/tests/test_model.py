@@ -1558,58 +1558,6 @@ class ModelTest(AironeTestCase):
         self.assertEqual(attr_date.get_latest_value().get_value(), date_value)
         self.assertEqual(attr_date.get_latest_value().get_value(serialize=True), str(date_value))
 
-    def test_get_value_of_attrv_that_refers_deleted_entry(self):
-        user = User.objects.create(username="hoge")
-
-        # create referred Entity and Entries
-        ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
-        ref_entry = Entry.objects.create(name="Ref", schema=ref_entity, created_user=user)
-
-        attr_info = {
-            "obj": {"type": AttrTypeValue["object"], "value": str(ref_entry.id)},
-            "name": {
-                "type": AttrTypeValue["named_object"],
-                "value": {"name": "foo", "id": str(ref_entry.id)},
-            },
-            "arr_obj": {
-                "type": AttrTypeValue["array_object"],
-                "value": [str(ref_entry.id)],
-            },
-            "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
-                "value": [{"name": "bar", "id": str(ref_entry.id)}],
-            },
-        }
-        entity = Entity.objects.create(name="Entity", created_user=user)
-        for attr_name, info in attr_info.items():
-            attr = EntityAttr.objects.create(
-                name=attr_name,
-                type=info["type"],
-                created_user=user,
-                parent_entity=entity,
-            )
-
-            if info["type"] & AttrTypeValue["object"]:
-                attr.referral.add(ref_entity)
-
-            entity.attrs.add(attr)
-
-        entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
-        entry.complement_attrs(user)
-        [entry.attrs.get(name=x).add_value(user, y["value"]) for (x, y) in attr_info.items()]
-
-        # delete entry to which all attribute values refer
-        ref_entry.delete()
-
-        expected_results = {
-            "obj": None,
-            "name": {"foo": None},
-            "arr_obj": [None],
-            "arr_name": [{"bar": None}],
-        }
-        for name, result in expected_results.items():
-            self.assertEqual(entry.attrs.get(name=name).get_latest_value().get_value(), result)
-
     def test_convert_value_to_register(self):
         user = User.objects.create(username="hoge")
 
