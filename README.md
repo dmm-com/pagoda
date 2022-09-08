@@ -317,3 +317,15 @@ If you have any change on a page component, please re-build snapshots along with
 ```
 user@hostname:~/airone$ npm run test:update
 ```
+
+### Running tests for React
+
+You can run test for web-ui components which are created by React as below.
+```
+$ npm run fix
+```
+
+When you want to run individual test (e.g. frontend/src/components/user/UserList.test.tsx), you can do it by following command.
+```
+$ npx jest -u frontend/src/components/user/UserList.test.tsx
+```
