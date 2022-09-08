@@ -192,12 +192,24 @@ const ElemReferral: FC<
           }
         }
         setReferrals(referrals.concat(addReferrals));
-      } else {
+      } else if (Number(attrType) & Number(djangoContext.attrTypeValue.group)) {
         const groups = await aironeApiClientV2.getGroups();
         const addReferrals = [];
 
         // Filter duplicate referrals.
         groups.forEach((result) => {
+          if (!referrals.map((referral) => referral.id).includes(result.id)) {
+            addReferrals.push(result);
+          }
+        });
+
+        setReferrals(referrals.concat(addReferrals));
+      } else if (Number(attrType) & Number(djangoContext.attrTypeValue.role)) {
+        const roles = await aironeApiClientV2.getRoles();
+        const addReferrals = [];
+
+        // Filter duplicate referrals.
+        roles.forEach((result) => {
           if (!referrals.map((referral) => referral.id).includes(result.id)) {
             addReferrals.push(result);
           }
@@ -482,6 +494,17 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
+    case djangoContext.attrTypeValue.role:
+      return (
+        <ElemReferral
+          attrName={attrName}
+          attrValue={attrInfo.value.asGroup}
+          attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
+          handleChange={handleChangeAttribute}
+        />
+      );
+
     case djangoContext.attrTypeValue.named_object:
       return (
         <ElemNamedObject
@@ -503,6 +526,18 @@ export const EditAttributeValue: FC<Props> = ({
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
           schemaId={attrInfo.schema.id}
+          handleChange={handleChangeAttribute}
+        />
+      );
+
+    case djangoContext.attrTypeValue.array_group:
+      return (
+        <ElemReferral
+          multiple={true}
+          attrName={attrName}
+          attrValue={attrInfo.value.asArrayGroup}
+          attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}
         />
       );

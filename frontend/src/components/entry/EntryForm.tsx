@@ -78,6 +78,11 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         changeAttributes({ ...entryInfo.attrs });
         break;
 
+      case djangoContext.attrTypeValue.role:
+        entryInfo.attrs[attrName].value.asRole = valueInfo.value;
+        changeAttributes({ ...entryInfo.attrs });
+        break;
+
       case djangoContext.attrTypeValue.named_object:
         if (valueInfo?.key !== undefined) {
           entryInfo.attrs[attrName].value.asNamedObject = {

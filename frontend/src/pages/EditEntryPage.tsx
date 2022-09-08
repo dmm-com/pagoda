@@ -59,8 +59,10 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
 
   const djangoContext = DjangoContext.getInstance();
 
+  console.log("[onix/pages.EditEntryPage(00)]");
   useEffect(() => {
     if (!entry.loading && entry.value !== undefined) {
+      console.log("[onix/pages.EditEntryPage(10)] entry.value: ", entry.value);
       setEntryInfo({
         name: entry.value.name,
         attrs: Object.fromEntries(
@@ -117,10 +119,12 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
                 asBoolean: false,
                 asObject: null,
                 asGroup: null,
+                asRole: null,
                 asNamedObject: { "": null },
                 asArrayString: [""],
                 asArrayObject: [],
                 asArrayGroup: [],
+                asArrayRole: [],
                 asArrayNamedObject: [{ "": null }],
               },
             },
