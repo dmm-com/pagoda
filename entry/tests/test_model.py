@@ -3006,26 +3006,28 @@ class ModelTest(AironeTestCase):
                 "exp_val": [{"hoge": test_ref.id}],
             },
         ]
-        test_ref.delete()
+        
         for info in attr_info:
             attr = entry.attrs.get(name=info["name"])
             attr.add_value(user, info["set_val"])
+            test_ref.delete()
             attrv = attr.get_latest_value()
 
             # test return value of get_value method with 'with_metainfo', 'is_active=False' parameter
-            print(attrv.referral)
+
             expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
             if attr.schema.type & AttrTypeValue["array"]:
                 if attr.schema.type & AttrTypeValue["named"]:
-                    expected_value["value"] = [{"hoge": {"id": test_ref.id}}]
+                    expected_value["value"] = [{"hoge": {"id": test_ref.id, "name": test_ref.name}}]
                 elif attr.schema.type & AttrTypeValue["object"]:
-                    expected_value["value"] = [{"id": test_ref.id}]
+                    expected_value["value"] = [{"id": test_ref.id, "name": test_ref.name}]
             elif attr.schema.type & AttrTypeValue["named"]:
-                expected_value["value"] = {"bar": {"id": test_ref.id}}
+                expected_value["value"] = {"bar": {"id": test_ref.id, "name": test_ref.name}}
             elif attr.schema.type & AttrTypeValue["object"]:
-                expected_value["value"] = {"id": test_ref.id}
+                expected_value["value"] = {"id": test_ref.id, "name": test_ref.name}
 
-            self.assertEqual(attrv.get_value(with_metainfo=True, is_active=False)["value"], expected_value["value"])
+            self.assertEqual(attrv.get_value(with_metainfo=True, is_active=False), expected_value)
+            test_ref.restore()
 
     def test_add_to_attrv(self):
         user = User.objects.create(username="hoge")
