@@ -9,7 +9,5 @@ import { UserList } from "components/user/UserList";
 import { TestWrapper } from "utils/TestWrapper";
 
 test("should render a component with essential props", function () {
-  expect(() =>
-    render(<UserList users={[]} />, { wrapper: TestWrapper })
-  ).not.toThrow();
+  expect(() => render(<UserList />, { wrapper: TestWrapper })).not.toThrow();
 });
