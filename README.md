@@ -302,13 +302,23 @@ user@hostname:~/airone$ source virtualenv/bin/activate
 user@hostname:~/airone$ npm run fix
 ```
 
-## Test
-
+## Test for Django processing
+You can run tests for processing that is run by Django and Celery, which means backend processing, as below.
 ```
 user@hostname:~$ cd airone
 user@hostname:~/airone$ source virtualenv/bin/activate
 (virtualenv) user@hostname:~/airone$ python manage.py test
+```
 
+When you want to run a specific test (`ModelTest.test_is_belonged_to_parent_group` in the file of `role/tests/test_model.py`) , you can do it as below.
+```
+(virtualenv) user@hostname:~/airone$ python manage.py test role.tests.test_model.ModelTest.test_is_belonged_to_parent_group
+```
+
+## Test for React processing
+You can run test for processing that is run by Browser, wihch means frontend processing as below.
+```
+user@hostname:~$ cd airone
 user@hostname:~/airone$ npm run test
 ```
 
@@ -318,14 +328,7 @@ If you have any change on a page component, please re-build snapshots along with
 user@hostname:~/airone$ npm run test:update
 ```
 
-### Running tests for React
-
-You can run test for web-ui components which are created by React as below.
-```
-$ npm run fix
-```
-
 When you want to run individual test (e.g. frontend/src/components/user/UserList.test.tsx), you can do it by following command.
 ```
-$ npx jest -u frontend/src/components/user/UserList.test.tsx
+user@hostname:~/airone$ npx jest -u frontend/src/components/user/UserList.test.tsx
 ```
