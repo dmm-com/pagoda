@@ -4176,7 +4176,11 @@ class ModelTest(AironeTestCase):
                         "type": AttrTypeValue["group"],
                         "value": {"id": "", "name": ""},
                     },
-                    "name": {"is_readble": True, "type": AttrTypeValue["named_object"]},
+                    "name": {
+                        "is_readble": True,
+                        "type": AttrTypeValue["named_object"],
+                        "value": {"": {"id": "", "name": ""}},
+                    },
                     "obj": {
                         "is_readble": True,
                         "type": AttrTypeValue["object"],

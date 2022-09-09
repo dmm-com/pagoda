@@ -899,8 +899,6 @@ def make_search_results(
                 }
 
             elif attrinfo["type"] == AttrTypeValue["named_object"]:
-                if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == "":
-                    continue
                 ret_attrinfo["value"] = {
                     attrinfo["key"]: {
                         "id": attrinfo["referral_id"],

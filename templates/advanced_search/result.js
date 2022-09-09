@@ -12,7 +12,7 @@ function make_attr_elem(attr, hint_attr) {
 
     return `<div class='row'> \
               <div class='col'> \
-                <p class='url_conv'>${ key }</p> \
+                <p class='url_conv'>${ key ?? '' }</p> \
               </div> \
               <div class='col'>${ value_str }</div> \
             </div>`;
