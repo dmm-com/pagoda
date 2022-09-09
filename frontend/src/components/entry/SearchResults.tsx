@@ -2,6 +2,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   InputAdornment,
+  List,
+  ListItem,
   TableCell,
   TableRow,
   TextField,
@@ -237,17 +239,19 @@ export const SearchResults: FC<Props> = ({
           ))}
           {hasReferral && (
             <TableCell sx={{ minWidth: "300px" }}>
-              {result.referrals.map((referral) => {
-                return (
-                  <Box
-                    key={referral.id}
-                    component={Link}
-                    to={entryDetailsPath(0, referral.id)}
-                  >
-                    {referral.name}
-                  </Box>
-                );
-              })}
+              <List>
+                {result.referrals.map((referral) => (
+                  <ListItem>
+                    <Box
+                      key={referral.id}
+                      component={Link}
+                      to={entryDetailsPath(0, referral.id)}
+                    >
+                      {referral.name}
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
             </TableCell>
           )}
         </StyledTableRow>

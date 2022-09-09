@@ -37,7 +37,7 @@
       </tr>
       {% for entry in entries %}
       <tr id="entryinfo" {% if entry.name == query %} class="table-primary" {% endif %}>
-        <td id="name"><a href="/entry/show/{{ entry.id }}/">{{ entry.name }}</a></td>
+        <td id="name"><a href="/entry/show/{{ entry.id }}/">{{ entry.name }} ({{ entry.schema.name }})</a></td>
         <td id="attrname">{{ entry.attr|default_if_none:'' }}</td>
       </tr>
       {% endfor %}

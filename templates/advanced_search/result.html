@@ -75,7 +75,7 @@
               <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
 
             {% elif attr.type == attr_type.date %}
-              <td id='{{ hint_attr.name }}'>{{ attr.value }}</td>
+              <td id='{{ hint_attr.name }}'>{{ attr.value|default_if_none:'' }}</td>
 
             {% elif attr.type == attr_type.entry %}
               <td id='{{ hint_attr.name }}'><a href='/entry/show/{{ attr.value.id }}/'>{{ attr.value.name }}</a></td>

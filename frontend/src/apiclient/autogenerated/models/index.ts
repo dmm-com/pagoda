@@ -1,6 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from "./ACL";
+export * from "./ACLParent";
 export * from "./Attribute";
 export * from "./Entity";
 export * from "./EntityAttrCreate";

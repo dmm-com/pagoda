@@ -2040,7 +2040,7 @@ class ViewTest(AironeViewTest):
             "vals": [],
             "ref": {"id": "", "name": ""},
             "refs": [],
-            # "name": None,
+            "name": {"": {"id": "", "name": ""}},
             "names": [],
             "group": {"id": "", "name": ""},
             "groups": [],

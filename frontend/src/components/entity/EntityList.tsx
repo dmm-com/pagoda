@@ -107,6 +107,9 @@ export const EntityList: FC<Props> = ({
                   mt: "24px",
                   mx: "16px",
                   mb: "16px",
+                  ".MuiCardHeader-content": {
+                    width: "80%",
+                  },
                 }}
                 title={
                   <CardActionArea
@@ -116,7 +119,6 @@ export const EntityList: FC<Props> = ({
                     <Typography
                       variant="h6"
                       sx={{
-                        width: "300px",
                         textOverflow: "ellipsis",
                         overflow: "hidden",
                         whiteSpace: "nowrap",

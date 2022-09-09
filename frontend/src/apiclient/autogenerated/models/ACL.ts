@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import {
+  ACLParent,
+  ACLParentFromJSON,
+  ACLParentFromJSONTyped,
+  ACLParentToJSON,
+} from "./ACLParent";
+
 /**
  *
  * @export
@@ -75,10 +82,10 @@ export interface ACL {
   readonly roles: Array<{ [key: string]: any }>;
   /**
    *
-   * @type {any}
+   * @type {ACLParent}
    * @memberof ACL
    */
-  readonly parent: any | null;
+  parent: ACLParent | null;
 }
 
 export function ACLFromJSON(json: any): ACL {
@@ -101,7 +108,7 @@ export function ACLFromJSONTyped(json: any, ignoreDiscriminator: boolean): ACL {
     members: json["members"],
     acl: json["acl"],
     roles: json["roles"],
-    parent: json["parent"],
+    parent: ACLParentFromJSON(json["parent"]),
   };
 }
 
@@ -118,5 +125,6 @@ export function ACLToJSON(value?: ACL | null): any {
     default_permission: value.defaultPermission,
     objtype: value.objtype,
     acl: value.acl,
+    parent: ACLParentToJSON(value.parent),
   };
 }

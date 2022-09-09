@@ -10,6 +10,18 @@
 ### Changed
 
 ### Fixed
+
+* Escaped single quote data will be shown at Entry edit page (#603)
+  Contributed by @Ravie403
+
+## v3.19.0
+
+### Added
+* Added special search character to get Entries
+  that have substantial attribute values.
+  Contributed by @userlocalhost
+
+### Fixed
 * Fixed problem that duplicate named Entries might be created
   when multiple requests were coming at the exact same time.
   Contributed by @userlocalhost, @hinashi
@@ -24,9 +36,6 @@
   Contributed by @hinashi
 * Added exclude entity parameter in get_referred_objects.
   Contributed by @hinashi
-* Added special search character to get Entries
-  that have substantial attribute values.
-  Contributed by @userlocalhost
 
 ### Fixed
 * Fixed an error in getting data_value in advanced search.
