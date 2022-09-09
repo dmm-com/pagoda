@@ -8,7 +8,22 @@
 
 ### Fixed
 
+## v3.20.0
+
+### Added
+* Added entity name at dashboard search result page.
+  Contributed by @Ravie403
+
+### Fixed
 * Escaped single quote data will be shown at Entry edit page (#603)
+  Contributed by @Ravie403
+* Fixed value being displayed as null at advanced search results page.
+  Contributed by @Ravie403
+* Fixed referral entries not displayed at restore entry page.
+  Contributed by @Ravie403
+* Fixed value being displayed as null at restore entry page.
+  Contributed by @Ravie403
+* Fixed an error when there is no named_entry attribute value in advanced search.
   Contributed by @Ravie403
 
 ## v3.19.0
