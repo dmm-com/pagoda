@@ -26,20 +26,17 @@ test("should match snapshot", async () => {
     writable: false,
   });
 
-  const users = [
-    {
+  const users = {
+    count: 1,
+    next: null,
+    previous: null,
+    results: [{
       id: 1,
       username: "user1",
       email: "user1@example.com",
-      date_joined: "2022-01-01 00:00:00",
-    },
-    {
-      id: 2,
-      username: "user2",
-      email: "user2@example.com",
-      date_joined: "2022-01-01 00:00:00",
-    },
-  ];
+      is_superuser: false,
+    }]
+  }
 
   /* eslint-disable */
   jest

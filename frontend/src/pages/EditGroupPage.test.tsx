@@ -17,16 +17,23 @@ afterEach(() => {
 });
 
 test("should match snapshot", async () => {
-  const users = [
-    {
+  const users = {
+    count: 2,
+    next: null,
+    previous: null,
+    results: [{
       id: 1,
       username: "user1",
-    },
-    {
+      email: "user1@example.com",
+      is_superuser: false,
+    }, {
       id: 2,
       username: "user2",
-    },
-  ];
+      email: "user2@example.com",
+      is_superuser: false,
+    }]
+  }
+
   const group = {
     id: 1,
     name: "group1",
