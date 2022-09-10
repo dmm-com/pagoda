@@ -2,11 +2,12 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { PageHeader } from "../components/common/PageHeader";
+import { RateLimitedClickable } from "../components/common/RateLimitedClickable";
 
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -20,7 +21,6 @@ import {
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
-  const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const [openModal, setOpenModal] = useState(false);
 
@@ -104,20 +104,22 @@ export const AdvancedSearchResultsPage: FC = () => {
             >
               属性の再設定
             </Button>
-            <Button
-              sx={{ marginLeft: "40px" }}
-              variant="outlined"
+            <RateLimitedClickable
+              intervalSec={5}
               onClick={() => handleExport("yaml")}
             >
-              YAML 出力
-            </Button>
-            <Button
-              sx={{ marginLeft: "16px" }}
-              variant="outlined"
+              <Button sx={{ marginLeft: "40px" }} variant="outlined">
+                YAML 出力
+              </Button>
+            </RateLimitedClickable>
+            <RateLimitedClickable
+              intervalSec={5}
               onClick={() => handleExport("csv")}
             >
-              CSV 出力
-            </Button>
+              <Button sx={{ marginLeft: "16px" }} variant="outlined">
+                CSV 出力
+              </Button>
+            </RateLimitedClickable>
           </Box>
         }
       />
