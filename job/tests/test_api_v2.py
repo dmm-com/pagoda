@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from airone.lib.test import AironeViewTest
 from entity.models import Entity
 from entry.models import Entry
@@ -79,6 +81,31 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["count"], 2)
+
+    def test_get_recent_job(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
+        job = Job.new_create(user, entry, "hoge")
+
+        # match the created_after
+        created_after = job.created_at.strftime("%Y-%m-%d")
+        resp = self.client.get(
+            f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}"
+            f"&offset=0&created_after={created_after}"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 1)
+
+        # don't match the created_after
+        created_after = (job.created_at + timedelta(days=1)).strftime("%Y-%m-%d")
+        resp = self.client.get(
+            f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}"
+            f"&offset=0&created_after={created_after}"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 0)
 
     def test_get_job(self):
         user = self.guest_login()
