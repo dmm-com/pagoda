@@ -24,7 +24,7 @@ class ViewTest(AironeViewTest):
     def test_get_user(self):
         login_user = self.guest_login()
 
-        resp = self.client.get("/user/api/v2/users/%s" % login_user.id)
+        resp = self.client.get("/user/api/v2/%s/" % login_user.id)
         self.assertEqual(resp.status_code, 200)
 
         body = resp.json()
@@ -36,26 +36,60 @@ class ViewTest(AironeViewTest):
         self.assertEqual(body["token"], None)
 
         other = self._create_user("test1", "test1@example.com")
-        resp = self.client.get("/user/api/v2/users/%s" % other.id)
+        resp = self.client.get("/user/api/v2/%s/" % other.id)
         self.assertEqual(resp.status_code, 403)
 
     def test_list_user(self):
         login_user = self.guest_login()
+        admin_user = self._create_user("admin", "admin@example.com", True)
 
-        origins = [
-            self._create_user("test1", "test1@example.com"),
-            self._create_user("test2", "test2@example.com"),
-        ]
-
-        resp = self.client.get("/user/api/v2/users")
+        resp = self.client.get("/user/api/v2/")
         self.assertEqual(resp.status_code, 200)
 
-        body = [x for x in resp.json() if x["id"] != login_user.id]
-        self.assertEqual(len(body), len(origins))
+        self.assertEqual(
+            resp.json(),
+            {
+                "count": 2,
+                "next": None,
+                "previous": None,
+                "results": [
+                    {
+                        "id": admin_user.id,
+                        "username": "admin",
+                        "email": "admin@example.com",
+                        "is_superuser": True,
+                        "date_joined": admin_user.date_joined.isoformat(),
+                    },
+                    {
+                        "id": login_user.id,
+                        "username": "guest",
+                        "email": "",
+                        "is_superuser": False,
+                        "date_joined": login_user.date_joined.isoformat(),
+                    },
+                ],
+            },
+        )
 
-        for i, x in enumerate(body):
-            self.assertEqual(x["id"], origins[i].id)
-            self.assertEqual(x["username"], origins[i].username)
-            self.assertEqual(x["email"], origins[i].email)
-            self.assertEqual(x["is_superuser"], origins[i].is_superuser)
-            self.assertEqual(x["date_joined"], origins[i].date_joined.isoformat())
+    def test_delete_user(self):
+        self.admin_login()
+
+        user: User = User.objects.create(username="user")
+        resp = self.client.delete("/user/api/v2/%d/" % user.id)
+        self.assertEqual(resp.status_code, 204)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
+        # already deleted case
+        resp = self.client.delete("/user/api/v2/%d/" % user.id)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_delete_user_without_permission(self):
+        self.guest_login()
+
+        user: User = User.objects.create(username="user")
+        resp = self.client.delete("/user/api/v2/%d/" % user.id)
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(), {"detail": "You do not have permission to perform this action."}
+        )

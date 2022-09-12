@@ -39,6 +39,7 @@ models/PaginatedEntityListList.ts
 models/PaginatedEntryBaseList.ts
 models/PaginatedGetEntrySimpleList.ts
 models/PaginatedJobSerializersList.ts
+models/PaginatedUserListList.ts
 models/Role.ts
 models/UserBase.ts
 models/UserList.ts
