@@ -23,6 +23,7 @@ import {
 } from "../models";
 
 export interface JobApiV2JobsListRequest {
+  createdAfter?: Date;
   limit?: number;
   offset?: number;
 }
@@ -42,6 +43,12 @@ export class JobApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<runtime.ApiResponse<PaginatedJobSerializersList>> {
     const queryParameters: any = {};
+
+    if (requestParameters.createdAfter !== undefined) {
+      queryParameters["created_after"] = (
+        requestParameters.createdAfter as any
+      ).toISOString();
+    }
 
     if (requestParameters.limit !== undefined) {
       queryParameters["limit"] = requestParameters.limit;

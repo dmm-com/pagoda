@@ -102,3 +102,32 @@ export const EntryReferralList = {
  */
 export const Full2HalfWidthConstant = 0xfee0;
 export const Full2HalfWidthSourceRegex = "[Ａ-Ｚａ-ｚ０-９]";
+
+export const JobStatuses = {
+  PREPARING: 1,
+  DONE: 2,
+  ERROR: 3,
+  TIMEOUT: 4,
+  PROCESSING: 5,
+  CANCELED: 6,
+};
+
+export const JobOperations = {
+  CREATE_ENTRY: 1,
+  EDIT_ENTRY: 2,
+  DELETE_ENTRY: 3,
+  COPY_ENTRY: 4,
+  IMPORT_ENTRY: 5,
+  EXPORT_ENTRY: 6,
+  RESTORE_ENTRY: 7,
+  EXPORT_SEARCH_RESULT: 8,
+  REGISTER_REFERRALS: 9,
+  CREATE_ENTITY: 10,
+  EDIT_ENTITY: 11,
+  DELETE_ENTITY: 12,
+  NOTIFY_CREATE_ENTRY: 13,
+  NOTIFY_UPDATE_ENTRY: 14,
+  NOTIFY_DELETE_ENTRY: 15,
+  DO_COPY_ENTRY: 16,
+  IMPORT_ENTRY_V2: 17,
+};
