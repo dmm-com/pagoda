@@ -38,7 +38,7 @@ export const EditGroupPage: FC = () => {
       {users.loading || group.loading ? (
         <Loading />
       ) : (
-        <GroupForm users={users.value} group={group.value} />
+        <GroupForm users={users.value.results} group={group.value} />
       )}
     </Box>
   );

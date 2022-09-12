@@ -192,12 +192,24 @@ const ElemReferral: FC<
           }
         }
         setReferrals(referrals.concat(addReferrals));
-      } else {
+      } else if (Number(attrType) & Number(djangoContext.attrTypeValue.group)) {
         const groups = await aironeApiClientV2.getGroups();
         const addReferrals = [];
 
         // Filter duplicate referrals.
         groups.forEach((result) => {
+          if (!referrals.map((referral) => referral.id).includes(result.id)) {
+            addReferrals.push(result);
+          }
+        });
+
+        setReferrals(referrals.concat(addReferrals));
+      } else if (Number(attrType) & Number(djangoContext.attrTypeValue.role)) {
+        const roles = await aironeApiClientV2.getRoles();
+        const addReferrals = [];
+
+        // Filter duplicate referrals.
+        roles.forEach((result) => {
           if (!referrals.map((referral) => referral.id).includes(result.id)) {
             addReferrals.push(result);
           }
@@ -482,6 +494,17 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
+    case djangoContext.attrTypeValue.role:
+      return (
+        <ElemReferral
+          attrName={attrName}
+          attrValue={attrInfo.value.asRole}
+          attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
+          handleChange={handleChangeAttribute}
+        />
+      );
+
     case djangoContext.attrTypeValue.named_object:
       return (
         <ElemNamedObject
@@ -513,6 +536,18 @@ export const EditAttributeValue: FC<Props> = ({
           multiple={true}
           attrName={attrName}
           attrValue={attrInfo.value.asArrayGroup}
+          attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
+          handleChange={handleChangeAttribute}
+        />
+      );
+
+    case djangoContext.attrTypeValue.array_role:
+      return (
+        <ElemReferral
+          multiple={true}
+          attrName={attrName}
+          attrValue={attrInfo.value.asArrayRole}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}

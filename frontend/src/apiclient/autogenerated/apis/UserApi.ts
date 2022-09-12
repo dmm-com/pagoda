@@ -14,16 +14,26 @@
 
 import * as runtime from "../runtime";
 import {
-  UserList,
-  UserListFromJSON,
-  UserListToJSON,
+  PaginatedUserListList,
+  PaginatedUserListListFromJSON,
+  PaginatedUserListListToJSON,
   UserRetrieve,
   UserRetrieveFromJSON,
   UserRetrieveToJSON,
 } from "../models";
 
-export interface UserApiV2UsersRetrieveRequest {
+export interface UserApiV2DestroyRequest {
   id: number;
+}
+
+export interface UserApiV2RetrieveRequest {
+  id: number;
+}
+
+export interface UserApiV2UsersListRequest {
+  ordering?: string;
+  page?: number;
+  search?: string;
 }
 
 /**
@@ -32,10 +42,141 @@ export interface UserApiV2UsersRetrieveRequest {
 export class UserApi extends runtime.BaseAPI {
   /**
    */
-  async userApiV2UsersListRaw(
+  async userApiV2DestroyRaw(
+    requestParameters: UserApiV2DestroyRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<Array<UserList>>> {
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling userApiV2Destroy."
+      );
+    }
+
     const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/{id}/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "DELETE",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async userApiV2Destroy(
+    requestParameters: UserApiV2DestroyRequest,
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.userApiV2DestroyRaw(requestParameters, initOverrides);
+  }
+
+  /**
+   */
+  async userApiV2RetrieveRaw(
+    requestParameters: UserApiV2RetrieveRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<UserRetrieve>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling userApiV2Retrieve."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/{id}/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      UserRetrieveFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async userApiV2Retrieve(
+    requestParameters: UserApiV2RetrieveRequest,
+    initOverrides?: RequestInit
+  ): Promise<UserRetrieve> {
+    const response = await this.userApiV2RetrieveRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async userApiV2UsersListRaw(
+    requestParameters: UserApiV2UsersListRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<PaginatedUserListList>> {
+    const queryParameters: any = {};
+
+    if (requestParameters.ordering !== undefined) {
+      queryParameters["ordering"] = requestParameters.ordering;
+    }
+
+    if (requestParameters.page !== undefined) {
+      queryParameters["page"] = requestParameters.page;
+    }
+
+    if (requestParameters.search !== undefined) {
+      queryParameters["search"] = requestParameters.search;
+    }
 
     const headerParameters: runtime.HTTPHeaders = {};
 
@@ -64,75 +205,17 @@ export class UserApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      jsonValue.map(UserListFromJSON)
+      PaginatedUserListListFromJSON(jsonValue)
     );
   }
 
   /**
    */
   async userApiV2UsersList(
+    requestParameters: UserApiV2UsersListRequest = {},
     initOverrides?: RequestInit
-  ): Promise<Array<UserList>> {
-    const response = await this.userApiV2UsersListRaw(initOverrides);
-    return await response.value();
-  }
-
-  /**
-   */
-  async userApiV2UsersRetrieveRaw(
-    requestParameters: UserApiV2UsersRetrieveRequest,
-    initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<UserRetrieve>> {
-    if (requestParameters.id === null || requestParameters.id === undefined) {
-      throw new runtime.RequiredError(
-        "id",
-        "Required parameter requestParameters.id was null or undefined when calling userApiV2UsersRetrieve."
-      );
-    }
-
-    const queryParameters: any = {};
-
-    const headerParameters: runtime.HTTPHeaders = {};
-
-    if (
-      this.configuration &&
-      (this.configuration.username !== undefined ||
-        this.configuration.password !== undefined)
-    ) {
-      headerParameters["Authorization"] =
-        "Basic " +
-        btoa(this.configuration.username + ":" + this.configuration.password);
-    }
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters["Authorization"] =
-        this.configuration.apiKey("Authorization"); // tokenAuth authentication
-    }
-
-    const response = await this.request(
-      {
-        path: `/user/api/v2/users/{id}`.replace(
-          `{${"id"}}`,
-          encodeURIComponent(String(requestParameters.id))
-        ),
-        method: "GET",
-        headers: headerParameters,
-        query: queryParameters,
-      },
-      initOverrides
-    );
-
-    return new runtime.JSONApiResponse(response, (jsonValue) =>
-      UserRetrieveFromJSON(jsonValue)
-    );
-  }
-
-  /**
-   */
-  async userApiV2UsersRetrieve(
-    requestParameters: UserApiV2UsersRetrieveRequest,
-    initOverrides?: RequestInit
-  ): Promise<UserRetrieve> {
-    const response = await this.userApiV2UsersRetrieveRaw(
+  ): Promise<PaginatedUserListList> {
+    const response = await this.userApiV2UsersListRaw(
       requestParameters,
       initOverrides
     );

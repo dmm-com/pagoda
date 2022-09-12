@@ -8,8 +8,30 @@ import React from "react";
 import { UserList } from "components/user/UserList";
 import { TestWrapper } from "utils/TestWrapper";
 
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
 test("should render a component with essential props", function () {
-  expect(() =>
-    render(<UserList users={[]} />, { wrapper: TestWrapper })
-  ).not.toThrow();
+  const users = {
+    count: 1,
+    next: null,
+    previous: null,
+    results: [
+      {
+        id: 1,
+        username: "user1",
+        email: "user1@example.com",
+        is_superuser: false,
+      },
+    ],
+  };
+
+  /* eslint-disable */
+  jest
+    .spyOn(require("apiclient/AironeApiClientV2").aironeApiClientV2, "getUsers")
+    .mockResolvedValue(Promise.resolve(users));
+  /* eslint-enable */
+
+  expect(() => render(<UserList />, { wrapper: TestWrapper })).not.toThrow();
 });

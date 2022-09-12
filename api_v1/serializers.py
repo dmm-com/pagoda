@@ -7,6 +7,7 @@ from airone.lib.types import AttrTypeValue
 from entity.models import Entity
 from entry.models import AttributeValue, Entry
 from group.models import Group
+from role.models import Role
 
 
 class GetEntrySerializer(serializers.ModelSerializer):
@@ -148,9 +149,10 @@ class PostEntrySerializer(serializers.Serializer):
                 )
 
             elif attr.type & AttrTypeValue["group"]:
-                return [
-                    x for x in [AttributeValue.uniform_storable_for_group(v) for v in value] if x
-                ]
+                return [x for x in [AttributeValue.uniform_storable(v, Group) for v in value] if x]
+
+            elif attr.type & AttrTypeValue["role"]:
+                return [x for x in [AttributeValue.uniform_storable(v, Role) for v in value] if x]
 
         elif attr.type & AttrTypeValue["string"] or attr.type & AttrTypeValue["text"]:
             if not isinstance(value, str):
@@ -192,7 +194,10 @@ class PostEntrySerializer(serializers.Serializer):
                 return None
 
         elif attr.type & AttrTypeValue["group"]:
-            return AttributeValue.uniform_storable_for_group(value)
+            return AttributeValue.uniform_storable(value, Group)
+
+        elif attr.type & AttrTypeValue["role"]:
+            return AttributeValue.uniform_storable(value, Role)
 
         return None
 

@@ -27,6 +27,7 @@ class ViewTest(AironeViewTest):
         self.ref_entity: Entity = self.create_entity(self.user, "ref_entity")
         self.ref_entry: Entry = self.add_entry(self.user, "r-0", self.ref_entity)
         self.group: Group = Group.objects.create(name="group0")
+        self.role: Role = Role.objects.create(name="role0")
 
         self.entity: Entity = self.create_entity(
             **{
@@ -169,11 +170,29 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrTypeValue["date"],
                 },
+                {
+                    "id": self.entity.attrs.get(name="role").id,
+                    "index": 11,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "role",
+                    "referral": [],
+                    "type": AttrTypeValue["role"],
+                },
+                {
+                    "id": self.entity.attrs.get(name="roles").id,
+                    "index": 12,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "name": "roles",
+                    "referral": [],
+                    "type": AttrTypeValue["array_role"],
+                },
             ],
         )
 
         entity_attr: EntityAttr = self.entity.attrs.get(name="refs")
-        entity_attr.index = 11
+        entity_attr.index = 13
         entity_attr.is_delete_in_chain = True
         entity_attr.is_mandatory = True
         entity_attr.referral.add(self.ref_entity)
@@ -184,7 +203,7 @@ class ViewTest(AironeViewTest):
             resp.json()["attrs"][-1],
             {
                 "id": entity_attr.id,
-                "index": 11,
+                "index": 13,
                 "is_delete_in_chain": True,
                 "is_mandatory": True,
                 "name": "refs",
@@ -2147,6 +2166,8 @@ class ViewTest(AironeViewTest):
                 {"id": attr["text"].id, "value": "hoge\nfuga"},
                 {"id": attr["bool"].id, "value": True},
                 {"id": attr["date"].id, "value": "2018-12-31"},
+                {"id": attr["role"].id, "value": self.role.id},
+                {"id": attr["roles"].id, "value": [self.role.id]},
             ],
         }
         resp = self.client.post(
@@ -2182,6 +2203,8 @@ class ViewTest(AironeViewTest):
                 "text": "hoge\nfuga",
                 "val": "hoge",
                 "vals": ["hoge", "fuga"],
+                "role": "role0",
+                "roles": ["role0"],
             },
         )
         search_result = self._es.search(body={"query": {"term": {"name": entry.name}}})

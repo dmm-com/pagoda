@@ -45,6 +45,12 @@ function make_attr_elem(attr, hint_attr) {
         }
         break;
 
+      case {{ attr_type.role }}:
+        if (attr.value) {
+          new_elem.append($(`<a href='/role/edit/${ attr.value.id }'>${ attr.value.name }</a>`));
+        }
+        break;
+
       case {{ attr_type.named_entry }}:
         new_elem.append($(get_named_column(attr.value)));
         break;
@@ -82,6 +88,18 @@ function make_attr_elem(attr, hint_attr) {
         for(var value of attr.value) {
           if(value) {
             elem_ul.append($(`<li class='list-group-item'><a href='/group/'>${ value.name }</a></li>`));
+          } else {
+            elem_ul.append($(`<li class='list-group-item' />`));
+          }
+        }
+        new_elem.append(elem_ul);
+        break;
+
+      case {{ attr_type.array_role }}:
+        var elem_ul = $("<ul class='list-group'/>");
+        for(var value of attr.value) {
+          if(value) {
+            elem_ul.append($(`<li class='list-group-item'><a href='/role/edit/${ value.id }'>${ value.name }</a></li>`));
           } else {
             elem_ul.append($(`<li class='list-group-item' />`));
           }

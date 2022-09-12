@@ -1,8 +1,10 @@
+.openapi-generator-ignore
 apis/AclApi.ts
 apis/EntityApi.ts
 apis/EntryApi.ts
 apis/GroupApi.ts
 apis/JobApi.ts
+apis/RoleApi.ts
 apis/UserApi.ts
 apis/index.ts
 index.ts
@@ -37,6 +39,8 @@ models/PaginatedEntityListList.ts
 models/PaginatedEntryBaseList.ts
 models/PaginatedGetEntrySimpleList.ts
 models/PaginatedJobSerializersList.ts
+models/PaginatedUserListList.ts
+models/Role.ts
 models/UserBase.ts
 models/UserList.ts
 models/UserRetrieve.ts

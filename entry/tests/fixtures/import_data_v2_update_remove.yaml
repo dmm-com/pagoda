@@ -25,3 +25,7 @@
         value: ""
       - name: date
         value: "" 
+      - name: role
+        value: "" 
+      - name: roles
+        value: []

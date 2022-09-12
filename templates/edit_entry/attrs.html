@@ -62,6 +62,24 @@
         </select>
         <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}"/>
 
+      {% elif attr.type|bitwise_and:attr_type.role %}
+
+        <ul class='list-group'>
+          <li class='list-group-item list-group-item-info airone-selected-items' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
+        </ul>
+
+        <select class="attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" index='0' size='5' style="width: 100%">
+            {% if not attr.is_mandatory %}
+            <option value='0'>- NOT SET -</option>
+            {% endif %}
+
+            {% for role in roles %}
+            <option value="{{ role.id }}"{% if role.id == attr.last_value.id %} selected="selected" {% endif %}>{{ role.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}"/>
+
+
       {% else %}
         <input type='text' class='form-control attr_value' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" index='0'/>
       {% endif %}
@@ -136,6 +154,27 @@
 
           {% for group in groups %}
           <option value="{{ group.id }}"{% if group.id == attr.last_value.id %} selected="selected" {% endif %}>{{ group.name }}</option>
+          {% endfor %}
+      </select>
+      <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}"/>
+
+      </div>
+    </div>
+
+    {% elif attr.type|bitwise_and:attr_type.role %}
+    <div class='row attr_referral' {% if attr.is_mandatory %}mandatory="true"{% endif %}>
+      <div class='col-12'>
+
+      <ul class='list-group'>
+        <li class='list-group-item list-group-item-info airone-selected-items' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
+      </ul>
+      <select class="attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" index='0' size='5' style="width: 100%" {% if attr.is_mandatory %}mandatory="true"{% endif %}>
+          {% if not attr.is_mandatory %}
+          <option value='0'>- NOT SET -</option>
+          {% endif %}
+
+          {% for role in roles %}
+          <option value="{{ role.id }}"{% if role.id == attr.last_value.id %} selected="selected" {% endif %}>{{ role.name }}</option>
           {% endfor %}
       </select>
       <input type="text" class="form-control narrow_down_referral" placeholder="絞り込み" style="width: 100%" use_api="True" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}"/>

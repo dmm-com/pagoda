@@ -92,6 +92,18 @@ export interface EntryRetrieveValue {
    * @memberof EntryRetrieveValue
    */
   asGroup?: EntryRetrieveValueAsGroup | null;
+  /**
+   *
+   * @type {EntryRetrieveValueAsGroup}
+   * @memberof EntryRetrieveValue
+   */
+  asRole?: EntryRetrieveValueAsGroup | null;
+  /**
+   *
+   * @type {Array<EntryRetrieveValueAsObjectSchema>}
+   * @memberof EntryRetrieveValue
+   */
+  asArrayRole?: Array<EntryRetrieveValueAsObjectSchema>;
 }
 
 export function EntryRetrieveValueFromJSON(json: any): EntryRetrieveValue {
@@ -133,6 +145,14 @@ export function EntryRetrieveValueFromJSONTyped(
     asGroup: !exists(json, "as_group")
       ? undefined
       : EntryRetrieveValueAsGroupFromJSON(json["as_group"]),
+    asRole: !exists(json, "as_role")
+      ? undefined
+      : EntryRetrieveValueAsGroupFromJSON(json["as_role"]),
+    asArrayRole: !exists(json, "as_array_role")
+      ? undefined
+      : (json["as_array_role"] as Array<any>).map(
+          EntryRetrieveValueAsObjectSchemaFromJSON
+        ),
   };
 }
 
@@ -168,5 +188,12 @@ export function EntryRetrieveValueToJSON(
           ),
     as_boolean: value.asBoolean,
     as_group: EntryRetrieveValueAsGroupToJSON(value.asGroup),
+    as_role: EntryRetrieveValueAsGroupToJSON(value.asRole),
+    as_array_role:
+      value.asArrayRole === undefined
+        ? undefined
+        : (value.asArrayRole as Array<any>).map(
+            EntryRetrieveValueAsObjectSchemaToJSON
+          ),
   };
 }

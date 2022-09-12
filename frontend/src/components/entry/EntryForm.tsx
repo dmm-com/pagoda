@@ -78,6 +78,11 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         changeAttributes({ ...entryInfo.attrs });
         break;
 
+      case djangoContext.attrTypeValue.role:
+        entryInfo.attrs[attrName].value.asRole = valueInfo.value;
+        changeAttributes({ ...entryInfo.attrs });
+        break;
+
       case djangoContext.attrTypeValue.named_object:
         if (valueInfo?.key !== undefined) {
           entryInfo.attrs[attrName].value.asNamedObject = {
@@ -112,6 +117,11 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
 
       case djangoContext.attrTypeValue.array_group:
         entryInfo.attrs[attrName].value.asArrayGroup = valueInfo.value;
+        changeAttributes({ ...entryInfo.attrs });
+        break;
+
+      case djangoContext.attrTypeValue.array_role:
+        entryInfo.attrs[attrName].value.asArrayRole = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
         break;
 

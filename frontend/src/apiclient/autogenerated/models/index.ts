@@ -31,6 +31,8 @@ export * from "./PaginatedEntityListList";
 export * from "./PaginatedEntryBaseList";
 export * from "./PaginatedGetEntrySimpleList";
 export * from "./PaginatedJobSerializersList";
+export * from "./PaginatedUserListList";
+export * from "./Role";
 export * from "./UserBase";
 export * from "./UserList";
 export * from "./UserRetrieve";
