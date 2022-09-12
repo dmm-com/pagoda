@@ -337,7 +337,7 @@ $('button[name=add_attr]').on('click', function() {
     {% for value in attr.last_value %}
       {% if attr.type == attr_type.array_string %}
         value_setter = function(new_column) {
-          new_column.find('.attr_value').val(unescapeHtml('{{ value }}'));
+          new_column.find('.attr_value').val(unescapeHtml('{{ value|escapejs }}'));
           new_column.find('.attr_value').attr('enabled', 'True');
         };
 
