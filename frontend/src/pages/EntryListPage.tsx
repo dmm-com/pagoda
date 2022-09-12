@@ -35,10 +35,6 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
     );
   }
 
-  if (!entity.loading) {
-    console.log("[onix(10)] entity: ", entity);
-  }
-
   return (
     <Box>
       <AironeBreadcrumbs>

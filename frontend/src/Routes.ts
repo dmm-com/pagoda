@@ -59,3 +59,8 @@ export const passwordPath = (userId: number | string) =>
 export const userPath = (userId: number | string) =>
   basePath + `users/${userId}`;
 export const usersPath = () => basePath + "users";
+
+// roles
+export const rolePath = (roleId: number | string) =>
+  basePath + `roles/${roleId}`;
+export const rolesPath = () => basePath + "roles";

@@ -36,6 +36,8 @@ class AironeTestCase(TestCase):
         {"name": "bool", "type": AttrTypeValue["boolean"]},
         {"name": "text", "type": AttrTypeValue["text"]},
         {"name": "date", "type": AttrTypeValue["date"]},
+        {"name": "role", "type": AttrTypeValue["role"]},
+        {"name": "roles", "type": AttrTypeValue["array_role"]},
     ]
 
     def setUp(self):

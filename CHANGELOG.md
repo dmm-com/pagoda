@@ -3,6 +3,9 @@
 ## In development
 
 ### Added
+* Added new Attribute-types ("role" and "array_role") that
+  could refer Role instance from AttributeValue.
+  Contributed by @userlocalhost
 
 ### Changed
 

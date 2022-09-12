@@ -21,6 +21,8 @@ import {
   EntityCreate,
   EntityUpdate,
   EntityApiV2ListRequest,
+  Role,
+  RoleApi,
   UserApi,
   UserRetrieve,
   UserList,
@@ -52,6 +54,7 @@ class AironeApiClientV2 {
   private entry: EntryApi;
   private group: GroupApi;
   private user: UserApi;
+  private role: RoleApi;
   private job: JobApi;
 
   constructor() {
@@ -62,6 +65,7 @@ class AironeApiClientV2 {
     // "GroupApi" is associated with "GroupAPI" (~/airone/group/api_v2/views.py)
     this.group = new GroupApi(config);
     this.user = new UserApi(config);
+    this.role = new RoleApi(config);
     this.job = new JobApi(config);
   }
 
@@ -297,6 +301,10 @@ class AironeApiClientV2 {
   async getGroup(id: number): Promise<Group> {
     // groupApiV2GroupsRetrieve: associated with
     return await this.group.groupApiV2GroupsRetrieve({ id });
+  }
+
+  async getRoles(): Promise<Role[]> {
+    return await this.role.roleApiV2ListList();
   }
 
   async getEntries(
