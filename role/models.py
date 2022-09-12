@@ -1,7 +1,13 @@
+import importlib
+import sys
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.db import models
+from django.db.models import Q
+
+from airone.lib.types import AttrTypeValue
 
 
 class Role(models.Model):
@@ -89,9 +95,69 @@ class Role(models.Model):
         )
         self.save(update_fields=["is_active", "name"])
 
+        # avoid circular import
+        from airone.lib.elasticsearch import ESS
+
+        es_object = ESS()
+        for entry in [x for x in self.get_referred_entries() if x.id != self.id]:
+            entry.register_es(es=es_object)
+
+        if settings.ES_CONFIG:
+            self.unregister_es()
+
+    def register_es(self, es=None, skip_refresh=False):
+        if not es:
+            from airone.lib.elasticsearch import ESS
+
+            es = ESS()
+
+        es.index(doc_type="entry", id=self.id, body=self.get_es_document(es))
+        if not skip_refresh:
+            es.refresh()
+
+    def unregister_es(self, es=None):
+        if not es:
+            from airone.lib.elasticsearch import ESS
+
+            es = ESS()
+
+        es.delete(doc_type="entry", id=self.id, ignore=[404])
+        es.refresh(ignore=[404])
+
     def get_current_permission(self, aclbase):
         permissions = [x for x in self.permissions.all() if x.get_objid() == aclbase.id]
         if permissions:
             return permissions[0].get_aclid()
         else:
             return 0
+
+    def get_referred_entries(self, entity_name=None):
+        # make query to identify AttributeValue that specify this Role instance
+        query = Q(
+            Q(
+                is_latest=True,
+                parent_attr__schema__type=AttrTypeValue["role"],
+            )
+            | Q(
+                parent_attrv__is_latest=True,
+                parent_attr__schema__type=AttrTypeValue["array_role"],
+            ),
+            value=str(self.id),
+            parent_attr__parent_entry__is_active=True,
+            parent_attr__parent_entry__schema__is_active=True,
+        )
+        if entity_name:
+            query = Q(query, parent_attr__parent_entry__schema__name=entity_name)
+
+        # import entry.models if it's necessary
+        if "entry" in sys.modules:
+            entry_model = sys.modules["entry"].models
+        else:
+            entry_model = importlib.import_module("entry.models")
+
+        # get Entries that has AttributeValues, which specify this Role instance.
+        return entry_model.Entry.objects.filter(
+            pk__in=entry_model.AttributeValue.objects.filter(query).values_list(
+                "parent_attr__parent_entry", flat=True
+            )
+        )

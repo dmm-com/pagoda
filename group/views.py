@@ -95,12 +95,19 @@ def do_edit(request, group_id, recv_data):
     # get users who are belonged to the selected group for updating
     old_users = [str(x.id) for x in User.objects.filter(groups__id=group_id, is_active=True)]
 
+    need_ess_updating = group.name != recv_data["name"]
+
     # update group_name with specified one
     group.name = recv_data["name"]
     group.parent_group = Group.objects.filter(
         id=recv_data.get("parent_group", 0), is_active=True
     ).first()
     group.save()
+
+    # TODO: this process will be moved to model method
+    if need_ess_updating:
+        for entry in [x for x in group.get_referred_entries() if x.id != group.id]:
+            entry.register_es()
 
     # the processing for deleted users
     for user in [User.objects.get(id=x) for x in set(old_users) - set(recv_data.get("users", []))]:

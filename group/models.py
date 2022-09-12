@@ -2,6 +2,7 @@ import importlib
 import sys
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib.auth.models import Group as DjangoGroup
 from django.db import models
 from django.db.models import Q
@@ -30,6 +31,35 @@ class Group(DjangoGroup):
             datetime.now().strftime("%Y%m%d_%H%M%S"),
         )
         self.save()
+
+        # avoid circular import
+        from airone.lib.elasticsearch import ESS
+
+        es_object = ESS()
+        for entry in [x for x in self.get_referred_entries() if x.id != self.id]:
+            entry.register_es(es=es_object)
+
+        if settings.ES_CONFIG:
+            self.unregister_es()
+
+    def register_es(self, es=None, skip_refresh=False):
+        if not es:
+            from airone.lib.elasticsearch import ESS
+
+            es = ESS()
+
+        es.index(doc_type="entry", id=self.id, body=self.get_es_document(es))
+        if not skip_refresh:
+            es.refresh()
+
+    def unregister_es(self, es=None):
+        if not es:
+            from airone.lib.elasticsearch import ESS
+
+            es = ESS()
+
+        es.delete(doc_type="entry", id=self.id, ignore=[404])
+        es.refresh(ignore=[404])
 
     def has_permission(self, target_obj, permission_level):
         """[NOTE]
