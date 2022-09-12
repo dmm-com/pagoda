@@ -219,7 +219,7 @@ def do_edit(request, role_id, recv_data):
             update_fields.append(key)
 
     role.save(update_fields=update_fields)
-    
+
     # TODO: this process will be moved to model method
     if need_ess_updating:
         for entry in [x for x in role.get_referred_entries() if x.id != role.id]:
