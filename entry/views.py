@@ -26,6 +26,7 @@ from entity.models import Entity
 from entry.models import Attribute, AttributeValue, Entry
 from group.models import Group
 from job.models import Job
+from role.models import Role
 from user.models import User
 
 from .settings import CONFIG
@@ -163,6 +164,7 @@ def create(request, entity_id):
         "form_url": "/entry/do_create/%s/" % entity.id,
         "redirect_url": "/entry/%s" % entity.id,
         "groups": Group.objects.filter(is_active=True),
+        "roles": Role.objects.filter(is_active=True),
         "attributes": [
             {
                 "entity_attr_id": x.id,
@@ -257,6 +259,7 @@ def edit(request, entry_id):
     context = {
         "entry": entry,
         "groups": Group.objects.filter(is_active=True),
+        "roles": Role.objects.filter(is_active=True),
         "attributes": entry.get_available_attrs(request.user, ACLType.Writable),
         "form_url": "/entry/do_edit/%s" % entry.id,
         "redirect_url": "/entry/show/%s" % entry.id,

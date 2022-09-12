@@ -9,4 +9,5 @@ urlpatterns = [
     url(r"^edit/(\d+)/$", views.edit, name="edit"),
     url(r"^do_edit/(\d+)/$", views.do_edit, name="do_edit"),
     url(r"^api/v1/", include(("role.api_v1.urls", "role.api_v1"))),
+    url(r"^api/v2/", include(("role.api_v2.urls", "role.api_v2"))),
 ]

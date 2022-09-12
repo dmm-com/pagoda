@@ -39,6 +39,7 @@ class ViewTest(AironeViewTest):
         self.ref_entity: Entity = self.create_entity(self.user, "ref_entity")
         self.ref_entry: Entry = self.add_entry(self.user, "r-0", self.ref_entity)
         self.group: Group = Group.objects.create(name="group0")
+        self.role: Role = Role.objects.create(name="role0")
 
         attrs = []
         for attr_info in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY:
@@ -73,6 +74,8 @@ class ViewTest(AironeViewTest):
                     {"name": "foo", "id": self.ref_entry.id},
                     {"name": "bar", "id": self.ref_entry.id},
                 ],
+                "role": self.role.id,
+                "roles": [self.role.id],
             },
         )
         # add an optional attribute after creating entry
@@ -218,6 +221,44 @@ class ViewTest(AironeViewTest):
                 "schema": {
                     "id": entry.attrs.get(schema__name="groups").schema.id,
                     "name": "groups",
+                },
+            },
+        )
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "role", resp_data["attrs"])),
+            {
+                "type": AttrTypeValue["role"],
+                "value": {
+                    "as_role": {
+                        "id": self.role.id,
+                        "name": self.role.name,
+                    },
+                },
+                "id": entry.attrs.get(schema__name="role").id,
+                "is_mandatory": False,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="role").schema.id,
+                    "name": "role",
+                },
+            },
+        )
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "roles", resp_data["attrs"])),
+            {
+                "type": AttrTypeValue["array_role"],
+                "value": {
+                    "as_array_role": [
+                        {
+                            "id": self.role.id,
+                            "name": self.role.name,
+                        }
+                    ]
+                },
+                "id": entry.attrs.get(schema__name="roles").id,
+                "is_mandatory": False,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="roles").schema.id,
+                    "name": "roles",
                 },
             },
         )
@@ -429,6 +470,8 @@ class ViewTest(AironeViewTest):
                 {"id": attr["text"].id, "value": "hoge\nfuga"},
                 {"id": attr["bool"].id, "value": True},
                 {"id": attr["date"].id, "value": "2018-12-31"},
+                {"id": attr["role"].id, "value": self.role.id},
+                {"id": attr["roles"].id, "value": [self.role.id]},
             ],
         }
         resp = self.client.put(
@@ -461,6 +504,8 @@ class ViewTest(AironeViewTest):
                 "text": "hoge\nfuga",
                 "val": "hoge",
                 "vals": ["hoge", "fuga"],
+                "role": "role0",
+                "roles": ["role0"],
             },
         )
         search_result = self._es.search(body={"query": {"term": {"name": "entry-change"}}})
@@ -1447,7 +1492,20 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             sorted([attr["schema"]["name"] for attr in resp.json()["attrs"]]),
             sorted(
-                ["ref", "name", "bool", "date", "group", "groups", "text", "vals", "refs", "names"]
+                [
+                    "ref",
+                    "name",
+                    "bool",
+                    "date",
+                    "group",
+                    "groups",
+                    "text",
+                    "vals",
+                    "refs",
+                    "names",
+                    "role",
+                    "roles",
+                ]
             ),
         )
 
@@ -1694,6 +1752,30 @@ class ViewTest(AironeViewTest):
             data = content.replace(header, "", 1).strip()
             self.assertEqual(data, '"%s,""ENTRY""",' % type_name + case[2])
 
+    def test_get_attr_referrals_of_role(self):
+        entity = self.create_entity(
+            self.user,
+            "Entity",
+            attrs=[
+                {"name": "role", "type": AttrTypeValue["role"]},
+                {"name": "roles", "type": AttrTypeValue["array_role"]},
+            ],
+        )
+
+        # test to get groups through API calling of get_attr_referrals
+        for attr in entity.attrs.all():
+            resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % attr.id)
+            self.assertEqual(resp.status_code, 200)
+
+            # This expects results has all role information.
+            self.assertEqual(
+                sorted(resp.json(), key=lambda x: x["id"]),
+                sorted(
+                    [{"id": r.id, "name": r.name} for r in Role.objects.filter(is_active=True)],
+                    key=lambda x: x["id"],
+                ),
+            )
+
     def test_get_attr_referrals_of_group(self):
         user = self.guest_login("guest2")
 
@@ -1883,6 +1965,8 @@ class ViewTest(AironeViewTest):
             "text": "foo\nbar",
             "val": "foo",
             "vals": ["foo"],
+            "role": {"id": self.role.id, "name": "role0"},
+            "roles": [{"id": self.role.id, "name": "role0"}],
         }
         for attr_name in result["ret_values"][0]["attrs"]:
             self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
@@ -1918,6 +2002,8 @@ class ViewTest(AironeViewTest):
             "bool": "True",
             "text": "foo\nbar",
             "date": "2018-12-31",
+            "role": {"id": self.role.id, "name": "role0"},
+            "roles": [{"id": self.role.id, "name": "role0"}],
         }
         for attr_name in result["ret_values"][0]["attrs"]:
             self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
@@ -1954,13 +2040,15 @@ class ViewTest(AironeViewTest):
             "vals": [],
             "ref": {"id": "", "name": ""},
             "refs": [],
-            # "name": None,
+            "name": {"": {"id": "", "name": ""}},
             "names": [],
             "group": {"id": "", "name": ""},
             "groups": [],
             "bool": "False",
             # "text": None,
             "date": None,
+            "role": {"id": "", "name": ""},
+            "roles": [],
         }
         for attr_name in result["ret_values"][0]["attrs"]:
             if "value" in result["ret_values"][0]["attrs"][attr_name]:

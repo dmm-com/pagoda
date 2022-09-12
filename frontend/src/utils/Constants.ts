@@ -27,6 +27,7 @@ export const BaseAttributeTypes = {
   bool: 1 << 3,
   group: 1 << 4,
   date: 1 << 5,
+  role: 1 << 6,
   array: 1 << 10,
   named: 1 << 11,
 };
@@ -63,6 +64,10 @@ export const AttributeTypes = {
     name: "array_group",
     type: BaseAttributeTypes.group | BaseAttributeTypes.array,
   },
+  array_role: {
+    name: "array_role",
+    type: BaseAttributeTypes.role | BaseAttributeTypes.array,
+  },
   text: {
     name: "textarea",
     type: BaseAttributeTypes.text,
@@ -78,6 +83,10 @@ export const AttributeTypes = {
   date: {
     name: "date",
     type: BaseAttributeTypes.date,
+  },
+  role: {
+    name: "role",
+    type: BaseAttributeTypes.role,
   },
 };
 

@@ -892,6 +892,7 @@ def make_search_results(
             elif (
                 attrinfo["type"] == AttrTypeValue["object"]
                 or attrinfo["type"] == AttrTypeValue["group"]
+                or attrinfo["type"] == AttrTypeValue["role"]
             ):
                 ret_attrinfo["value"] = {
                     "id": attrinfo["referral_id"],
@@ -899,8 +900,6 @@ def make_search_results(
                 }
 
             elif attrinfo["type"] == AttrTypeValue["named_object"]:
-                if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == "":
-                    continue
                 ret_attrinfo["value"] = {
                     attrinfo["key"]: {
                         "id": attrinfo["referral_id"],
@@ -933,7 +932,9 @@ def make_search_results(
                     else:
                         ret_attrinfo["value"].append(attrinfo["value"])
 
-                elif attrinfo["type"] & (AttrTypeValue["object"] | AttrTypeValue["group"]):
+                elif attrinfo["type"] & (
+                    AttrTypeValue["object"] | AttrTypeValue["group"] | AttrTypeValue["role"]
+                ):
                     ret_attrinfo["value"].append(
                         {"id": attrinfo["referral_id"], "name": attrinfo["value"]}
                     )

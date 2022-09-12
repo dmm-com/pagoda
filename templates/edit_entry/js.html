@@ -341,7 +341,7 @@ $('button[name=add_attr]').on('click', function() {
           new_column.find('.attr_value').attr('enabled', 'True');
         };
 
-      {% elif attr.type == attr_type.array_entry or attr.type == attr_type.array_group %}
+      {% elif attr.type == attr_type.array_entry or attr.type == attr_type.array_group or attr.type == attr_type.array_role %}
         value_setter = function(new_column) {
           elem_select = new_column.find('select');
 

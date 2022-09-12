@@ -45,10 +45,12 @@ export class DjangoContext {
       array_named_object: 3073,
       array_named_object_boolean: 3081,
       array_group: 1040,
+      array_role: 1088,
       text: 4,
       boolean: 8,
       group: 16,
       date: 32,
+      role: 64,
     };
 
     this.aclTypes = {
