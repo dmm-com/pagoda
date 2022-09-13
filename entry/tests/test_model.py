@@ -5022,3 +5022,17 @@ class ModelTest(AironeTestCase):
             ),
             (True, None),
         )
+
+    def test_check_duplication_entry_at_restoring1(self):
+        """
+        Test case confirms to fail to restore EntryA at following case
+        * EntryA -> EntryB (there is another active Entry which is same name)
+        """
+        pass
+
+    def test_check_duplication_entry_at_restoring2(self):
+        """
+        Test case confirms to fail to restore EntryA at following case
+        * EntryA -> EntryB -> EntryC(there is another active Entry which is same name)
+        """
+        pass

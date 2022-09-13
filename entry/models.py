@@ -1187,6 +1187,19 @@ class Attribute(ACLBase):
             else:
                 _may_remove_referral(attrv.referral)
 
+    # implementation for Attribute
+    def check_duplication_entry_at_restoring(self, entry_chain):
+        if self.schema.is_delete_in_chain and self.schema.type & AttrTypeValue["object"]:
+            attrv = self.get_latest_value()
+            if attrv.referral and not attrv.referral.is_active:
+                entry = Entry.objects.filter(id=referral.id, is_active=False).first()
+                if entry:
+                    entry_chain.append(entry)
+                    return entry.check_duplication_entry_at_restoring(entry_chain)
+
+        # It means it's safe to restore this Entry.
+        return False
+
     # NOTE: Type-Write
     def restore(self):
         super(Attribute, self).restore()
@@ -1561,6 +1574,24 @@ class Entry(ACLBase):
 
         if settings.ES_CONFIG:
             self.unregister_es()
+
+    # implementation for Entry
+    def check_duplication_entry_at_restoring(self, entry_chain=[]):
+        """This method returns true when this Entry has referral that is same name with other entry at restoring Entry.
+        - case True: there is an Entry(at least) that is same name with same Entity.
+        - case False: there is no Entry that is same name with same Entity.
+        """
+        if self in entry_chain:
+            # It means it's safe to restore this Entry.
+            return False
+
+        for attr in self.attrs.filter(is_active=False):
+            ret = attr.check_duplication_entry_at_restoring(entry_chain=[])
+            if ret:
+                return True
+
+        # It means it's safe to restore this Entry.
+        return False
 
     def restore(self):
         super(Entry, self).restore()
