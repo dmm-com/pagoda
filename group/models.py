@@ -31,6 +31,9 @@ class Group(DjangoGroup):
         )
         self.save()
 
+        for entry in self.get_referred_entries():
+            entry.register_es()
+
     def has_permission(self, target_obj, permission_level):
         """[NOTE]
         This function will be obsoleted, then will be alternated by Role feature

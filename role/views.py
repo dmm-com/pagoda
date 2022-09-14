@@ -209,6 +209,8 @@ def do_edit(request, role_id, recv_data):
     # set users and groups, which include administrative ones, to role instance
     set_role_members(role, recv_data)
 
+    need_ess_updating = role.name != recv_data["name"]
+
     # update attributes of role instance
     update_fields = []
     for key in ["name", "description"]:
@@ -217,5 +219,10 @@ def do_edit(request, role_id, recv_data):
             update_fields.append(key)
 
     role.save(update_fields=update_fields)
+
+    # TODO: this process will be moved to model method
+    if need_ess_updating:
+        for entry in [x for x in role.get_referred_entries()]:
+            entry.register_es()
 
     return JsonResponse({"msg": 'Succeeded in updating Role "%s"' % recv_data["name"]})
