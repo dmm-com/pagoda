@@ -1,5 +1,7 @@
 from airone.lib.acl import ACLType
+from airone.lib.types import AttrTypeValue
 from entity.models import Entity
+from entry.models import Entry
 from group.models import Group
 from role.models import Role
 
@@ -141,3 +143,32 @@ class ModelTest(RoleTestBase):
         self.assertEqual(deleted_role, self.role)
         self.assertFalse(deleted_role.is_active)
         self.assertIn("test_role", deleted_role.name)
+
+    def test_get_referred_entries(self):
+        user = self.users["userA"]
+        entity = self.create_entity(
+            **{
+                "user": user,
+                "name": "entity",
+                "attrs": [
+                    {
+                        "name": "role",
+                        "type": AttrTypeValue["role"],
+                    }
+                ],
+            }
+        )
+
+        entry = Entry.objects.create(
+            created_user=user,
+            name="e-1",
+            schema=entity,
+        )
+
+        entry.complement_attrs(user)
+        entry.register_es()
+
+        attr = entry.attrs.get(schema__name="role")
+        attr.add_value(user, self.role)
+
+        self.assertEqual([e.name for e in self.role.get_referred_entries()], ["e-1"])
