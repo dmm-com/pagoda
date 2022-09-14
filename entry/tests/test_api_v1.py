@@ -690,16 +690,15 @@ class ViewTest(AironeViewTest):
 
         # initialize Entity and Entry
         entity = Entity.objects.create(name="Entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrTypeValue["string"],
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        entity_attr = EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrTypeValue["string"],
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
+        entity.attrs.add(entity_attr)
 
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -720,6 +719,9 @@ class ViewTest(AironeViewTest):
                 sorted(attrinfo.keys()),
                 sorted(["id", "name", "type", "index", "value"]),
             )
+        entity_attr.delete()
+        resp = self.client.get("/entry/api/v1/get_entry_info/%d" % entry.id)
+        self.assertEqual(resp.json()["attrs"], [])
 
     def test_create_entry_attr(self):
         user = self.guest_login()
