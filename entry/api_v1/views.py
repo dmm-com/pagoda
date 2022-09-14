@@ -300,7 +300,7 @@ def get_entry_info(request, entry_id):
                         **x.get_latest_value().get_value(with_metainfo=True, is_active=False)
                     )
                     for x in entry.attrs.all()
-                    if request.user.has_permission(x, ACLType.Readable)
+                    if request.user.has_permission(x, ACLType.Readable) and x.schema.is_active
                 ],
                 key=lambda x: x["index"],
             ),
