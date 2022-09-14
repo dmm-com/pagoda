@@ -1,4 +1,5 @@
 from datetime import date
+from unicodedata import name
 from unittest import skip
 
 from django.conf import settings
@@ -5023,16 +5024,187 @@ class ModelTest(AironeTestCase):
             (True, None),
         )
 
-    def test_check_duplication_entry_at_restoring1(self):
+    def test_check_duplication_entry_at_restoring_one_chain(self):
         """
         Test case confirms to fail to restore EntryA at following case
         * EntryA -> EntryB (there is another active Entry which is same name)
         """
-        pass
+        ref_entity = Entity.objects.create(name="ReferredEntity", created_user=self._user)
+        ref_entries = [
+            Entry.objects.create(name="ref-%d" % i, created_user=self._user, schema=ref_entity)
+            for i in range(3)
+        ]
 
-    def test_check_duplication_entry_at_restoring2(self):
+        # initialize EntityAttrs
+        attr_info = {
+            "obj": {"type": AttrTypeValue["object"], "value": ref_entries[0]},
+            "arr_obj": {
+                "type": AttrTypeValue["array_object"],
+                "value": ref_entries[1:],
+            },
+        }
+        for attr_name, info in attr_info.items():
+            # create EntityAttr object with is_delete_in_chain object
+            attr = EntityAttr.objects.create(
+                name=attr_name,
+                type=info["type"],
+                is_delete_in_chain=True,
+                created_user=self._user,
+                parent_entity=self._entity,
+            )
+
+            if info["type"] & AttrTypeValue["object"]:
+                attr.referral.add(ref_entity)
+
+            self._entity.attrs.add(attr)
+
+        # initialize target entry
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
+        entry.complement_attrs(self._user)
+
+        for attr_name, info in attr_info.items():
+            attr = entry.attrs.get(schema__name=attr_name)
+            attr.add_value(self._user, info["value"])
+
+        # delete target entry at first
+        entry.delete()
+
+        # create same name entry
+        Entry.objects.create(name="ref-1", created_user=self._user, schema=ref_entity)
+
+        # check duplicate entry
+        ret = entry.check_duplication_entry_at_restoring(entry_chain=[])
+        self.assertTrue(ret)
+
+    def test_check_duplication_entry_at_restoring_two_chain(self):
         """
         Test case confirms to fail to restore EntryA at following case
         * EntryA -> EntryB -> EntryC(there is another active Entry which is same name)
         """
-        pass
+        ref_entity = Entity.objects.create(name="ReferredEntity", created_user=self._user)
+        ref_entries = [
+            Entry.objects.create(name="ref-%d" % i, created_user=self._user, schema=ref_entity)
+            for i in range(3)
+        ]
+        ref_entity_2 = Entity.objects.create(name="ReferredEntity2", created_user=self._user)
+        ref_entries_2 = [
+            Entry.objects.create(name="ref2-%d" % i, created_user=self._user, schema=ref_entity_2)
+            for i in range(3)
+        ]
+
+        # initialize EntityAttrs
+        attr_info = {
+            "obj": {"type": AttrTypeValue["object"], "value": ref_entries[0]},
+            "arr_obj": {
+                "type": AttrTypeValue["array_object"],
+                "value": ref_entries[1:],
+            },
+        }
+        attr_info_2 = {
+            "obj": {"type": AttrTypeValue["object"], "value": ref_entries_2[0]},
+            "arr_obj": {
+                "type": AttrTypeValue["array_object"],
+                "value": ref_entries_2[1:],
+            },
+        }
+        for attr_name, info in attr_info.items():
+            # create EntityAttr object with is_delete_in_chain object
+            attr = EntityAttr.objects.create(
+                name=attr_name,
+                type=info["type"],
+                is_delete_in_chain=True,
+                created_user=self._user,
+                parent_entity=self._entity,
+            )
+
+            if info["type"] & AttrTypeValue["object"]:
+                attr.referral.add(ref_entity)
+
+            self._entity.attrs.add(attr)
+
+        for attr_name, info in attr_info_2.items():
+            # create EntityAttr object with is_delete_in_chain object
+            attr = EntityAttr.objects.create(
+                name=attr_name,
+                type=info["type"],
+                is_delete_in_chain=True,
+                created_user=self._user,
+                parent_entity=ref_entity,
+            )
+
+            if info["type"] & AttrTypeValue["object"]:
+                attr.referral.add(ref_entity_2)
+
+            ref_entity.attrs.add(attr)
+
+        # initialize target entry
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
+        entry.complement_attrs(self._user)
+
+        for attr_name, info in attr_info.items():
+            attr = entry.attrs.get(schema__name=attr_name)
+            attr.add_value(self._user, info["value"])
+
+        ref_entries[0].complement_attrs(self._user)
+        for attr_name, info in attr_info_2.items():
+            attr = ref_entries[0].attrs.get(schema__name=attr_name)
+            attr.add_value(self._user, info["value"])
+
+        # delete target entry at first
+        entry.delete()
+        # sync referral entries from database
+        [x.refresh_from_db() for x in ref_entries]
+        [x.refresh_from_db() for x in ref_entries_2]
+
+        self.assertFalse(ref_entries_2[1].is_active)
+
+        # create same name entry
+        Entry.objects.create(name="ref2-1", created_user=self._user, schema=ref_entity_2)
+
+        # check duplicate entry
+        ret = entry.check_duplication_entry_at_restoring(entry_chain=[])
+        self.assertTrue(ret)
+
+    def test_check_duplication_entry_at_restoring_loop(self):
+        """
+        Test case confirm to pass the duplicate check to restore EntryA in the following cases
+        * EntryA -> EntryB -> EntryA
+        """
+        ref_entity = Entity.objects.create(name="ReferredEntity", created_user=self._user)
+        ref_entry = Entry.objects.create(name="ref", created_user=self._user, schema=ref_entity)
+        # initialize target entry
+        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
+
+        # initialize EntityAttrs
+        attr_info = {
+            "obj": {"type": AttrTypeValue["object"], "value": ref_entry},
+        }
+        for attr_name, info in attr_info.items():
+            # create EntityAttr object with is_delete_in_chain object
+            attr = EntityAttr.objects.create(
+                name=attr_name,
+                type=info["type"],
+                is_delete_in_chain=True,
+                created_user=self._user,
+                parent_entity=self._entity,
+            )
+
+            if info["type"] & AttrTypeValue["object"]:
+                attr.referral.add(ref_entity)
+
+            self._entity.attrs.add(attr)
+
+        entry.complement_attrs(self._user)
+        for attr_name, info in attr_info.items():
+            attr = entry.attrs.get(schema__name=attr_name)
+            attr.add_value(self._user, info["value"])
+
+        # delete target entry at first
+        entry.delete()
+        # sync referral entry from database
+        ref_entry.refresh_from_db()
+        self.assertFalse(ref_entry.is_active)
+
+        # check duplicate entry
+        ret = entry.check_duplication_entry_at_restoring(entry_chain=[])
+        self.assertFalse(ret)

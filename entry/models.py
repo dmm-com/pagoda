@@ -1,3 +1,4 @@
+import re
 from collections.abc import Iterable
 from datetime import date, datetime
 from typing import Any, Optional, Tuple
@@ -1189,16 +1190,39 @@ class Attribute(ACLBase):
 
     # implementation for Attribute
     def check_duplication_entry_at_restoring(self, entry_chain):
-        if self.schema.is_delete_in_chain and self.schema.type & AttrTypeValue["object"]:
-            attrv = self.get_latest_value()
-            if attrv.referral and not attrv.referral.is_active:
+        def _check(referral):
+            if referral and not referral.is_active:
                 entry = Entry.objects.filter(id=referral.id, is_active=False).first()
                 if entry:
+                    if entry in entry_chain:
+                        # It means it's safe to restore this Entry.
+                        return False
+                    dup_entry = Entry.objects.filter(
+                        schema=entry.schema.id,
+                        name=re.sub(r"_deleted_[0-9_]*$", "", entry.name),
+                        is_active=True,
+                    ).first()
+                    if dup_entry:
+                        return True
+
                     entry_chain.append(entry)
+
                     return entry.check_duplication_entry_at_restoring(entry_chain)
 
-        # It means it's safe to restore this Entry.
-        return False
+            # It means it's safe to restore this Entry.
+            return False
+
+        if self.schema.is_delete_in_chain and self.schema.type & AttrTypeValue["object"]:
+            attrv = self.get_latest_value()
+
+            if self.schema.type & AttrTypeValue["array"]:
+                ret = [_check(x.referral) for x in attrv.data_array.all()]
+                if True in ret:
+                    return True
+                else:
+                    return False
+            else:
+                return _check(attrv.referral)
 
     # NOTE: Type-Write
     def restore(self):
@@ -1581,12 +1605,8 @@ class Entry(ACLBase):
         - case True: there is an Entry(at least) that is same name with same Entity.
         - case False: there is no Entry that is same name with same Entity.
         """
-        if self in entry_chain:
-            # It means it's safe to restore this Entry.
-            return False
-
         for attr in self.attrs.filter(is_active=False):
-            ret = attr.check_duplication_entry_at_restoring(entry_chain=[])
+            ret = attr.check_duplication_entry_at_restoring(entry_chain)
             if ret:
                 return True
 
