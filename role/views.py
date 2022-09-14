@@ -222,7 +222,7 @@ def do_edit(request, role_id, recv_data):
 
     # TODO: this process will be moved to model method
     if need_ess_updating:
-        for entry in [x for x in role.get_referred_entries() if x.id != role.id]:
+        for entry in [x for x in role.get_referred_entries()]:
             entry.register_es()
 
     return JsonResponse({"msg": 'Succeeded in updating Role "%s"' % recv_data["name"]})

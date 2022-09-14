@@ -106,7 +106,7 @@ def do_edit(request, group_id, recv_data):
 
     # TODO: this process will be moved to model method
     if need_ess_updating:
-        for entry in [x for x in group.get_referred_entries() if x.id != group.id]:
+        for entry in [x for x in group.get_referred_entries()]:
             entry.register_es()
 
     # the processing for deleted users

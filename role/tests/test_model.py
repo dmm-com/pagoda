@@ -1,7 +1,6 @@
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity
-from entry.models import Entry
 from group.models import Group
 from role.models import Role
 
@@ -159,16 +158,27 @@ class ModelTest(RoleTestBase):
             }
         )
 
-        entry = Entry.objects.create(
-            created_user=user,
-            name="e-1",
-            schema=entity,
-        )
-
-        entry.complement_attrs(user)
-        entry.register_es()
-
-        attr = entry.attrs.get(schema__name="role")
-        attr.add_value(user, self.role)
+        self.add_entry(user, "e-1", entity, values={"role": self.role})
 
         self.assertEqual([e.name for e in self.role.get_referred_entries()], ["e-1"])
+
+    def test_get_referred_entries_from_array(self):
+        user = self.users["userA"]
+        entity = self.create_entity(
+            **{
+                "user": user,
+                "name": "entity",
+                "attrs": [
+                    {
+                        "name": "roles",
+                        "type": AttrTypeValue["array_role"],
+                    }
+                ],
+            }
+        )
+        role2 = Role.objects.create(name="test2")
+
+        roles = [self.role, role2]
+        self.add_entry(user, "e-1", entity, values={"roles": roles})
+        for role in roles:
+            self.assertEqual([e.name for e in role.get_referred_entries()], ["e-1"])
