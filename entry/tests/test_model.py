@@ -1,5 +1,4 @@
 from datetime import date
-from unicodedata import name
 from unittest import skip
 
 from django.conf import settings

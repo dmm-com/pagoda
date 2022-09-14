@@ -721,11 +721,13 @@ def do_restore(request, entry_id, recv_data):
             status=400,
         )
 
-    # validation processing for checking duplication of entry that "is_delete_in_chain" parameter is setting
+    # validation processing for checking duplication of entry
+    # that "is_delete_in_chain" parameter is setting
     if entry.check_duplication_entry_at_restoring(entry_chain=[]):
         return JsonResponse(
             data={
-                "msg": "Failed to restore entry. %s has referral that will be duplicate with other Entry"
+                "msg": "Failed to restore entry. %s has referral that will be duplicate \
+                with other Entry."
                 % entry.name
             },
             status=400,

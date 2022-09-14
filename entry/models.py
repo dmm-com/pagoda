@@ -1601,7 +1601,8 @@ class Entry(ACLBase):
 
     # implementation for Entry
     def check_duplication_entry_at_restoring(self, entry_chain=[]):
-        """This method returns true when this Entry has referral that is same name with other entry at restoring Entry.
+        """This method returns true when this Entry has referral that is
+           same name with other entry at restoring Entry.
         - case True: there is an Entry(at least) that is same name with same Entity.
         - case False: there is no Entry that is same name with same Entity.
         """
