@@ -2,14 +2,26 @@ import {
   Box,
   Button,
   Checkbox,
+  Container,
+  Divider,
+  IconButton,
   Input,
+  InputBase,
+  InputAdornment,
+  Paper,
   Table,
+  TableContainer,
   TableBody,
   TableCell,
+  TableHead,
   TableRow,
+  TextField,
   Theme,
   Typography,
 } from "@mui/material";
+
+import RefreshIcon from '@mui/icons-material/Refresh';
+
 import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -23,6 +35,8 @@ import {
   updateUser,
 } from "utils/AironeAPIClient";
 import { DjangoContext } from "utils/DjangoContext";
+import { styled } from "@mui/material/styles";
+
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -36,6 +50,181 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface Props {
   user?: User;
 }
+
+const StyledTableRow = styled(TableRow)(() => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: "#607D8B0A",
+  },
+  "&:last-child td, &:last-child th": {
+    border: 0,
+  },
+}));
+
+const InputBox: FC = ({children}) => {
+  return (
+    <Box component="form"
+     sx={{ m: 1, p: '2px 4px', display: 'flex', alignItems: 'center', width: '90%' }}>
+     { children }
+    </Box>
+  );
+}
+
+const ElemChangingPassword: FC = () => {
+  return (
+    <StyledTableRow>
+      <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
+        パスワード変更
+      </TableCell>
+      <TableCell
+        sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}
+      >
+        <InputBox>
+          <Button variant="contained">パスワードの再設定</Button>
+        </InputBox>
+      </TableCell>
+    </StyledTableRow>
+  );
+}
+
+const ElemAuthenticationMethod: FC = () => {
+  return (
+    <StyledTableRow>
+      <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
+        認証方法
+      </TableCell>
+      <TableCell
+        sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}
+      >
+        <InputBox>
+          {/* FIXME: to change its display by response of API calling */}
+          LDAP 認証 / ローカル認証 (FIXME)
+        </InputBox>
+      </TableCell>
+    </StyledTableRow>
+  );
+}
+
+const ElemAccessTokenConfiguration: FC = () => {
+  return (
+    <StyledTableRow>
+      <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
+        アクセストークンの有効期限設定
+      </TableCell>
+      <TableCell
+        sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}
+      >
+        <InputBox>
+          <Box sx={{ flexDirecton: "column"}}>
+
+          <Box sx={{ pb: "20px" }}>
+            <TextField
+              label="With normal TextField"
+              id="outlined-start-adornment"
+              InputProps={{
+                endAdornment: <InputAdornment position="end">秒</InputAdornment>,
+              }}
+              variant="standard"
+             />
+          </Box>
+
+          <Box>
+             <TextField
+               disabled
+               label="作成日"
+               id="outlined-start-adornment"
+               variant="standard"
+               value="2022/09/15 11:29:30"
+               InputProps={{ disableUnderline: true }}
+              />
+
+             <TextField
+               disabled
+               label="有効期限"
+               id="outlined-start-adornment"
+               variant="standard"
+               value="無期限"
+               InputProps={{ disableUnderline: true }}
+              />
+          </Box>
+
+          </Box>
+
+        </InputBox>
+      </TableCell>
+    </StyledTableRow>
+  );
+}
+
+const ElemAccessToken: FC = () => {
+  return (
+    <StyledTableRow>
+      <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
+        アクセストークン
+      </TableCell>
+      <TableCell
+        sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}
+      >
+        <InputBox>
+          <Input
+            sx={{ width: "90%" }}
+            placeholder="右側の更新ボタンを押してトークンをリフレッシュさせてください"
+            inputProps={{ 'aria-label': 'search google maps' }}
+          />
+          <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
+            <RefreshIcon />
+          </IconButton>
+        </InputBox>
+
+      </TableCell>
+    </StyledTableRow>
+  );
+}
+
+const ElemEmailAddress: FC = () => {
+  return (
+    <StyledTableRow>
+      <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
+        メールアドレス　
+      </TableCell>
+      <TableCell
+        sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}
+      >
+        <InputBox>
+          <Input
+            type="text"
+            placeholder="メールアドレスを入力してください"
+            sx={{ width: "100%"}}
+            onChange={(e) => {console.log(e.target.value);}}
+          />
+        </InputBox>
+      </TableCell>
+    </StyledTableRow>
+  );
+}
+
+
+const ElemUserName: FC = () => {
+  return (
+    <StyledTableRow>
+      <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
+        名前
+      </TableCell>
+      <TableCell
+        sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}
+      >
+        <InputBox>
+          <Input
+            type="text"
+            placeholder="ユーザ名を入力してください"
+            sx={{ width: "100%"}}
+            onChange={(e) => {console.log(e.target.value);}}
+          />
+        </InputBox>
+      </TableCell>
+    </StyledTableRow>
+  );
+}
+
 
 export const UserForm: FC<Props> = ({ user }) => {
   const classes = useStyles();
@@ -71,131 +260,31 @@ export const UserForm: FC<Props> = ({ user }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Typography>ユーザ編集</Typography>
-      <Button
-        className={classes.button}
-        type="submit"
-        variant="contained"
-        color="secondary"
-      >
-        保存
-      </Button>
-      <Table className="table table-bordered">
-        <TableBody>
-          <TableRow>
-            <TableCell>
-              <Typography>名前</Typography>
-            </TableCell>
-            <TableCell>
-              {djangoContext.user.isSuperuser ? (
-                <Input
-                  type="text"
-                  name="name"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                />
-              ) : (
-                <Typography>{username}</Typography>
-              )}
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>
-              <Typography>メールアドレス</Typography>
-            </TableCell>
-            <TableCell>
-              {djangoContext.user.isSuperuser ? (
-                <Input
-                  type="email"
-                  name="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              ) : (
-                <Typography>{email}</Typography>
-              )}
-            </TableCell>
-          </TableRow>
-          {djangoContext.user?.isSuperuser ? (
-            <TableRow>
-              <TableCell>
-                <Typography>管理者権限を付与</Typography>
-              </TableCell>
-              <TableCell>
-                <Checkbox
-                  name="is_superuser"
-                  checked={isSuperuser}
-                  onChange={(e) => setIsSuperuser(e.target.checked)}
-                />
-              </TableCell>
+    <Container maxWidth="lg" sx={{ pt: "50px", pb: "50px" }}>
+      <TableContainer component={Paper}>
+        <Table className="table table-bordered">
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "#455A64" }}>
+              <TableCell sx={{ color: "#FFFFFF" }}>項目</TableCell>
+              <TableCell sx={{ color: "#FFFFFF" }}>内容</TableCell>
             </TableRow>
-          ) : null}
-          {isCreateMode ? (
-            <TableRow>
-              <TableCell>
-                <Typography>パスワード</Typography>
-              </TableCell>
-              <TableCell>
-                <Input
-                  type="password"
-                  name="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </TableCell>
-            </TableRow>
-          ) : (
-            <>
-              {user?.token !== undefined && user?.token !== "" ? (
-                <TableRow>
-                  <TableCell>
-                    <Typography>AccessToken</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography>{user.token}</Typography>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={handleRefreshAccessToken}
-                    >
-                      Refresh
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ) : null}
-              <TableRow>
-                <TableCell>
-                  <Typography>AccessToken の有効期間 [sec]</Typography>
-                </TableCell>
-                <TableCell>
-                  <Box className={classes.tokenLifetime}>
-                    <Input
-                      type="text"
-                      name="token_lifetime"
-                      value={tokenLifetime}
-                      onChange={(e) => setTokenLifetime(Number(e.target.value))}
-                    />
-                    <Typography>
-                      0 ~ 10^8
-                      の範囲の整数を指定してください。0を入力した場合は期限は無期限になります
-                    </Typography>
-                  </Box>
-                  {user?.token?.created != undefined && (
-                    <Typography>作成日：{user?.token?.created}</Typography>
-                  )}
-                  {user?.token?.expire != undefined && (
-                    <Typography>有効期限：{user?.token?.expire}</Typography>
-                  )}
-                </TableCell>
-              </TableRow>
-            </>
-          )}
-        </TableBody>
-      </Table>
-    </form>
+          </TableHead>
+          <TableBody>
+
+            <ElemUserName />
+
+            <ElemEmailAddress />
+
+            <ElemAccessToken />
+            <ElemAccessTokenConfiguration />
+
+            <ElemAuthenticationMethod />
+
+            <ElemChangingPassword />
+
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 };
