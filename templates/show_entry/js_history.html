@@ -58,6 +58,8 @@ var attr_type = {
   'array_string': {{ attr_type.array_string }},
   'array_named_entry': {{ attr_type.array_named_entry }},
   'array_group': {{ attr_type.array_group }},
+  'role': {{ attr_type.role }},
+  'array_role': {{ attr_type.array_role }},
 };
 function show_old_history(e) {
   MessageBox.clear();
@@ -129,6 +131,9 @@ function make_element_value_text(a_type, attrv) {
   } else if (a_type == attr_type.group) {
     return `<a href='/group/edit/${ attrv.value.id }'>${ attrv.value.name }</a>`;
 
+  } else if (a_type == attr_type.role) {
+    return `<a href='/role/edit/${ attrv.value.id }'>${ attrv.value.name }</a>`;
+
   } else if (a_type == attr_type.date) {
     return `<span>${ attrv.value }</span>`;
 
@@ -172,6 +177,16 @@ function make_element_value_text(a_type, attrv) {
     for (let co_info of attrv.value) {
       result += `<li class='list-group-item'>` +
                   `<a href='/group'>${ co_info.name }</a>` +
+                `</li>`;
+    }
+    result += '</ul>';
+    return result;
+
+  } else if (a_type == attr_type.array_role) {
+    let result = "<ul class='list-group'>";
+    for (let co_info of attrv.value) {
+      result += `<li class='list-group-item'>` +
+                `<a href='/role/edit/${co_info.id}'>${ co_info.name }</a>` +
                 `</li>`;
     }
     result += '</ul>';
