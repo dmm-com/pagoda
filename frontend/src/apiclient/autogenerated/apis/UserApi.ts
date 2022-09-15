@@ -26,14 +26,14 @@ export interface UserApiV2DestroyRequest {
   id: number;
 }
 
-export interface UserApiV2RetrieveRequest {
-  id: number;
-}
-
-export interface UserApiV2UsersListRequest {
+export interface UserApiV2ListRequest {
   ordering?: string;
   page?: number;
   search?: string;
+}
+
+export interface UserApiV2RetrieveRequest {
+  id: number;
 }
 
 /**
@@ -98,6 +98,70 @@ export class UserApi extends runtime.BaseAPI {
 
   /**
    */
+  async userApiV2ListRaw(
+    requestParameters: UserApiV2ListRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<PaginatedUserListList>> {
+    const queryParameters: any = {};
+
+    if (requestParameters.ordering !== undefined) {
+      queryParameters["ordering"] = requestParameters.ordering;
+    }
+
+    if (requestParameters.page !== undefined) {
+      queryParameters["page"] = requestParameters.page;
+    }
+
+    if (requestParameters.search !== undefined) {
+      queryParameters["search"] = requestParameters.search;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/`,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      PaginatedUserListListFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async userApiV2List(
+    requestParameters: UserApiV2ListRequest = {},
+    initOverrides?: RequestInit
+  ): Promise<PaginatedUserListList> {
+    const response = await this.userApiV2ListRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
   async userApiV2RetrieveRaw(
     requestParameters: UserApiV2RetrieveRequest,
     initOverrides?: RequestInit
@@ -152,70 +216,6 @@ export class UserApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<UserRetrieve> {
     const response = await this.userApiV2RetrieveRaw(
-      requestParameters,
-      initOverrides
-    );
-    return await response.value();
-  }
-
-  /**
-   */
-  async userApiV2UsersListRaw(
-    requestParameters: UserApiV2UsersListRequest,
-    initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<PaginatedUserListList>> {
-    const queryParameters: any = {};
-
-    if (requestParameters.ordering !== undefined) {
-      queryParameters["ordering"] = requestParameters.ordering;
-    }
-
-    if (requestParameters.page !== undefined) {
-      queryParameters["page"] = requestParameters.page;
-    }
-
-    if (requestParameters.search !== undefined) {
-      queryParameters["search"] = requestParameters.search;
-    }
-
-    const headerParameters: runtime.HTTPHeaders = {};
-
-    if (
-      this.configuration &&
-      (this.configuration.username !== undefined ||
-        this.configuration.password !== undefined)
-    ) {
-      headerParameters["Authorization"] =
-        "Basic " +
-        btoa(this.configuration.username + ":" + this.configuration.password);
-    }
-    if (this.configuration && this.configuration.apiKey) {
-      headerParameters["Authorization"] =
-        this.configuration.apiKey("Authorization"); // tokenAuth authentication
-    }
-
-    const response = await this.request(
-      {
-        path: `/user/api/v2/users`,
-        method: "GET",
-        headers: headerParameters,
-        query: queryParameters,
-      },
-      initOverrides
-    );
-
-    return new runtime.JSONApiResponse(response, (jsonValue) =>
-      PaginatedUserListListFromJSON(jsonValue)
-    );
-  }
-
-  /**
-   */
-  async userApiV2UsersList(
-    requestParameters: UserApiV2UsersListRequest = {},
-    initOverrides?: RequestInit
-  ): Promise<PaginatedUserListList> {
-    const response = await this.userApiV2UsersListRaw(
       requestParameters,
       initOverrides
     );

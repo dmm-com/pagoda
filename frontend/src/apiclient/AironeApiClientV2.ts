@@ -406,7 +406,7 @@ class AironeApiClientV2 {
   }
 
   async getUsers(page = 1, keyword?: string): Promise<PaginatedUserListList> {
-    return await this.user.userApiV2UsersList({
+    return await this.user.userApiV2List({
       page: page,
       search: keyword,
       ordering: "username",

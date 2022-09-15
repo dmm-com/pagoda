@@ -259,7 +259,7 @@ def get_entry_history(request, entry_id):
         return HttpResponse("Specified entry doesn't exist", status=400)
 
     def json_serial(obj):
-        if isinstance(obj, ACLBase) or isinstance(obj, Group):
+        if isinstance(obj, ACLBase) or isinstance(obj, Group) or isinstance(obj, Role):
             return {"id": obj.id, "name": obj.name}
         elif isinstance(obj, datetime):
             return obj.astimezone(timezone("Asia/Tokyo")).strftime("%b. %d, %Y, %I:%M %p")
@@ -300,7 +300,7 @@ def get_entry_info(request, entry_id):
                         **x.get_latest_value().get_value(with_metainfo=True, is_active=False)
                     )
                     for x in entry.attrs.all()
-                    if request.user.has_permission(x, ACLType.Readable)
+                    if request.user.has_permission(x, ACLType.Readable) and x.schema.is_active
                 ],
                 key=lambda x: x["index"],
             ),
