@@ -11,6 +11,9 @@ from .base import RoleTestBase
 
 
 class ModelTest(RoleTestBase):
+    def setUp(self):
+        super(ModelTest, self).setUp()
+
     def test_delete_invalid_role(self):
         self.guest_login()
 
@@ -41,7 +44,16 @@ class ModelTest(RoleTestBase):
         "role.tasks.edit_role_referrals.delay", mock.Mock(side_effect=tasks.edit_role_referrals)
     )
     def test_update_role_referral(self):
-        user = self.admin_login()
+        user = self.guest_login()
+        user.groups.add(self.groups["groupB"])
+        self._BASE_UPDATE_PARAMS = {
+            "name": "Creating Role",
+            "description": "explanation of this role",
+            "users": [{"id": user.id}],
+            "groups": [{"id": self.groups["groupA"].id}],
+            "admin_users": [{"id": self.users["userB"].id}],
+            "admin_groups": [{"id": self.groups["groupB"].id}],
+        }
 
         self.role.admin_users.add(user)
 
@@ -64,16 +76,17 @@ class ModelTest(RoleTestBase):
         resp1 = Entry.search_entries(user, [entity.id], [{"name": "role"}])
         self.assertEqual(resp1["ret_values"][0]["attrs"]["role"]["value"]["name"], "test_role")
 
-        params = {
-            "name": "test_role_update",
-            "users": [user.id],
-        }
-        r = self.client.post(
+        params = dict(
+            self._BASE_UPDATE_PARAMS,
+            **{
+                "name": "test_role_update",
+            }
+        )
+        self.client.post(
             reverse("role:do_edit", args=[self.role.id]),
             json.dumps(params),
             "application/json",
         )
-        print(r.status_code)
         resp2 = Entry.search_entries(user, [entity.id], [{"name": "role"}])
         self.assertEqual(
             resp2["ret_values"][0]["attrs"]["role"]["value"]["name"], "test_role_update"
