@@ -66,6 +66,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.context["page_index_start"], 3)
         self.assertEqual(resp.context["page_index_end"], 5)
 
+        resp = self.client.get("/entity/?page=100")
+        self.assertEqual(resp.status_code, 400)
+        resp = self.client.get("/entity/?page=invalid")
+        self.assertEqual(resp.status_code, 400)
+
     def test_index_with_keyword_param(self):
         user = self.guest_login()
 
