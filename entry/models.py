@@ -524,6 +524,13 @@ class Attribute(ACLBase):
                 if isinstance(value, Entry):
                     value = value.id
 
+                # check if the value can be converted to int
+                try:
+                    int(value)
+                # e.g. value="" will result in the following exception
+                except ValueError:
+                    continue
+
                 if not last_value.data_array.filter(referral__id=value).exists():
                     return True
 

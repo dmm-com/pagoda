@@ -368,6 +368,31 @@ class ModelTest(AironeTestCase):
         self.assertFalse(attr.is_updated([e2, e1]))
         self.assertTrue(attr.is_updated([e1, e3]))
 
+    def test_attr_helper_of_attribute_with_array_object_values_at_empty(self):
+        e1 = Entry.objects.create(name="E1", created_user=self._user, schema=self._entity)
+        e2 = Entry.objects.create(name="E2", created_user=self._user, schema=self._entity)
+
+        entity = Entity.objects.create(name="e2", created_user=self._user)
+        entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
+
+        attr = self.make_attr("attr2", attrtype=AttrTypeArrObj, entity=entity, entry=entry)
+        attr_value = AttributeValue.objects.create(created_user=self._user, parent_attr=attr)
+        attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
+
+        attr_value.data_array.add(
+            AttributeValue.objects.create(referral=e1, created_user=self._user, parent_attr=attr)
+        )
+
+        attr_value.data_array.add(
+            AttributeValue.objects.create(referral=e2, created_user=self._user, parent_attr=attr)
+        )
+
+        attr.values.add(attr_value)
+
+        self.assertFalse(attr.is_updated([e1.id, e2.id]))
+        e2.delete()
+        self.assertFalse(attr.is_updated([e1.id, ""]))  # value=""
+
     def test_attr_helper_of_attribute_with_named_ref(self):
         ref_entity = Entity.objects.create(name="referred_entity", created_user=self._user)
         ref_entry1 = Entry.objects.create(
