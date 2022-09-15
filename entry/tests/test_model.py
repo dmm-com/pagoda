@@ -395,7 +395,7 @@ class ModelTest(AironeTestCase):
 
         self.assertFalse(attr.is_updated([e1.id, e2.id]))
         e2.delete()
-        self.assertFalse(attr.is_updated([e1.id, ""]))  # value=""
+        self.assertTrue(attr.is_updated([e1.id, ""]))  # value=""
 
     def test_attr_helper_of_attribute_with_named_ref(self):
         ref_entity = Entity.objects.create(name="referred_entity", created_user=self._user)
