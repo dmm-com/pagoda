@@ -37,7 +37,7 @@ export const PaginatedTable = <T,>({
 
   return (
     <Paper>
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ overflowX: "inherit" }}>
         <Table>
           <TableHead>{tableHeadRow}</TableHead>
           <TableBody>
