@@ -3,13 +3,30 @@
 ## In development
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## v3.21.0
+
+### Added
 * Added new Attribute-types ("role" and "array_role") that
   could refer Role instance from AttributeValue.
   Contributed by @userlocalhost
 
 ### Changed
+Upgrade flower version from 1.1.0 to 1.2.0
 
 ### Fixed
+* Fixed Elasticsearch not updating when updating Group and Role.
+  Contributed by @Ravie403
+* Fixed showing deleted attributes in entry restore.
+  Contributed by @Ravie403
+* Fixed value not being displayed due to javascript error in entry edit.
+  Contributed by @ritsuxis
+* Fixed duplicate entries in entry restore.
+  Contributed by @ritsuxis
 
 ## v3.20.0
 
