@@ -1,3 +1,12 @@
+import json
+from unittest import mock
+
+from django.urls import reverse
+
+from airone.lib.types import AttrTypeValue
+from entry.models import Entry
+from role import tasks
+
 from .base import RoleTestBase
 
 
@@ -27,3 +36,45 @@ class ModelTest(RoleTestBase):
 
         resp = self.client.delete("/role/api/v1/%d/" % self.role.id)
         self.assertEqual(resp.status_code, 204)
+
+    @mock.patch(
+        "role.tasks.edit_role_referrals.delay", mock.Mock(side_effect=tasks.edit_role_referrals)
+    )
+    def test_update_role_referral(self):
+        user = self.admin_login()
+
+        self.role.admin_users.add(user)
+
+        entity = self.create_entity(
+            **{
+                "user": user,
+                "name": "Entity",
+                "attrs": [{"name": "role", "type": AttrTypeValue["role"]}],
+            }
+        )
+
+        entry = self.add_entry(
+            user,
+            "entry",
+            entity,
+            values={"role": self.role},
+        )
+
+        entry.register_es()
+        resp1 = Entry.search_entries(user, [entity.id], [{"name": "role"}])
+        self.assertEqual(resp1["ret_values"][0]["attrs"]["role"]["value"]["name"], "test_role")
+
+        params = {
+            "name": "test_role_update",
+            "users": [user.id],
+        }
+        r = self.client.post(
+            reverse("role:do_edit", args=[self.role.id]),
+            json.dumps(params),
+            "application/json",
+        )
+        print(r.status_code)
+        resp2 = Entry.search_entries(user, [entity.id], [{"name": "role"}])
+        self.assertEqual(
+            resp2["ret_values"][0]["attrs"]["role"]["value"]["name"], "test_role_update"
+        )

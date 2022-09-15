@@ -42,6 +42,8 @@ class JobOperation(Enum):
     NOTIFY_DELETE_ENTRY = 15
     DO_COPY_ENTRY = 16
     IMPORT_ENTRY_V2 = 17
+    GROUP_REGISTER_REFERRAL = 18
+    ROLE_REGISTER_REFERRAL = 19
 
 
 class Job(models.Model):
@@ -287,6 +289,8 @@ class Job(models.Model):
             entry_task = kls.get_task_module("entry.tasks")
             dashboard_task = kls.get_task_module("dashboard.tasks")
             entity_task = kls.get_task_module("entity.tasks")
+            group_task = kls.get_task_module("group.tasks")
+            role_task = kls.get_task_module("role.tasks")
 
             kls._METHOD_TABLE = {
                 JobOperation.CREATE_ENTRY.value: entry_task.create_entry_attrs,
@@ -306,6 +310,8 @@ class Job(models.Model):
                 JobOperation.NOTIFY_CREATE_ENTRY.value: entry_task.notify_create_entry,
                 JobOperation.NOTIFY_UPDATE_ENTRY.value: entry_task.notify_update_entry,
                 JobOperation.NOTIFY_DELETE_ENTRY.value: entry_task.notify_delete_entry,
+                JobOperation.GROUP_REGISTER_REFERRAL.value: group_task.edit_group_referrals,
+                JobOperation.ROLE_REGISTER_REFERRAL.value: role_task.edit_role_referrals,
             }
 
         return kls._METHOD_TABLE
@@ -411,13 +417,15 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_register_referrals(kls, user, target):
+    def new_register_referrals(
+        kls, user, target, operation_value=JobOperation.REGISTER_REFERRALS.value, params={}
+    ):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.REGISTER_REFERRALS.value,
+            operation_value,
             "",
-            json.dumps({}, default=_support_time_default, sort_keys=True),
+            json.dumps(params, default=_support_time_default, sort_keys=True),
         )
 
     @classmethod

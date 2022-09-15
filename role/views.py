@@ -3,6 +3,7 @@ from django.http.response import JsonResponse
 
 from airone.lib.http import http_get, http_post, render
 from group.models import Group
+from job.models import Job, JobOperation
 from role.models import Role
 from user.models import User
 
@@ -209,7 +210,14 @@ def do_edit(request, role_id, recv_data):
     # set users and groups, which include administrative ones, to role instance
     set_role_members(role, recv_data)
 
-    need_ess_updating = role.name != recv_data["name"]
+    job_register_referrals = None
+    if role.name != recv_data["name"]:
+        job_register_referrals = Job.new_register_referrals(
+            request.user,
+            None,
+            operation_value=JobOperation.ROLE_REGISTER_REFERRAL.value,
+            params={"role_id": role.id},
+        )
 
     # update attributes of role instance
     update_fields = []
@@ -220,9 +228,7 @@ def do_edit(request, role_id, recv_data):
 
     role.save(update_fields=update_fields)
 
-    # TODO: this process will be moved to model method
-    if need_ess_updating:
-        for entry in [x for x in role.get_referred_entries()]:
-            entry.register_es()
+    if job_register_referrals:
+        job_register_referrals.run()
 
     return JsonResponse({"msg": 'Succeeded in updating Role "%s"' % recv_data["name"]})
