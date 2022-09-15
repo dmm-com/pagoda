@@ -8,6 +8,9 @@
 
 ### Fixed
 
+* Fixed a problem that an exception will be occurred at edit Entry page.
+  Contributed by @ritsuxis
+
 ## v3.21.0
 
 ### Added
