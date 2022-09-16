@@ -53,7 +53,7 @@ export const AdvancedSearchResultsPage: FC = () => {
       referralName
     );
     const data = await resp.json();
-    return data.result.ret_values;
+    return data.result;
   });
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
@@ -91,7 +91,7 @@ export const AdvancedSearchResultsPage: FC = () => {
 
       <PageHeader
         title="検索結果"
-        subTitle={`${results.value?.length ?? 0} 件`}
+        subTitle={`${results.value?.ret_count ?? 0} 件`}
         componentSubmits={
           <Box display="flex" justifyContent="center">
             <Button
@@ -127,7 +127,7 @@ export const AdvancedSearchResultsPage: FC = () => {
       <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
         {!results.loading ? (
           <SearchResults
-            results={results.value}
+            results={results.value.ret_values}
             defaultEntryFilter={entryName}
             defaultReferralFilter={referralName}
             defaultAttrsFilter={Object.fromEntries(
