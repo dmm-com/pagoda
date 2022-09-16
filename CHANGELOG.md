@@ -8,9 +8,6 @@
 
 ### Fixed
 
-* Fixed a problem that an exception will be occurred at edit Entry page.
-  Contributed by @ritsuxis
-
 ## v3.21.0
 
 ### Added
@@ -29,6 +26,10 @@ Upgrade flower version from 1.1.0 to 1.2.0
 * Fixed value not being displayed due to javascript error in entry edit.
   Contributed by @ritsuxis
 * Fixed duplicate entries in entry restore.
+  Contributed by @ritsuxis
+* Fixed a problem that an exception will be occurred at edit Entry page.
+  Contributed by @ritsuxis
+* Fixed entity's page paginate.
   Contributed by @ritsuxis
 
 ## v3.20.0
