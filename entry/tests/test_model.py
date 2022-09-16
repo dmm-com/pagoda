@@ -363,6 +363,10 @@ class ModelTest(AironeTestCase):
         self.assertTrue(attr.is_updated([e3.id]))  # delete & update
         self.assertTrue(attr.is_updated([e1.id, e2.id, e3.id]))  # create
         self.assertTrue(attr.is_updated([e1.id, e3.id, e4.id]))  # create & update
+        self.assertTrue(attr.is_updated([]))
+        self.assertTrue(attr.is_updated(["", e1.id]))
+        self.assertTrue(attr.is_updated(["0", e1.id]))
+        self.assertTrue(attr.is_updated(["hoge", e1.id]))
 
         # checks that this method also accepts Entry
         self.assertFalse(attr.is_updated([e2, e1]))
@@ -391,7 +395,7 @@ class ModelTest(AironeTestCase):
 
         self.assertFalse(attr.is_updated([e1.id, e2.id]))
         e2.delete()
-        self.assertFalse(attr.is_updated([e1.id, ""]))  # value=""
+        self.assertTrue(attr.is_updated([e1.id, ""]))  # value=""
 
     def test_attr_helper_of_attribute_with_named_ref(self):
         ref_entity = Entity.objects.create(name="referred_entity", created_user=self._user)

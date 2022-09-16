@@ -521,17 +521,17 @@ class Attribute(ACLBase):
             # the case of appending or deleting
             for value in recv_value:
                 # formalize value type
-                if isinstance(value, Entry):
-                    value = value.id
-
-                # check if the value can be converted to int
                 try:
-                    int(value)
-                # e.g. value="" will result in the following exception
-                except ValueError:
-                    continue
+                    if isinstance(value, Entry):
+                        entry_id = value.id
+                    else:
+                        entry_id = int(value)
 
-                if not last_value.data_array.filter(referral__id=value).exists():
+                except ValueError:
+                    # When user specify an invalid value (e.g. ""), ValueError will be occcured
+                    entry_id = 0
+
+                if not last_value.data_array.filter(referral__id=entry_id).exists():
                     return True
 
         elif self.schema.type == AttrTypeValue["boolean"]:
