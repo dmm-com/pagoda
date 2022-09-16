@@ -1159,21 +1159,18 @@ class Attribute(ACLBase):
             if updated_data and self.is_updated(updated_data):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
 
-    # NOTE: Type-Write
-    def delete(self):
-        super(Attribute, self).delete()
-
+    def may_remove_referral(self):
         def _may_remove_referral(referral):
             if not referral:
                 # the case this refers no entry, do nothing
                 return
 
-            entry = Entry.objects.filter(id=referral.id, is_active=True).first()
+            entry: Entry = Entry.objects.filter(id=referral.id, is_active=True).first()
             if not entry:
                 # the case referred entry is already deleted, do nothing
                 return
 
-            if entry.get_referred_objects().count() > 0:
+            if entry.get_referred_objects().exclude(id=self.parent_entry.id).count() > 0:
                 # the case other entries also refer target referral, do nothing
                 return
 
@@ -1187,6 +1184,12 @@ class Attribute(ACLBase):
                 [_may_remove_referral(x.referral) for x in attrv.data_array.all()]
             else:
                 _may_remove_referral(attrv.referral)
+
+    # NOTE: Type-Write
+    def delete(self):
+        super(Attribute, self).delete()
+
+        self.may_remove_referral()
 
     # implementation for Attribute
     def check_duplication_entry_at_restoring(self, entry_chain):
