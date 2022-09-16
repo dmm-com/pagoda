@@ -1,6 +1,6 @@
 import yaml
 from django.conf import settings
-from rest_framework.exceptions import ParseError, ValidationError
+from rest_framework.exceptions import APIException, ParseError, ValidationError
 from rest_framework.parsers import BaseParser
 from rest_framework.views import exception_handler
 
@@ -46,6 +46,12 @@ def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
     if response is not None:
-        response.data = exc.get_full_details()
+        if isinstance(exc, APIException):
+            response.data = exc.get_full_details()
+        else:
+            response.data = {
+                "message": response.data["detail"],
+                "code": response.data["detail"].code,
+            }
 
     return response
