@@ -240,7 +240,7 @@ function reconstruct_modal_body_for_entry(data) {
       elem_td.append(elem_ul);
 
     } else if(attr.type == {{ attr_type.date }}) {
-      elem_td.append($(`<span>${ attr.value }</span>`));
+      elem_td.append($(`<span>${ attr.value ?? '' }</span>`));
     }
 
     elem_tr.append(elem_td);

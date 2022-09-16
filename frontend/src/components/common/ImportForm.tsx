@@ -1,56 +1,71 @@
-import { Box, Button, Input, Theme, Typography } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { Box, Button, Input, Typography } from "@mui/material";
+import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-}));
-
 interface Props {
-  importFunc: (formData: FormData) => Promise<Response>;
-  redirectPath: string;
+  // FIXME describe concrete types
+  handleImport: (importData: any) => Promise<any>;
+  handleCancel?: () => void;
 }
 
-export const ImportForm: FC<Props> = ({ importFunc, redirectPath }) => {
-  const classes = useStyles();
+export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
   const history = useHistory();
-  const [file, setFile] = useState<string>();
+  const [file, setFile] = useState<File>();
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const { enqueueSnackbar } = useSnackbar();
 
   const onChange = (event) => {
     setFile(event.target.files[0]);
   };
 
-  const onSubmit = async (event) => {
+  const onClick = async () => {
     if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
+      const fileReader = new FileReader();
+      fileReader.readAsText(file);
 
-      await importFunc(formData);
-      history.push(redirectPath);
+      fileReader.onload = async () => {
+        try {
+          await handleImport(fileReader.result);
+          history.go(0);
+        } catch (e) {
+          setErrorMessage("ファイルのアップロードに失敗しました。");
+          enqueueSnackbar("ファイルのアップロードに失敗しました", {
+            variant: "error",
+          });
+        }
+      };
     }
-
-    event.preventDefault();
   };
 
   return (
     <Box>
-      <form onSubmit={onSubmit}>
-        <Box>
-          <Input type="file" onChange={onChange} />
+      <Box display="flex" flexDirection="column">
+        <Input type="file" onChange={onChange} />
+
+        <Typography color="error" variant="caption" my="4px">
+          {errorMessage}
+        </Typography>
+        <Box display="flex" justifyContent="flex-end">
           <Button
-            className={classes.button}
             type="submit"
             variant="contained"
             color="secondary"
+            onClick={onClick}
+            sx={{ m: "4px" }}
           >
-            保存
+            インポート
+          </Button>
+          <Button
+            variant="contained"
+            color="info"
+            onClick={handleCancel}
+            sx={{ m: "4px" }}
+          >
+            キャンセル
           </Button>
         </Box>
-      </form>
-      <Typography>(注：CSV 形式のデータはインポートできません)</Typography>
+      </Box>
     </Box>
   );
 };

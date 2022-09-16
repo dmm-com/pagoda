@@ -17,6 +17,7 @@ from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from entry.settings import CONFIG
 from group.models import Group
+from role.models import Role
 
 
 @http_get
@@ -211,6 +212,9 @@ def get_attr_referrals(request, attr_id):
     def _get_referral_groups(attr):
         return _get_referral_objects(attr, Group, {"is_active": True})
 
+    def _get_referral_roles(attr):
+        return _get_referral_objects(attr, Role, {"is_active": True})
+
     if (
         not Attribute.objects.filter(id=attr_id).exists()
         and not EntityAttr.objects.filter(id=attr_id).exists()
@@ -227,6 +231,8 @@ def get_attr_referrals(request, attr_id):
         results = _get_referral_entries(attr)
     elif attr.type & AttrTypeValue["group"]:
         results = _get_referral_groups(attr)
+    elif attr.type & AttrTypeValue["role"]:
+        results = _get_referral_roles(attr)
     else:
         return HttpResponse("Target Attribute does not referring type", status=400)
 
@@ -253,7 +259,7 @@ def get_entry_history(request, entry_id):
         return HttpResponse("Specified entry doesn't exist", status=400)
 
     def json_serial(obj):
-        if isinstance(obj, ACLBase) or isinstance(obj, Group):
+        if isinstance(obj, ACLBase) or isinstance(obj, Group) or isinstance(obj, Role):
             return {"id": obj.id, "name": obj.name}
         elif isinstance(obj, datetime):
             return obj.astimezone(timezone("Asia/Tokyo")).strftime("%b. %d, %Y, %I:%M %p")
@@ -291,10 +297,10 @@ def get_entry_info(request, entry_id):
                 [
                     dict(
                         {"id": x.id, "name": x.schema.name, "index": x.schema.index},
-                        **x.get_latest_value().get_value(with_metainfo=True)
+                        **x.get_latest_value().get_value(with_metainfo=True, is_active=False)
                     )
                     for x in entry.attrs.all()
-                    if request.user.has_permission(x, ACLType.Readable)
+                    if request.user.has_permission(x, ACLType.Readable) and x.schema.is_active
                 ],
                 key=lambda x: x["index"],
             ),

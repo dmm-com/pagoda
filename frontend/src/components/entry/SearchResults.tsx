@@ -2,6 +2,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   InputAdornment,
+  List,
+  ListItem,
   TableCell,
   TableRow,
   TextField,
@@ -103,9 +105,6 @@ export const SearchResults: FC<Props> = ({
             sx={{
               color: "primary.contrastText",
               minWidth: "300px",
-              position: "sticky",
-              left: 0,
-              zIndex: 1,
               backgroundColor: "inherit",
               outline: "1px solid #FFFFFF",
             }}
@@ -219,9 +218,6 @@ export const SearchResults: FC<Props> = ({
             sx={{
               backgroundColor: "inherit",
               minWidth: "300px",
-              position: "sticky",
-              left: 0,
-              zIndex: 1,
             }}
           >
             <Box component={Link} to={entryDetailsPath(0, result.entry.id)}>
@@ -237,17 +233,19 @@ export const SearchResults: FC<Props> = ({
           ))}
           {hasReferral && (
             <TableCell sx={{ minWidth: "300px" }}>
-              {result.referrals.map((referral) => {
-                return (
-                  <Box
-                    key={referral.id}
-                    component={Link}
-                    to={entryDetailsPath(0, referral.id)}
-                  >
-                    {referral.name}
-                  </Box>
-                );
-              })}
+              <List>
+                {result.referrals.map((referral) => (
+                  <ListItem>
+                    <Box
+                      key={referral.id}
+                      component={Link}
+                      to={entryDetailsPath(0, referral.id)}
+                    >
+                      {referral.name}
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
             </TableCell>
           )}
         </StyledTableRow>

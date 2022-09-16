@@ -5,4 +5,5 @@ export * from "./EntityApi";
 export * from "./EntryApi";
 export * from "./GroupApi";
 export * from "./JobApi";
+export * from "./RoleApi";
 export * from "./UserApi";

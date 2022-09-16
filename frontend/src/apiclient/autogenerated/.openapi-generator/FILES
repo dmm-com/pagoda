@@ -3,10 +3,12 @@ apis/EntityApi.ts
 apis/EntryApi.ts
 apis/GroupApi.ts
 apis/JobApi.ts
+apis/RoleApi.ts
 apis/UserApi.ts
 apis/index.ts
 index.ts
 models/ACL.ts
+models/ACLParent.ts
 models/Attribute.ts
 models/Entity.ts
 models/EntityAttrCreate.ts
@@ -20,9 +22,6 @@ models/EntryBase.ts
 models/EntryCopy.ts
 models/EntryCreate.ts
 models/EntryExport.ts
-models/EntryImportAttribute.ts
-models/EntryImportEntity.ts
-models/EntryImportEntries.ts
 models/EntryRetrieve.ts
 models/EntryRetrieveAttrs.ts
 models/EntryRetrieveValue.ts
@@ -34,9 +33,13 @@ models/GetEntryAttrReferral.ts
 models/GetEntrySimple.ts
 models/Group.ts
 models/JobSerializers.ts
+models/JobSerializersTarget.ts
 models/PaginatedEntityListList.ts
 models/PaginatedEntryBaseList.ts
 models/PaginatedGetEntrySimpleList.ts
+models/PaginatedJobSerializersList.ts
+models/PaginatedUserListList.ts
+models/Role.ts
 models/UserBase.ts
 models/UserList.ts
 models/UserRetrieve.ts

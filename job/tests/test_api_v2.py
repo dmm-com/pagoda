@@ -1,8 +1,9 @@
+from datetime import timedelta
+
 from airone.lib.test import AironeViewTest
 from entity.models import Entity
 from entry.models import Entry
 from job.models import Job, JobOperation
-from job.settings import CONFIG
 
 # constants using this tests
 _TEST_MAX_LIST_VIEW = 2
@@ -12,16 +13,8 @@ class ViewTest(AironeViewTest):
     def setUp(self):
         super(ViewTest, self).setUp()
 
-        # save original configuration not to make affect other tests by chaning this
-        self.old_config = CONFIG.conf
-
-        CONFIG.conf["MAX_LIST_VIEW"] = _TEST_MAX_LIST_VIEW
-
     def tearDown(self):
         super(ViewTest, self).tearDown()
-
-        # retrieve original configuration for Job.settings.CONFIG
-        CONFIG.conf = self.old_config
 
     def test_get_jobs(self):
         user = self.guest_login()
@@ -30,24 +23,19 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
 
         # create three jobs
-        [Job.new_create(user, entry) for _ in range(0, _TEST_MAX_LIST_VIEW + 1)]
-        self.assertEqual(Job.objects.filter(user=user).count(), _TEST_MAX_LIST_VIEW + 1)
+        [Job.new_create(user, entry) for _ in range(0, _TEST_MAX_LIST_VIEW)]
+        self.assertEqual(Job.objects.filter(user=user).count(), _TEST_MAX_LIST_VIEW)
 
         # checks number of the returned objects are as expected
-        resp = self.client.get("/job/api/v2/jobs")
+        resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()), _TEST_MAX_LIST_VIEW)
-
-        # checks all job objects will be returned
-        resp = self.client.get("/job/api/v2/jobs?nolimit=1")
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()), _TEST_MAX_LIST_VIEW + 1)
+        self.assertEqual(resp.json()["count"], _TEST_MAX_LIST_VIEW)
 
         # checks no job object will be returned because of different user
         self.admin_login()
-        resp = self.client.get("/job/api/v2/jobs?nolimit=1")
+        resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()), 0)
+        self.assertEqual(resp.json()["count"], 0)
 
     def test_get_jobs_deleted_target(self):
         user = self.guest_login()
@@ -56,9 +44,9 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
         Job.new_create(user, entry)
 
-        resp = self.client.get("/job/api/v2/jobs")
+        resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()), 1)
+        self.assertEqual(resp.json()["count"], 1)
 
         # check the case show jobs after deleting job target
         entry.delete()
@@ -66,22 +54,22 @@ class ViewTest(AironeViewTest):
         # Create delete job
         Job.new_delete(user, entry)
 
-        resp = self.client.get("/job/api/v2/jobs")
+        resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
 
         # Confirm that the delete job can be obtained
         body = resp.json()
-        self.assertEqual(len(body), 1)
-        self.assertEqual(body[0]["operation"], JobOperation.DELETE_ENTRY.value)
+        self.assertEqual(body["count"], 1)
+        self.assertEqual(body["results"][0]["operation"], JobOperation.DELETE_ENTRY.value)
 
     def test_get_non_target_job(self):
         user = self.guest_login()
 
         Job.new_create(user, None)
 
-        resp = self.client.get("/job/api/v2/jobs")
+        resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()), 0)
+        self.assertEqual(resp.json()["count"], 0)
 
     def test_get_exporting_job(self):
         user = self.guest_login()
@@ -90,9 +78,34 @@ class ViewTest(AironeViewTest):
         Job.new_export(user),
         Job.new_export_search_result(user),
 
-        resp = self.client.get("/job/api/v2/jobs")
+        resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json()), 2)
+        self.assertEqual(resp.json()["count"], 2)
+
+    def test_get_recent_job(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
+        job = Job.new_create(user, entry, "hoge")
+
+        # match the created_after
+        created_after = job.created_at.strftime("%Y-%m-%d")
+        resp = self.client.get(
+            f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}"
+            f"&offset=0&created_after={created_after}"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 1)
+
+        # don't match the created_after
+        created_after = (job.created_at + timedelta(days=1)).strftime("%Y-%m-%d")
+        resp = self.client.get(
+            f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}"
+            f"&offset=0&created_after={created_after}"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 0)
 
     def test_get_job(self):
         user = self.guest_login()
@@ -103,14 +116,10 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get("/job/api/v2/%d/" % job.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(
-            resp.json(),
-            {
-                "id": job.id,
-                "status": Job.STATUS["PREPARING"],
-                "text": "hoge",
-            },
-        )
+        body = resp.json()
+        self.assertEqual(body["id"], job.id)
+        self.assertEqual(body["status"], Job.STATUS["PREPARING"])
+        self.assertEqual(body["text"], "hoge")
 
     def test_get_job_with_invalid_param(self):
         user = self.guest_login()

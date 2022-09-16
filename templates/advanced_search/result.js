@@ -12,7 +12,7 @@ function make_attr_elem(attr, hint_attr) {
 
     return `<div class='row'> \
               <div class='col'> \
-                <p class='url_conv'>${ key }</p> \
+                <p class='url_conv'>${ key ?? '' }</p> \
               </div> \
               <div class='col'>${ value_str }</div> \
             </div>`;
@@ -42,6 +42,12 @@ function make_attr_elem(attr, hint_attr) {
       case {{ attr_type.group }}:
         if (attr.value) {
           new_elem.append($(`<a href='/group/'>${ attr.value.name }</a>`));
+        }
+        break;
+
+      case {{ attr_type.role }}:
+        if (attr.value) {
+          new_elem.append($(`<a href='/role/edit/${ attr.value.id }'>${ attr.value.name }</a>`));
         }
         break;
 
@@ -82,6 +88,18 @@ function make_attr_elem(attr, hint_attr) {
         for(var value of attr.value) {
           if(value) {
             elem_ul.append($(`<li class='list-group-item'><a href='/group/'>${ value.name }</a></li>`));
+          } else {
+            elem_ul.append($(`<li class='list-group-item' />`));
+          }
+        }
+        new_elem.append(elem_ul);
+        break;
+
+      case {{ attr_type.array_role }}:
+        var elem_ul = $("<ul class='list-group'/>");
+        for(var value of attr.value) {
+          if(value) {
+            elem_ul.append($(`<li class='list-group-item'><a href='/role/edit/${ value.id }'>${ value.name }</a></li>`));
           } else {
             elem_ul.append($(`<li class='list-group-item' />`));
           }

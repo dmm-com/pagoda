@@ -1710,6 +1710,99 @@ class ViewTest(AironeViewTest):
         "entry.tasks.create_entry_attrs.delay",
         Mock(side_effect=tasks.create_entry_attrs),
     )
+    def test_create_entry_with_role_attributes(self):
+        user = self.guest_login()
+        role = Role.objects.create(name="TestRole")
+
+        # initialize Entity which has Role related Attributes
+        entity = self.create_entity(
+            user,
+            "Entity",
+            attrs=[
+                {"name": "Role", "type": AttrTypeValue["role"]},
+                {"name": "RoleArray", "type": AttrTypeValue["array_role"]},
+            ],
+        )
+
+        # initialize parameters that will be sent to AirOne to create Entry
+        sending_params = {"entry_name": "entry", "attrs": []}
+        for attrname, value in [
+            ("Role", [{"data": str(role.id), "index": 0}]),
+            ("RoleArray", [{"data": str(role.id), "index": 0}]),
+        ]:
+            attr = entity.attrs.get(name=attrname, is_active=True)
+            sending_params["attrs"].append(
+                {
+                    "id": str(attr.id),
+                    "type": str(attr.type),
+                    "value": value,
+                    "referral_key": [],
+                }
+            )
+
+        # create Entry with valid role attributes and confirm that
+        # created Entry has specified Attribute values.
+        resp = self.client.post(
+            reverse("entry:do_create", args=[entity.id]),
+            json.dumps(sending_params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        entry = Entry.objects.get(id=resp.json().get("entry_id"))
+        self.assertFalse(entry.attrs.get(schema__name="Role").is_updated(role))
+        self.assertFalse(entry.attrs.get(schema__name="RoleArray").is_updated([role]))
+
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
+    def test_edit_entry_with_role_attributes(self):
+        user = self.guest_login()
+        role = Role.objects.create(name="TestRole")
+
+        # initialize Entity which has Role related Attributes
+        # and create Entry which is associated with that Entity
+        entity = self.create_entity(
+            user,
+            "Entity",
+            attrs=[
+                {"name": "Role", "type": AttrTypeValue["role"]},
+                {"name": "RoleArray", "type": AttrTypeValue["array_role"]},
+            ],
+        )
+        entry = self.add_entry(user, "TestEntry", entity)
+
+        # initialize parameters that will be sent to AirOne to edit Entry
+        sending_params = {"entry_name": "entry", "attrs": []}
+        for attrname, value in [
+            ("Role", [{"data": str(role.id), "index": 0}]),
+            ("RoleArray", [{"data": str(role.id), "index": 0}]),
+        ]:
+            attr = entry.attrs.get(schema__name=attrname, is_active=True)
+            sending_params["attrs"].append(
+                {
+                    "entity_attr_id": str(attr.schema.id),
+                    "id": str(attr.id),
+                    "value": value,
+                    "referral_key": [],
+                }
+            )
+
+        # sending a request to edit specified Entry and
+        # confirme updated Entry has expected Attribute values
+        resp = self.client.post(
+            reverse("entry:do_edit", args=[entry.id]),
+            json.dumps(sending_params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        updatedEntry = Entry.objects.get(id=resp.json().get("entry_id"))
+        self.assertFalse(updatedEntry.attrs.get(schema__name="Role").is_updated(role))
+        self.assertFalse(updatedEntry.attrs.get(schema__name="RoleArray").is_updated([role]))
+
+    @patch(
+        "entry.tasks.create_entry_attrs.delay",
+        Mock(side_effect=tasks.create_entry_attrs),
+    )
     def test_post_create_just_limit_of_value(self):
         self.admin_login()
 
@@ -3020,18 +3113,22 @@ class ViewTest(AironeViewTest):
         ref_entity = Entity.objects.create(name="RefEntity", created_user=user)
         ref_entry = Entry.objects.create(name="ref", created_user=user, schema=ref_entity)
         group = Group.objects.create(name="group")
+        role = Role.objects.create(name="role")
 
         entity = Entity.objects.create(name="Entity", created_user=user)
         attr_info = {
             "str": {"type": AttrTypeValue["string"]},
             "obj": {"type": AttrTypeValue["object"]},
             "grp": {"type": AttrTypeValue["group"]},
+            "role": {"type": AttrTypeValue["role"]},
             "name": {"type": AttrTypeValue["named_object"]},
             "bool": {"type": AttrTypeValue["boolean"]},
             "date": {"type": AttrTypeValue["date"]},
             "arr1": {"type": AttrTypeValue["array_string"]},
             "arr2": {"type": AttrTypeValue["array_object"]},
             "arr3": {"type": AttrTypeValue["array_named_object"]},
+            "arr4": {"type": AttrTypeValue["array_group"]},
+            "arr5": {"type": AttrTypeValue["array_role"]},
         }
         for attr_name, info in attr_info.items():
             attr = EntityAttr.objects.create(
@@ -3083,6 +3180,7 @@ class ViewTest(AironeViewTest):
             {"attr": "str", "checker": lambda x: x.value == "foo"},
             {"attr": "obj", "checker": lambda x: x.referral.id == ref_entry.id},
             {"attr": "grp", "checker": lambda x: x.value == str(group.id)},
+            {"attr": "role", "checker": lambda x: x.value == str(role.id)},
             {
                 "attr": "name",
                 "checker": lambda x: x.value == "foo" and x.referral.id == ref_entry.id,
@@ -3099,6 +3197,16 @@ class ViewTest(AironeViewTest):
                 "attr": "arr3",
                 "checker": lambda x: x.data_array.count() == 1
                 and x.data_array.first().referral.id == ref_entry.id,
+            },
+            {
+                "attr": "arr4",
+                "checker": lambda x: x.data_array.count() == 1
+                and x.data_array.first().value == str(group.id),
+            },
+            {
+                "attr": "arr5",
+                "checker": lambda x: x.data_array.count() == 1
+                and x.data_array.first().value == str(role.id),
             },
         ]
         for info in checklist:

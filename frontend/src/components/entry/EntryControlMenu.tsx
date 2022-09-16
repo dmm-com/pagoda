@@ -67,6 +67,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
         vertical: "top",
         horizontal: "right",
       }}
+      disableScrollLock
     >
       <Box sx={{ width: 150 }}>
         <MenuItem component={Link} to={entryEditPath(entityId, entryId)}>

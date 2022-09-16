@@ -1,4 +1,12 @@
+import json
+from unittest import mock
+
+from django.urls import reverse
+
 from airone.lib.test import AironeViewTest
+from airone.lib.types import AttrTypeValue
+from entry.models import Entry
+from group import tasks
 from group.models import Group
 from user.models import User
 
@@ -50,3 +58,40 @@ class APITest(AironeViewTest):
                 }
             ],
         )
+
+    @mock.patch(
+        "group.tasks.edit_group_referrals.delay", mock.Mock(side_effect=tasks.edit_group_referrals)
+    )
+    def test_update_group_referral(self):
+        user = self.admin_login()
+        entity = self.create_entity(
+            **{
+                "user": user,
+                "name": "Entity",
+                "attrs": [{"name": "group", "type": AttrTypeValue["group"]}],
+            }
+        )
+
+        group = self._create_group("testg")
+
+        entry = self.add_entry(
+            user,
+            "entry",
+            entity,
+            values={"group": group},
+        )
+        entry.register_es()
+        resp1 = Entry.search_entries(user, [entity.id], [{"name": "group"}])
+        self.assertEqual(resp1["ret_values"][0]["attrs"]["group"]["value"]["name"], "testg")
+
+        params = {
+            "name": "testg-update",
+            "users": [user.id],
+        }
+        self.client.post(
+            reverse("group:do_edit", args=[group.id]),
+            json.dumps(params),
+            "application/json",
+        )
+        resp2 = Entry.search_entries(user, [entity.id], [{"name": "group"}])
+        self.assertEqual(resp2["ret_values"][0]["attrs"]["group"]["value"]["name"], "testg-update")

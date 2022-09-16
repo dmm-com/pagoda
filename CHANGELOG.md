@@ -3,6 +3,67 @@
 ## In development
 
 ### Added
+
+### Changed
+
+### Fixed
+
+* Fixed a problem that an exception will be occurred at edit Entry page.
+  Contributed by @ritsuxis
+
+## v3.21.0
+
+### Added
+* Added new Attribute-types ("role" and "array_role") that
+  could refer Role instance from AttributeValue.
+  Contributed by @userlocalhost
+
+### Changed
+Upgrade flower version from 1.1.0 to 1.2.0
+
+### Fixed
+* Fixed Elasticsearch not updating when updating Group and Role.
+  Contributed by @Ravie403
+* Fixed showing deleted attributes in entry restore.
+  Contributed by @Ravie403
+* Fixed value not being displayed due to javascript error in entry edit.
+  Contributed by @ritsuxis
+* Fixed duplicate entries in entry restore.
+  Contributed by @ritsuxis
+
+## v3.20.0
+
+### Added
+* Added entity name at dashboard search result page.
+  Contributed by @Ravie403
+
+### Fixed
+* Escaped single quote data will be shown at Entry edit page (#603)
+  Contributed by @Ravie403
+* Fixed value being displayed as null at advanced search results page.
+  Contributed by @Ravie403
+* Fixed referral entries not displayed at restore entry page.
+  Contributed by @Ravie403
+* Fixed value being displayed as null at restore entry page.
+  Contributed by @Ravie403
+* Fixed an error when there is no named_entry attribute value in advanced search.
+  Contributed by @Ravie403
+
+## v3.19.0
+
+### Added
+* Added special search character to get Entries
+  that have substantial attribute values.
+  Contributed by @userlocalhost
+
+### Fixed
+* Fixed problem that duplicate named Entries might be created
+  when multiple requests were coming at the exact same time.
+  Contributed by @userlocalhost, @hinashi
+
+## v3.18.0
+
+### Added
 * (New-UI) Implemented ACL configuration page for Entity, Entry
   and EntityAttr.
   Contributed by @hinashi, @syucream, @userlocalhost
@@ -13,15 +74,16 @@
 * Added airone error code to APIv2 for frontend.
   Contributed by @syucream, @userlocalhost, @hinashi
 
+### Fixed
+* Fixed an error in getting data_value in advanced search.
+  Contributed by @hinashi
+
+## v3.17.0
+
 ### Changed
 * Changed to allow parallel execution some job.
   Contributed by @hinashi
-
 * Changed to update job status to error when celery exception error
-  Contributed by @hinashi
-
-### Fixed
-* Fixed an error in getting data_value in advanced search.
   Contributed by @hinashi
 
 ## v3.16.0

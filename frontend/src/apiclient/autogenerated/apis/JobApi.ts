@@ -17,7 +17,16 @@ import {
   JobSerializers,
   JobSerializersFromJSON,
   JobSerializersToJSON,
+  PaginatedJobSerializersList,
+  PaginatedJobSerializersListFromJSON,
+  PaginatedJobSerializersListToJSON,
 } from "../models";
+
+export interface JobApiV2JobsListRequest {
+  createdAfter?: Date;
+  limit?: number;
+  offset?: number;
+}
 
 export interface JobApiV2RetrieveRequest {
   id: number;
@@ -27,6 +36,72 @@ export interface JobApiV2RetrieveRequest {
  *
  */
 export class JobApi extends runtime.BaseAPI {
+  /**
+   */
+  async jobApiV2JobsListRaw(
+    requestParameters: JobApiV2JobsListRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<PaginatedJobSerializersList>> {
+    const queryParameters: any = {};
+
+    if (requestParameters.createdAfter !== undefined) {
+      queryParameters["created_after"] = (
+        requestParameters.createdAfter as any
+      ).toISOString();
+    }
+
+    if (requestParameters.limit !== undefined) {
+      queryParameters["limit"] = requestParameters.limit;
+    }
+
+    if (requestParameters.offset !== undefined) {
+      queryParameters["offset"] = requestParameters.offset;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/job/api/v2/jobs`,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      PaginatedJobSerializersListFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async jobApiV2JobsList(
+    requestParameters: JobApiV2JobsListRequest = {},
+    initOverrides?: RequestInit
+  ): Promise<PaginatedJobSerializersList> {
+    const response = await this.jobApiV2JobsListRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
   /**
    */
   async jobApiV2RetrieveRaw(

@@ -41,6 +41,7 @@ class APITest(AironeViewTest):
 
         # create referred Entity, Entries and Groups
         test_groups = [Group.objects.create(name=x) for x in ["group1", "group2"]]
+        test_roles = [Role.objects.create(name=x) for x in ["role1", "role2"]]
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=admin)
         ref_e = []
         for index in range(0, 10):
@@ -71,6 +72,8 @@ class APITest(AironeViewTest):
                 "date": "2018-12-31",
                 "group": "group1",
                 "groups": ["group1", "group2"],
+                "role": "role1",
+                "roles": ["role1", "role2"],
                 "text": "fuga",
                 "vals": ["foo", "bar"],
                 "refs": ["r-2", "r-3"],
@@ -126,6 +129,19 @@ class APITest(AironeViewTest):
                 "check": lambda v: self.assertEqual(
                     [x.value for x in v.data_array.all()],
                     [str(x.id) for x in test_groups],
+                ),
+            },
+            {
+                "name": "role",
+                "check": lambda v: self.assertEqual(
+                    v.value, str(Role.objects.get(name="role1").id)
+                ),
+            },
+            {
+                "name": "roles",
+                "check": lambda v: self.assertEqual(
+                    [x.value for x in v.data_array.all()],
+                    [str(x.id) for x in test_roles],
                 ),
             },
             {"name": "text", "check": lambda v: self.assertEqual(v.value, "fuga")},
@@ -188,6 +204,8 @@ class APITest(AironeViewTest):
                 "name": {},
                 "group": "",
                 "groups": [],
+                "role": "",
+                "roles": [],
                 "text": "",
                 "vals": [],
                 "refs": [],

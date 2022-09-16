@@ -7,6 +7,7 @@ from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from entry.settings import CONFIG
 from group.models import Group
+from role.models import Role
 
 
 class ViewTest(AironeViewTest):
@@ -586,6 +587,7 @@ class ViewTest(AironeViewTest):
             elif (
                 attr.schema.type & AttrTypeValue["object"]
                 or attr.schema.type & AttrTypeValue["group"]
+                or attr.schema.type & AttrTypeValue["role"]
             ):
                 return {"id": attr_value.id, "name": attr_value.name}
             elif attr.schema.type & AttrTypeValue["date"]:
@@ -601,6 +603,7 @@ class ViewTest(AironeViewTest):
             Entry.objects.create(name=x, created_user=user, schema=ref_entity) for x in ["r0", "r1"]
         ]
         groups = [Group.objects.create(name=x) for x in ["g0", "g1"]]
+        roles = [Role.objects.create(name=x) for x in ["g0", "g1"]]
         attrinfo = {
             "string": {"values": ["foo", "bar"]},
             "object": {"values": [ref_entries[0], ref_entries[1]]},
@@ -618,6 +621,8 @@ class ViewTest(AironeViewTest):
             "boolean": {"values": [True, False]},
             "group": {"values": [groups[0], groups[1]]},
             "date": {"values": [date(2020, 1, 1), date(2021, 1, 1)]},
+            "role": {"values": [roles[0], roles[1]]},
+            "array_role": {"values": [[roles[0]], [roles[1]]]},
         }
         entity = Entity.objects.create(name="Entity", created_user=user)
         for name in attrinfo.keys():
@@ -690,16 +695,15 @@ class ViewTest(AironeViewTest):
 
         # initialize Entity and Entry
         entity = Entity.objects.create(name="Entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrTypeValue["string"],
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        entity_attr = EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrTypeValue["string"],
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
+        entity.attrs.add(entity_attr)
 
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -720,6 +724,9 @@ class ViewTest(AironeViewTest):
                 sorted(attrinfo.keys()),
                 sorted(["id", "name", "type", "index", "value"]),
             )
+        entity_attr.delete()
+        resp = self.client.get("/entry/api/v1/get_entry_info/%d" % entry.id)
+        self.assertEqual(resp.json()["attrs"], [])
 
     def test_create_entry_attr(self):
         user = self.guest_login()

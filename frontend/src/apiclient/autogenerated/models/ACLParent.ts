@@ -16,43 +16,48 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface EntryImportAttribute
+ * @interface ACLParent
  */
-export interface EntryImportAttribute {
+export interface ACLParent {
+  /**
+   *
+   * @type {number}
+   * @memberof ACLParent
+   */
+  id?: number;
   /**
    *
    * @type {string}
-   * @memberof EntryImportAttribute
+   * @memberof ACLParent
    */
-  name: string;
+  name?: string;
   /**
    *
-   * @type {any}
-   * @memberof EntryImportAttribute
+   * @type {boolean}
+   * @memberof ACLParent
    */
-  value: any | null;
+  isPublic?: boolean;
 }
 
-export function EntryImportAttributeFromJSON(json: any): EntryImportAttribute {
-  return EntryImportAttributeFromJSONTyped(json, false);
+export function ACLParentFromJSON(json: any): ACLParent {
+  return ACLParentFromJSONTyped(json, false);
 }
 
-export function EntryImportAttributeFromJSONTyped(
+export function ACLParentFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntryImportAttribute {
+): ACLParent {
   if (json === undefined || json === null) {
     return json;
   }
   return {
-    name: json["name"],
-    value: json["value"],
+    id: !exists(json, "id") ? undefined : json["id"],
+    name: !exists(json, "name") ? undefined : json["name"],
+    isPublic: !exists(json, "is_public") ? undefined : json["is_public"],
   };
 }
 
-export function EntryImportAttributeToJSON(
-  value?: EntryImportAttribute | null
-): any {
+export function ACLParentToJSON(value?: ACLParent | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -60,7 +65,8 @@ export function EntryImportAttributeToJSON(
     return null;
   }
   return {
+    id: value.id,
     name: value.name,
-    value: value.value,
+    is_public: value.isPublic,
   };
 }

@@ -14,9 +14,17 @@ import {
   Typography,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { FC, useState } from "react";
+import React, { FC, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
+
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+import { JobOperations, JobStatuses } from "../utils/Constants";
+import {
+  getLatestCheckDate,
+  jobTargetLabel,
+  updateLatestCheckDate,
+} from "../utils/JobUtil";
 
 import {
   jobsPath,
@@ -27,7 +35,7 @@ import {
   advancedSearchPath,
   loginPath,
 } from "Routes";
-import { getRecentJobs, postLogout } from "utils/AironeAPIClient";
+import { postLogout } from "utils/AironeAPIClient";
 import { DjangoContext } from "utils/DjangoContext";
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -81,19 +89,32 @@ export const Header: FC = () => {
 
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
   const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();
+  const [latestCheckDate, setLatestCheckDate] = useState<Date>(
+    getLatestCheckDate()
+  );
 
   const djangoContext = DjangoContext.getInstance();
 
   const recentJobs = useAsync(async () => {
-    const resp = await getRecentJobs();
-    const data = await resp.json();
-    return data["result"];
+    return await aironeApiClientV2.getRecentJobs();
   });
+
+  const uncheckedJobsCount = useMemo(() => {
+    return (
+      recentJobs.value?.filter((job) => job.createdAt > latestCheckDate)
+        ?.length ?? 0
+    );
+  }, [latestCheckDate, recentJobs.value]);
 
   const handleLogout = () => {
     postLogout().then(() => {
       window.location.href = `${loginPath()}?next=${window.location.pathname}`;
     });
+  };
+
+  const handleOpenMenu = () => {
+    updateLatestCheckDate(new Date());
+    setLatestCheckDate(getLatestCheckDate());
   };
 
   return (
@@ -148,10 +169,7 @@ export const Header: FC = () => {
                 onClick={(e) => setJobAnchorEl(e.currentTarget)}
               >
                 {!recentJobs.loading && (
-                  <Badge
-                    badgeContent={recentJobs.value.length}
-                    color="secondary"
-                  >
+                  <Badge badgeContent={uncheckedJobsCount} color="secondary">
                     <TaskIcon />
                   </Badge>
                 )}
@@ -160,16 +178,23 @@ export const Header: FC = () => {
                 id="job-menu"
                 anchorEl={jobAnchorEl}
                 open={Boolean(jobAnchorEl)}
+                onClick={handleOpenMenu}
                 onClose={() => setJobAnchorEl(null)}
                 keepMounted
                 disableScrollLock
               >
                 {!recentJobs.loading && recentJobs.value.length > 0 ? (
-                  recentJobs.value.map((recentJob) => (
-                    <MenuItem key={recentJob.id}>
-                      <Typography component={Link} to={jobsPath()}>
-                        {recentJob.target.name}
-                      </Typography>
+                  recentJobs.value.map((job) => (
+                    <MenuItem key={job.id}>
+                      {(job.operation == JobOperations.EXPORT_ENTRY ||
+                        job.operation == JobOperations.EXPORT_SEARCH_RESULT) &&
+                      job.status == JobStatuses.DONE ? (
+                        <a href={`/job/download/${job.id}`}>
+                          {jobTargetLabel(job)}
+                        </a>
+                      ) : (
+                        <Typography>{jobTargetLabel(job)}</Typography>
+                      )}
                     </MenuItem>
                   ))
                 ) : (

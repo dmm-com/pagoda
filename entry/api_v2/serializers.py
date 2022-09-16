@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional, TypedDict, Union
 
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -15,6 +15,7 @@ from entity.models import Entity
 from entry.models import Attribute, AttributeValue, Entry
 from group.models import Group
 from job.models import Job
+from role.models import Role
 from user.api_v2.serializers import UserBaseSerializer
 from user.models import User
 
@@ -25,12 +26,25 @@ class EntityAttributeType(TypedDict):
 
 
 class EntryAttributeValueObject(TypedDict):
-    id: Optional[int]
+    id: int
     name: str
     schema: EntityAttributeType
 
 
+class EntryAttributeValueObjectBoolean(EntryAttributeValueObject):
+    boolean: bool
+
+
+class EntryAttributeValueBoolean(TypedDict):
+    boolean: bool
+
+
 class EntryAttributeValueGroup(TypedDict):
+    id: int
+    name: str
+
+
+class EntryAttributeValueRole(TypedDict):
     id: int
     name: str
 
@@ -42,12 +56,25 @@ class EntryAttributeValue(TypedDict, total=False):
     as_named_object: Dict[str, Optional[EntryAttributeValueObject]]
     as_array_object: List[Optional[EntryAttributeValueObject]]
     as_array_string: List[str]
-    as_array_named_object: List[Dict[str, Optional[EntryAttributeValueObject]]]
+    as_array_named_object: List[
+        Dict[
+            str,
+            Optional[
+                Union[
+                    EntryAttributeValueObject,
+                    EntryAttributeValueObjectBoolean,
+                    EntryAttributeValueBoolean,
+                ]
+            ],
+        ]
+    ]
     as_array_group: List[EntryAttributeValueGroup]
     # text; use string instead
     as_boolean: bool
     as_group: Optional[EntryAttributeValueGroup]
     # date; use string instead
+    as_role: Optional[EntryAttributeValueRole]
+    as_array_role: List[EntryAttributeValueRole]
 
 
 class EntryAttributeType(TypedDict):
@@ -302,7 +329,18 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     }
 
                 elif attr.schema.type & AttrTypeValue["named"]:
-                    array_named_object: List[Dict[str, Optional[EntryAttributeValueObject]]] = [
+                    array_named_object: List[
+                        Dict[
+                            str,
+                            Optional[
+                                Union[
+                                    EntryAttributeValueObject,
+                                    EntryAttributeValueObjectBoolean,
+                                    EntryAttributeValueBoolean,
+                                ]
+                            ],
+                        ]
+                    ] = [
                         {
                             x.value: {
                                 "id": x.referral.id if x.referral else None,
@@ -345,6 +383,18 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                                 "name": group.name,
                             }
                             for group in groups
+                        ]
+                    }
+
+                elif attr.schema.type & AttrTypeValue["role"]:
+                    roles = [Role.objects.get(id=x.value) for x in attrv.data_array.all()]
+                    return {
+                        "as_array_role": [
+                            {
+                                "id": role.id,
+                                "name": role.name,
+                            }
+                            for role in roles
                         ]
                     }
 
@@ -398,6 +448,15 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     }
                 }
 
+            elif attr.schema.type & AttrTypeValue["role"] and attrv.value:
+                role = Role.objects.get(id=attrv.value)
+                return {
+                    "as_role": {
+                        "id": role.id,
+                        "name": role.name,
+                    }
+                }
+
             return {}
 
         def get_default_attr_value(type: int) -> EntryAttributeValue:
@@ -416,6 +475,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 elif type & AttrTypeValue["group"]:
                     return {"as_array_group": AttrDefaultValue[type]}
 
+                elif type & AttrTypeValue["role"]:
+                    return {"as_array_role": AttrDefaultValue[type]}
+
             elif type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
                 return {"as_string": AttrDefaultValue[type]}
 
@@ -433,6 +495,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
             elif type & AttrTypeValue["group"]:
                 return {"as_group": AttrDefaultValue[type]}
+
+            elif type & AttrTypeValue["role"]:
+                return {"as_role": AttrDefaultValue[type]}
 
             raise ValidationError(f"unexpected type: {type}")
 

@@ -36,8 +36,16 @@ interface CommonProps {
 const ElemString: FC<
   CommonProps & {
     attrValue: string;
-    handleClickDeleteListItem?: (attrName: string, index?: number) => void;
-    handleClickAddListItem?: (attrName: string, index: number) => void;
+    handleClickDeleteListItem?: (
+      attrName: string,
+      attrType: number,
+      index?: number
+    ) => void;
+    handleClickAddListItem?: (
+      attrName: string,
+      attrType: number,
+      index: number
+    ) => void;
     multiline?: boolean;
     disabled?: boolean;
   }
@@ -73,11 +81,13 @@ const ElemString: FC<
           <IconButton
             disabled={disabled}
             sx={{ mx: "20px" }}
-            onClick={() => handleClickDeleteListItem(attrName, index)}
+            onClick={() => handleClickDeleteListItem(attrName, attrType, index)}
           >
             <DeleteOutlineIcon />
           </IconButton>
-          <IconButton onClick={() => handleClickAddListItem(attrName, index)}>
+          <IconButton
+            onClick={() => handleClickAddListItem(attrName, attrType, index)}
+          >
             <AddIcon />
           </IconButton>
         </>
@@ -116,8 +126,16 @@ const ElemReferral: FC<
       | Array<EntryRetrieveValueAsObjectSchema>;
     schemaId?: number;
     disabled?: boolean;
-    handleClickDeleteListItem?: (attrName: string, index?: number) => void;
-    handleClickAddListItem?: (attrName: string, index: number) => void;
+    handleClickDeleteListItem?: (
+      attrName: string,
+      attrType: number,
+      index?: number
+    ) => void;
+    handleClickAddListItem?: (
+      attrName: string,
+      attrType: number,
+      index: number
+    ) => void;
   }
 > = ({
   multiple = false,
@@ -174,12 +192,24 @@ const ElemReferral: FC<
           }
         }
         setReferrals(referrals.concat(addReferrals));
-      } else {
+      } else if (Number(attrType) & Number(djangoContext.attrTypeValue.group)) {
         const groups = await aironeApiClientV2.getGroups();
         const addReferrals = [];
 
         // Filter duplicate referrals.
         groups.forEach((result) => {
+          if (!referrals.map((referral) => referral.id).includes(result.id)) {
+            addReferrals.push(result);
+          }
+        });
+
+        setReferrals(referrals.concat(addReferrals));
+      } else if (Number(attrType) & Number(djangoContext.attrTypeValue.role)) {
+        const roles = await aironeApiClientV2.getRoles();
+        const addReferrals = [];
+
+        // Filter duplicate referrals.
+        roles.forEach((result) => {
           if (!referrals.map((referral) => referral.id).includes(result.id)) {
             addReferrals.push(result);
           }
@@ -249,11 +279,15 @@ const ElemReferral: FC<
             <IconButton
               disabled={disabled}
               sx={{ mx: "20px" }}
-              onClick={() => handleClickDeleteListItem(attrName, index)}
+              onClick={() =>
+                handleClickDeleteListItem(attrName, attrType, index)
+              }
             >
               <DeleteOutlineIcon />
             </IconButton>
-            <IconButton onClick={() => handleClickAddListItem(attrName, index)}>
+            <IconButton
+              onClick={() => handleClickAddListItem(attrName, attrType, index)}
+            >
               <AddIcon />
             </IconButton>
           </>
@@ -268,8 +302,16 @@ const ElemNamedObject: FC<
     attrValue?: { [key: string]: EntryRetrieveValueAsObject };
     schemaId: number;
     disabled?: boolean;
-    handleClickDeleteListItem?: (attrName: string, index?: number) => void;
-    handleClickAddListItem?: (attrName: string, index: number) => void;
+    handleClickDeleteListItem?: (
+      attrName: string,
+      attrType: number,
+      index?: number
+    ) => void;
+    handleClickAddListItem?: (
+      attrName: string,
+      attrType: number,
+      index: number
+    ) => void;
   }
 > = ({
   attrName,
@@ -361,8 +403,16 @@ interface Props {
     attrType: number,
     valueInfo: any
   ) => void;
-  handleClickDeleteListItem: (attrName: string, index?: number) => void;
-  handleClickAddListItem: (attrName: string, index: number) => void;
+  handleClickDeleteListItem: (
+    attrName: string,
+    attrType: number,
+    index?: number
+  ) => void;
+  handleClickAddListItem: (
+    attrName: string,
+    attrType: number,
+    index: number
+  ) => void;
 }
 
 export const EditAttributeValue: FC<Props> = ({
@@ -444,6 +494,17 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
+    case djangoContext.attrTypeValue.role:
+      return (
+        <ElemReferral
+          attrName={attrName}
+          attrValue={attrInfo.value.asRole}
+          attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
+          handleChange={handleChangeAttribute}
+        />
+      );
+
     case djangoContext.attrTypeValue.named_object:
       return (
         <ElemNamedObject
@@ -475,6 +536,18 @@ export const EditAttributeValue: FC<Props> = ({
           multiple={true}
           attrName={attrName}
           attrValue={attrInfo.value.asArrayGroup}
+          attrType={attrInfo.type}
+          isMandatory={attrInfo.isMandatory}
+          handleChange={handleChangeAttribute}
+        />
+      );
+
+    case djangoContext.attrTypeValue.array_role:
+      return (
+        <ElemReferral
+          multiple={true}
+          attrName={attrName}
+          attrValue={attrInfo.value.asArrayRole}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
           handleChange={handleChangeAttribute}
@@ -524,6 +597,86 @@ export const EditAttributeValue: FC<Props> = ({
                 />
               </ListItem>
             ))}
+          </List>
+        </Box>
+      );
+
+    case djangoContext.attrTypeValue.array_named_object_boolean:
+      return (
+        <Box>
+          <List>
+            {(
+              attrInfo.value.asArrayNamedObject as {
+                [key: string]: Pick<
+                  EntryRetrieveValueAsObject,
+                  "id" | "name" | "schema"
+                > & {
+                  boolean?: boolean;
+                };
+              }[]
+            ).map((info, n) => {
+              const key = info ? Object.keys(info)[0] : "";
+              return (
+                <ListItem key={n}>
+                  <Box display="flex" alignItems="flex-end">
+                    <Box display="flex" flexDirection="column">
+                      <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
+                        name
+                      </Typography>
+                      <Box width="260px">
+                        <TextField
+                          variant="standard"
+                          value={key}
+                          onChange={(e) =>
+                            handleChangeAttribute(
+                              attrName,
+                              djangoContext.attrTypeValue.array_named_object,
+                              {
+                                index: n,
+                                key: e.target.value,
+                                ...info[key],
+                              }
+                            )
+                          }
+                          error={attrInfo.isMandatory && !key && !info[key]}
+                        />
+                      </Box>
+                    </Box>
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      width="60px"
+                      mr="16px"
+                    >
+                      <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
+                        使用不可
+                      </Typography>
+                      <Checkbox
+                        checked={info[key]?.boolean ?? false}
+                        onChange={(e) =>
+                          handleChangeAttribute(attrName, attrInfo.type, {
+                            index: n,
+                            checked: e.target.checked,
+                          })
+                        }
+                      />
+                    </Box>
+                    <ElemReferral
+                      schemaId={attrInfo.schema.id}
+                      attrName={attrName}
+                      attrValue={info[key]?.id ? info[key] : undefined}
+                      attrType={djangoContext.attrTypeValue.array_named_object}
+                      isMandatory={attrInfo.isMandatory && !key}
+                      index={n}
+                      disabled={attrInfo.value.asArrayNamedObject?.length == 1}
+                      handleChange={handleChangeAttribute}
+                      handleClickDeleteListItem={handleClickDeleteListItem}
+                      handleClickAddListItem={handleClickAddListItem}
+                    />
+                  </Box>
+                </ListItem>
+              );
+            })}
           </List>
         </Box>
       );

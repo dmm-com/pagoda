@@ -4,6 +4,7 @@ Entity:
       str: foo
       obj: ref
       grp: group
+      role: role
       bool: False
       date: 2018-12-31 
       name:
@@ -16,3 +17,7 @@ Entity:
         - ref
       arr3:
         - foo: ref
+      arr4:
+        - group
+      arr5:
+        - role

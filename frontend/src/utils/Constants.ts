@@ -12,6 +12,14 @@ export const EntryList = {
   MAX_ROW_COUNT: 30,
 };
 
+export const UserList = {
+  MAX_ROW_COUNT: 30,
+};
+
+export const JobList = {
+  MAX_ROW_COUNT: 30,
+};
+
 export const BaseAttributeTypes = {
   object: 1 << 0,
   string: 1 << 1,
@@ -19,6 +27,7 @@ export const BaseAttributeTypes = {
   bool: 1 << 3,
   group: 1 << 4,
   date: 1 << 5,
+  role: 1 << 6,
   array: 1 << 10,
   named: 1 << 11,
 };
@@ -55,6 +64,10 @@ export const AttributeTypes = {
     name: "array_group",
     type: BaseAttributeTypes.group | BaseAttributeTypes.array,
   },
+  array_role: {
+    name: "array_role",
+    type: BaseAttributeTypes.role | BaseAttributeTypes.array,
+  },
   text: {
     name: "textarea",
     type: BaseAttributeTypes.text,
@@ -71,6 +84,10 @@ export const AttributeTypes = {
     name: "date",
     type: BaseAttributeTypes.date,
   },
+  role: {
+    name: "role",
+    type: BaseAttributeTypes.role,
+  },
 };
 
 export const EntryReferralList = {
@@ -85,3 +102,32 @@ export const EntryReferralList = {
  */
 export const Full2HalfWidthConstant = 0xfee0;
 export const Full2HalfWidthSourceRegex = "[Ａ-Ｚａ-ｚ０-９]";
+
+export const JobStatuses = {
+  PREPARING: 1,
+  DONE: 2,
+  ERROR: 3,
+  TIMEOUT: 4,
+  PROCESSING: 5,
+  CANCELED: 6,
+};
+
+export const JobOperations = {
+  CREATE_ENTRY: 1,
+  EDIT_ENTRY: 2,
+  DELETE_ENTRY: 3,
+  COPY_ENTRY: 4,
+  IMPORT_ENTRY: 5,
+  EXPORT_ENTRY: 6,
+  RESTORE_ENTRY: 7,
+  EXPORT_SEARCH_RESULT: 8,
+  REGISTER_REFERRALS: 9,
+  CREATE_ENTITY: 10,
+  EDIT_ENTITY: 11,
+  DELETE_ENTITY: 12,
+  NOTIFY_CREATE_ENTRY: 13,
+  NOTIFY_UPDATE_ENTRY: 14,
+  NOTIFY_DELETE_ENTRY: 15,
+  DO_COPY_ENTRY: 16,
+  IMPORT_ENTRY_V2: 17,
+};

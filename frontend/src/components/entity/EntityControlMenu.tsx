@@ -10,12 +10,13 @@ import { useSnackbar } from "notistack";
 import React, { FC } from "react";
 import { Link, useHistory } from "react-router-dom";
 
+import { RateLimitedClickable } from "../common/RateLimitedClickable";
+
 import {
   aclPath,
   entityHistoryPath,
   entityPath,
   entitiesPath,
-  importEntriesPath,
   restoreEntryPath,
   topPath,
 } from "Routes";
@@ -28,12 +29,14 @@ interface Props {
   entityId: number;
   anchorElem: HTMLButtonElement | null;
   handleClose: (entityId: number) => void;
+  setOpenImportModal: (isOpened: boolean) => void;
 }
 
 export const EntityControlMenu: FC<Props> = ({
   entityId,
   anchorElem,
   handleClose,
+  setOpenImportModal,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
@@ -74,6 +77,7 @@ export const EntityControlMenu: FC<Props> = ({
       open={Boolean(anchorElem)}
       onClose={() => handleClose(entityId)}
       anchorEl={anchorElem}
+      disableScrollLock
     >
       <MenuItem component={Link} to={entityPath(entityId)}>
         <Typography>編集</Typography>
@@ -81,13 +85,23 @@ export const EntityControlMenu: FC<Props> = ({
       <MenuItem component={Link} to={aclPath(entityId)}>
         <Typography>ACL 設定</Typography>
       </MenuItem>
-      <MenuItem onClick={handleExport.bind(null, entityId, "YAML")}>
-        <Typography>エクスポート(YAML)</Typography>
-      </MenuItem>
-      <MenuItem onClick={handleExport.bind(null, entityId, "CSV")}>
-        <Typography>エクスポート(CSV)</Typography>
-      </MenuItem>
-      <MenuItem component={Link} to={importEntriesPath(entityId)}>
+      <RateLimitedClickable
+        intervalSec={5}
+        onClick={handleExport.bind(null, entityId, "YAML")}
+      >
+        <MenuItem>
+          <Typography>エクスポート(YAML)</Typography>
+        </MenuItem>
+      </RateLimitedClickable>
+      <RateLimitedClickable
+        intervalSec={5}
+        onClick={handleExport.bind(null, entityId, "CSV")}
+      >
+        <MenuItem>
+          <Typography>エクスポート(CSV)</Typography>
+        </MenuItem>
+      </RateLimitedClickable>
+      <MenuItem onClick={() => setOpenImportModal(true)}>
         <Typography>インポート</Typography>
       </MenuItem>
       <MenuItem component={Link} to={entityHistoryPath(entityId)}>

@@ -18,6 +18,7 @@ test("should render with essential props", () => {
         handleClose={() => {
           /* any closing process */
         }}
+        setOpenImportModal={() => false}
       />,
       { wrapper: TestWrapper }
     )

@@ -630,12 +630,28 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
         cond_attr.append(date_cond)
 
     else:
-        hint_kyeword_val = _get_hint_keyword_val(keyword)
-        cond_val = [{"match": {"attr.value": hint_kyeword_val}}]
+        hint_keyword_val = _get_hint_keyword_val(keyword)
+        cond_val = [{"match": {"attr.value": hint_keyword_val}}]
 
-        if hint_kyeword_val:
+        # This is an exceptional bypass processing to be able to search Entries
+        # that has substantial Attribute.
+        if hint_keyword_val == "*":
+            cond_attr.append(
+                {
+                    "bool": {
+                        "should": [
+                            # This query get results that have any substantial values
+                            {"regexp": {"attr.value": ".+"}},
+                            # This query get results that have date value
+                            {"exists": {"field": "attr.date_value"}},
+                        ]
+                    }
+                }
+            )
+
+        elif hint_keyword_val:
             if "exact_match" not in hint:
-                cond_val.append({"regexp": {"attr.value": _get_regex_pattern(hint_kyeword_val)}})
+                cond_val.append({"regexp": {"attr.value": _get_regex_pattern(hint_keyword_val)}})
 
             cond_attr.append({"bool": {"should": cond_val}})
 
@@ -876,6 +892,7 @@ def make_search_results(
             elif (
                 attrinfo["type"] == AttrTypeValue["object"]
                 or attrinfo["type"] == AttrTypeValue["group"]
+                or attrinfo["type"] == AttrTypeValue["role"]
             ):
                 ret_attrinfo["value"] = {
                     "id": attrinfo["referral_id"],
@@ -883,8 +900,6 @@ def make_search_results(
                 }
 
             elif attrinfo["type"] == AttrTypeValue["named_object"]:
-                if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == "":
-                    continue
                 ret_attrinfo["value"] = {
                     attrinfo["key"]: {
                         "id": attrinfo["referral_id"],
@@ -917,7 +932,9 @@ def make_search_results(
                     else:
                         ret_attrinfo["value"].append(attrinfo["value"])
 
-                elif attrinfo["type"] & (AttrTypeValue["object"] | AttrTypeValue["group"]):
+                elif attrinfo["type"] & (
+                    AttrTypeValue["object"] | AttrTypeValue["group"] | AttrTypeValue["role"]
+                ):
                     ret_attrinfo["value"].append(
                         {"id": attrinfo["referral_id"], "name": attrinfo["value"]}
                     )

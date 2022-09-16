@@ -30,6 +30,7 @@ from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
 from job.models import Job
+from role.models import Role
 from user.models import User
 
 
@@ -258,6 +259,8 @@ class AdvancedSearchAPI(APIView):
                             return "asArrayObject"
                         elif type & AttrTypeValue["group"]:
                             return "asArrayGroup"
+                        elif type & AttrTypeValue["role"]:
+                            return "asArrayRole"
                     elif type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
                         return "asString"
                     elif type & AttrTypeValue["named"]:
@@ -270,6 +273,8 @@ class AdvancedSearchAPI(APIView):
                         return "asString"
                     elif type & AttrTypeValue["group"]:
                         return "asGroup"
+                    elif type & AttrTypeValue["role"]:
+                        return "asRole"
                     raise ValidationError(f"unexpected type: {type}")
 
                 entry["attrs"][name] = {
@@ -399,13 +404,14 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
             return Group.objects.filter(**conditions).order_by("name")[
                 0 : CONFIG.MAX_LIST_REFERRALS
             ]
+        elif entity_attr.type & AttrTypeValue["role"]:
+            return Role.objects.filter(**conditions).order_by("name")[0 : CONFIG.MAX_LIST_REFERRALS]
         else:
             raise ValidationError(f"unsupported attr type: {entity_attr.type}")
 
 
 class EntryImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
-    serializer_class = EntryImportSerializer
 
     def post(self, request):
         import_datas = request.data

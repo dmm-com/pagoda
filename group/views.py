@@ -14,6 +14,7 @@ from airone.lib.http import (
     render,
 )
 from group.models import Group
+from job.models import Job, JobOperation
 from user.models import User
 
 
@@ -94,6 +95,14 @@ def do_edit(request, group_id, recv_data):
 
     # get users who are belonged to the selected group for updating
     old_users = [str(x.id) for x in User.objects.filter(groups__id=group_id, is_active=True)]
+    job_register_referrals = None
+    if group.name != recv_data["name"]:
+        job_register_referrals = Job.new_register_referrals(
+            request.user,
+            None,
+            operation_value=JobOperation.GROUP_REGISTER_REFERRAL.value,
+            params={"group_id": group.id},
+        )
 
     # update group_name with specified one
     group.name = recv_data["name"]
@@ -101,6 +110,9 @@ def do_edit(request, group_id, recv_data):
         id=recv_data.get("parent_group", 0), is_active=True
     ).first()
     group.save()
+
+    if job_register_referrals:
+        job_register_referrals.run()
 
     # the processing for deleted users
     for user in [User.objects.get(id=x) for x in set(old_users) - set(recv_data.get("users", []))]:

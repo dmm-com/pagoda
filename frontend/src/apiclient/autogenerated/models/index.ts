@@ -1,6 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from "./ACL";
+export * from "./ACLParent";
 export * from "./Attribute";
 export * from "./Entity";
 export * from "./EntityAttrCreate";
@@ -14,9 +15,6 @@ export * from "./EntryBase";
 export * from "./EntryCopy";
 export * from "./EntryCreate";
 export * from "./EntryExport";
-export * from "./EntryImportAttribute";
-export * from "./EntryImportEntity";
-export * from "./EntryImportEntries";
 export * from "./EntryRetrieve";
 export * from "./EntryRetrieveAttrs";
 export * from "./EntryRetrieveValue";
@@ -28,9 +26,13 @@ export * from "./GetEntryAttrReferral";
 export * from "./GetEntrySimple";
 export * from "./Group";
 export * from "./JobSerializers";
+export * from "./JobSerializersTarget";
 export * from "./PaginatedEntityListList";
 export * from "./PaginatedEntryBaseList";
 export * from "./PaginatedGetEntrySimpleList";
+export * from "./PaginatedJobSerializersList";
+export * from "./PaginatedUserListList";
+export * from "./Role";
 export * from "./UserBase";
 export * from "./UserList";
 export * from "./UserRetrieve";

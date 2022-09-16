@@ -75,4 +75,18 @@
   {% endfor %}
   </ul>
 
+{% elif a_type == attr_type.role %}
+  <a href='/role/edit/{{ attrv.value.id }}'>{{ attrv.value.name }}</a>
+
+{% elif a_type == attr_type.array_role %}
+  <ul class='list-group'>
+  {% for co_attrv in attrv.value %}
+    <li class='list-group-item'>
+      <a href='/role/edit/{{ co_attrv.id }}'>
+        {{ co_attrv.name }}
+      </a>
+    </li>
+  {% endfor %}
+  </ul>
+
 {% endif %}

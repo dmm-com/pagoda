@@ -23,9 +23,6 @@ import {
   EntryExport,
   EntryExportFromJSON,
   EntryExportToJSON,
-  EntryImportEntity,
-  EntryImportEntityFromJSON,
-  EntryImportEntityToJSON,
   EntryRetrieve,
   EntryRetrieveFromJSON,
   EntryRetrieveToJSON,
@@ -57,10 +54,6 @@ export interface EntryApiV2DestroyRequest {
 export interface EntryApiV2ExportCreateRequest {
   entityId: number;
   entryExport?: EntryExport;
-}
-
-export interface EntryApiV2ImportCreateRequest {
-  entryImportEntity: Array<EntryImportEntity>;
 }
 
 export interface EntryApiV2ReferralListRequest {
@@ -409,24 +402,11 @@ export class EntryApi extends runtime.BaseAPI {
   /**
    */
   async entryApiV2ImportCreateRaw(
-    requestParameters: EntryApiV2ImportCreateRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<Array<EntryImportEntity>>> {
-    if (
-      requestParameters.entryImportEntity === null ||
-      requestParameters.entryImportEntity === undefined
-    ) {
-      throw new runtime.RequiredError(
-        "entryImportEntity",
-        "Required parameter requestParameters.entryImportEntity was null or undefined when calling entryApiV2ImportCreate."
-      );
-    }
-
+  ): Promise<runtime.ApiResponse<void>> {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
-
-    headerParameters["Content-Type"] = "application/yaml";
 
     if (
       this.configuration &&
@@ -448,27 +428,17 @@ export class EntryApi extends runtime.BaseAPI {
         method: "POST",
         headers: headerParameters,
         query: queryParameters,
-        body: requestParameters.entryImportEntity.map(EntryImportEntityToJSON),
       },
       initOverrides
     );
 
-    return new runtime.JSONApiResponse(response, (jsonValue) =>
-      jsonValue.map(EntryImportEntityFromJSON)
-    );
+    return new runtime.VoidApiResponse(response);
   }
 
   /**
    */
-  async entryApiV2ImportCreate(
-    requestParameters: EntryApiV2ImportCreateRequest,
-    initOverrides?: RequestInit
-  ): Promise<Array<EntryImportEntity>> {
-    const response = await this.entryApiV2ImportCreateRaw(
-      requestParameters,
-      initOverrides
-    );
-    return await response.value();
+  async entryApiV2ImportCreate(initOverrides?: RequestInit): Promise<void> {
+    await this.entryApiV2ImportCreateRaw(initOverrides);
   }
 
   /**
