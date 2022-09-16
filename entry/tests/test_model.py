@@ -20,16 +20,16 @@ class ModelTest(AironeTestCase):
     def setUp(self):
         super(ModelTest, self).setUp()
 
-        self._user = User(username="test")
+        self._user: User = User(username="test")
         self._user.save()
 
-        self._entity = Entity(name="entity", created_user=self._user)
+        self._entity: Entity = Entity(name="entity", created_user=self._user)
         self._entity.save()
 
-        self._entry = Entry(name="entry", created_user=self._user, schema=self._entity)
+        self._entry: Entry = Entry(name="entry", created_user=self._user, schema=self._entity)
         self._entry.save()
 
-        self._attr = self.make_attr("attr")
+        self._attr: Attribute = self.make_attr("attr")
         self._attr.save()
 
         # clear all cache before start
@@ -38,7 +38,7 @@ class ModelTest(AironeTestCase):
         self._org_auto_complement_user = settings.AIRONE["AUTO_COMPLEMENT_USER"]
 
         # make auto complement user
-        self._complement_user = User(
+        self._complement_user: User = User(
             username=self._org_auto_complement_user,
             email="hoge@example.com",
             is_superuser=True,
@@ -93,7 +93,7 @@ class ModelTest(AironeTestCase):
         This is a test helper method to add attributes of all attribute-types
         to specified entity.
         """
-        entity = Entity.objects.create(name="entity", created_user=user)
+        entity = Entity.objects.create(name="all_attr_entity", created_user=user)
         attr_info = {
             "str": AttrTypeValue["string"],
             "text": AttrTypeValue["text"],
@@ -884,6 +884,37 @@ class ModelTest(AironeTestCase):
         self.assertFalse(ref_entries[0].is_active)
         self.assertFalse(ref_entries[1].is_active)
         self.assertTrue(ref_entries[2].is_active)
+
+    def test_may_remove_referral(self):
+        entity: Entity = self.create_entity_with_all_type_attributes(self._user, self._entity)
+        entry: Entry = Entry.objects.create(name="e1", schema=entity, created_user=self._user)
+        entry.complement_attrs(self._user)
+
+        attr_info = [
+            {"name": "obj", "val": self._entry, "del": ""},
+            {
+                "name": "name",
+                "val": {"name": "new_value", "id": self._entry},
+                "del": {"name": "", "id": ""},
+            },
+            {"name": "arr_obj", "val": [self._entry], "del": []},
+            {"name": "arr_name", "val": [{"name": "new_value", "id": self._entry}], "del": []},
+        ]
+        for info in attr_info:
+            entity_attr: EntityAttr = entity.attrs.get(name=info["name"])
+            entity_attr.is_delete_in_chain = True
+            entity_attr.save()
+
+            attr: Attribute = entry.attrs.get(schema=entity_attr)
+            attr.add_value(self._user, info["val"])
+            attr.may_remove_referral()
+
+            self._entry.refresh_from_db()
+            self.assertFalse(self._entry.is_active)
+
+            # restore to pre-test state
+            attr.add_value(self._user, info["del"])
+            self._entry.restore()
 
     def test_order_of_array_named_ref_entries(self):
         ref_entity = Entity.objects.create(name="referred_entity", created_user=self._user)
@@ -4287,7 +4318,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(
             result["ret_values"][0],
             {
-                "entity": {"id": entity.id, "name": "entity"},
+                "entity": {"id": entity.id, "name": "all_attr_entity"},
                 "entry": {"id": entry.id, "name": "entry"},
                 "is_readble": True,
                 "attrs": {
