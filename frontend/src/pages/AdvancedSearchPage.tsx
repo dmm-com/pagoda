@@ -52,7 +52,7 @@ export const AdvancedSearchPage: FC = () => {
     selectedEntities.forEach((e) => {
       params.append("entity", e.id.toString());
     });
-    if (selectedEntities) {
+    if (searchAllEntities) {
       params.append("is_all_entities", "true");
     }
     params.append(
@@ -64,7 +64,7 @@ export const AdvancedSearchPage: FC = () => {
     }
 
     return params;
-  }, [selectedEntities, selectedAttrs, hasReferral]);
+  }, [selectedEntities, searchAllEntities, selectedAttrs, hasReferral]);
 
   const handleCancel = () => {
     history.goBack();
