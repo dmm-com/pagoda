@@ -154,7 +154,7 @@ export const AdvancedSearchPage: FC = () => {
 
           {!attrs.loading && (
             <AutocompleteWithAllSelector
-              selectAllLabel="select all"
+              selectAllLabel="すべて選択"
               options={attrs.value}
               value={selectedAttrs}
               onChange={(_, value: Array<string>) => setSelectedAttrs(value)}
