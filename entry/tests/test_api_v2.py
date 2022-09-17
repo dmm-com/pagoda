@@ -2269,9 +2269,6 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-
-        resp_data = resp.json()
-        result = resp_data["result"]
         # TODO assert result
 
     def test_advanced_search_all_entities(self):
@@ -2285,7 +2282,4 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-
-        resp_data = resp.json()
-        result = resp_data["result"]
         # TODO assert result
