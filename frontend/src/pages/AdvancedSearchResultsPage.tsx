@@ -26,6 +26,9 @@ export const AdvancedSearchResultsPage: FC = () => {
 
   const params = new URLSearchParams(location.search);
   const entityIds = params.getAll("entity").map((id) => Number(id));
+  const searchAllEntities = params.has("is_all_entities")
+    ? params.get("is_all_entities") === "true"
+    : false;
   const entryName = params.has("entry_name") ? params.get("entry_name") : "";
   const hasReferral = params.has("has_referral")
     ? params.get("has_referral") === "true"
@@ -38,7 +41,7 @@ export const AdvancedSearchResultsPage: FC = () => {
     : [];
 
   const entityAttrs = useAsync(async () => {
-    const resp = await getEntityAttrs(entityIds);
+    const resp = await getEntityAttrs(entityIds, searchAllEntities);
     const data = await resp.json();
 
     return data.result;
@@ -50,7 +53,8 @@ export const AdvancedSearchResultsPage: FC = () => {
       entryName,
       attrInfo,
       hasReferral,
-      referralName
+      referralName,
+      searchAllEntities
     );
     const data = await resp.json();
     return data.result;

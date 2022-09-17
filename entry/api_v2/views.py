@@ -180,6 +180,7 @@ class AdvancedSearchAPI(APIView):
         hint_has_referral = request.data.get("has_referral", False)
         hint_referral_name = request.data.get("referral_name", "")
         is_output_all = request.data.get("is_output_all", True)
+        is_all_entities = request.data.get("is_all_entities", False)
         entry_limit = request.data.get("entry_limit", self.MAX_LIST_ENTRIES)
 
         hint_referral = False
@@ -191,6 +192,7 @@ class AdvancedSearchAPI(APIView):
             or not isinstance(hint_entry_name, str)
             or not isinstance(hint_attrs, list)
             or not isinstance(is_output_all, bool)
+            or not isinstance(is_all_entities, bool)
             or not isinstance(hint_referral, (str, bool))
             or not isinstance(entry_limit, int)
         ):
@@ -215,9 +217,23 @@ class AdvancedSearchAPI(APIView):
                 if len(hint_attr["keyword"]) > self.MAX_QUERY_SIZE:
                     return Response("Sending parameter is too large", status=400)
 
+        if is_all_entities:
+            attr_names = [x["name"] for x in hint_attrs]
+            hint_entities = list(
+                EntityAttr.objects.filter(
+                    name__in=attr_names, is_active=True, parent_entity__is_active=True
+                )
+                    .order_by("parent_entity__name")
+                    .values_list("parent_entity__id", flat=True)
+                    .distinct()
+            )
+            if not hint_entities:
+                return Response("Invalid value for attribute parameter", status=400)
+
         # check entities params
         if not hint_entities:
             return Response("The entities parameters are required", status=400)
+
         hint_entity_ids = []
         for hint_entity in hint_entities:
             entity = None

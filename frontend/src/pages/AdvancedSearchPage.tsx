@@ -25,6 +25,7 @@ export const AdvancedSearchPage: FC = () => {
     []
   );
   const [selectedAttrs, setSelectedAttrs] = useState<Array<string>>([]);
+  const [searchAllEntities, setSearchAllEntities] = useState(false);
   const [hasReferral, setHasReferral] = useState(false);
 
   const entities = useAsync(async () => {
@@ -33,13 +34,16 @@ export const AdvancedSearchPage: FC = () => {
   });
 
   const attrs = useAsync(async () => {
-    if (selectedEntities.length > 0) {
-      const resp = await getEntityAttrs(selectedEntities.map((e) => e.id));
+    if (selectedEntities.length > 0 || searchAllEntities) {
+      const resp = await getEntityAttrs(
+        selectedEntities.map((e) => e.id),
+        searchAllEntities
+      );
       const data = await resp.json();
       return data.result;
     }
     return [];
-  }, [selectedEntities]);
+  }, [selectedEntities, searchAllEntities]);
 
   const searchParams = useMemo(() => {
     const params = new URLSearchParams();
@@ -47,6 +51,9 @@ export const AdvancedSearchPage: FC = () => {
     selectedEntities.forEach((e) => {
       params.append("entity", e.id.toString());
     });
+    if (selectedEntities) {
+      params.append("is_all_entities", "true");
+    }
     params.append(
       "attrinfo",
       JSON.stringify(selectedAttrs.map((attr) => ({ name: attr })))
@@ -81,7 +88,7 @@ export const AdvancedSearchPage: FC = () => {
                 color="secondary"
                 component={Link}
                 to={`${advancedSearchResultPath()}?${searchParams}`}
-                disabled={selectedEntities.length === 0}
+                disabled={selectedEntities.length === 0 && !searchAllEntities}
               >
                 検索
               </Button>
@@ -125,6 +132,13 @@ export const AdvancedSearchPage: FC = () => {
               sx={{ width: "100%", margin: "20px 0" }}
             />
           )}
+          <Box>
+            検索対象を絞り込まない
+            <Checkbox
+              checked={searchAllEntities}
+              onChange={(e) => setSearchAllEntities(e.target.checked)}
+            ></Checkbox>
+          </Box>
         </Box>
 
         <Box
