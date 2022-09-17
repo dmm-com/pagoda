@@ -223,9 +223,9 @@ class AdvancedSearchAPI(APIView):
                 EntityAttr.objects.filter(
                     name__in=attr_names, is_active=True, parent_entity__is_active=True
                 )
-                    .order_by("parent_entity__name")
-                    .values_list("parent_entity__id", flat=True)
-                    .distinct()
+                .order_by("parent_entity__name")
+                .values_list("parent_entity__id", flat=True)
+                .distinct()
             )
             if not hint_entities:
                 return Response("Invalid value for attribute parameter", status=400)
