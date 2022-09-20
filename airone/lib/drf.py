@@ -4,6 +4,8 @@ from rest_framework.exceptions import APIException, ParseError, ValidationError
 from rest_framework.parsers import BaseParser
 from rest_framework.views import exception_handler
 
+from airone.lib.log import Logger
+
 
 class YAMLParser(BaseParser):
     """
@@ -30,17 +32,68 @@ class YAMLParser(BaseParser):
 # https://github.com/dmm-com/airone/wiki/(Blueprint)-AirOne-API-Error-code-mapping
 
 
-class DuplicatedObjectExistsError(ValidationError):
-    def __init__(self, detail=None):
-        super().__init__(detail, "AE-220000")  # duplicated object exists
+class RequiredParameterError(ValidationError):
+    default_code = "AE-113000"
+
+
+class IncorrectTypeError(ValidationError):
+    default_code = "AE-121000"
 
 
 class ExceedLimitError(ValidationError):
-    def __init__(self, detail=None):
-        super().__init__(detail, "AE-122000")  # parameter exceed limit
+    default_code = "AE-122000"
+
+
+class DuplicatedObjectExistsError(ValidationError):
+    default_code = "AE-220000"
+
+
+class ObjectNotExistsError(ValidationError):
+    default_code = "AE-230000"
+
+
+class EntryIsNotEmptyError(ValidationError):
+    default_code = "AE-240000"
 
 
 def custom_exception_handler(exc, context):
+    def _convert_error_code(detail):
+        if isinstance(detail, list):
+            return [_convert_error_code(item) for item in detail]
+
+        if "code" not in detail:
+            return {key: _convert_error_code(value) for key, value in detail.items()}
+
+        if "AE-" in detail["code"]:
+            return detail
+
+        error_code = {
+            # "django or drf error_code": "airone error_code"
+            "authentication_failed": "AE-000000",
+            "not_authenticated": "AE-000000",
+            "unsupported_media_type": "AE-130000",
+            "parse_error": "AE-140000",
+            "required": "AE-113000",
+            "invalid": "AE-121000",
+            "incorrect_type": "AE-121000",
+            "not_a_list": "AE-121000",
+            "max_value": "AE-122000",
+            "max_length": "AE-122000",
+            "empty": "AE-123000",
+            "permission_denied": "AE-210000",
+            "does_not_exist": "AE-230000",
+            "not_found": "AE-230000",
+        }
+
+        # Convert Django, DRF error codes to for AirOne
+        airone_error_code = error_code.get(detail["code"])
+        if not airone_error_code:
+            airone_error_code = "AE-999999"  # unknown error
+            Logger.warning("unknown error(%s) has occurred" % detail)
+
+        detail["code"] = airone_error_code
+        return detail
+
     # Call REST framework's default exception handler first,
     # to get the standard error response.
     response = exception_handler(exc, context)
@@ -53,5 +106,7 @@ def custom_exception_handler(exc, context):
                 "message": response.data["detail"],
                 "code": response.data["detail"].code,
             }
+
+        response.data = _convert_error_code(response.data)
 
     return response
