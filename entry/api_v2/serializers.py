@@ -3,12 +3,17 @@ from typing import Any, Dict, List, Optional, TypedDict, Union
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied
 
 import custom_view
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
-from airone.lib.drf import DuplicatedObjectExistsError
+from airone.lib.drf import (
+    DuplicatedObjectExistsError,
+    IncorrectTypeError,
+    ObjectNotExistsError,
+    RequiredParameterError,
+)
 from airone.lib.types import AttrDefaultValue, AttrTypeValue
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity
@@ -115,12 +120,12 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             user: User = self.context["request"].user
             for mandatory_attr in schema.attrs.filter(is_mandatory=True, is_active=True):
                 if not user.has_permission(mandatory_attr, ACLType.Writable):
-                    raise ValidationError(
+                    raise PermissionDenied(
                         "mandatory attrs id(%s) is permission denied" % mandatory_attr.id
                     )
 
                 if mandatory_attr.id not in [attr["id"] for attr in attrs]:
-                    raise ValidationError(
+                    raise RequiredParameterError(
                         "mandatory attrs id(%s) is not specified" % mandatory_attr.id
                     )
 
@@ -129,14 +134,14 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             # check attrs id
             entity_attr = schema.attrs.filter(id=attr["id"], is_active=True).first()
             if not entity_attr:
-                raise ValidationError("attrs id(%s) does not exist" % attr["id"])
+                raise ObjectNotExistsError("attrs id(%s) does not exist" % attr["id"])
 
             # check attrs value
             (is_valid, msg) = AttributeValue.validate_attr_value(
                 entity_attr.type, attr["value"], entity_attr.is_mandatory
             )
             if not is_valid:
-                raise ValidationError("attrs id(%s) - %s" % (attr["id"], msg))
+                raise IncorrectTypeError("attrs id(%s) - %s" % (attr["id"], msg))
 
 
 @extend_schema_field({})
@@ -499,7 +504,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
             elif type & AttrTypeValue["role"]:
                 return {"as_role": AttrDefaultValue[type]}
 
-            raise ValidationError(f"unexpected type: {type}")
+            raise IncorrectTypeError(f"unexpected type: {type}")
 
         attr_prefetch = Prefetch(
             "attribute_set",
@@ -555,7 +560,9 @@ class EntryCopySerializer(serializers.Serializer):
             if Entry.objects.filter(
                 name=copy_entry_name, schema=entry.schema, is_active=True
             ).exists():
-                raise ValidationError("specified name(%s) already exists" % copy_entry_name)
+                raise DuplicatedObjectExistsError(
+                    "specified name(%s) already exists" % copy_entry_name
+                )
 
 
 class GetEntrySimpleSerializer(serializers.ModelSerializer):

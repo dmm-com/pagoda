@@ -1,10 +1,11 @@
 from typing import Any, Dict, List, Optional, TypedDict
 
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
+from airone.lib.drf import IncorrectTypeError, ObjectNotExistsError, RequiredParameterError
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from group.models import Group
@@ -110,18 +111,20 @@ class ACLSerializer(serializers.ModelSerializer):
 
     def validate_default_permission(self, default_permission: int):
         if default_permission not in ACLType.all():
-            raise ValidationError("invalid default_permission parameter")
+            raise IncorrectTypeError("invalid default_permission parameter")
         return default_permission
 
     def validate(self, attrs: Dict[str, Any]):
         # validate acl paramter
         for acl_info in attrs["acl"]:
             if "member_id" not in acl_info:
-                raise ValidationError('"member_id" parameter is necessary for "acl" parameter')
+                raise RequiredParameterError(
+                    '"member_id" parameter is necessary for "acl" parameter'
+                )
 
             role = Role.objects.filter(id=acl_info["member_id"]).first()
             if not role:
-                raise ValidationError("Invalid member_id of Role instance is specified")
+                raise ObjectNotExistsError("Invalid member_id of Role instance is specified")
 
         user = self.context["request"].user
         if not user.is_permitted_to_change(
@@ -139,7 +142,7 @@ class ACLSerializer(serializers.ModelSerializer):
                 ],
             }
         ):
-            raise ValidationError(
+            raise PermissionDenied(
                 "Inadmissible setting." "By this change you will never change this ACL"
             )
 

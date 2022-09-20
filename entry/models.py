@@ -324,7 +324,7 @@ class AttributeValue(models.Model):
             if not isinstance(value, str):
                 raise Exception("value(%s) is not str" % value)
             if len(str(value).encode("utf-8")) > AttributeValue.MAXIMUM_VALUE_SIZE:
-                raise ExceedLimitError("value(%s) is exceeded the limit" % value)
+                raise ExceedLimitError("value is exceeded the limit")
             if is_mandatory and value == "":
                 return False
             return True
