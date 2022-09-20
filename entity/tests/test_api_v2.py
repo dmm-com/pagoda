@@ -1108,7 +1108,8 @@ class ViewTest(AironeViewTest):
                                 "non_field_errors": [
                                     {
                                         "code": "AE-121000",
-                                        "message": "Invalid data. Expected a dictionary, but got str.",
+                                        "message": "Invalid data. Expected a dictionary, "
+                                        + "but got str.",
                                     }
                                 ]
                             }
@@ -2244,7 +2245,8 @@ class ViewTest(AironeViewTest):
                                 "non_field_errors": [
                                     {
                                         "code": "AE-121000",
-                                        "message": "Invalid data. Expected a dictionary, but got str.",
+                                        "message": "Invalid data. Expected a dictionary, "
+                                        + "but got str.",
                                     }
                                 ]
                             }
