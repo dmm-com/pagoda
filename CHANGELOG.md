@@ -3,6 +3,8 @@
 ## In development
 
 ### Added
+* Added airone error code to APIv2 for frontend.
+  Contributed by @syucream, @userlocalhost, @hinashi
 
 ### Changed
 
@@ -71,8 +73,6 @@ Upgrade flower version from 1.1.0 to 1.2.0
   Contributed by @hinashi
 * Added exclude entity parameter in get_referred_objects.
   Contributed by @hinashi
-* Added airone error code to APIv2 for frontend.
-  Contributed by @syucream, @userlocalhost, @hinashi
 
 ### Fixed
 * Fixed an error in getting data_value in advanced search.

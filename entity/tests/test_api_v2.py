@@ -265,7 +265,7 @@ class ViewTest(AironeViewTest):
     def test_retrieve_entity_with_invalid_param(self):
         resp = self.client.get("/entity/api/v2/%d/" % 9999)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
         resp = self.client.get("/entity/api/v2/%s/" % "hoge")
         self.assertEqual(resp.status_code, 404)
@@ -273,7 +273,7 @@ class ViewTest(AironeViewTest):
         self.entity.delete()
         resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
     def test_retrieve_entity_without_permission(self):
         # permission nothing entity
@@ -282,7 +282,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readble entity
@@ -476,25 +480,47 @@ class ViewTest(AironeViewTest):
         params = {}
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"name": ["This field is required."]})
+        self.assertEqual(
+            resp.json(), {"name": [{"code": "AE-113000", "message": "This field is required."}]}
+        )
 
         # name param
         params = {"name": ["hoge"]}
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"name": ["Not a valid string."]})
+        self.assertEqual(
+            resp.json(), {"name": [{"code": "AE-121000", "message": "Not a valid string."}]}
+        )
 
         params = {"name": "a" * (Entity._meta.get_field("name").max_length + 1)}
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
-            resp.json(), {"name": ["Ensure this field has no more than 200 characters."]}
+            resp.json(),
+            {
+                "name": [
+                    {
+                        "code": "AE-122000",
+                        "message": "Ensure this field has no more than 200 characters.",
+                    }
+                ]
+            },
         )
 
         params = {"name": "test-entity"}
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"name": ["Duplication error. There is same named Entity"]})
+        self.assertEqual(
+            resp.json(),
+            {
+                "name": [
+                    {
+                        "code": "AE-220000",
+                        "message": "Duplication error. There is same named Entity",
+                    }
+                ]
+            },
+        )
 
         # note param
         params = {
@@ -503,7 +529,9 @@ class ViewTest(AironeViewTest):
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"note": ["Not a valid string."]})
+        self.assertEqual(
+            resp.json(), {"note": [{"code": "AE-121000", "message": "Not a valid string."}]}
+        )
 
         params = {
             "name": "hoge",
@@ -512,7 +540,15 @@ class ViewTest(AironeViewTest):
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
-            resp.json(), {"note": ["Ensure this field has no more than 200 characters."]}
+            resp.json(),
+            {
+                "note": [
+                    {
+                        "code": "AE-122000",
+                        "message": "Ensure this field has no more than 200 characters.",
+                    }
+                ]
+            },
         )
 
         # is_toplevel param
@@ -522,7 +558,10 @@ class ViewTest(AironeViewTest):
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"is_toplevel": ["Must be a valid boolean."]})
+        self.assertEqual(
+            resp.json(),
+            {"is_toplevel": [{"code": "AE-121000", "message": "Must be a valid boolean."}]},
+        )
 
     def test_create_entity_with_invalid_param_attrs(self):
         params = {
@@ -531,7 +570,17 @@ class ViewTest(AironeViewTest):
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"attrs": ['Expected a list of items but got type "str".']})
+        self.assertEqual(
+            resp.json(),
+            {
+                "attrs": [
+                    {
+                        "code": "AE-121000",
+                        "message": 'Expected a list of items but got type "str".',
+                    }
+                ]
+            },
+        )
 
         params = {
             "name": "hoge",
@@ -543,7 +592,14 @@ class ViewTest(AironeViewTest):
             resp.json(),
             {
                 "attrs": {
-                    "0": {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]}
+                    "0": {
+                        "non_field_errors": [
+                            {
+                                "code": "AE-121000",
+                                "message": "Invalid data. Expected a dictionary, but got str.",
+                            }
+                        ]
+                    }
                 }
             },
         )
@@ -558,7 +614,10 @@ class ViewTest(AironeViewTest):
             resp.json(),
             {
                 "attrs": {
-                    "0": {"name": ["This field is required."], "type": ["This field is required."]}
+                    "0": {
+                        "name": [{"code": "AE-113000", "message": "This field is required."}],
+                        "type": [{"code": "AE-113000", "message": "This field is required."}],
+                    }
                 }
             },
         )
@@ -572,7 +631,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"name": ["Not a valid string."]}}},
+            {"attrs": {"0": {"name": [{"code": "AE-121000", "message": "Not a valid string."}]}}},
         )
 
         params = {
@@ -588,7 +647,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"name": ["Ensure this field has no more than 200 characters."]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "name": [
+                            {
+                                "code": "AE-122000",
+                                "message": "Ensure this field has no more than 200 characters.",
+                            }
+                        ]
+                    }
+                }
+            },
         )
 
         params = {
@@ -608,7 +678,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": ["Duplicated attribute names are not allowed"]},
+            {
+                "attrs": [
+                    {"code": "AE-220000", "message": "Duplicated attribute names are not allowed"}
+                ]
+            },
         )
 
         # type param
@@ -625,7 +699,13 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"type": ["A valid integer is required."]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "type": [{"code": "AE-121000", "message": "A valid integer is required."}]
+                    }
+                }
+            },
         )
 
         params = {
@@ -641,7 +721,15 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"type": ["attrs type(9999) does not exist"]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "type": [
+                            {"code": "AE-230000", "message": "attrs type(9999) does not exist"}
+                        ]
+                    }
+                }
+            },
         )
 
         # index param
@@ -653,7 +741,13 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"index": ["A valid integer is required."]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "index": [{"code": "AE-121000", "message": "A valid integer is required."}]
+                    }
+                }
+            },
         )
 
         params = {
@@ -670,7 +764,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"index": ["Ensure this value is less than or equal to 2147483647."]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "index": [
+                            {
+                                "code": "AE-122000",
+                                "message": "Ensure this value is less than or equal to 2147483647.",
+                            }
+                        ]
+                    }
+                }
+            },
         )
 
         # is_mandatory, is_summarized, is_delete_in_chain param
@@ -689,7 +794,11 @@ class ViewTest(AironeViewTest):
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(
                 resp.json(),
-                {"attrs": {"0": {param: ["Must be a valid boolean."]}}},
+                {
+                    "attrs": {
+                        "0": {param: [{"code": "AE-121000", "message": "Must be a valid boolean."}]}
+                    }
+                },
             )
 
         # referral param
@@ -707,7 +816,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"referral": ['Expected a list of items but got type "str".']}}},
+            {
+                "attrs": {
+                    "0": {
+                        "referral": [
+                            {
+                                "code": "AE-121000",
+                                "message": 'Expected a list of items but got type "str".',
+                            }
+                        ]
+                    }
+                }
+            },
         )
 
         params = {
@@ -724,7 +844,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"referral": ["Incorrect type. Expected pk value, received str."]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "referral": [
+                            {
+                                "code": "AE-121000",
+                                "message": "Incorrect type. Expected pk value, received str.",
+                            }
+                        ]
+                    }
+                }
+            },
         )
 
         params = {
@@ -741,7 +872,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"referral": ['Invalid pk "9999" - object does not exist.']}}},
+            {
+                "attrs": {
+                    "0": {
+                        "referral": [
+                            {
+                                "code": "AE-230000",
+                                "message": 'Invalid pk "9999" - object does not exist.',
+                            }
+                        ]
+                    }
+                }
+            },
         )
 
         params = {
@@ -760,7 +902,12 @@ class ViewTest(AironeViewTest):
         for index, all_attr in enumerate(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY):
             if all_attr["type"] & AttrTypeValue["object"]:
                 attrs[str(index)] = {
-                    "non_field_errors": ["When specified object type, referral field is required"]
+                    "non_field_errors": [
+                        {
+                            "code": "AE-113000",
+                            "message": "When specified object type, referral field is required",
+                        }
+                    ]
                 }
         self.assertEqual(
             resp.json(),
@@ -784,7 +931,12 @@ class ViewTest(AironeViewTest):
         for index, all_attr in enumerate(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY):
             if all_attr["type"] & AttrTypeValue["object"]:
                 attrs[str(index)] = {
-                    "non_field_errors": ["When specified object type, referral field is required"]
+                    "non_field_errors": [
+                        {
+                            "code": "AE-113000",
+                            "message": "When specified object type, referral field is required",
+                        }
+                    ]
                 }
         self.assertEqual(
             resp.json(),
@@ -800,7 +952,16 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": {"non_field_errors": ['Expected a list of items but got type "str".']}},
+            {
+                "webhooks": {
+                    "non_field_errors": [
+                        {
+                            "code": "AE-121000",
+                            "message": 'Expected a list of items but got type "str".',
+                        }
+                    ]
+                }
+            },
         )
 
         params = {
@@ -813,7 +974,14 @@ class ViewTest(AironeViewTest):
             resp.json(),
             {
                 "webhooks": [
-                    {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]}
+                    {
+                        "non_field_errors": [
+                            {
+                                "code": "AE-121000",
+                                "message": "Invalid data. Expected a dictionary, but got str.",
+                            }
+                        ]
+                    }
                 ]
             },
         )
@@ -824,7 +992,14 @@ class ViewTest(AironeViewTest):
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"webhooks": [{"non_field_errors": ["Enter a valid URL."]}]})
+        self.assertEqual(
+            resp.json(),
+            {
+                "webhooks": [
+                    {"non_field_errors": [{"code": "AE-121000", "message": "Enter a valid URL."}]}
+                ]
+            },
+        )
 
         # url param
         params = {
@@ -833,7 +1008,14 @@ class ViewTest(AironeViewTest):
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"webhooks": [{"non_field_errors": ["Enter a valid URL."]}]})
+        self.assertEqual(
+            resp.json(),
+            {
+                "webhooks": [
+                    {"non_field_errors": [{"code": "AE-121000", "message": "Enter a valid URL."}]}
+                ]
+            },
+        )
 
         params = {
             "name": "hoge",
@@ -845,7 +1027,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"url": ["Ensure this field has no more than 200 characters."]}]},
+            {
+                "webhooks": [
+                    {
+                        "url": [
+                            {
+                                "code": "AE-122000",
+                                "message": "Ensure this field has no more than 200 characters.",
+                            }
+                        ]
+                    }
+                ]
+            },
         )
 
         # label param
@@ -857,7 +1050,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"label": ["Not a valid string."]}]},
+            {"webhooks": [{"label": [{"code": "AE-121000", "message": "Not a valid string."}]}]},
         )
 
         # is_enabled param
@@ -869,7 +1062,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"is_enabled": ["Must be a valid boolean."]}]},
+            {
+                "webhooks": [
+                    {"is_enabled": [{"code": "AE-121000", "message": "Must be a valid boolean."}]}
+                ]
+            },
         )
 
         # headers param
@@ -881,7 +1078,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"headers": ['Expected a list of items but got type "str".']}]},
+            {
+                "webhooks": [
+                    {
+                        "headers": [
+                            {
+                                "code": "AE-121000",
+                                "message": 'Expected a list of items but got type "str".',
+                            }
+                        ]
+                    }
+                ]
+            },
         )
 
         params = {
@@ -898,7 +1106,10 @@ class ViewTest(AironeViewTest):
                         "headers": {
                             "0": {
                                 "non_field_errors": [
-                                    "Invalid data. Expected a dictionary, but got str."
+                                    {
+                                        "code": "AE-121000",
+                                        "message": "Invalid data. Expected a dictionary, but got str.",
+                                    }
                                 ]
                             }
                         }
@@ -920,8 +1131,18 @@ class ViewTest(AironeViewTest):
                     {
                         "headers": {
                             "0": {
-                                "header_key": ["This field is required."],
-                                "header_value": ["This field is required."],
+                                "header_key": [
+                                    {
+                                        "code": "AE-113000",
+                                        "message": "This field is required.",
+                                    }
+                                ],
+                                "header_value": [
+                                    {
+                                        "code": "AE-113000",
+                                        "message": "This field is required.",
+                                    }
+                                ],
                             }
                         }
                     }
@@ -947,8 +1168,12 @@ class ViewTest(AironeViewTest):
                     {
                         "headers": {
                             "0": {
-                                "header_key": ["Not a valid string."],
-                                "header_value": ["Not a valid string."],
+                                "header_key": [
+                                    {"code": "AE-121000", "message": "Not a valid string."}
+                                ],
+                                "header_value": [
+                                    {"code": "AE-121000", "message": "Not a valid string."}
+                                ],
                             }
                         }
                     }
@@ -999,7 +1224,7 @@ class ViewTest(AironeViewTest):
         mock_call_custom.side_effect = side_effect
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), ["create error"])
+        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "create error"}])
 
         def side_effect(handler_name, entity_name, user, *args):
             # Check specified parameters are expected
@@ -1131,7 +1356,7 @@ class ViewTest(AironeViewTest):
         params = {}
         resp = self.client.put("/entity/api/v2/%d/" % 9999, json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
         self.entity.delete()
         params = {}
@@ -1139,7 +1364,7 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
     def test_update_entity_with_invalid_param(self):
         # name param
@@ -1148,7 +1373,9 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"name": ["Not a valid string."]})
+        self.assertEqual(
+            resp.json(), {"name": [{"code": "AE-121000", "message": "Not a valid string."}]}
+        )
 
         params = {"name": "a" * (Entity._meta.get_field("name").max_length + 1)}
         resp = self.client.put(
@@ -1156,7 +1383,15 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
-            resp.json(), {"name": ["Ensure this field has no more than 200 characters."]}
+            resp.json(),
+            {
+                "name": [
+                    {
+                        "code": "AE-122000",
+                        "message": "Ensure this field has no more than 200 characters.",
+                    }
+                ]
+            },
         )
 
         params = {"name": "test-entity"}
@@ -1164,7 +1399,17 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.ref_entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"name": ["Duplication error. There is same named Entity"]})
+        self.assertEqual(
+            resp.json(),
+            {
+                "name": [
+                    {
+                        "code": "AE-220000",
+                        "message": "Duplication error. There is same named Entity",
+                    }
+                ]
+            },
+        )
 
         # note param
         params = {
@@ -1175,7 +1420,9 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"note": ["Not a valid string."]})
+        self.assertEqual(
+            resp.json(), {"note": [{"code": "AE-121000", "message": "Not a valid string."}]}
+        )
 
         params = {
             "name": "hoge",
@@ -1186,7 +1433,15 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
-            resp.json(), {"note": ["Ensure this field has no more than 200 characters."]}
+            resp.json(),
+            {
+                "note": [
+                    {
+                        "code": "AE-122000",
+                        "message": "Ensure this field has no more than 200 characters.",
+                    }
+                ]
+            },
         )
 
         # is_toplevel param
@@ -1198,7 +1453,10 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"is_toplevel": ["Must be a valid boolean."]})
+        self.assertEqual(
+            resp.json(),
+            {"is_toplevel": [{"code": "AE-121000", "message": "Must be a valid boolean."}]},
+        )
 
     def test_update_entity_with_invalid_param_attrs(self):
         params = {
@@ -1208,7 +1466,17 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"attrs": ['Expected a list of items but got type "str".']})
+        self.assertEqual(
+            resp.json(),
+            {
+                "attrs": [
+                    {
+                        "code": "AE-121000",
+                        "message": 'Expected a list of items but got type "str".',
+                    }
+                ]
+            },
+        )
 
         params = {
             "attrs": ["hoge"],
@@ -1221,7 +1489,14 @@ class ViewTest(AironeViewTest):
             resp.json(),
             {
                 "attrs": {
-                    "0": {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]}
+                    "0": {
+                        "non_field_errors": [
+                            {
+                                "code": "AE-121000",
+                                "message": "Invalid data. Expected a dictionary, but got str.",
+                            }
+                        ]
+                    }
                 }
             },
         )
@@ -1235,7 +1510,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"non_field_errors": ["id or (name and type) field is required"]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "non_field_errors": [
+                            {
+                                "code": "AE-113000",
+                                "message": "id or (name and type) field is required",
+                            }
+                        ]
+                    }
+                }
+            },
         )
 
         # id param
@@ -1248,7 +1534,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"id": ["A valid integer is required."]}}},
+            {
+                "attrs": {
+                    "0": {"id": [{"code": "AE-121000", "message": "A valid integer is required."}]}
+                }
+            },
         )
 
         params = {
@@ -1260,7 +1550,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"id": ["Invalid id(%s) object does not exist" % 9999]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "id": [
+                            {
+                                "code": "AE-230000",
+                                "message": "Invalid id(%s) object does not exist" % 9999,
+                            }
+                        ]
+                    }
+                }
+            },
         )
 
         entity_attr: EntityAttr = self.entity.attrs.first()
@@ -1274,7 +1575,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"id": ["Invalid id(%s) object does not exist" % entity_attr.id]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "id": [
+                            {
+                                "code": "AE-230000",
+                                "message": "Invalid id(%s) object does not exist" % entity_attr.id,
+                            }
+                        ]
+                    }
+                }
+            },
         )
         entity_attr.restore()
 
@@ -1288,7 +1600,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"name": ["Not a valid string."]}}},
+            {"attrs": {"0": {"name": [{"code": "AE-121000", "message": "Not a valid string."}]}}},
         )
 
         params = {
@@ -1305,7 +1617,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"name": ["Ensure this field has no more than 200 characters."]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "name": [
+                            {
+                                "code": "AE-122000",
+                                "message": "Ensure this field has no more than 200 characters.",
+                            }
+                        ]
+                    }
+                }
+            },
         )
 
         params = {
@@ -1326,7 +1649,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": ["Duplicated attribute names are not allowed"]},
+            {
+                "attrs": [
+                    {"code": "AE-220000", "message": "Duplicated attribute names are not allowed"}
+                ]
+            },
         )
 
         params = {
@@ -1343,7 +1670,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": ["Duplicated attribute names are not allowed"]},
+            {
+                "attrs": [
+                    {"code": "AE-220000", "message": "Duplicated attribute names are not allowed"}
+                ]
+            },
         )
 
         # type param
@@ -1361,7 +1692,13 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"type": ["A valid integer is required."]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "type": [{"code": "AE-121000", "message": "A valid integer is required."}]
+                    }
+                }
+            },
         )
 
         params = {
@@ -1378,7 +1715,15 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"type": ["attrs type(9999) does not exist"]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "type": [
+                            {"code": "AE-230000", "message": "attrs type(9999) does not exist"}
+                        ]
+                    }
+                }
+            },
         )
 
         params = {
@@ -1390,7 +1735,15 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"non_field_errors": ["type cannot be changed"]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "non_field_errors": [
+                            {"code": "AE-121000", "message": "type cannot be changed"}
+                        ]
+                    }
+                }
+            },
         )
 
         # index param
@@ -1403,7 +1756,13 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"index": ["A valid integer is required."]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "index": [{"code": "AE-121000", "message": "A valid integer is required."}]
+                    }
+                }
+            },
         )
 
         params = {
@@ -1421,7 +1780,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"index": ["Ensure this value is less than or equal to 2147483647."]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "index": [
+                            {
+                                "code": "AE-122000",
+                                "message": "Ensure this value is less than or equal to 2147483647.",
+                            }
+                        ]
+                    }
+                }
+            },
         )
 
         # is_mandatory, is_summarized, is_delete_in_chain param
@@ -1441,7 +1811,11 @@ class ViewTest(AironeViewTest):
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(
                 resp.json(),
-                {"attrs": {"0": {param: ["Must be a valid boolean."]}}},
+                {
+                    "attrs": {
+                        "0": {param: [{"code": "AE-121000", "message": "Must be a valid boolean."}]}
+                    }
+                },
             )
 
         # referral param
@@ -1460,7 +1834,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"referral": ['Expected a list of items but got type "str".']}}},
+            {
+                "attrs": {
+                    "0": {
+                        "referral": [
+                            {
+                                "code": "AE-121000",
+                                "message": 'Expected a list of items but got type "str".',
+                            }
+                        ]
+                    }
+                }
+            },
         )
 
         params = {
@@ -1478,7 +1863,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"referral": ["Incorrect type. Expected pk value, received str."]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "referral": [
+                            {
+                                "code": "AE-121000",
+                                "message": "Incorrect type. Expected pk value, received str.",
+                            }
+                        ]
+                    }
+                }
+            },
         )
 
         params = {
@@ -1496,7 +1892,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"referral": ['Invalid pk "9999" - object does not exist.']}}},
+            {
+                "attrs": {
+                    "0": {
+                        "referral": [
+                            {
+                                "code": "AE-230000",
+                                "message": 'Invalid pk "9999" - object does not exist.',
+                            }
+                        ]
+                    }
+                }
+            },
         )
 
         params = {
@@ -1516,7 +1923,12 @@ class ViewTest(AironeViewTest):
         for index, all_attr in enumerate(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY):
             if all_attr["type"] & AttrTypeValue["object"]:
                 attrs[str(index)] = {
-                    "non_field_errors": ["When specified object type, referral field is required"]
+                    "non_field_errors": [
+                        {
+                            "code": "AE-113000",
+                            "message": "When specified object type, referral field is required",
+                        }
+                    ]
                 }
         self.assertEqual(
             resp.json(),
@@ -1541,7 +1953,12 @@ class ViewTest(AironeViewTest):
         for index, all_attr in enumerate(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY):
             if all_attr["type"] & AttrTypeValue["object"]:
                 attrs[str(index)] = {
-                    "non_field_errors": ["When specified object type, referral field is required"]
+                    "non_field_errors": [
+                        {
+                            "code": "AE-113000",
+                            "message": "When specified object type, referral field is required",
+                        }
+                    ]
                 }
         self.assertEqual(
             resp.json(),
@@ -1582,7 +1999,13 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"attrs": {"0": {"is_deleted": ["Must be a valid boolean."]}}},
+            {
+                "attrs": {
+                    "0": {
+                        "is_deleted": [{"code": "AE-121000", "message": "Must be a valid boolean."}]
+                    }
+                }
+            },
         )
 
         entity_attr.refresh_from_db()
@@ -1613,7 +2036,16 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": {"non_field_errors": ['Expected a list of items but got type "str".']}},
+            {
+                "webhooks": {
+                    "non_field_errors": [
+                        {
+                            "code": "AE-121000",
+                            "message": 'Expected a list of items but got type "str".',
+                        }
+                    ]
+                }
+            },
         )
 
         params = {
@@ -1627,7 +2059,14 @@ class ViewTest(AironeViewTest):
             resp.json(),
             {
                 "webhooks": [
-                    {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]}
+                    {
+                        "non_field_errors": [
+                            {
+                                "code": "AE-121000",
+                                "message": "Invalid data. Expected a dictionary, but got str.",
+                            }
+                        ]
+                    }
                 ]
             },
         )
@@ -1641,7 +2080,15 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"non_field_errors": ["id or url field is required"]}]},
+            {
+                "webhooks": [
+                    {
+                        "non_field_errors": [
+                            {"code": "AE-113000", "message": "id or url field is required"}
+                        ]
+                    }
+                ]
+            },
         )
 
         # id param
@@ -1654,7 +2101,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"id": ["A valid integer is required."]}]},
+            {
+                "webhooks": [
+                    {"id": [{"code": "AE-121000", "message": "A valid integer is required."}]}
+                ]
+            },
         )
 
         params = {
@@ -1666,7 +2117,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"id": ["Invalid id(%s) object does not exist" % 9999]}]},
+            {
+                "webhooks": [
+                    {
+                        "id": [
+                            {
+                                "code": "AE-230000",
+                                "message": "Invalid id(%s) object does not exist" % 9999,
+                            }
+                        ]
+                    }
+                ]
+            },
         )
 
         # url param
@@ -1679,7 +2141,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"non_field_errors": ["Enter a valid URL."]}]},
+            {
+                "webhooks": [
+                    {"non_field_errors": [{"code": "AE-121000", "message": "Enter a valid URL."}]}
+                ]
+            },
         )
 
         params = {
@@ -1693,7 +2159,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"url": ["Ensure this field has no more than 200 characters."]}]},
+            {
+                "webhooks": [
+                    {
+                        "url": [
+                            {
+                                "code": "AE-122000",
+                                "message": "Ensure this field has no more than 200 characters.",
+                            }
+                        ]
+                    }
+                ]
+            },
         )
 
         # label param
@@ -1706,7 +2183,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"label": ["Not a valid string."]}]},
+            {"webhooks": [{"label": [{"code": "AE-121000", "message": "Not a valid string."}]}]},
         )
 
         # is_enabled param
@@ -1719,7 +2196,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"is_enabled": ["Must be a valid boolean."]}]},
+            {
+                "webhooks": [
+                    {"is_enabled": [{"code": "AE-121000", "message": "Must be a valid boolean."}]}
+                ]
+            },
         )
 
         # headers param
@@ -1732,7 +2213,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"webhooks": [{"headers": ['Expected a list of items but got type "str".']}]},
+            {
+                "webhooks": [
+                    {
+                        "headers": [
+                            {
+                                "code": "AE-121000",
+                                "message": 'Expected a list of items but got type "str".',
+                            }
+                        ]
+                    }
+                ]
+            },
         )
 
         params = {
@@ -1750,7 +2242,10 @@ class ViewTest(AironeViewTest):
                         "headers": {
                             "0": {
                                 "non_field_errors": [
-                                    "Invalid data. Expected a dictionary, but got str."
+                                    {
+                                        "code": "AE-121000",
+                                        "message": "Invalid data. Expected a dictionary, but got str.",
+                                    }
                                 ]
                             }
                         }
@@ -1773,8 +2268,18 @@ class ViewTest(AironeViewTest):
                     {
                         "headers": {
                             "0": {
-                                "header_key": ["This field is required."],
-                                "header_value": ["This field is required."],
+                                "header_key": [
+                                    {
+                                        "code": "AE-113000",
+                                        "message": "This field is required.",
+                                    }
+                                ],
+                                "header_value": [
+                                    {
+                                        "code": "AE-113000",
+                                        "message": "This field is required.",
+                                    }
+                                ],
                             }
                         }
                     }
@@ -1801,8 +2306,12 @@ class ViewTest(AironeViewTest):
                     {
                         "headers": {
                             "0": {
-                                "header_key": ["Not a valid string."],
-                                "header_value": ["Not a valid string."],
+                                "header_key": [
+                                    {"code": "AE-121000", "message": "Not a valid string."}
+                                ],
+                                "header_value": [
+                                    {"code": "AE-121000", "message": "Not a valid string."}
+                                ],
                             }
                         }
                     }
@@ -1861,7 +2370,7 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), ["update error"])
+        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "update error"}])
 
         def side_effect(handler_name, entity_name, user, *args):
             # Check specified parameters are expected
@@ -1929,7 +2438,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readble Entity
@@ -1939,7 +2452,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission writable Entity
@@ -1960,7 +2477,10 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 403)
-        self.assertEqual(resp.json(), {"detail": "Does not have permission to update"})
+        self.assertEqual(
+            resp.json(),
+            {"code": "AE-210000", "message": "Does not have permission to update"},
+        )
 
         # permission readble EntityAttr update
         self.role.permissions.add(entity_attr.readable)
@@ -1968,7 +2488,10 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 403)
-        self.assertEqual(resp.json(), {"detail": "Does not have permission to update"})
+        self.assertEqual(
+            resp.json(),
+            {"code": "AE-210000", "message": "Does not have permission to update"},
+        )
 
         # permission writable EntityAttr update
         self.role.permissions.add(entity_attr.writable)
@@ -1983,7 +2506,10 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 403)
-        self.assertEqual(resp.json(), {"detail": "Does not have permission to delete"})
+        self.assertEqual(
+            resp.json(),
+            {"code": "AE-210000", "message": "Does not have permission to delete"},
+        )
 
         # permission full EntityAttr delete
         self.role.permissions.add(entity_attr.full)
@@ -2033,12 +2559,12 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.delete("/entity/api/v2/%d/" % 9999, None, "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
         self.entity.delete()
         resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
     def test_delete_entity_with_exist_entry(self):
         self.add_entry(self.user, "entry", self.entity)
@@ -2046,7 +2572,12 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            ["cannot delete Entity because one or more Entries are not deleted"],
+            [
+                {
+                    "code": "AE-121000",
+                    "message": "cannot delete Entity because one or more Entries are not deleted",
+                }
+            ],
         )
 
     def test_list_entry(self):
@@ -2130,7 +2661,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/entity/api/v2/%d/entries/" % self.entity.id)
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         self.role.permissions.add(self.entity.readable)
@@ -2145,7 +2680,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get("/entity/api/v2/%s/entries/" % 9999)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
     def test_create_entry(self):
         attr = {}
@@ -2223,7 +2758,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readable
@@ -2234,7 +2773,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission writable
@@ -2276,10 +2819,13 @@ class ViewTest(AironeViewTest):
             json.dumps({**params, "name": "entry2"}),
             "application/json",
         )
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 403)
         self.assertEqual(
             resp.json(),
-            {"non_field_errors": ["mandatory attrs id(%s) is permission denied" % attr["vals"].id]},
+            {
+                "code": "AE-210000",
+                "message": "mandatory attrs id(%s) is permission denied" % attr["vals"].id,
+            },
         )
 
     def test_create_entry_with_invalid_param_entity_id(self):
@@ -2293,7 +2839,17 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % 9999, json.dumps({"name": "entry1"}), "application/json"
         )
-        self.assertEqual(resp.json(), {"schema": ['Invalid pk "9999" - object does not exist.']})
+        self.assertEqual(
+            resp.json(),
+            {
+                "schema": [
+                    {
+                        "code": "AE-230000",
+                        "message": 'Invalid pk "9999" - object does not exist.',
+                    }
+                ]
+            },
+        )
 
     def test_create_entry_with_invalid_param_name(self):
         resp = self.client.post(
@@ -2303,7 +2859,15 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
-            resp.json(), {"name": ["Ensure this field has no more than 200 characters."]}
+            resp.json(),
+            {
+                "name": [
+                    {
+                        "code": "AE-122000",
+                        "message": "Ensure this field has no more than 200 characters.",
+                    }
+                ]
+            },
         )
 
         resp = self.client.post(
@@ -2320,7 +2884,10 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"name": ["specified name(hoge) already exists"]})
+        self.assertEqual(
+            resp.json(),
+            {"name": [{"code": "AE-220000", "message": "specified name(hoge) already exists"}]},
+        )
 
         entry.delete()
         resp = self.client.post(
@@ -2338,7 +2905,14 @@ class ViewTest(AironeViewTest):
         test_values = [
             {
                 "input": "hoge",
-                "error_msg": {"attrs": ['Expected a list of items but got type "str".']},
+                "error_msg": {
+                    "attrs": [
+                        {
+                            "code": "AE-121000",
+                            "message": 'Expected a list of items but got type "str".',
+                        }
+                    ]
+                },
             },
             {
                 "input": ["hoge"],
@@ -2346,7 +2920,10 @@ class ViewTest(AironeViewTest):
                     "attrs": {
                         "0": {
                             "non_field_errors": [
-                                "Invalid data. Expected a dictionary, but got str."
+                                {
+                                    "code": "AE-121000",
+                                    "message": "Invalid data. Expected a dictionary, but got str.",
+                                }
                             ]
                         }
                     }
@@ -2357,8 +2934,8 @@ class ViewTest(AironeViewTest):
                 "error_msg": {
                     "attrs": {
                         "0": {
-                            "id": ["This field is required."],
-                            "value": ["This field is required."],
+                            "id": [{"code": "AE-113000", "message": "This field is required."}],
+                            "value": [{"code": "AE-113000", "message": "This field is required."}],
                         }
                     }
                 },
@@ -2370,7 +2947,13 @@ class ViewTest(AironeViewTest):
                         "value": "hoge",
                     }
                 ],
-                "error_msg": {"attrs": {"0": {"id": ["A valid integer is required."]}}},
+                "error_msg": {
+                    "attrs": {
+                        "0": {
+                            "id": [{"code": "AE-121000", "message": "A valid integer is required."}]
+                        }
+                    }
+                },
             },
             {
                 "input": [
@@ -2379,7 +2962,11 @@ class ViewTest(AironeViewTest):
                         "value": "hoge",
                     }
                 ],
-                "error_msg": {"non_field_errors": ["attrs id(9999) does not exist"]},
+                "error_msg": {
+                    "non_field_errors": [
+                        {"code": "AE-230000", "message": "attrs id(9999) does not exist"}
+                    ]
+                },
             },
             {
                 "input": [
@@ -2389,7 +2976,12 @@ class ViewTest(AironeViewTest):
                     }
                 ],
                 "error_msg": {
-                    "non_field_errors": ["attrs id(%s) - value(hoge) is not int" % attr["ref"].id]
+                    "non_field_errors": [
+                        {
+                            "code": "AE-121000",
+                            "message": "attrs id(%s) - value(hoge) is not int" % attr["ref"].id,
+                        }
+                    ]
                 },
             },
         ]
@@ -2415,7 +3007,14 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(),
-            {"non_field_errors": ["mandatory attrs id(%s) is not specified" % attr["val"].id]},
+            {
+                "non_field_errors": [
+                    {
+                        "code": "AE-113000",
+                        "message": "mandatory attrs id(%s) is not specified" % attr["val"].id,
+                    }
+                ]
+            },
         )
 
         attr["val"].is_public = False
@@ -2424,10 +3023,13 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 403)
         self.assertEqual(
             resp.json(),
-            {"non_field_errors": ["mandatory attrs id(%s) is permission denied" % attr["val"].id]},
+            {
+                "code": "AE-210000",
+                "message": "mandatory attrs id(%s) is permission denied" % attr["val"].id,
+            },
         )
 
         attr["val"].delete()
@@ -2467,7 +3069,7 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), ["create error"])
+        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "create error"}])
 
         def side_effect(handler_name, entity_name, user, *args):
             # Check specified parameters are expected

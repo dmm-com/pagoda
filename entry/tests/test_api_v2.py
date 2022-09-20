@@ -371,7 +371,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/entry/api/v2/%d/" % entry.id)
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readble entity
@@ -386,7 +390,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/entry/api/v2/%d/" % entry.id)
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readble entry
@@ -400,7 +408,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get("/entry/api/v2/%s/" % 9999)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
@@ -525,7 +533,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readable entity
@@ -536,7 +548,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission writable entity
@@ -554,7 +570,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readable entry
@@ -564,7 +584,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission writable entry
@@ -626,7 +650,7 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/%s/" % 9999, json.dumps({"name": "entry1"}), "application/json"
         )
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
     def test_update_entry_with_invalid_param_name(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
@@ -637,7 +661,15 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
-            resp.json(), {"name": ["Ensure this field has no more than 200 characters."]}
+            resp.json(),
+            {
+                "name": [
+                    {
+                        "code": "AE-122000",
+                        "message": "Ensure this field has no more than 200 characters.",
+                    }
+                ]
+            },
         )
 
         resp = self.client.put(
@@ -652,7 +684,10 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/%s/" % entry.id, json.dumps({"name": "hoge"}), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"name": ["specified name(hoge) already exists"]})
+        self.assertEqual(
+            resp.json(),
+            {"name": [{"code": "AE-220000", "message": "specified name(hoge) already exists"}]},
+        )
 
         hoge_entry.delete()
         resp = self.client.put(
@@ -669,7 +704,14 @@ class ViewTest(AironeViewTest):
         test_values = [
             {
                 "input": "hoge",
-                "error_msg": {"attrs": ['Expected a list of items but got type "str".']},
+                "error_msg": {
+                    "attrs": [
+                        {
+                            "code": "AE-121000",
+                            "message": 'Expected a list of items but got type "str".',
+                        }
+                    ]
+                },
             },
             {
                 "input": ["hoge"],
@@ -677,7 +719,10 @@ class ViewTest(AironeViewTest):
                     "attrs": {
                         "0": {
                             "non_field_errors": [
-                                "Invalid data. Expected a dictionary, but got str."
+                                {
+                                    "code": "AE-121000",
+                                    "message": "Invalid data. Expected a dictionary, but got str.",
+                                }
                             ]
                         }
                     }
@@ -688,8 +733,8 @@ class ViewTest(AironeViewTest):
                 "error_msg": {
                     "attrs": {
                         "0": {
-                            "id": ["This field is required."],
-                            "value": ["This field is required."],
+                            "id": [{"code": "AE-113000", "message": "This field is required."}],
+                            "value": [{"code": "AE-113000", "message": "This field is required."}],
                         }
                     }
                 },
@@ -701,7 +746,13 @@ class ViewTest(AironeViewTest):
                         "value": "hoge",
                     }
                 ],
-                "error_msg": {"attrs": {"0": {"id": ["A valid integer is required."]}}},
+                "error_msg": {
+                    "attrs": {
+                        "0": {
+                            "id": [{"code": "AE-121000", "message": "A valid integer is required."}]
+                        }
+                    }
+                },
             },
             {
                 "input": [
@@ -710,7 +761,11 @@ class ViewTest(AironeViewTest):
                         "value": "hoge",
                     }
                 ],
-                "error_msg": {"non_field_errors": ["attrs id(9999) does not exist"]},
+                "error_msg": {
+                    "non_field_errors": [
+                        {"code": "AE-230000", "message": "attrs id(9999) does not exist"}
+                    ]
+                },
             },
             {
                 "input": [
@@ -720,7 +775,12 @@ class ViewTest(AironeViewTest):
                     }
                 ],
                 "error_msg": {
-                    "non_field_errors": ["attrs id(%s) - value(hoge) is not int" % attr["ref"].id]
+                    "non_field_errors": [
+                        {
+                            "code": "AE-121000",
+                            "message": "attrs id(%s) - value(hoge) is not int" % attr["ref"].id,
+                        }
+                    ]
                 },
             },
         ]
@@ -764,7 +824,7 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), ["update error"])
+        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "update error"}])
 
         def side_effect(handler_name, entity_name, user, *args):
             self.assertEqual(entity_name, self.entity.name)
@@ -861,7 +921,10 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), ["specified entry has already been deleted"])
+        self.assertEqual(
+            resp.json(),
+            [{"code": "AE-230000", "message": "specified entry has already been deleted"}],
+        )
 
     def test_destroy_entry_without_permission(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
@@ -872,7 +935,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readable entity
@@ -881,7 +948,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission writable entity
@@ -889,7 +960,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission full entity
@@ -905,7 +980,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readable entry
@@ -913,7 +992,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission writable entry
@@ -921,7 +1004,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission full entry
@@ -935,7 +1022,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.delete("/entry/api/v2/%s/" % 9999, None, "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
@@ -948,7 +1035,7 @@ class ViewTest(AironeViewTest):
         mock_call_custom.side_effect = side_effect
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), ["delete error"])
+        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "delete error"}])
 
         def side_effect(handler_name, entity_name, user, entry):
             self.assertTrue(handler_name in ["before_delete_entry_v2", "after_delete_entry_v2"])
@@ -983,7 +1070,9 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), ["specified entry has not deleted"])
+        self.assertEqual(
+            resp.json(), [{"code": "AE-230000", "message": "specified entry has not deleted"}]
+        )
 
     def test_restore_entry_without_permission(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
@@ -995,7 +1084,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readable entity
@@ -1004,14 +1097,22 @@ class ViewTest(AironeViewTest):
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission writable entity
         self.role.permissions.add(self.entity.writable)
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission full entity
@@ -1027,7 +1128,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readable entry
@@ -1035,7 +1140,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission writable entry
@@ -1043,7 +1152,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission full entry
@@ -1057,7 +1170,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.post("/entry/api/v2/%s/restore/" % 9999, None, "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
         entry = self.add_entry(self.user, "entry", self.entity)
         entry.delete()
@@ -1065,7 +1178,10 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), ["specified entry has already exist other"])
+        self.assertEqual(
+            resp.json(),
+            [{"code": "AE-220000", "message": "specified entry has already exist other"}],
+        )
 
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
@@ -1079,7 +1195,7 @@ class ViewTest(AironeViewTest):
         mock_call_custom.side_effect = side_effect
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), ["restore error"])
+        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "restore error"}])
 
         def side_effect(handler_name, entity_name, user, entry):
             self.assertTrue(handler_name in ["before_restore_entry_v2", "after_restore_entry_v2"])
@@ -1128,7 +1244,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readable entity
@@ -1139,7 +1259,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission writable entity
@@ -1148,7 +1272,11 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
         )
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission full entity
@@ -1168,7 +1296,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission readable entry
@@ -1178,7 +1310,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission writable entry
@@ -1188,7 +1324,11 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
 
         # permission full entry
@@ -1210,7 +1350,7 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/%s/copy/" % 9999, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
         entry = self.add_entry(self.user, "entry", self.entity)
 
@@ -1219,7 +1359,10 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"copy_entry_names": ["This field is required."]})
+        self.assertEqual(
+            resp.json(),
+            {"copy_entry_names": [{"code": "AE-113000", "message": "This field is required."}]},
+        )
 
         params = {"copy_entry_names": "hoge"}
         resp = self.client.post(
@@ -1227,7 +1370,15 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
-            resp.json(), {"copy_entry_names": ['Expected a list of items but got type "str".']}
+            resp.json(),
+            {
+                "copy_entry_names": [
+                    {
+                        "code": "AE-121000",
+                        "message": 'Expected a list of items but got type "str".',
+                    }
+                ]
+            },
         )
 
         params = {"copy_entry_names": [{}]}
@@ -1235,14 +1386,20 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"copy_entry_names": {"0": ["Not a valid string."]}})
+        self.assertEqual(
+            resp.json(),
+            {"copy_entry_names": {"0": [{"code": "AE-121000", "message": "Not a valid string."}]}},
+        )
 
         params = {"copy_entry_names": []}
         resp = self.client.post(
             "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"copy_entry_names": ["This list may not be empty."]})
+        self.assertEqual(
+            resp.json(),
+            {"copy_entry_names": [{"code": "AE-123000", "message": "This list may not be empty."}]},
+        )
 
         params = {"copy_entry_names": ["entry"]}
         resp = self.client.post(
@@ -1250,7 +1407,12 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
-            resp.json(), {"copy_entry_names": ["specified name(entry) already exists"]}
+            resp.json(),
+            {
+                "copy_entry_names": [
+                    {"code": "AE-220000", "message": "specified name(entry) already exists"}
+                ]
+            },
         )
 
     def test_serach_entry(self):
@@ -2091,7 +2253,15 @@ class ViewTest(AironeViewTest):
         resp = self.client.post("/entry/api/v2/import/", None, "application/yaml")
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
-            resp.json(), {"non_field_errors": ['Expected a list of items but got type "dict".']}
+            resp.json(),
+            {
+                "non_field_errors": [
+                    {
+                        "code": "AE-121000",
+                        "message": "Expected a list of items but got type " '"dict".',
+                    }
+                ]
+            },
         )
 
         # wrong content-type
@@ -2100,7 +2270,11 @@ class ViewTest(AironeViewTest):
         fp.close()
         self.assertEqual(resp.status_code, 415)
         self.assertEqual(
-            resp.json(), {"detail": 'Unsupported media type "application/json" in request.'}
+            resp.json(),
+            {
+                "code": "AE-130000",
+                "message": 'Unsupported media type "application/json" in request.',
+            },
         )
 
         # faild parse yaml
@@ -2108,14 +2282,16 @@ class ViewTest(AironeViewTest):
         resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
         self.assertEqual(resp.status_code, 400)
-        self.assertTrue("YAML parse error" in resp.json()["detail"])
+        self.assertEqual(resp.json()["code"], "AE-140000")
+        self.assertTrue("YAML parse error" in resp.json()["message"])
 
         # faild scan yaml
         fp = self.open_fixture_file("import_data_v2_failed_scan.yaml")
         resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
         self.assertEqual(resp.status_code, 400)
-        self.assertTrue("YAML parse error" in resp.json()["detail"])
+        self.assertEqual(resp.json()["code"], "AE-140000")
+        self.assertTrue("YAML parse error" in resp.json()["message"])
 
         # invalid param
         fp = self.open_fixture_file("import_data_v2_invalid_param.yaml")
@@ -2126,55 +2302,85 @@ class ViewTest(AironeViewTest):
         # invalid required param (entity, entries)
         self.assertEqual(
             resp.json()[0],
-            {"entity": ["This field is required."], "entries": ["This field is required."]},
+            {
+                "entity": [{"code": "AE-113000", "message": "This field is required."}],
+                "entries": [{"code": "AE-113000", "message": "This field is required."}],
+            },
         )
 
         # invalid type param (entity, entries)
         self.assertEqual(
             resp.json()[1],
             {
-                "entity": ["Not a valid string."],
-                "entries": ['Expected a list of items but got type "str".'],
+                "entity": [{"code": "AE-121000", "message": "Not a valid string."}],
+                "entries": [
+                    {
+                        "code": "AE-121000",
+                        "message": 'Expected a list of items but got type "str".',
+                    }
+                ],
             },
         )
 
         # invalid type param (entries)
         self.assertEqual(
             resp.json()[2]["entries"]["0"],
-            {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]},
+            {
+                "non_field_errors": [
+                    {
+                        "code": "AE-121000",
+                        "message": "Invalid data. Expected a dictionary, but got str.",
+                    }
+                ]
+            },
         )
 
         # invalid required param (entries)
         self.assertEqual(
             resp.json()[2]["entries"]["1"],
-            {"name": ["This field is required."]},
+            {"name": [{"code": "AE-113000", "message": "This field is required."}]},
         )
 
         # invalid type param (name, attrs)
         self.assertEqual(
             resp.json()[2]["entries"]["2"],
             {
-                "attrs": ['Expected a list of items but got type "str".'],
-                "name": ["Not a valid string."],
+                "attrs": [
+                    {
+                        "code": "AE-121000",
+                        "message": 'Expected a list of items but got type "str".',
+                    }
+                ],
+                "name": [{"code": "AE-121000", "message": "Not a valid string."}],
             },
         )
 
         # invalid type param (attrs)
         self.assertEqual(
             resp.json()[2]["entries"]["3"]["attrs"]["0"],
-            {"non_field_errors": ["Invalid data. Expected a dictionary, but got str."]},
+            {
+                "non_field_errors": [
+                    {
+                        "code": "AE-121000",
+                        "message": "Invalid data. Expected a dictionary, but got str.",
+                    }
+                ]
+            },
         )
 
         # invalid required param (name, value)
         self.assertEqual(
             resp.json()[2]["entries"]["3"]["attrs"]["1"],
-            {"name": ["This field is required."], "value": ["This field is required."]},
+            {
+                "name": [{"code": "AE-113000", "message": "This field is required."}],
+                "value": [{"code": "AE-113000", "message": "This field is required."}],
+            },
         )
 
         # invalid type param (name)
         self.assertEqual(
             resp.json()[2]["entries"]["3"]["attrs"]["2"]["name"],
-            ["Not a valid string."],
+            [{"code": "AE-121000", "message": "Not a valid string."}],
         )
 
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))

@@ -6,6 +6,7 @@ from django.core.cache import cache
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
+from airone.lib.drf import ExceedLimitError
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrTypeArrObj, AttrTypeArrStr, AttrTypeObj, AttrTypeStr, AttrTypeValue
 from entity.models import Entity, EntityAttr
@@ -4658,16 +4659,10 @@ class ModelTest(AironeTestCase):
                 ),
                 (True, None),
             )
-            self.assertEqual(
+            with self.assertRaises(ExceedLimitError):
                 AttributeValue.validate_attr_value(
                     AttrTypeValue[type], "a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1), False
-                ),
-                (
-                    False,
-                    "value(%s) is exceeded the limit"
-                    % ("a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1)),
-                ),
-            )
+                )
 
         self.assertEqual(
             AttributeValue.validate_attr_value(AttrTypeValue["object"], self._entry.id, False),
@@ -4740,17 +4735,12 @@ class ModelTest(AironeTestCase):
             ),
             (True, None),
         )
-        self.assertEqual(
+        with self.assertRaises(ExceedLimitError):
             AttributeValue.validate_attr_value(
                 AttrTypeValue["named_object"],
                 {"name": "a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1), "id": self._entry.id},
                 False,
-            ),
-            (
-                False,
-                "value(%s) is exceeded the limit" % ("a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1)),
-            ),
-        )
+            )
         self.assertEqual(
             AttributeValue.validate_attr_value(
                 AttrTypeValue["named_object"], {"name": "hoge", "id": "hoge"}, False
