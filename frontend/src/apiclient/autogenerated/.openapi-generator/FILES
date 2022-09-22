@@ -38,8 +38,13 @@ models/PaginatedEntityListList.ts
 models/PaginatedEntryBaseList.ts
 models/PaginatedGetEntrySimpleList.ts
 models/PaginatedJobSerializersList.ts
+models/PaginatedUserListList.ts
 models/Role.ts
 models/UserBase.ts
+models/UserCreate.ts
+models/UserList.ts
+models/UserRetrieve.ts
+models/UserRetrieveToken.ts
 models/Webhook.ts
 models/WebhookHeaders.ts
 models/WebhookUpdate.ts

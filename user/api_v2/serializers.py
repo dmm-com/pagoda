@@ -25,8 +25,6 @@ class UserBaseSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(UserBaseSerializer):
-    token = serializers.SerializerMethodField()
-
     class Meta:
         model = User
         fields = [
@@ -35,7 +33,6 @@ class UserCreateSerializer(UserBaseSerializer):
             "password",
             "is_superuser",
             "date_joined",
-            "token",
             "authenticate_type",
         ]
 
@@ -70,7 +67,7 @@ class UserRetrieveSerializer(UserBaseSerializer):
             return None
 
 
-# class UserListSerializer(UserBaseSerializer):
-#    class Meta:
-#        model = User
-#        fields = ["id", "username", "email", "is_superuser", "date_joined"]
+class UserListSerializer(UserBaseSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "is_superuser", "date_joined"]
