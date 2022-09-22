@@ -125,7 +125,7 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
         resp = self.client.get("/job/api/v2/%d/" % 9999)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
         resp = self.client.get("/job/api/v2/%s/" % "hoge")
         self.assertEqual(resp.status_code, 404)
@@ -138,4 +138,4 @@ class ViewTest(AironeViewTest):
         self.admin_login()
         resp = self.client.get("/job/api/v2/%d/" % job.id)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"detail": "Not found."})
+        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})

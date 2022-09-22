@@ -3,6 +3,9 @@
 ## In development
 
 ### Added
+* Added airone error code to APIv2 for frontend.
+  Contributed by @syucream, @userlocalhost, @hinashi
+
 * Added new parameter "as_member" at the Role.is_belonged_to() method to be able to
   confirm that specified user is belonged to this role as member.
   Contributed by @userlocalhost

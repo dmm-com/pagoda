@@ -11,6 +11,7 @@ from django.db.models import Prefetch, Q
 from acl.models import ACLBase
 from airone.lib import auto_complement
 from airone.lib.acl import ACLObjType, ACLType
+from airone.lib.drf import ExceedLimitError
 from airone.lib.elasticsearch import (
     ESS,
     execute_query,
@@ -323,7 +324,7 @@ class AttributeValue(models.Model):
             if not isinstance(value, str):
                 raise Exception("value(%s) is not str" % value)
             if len(str(value).encode("utf-8")) > AttributeValue.MAXIMUM_VALUE_SIZE:
-                raise Exception("value(%s) is exceeded the limit" % value)
+                raise ExceedLimitError("value is exceeded the limit")
             if is_mandatory and value == "":
                 return False
             return True
@@ -417,6 +418,9 @@ class AttributeValue(models.Model):
             else:
                 if not _is_validate_attr(input_value):
                     raise Exception("mandatory attrs value is not specified")
+        except ExceedLimitError as e:
+            raise (e)
+
         except Exception as e:
             return (False, str(e))
 
