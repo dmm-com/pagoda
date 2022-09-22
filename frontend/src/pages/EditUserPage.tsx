@@ -53,7 +53,14 @@ export const EditUserPage: FC = () => {
   }, [user]);
 
   const handleSubmit = () => {
-    console.log("[onix/handleSubmit(00)] userInfo: ", userInfo);
+    // FIXME: There is no component to edit password. Therefore, this handler send request
+    //        with arbitrary password("hoge") to AirOne.
+    aironeApiClientV2.createUser(
+      userInfo.username,
+      userInfo.email,
+      "hoge",
+      userInfo.isSuperuser
+    );
   };
 
   return (

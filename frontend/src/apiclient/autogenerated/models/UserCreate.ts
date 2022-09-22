@@ -20,17 +20,17 @@ import { exists, mapValues } from "../runtime";
  */
 export interface UserCreate {
   /**
-   *
-   * @type {number}
-   * @memberof UserCreate
-   */
-  readonly id: number;
-  /**
    * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
    * @type {string}
    * @memberof UserCreate
    */
   username: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UserCreate
+   */
+  email?: string;
   /**
    *
    * @type {string}
@@ -43,18 +43,6 @@ export interface UserCreate {
    * @memberof UserCreate
    */
   isSuperuser?: boolean;
-  /**
-   *
-   * @type {string}
-   * @memberof UserCreate
-   */
-  readonly dateJoined: string;
-  /**
-   *
-   * @type {number}
-   * @memberof UserCreate
-   */
-  authenticateType?: number;
 }
 
 export function UserCreateFromJSON(json: any): UserCreate {
@@ -69,16 +57,12 @@ export function UserCreateFromJSONTyped(
     return json;
   }
   return {
-    id: json["id"],
     username: json["username"],
+    email: !exists(json, "email") ? undefined : json["email"],
     password: json["password"],
     isSuperuser: !exists(json, "is_superuser")
       ? undefined
       : json["is_superuser"],
-    dateJoined: json["date_joined"],
-    authenticateType: !exists(json, "authenticate_type")
-      ? undefined
-      : json["authenticate_type"],
   };
 }
 
@@ -91,8 +75,8 @@ export function UserCreateToJSON(value?: UserCreate | null): any {
   }
   return {
     username: value.username,
+    email: value.email,
     password: value.password,
     is_superuser: value.isSuperuser,
-    authenticate_type: value.authenticateType,
   };
 }

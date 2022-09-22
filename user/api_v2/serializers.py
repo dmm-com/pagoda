@@ -28,13 +28,14 @@ class UserCreateSerializer(UserBaseSerializer):
     class Meta:
         model = User
         fields = [
-            "id",
             "username",
+            "email",
             "password",
             "is_superuser",
-            "date_joined",
-            "authenticate_type",
         ]
+
+    def create(self, validate_data):
+        return User.objects.create_user(request_data=validate_data)
 
 
 class UserRetrieveSerializer(UserBaseSerializer):

@@ -9,8 +9,27 @@ from airone.lib.acl import ACLType, ACLTypeBase
 from group.models import Group
 from role.models import Role
 
+from django.contrib.auth.models import (
+    BaseUserManager,
+)
+
+
+class UserManager(BaseUserManager):
+    def create_user(self, request_data, **kwargs):
+        user = User(
+            username=request_data.get("username"),
+            email=request_data.get("email"),
+            is_superuser=request_data.get("is_superuser"),
+        )
+        user.set_password(request_data.get("password"))
+        user.save()
+
+        return user
+
 
 class User(AbstractUser):
+    objects = UserManager()
+
     MAXIMUM_TOKEN_LIFETIME = 10**8
     TOKEN_LIFETIME = 86400
 
