@@ -29,7 +29,15 @@ class UserRetrieveSerializer(UserBaseSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "is_superuser", "date_joined", "token"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "is_superuser",
+            "date_joined",
+            "token",
+            "authenticate_type",
+        ]
 
     def get_token(self, obj: User) -> Optional[UserToken]:
         current_user = self.context["request"].user

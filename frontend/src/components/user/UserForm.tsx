@@ -78,6 +78,8 @@ const ElemChangingPassword: FC<Props> = ({ userInfo, setUserInfo }) => {
 };
 
 const ElemAuthenticationMethod: FC<Props> = ({ userInfo, setUserInfo }) => {
+  const djangoContext = DjangoContext.getInstance();
+
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
@@ -85,8 +87,9 @@ const ElemAuthenticationMethod: FC<Props> = ({ userInfo, setUserInfo }) => {
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         <InputBox>
-          {/* FIXME: to change its display by response of API calling */}
-          LDAP 認証 / ローカル認証 (FIXME)
+          {userInfo.authenticateType == djangoContext.userAuthenticateType.local
+            ? "ローカル認証"
+            : "LDAP 認証"}
         </InputBox>
       </TableCell>
     </StyledTableRow>
@@ -258,8 +261,6 @@ export const UserForm: FC<Props> = ({ userInfo, setUserInfo }) => {
   const isCreateMode = userInfo.id === 0;
   const [password, setPassword] = useState(isCreateMode ? "" : undefined);
 
-  const djangoContext = DjangoContext.getInstance();
-
   const handleSubmit = (event) => {
     if (isCreateMode) {
       createUser(
@@ -301,11 +302,16 @@ export const UserForm: FC<Props> = ({ userInfo, setUserInfo }) => {
 
             <ElemEmailAddress userInfo={userInfo} setUserInfo={setUserInfo} />
 
-            <ElemAccessToken userInfo={userInfo} setUserInfo={setUserInfo} />
-            <ElemAccessTokenConfiguration
-              userInfo={userInfo}
-              setUserInfo={setUserInfo}
-            />
+            {/* Undisplay other user's token information */}
+            {userInfo.token && (
+              <ElemAccessToken userInfo={userInfo} setUserInfo={setUserInfo} />
+            )}
+            {userInfo.token && (
+              <ElemAccessTokenConfiguration
+                userInfo={userInfo}
+                setUserInfo={setUserInfo}
+              />
+            )}
 
             <ElemAuthenticationMethod
               userInfo={userInfo}

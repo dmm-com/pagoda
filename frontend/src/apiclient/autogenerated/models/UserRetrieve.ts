@@ -62,6 +62,12 @@ export interface UserRetrieve {
    * @memberof UserRetrieve
    */
   token: UserRetrieveToken | null;
+  /**
+   *
+   * @type {number}
+   * @memberof UserRetrieve
+   */
+  authenticateType?: number;
 }
 
 export function UserRetrieveFromJSON(json: any): UserRetrieve {
@@ -84,6 +90,9 @@ export function UserRetrieveFromJSONTyped(
       : json["is_superuser"],
     dateJoined: json["date_joined"],
     token: UserRetrieveTokenFromJSON(json["token"]),
+    authenticateType: !exists(json, "authenticate_type")
+      ? undefined
+      : json["authenticate_type"],
   };
 }
 
@@ -99,5 +108,6 @@ export function UserRetrieveToJSON(value?: UserRetrieve | null): any {
     email: value.email,
     is_superuser: value.isSuperuser,
     token: UserRetrieveTokenToJSON(value.token),
+    authenticate_type: value.authenticateType,
   };
 }
