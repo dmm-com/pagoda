@@ -3,7 +3,7 @@
  */
 
 import { render } from "@testing-library/react";
-import React from "react";
+import React, { useState } from "react";
 
 import { UserForm } from "components/user/UserForm";
 import { TestWrapper } from "utils/TestWrapper";
@@ -18,5 +18,11 @@ test("should render a component with essential props", function () {
     writable: false,
   });
 
-  expect(() => render(<UserForm />, { wrapper: TestWrapper })).not.toThrow();
+  const [userInfo, setUserInfo] = useState({});
+
+  expect(() =>
+    render(<UserForm userInfo={userInfo} setUserInfo={setUserInfo} />, {
+      wrapper: TestWrapper,
+    })
+  ).not.toThrow();
 });

@@ -1,5 +1,5 @@
 import { Box, Typography, Button } from "@mui/material";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -9,8 +9,8 @@ import { useTypedParams } from "../hooks/useTypedParams";
 import { topPath, usersPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
-import { UserForm } from "components/user/UserForm";
 import { PageHeader } from "components/common/PageHeader";
+import { UserForm } from "components/user/UserForm";
 
 export const EditUserPage: FC = () => {
   const { userId } = useTypedParams<{ userId: number }>();
@@ -20,6 +20,17 @@ export const EditUserPage: FC = () => {
       return await aironeApiClientV2.getUser(userId);
     }
   });
+
+  const [userInfo, setUserInfo] = useState({
+    name: "",
+    email: "",
+    token: "",
+    tokenLifetime: "",
+  });
+
+  const handleSubmit = () => {
+    console.log("[onix/handleSubmit(00)] userInfo: ", userInfo);
+  };
 
   return (
     <Box>
@@ -41,7 +52,7 @@ export const EditUserPage: FC = () => {
               <Button
                 variant="contained"
                 color="secondary"
-                onClick={() => {}}
+                onClick={handleSubmit}
               >
                 保存
               </Button>
@@ -55,7 +66,15 @@ export const EditUserPage: FC = () => {
         }
       />
 
-      {user.loading ? <Loading /> : <UserForm user={user.value} />}
+      {user.loading ? (
+        <Loading />
+      ) : (
+        <UserForm
+          user={user.value}
+          userInfo={userInfo}
+          setUserInfo={setUserInfo}
+        />
+      )}
     </Box>
   );
 };
