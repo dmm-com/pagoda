@@ -5,7 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 
-from user.api_v2.serializers import UserListSerializer, UserRetrieveSerializer
+from user.api_v2.serializers import UserRetrieveSerializer
 from user.models import User
 
 
@@ -21,8 +21,19 @@ class UserPermission(BasePermission):
 
 class UserAPI(viewsets.ModelViewSet):
     queryset = User.objects.filter(is_active=True)
-    serializer_class = UserRetrieveSerializer
     permission_classes = [IsAuthenticated & UserPermission]
+    pagination_class = PageNumberPagination
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    ordering = ["username"]
+    search_fields = ["username"]
+
+    def get_serializer_class(self):
+        serializer = {
+            #            "get": UserRetrieveSerializer,
+            "list": UserListSerializer,
+            #            "delete": UserRetrieveSerializer,
+        }
+        return serializer.get(self.action, UserRetrieveSerializer)
 
     def destroy(self, request, pk):
         user: User = self.get_object()
@@ -31,11 +42,11 @@ class UserAPI(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserListAPI(ListAPIView):
-    queryset = User.objects.filter(is_active=True)
-    serializer_class = UserListSerializer
-    permission_classes = [IsAuthenticated]
-    pagination_class = PageNumberPagination
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    ordering = ["username"]
-    search_fields = ["username"]
+# class UserListAPI(ListAPIView):
+#    queryset = User.objects.filter(is_active=True)
+#    serializer_class = UserListSerializer
+#    permission_classes = [IsAuthenticated]
+#    pagination_class = PageNumberPagination
+#    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+#    ordering = ["username"]
+#    search_fields = ["username"]

@@ -13,26 +13,16 @@
  */
 
 import * as runtime from "../runtime";
-import {
-  PaginatedUserListList,
-  PaginatedUserListListFromJSON,
-  PaginatedUserListListToJSON,
-  UserRetrieve,
-  UserRetrieveFromJSON,
-  UserRetrieveToJSON,
-} from "../models";
 
 export interface UserApiV2DestroyRequest {
   id: number;
 }
 
-export interface UserApiV2ListRequest {
-  ordering?: string;
-  page?: number;
-  search?: string;
+export interface UserApiV2Retrieve2Request {
+  id: number;
 }
 
-export interface UserApiV2RetrieveRequest {
+export interface UserApiV2UpdateRequest {
   id: number;
 }
 
@@ -40,6 +30,48 @@ export interface UserApiV2RetrieveRequest {
  *
  */
 export class UserApi extends runtime.BaseAPI {
+  /**
+   */
+  async userApiV2CreateRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/`,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async userApiV2Create(initOverrides?: RequestInit): Promise<void> {
+    await this.userApiV2CreateRaw(initOverrides);
+  }
+
   /**
    */
   async userApiV2DestroyRaw(
@@ -98,23 +130,10 @@ export class UserApi extends runtime.BaseAPI {
 
   /**
    */
-  async userApiV2ListRaw(
-    requestParameters: UserApiV2ListRequest,
+  async userApiV2RetrieveRaw(
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<PaginatedUserListList>> {
+  ): Promise<runtime.ApiResponse<void>> {
     const queryParameters: any = {};
-
-    if (requestParameters.ordering !== undefined) {
-      queryParameters["ordering"] = requestParameters.ordering;
-    }
-
-    if (requestParameters.page !== undefined) {
-      queryParameters["page"] = requestParameters.page;
-    }
-
-    if (requestParameters.search !== undefined) {
-      queryParameters["search"] = requestParameters.search;
-    }
 
     const headerParameters: runtime.HTTPHeaders = {};
 
@@ -142,34 +161,25 @@ export class UserApi extends runtime.BaseAPI {
       initOverrides
     );
 
-    return new runtime.JSONApiResponse(response, (jsonValue) =>
-      PaginatedUserListListFromJSON(jsonValue)
-    );
+    return new runtime.VoidApiResponse(response);
   }
 
   /**
    */
-  async userApiV2List(
-    requestParameters: UserApiV2ListRequest = {},
-    initOverrides?: RequestInit
-  ): Promise<PaginatedUserListList> {
-    const response = await this.userApiV2ListRaw(
-      requestParameters,
-      initOverrides
-    );
-    return await response.value();
+  async userApiV2Retrieve(initOverrides?: RequestInit): Promise<void> {
+    await this.userApiV2RetrieveRaw(initOverrides);
   }
 
   /**
    */
-  async userApiV2RetrieveRaw(
-    requestParameters: UserApiV2RetrieveRequest,
+  async userApiV2Retrieve2Raw(
+    requestParameters: UserApiV2Retrieve2Request,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<UserRetrieve>> {
+  ): Promise<runtime.ApiResponse<void>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
         "id",
-        "Required parameter requestParameters.id was null or undefined when calling userApiV2Retrieve."
+        "Required parameter requestParameters.id was null or undefined when calling userApiV2Retrieve2."
       );
     }
 
@@ -204,21 +214,71 @@ export class UserApi extends runtime.BaseAPI {
       initOverrides
     );
 
-    return new runtime.JSONApiResponse(response, (jsonValue) =>
-      UserRetrieveFromJSON(jsonValue)
-    );
+    return new runtime.VoidApiResponse(response);
   }
 
   /**
    */
-  async userApiV2Retrieve(
-    requestParameters: UserApiV2RetrieveRequest,
+  async userApiV2Retrieve2(
+    requestParameters: UserApiV2Retrieve2Request,
     initOverrides?: RequestInit
-  ): Promise<UserRetrieve> {
-    const response = await this.userApiV2RetrieveRaw(
-      requestParameters,
+  ): Promise<void> {
+    await this.userApiV2Retrieve2Raw(requestParameters, initOverrides);
+  }
+
+  /**
+   */
+  async userApiV2UpdateRaw(
+    requestParameters: UserApiV2UpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling userApiV2Update."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/{id}/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PUT",
+        headers: headerParameters,
+        query: queryParameters,
+      },
       initOverrides
     );
-    return await response.value();
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async userApiV2Update(
+    requestParameters: UserApiV2UpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.userApiV2UpdateRaw(requestParameters, initOverrides);
   }
 }
