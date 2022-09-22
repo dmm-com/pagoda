@@ -2464,3 +2464,28 @@ class ViewTest(AironeViewTest):
         self.assertEqual(job.status, Job.STATUS["CANCELED"])
         self.assertEqual(job.text, "Now importing... (progress: [    1/    1])")
         self.assertFalse(Entry.objects.filter(name="test-entry").exists())
+
+    def test_advanced_search(self):
+        params = {
+            "entities": [self.entity.id],
+            "attrinfo": [],
+        }
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        # TODO assert result
+
+    def test_advanced_search_all_entities(self):
+        params = {
+            "entities": [],
+            "is_all_entities": True,
+            "attrinfo": [{"name": self.entity.attrs.first().name}],
+        }
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        # TODO assert result

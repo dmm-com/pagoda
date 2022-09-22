@@ -14,6 +14,7 @@ class ModelTest(RoleTestBase):
 
         self.assertTrue(self.role.is_belonged_to(self.users["userA"]))
         self.assertFalse(self.role.is_belonged_to(self.users["userB"]))
+        self.assertTrue(self.role.is_belonged_to(self.users["userA"], as_member=True))
 
     def test_is_belonged_to_registered_in_groups(self):
         # set userA belongs to groupA as groups member
@@ -24,6 +25,7 @@ class ModelTest(RoleTestBase):
 
         self.assertTrue(self.role.is_belonged_to(self.users["userA"]))
         self.assertFalse(self.role.is_belonged_to(self.users["userB"]))
+        self.assertTrue(self.role.is_belonged_to(self.users["userA"], as_member=True))
 
     def test_is_belonged_to_registered_in_admin_users(self):
         # set userA belongs to test Role as admin user
@@ -31,6 +33,7 @@ class ModelTest(RoleTestBase):
 
         self.assertTrue(self.role.is_belonged_to(self.users["userA"]))
         self.assertFalse(self.role.is_belonged_to(self.users["userB"]))
+        self.assertFalse(self.role.is_belonged_to(self.users["userA"], as_member=True))
 
     def test_is_belonged_to_registered_in_admin_groups(self):
         # set userA belongs to groupA as groups member
@@ -41,6 +44,7 @@ class ModelTest(RoleTestBase):
 
         self.assertTrue(self.role.is_belonged_to(self.users["userA"]))
         self.assertFalse(self.role.is_belonged_to(self.users["userB"]))
+        self.assertFalse(self.role.is_belonged_to(self.users["userA"], as_member=True))
 
     def test_is_belonged_to_parent_group(self):
         """This test create Role (role1) that belongs following hierarchical groups

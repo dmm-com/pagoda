@@ -35,13 +35,16 @@ class Role(models.Model):
 
         return False
 
-    def is_belonged_to(self, user):
-        """check wether specified User is belonged to this Role"""
+    def is_belonged_to(self, user, as_member=False):
+        """This checks wether specified User is belonged to this Role.
+        When "as_member" parameter is True, then this method only doesn't check
+        admin users and groups.
+        """
         if user.id in [
             u.id
             for u in set(
                 list(self.users.filter(is_active=True))
-                + list(self.admin_users.filter(is_active=True))
+                + ([] if as_member else list(self.admin_users.filter(is_active=True)))
             )
         ]:
             return True
@@ -53,7 +56,7 @@ class Role(models.Model):
                     g.id
                     for g in set(
                         list(self.groups.filter(is_active=True))
-                        + list(self.admin_groups.filter(is_active=True))
+                        + ([] if as_member else list(self.admin_groups.filter(is_active=True)))
                     )
                 ]
             )

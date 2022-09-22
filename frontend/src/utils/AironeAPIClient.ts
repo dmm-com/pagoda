@@ -48,8 +48,13 @@ export function importEntities(formData: FormData): Promise<Response> {
   });
 }
 
-export function getEntityAttrs(entityIds: number[]): Promise<Response> {
-  return fetch(`/api/v1/entity/attrs/${entityIds.join(",")}`);
+export function getEntityAttrs(
+  entityIds: number[],
+  searchAllEntities = false
+): Promise<Response> {
+  // NOTE "," is a magic means specifying all the attributes
+  const path = searchAllEntities ? "," : entityIds.join(",");
+  return fetch(`/api/v1/entity/attrs/${path}`);
 }
 
 export function importEntries(
