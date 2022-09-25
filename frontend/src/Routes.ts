@@ -54,8 +54,6 @@ export const groupsPath = () => basePath + "groups";
 // users
 export const newUserPath = () => basePath + "users/new";
 export const importUsersPath = () => basePath + "users/import";
-export const passwordPath = (userId: number | string) =>
-  basePath + `users/${userId}/password`;
 export const userPath = (userId: number | string) =>
   basePath + `users/${userId}`;
 export const usersPath = () => basePath + "users";
