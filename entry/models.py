@@ -1696,6 +1696,27 @@ class Entry(ACLBase):
 
         return {"name": self.name, "attrs": attrinfo}
 
+    def export_v2(self, user):
+        attrinfo = []
+
+        # This calling of complement_attrs is needed to take into account the case of the Attributes
+        # that are added after creating this entry.
+        self.complement_attrs(user)
+
+        for attr in self.attrs.filter(is_active=True, schema__is_active=True):
+            if not user.has_permission(attr, ACLType.Readable):
+                continue
+
+            latest_value = attr.get_latest_value()
+            attrinfo.append(
+                {
+                    "name": attr.schema.name,
+                    "value": latest_value.get_value() if latest_value else None,
+                }
+            )
+
+        return {"name": self.name, "attrs": attrinfo}
+
     # NOTE: Type-Write
     def get_es_document(self, es=None):
         """This processing registers entry information to Elasticsearch"""
