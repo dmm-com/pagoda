@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Changed not to use memcached.
+  Contributed by @hinashi
 
 ### Fixed
 
