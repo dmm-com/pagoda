@@ -4,7 +4,6 @@ jobs:
     docker:
       - image: cimg/python:3.8.10
       - image: rabbitmq:3.8.19-management
-      - image: bitnami/memcached:1.6.9
       - image: docker.elastic.co/elasticsearch/elasticsearch:6.8.16
         environment:
           discovery.type: single-node

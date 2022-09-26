@@ -2,7 +2,6 @@ from datetime import date
 from unittest import skip
 
 from django.conf import settings
-from django.core.cache import cache
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
@@ -32,9 +31,6 @@ class ModelTest(AironeTestCase):
 
         self._attr: Attribute = self.make_attr("attr")
         self._attr.save()
-
-        # clear all cache before start
-        cache.clear()
 
         self._org_auto_complement_user = settings.AIRONE["AUTO_COMPLEMENT_USER"]
 
@@ -232,30 +228,16 @@ class ModelTest(AironeTestCase):
             created_user=user,
             parent_entity=entity,
         )
-        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry: Entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
 
-        # the case setting attribute lock to assure adding adding attribute processing
-        # should be run only one time.
-        cache_key = "add_%d" % attrbase.id
-        entry.set_cache(cache_key, True)
-        self.assertIsNone(entry.add_attribute_from_base(attrbase, user))
-        self.assertEqual(entry.attrs.count(), 0)
-
-        entry.clear_cache(cache_key)
         attr = entry.add_attribute_from_base(attrbase, user)
+        self.assertTrue(entry.attrs.filter(id=attr.id).exists())
         self.assertEqual(entry.attrs.count(), 1)
 
         # check not to create multiple same Attribute objects by add_attribute_from_base method
-        self.assertIsNone(entry.add_attribute_from_base(attrbase, user))
+        entry.add_attribute_from_base(attrbase, user)
+        self.assertTrue(entry.attrs.filter(id=attr.id).exists())
         self.assertEqual(entry.attrs.count(), 1)
-
-        # update attrbase
-        attrbase.name = "hoge"
-        attrbase.type = AttrTypeObj.TYPE
-        attrbase.referral.add(entity)
-        attrbase.is_mandatory = True
-
-        self.assertEqual(Attribute.objects.get(id=attr.id).schema, attrbase)
 
     def test_status_update_methods_of_attribute_value(self):
         value = AttributeValue(value="hoge", created_user=self._user, parent_attr=self._attr)
@@ -3774,47 +3756,6 @@ class ModelTest(AironeTestCase):
             entry_name=CONFIG.EMPTY_SEARCH_CHARACTER,
         )
         self.assertEqual(ret["ret_count"], 1)
-
-    def test_cache_of_adding_attribute(self):
-        """
-        This test suite confirms that the creating cache not to remaining after
-        creating Attribute instance. This indicates cache operation in the method
-        of add_attribute_from_base has atomicity. It means cache value would not
-        be set before and after calling this method that set cache value.
-        """
-        # initialize Entity an Entry
-        user = User.objects.create(username="hoge")
-        entity = Entity.objects.create(name="entity", created_user=user)
-        attrbase = EntityAttr.objects.create(
-            name="attr", type=AttrTypeValue["object"], created_user=user, parent_entity=entity
-        )
-        entity.attrs.add(attrbase)
-
-        # call add_attribute_from_base method more than once
-        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
-        for _i in range(2):
-            entry.add_attribute_from_base(attrbase, user)
-
-        self.assertIsNone(entry.get_cache("add_%d" % attrbase.id))
-
-    def test_may_append_attr(self):
-        # initialize Entity an Entry
-        entity = Entity.objects.create(name="entity", created_user=self._user)
-        entry1 = Entry.objects.create(name="entry1", created_user=self._user, schema=entity)
-        entry2 = Entry.objects.create(name="entry2", created_user=self._user, schema=entity)
-
-        attr = self.make_attr("attr", attrtype=AttrTypeArrStr, entity=entity, entry=entry1)
-
-        # Just after creating entries, there is no attribute in attrs member
-        self.assertEqual(entry1.attrs.count(), 0)
-        self.assertEqual(entry2.attrs.count(), 0)
-
-        for entry in [entry1, entry2]:
-            entry.may_append_attr(attr)
-
-        # Attribute object should be set to appropriate entry's attrs member
-        self.assertEqual(entry1.attrs.first(), attr)
-        self.assertEqual(entry2.attrs.count(), 0)
 
     def test_search_entries_includes_and_or(self):
         user = User.objects.create(username="hoge")

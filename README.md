@@ -47,9 +47,9 @@ user@hostname:~/airone$ docker-compose up
 
 ## (Setting-up Backend with manual)
 
-And you have to install RabbitMQ for executing heavy processing as background task using [Celery](http://docs.celeryproject.org/) and Memcached for caching backend.
+And you have to install RabbitMQ for executing heavy processing as background task using [Celery](http://docs.celeryproject.org/).
 ```
-user@hostname:~$ sudo apt-get install rabbitmq-server memcached mysql-server python-dev libmysqlclient-dev
+user@hostname:~$ sudo apt-get install rabbitmq-server mysql-server python-dev libmysqlclient-dev
 ```
 
 ### Setting-up MySQL configuration
