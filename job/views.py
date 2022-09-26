@@ -65,6 +65,7 @@ def download(request, job_id):
 
     export_operations = [
         JobOperation.EXPORT_ENTRY.value,
+        JobOperation.EXPORT_ENTRY_V2.value,
         JobOperation.EXPORT_SEARCH_RESULT.value,
     ]
     if job.operation not in export_operations:

@@ -376,7 +376,7 @@ class EntryExportAPI(generics.GenericAPIView):
             )
 
         # create a job to export search result and run it
-        job = Job.new_export(
+        job = Job.new_export_v2(
             request.user,
             **{
                 "text": "entry_%s.%s" % (entity.name, job_params["export_format"]),

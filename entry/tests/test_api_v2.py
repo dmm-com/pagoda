@@ -1698,7 +1698,7 @@ class ViewTest(AironeViewTest):
         results = resp_data["results"]
         self.assertEqual(len(results), 0)
 
-    @patch("entry.tasks.export_entries.delay", Mock(side_effect=tasks.export_entries))
+    @patch("entry.tasks.export_entries_v2.delay", Mock(side_effect=tasks.export_entries_v2))
     def test_post_export(self):
         user = self.admin_login()
 
@@ -1732,21 +1732,26 @@ class ViewTest(AironeViewTest):
         )
 
         job = Job.objects.last()
-        self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY_V2.value)
         self.assertEqual(job.status, Job.STATUS["DONE"])
         self.assertEqual(job.text, "entry_ほげ.yaml")
 
         obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
-        self.assertTrue(entity.name in obj)
 
-        self.assertEqual(len(obj[entity.name]), 1)
-        entry_data = obj[entity.name][0]
-        self.assertTrue(all(["name" in entry_data and "attrs" in entry_data]))
+        self.assertEqual(len(obj), 1)
+        entity_data = obj[0]
+        self.assertEqual(entity_data["entity"], "ほげ")
 
-        self.assertEqual(entry_data["name"], entry.name)
-        self.assertEqual(len(entry_data["attrs"]), entry.attrs.count())
-        self.assertEqual(entry_data["attrs"]["foo"], "fuga")
-        self.assertEqual(entry_data["attrs"]["bar"], "fuga")
+        self.assertEqual(len(entity_data["entries"]), 1)
+        entry_data = entity_data["entries"][0]
+        self.assertEqual(entry_data["name"], "fuga")
+        self.assertTrue("attrs" in entry_data)
+
+        attrs_data = entry_data["attrs"]
+        self.assertTrue(all(["name" in x and "value" in x for x in attrs_data]))
+        self.assertEqual(len(attrs_data), entry.attrs.count())
+        self.assertEqual(attrs_data[0]["name"], "foo")
+        self.assertEqual(attrs_data[1]["name"], "bar")
 
         resp = self.client.post(
             "/entry/api/v2/%d/export/" % entity.id,
@@ -1780,10 +1785,10 @@ class ViewTest(AironeViewTest):
         obj = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
 
         # check permitted attributes exist in the result
-        self.assertTrue(all([x in obj["ほげ"][0]["attrs"] for x in ["foo", "bar"]]))
+        self.assertTrue(all([x["name"] in ["foo", "bar"] for x in obj[0]["entries"][0]["attrs"]]))
 
         # check unpermitted attribute doesn't exist in the result
-        self.assertFalse("new_attr" in obj["ほげ"][0]["attrs"])
+        self.assertFalse("new_attr" in obj[0]["entries"][0]["attrs"])
 
         ###
         # Check the case of canceling job
@@ -1802,7 +1807,7 @@ class ViewTest(AironeViewTest):
         )
 
         job = Job.objects.last()
-        self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY_V2.value)
         self.assertEqual(job.text, "entry_ほげ.yaml")
         with self.assertRaises(OSError) as e:
             raise OSError
@@ -1810,7 +1815,7 @@ class ViewTest(AironeViewTest):
         if e.exception.errno == errno.ENOENT:
             job.get_cache()
 
-    @patch("entry.tasks.export_entries.delay", Mock(side_effect=tasks.export_entries))
+    @patch("entry.tasks.export_entries_v2.delay", Mock(side_effect=tasks.export_entries_v2))
     def test_get_export_csv_escape(self):
         user = self.admin_login()
 

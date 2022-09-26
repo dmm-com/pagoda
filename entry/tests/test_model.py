@@ -1849,6 +1849,74 @@ class ModelTest(AironeTestCase):
         exported_data = entry.export(user)
         self.assertTrue("new_attr" in exported_data["attrs"])
 
+    def test_export_entry_v2(self):
+        user = User.objects.create(username="hoge")
+
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
+        attr_info = {
+            "str1": {"type": AttrTypeValue["string"], "is_public": True},
+            "str2": {"type": AttrTypeValue["string"], "is_public": True},
+            "obj": {"type": AttrTypeValue["object"], "is_public": True},
+            "invisible": {"type": AttrTypeValue["string"], "is_public": False},
+        }
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        for attr_name, info in attr_info.items():
+            attr = EntityAttr.objects.create(
+                name=attr_name,
+                type=info["type"],
+                created_user=user,
+                parent_entity=entity,
+                is_public=info["is_public"],
+            )
+
+            if info["type"] & AttrTypeValue["object"]:
+                attr.referral.add(ref_entity)
+
+            entity.attrs.add(attr)
+
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry.attrs.get(name="str1").add_value(user, "hoge")
+
+        entry.attrs.get(name="str2").add_value(user, "foo")
+        # update AttributeValue of Attribute 'str2'
+        entry.attrs.get(name="str2").add_value(user, "bar")
+
+        exported_data = entry.export_v2(user)
+        self.assertEqual(exported_data["name"], entry.name)
+        self.assertEqual(
+            len(exported_data["attrs"]),
+            len([x for x in attr_info.values() if x["is_public"]]),
+        )
+        self.assertIn({"name": "str1", "value": "hoge"}, exported_data["attrs"])
+        self.assertIn({"name": "str2", "value": "bar"}, exported_data["attrs"])
+        self.assertIn({"name": "obj", "value": None}, exported_data["attrs"])
+
+        # change the name of EntityAttr then export entry
+        NEW_ATTR_NAME = "str1 (changed)"
+        entity_attr = entry.schema.attrs.get(name="str1")
+        entity_attr.name = NEW_ATTR_NAME
+        entity_attr.save()
+
+        exported_data = entry.export_v2(user)
+        self.assertIn({"name": NEW_ATTR_NAME, "value": "hoge"}, exported_data["attrs"])
+        self.assertNotIn({"name": "str1", "value": "hoge"}, exported_data["attrs"])
+
+        # Add an Attribute after creating entry
+        entity.attrs.add(
+            EntityAttr.objects.create(
+                **{
+                    "name": "new_attr",
+                    "type": AttrTypeValue["string"],
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
+            )
+        )
+        exported_data = entry.export_v2(user)
+        self.assertIn({"name": "new_attr", "value": ""}, exported_data["attrs"])
+
     def test_search_entries(self):
         user = User.objects.create(username="hoge")
 
