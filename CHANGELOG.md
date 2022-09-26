@@ -3,16 +3,20 @@
 ## In development
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## v3.22.0
+
+### Added
 * Added airone error code to APIv2 for frontend.
   Contributed by @syucream, @userlocalhost, @hinashi
 
 * Added new parameter "as_member" at the Role.is_belonged_to() method to be able to
   confirm that specified user is belonged to this role as member.
   Contributed by @userlocalhost
-
-### Changed
-
-### Fixed
 
 ## v3.21.0
 
@@ -22,7 +26,7 @@
   Contributed by @userlocalhost
 
 ### Changed
-Upgrade flower version from 1.1.0 to 1.2.0
+* Upgrade flower version from 1.1.0 to 1.2.0
 
 ### Fixed
 * Fixed Elasticsearch not updating when updating Group and Role.
