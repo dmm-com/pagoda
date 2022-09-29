@@ -4,7 +4,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 
-from user.api_v2.serializers import UserCreateSerializer, UserListSerializer, UserRetrieveSerializer
+from user.api_v2.serializers import UserCreateSerializer, UserListSerializer, UserRetrieveSerializer, \
+    UserUpdateSerializer
 from user.models import User
 
 
@@ -14,6 +15,7 @@ class UserPermission(BasePermission):
         permisson = {
             "retrieve": current_user.is_superuser or current_user == obj,
             "destroy": current_user.is_superuser,
+            "update": current_user.is_superuser or current_user == obj
         }
         return permisson.get(view.action)
 
@@ -29,6 +31,7 @@ class UserAPI(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer = {
             "create": UserCreateSerializer,
+            "update": UserUpdateSerializer,
             "list": UserListSerializer,
         }
         return serializer.get(self.action, UserRetrieveSerializer)

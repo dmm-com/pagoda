@@ -38,6 +38,7 @@ export * from "./UserCreate";
 export * from "./UserList";
 export * from "./UserRetrieve";
 export * from "./UserRetrieveToken";
+export * from "./UserUpdate";
 export * from "./Webhook";
 export * from "./WebhookHeaders";
 export * from "./WebhookUpdate";

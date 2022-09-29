@@ -45,6 +45,7 @@ models/UserCreate.ts
 models/UserList.ts
 models/UserRetrieve.ts
 models/UserRetrieveToken.ts
+models/UserUpdate.ts
 models/Webhook.ts
 models/WebhookHeaders.ts
 models/WebhookUpdate.ts

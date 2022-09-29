@@ -15,6 +15,7 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Checkbox,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
@@ -202,10 +203,10 @@ const ElemAccessToken: FC<Props> = ({ userInfo, setUserInfo }) => {
             sx={{ width: "90%" }}
             placeholder="右側の更新ボタンを押してトークンをリフレッシュさせてください"
             inputProps={{ "aria-label": "search google maps" }}
-            value={userInfo.token.value}
+            value={userInfo.token?.value}
           />
           <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
-            <CopyToClipboard text={"hoge"}>
+            <CopyToClipboard text={userInfo.token?.value}>
               <ContentCopyIcon />
             </CopyToClipboard>
           </IconButton>
@@ -295,6 +296,27 @@ const ElemUserPassword: FC<Props> = ({ userInfo, setUserInfo }) => {
   );
 };
 
+const ElemIsSuperuser: FC<Props> = ({ userInfo, setUserInfo }) => {
+  const djangoContext = DjangoContext.getInstance();
+
+  return (
+    <StyledTableRow>
+      <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
+        管理者権限
+      </TableCell>
+      <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
+        <Checkbox
+          disabled={!djangoContext.user.isSuperuser}
+          checked={userInfo.isSuperuser ?? false}
+          onChange={(e) => {
+            setUserInfo({ ...userInfo, isSuperuser: e.target.checked });
+          }}
+        />
+      </TableCell>
+    </StyledTableRow>
+  );
+};
+
 export const UserForm: FC<Props> = ({ userInfo, setUserInfo }) => {
   const history = useHistory();
 
@@ -341,16 +363,16 @@ export const UserForm: FC<Props> = ({ userInfo, setUserInfo }) => {
           <TableBody>
             <ElemUserName userInfo={userInfo} setUserInfo={setUserInfo} />
             <ElemEmailAddress userInfo={userInfo} setUserInfo={setUserInfo} />
+            <ElemIsSuperuser userInfo={userInfo} setUserInfo={setUserInfo} />
 
             {userInfo.id > 0 ? (
               <>
                 {/* Undisplay other user's token information */}
-                {userInfo.token && (
-                  <ElemAccessToken
-                    userInfo={userInfo}
-                    setUserInfo={setUserInfo}
-                  />
-                )}
+                <ElemAccessToken
+                  userInfo={userInfo}
+                  setUserInfo={setUserInfo}
+                />
+
                 {userInfo.token && (
                   <ElemAccessTokenConfiguration
                     userInfo={userInfo}

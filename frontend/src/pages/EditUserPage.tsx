@@ -1,6 +1,6 @@
 import { Box, Typography, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -71,29 +71,54 @@ export const EditUserPage: FC = () => {
     }
   }, [user]);
 
+  const isCreateMode = useMemo(() => {
+    return user.value?.id == null;
+  }, [user.value]);
+
   const handleSubmit = () => {
-    // FIXME: There is no component to edit password. Therefore, this handler send request
-    //        with arbitrary password("hoge") to AirOne.
-    aironeApiClientV2
-      .createUser(
-        userInfo.username,
-        userInfo.email,
-        userInfo.password,
-        userInfo.isSuperuser
-      )
-      .then(() => {
-        enqueueSnackbar("ユーザの作成に成功しました", {
-          variant: "success",
+    if (isCreateMode) {
+      aironeApiClientV2
+        .createUser(
+          userInfo.username,
+          userInfo.email,
+          userInfo.password,
+          userInfo.isSuperuser
+        )
+        .then(() => {
+          enqueueSnackbar("ユーザの作成に成功しました", {
+            variant: "success",
+          });
+          history.push(usersPath());
+        })
+        .catch((err) => {
+          const json = err.json();
+          const reasons = json["name"];
+          enqueueSnackbar(`ユーザの作成に失敗しました。詳細: ${reasons}`, {
+            variant: "error",
+          });
         });
-        history.push(usersPath());
-      })
-      .catch((err) => {
-        const json = err.json();
-        const reasons = json["name"];
-        enqueueSnackbar(`ユーザの作成に失敗しました。詳細: ${reasons}`, {
-          variant: "error",
+    } else {
+      aironeApiClientV2
+        .updateUser(
+          userInfo.id,
+          userInfo.username,
+          userInfo.email,
+          userInfo.isSuperuser
+        )
+        .then(() => {
+          enqueueSnackbar("ユーザの更新に成功しました", {
+            variant: "success",
+          });
+          history.push(usersPath());
+        })
+        .catch((err) => {
+          const json = err.json();
+          const reasons = json["name"];
+          enqueueSnackbar(`ユーザの更新に失敗しました。詳細: ${reasons}`, {
+            variant: "error",
+          });
         });
-      });
+    }
   };
 
   return (

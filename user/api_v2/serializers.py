@@ -38,6 +38,16 @@ class UserCreateSerializer(UserBaseSerializer):
         return User.objects.create_user(request_data=validate_data)
 
 
+class UserUpdateSerializer(UserBaseSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "username",
+            "email",
+            "is_superuser",
+        ]
+
+
 class UserRetrieveSerializer(UserBaseSerializer):
     token = serializers.SerializerMethodField()
 

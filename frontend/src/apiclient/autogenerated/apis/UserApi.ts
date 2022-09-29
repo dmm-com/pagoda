@@ -23,6 +23,9 @@ import {
   UserRetrieve,
   UserRetrieveFromJSON,
   UserRetrieveToJSON,
+  UserUpdate,
+  UserUpdateFromJSON,
+  UserUpdateToJSON,
 } from "../models";
 
 export interface UserApiV2CreateRequest {
@@ -45,7 +48,7 @@ export interface UserApiV2RetrieveRequest {
 
 export interface UserApiV2UpdateRequest {
   id: number;
-  userRetrieve: UserRetrieve;
+  userUpdate: UserUpdate;
 }
 
 /**
@@ -304,7 +307,7 @@ export class UserApi extends runtime.BaseAPI {
   async userApiV2UpdateRaw(
     requestParameters: UserApiV2UpdateRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<UserRetrieve>> {
+  ): Promise<runtime.ApiResponse<UserUpdate>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
         "id",
@@ -313,12 +316,12 @@ export class UserApi extends runtime.BaseAPI {
     }
 
     if (
-      requestParameters.userRetrieve === null ||
-      requestParameters.userRetrieve === undefined
+      requestParameters.userUpdate === null ||
+      requestParameters.userUpdate === undefined
     ) {
       throw new runtime.RequiredError(
-        "userRetrieve",
-        "Required parameter requestParameters.userRetrieve was null or undefined when calling userApiV2Update."
+        "userUpdate",
+        "Required parameter requestParameters.userUpdate was null or undefined when calling userApiV2Update."
       );
     }
 
@@ -351,13 +354,13 @@ export class UserApi extends runtime.BaseAPI {
         method: "PUT",
         headers: headerParameters,
         query: queryParameters,
-        body: UserRetrieveToJSON(requestParameters.userRetrieve),
+        body: UserUpdateToJSON(requestParameters.userUpdate),
       },
       initOverrides
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      UserRetrieveFromJSON(jsonValue)
+      UserUpdateFromJSON(jsonValue)
     );
   }
 
@@ -366,7 +369,7 @@ export class UserApi extends runtime.BaseAPI {
   async userApiV2Update(
     requestParameters: UserApiV2UpdateRequest,
     initOverrides?: RequestInit
-  ): Promise<UserRetrieve> {
+  ): Promise<UserUpdate> {
     const response = await this.userApiV2UpdateRaw(
       requestParameters,
       initOverrides
