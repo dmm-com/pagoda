@@ -1,4 +1,5 @@
 import { Box, Typography, Button } from "@mui/material";
+import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
@@ -16,23 +17,25 @@ import { UserForm } from "components/user/UserForm";
 import { DjangoContext } from "utils/DjangoContext";
 import { FailedToGetUser, UnAuthorizedToGetUser } from "utils/Exceptions";
 
+export interface AironeUserProps extends UserRetrieve {
+  password?: string;
+}
+
 export const EditUserPage: FC = () => {
   const { userId } = useTypedParams<{ userId: number }>();
   const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
 
   const user = useAsync(async () => {
     if (userId) {
       try {
         return await aironeApiClientV2.getUser(userId);
       } catch (error) {
-        console.log("error", error);
         if (error.status === 403) {
-          console.log("UnAuthorizedToGetUser");
           throw new UnAuthorizedToGetUser(
             "Failed to get User from AirOne APIv2 endpoint"
           );
         } else {
-          console.log("FailedToGetUser");
           throw new FailedToGetUser(
             "Failed to get User from AirOne APIv2 endpoint"
           );
@@ -46,9 +49,10 @@ export const EditUserPage: FC = () => {
 
   const djangoContext = DjangoContext.getInstance();
 
-  const [userInfo, setUserInfo] = useState<UserRetrieve>({
+  const [userInfo, setUserInfo] = useState<AironeUserProps>({
     id: 0,
     username: "",
+    password: "",
     email: "",
     isSuperuser: false,
     dateJoined: "",
@@ -70,12 +74,26 @@ export const EditUserPage: FC = () => {
   const handleSubmit = () => {
     // FIXME: There is no component to edit password. Therefore, this handler send request
     //        with arbitrary password("hoge") to AirOne.
-    aironeApiClientV2.createUser(
-      userInfo.username,
-      userInfo.email,
-      "hoge",
-      userInfo.isSuperuser
-    );
+    aironeApiClientV2
+      .createUser(
+        userInfo.username,
+        userInfo.email,
+        userInfo.password,
+        userInfo.isSuperuser
+      )
+      .then(() => {
+        enqueueSnackbar("ユーザの作成に成功しました", {
+          variant: "success",
+        });
+        history.push(usersPath());
+      })
+      .catch((err) => {
+        const json = err.json();
+        const reasons = json["name"];
+        enqueueSnackbar(`ユーザの作成に失敗しました。詳細: ${reasons}`, {
+          variant: "error",
+        });
+      });
   };
 
   return (
