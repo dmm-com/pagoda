@@ -15,7 +15,6 @@ mock==2.0.0
 mysqlclient==2.0.3
 natsort==5.3.3
 python-ldap==3.4.0
-python-memcached==1.59
 python3-SAML==1.12.0
 pyyaml==5.4
 requests==2.20.0

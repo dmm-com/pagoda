@@ -4,14 +4,19 @@ from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 import custom_view
 from airone.lib.acl import ACLType
-from airone.lib.drf import YAMLParser
+from airone.lib.drf import (
+    DuplicatedObjectExistsError,
+    IncorrectTypeError,
+    ObjectNotExistsError,
+    YAMLParser,
+)
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
@@ -66,7 +71,7 @@ class EntryAPI(viewsets.ModelViewSet):
     def destroy(self, request, pk):
         entry: Entry = self.get_object()
         if not entry.is_active:
-            raise ValidationError("specified entry has already been deleted")
+            raise ObjectNotExistsError("specified entry has already been deleted")
 
         user: User = request.user
 
@@ -92,13 +97,13 @@ class EntryAPI(viewsets.ModelViewSet):
         entry: Entry = self.get_object()
 
         if entry.is_active:
-            raise ValidationError("specified entry has not deleted")
+            raise ObjectNotExistsError("specified entry has not deleted")
 
         # checks that a same name entry corresponding to the entity is existed, or not.
         if Entry.objects.filter(
             schema=entry.schema, name=re.sub(r"_deleted_[0-9_]*$", "", entry.name), is_active=True
         ).exists():
-            raise ValidationError("specified entry has already exist other")
+            raise DuplicatedObjectExistsError("specified entry has already exist other")
 
         user: User = request.user
 
@@ -126,7 +131,7 @@ class EntryAPI(viewsets.ModelViewSet):
         src_entry: Entry = self.get_object()
 
         if not src_entry.is_active:
-            raise ValidationError("specified entry is not active")
+            raise ObjectNotExistsError("specified entry is not active")
 
         # validate post parameter
         serializer = self.get_serializer(src_entry, data=request.data)
@@ -180,6 +185,7 @@ class AdvancedSearchAPI(APIView):
         hint_has_referral = request.data.get("has_referral", False)
         hint_referral_name = request.data.get("referral_name", "")
         is_output_all = request.data.get("is_output_all", True)
+        is_all_entities = request.data.get("is_all_entities", False)
         entry_limit = request.data.get("entry_limit", self.MAX_LIST_ENTRIES)
 
         hint_referral = False
@@ -191,6 +197,7 @@ class AdvancedSearchAPI(APIView):
             or not isinstance(hint_entry_name, str)
             or not isinstance(hint_attrs, list)
             or not isinstance(is_output_all, bool)
+            or not isinstance(is_all_entities, bool)
             or not isinstance(hint_referral, (str, bool))
             or not isinstance(entry_limit, int)
         ):
@@ -215,9 +222,23 @@ class AdvancedSearchAPI(APIView):
                 if len(hint_attr["keyword"]) > self.MAX_QUERY_SIZE:
                     return Response("Sending parameter is too large", status=400)
 
+        if is_all_entities:
+            attr_names = [x["name"] for x in hint_attrs]
+            hint_entities = list(
+                EntityAttr.objects.filter(
+                    name__in=attr_names, is_active=True, parent_entity__is_active=True
+                )
+                .order_by("parent_entity__name")
+                .values_list("parent_entity__id", flat=True)
+                .distinct()
+            )
+            if not hint_entities:
+                return Response("Invalid value for attribute parameter", status=400)
+
         # check entities params
         if not hint_entities:
             return Response("The entities parameters are required", status=400)
+
         hint_entity_ids = []
         for hint_entity in hint_entities:
             entity = None
@@ -275,7 +296,7 @@ class AdvancedSearchAPI(APIView):
                         return "asGroup"
                     elif type & AttrTypeValue["role"]:
                         return "asRole"
-                    raise ValidationError(f"unexpected type: {type}")
+                    raise IncorrectTypeError(f"unexpected type: {type}")
 
                 entry["attrs"][name] = {
                     "is_readble": attr["is_readble"],
@@ -355,7 +376,7 @@ class EntryExportAPI(generics.GenericAPIView):
             )
 
         # create a job to export search result and run it
-        job = Job.new_export(
+        job = Job.new_export_v2(
             request.user,
             **{
                 "text": "entry_%s.%s" % (entity.name, job_params["export_format"]),
@@ -407,7 +428,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         elif entity_attr.type & AttrTypeValue["role"]:
             return Role.objects.filter(**conditions).order_by("name")[0 : CONFIG.MAX_LIST_REFERRALS]
         else:
-            raise ValidationError(f"unsupported attr type: {entity_attr.type}")
+            raise IncorrectTypeError(f"unsupported attr type: {entity_attr.type}")
 
 
 class EntryImportAPI(generics.GenericAPIView):

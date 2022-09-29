@@ -390,7 +390,8 @@ class AironeApiClientV2 {
     attrInfo: object[] = [],
     hasReferral = false,
     referralName = "",
-    entryLimit = 99999
+    searchAllEntities = false,
+    entryLimit = 100
   ): Promise<Response> {
     return fetch(`/entry/api/v2/advanced_search/`, {
       method: "POST",
@@ -403,6 +404,7 @@ class AironeApiClientV2 {
         entry_name: entryName,
         attrinfo: attrInfo,
         has_referral: hasReferral,
+        is_all_entities: searchAllEntities,
         referral_name: referralName,
         entry_limit: entryLimit,
         is_output_all: false,

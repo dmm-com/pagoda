@@ -54,6 +54,7 @@ test("should match snapshot", async () => {
       json() {
         return Promise.resolve({
           result: {
+            ret_count: 1,
             ret_values: results,
           },
         });

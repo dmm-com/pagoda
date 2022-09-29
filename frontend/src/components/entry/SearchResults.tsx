@@ -105,9 +105,6 @@ export const SearchResults: FC<Props> = ({
             sx={{
               color: "primary.contrastText",
               minWidth: "300px",
-              position: "sticky",
-              left: 0,
-              zIndex: 1,
               backgroundColor: "inherit",
               outline: "1px solid #FFFFFF",
             }}
@@ -221,9 +218,6 @@ export const SearchResults: FC<Props> = ({
             sx={{
               backgroundColor: "inherit",
               minWidth: "300px",
-              position: "sticky",
-              left: 0,
-              zIndex: 1,
             }}
           >
             <Box component={Link} to={entryDetailsPath(0, result.entry.id)}>

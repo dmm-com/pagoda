@@ -176,7 +176,7 @@ class ACLAPITest(AironeViewTest):
             ),
             "application/json;charset=utf-8",
         )
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 403)
 
     def test_update_acl_to_nobody_control(self):
         user = self.guest_login()
@@ -204,13 +204,12 @@ class ACLAPITest(AironeViewTest):
             ),
             "application/json;charset=utf-8",
         )
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 403)
         self.assertEqual(
             resp.json(),
             {
-                "non_field_errors": [
-                    "Inadmissible setting.By this change you will never change this ACL"
-                ]
+                "code": "AE-210000",
+                "message": "Inadmissible setting.By this change you will never change this ACL",
             },
         )
 
@@ -271,6 +270,10 @@ class ACLAPITest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )
         self.assertFalse(role.is_permitted(acl, ACLType.Full))

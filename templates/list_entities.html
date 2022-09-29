@@ -130,6 +130,7 @@ function handle_narrow_down(e) {
     } else {
       params.delete('keyword');
     }
+    params.set('page', 0);
 
     // send request for update same-page to narrow down list entries
     location.href = `${ url.pathname }?${ params.toString() }`;

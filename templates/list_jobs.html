@@ -139,6 +139,10 @@
               {% if job.status == JOB.STATUS.DONE %}
               <a href='/job/download/{{ job.id }}'>Download</a>
               {% endif %}
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT_V2 %}
+              {% if job.status == JOB.STATUS.DONE %}
+                <a href='/job/download/{{ job.id }}'>Download</a>
+              {% endif %}
             {% else %}
               {{ job.text | linebreaksbr }}
             {% endif %}

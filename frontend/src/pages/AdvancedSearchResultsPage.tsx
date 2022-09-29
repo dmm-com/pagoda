@@ -26,6 +26,9 @@ export const AdvancedSearchResultsPage: FC = () => {
 
   const params = new URLSearchParams(location.search);
   const entityIds = params.getAll("entity").map((id) => Number(id));
+  const searchAllEntities = params.has("is_all_entities")
+    ? params.get("is_all_entities") === "true"
+    : false;
   const entryName = params.has("entry_name") ? params.get("entry_name") : "";
   const hasReferral = params.has("has_referral")
     ? params.get("has_referral") === "true"
@@ -38,7 +41,7 @@ export const AdvancedSearchResultsPage: FC = () => {
     : [];
 
   const entityAttrs = useAsync(async () => {
-    const resp = await getEntityAttrs(entityIds);
+    const resp = await getEntityAttrs(entityIds, searchAllEntities);
     const data = await resp.json();
 
     return data.result;
@@ -50,10 +53,11 @@ export const AdvancedSearchResultsPage: FC = () => {
       entryName,
       attrInfo,
       hasReferral,
-      referralName
+      referralName,
+      searchAllEntities
     );
     const data = await resp.json();
-    return data.result.ret_values;
+    return data.result;
   });
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
@@ -91,7 +95,7 @@ export const AdvancedSearchResultsPage: FC = () => {
 
       <PageHeader
         title="検索結果"
-        subTitle={`${results.value?.length ?? 0} 件`}
+        subTitle={`${results.value?.ret_count ?? 0} 件`}
         componentSubmits={
           <Box display="flex" justifyContent="center">
             <Button
@@ -127,7 +131,7 @@ export const AdvancedSearchResultsPage: FC = () => {
       <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
         {!results.loading ? (
           <SearchResults
-            results={results.value}
+            results={results.value.ret_values}
             defaultEntryFilter={entryName}
             defaultReferralFilter={referralName}
             defaultAttrsFilter={Object.fromEntries(
