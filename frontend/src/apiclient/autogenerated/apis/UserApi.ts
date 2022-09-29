@@ -23,6 +23,9 @@ import {
   UserRetrieve,
   UserRetrieveFromJSON,
   UserRetrieveToJSON,
+  UserToken,
+  UserTokenFromJSON,
+  UserTokenToJSON,
   UserUpdate,
   UserUpdateFromJSON,
   UserUpdateToJSON,
@@ -47,7 +50,7 @@ export interface UserApiV2RetrieveRequest {
 }
 
 export interface UserApiV2TokenCreateRequest {
-  userCreate: UserCreate;
+  userToken?: UserToken;
 }
 
 export interface UserApiV2UpdateRequest {
@@ -311,17 +314,7 @@ export class UserApi extends runtime.BaseAPI {
   async userApiV2TokenCreateRaw(
     requestParameters: UserApiV2TokenCreateRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<UserCreate>> {
-    if (
-      requestParameters.userCreate === null ||
-      requestParameters.userCreate === undefined
-    ) {
-      throw new runtime.RequiredError(
-        "userCreate",
-        "Required parameter requestParameters.userCreate was null or undefined when calling userApiV2TokenCreate."
-      );
-    }
-
+  ): Promise<runtime.ApiResponse<UserToken>> {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -348,22 +341,22 @@ export class UserApi extends runtime.BaseAPI {
         method: "POST",
         headers: headerParameters,
         query: queryParameters,
-        body: UserCreateToJSON(requestParameters.userCreate),
+        body: UserTokenToJSON(requestParameters.userToken),
       },
       initOverrides
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      UserCreateFromJSON(jsonValue)
+      UserTokenFromJSON(jsonValue)
     );
   }
 
   /**
    */
   async userApiV2TokenCreate(
-    requestParameters: UserApiV2TokenCreateRequest,
+    requestParameters: UserApiV2TokenCreateRequest = {},
     initOverrides?: RequestInit
-  ): Promise<UserCreate> {
+  ): Promise<UserToken> {
     const response = await this.userApiV2TokenCreateRaw(
       requestParameters,
       initOverrides
@@ -375,7 +368,7 @@ export class UserApi extends runtime.BaseAPI {
    */
   async userApiV2TokenRetrieveRaw(
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<UserRetrieve>> {
+  ): Promise<runtime.ApiResponse<UserToken>> {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -405,7 +398,7 @@ export class UserApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      UserRetrieveFromJSON(jsonValue)
+      UserTokenFromJSON(jsonValue)
     );
   }
 
@@ -413,7 +406,7 @@ export class UserApi extends runtime.BaseAPI {
    */
   async userApiV2TokenRetrieve(
     initOverrides?: RequestInit
-  ): Promise<UserRetrieve> {
+  ): Promise<UserToken> {
     const response = await this.userApiV2TokenRetrieveRaw(initOverrides);
     return await response.value();
   }
