@@ -14,7 +14,7 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { UserForm } from "components/user/UserForm";
 import { DjangoContext } from "utils/DjangoContext";
-import { FailedToGetUser } from "utils/Exceptions";
+import { FailedToGetUser, UnAuthorizedToGetUser } from "utils/Exceptions";
 
 export const EditUserPage: FC = () => {
   const { userId } = useTypedParams<{ userId: number }>();
@@ -22,11 +22,26 @@ export const EditUserPage: FC = () => {
 
   const user = useAsync(async () => {
     if (userId) {
-      return await aironeApiClientV2.getUser(userId);
+      try {
+        return await aironeApiClientV2.getUser(userId);
+      } catch (error) {
+        console.log("error", error);
+        if (error.status === 403) {
+          console.log("UnAuthorizedToGetUser");
+          throw new UnAuthorizedToGetUser(
+            "Failed to get User from AirOne APIv2 endpoint"
+          );
+        } else {
+          console.log("FailedToGetUser");
+          throw new FailedToGetUser(
+            "Failed to get User from AirOne APIv2 endpoint"
+          );
+        }
+      }
     }
   });
-  if (user !== undefined && !user.loading && user.error) {
-    throw new FailedToGetUser("Failed to get User from AirOne APIv2 endpoint");
+  if (!user.loading && user.error) {
+    throw user.error;
   }
 
   const djangoContext = DjangoContext.getInstance();

@@ -1,17 +1,13 @@
 from datetime import datetime
 from importlib import import_module
 
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from rest_framework.authtoken.models import Token
 
 from airone.lib.acl import ACLType, ACLTypeBase
 from group.models import Group
 from role.models import Role
-
-from django.contrib.auth.models import (
-    BaseUserManager,
-)
 
 
 class UserManager(BaseUserManager):

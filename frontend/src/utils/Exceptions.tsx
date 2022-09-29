@@ -18,3 +18,10 @@ export class FailedToGetUser extends Error {
     this.name = "FailedToGetUser";
   }
 }
+
+export class UnAuthorizedToGetUser extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "UnAuthorizedToGetUser";
+  }
+}

@@ -67,12 +67,12 @@ const InputBox: FC = ({ children }) => {
 const ElemChangingPassword: FC<Props> = ({ userInfo, setUserInfo }) => {
   const [openModal, setOpenModal] = useState(false);
   const handleOpenModal = () => {
-    console.log('[onix/ElemChangingPassword.handleOpenModal(00)]');
+    console.log("[onix/ElemChangingPassword.handleOpenModal(00)]");
     setOpenModal(true);
   };
 
   const handleCloseModal = () => {
-    console.log('[onix/ElemChangingPassword.handleCloseModal(00)]');
+    console.log("[onix/ElemChangingPassword.handleCloseModal(00)]");
     setOpenModal(false);
   };
 
