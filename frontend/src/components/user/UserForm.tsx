@@ -126,9 +126,10 @@ const ElemAccessTokenConfiguration: FC<Props> = ({ userInfo, setUserInfo }) => {
             <Box sx={{ pb: "20px" }}>
               {/* This TextField only allow to accept numeric string */}
               <TextField
-                label="With normal TextField"
+                label="アクセストークンが有効な期間"
                 id="outlined-start-adornment"
                 InputProps={{
+                  type: "number",
                   endAdornment: (
                     <InputAdornment position="end">秒</InputAdornment>
                   ),
@@ -139,7 +140,8 @@ const ElemAccessTokenConfiguration: FC<Props> = ({ userInfo, setUserInfo }) => {
                     ...userInfo,
                     token: {
                       ...userInfo.token,
-                      lifetime: Number(e.target.value.replace(/[^0-9]/g, "")),
+                      // lifetime: Number(e.target.value.replace(/[^0-9]/g, "")),
+                      lifetime: e.target.value ? Number(e.target.value) : null,
                     },
                   });
                 }}
@@ -164,7 +166,7 @@ const ElemAccessTokenConfiguration: FC<Props> = ({ userInfo, setUserInfo }) => {
                 id="outlined-start-adornment"
                 variant="standard"
                 value={
-                  userInfo.token.lifetime === 0
+                  userInfo.token.created === userInfo.token.expire
                     ? "無期限"
                     : userInfo.token.expire
                 }

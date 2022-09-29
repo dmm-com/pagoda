@@ -42,7 +42,8 @@ export const EditUserPage: FC = () => {
         }
       }
     }
-  });
+  }, [userId]);
+
   if (!user.loading && user.error) {
     throw user.error;
   }
