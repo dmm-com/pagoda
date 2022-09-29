@@ -13,90 +13,53 @@
  */
 
 import { exists, mapValues } from "../runtime";
-import {
-  UserRetrieveToken,
-  UserRetrieveTokenFromJSON,
-  UserRetrieveTokenFromJSONTyped,
-  UserRetrieveTokenToJSON,
-} from "./UserRetrieveToken";
-
 /**
  *
  * @export
- * @interface UserRetrieve
+ * @interface UserUpdate
  */
-export interface UserRetrieve {
-  /**
-   *
-   * @type {number}
-   * @memberof UserRetrieve
-   */
-  readonly id: number;
+export interface UserUpdate {
   /**
    * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
    * @type {string}
-   * @memberof UserRetrieve
+   * @memberof UserUpdate
    */
   username: string;
   /**
    *
    * @type {string}
-   * @memberof UserRetrieve
+   * @memberof UserUpdate
    */
   email?: string;
   /**
    * Designates that this user has all permissions without explicitly assigning them.
    * @type {boolean}
-   * @memberof UserRetrieve
+   * @memberof UserUpdate
    */
   isSuperuser?: boolean;
-  /**
-   *
-   * @type {string}
-   * @memberof UserRetrieve
-   */
-  readonly dateJoined: string;
-  /**
-   *
-   * @type {UserRetrieveToken}
-   * @memberof UserRetrieve
-   */
-  token: UserRetrieveToken | null;
-  /**
-   *
-   * @type {number}
-   * @memberof UserRetrieve
-   */
-  authenticateType?: number;
 }
 
-export function UserRetrieveFromJSON(json: any): UserRetrieve {
-  return UserRetrieveFromJSONTyped(json, false);
+export function UserUpdateFromJSON(json: any): UserUpdate {
+  return UserUpdateFromJSONTyped(json, false);
 }
 
-export function UserRetrieveFromJSONTyped(
+export function UserUpdateFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): UserRetrieve {
+): UserUpdate {
   if (json === undefined || json === null) {
     return json;
   }
   return {
-    id: json["id"],
     username: json["username"],
     email: !exists(json, "email") ? undefined : json["email"],
     isSuperuser: !exists(json, "is_superuser")
       ? undefined
       : json["is_superuser"],
-    dateJoined: json["date_joined"],
-    token: UserRetrieveTokenFromJSON(json["token"]),
-    authenticateType: !exists(json, "authenticate_type")
-      ? undefined
-      : json["authenticate_type"],
   };
 }
 
-export function UserRetrieveToJSON(value?: UserRetrieve | null): any {
+export function UserUpdateToJSON(value?: UserUpdate | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -107,7 +70,5 @@ export function UserRetrieveToJSON(value?: UserRetrieve | null): any {
     username: value.username,
     email: value.email,
     is_superuser: value.isSuperuser,
-    token: UserRetrieveTokenToJSON(value.token),
-    authenticate_type: value.authenticateType,
   };
 }

@@ -11,3 +11,17 @@ export class FailedToGetEntity extends Error {
     this.name = "FailedToGetEntity";
   }
 }
+
+export class FailedToGetUser extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "FailedToGetUser";
+  }
+}
+
+export class UnAuthorizedToGetUser extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "UnAuthorizedToGetUser";
+  }
+}

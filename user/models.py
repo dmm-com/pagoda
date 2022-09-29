@@ -1,7 +1,7 @@
 from datetime import datetime
 from importlib import import_module
 
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from rest_framework.authtoken.models import Token
 
@@ -10,7 +10,22 @@ from group.models import Group
 from role.models import Role
 
 
+class UserManager(BaseUserManager):
+    def create_user(self, request_data, **kwargs):
+        user = User(
+            username=request_data.get("username"),
+            email=request_data.get("email"),
+            is_superuser=request_data.get("is_superuser"),
+        )
+        user.set_password(request_data.get("password"))
+        user.save()
+
+        return user
+
+
 class User(AbstractUser):
+    objects = UserManager()
+
     MAXIMUM_TOKEN_LIFETIME = 10**8
     TOKEN_LIFETIME = 86400
 

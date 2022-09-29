@@ -24,12 +24,44 @@ class UserBaseSerializer(serializers.ModelSerializer):
         return obj.date_joined.isoformat()
 
 
+class UserCreateSerializer(UserBaseSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "username",
+            "email",
+            "password",
+            "is_superuser",
+        ]
+
+    def create(self, validate_data):
+        return User.objects.create_user(request_data=validate_data)
+
+
+class UserUpdateSerializer(UserBaseSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "username",
+            "email",
+            "is_superuser",
+        ]
+
+
 class UserRetrieveSerializer(UserBaseSerializer):
     token = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "is_superuser", "date_joined", "token"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "is_superuser",
+            "date_joined",
+            "token",
+            "authenticate_type",
+        ]
 
     def get_token(self, obj: User) -> Optional[UserToken]:
         current_user = self.context["request"].user

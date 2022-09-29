@@ -17,10 +17,20 @@ import {
   PaginatedUserListList,
   PaginatedUserListListFromJSON,
   PaginatedUserListListToJSON,
+  UserCreate,
+  UserCreateFromJSON,
+  UserCreateToJSON,
   UserRetrieve,
   UserRetrieveFromJSON,
   UserRetrieveToJSON,
+  UserUpdate,
+  UserUpdateFromJSON,
+  UserUpdateToJSON,
 } from "../models";
+
+export interface UserApiV2CreateRequest {
+  userCreate: UserCreate;
+}
 
 export interface UserApiV2DestroyRequest {
   id: number;
@@ -36,10 +46,80 @@ export interface UserApiV2RetrieveRequest {
   id: number;
 }
 
+export interface UserApiV2UpdateRequest {
+  id: number;
+  userUpdate: UserUpdate;
+}
+
 /**
  *
  */
 export class UserApi extends runtime.BaseAPI {
+  /**
+   */
+  async userApiV2CreateRaw(
+    requestParameters: UserApiV2CreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<UserCreate>> {
+    if (
+      requestParameters.userCreate === null ||
+      requestParameters.userCreate === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "userCreate",
+        "Required parameter requestParameters.userCreate was null or undefined when calling userApiV2Create."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/`,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+        body: UserCreateToJSON(requestParameters.userCreate),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      UserCreateFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async userApiV2Create(
+    requestParameters: UserApiV2CreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<UserCreate> {
+    const response = await this.userApiV2CreateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
   /**
    */
   async userApiV2DestroyRaw(
@@ -216,6 +296,81 @@ export class UserApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<UserRetrieve> {
     const response = await this.userApiV2RetrieveRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async userApiV2UpdateRaw(
+    requestParameters: UserApiV2UpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<UserUpdate>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling userApiV2Update."
+      );
+    }
+
+    if (
+      requestParameters.userUpdate === null ||
+      requestParameters.userUpdate === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "userUpdate",
+        "Required parameter requestParameters.userUpdate was null or undefined when calling userApiV2Update."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/{id}/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PUT",
+        headers: headerParameters,
+        query: queryParameters,
+        body: UserUpdateToJSON(requestParameters.userUpdate),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      UserUpdateFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async userApiV2Update(
+    requestParameters: UserApiV2UpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<UserUpdate> {
+    const response = await this.userApiV2UpdateRaw(
       requestParameters,
       initOverrides
     );
