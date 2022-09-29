@@ -46,6 +46,10 @@ export interface UserApiV2RetrieveRequest {
   id: number;
 }
 
+export interface UserApiV2TokenCreateRequest {
+  userCreate: UserCreate;
+}
+
 export interface UserApiV2UpdateRequest {
   id: number;
   userUpdate: UserUpdate;
@@ -299,6 +303,118 @@ export class UserApi extends runtime.BaseAPI {
       requestParameters,
       initOverrides
     );
+    return await response.value();
+  }
+
+  /**
+   */
+  async userApiV2TokenCreateRaw(
+    requestParameters: UserApiV2TokenCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<UserCreate>> {
+    if (
+      requestParameters.userCreate === null ||
+      requestParameters.userCreate === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "userCreate",
+        "Required parameter requestParameters.userCreate was null or undefined when calling userApiV2TokenCreate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/token/`,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+        body: UserCreateToJSON(requestParameters.userCreate),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      UserCreateFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async userApiV2TokenCreate(
+    requestParameters: UserApiV2TokenCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<UserCreate> {
+    const response = await this.userApiV2TokenCreateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async userApiV2TokenRetrieveRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<UserRetrieve>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/token/`,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      UserRetrieveFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async userApiV2TokenRetrieve(
+    initOverrides?: RequestInit
+  ): Promise<UserRetrieve> {
+    const response = await this.userApiV2TokenRetrieveRaw(initOverrides);
     return await response.value();
   }
 

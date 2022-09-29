@@ -1,14 +1,17 @@
+from django.http.response import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
 
 from user.api_v2.serializers import (
     UserCreateSerializer,
     UserListSerializer,
     UserRetrieveSerializer,
     UserUpdateSerializer,
+    UserTokenSerializer,
 )
 from user.models import User
 
@@ -45,3 +48,14 @@ class UserAPI(viewsets.ModelViewSet):
         user.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserTokenAPI(viewsets.ModelViewSet):
+    serializer_class = UserTokenSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        return Response("hoge")
+
+    def get_queryset(self):
+        return Token.objects.filter(user=self.request.user)

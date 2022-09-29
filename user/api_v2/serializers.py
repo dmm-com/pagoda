@@ -2,6 +2,7 @@ from datetime import timedelta
 from typing import Optional, TypedDict
 
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 
 from user.models import User
 
@@ -11,6 +12,14 @@ class UserToken(TypedDict):
     lifetime: int
     expire: str
     created: str
+
+
+class UserTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Token
+        fields = [
+            "key",
+        ]
 
 
 class UserBaseSerializer(serializers.ModelSerializer):

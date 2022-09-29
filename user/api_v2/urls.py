@@ -22,4 +22,13 @@ urlpatterns = [
             }
         ),
     ),
+    path(
+        "token/",
+        views.UserTokenAPI.as_view(
+            {
+                "get": "list",
+                "post": "create",
+            }
+        ),
+    ),
 ]
