@@ -1,17 +1,17 @@
-from django.http.response import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
+from rest_framework.authtoken.models import Token
+from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
 
 from user.api_v2.serializers import (
     UserCreateSerializer,
     UserListSerializer,
     UserRetrieveSerializer,
-    UserUpdateSerializer,
     UserTokenSerializer,
+    UserUpdateSerializer,
 )
 from user.models import User
 
@@ -54,8 +54,13 @@ class UserTokenAPI(viewsets.ModelViewSet):
     serializer_class = UserTokenSerializer
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        return Response("hoge")
+    def retrieve(self, request):
+        instance = get_object_or_404(Token.objects.filter(user=request.user))
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
-    def get_queryset(self):
-        return Token.objects.filter(user=self.request.user)
+    def refresh(self, request):
+        Token.objects.filter(user=request.user).delete()
+        instance = Token.objects.create(user=request.user)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)

@@ -26,8 +26,8 @@ urlpatterns = [
         "token/",
         views.UserTokenAPI.as_view(
             {
-                "get": "list",
-                "post": "create",
+                "get": "retrieve",
+                "post": "refresh",
             }
         ),
     ),

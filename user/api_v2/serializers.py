@@ -20,6 +20,7 @@ class UserTokenSerializer(serializers.ModelSerializer):
         fields = [
             "key",
         ]
+        read_only_fields = ["key"]
 
 
 class UserBaseSerializer(serializers.ModelSerializer):
