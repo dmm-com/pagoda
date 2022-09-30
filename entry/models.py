@@ -527,6 +527,8 @@ class Attribute(ACLBase):
                 try:
                     if isinstance(value, Entry):
                         entry_id = value.id
+                    elif not value:
+                        entry_id = 0
                     else:
                         entry_id = int(value)
 
