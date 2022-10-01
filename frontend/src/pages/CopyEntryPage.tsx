@@ -3,7 +3,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import { Box, IconButton, Typography, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, Prompt, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { EntryControlMenu } from "../components/entry/EntryControlMenu";
@@ -30,7 +30,9 @@ export const CopyEntryPage: FC = () => {
   const [entryAnchorEl, setEntryAnchorEl] =
     useState<HTMLButtonElement | null>();
   // newline delimited string value, not string[]
-  const [entries, setEntries] = useState<string>("");
+  const [entries, _setEntries] = useState<string>("");
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [edited, setEdited] = useState<boolean>(false);
 
   const entry = useAsync(async () => {
     return await aironeApiClientV2.getEntry(entryId);
@@ -46,10 +48,16 @@ export const CopyEntryPage: FC = () => {
     return <Loading />;
   }
 
+  const setEntries = (entries: string) => {
+    setEdited(true);
+    _setEntries(entries);
+  };
+
   const handleCopy = async () => {
     await aironeApiClientV2
       .copyEntry(entryId, entries.split("\n"))
       .then((resp) => {
+        setSubmitted(true);
         enqueueSnackbar("エントリコピーのジョブ登録が成功しました", {
           variant: "success",
         });
@@ -145,6 +153,11 @@ export const CopyEntryPage: FC = () => {
       <Box>
         <CopyForm entries={entries} setEntries={setEntries} />
       </Box>
+
+      <Prompt
+        when={edited && !submitted}
+        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+      />
     </Box>
   );
 };
