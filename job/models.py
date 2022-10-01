@@ -44,6 +44,7 @@ class JobOperation(Enum):
     IMPORT_ENTRY_V2 = 17
     GROUP_REGISTER_REFERRAL = 18
     ROLE_REGISTER_REFERRAL = 19
+    EXPORT_ENTRY_V2 = 20
 
 
 class Job(models.Model):
@@ -99,6 +100,7 @@ class Job(models.Model):
         JobOperation.IMPORT_ENTRY.value,
         JobOperation.IMPORT_ENTRY_V2.value,
         JobOperation.EXPORT_ENTRY.value,
+        JobOperation.EXPORT_ENTRY_V2.value,
         JobOperation.REGISTER_REFERRALS.value,
         JobOperation.EXPORT_SEARCH_RESULT.value,
     ]
@@ -301,6 +303,7 @@ class Job(models.Model):
                 JobOperation.IMPORT_ENTRY.value: entry_task.import_entries,
                 JobOperation.IMPORT_ENTRY_V2.value: entry_task.import_entries_v2,
                 JobOperation.EXPORT_ENTRY.value: entry_task.export_entries,
+                JobOperation.EXPORT_ENTRY_V2.value: entry_task.export_entries_v2,
                 JobOperation.RESTORE_ENTRY.value: entry_task.restore_entry,
                 JobOperation.EXPORT_SEARCH_RESULT.value: dashboard_task.export_search_result,
                 JobOperation.REGISTER_REFERRALS.value: entry_task.register_referrals,
@@ -398,6 +401,16 @@ class Job(models.Model):
             user,
             target,
             JobOperation.EXPORT_ENTRY.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_export_v2(kls, user, target=None, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.EXPORT_ENTRY_V2.value,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )

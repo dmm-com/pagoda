@@ -81,6 +81,10 @@ const ErrorFallback: FC<Props> = ({ error }) => {
       return <Box>(TBC) Failed to get Entry</Box>;
     case "FailedToGetEntity":
       return <Box>(TBC) Failed to get Entity</Box>;
+    case "FailedToGetUser":
+      return <Box>(TBC) Failed to get User</Box>;
+    case "UnAuthorizedToGetUser":
+      return <Box>(TBC) UnAuthorized to get User</Box>;
     default:
       return <GenericError>{error.toString()}</GenericError>;
   }

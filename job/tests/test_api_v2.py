@@ -99,7 +99,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.json()["count"], 1)
 
         # don't match the created_after
-        created_after = (job.created_at + timedelta(days=1)).strftime("%Y-%m-%d")
+        created_after = (job.created_at + timedelta(days=2)).strftime("%Y-%m-%d")
         resp = self.client.get(
             f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}"
             f"&offset=0&created_after={created_after}"

@@ -7,7 +7,6 @@ from unittest.mock import Mock, patch
 
 import yaml
 from django.conf import settings
-from django.core.cache import cache
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.urls import reverse
@@ -37,9 +36,6 @@ from user.models import User
 class ViewTest(AironeViewTest):
     def setUp(self):
         super(ViewTest, self).setUp()
-
-        # clear all caches
-        cache.clear()
 
     # override 'admin_login' method to create initial Entity/EntityAttr objects
     def admin_login(self):

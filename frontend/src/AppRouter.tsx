@@ -24,7 +24,6 @@ import {
   newEntryPath,
   newGroupPath,
   newUserPath,
-  passwordPath,
   userPath,
   usersPath,
   loginPath,
@@ -43,7 +42,6 @@ import { EditEntityPage } from "pages/EditEntityPage";
 import { EditEntryPage } from "pages/EditEntryPage";
 import { EditGroupPage } from "pages/EditGroupPage";
 import { EditUserPage } from "pages/EditUserPage";
-import { EditUserPasswordPage } from "pages/EditUserPasswordPage";
 import { EntityHistoryPage } from "pages/EntityHistoryPage";
 import { EntityPage } from "pages/EntityPage";
 import { EntryListPage } from "pages/EntryListPage";
@@ -137,10 +135,6 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             <Route path={aclPath(":objectId")} component={ACLPage} />
             <Route path={newUserPath()} component={EditUserPage} />
             <Route path={importUsersPath()} component={ImportUserPage} />
-            <Route
-              path={passwordPath(":userId")}
-              component={EditUserPasswordPage}
-            />
             <Route path={userPath(":userId")} component={EditUserPage} />
             <Route path={usersPath()} component={UserPage} />
             <Route path="/" component={DashboardPage} />

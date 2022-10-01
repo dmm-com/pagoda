@@ -559,6 +559,86 @@ def export_entries(self, job_id):
 
 
 @app.task(bind=True)
+def export_entries_v2(self, job_id):
+    job = Job.objects.get(id=job_id)
+
+    if not job.proceed_if_ready():
+        return
+
+    job.update(Job.STATUS["PROCESSING"])
+
+    user = job.user
+    entity = Entity.objects.get(id=job.target.id)
+    params = json.loads(job.params)
+
+    exported_entity = []
+    exported_entries = []
+
+    # This variable is used for job status check. When it's checked at every loop, this might send
+    # tons of query to the database. To prevent the sort of tragedy situation, checking status of
+    # this job should be skipped some times (which is specified in Job.STATUS_CHECK_FREQUENCY).
+    #
+    # NOTE:
+    #   This doesn't use enumerate() method to count loop. Because when a QuerySet value is
+    #   passed to the argument of enumerate() method, Django try to get result at once (this never
+    #   do lazy evaluation).
+    export_item_counter = 0
+    for entry in Entry.objects.filter(schema=entity, is_active=True):
+        # abort processing when job is canceled
+        if export_item_counter % Job.STATUS_CHECK_FREQUENCY == 0 and job.is_canceled():
+            return
+
+        if user.has_permission(entry, ACLType.Readable):
+            exported_entries.append(entry.export_v2(user))
+
+        # increment loop counter
+        export_item_counter += 1
+
+    exported_entity.append(
+        {
+            "entity": entity.name,
+            "entries": exported_entries,
+        }
+    )
+
+    output = None
+    if params["export_format"] == "csv":
+        # newline is blank because csv module performs universal newlines
+        # https://docs.python.org/ja/3/library/csv.html#id3
+        output = io.StringIO(newline="")
+        writer = csv.writer(output)
+
+        attrs = [x.name for x in entity.attrs.filter(is_active=True)]
+        writer.writerow(["Name"] + attrs)
+
+        def data2str(data):
+            if not data:
+                return ""
+            return str(data)
+
+        for data in exported_entity[0]["entries"]:
+            writer.writerow(
+                [data["name"]] + [data2str(x["value"]) for x in data["attrs"] if x["name"] in attrs]
+            )
+    else:
+        output = io.StringIO()
+        output.write(
+            yaml.dump(
+                exported_entity,
+                default_flow_style=False,
+                allow_unicode=True,
+            )
+        )
+
+    if output:
+        job.set_cache(output.getvalue())
+
+    # update job status and save it except for the case that target job is canceled.
+    if not job.is_canceled():
+        job.update(Job.STATUS["DONE"])
+
+
+@app.task(bind=True)
 def register_referrals(self, job_id):
     job = Job.objects.get(id=job_id)
 

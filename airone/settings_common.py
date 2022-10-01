@@ -231,14 +231,6 @@ class Common(Configuration):
             # do nothing and use 'unknown' as version when git does not exists
             logging.getLogger(__name__).warning("git command not found.")
 
-    CACHES = {
-        "default": {
-            "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
-            "LOCATION": "localhost:11211",
-            "TIMEOUT": None,
-        }
-    }
-
     ES_CONFIG = {
         "NODES": ["localhost:9200"],
         "INDEX": "airone",

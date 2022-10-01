@@ -4,7 +4,6 @@ from datetime import date, datetime
 from typing import Any, Optional, Tuple
 
 from django.conf import settings
-from django.core.cache import cache
 from django.db import models
 from django.db.models import Prefetch, Q
 
@@ -1277,15 +1276,6 @@ class Entry(ACLBase):
         super(Entry, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entry
 
-    def get_cache(self, cache_key):
-        return cache.get("%s_%s" % (self.id, cache_key))
-
-    def set_cache(self, cache_key, value):
-        cache.set("%s_%s" % (self.id, cache_key), value)
-
-    def clear_cache(self, cache_key):
-        cache.delete("%s_%s" % (self.id, cache_key))
-
     def add_attribute_from_base(self, base, request_user):
         if not isinstance(base, EntityAttr):
             raise TypeError('Variable "base" is incorrect type')
@@ -1293,33 +1283,19 @@ class Entry(ACLBase):
         if not isinstance(request_user, User):
             raise TypeError('Variable "user" is incorrect type')
 
-        # While an Attribute object which corresponding to base EntityAttr has been already
-        # registered, a request to create same Attribute might be here when multiple request
-        # invoked and make requests simultaneously. That request may call this method after
-        # previous processing is finished.
-        # In this case, we have to prevent to create new Attribute object.
-        attr = Attribute.objects.filter(schema=base, parent_entry=self, is_active=True).first()
-        if attr:
-            self.may_append_attr(attr)
-            return
-
-        # This processing may avoid to run following more one time from mutiple request
-        cache_key = "add_%d" % base.id
-        if self.get_cache(cache_key):
-            return
-
-        # set lock status
-        self.set_cache(cache_key, 1)
-
-        attr = Attribute.objects.create(
-            name=base.name, schema=base, created_user=request_user, parent_entry=self
+        # If multiple requests are invoked to make requests at the same time,
+        # some may create the same attribute. So use get_or_create().
+        attr, is_created = Attribute.objects.get_or_create(
+            schema=base,
+            parent_entry=self,
+            is_active=True,
+            defaults={
+                "name": base.name,
+                "created_user": request_user,
+            },
         )
-
-        self.attrs.add(attr)
-
-        # release lock status
-        self.clear_cache(cache_key)
-
+        if is_created:
+            self.attrs.add(attr)
         return attr
 
     def get_referred_objects(self, filter_entities=[], exclude_entities=[]):
@@ -1336,18 +1312,6 @@ class Entry(ACLBase):
             query &= Q(schema__name__in=filter_entities)
 
         return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities)
-
-    def may_append_attr(self, attr):
-        """
-        This appends Attribute object to attributes' array of entry when it's entitled to be there.
-        """
-        if (
-            attr
-            and attr.is_active
-            and attr.parent_entry == self
-            and attr.id not in [x.id for x in self.attrs.filter(is_active=True)]
-        ):
-            self.attrs.add(attr)
 
     def may_remove_duplicate_attr(self, attr):
         """
@@ -1693,6 +1657,27 @@ class Entry(ACLBase):
                 attrinfo[attr.schema.name] = latest_value.get_value()
             else:
                 attrinfo[attr.schema.name] = None
+
+        return {"name": self.name, "attrs": attrinfo}
+
+    def export_v2(self, user):
+        attrinfo = []
+
+        # This calling of complement_attrs is needed to take into account the case of the Attributes
+        # that are added after creating this entry.
+        self.complement_attrs(user)
+
+        for attr in self.attrs.filter(is_active=True, schema__is_active=True):
+            if not user.has_permission(attr, ACLType.Readable):
+                continue
+
+            latest_value = attr.get_latest_value()
+            attrinfo.append(
+                {
+                    "name": attr.schema.name,
+                    "value": latest_value.get_value() if latest_value else None,
+                }
+            )
 
         return {"name": self.name, "attrs": attrinfo}
 

@@ -53,6 +53,7 @@ class APITest(AironeViewTest):
                 "import_v2": JobOperation.IMPORT_ENTRY_V2.value,
                 "export": JobOperation.EXPORT_ENTRY.value,
                 "export_search_result": JobOperation.EXPORT_SEARCH_RESULT.value,
+                "export_v2": JobOperation.EXPORT_ENTRY_V2.value,
                 "restore": JobOperation.RESTORE_ENTRY.value,
                 "create_entity": JobOperation.CREATE_ENTITY.value,
                 "edit_entity": JobOperation.EDIT_ENTITY.value,
