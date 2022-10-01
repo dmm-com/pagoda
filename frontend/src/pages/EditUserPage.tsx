@@ -131,6 +131,11 @@ export const EditUserPage: FC = () => {
     }
   };
 
+  const handleCancel = () => {
+    setSubmitted(true);
+    history.replace(usersPath());
+  };
+
   return (
     <Box>
       <AironeBreadcrumbs>
@@ -157,11 +162,7 @@ export const EditUserPage: FC = () => {
               </Button>
             </Box>
             <Box mx="4px">
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={() => history.replace(usersPath())}
-              >
+              <Button variant="outlined" color="primary" onClick={handleCancel}>
                 キャンセル
               </Button>
             </Box>

@@ -56,6 +56,7 @@ export const EditEntityPage: FC = () => {
   };
 
   const handleCancel = () => {
+    setSubmitted(true);
     history.replace(entitiesPath());
   };
 

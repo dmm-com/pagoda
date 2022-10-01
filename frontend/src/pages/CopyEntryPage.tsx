@@ -71,6 +71,7 @@ export const CopyEntryPage: FC = () => {
   };
 
   const handleCancel = () => {
+    setSubmitted(true);
     history.replace(entryDetailsPath(entry.value.schema.id, entry.value.id));
   };
 

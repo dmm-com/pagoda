@@ -69,6 +69,7 @@ export const ACLPage: FC = () => {
   };
 
   const handleCancel = async () => {
+    setSubmitted(true);
     history.goBack();
   };
 
