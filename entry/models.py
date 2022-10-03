@@ -1096,7 +1096,7 @@ class Attribute(ACLBase):
                         "id": x.referral.id if x.referral else None,
                         "boolean": x.boolean,
                     }
-                    for x in attrv.data_array.filter(~Q(referral__id=referral.id))
+                    for x in attrv.data_array.exclude(referral=referral, value=value)
                 ]
 
             elif self.schema.type & AttrTypeValue["string"]:
