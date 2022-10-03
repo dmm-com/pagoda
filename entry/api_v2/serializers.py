@@ -355,7 +355,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                                     "name": x.referral.entry.schema.name,
                                 },
                             }
-                            if x.referral
+                            if x.referral and x.referral.is_active
                             else None,
                         }
                         for x in attrv.data_array.all()
@@ -373,7 +373,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                                     "name": x.referral.entry.schema.name,
                                 },
                             }
-                            if x.referral
+                            if x.referral and x.referral.is_active
                             else None
                             for x in attrv.data_array.all()
                         ]
@@ -419,7 +419,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                             "name": attrv.referral.entry.schema.name,
                         },
                     }
-                    if attrv.referral
+                    if attrv.referral and attrv.referral.is_active
                     else None
                 }
                 return {"as_named_object": named}
@@ -434,7 +434,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                             "name": attrv.referral.entry.schema.name,
                         },
                     }
-                    if attrv.referral
+                    if attrv.referral and attrv.referral.is_active
                     else None
                 }
 

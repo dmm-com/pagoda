@@ -457,6 +457,107 @@ class ViewTest(AironeViewTest):
             },
         )
 
+    def test_retrieve_entry_with_deleted_referrals(self):
+        entry: Entry = self.add_entry(
+            self.user,
+            "Entry",
+            self.entity,
+            values={
+                "ref": self.ref_entry.id,
+                "name": {"name": "hoge", "id": self.ref_entry.id},
+                "refs": [self.ref_entry.id],
+                "names": [
+                    {"name": "foo", "id": self.ref_entry.id},
+                    {"name": "bar", "id": self.ref_entry.id},
+                ],
+            },
+        )
+        # delete referring entry
+        self.ref_entry.delete()
+
+        resp = self.client.get("/entry/api/v2/%d/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+
+        resp_data = resp.json()
+        self.assertEqual(resp_data["id"], entry.id)
+        self.assertEqual(resp_data["name"], entry.name)
+        self.assertEqual(
+            resp_data["schema"],
+            {"id": entry.schema.id, "name": entry.schema.name, "is_public": entry.schema.is_public},
+        )
+
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "ref", resp_data["attrs"])),
+            {
+                "type": AttrTypeValue["object"],
+                "value": {
+                    "as_object": None,
+                },
+                "id": entry.attrs.get(schema__name="ref").id,
+                "is_mandatory": False,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="ref").schema.id,
+                    "name": "ref",
+                },
+            },
+        )
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "name", resp_data["attrs"])),
+            {
+                "type": AttrTypeValue["named_object"],
+                "value": {
+                    "as_named_object": {
+                        "hoge": None,
+                    },
+                },
+                "id": entry.attrs.get(schema__name="name").id,
+                "is_mandatory": False,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="name").schema.id,
+                    "name": "name",
+                },
+            },
+        )
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "refs", resp_data["attrs"])),
+            {
+                "type": AttrTypeValue["array_object"],
+                "value": {
+                    "as_array_object": [
+                        None,
+                    ]
+                },
+                "id": entry.attrs.get(schema__name="refs").id,
+                "is_mandatory": False,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="refs").schema.id,
+                    "name": "refs",
+                },
+            },
+        )
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "names", resp_data["attrs"])),
+            {
+                "type": AttrTypeValue["array_named_object"],
+                "value": {
+                    "as_array_named_object": [
+                        {
+                            "foo": None,
+                        },
+                        {
+                            "bar": None,
+                        },
+                    ]
+                },
+                "id": entry.attrs.get(schema__name="names").id,
+                "is_mandatory": False,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="names").schema.id,
+                    "name": "names",
+                },
+            },
+        )
+
     def test_update_entry(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
 
