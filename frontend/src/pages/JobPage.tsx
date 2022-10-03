@@ -1,5 +1,7 @@
+import ReplayIcon from "@mui/icons-material/Replay";
 import {
   Box,
+  Button,
   Container,
   Divider,
   Pagination,
@@ -10,7 +12,7 @@ import {
 import { makeStyles } from "@mui/styles";
 import React, { FC, useMemo, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
+import { useAsync, useToggle } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { JobList as ConstJobList } from "../utils/Constants";
@@ -36,10 +38,11 @@ export const JobPage: FC = () => {
   const [page, setPage] = useState<number>(
     params.has("page") ? Number(params.get("page")) : 1
   );
+  const [refresh, toggleRefresh] = useToggle(false);
 
   const jobs = useAsync(async () => {
     return await aironeApiClientV2.getJobs(page);
-  }, [page]);
+  }, [page, refresh]);
 
   const handleChangePage = (newPage: number) => {
     setPage(newPage);
@@ -84,6 +87,16 @@ export const JobPage: FC = () => {
           marginBottom: "10%",
         }}
       >
+        <Box my="12px" display="flex" justifyContent="flex-end">
+          <Button
+            variant="outlined"
+            color="success"
+            onClick={() => toggleRefresh()}
+          >
+            <ReplayIcon /> ジョブ一覧を更新
+          </Button>
+        </Box>
+
         {jobs.loading ? <Loading /> : <JobList jobs={jobs.value.results} />}
         <Box display="flex" justifyContent="center" my="30px">
           <Stack spacing={2}>
