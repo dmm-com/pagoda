@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Changed not to execute notify job when there is no update in entry import
+  Contributed by @hinashi
 
 ### Fixed
 
