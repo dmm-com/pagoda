@@ -3448,6 +3448,60 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(Entry.objects.filter(name__iregex=r"えんとり*").coiunt(), 3)
 
+    @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
+    def test_import_entry_with_notify_entry(self):
+        user = self.admin_login()
+
+        # create
+        fp = self.open_fixture_file("import_data02.yaml")
+        self.client.post(reverse("entry:do_import", args=[self._entity.id]), {"file": fp})
+        fp.close()
+
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY.value).last()
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+
+        self.assertTrue(
+            Job.objects.filter(operation=JobOperation.NOTIFY_CREATE_ENTRY.value).exists()
+        )
+
+        ret = Entry.search_entries(user, [self._entity.id], [{"name": "test"}])
+        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "entry")
+        self.assertEqual(ret["ret_values"][0]["attrs"]["test"]["value"], "fuga")
+
+        Job.objects.all().delete()
+
+        # no update
+        fp = self.open_fixture_file("import_data02.yaml")
+        self.client.post(reverse("entry:do_import", args=[self._entity.id]), {"file": fp})
+        fp.close()
+
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY.value).last()
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+
+        self.assertFalse(
+            Job.objects.filter(operation=JobOperation.NOTIFY_UPDATE_ENTRY.value).exists()
+        )
+
+        Job.objects.all().delete()
+
+        # update
+        fp = self.open_fixture_file("import_data02_change.yaml")
+        self.client.post(reverse("entry:do_import", args=[self._entity.id]), {"file": fp})
+        fp.close()
+
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY.value).last()
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+
+        self.assertTrue(
+            Job.objects.filter(operation=JobOperation.NOTIFY_UPDATE_ENTRY.value).exists()
+        )
+
+        ret = Entry.search_entries(user, [self._entity.id], [{"name": "test"}])
+        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "entry")
+        self.assertEqual(ret["ret_values"][0]["attrs"]["test"]["value"], "piyo")
+
     @patch(
         "entry.tasks.create_entry_attrs.delay",
         Mock(side_effect=tasks.create_entry_attrs),
