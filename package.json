@@ -82,7 +82,7 @@
     "react-router-dom": "^5.2.0",
     "react-scroll": "^1.8.5",
     "react-use": "^17.2.4",
-    "recharts": "^2.1.12",
+    "recharts": "^2.1.14",
     "ts-loader": "^9.2.6"
   }
 }
