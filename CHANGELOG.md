@@ -5,12 +5,16 @@
 ### Added
 
 ### Changed
-* Changed not to use memcached.
-  Contributed by @hinashi
 * Changed not to execute notify job when there is no update in entry import
   Contributed by @hinashi
 
 ### Fixed
+
+## v3.23.0
+
+### Changed
+* Changed not to use memcached.
+  Contributed by @hinashi
 
 ## v3.22.0
 
