@@ -91,6 +91,8 @@
               インポート
             {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT %}
               エクスポート
+            {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT_V2 %}
+              エクスポート
             {% elif job.operation|divmod:100 == JOB.OPERATION.EXPORT_SEARCH_RESULT %}
               エクスポート
             {% elif job.operation|divmod:100 == JOB.OPERATION.RESTORE %}
