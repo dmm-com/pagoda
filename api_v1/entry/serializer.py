@@ -56,33 +56,33 @@ class EntrySearchChainSerializer(serializers.Serializer):
         # This is a helper method to check referral entry meets chaining conditions.
         def _is_attrv_referral_chained(attrv, info):
             chained_entry = Entry.objects.get(id=attrv.referral.id)
-            if chained_entry is None or info['value'] not in chained_entry.name:
+            if chained_entry is None or info["value"] not in chained_entry.name:
                 return False
 
-            if info.get('attrs'):
-                return self.is_attr_chained(chained_entry, info['attrs'])
+            if info.get("attrs"):
+                return self.is_attr_chained(chained_entry, info["attrs"])
             else:
                 return True
 
             return False
 
         for info in attrs:
-            attrv = entry.get_attrv(info['name'])
+            attrv = entry.get_attrv(info["name"])
             if not attrv:
                 continue
 
             v = attrv.get_value(with_metainfo=True)
-            if isinstance(v['value'], str) and info['value'] in v['value']:
+            if isinstance(v["value"], str) and info["value"] in v["value"]:
                 # this confirms text attribute value (e.g. AttrTypeValue['string'])
                 # has expected value
                 return True
 
-            elif isinstance(v['value'], dict):
+            elif isinstance(v["value"], dict):
                 # this confirms simple referral value (e.g. AttrTypeValue['object'])
                 # has expected referral
                 return _is_attrv_referral_chained(attrv, info)
 
-            elif isinstance(v['value'], list):
+            elif isinstance(v["value"], list):
                 # this confirms array referral values (e.g. AttrTypeValue['array_object'])
                 # has expected referral at least one
                 for co_attrv in attrv.data_array.all():
