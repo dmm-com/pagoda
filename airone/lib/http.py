@@ -164,6 +164,7 @@ def render(request, template, context={}):
             "IMPORT": JobOperation.IMPORT_ENTRY.value,
             "IMPORT_V2": JobOperation.IMPORT_ENTRY_V2.value,
             "EXPORT": JobOperation.EXPORT_ENTRY.value,
+            "EXPORT_V2": JobOperation.EXPORT_ENTRY_V2.value,
             "RESTORE": JobOperation.RESTORE_ENTRY.value,
             "EXPORT_SEARCH_RESULT": JobOperation.EXPORT_SEARCH_RESULT.value,
             "CREATE_ENTITY": JobOperation.CREATE_ENTITY.value,

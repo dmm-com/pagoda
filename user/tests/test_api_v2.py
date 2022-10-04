@@ -91,5 +91,9 @@ class ViewTest(AironeViewTest):
         resp = self.client.delete("/user/api/v2/%d/" % user.id)
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
-            resp.json(), {"detail": "You do not have permission to perform this action."}
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
         )

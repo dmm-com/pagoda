@@ -2,10 +2,10 @@ from datetime import date
 from unittest import skip
 
 from django.conf import settings
-from django.core.cache import cache
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
+from airone.lib.drf import ExceedLimitError
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrTypeArrObj, AttrTypeArrStr, AttrTypeObj, AttrTypeStr, AttrTypeValue
 from entity.models import Entity, EntityAttr
@@ -31,9 +31,6 @@ class ModelTest(AironeTestCase):
 
         self._attr: Attribute = self.make_attr("attr")
         self._attr.save()
-
-        # clear all cache before start
-        cache.clear()
 
         self._org_auto_complement_user = settings.AIRONE["AUTO_COMPLEMENT_USER"]
 
@@ -231,30 +228,16 @@ class ModelTest(AironeTestCase):
             created_user=user,
             parent_entity=entity,
         )
-        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry: Entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
 
-        # the case setting attribute lock to assure adding adding attribute processing
-        # should be run only one time.
-        cache_key = "add_%d" % attrbase.id
-        entry.set_cache(cache_key, True)
-        self.assertIsNone(entry.add_attribute_from_base(attrbase, user))
-        self.assertEqual(entry.attrs.count(), 0)
-
-        entry.clear_cache(cache_key)
         attr = entry.add_attribute_from_base(attrbase, user)
+        self.assertTrue(entry.attrs.filter(id=attr.id).exists())
         self.assertEqual(entry.attrs.count(), 1)
 
         # check not to create multiple same Attribute objects by add_attribute_from_base method
-        self.assertIsNone(entry.add_attribute_from_base(attrbase, user))
+        entry.add_attribute_from_base(attrbase, user)
+        self.assertTrue(entry.attrs.filter(id=attr.id).exists())
         self.assertEqual(entry.attrs.count(), 1)
-
-        # update attrbase
-        attrbase.name = "hoge"
-        attrbase.type = AttrTypeObj.TYPE
-        attrbase.referral.add(entity)
-        attrbase.is_mandatory = True
-
-        self.assertEqual(Attribute.objects.get(id=attr.id).schema, attrbase)
 
     def test_status_update_methods_of_attribute_value(self):
         value = AttributeValue(value="hoge", created_user=self._user, parent_attr=self._attr)
@@ -364,6 +347,7 @@ class ModelTest(AironeTestCase):
         self.assertTrue(attr.is_updated([e1.id, e2.id, e3.id]))  # create
         self.assertTrue(attr.is_updated([e1.id, e3.id, e4.id]))  # create & update
         self.assertTrue(attr.is_updated([]))
+        self.assertTrue(attr.is_updated([None, e1.id]))
         self.assertTrue(attr.is_updated(["", e1.id]))
         self.assertTrue(attr.is_updated(["0", e1.id]))
         self.assertTrue(attr.is_updated(["hoge", e1.id]))
@@ -1866,6 +1850,74 @@ class ModelTest(AironeTestCase):
         exported_data = entry.export(user)
         self.assertTrue("new_attr" in exported_data["attrs"])
 
+    def test_export_entry_v2(self):
+        user = User.objects.create(username="hoge")
+
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
+        attr_info = {
+            "str1": {"type": AttrTypeValue["string"], "is_public": True},
+            "str2": {"type": AttrTypeValue["string"], "is_public": True},
+            "obj": {"type": AttrTypeValue["object"], "is_public": True},
+            "invisible": {"type": AttrTypeValue["string"], "is_public": False},
+        }
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        for attr_name, info in attr_info.items():
+            attr = EntityAttr.objects.create(
+                name=attr_name,
+                type=info["type"],
+                created_user=user,
+                parent_entity=entity,
+                is_public=info["is_public"],
+            )
+
+            if info["type"] & AttrTypeValue["object"]:
+                attr.referral.add(ref_entity)
+
+            entity.attrs.add(attr)
+
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry.attrs.get(name="str1").add_value(user, "hoge")
+
+        entry.attrs.get(name="str2").add_value(user, "foo")
+        # update AttributeValue of Attribute 'str2'
+        entry.attrs.get(name="str2").add_value(user, "bar")
+
+        exported_data = entry.export_v2(user)
+        self.assertEqual(exported_data["name"], entry.name)
+        self.assertEqual(
+            len(exported_data["attrs"]),
+            len([x for x in attr_info.values() if x["is_public"]]),
+        )
+        self.assertIn({"name": "str1", "value": "hoge"}, exported_data["attrs"])
+        self.assertIn({"name": "str2", "value": "bar"}, exported_data["attrs"])
+        self.assertIn({"name": "obj", "value": None}, exported_data["attrs"])
+
+        # change the name of EntityAttr then export entry
+        NEW_ATTR_NAME = "str1 (changed)"
+        entity_attr = entry.schema.attrs.get(name="str1")
+        entity_attr.name = NEW_ATTR_NAME
+        entity_attr.save()
+
+        exported_data = entry.export_v2(user)
+        self.assertIn({"name": NEW_ATTR_NAME, "value": "hoge"}, exported_data["attrs"])
+        self.assertNotIn({"name": "str1", "value": "hoge"}, exported_data["attrs"])
+
+        # Add an Attribute after creating entry
+        entity.attrs.add(
+            EntityAttr.objects.create(
+                **{
+                    "name": "new_attr",
+                    "type": AttrTypeValue["string"],
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
+            )
+        )
+        exported_data = entry.export_v2(user)
+        self.assertIn({"name": "new_attr", "value": ""}, exported_data["attrs"])
+
     def test_search_entries(self):
         user = User.objects.create(username="hoge")
 
@@ -3254,13 +3306,32 @@ class ModelTest(AironeTestCase):
             sorted(["ref-0", "ref-1"]),
         )
 
-        attrs["arr_name"].remove_from_attrv(user, referral=None)
-        attrv = attrs["arr_name"].get_latest_value()
-        self.assertEqual(sorted([x.value for x in attrv.data_array.all()]), sorted(["foo", "bar"]))
-        self.assertEqual(
-            sorted([x.referral.name for x in attrv.data_array.all()]),
-            sorted(["ref-0", "ref-1"]),
-        )
+        param_list = [
+            {
+                "referral": None,
+                "value": "",
+            },
+            {
+                "referral": entry_refs[0],
+                "value": "",
+            },
+            {
+                "referral": None,
+                "value": "foo",
+            },
+        ]
+        for param in param_list:
+            attrs["arr_name"].remove_from_attrv(
+                user, referral=param["referral"], value=param["value"]
+            )
+            attrv = attrs["arr_name"].get_latest_value()
+            self.assertEqual(
+                sorted([x.value for x in attrv.data_array.all()]), sorted(["foo", "bar"])
+            )
+            self.assertEqual(
+                sorted([x.referral.name for x in attrv.data_array.all()]),
+                sorted(["ref-0", "ref-1"]),
+            )
 
         attrs["arr_group"].remove_from_attrv(user, value=None)
         self.assertEqual(
@@ -3279,7 +3350,7 @@ class ModelTest(AironeTestCase):
             sorted([x.referral.name for x in attrv.data_array.all()]), sorted(["ref-1"])
         )
 
-        attrs["arr_name"].remove_from_attrv(user, referral=entry_refs[0])
+        attrs["arr_name"].remove_from_attrv(user, referral=entry_refs[0], value="foo")
         attrv = attrs["arr_name"].get_latest_value()
         self.assertEqual(sorted([x.value for x in attrv.data_array.all()]), sorted(["bar"]))
         self.assertEqual(
@@ -3773,47 +3844,6 @@ class ModelTest(AironeTestCase):
             entry_name=CONFIG.EMPTY_SEARCH_CHARACTER,
         )
         self.assertEqual(ret["ret_count"], 1)
-
-    def test_cache_of_adding_attribute(self):
-        """
-        This test suite confirms that the creating cache not to remaining after
-        creating Attribute instance. This indicates cache operation in the method
-        of add_attribute_from_base has atomicity. It means cache value would not
-        be set before and after calling this method that set cache value.
-        """
-        # initialize Entity an Entry
-        user = User.objects.create(username="hoge")
-        entity = Entity.objects.create(name="entity", created_user=user)
-        attrbase = EntityAttr.objects.create(
-            name="attr", type=AttrTypeValue["object"], created_user=user, parent_entity=entity
-        )
-        entity.attrs.add(attrbase)
-
-        # call add_attribute_from_base method more than once
-        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
-        for _i in range(2):
-            entry.add_attribute_from_base(attrbase, user)
-
-        self.assertIsNone(entry.get_cache("add_%d" % attrbase.id))
-
-    def test_may_append_attr(self):
-        # initialize Entity an Entry
-        entity = Entity.objects.create(name="entity", created_user=self._user)
-        entry1 = Entry.objects.create(name="entry1", created_user=self._user, schema=entity)
-        entry2 = Entry.objects.create(name="entry2", created_user=self._user, schema=entity)
-
-        attr = self.make_attr("attr", attrtype=AttrTypeArrStr, entity=entity, entry=entry1)
-
-        # Just after creating entries, there is no attribute in attrs member
-        self.assertEqual(entry1.attrs.count(), 0)
-        self.assertEqual(entry2.attrs.count(), 0)
-
-        for entry in [entry1, entry2]:
-            entry.may_append_attr(attr)
-
-        # Attribute object should be set to appropriate entry's attrs member
-        self.assertEqual(entry1.attrs.first(), attr)
-        self.assertEqual(entry2.attrs.count(), 0)
 
     def test_search_entries_includes_and_or(self):
         user = User.objects.create(username="hoge")
@@ -4658,16 +4688,10 @@ class ModelTest(AironeTestCase):
                 ),
                 (True, None),
             )
-            self.assertEqual(
+            with self.assertRaises(ExceedLimitError):
                 AttributeValue.validate_attr_value(
                     AttrTypeValue[type], "a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1), False
-                ),
-                (
-                    False,
-                    "value(%s) is exceeded the limit"
-                    % ("a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1)),
-                ),
-            )
+                )
 
         self.assertEqual(
             AttributeValue.validate_attr_value(AttrTypeValue["object"], self._entry.id, False),
@@ -4740,17 +4764,12 @@ class ModelTest(AironeTestCase):
             ),
             (True, None),
         )
-        self.assertEqual(
+        with self.assertRaises(ExceedLimitError):
             AttributeValue.validate_attr_value(
                 AttrTypeValue["named_object"],
                 {"name": "a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1), "id": self._entry.id},
                 False,
-            ),
-            (
-                False,
-                "value(%s) is exceeded the limit" % ("a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1)),
-            ),
-        )
+            )
         self.assertEqual(
             AttributeValue.validate_attr_value(
                 AttrTypeValue["named_object"], {"name": "hoge", "id": "hoge"}, False

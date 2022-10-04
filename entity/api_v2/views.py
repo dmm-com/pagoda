@@ -14,6 +14,7 @@ from rest_framework.response import Response
 
 import custom_view
 from airone.lib.acl import ACLType
+from airone.lib.drf import ObjectNotExistsError
 from airone.lib.http import http_get
 from entity.api_v2.serializers import (
     EntityCreateSerializer,
@@ -129,7 +130,7 @@ class EntityAPI(viewsets.ModelViewSet):
         user: User = request.user
 
         if not entity.is_active:
-            raise ValidationError("specified entity has already been deleted")
+            raise ObjectNotExistsError("specified entity has already been deleted")
 
         if Entry.objects.filter(schema=entity, is_active=True).exists():
             raise ValidationError(

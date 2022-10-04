@@ -18,5 +18,29 @@ test("should render a component with essential props", function () {
     writable: false,
   });
 
-  expect(() => render(<UserForm />, { wrapper: TestWrapper })).not.toThrow();
+  const userInfo = {
+    id: 0,
+    username: "",
+    password: "",
+    email: "",
+    isSuperuser: false,
+    dateJoined: "",
+    token: {
+      value: "",
+      lifetime: 86400,
+      expire: "",
+      created: "",
+    },
+    authenticateType: 0,
+  };
+
+  const setUserInfo = () => {
+    /* do nothing */
+  };
+
+  expect(() =>
+    render(<UserForm userInfo={userInfo} setUserInfo={setUserInfo} />, {
+      wrapper: TestWrapper,
+    })
+  ).not.toThrow();
 });

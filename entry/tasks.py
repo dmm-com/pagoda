@@ -2,6 +2,7 @@ import csv
 import io
 import json
 from datetime import datetime
+from typing import Optional
 
 import yaml
 from rest_framework.exceptions import ValidationError
@@ -113,6 +114,7 @@ def _do_import_entries(job: Job):
 
     # create or update entry
     for (index, entry_data) in enumerate(import_data):
+        job_notify: Optional[Job] = None
         job.text = "Now importing... (progress: [%5d/%5d] for %s)" % (
             index + 1,
             total_count,
@@ -129,16 +131,13 @@ def _do_import_entries(job: Job):
             entry = Entry.objects.create(name=entry_data["name"], schema=entity, created_user=user)
 
             # create job to notify create event to the WebHook URL
-            job_notify: Job = Job.new_notify_create_entry(user, entry)
+            job_notify = Job.new_notify_create_entry(user, entry)
 
-        elif not user.has_permission(entry, ACLType.Writable):
+        if not user.has_permission(entry, ACLType.Writable):
             continue
 
-        else:
-            # create job to notify edit event to the WebHook URL
-            job_notify = Job.new_notify_update_entry(user, entry)
-
         entry.complement_attrs(user)
+        is_update: bool = False
         for attr_name, value in entry_data["attrs"].items():
             # If user doesn't have readable permission for target Attribute,
             # it won't be created.
@@ -170,16 +169,21 @@ def _do_import_entries(job: Job):
             input_value = attr.convert_value_to_register(value)
             if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(input_value):
                 attr.add_value(user, input_value)
+                is_update = True
 
             # call custom-view processing corresponding to import entry
             if custom_view_handler:
                 custom_view.call_custom(custom_view_handler, entity.name, user, entry, attr, value)
 
-        # register entry to the Elasticsearch
-        entry.register_es()
+        if not job_notify and is_update:
+            job_notify = Job.new_notify_update_entry(user, entry)
 
-        # run notification job
-        job_notify.run()
+        if job_notify:
+            # register entry to the Elasticsearch
+            entry.register_es()
+
+            # run notification job
+            job_notify.run()
 
     job.update(status=Job.STATUS["DONE"], text="")
 
@@ -545,6 +549,86 @@ def export_entries(self, job_id):
         output.write(
             yaml.dump(
                 {entity.name: exported_data},
+                default_flow_style=False,
+                allow_unicode=True,
+            )
+        )
+
+    if output:
+        job.set_cache(output.getvalue())
+
+    # update job status and save it except for the case that target job is canceled.
+    if not job.is_canceled():
+        job.update(Job.STATUS["DONE"])
+
+
+@app.task(bind=True)
+def export_entries_v2(self, job_id):
+    job = Job.objects.get(id=job_id)
+
+    if not job.proceed_if_ready():
+        return
+
+    job.update(Job.STATUS["PROCESSING"])
+
+    user = job.user
+    entity = Entity.objects.get(id=job.target.id)
+    params = json.loads(job.params)
+
+    exported_entity = []
+    exported_entries = []
+
+    # This variable is used for job status check. When it's checked at every loop, this might send
+    # tons of query to the database. To prevent the sort of tragedy situation, checking status of
+    # this job should be skipped some times (which is specified in Job.STATUS_CHECK_FREQUENCY).
+    #
+    # NOTE:
+    #   This doesn't use enumerate() method to count loop. Because when a QuerySet value is
+    #   passed to the argument of enumerate() method, Django try to get result at once (this never
+    #   do lazy evaluation).
+    export_item_counter = 0
+    for entry in Entry.objects.filter(schema=entity, is_active=True):
+        # abort processing when job is canceled
+        if export_item_counter % Job.STATUS_CHECK_FREQUENCY == 0 and job.is_canceled():
+            return
+
+        if user.has_permission(entry, ACLType.Readable):
+            exported_entries.append(entry.export_v2(user))
+
+        # increment loop counter
+        export_item_counter += 1
+
+    exported_entity.append(
+        {
+            "entity": entity.name,
+            "entries": exported_entries,
+        }
+    )
+
+    output = None
+    if params["export_format"] == "csv":
+        # newline is blank because csv module performs universal newlines
+        # https://docs.python.org/ja/3/library/csv.html#id3
+        output = io.StringIO(newline="")
+        writer = csv.writer(output)
+
+        attrs = [x.name for x in entity.attrs.filter(is_active=True)]
+        writer.writerow(["Name"] + attrs)
+
+        def data2str(data):
+            if not data:
+                return ""
+            return str(data)
+
+        for data in exported_entity[0]["entries"]:
+            writer.writerow(
+                [data["name"]] + [data2str(x["value"]) for x in data["attrs"] if x["name"] in attrs]
+            )
+    else:
+        output = io.StringIO()
+        output.write(
+            yaml.dump(
+                exported_entity,
                 default_flow_style=False,
                 allow_unicode=True,
             )

@@ -3,16 +3,30 @@
 ## In development
 
 ### Added
+
+### Changed
+* Changed not to execute notify job when there is no update in entry import
+  Contributed by @hinashi
+
+### Fixed
+* Fixed remove_from_attrv for array_named_entry attribute
+  Contributed by @hinashi
+
+## v3.23.0
+
+### Changed
+* Changed not to use memcached.
+  Contributed by @hinashi
+
+## v3.22.0
+
+### Added
+* Added airone error code to APIv2 for frontend.
+  Contributed by @syucream, @userlocalhost, @hinashi
+
 * Added new parameter "as_member" at the Role.is_belonged_to() method to be able to
   confirm that specified user is belonged to this role as member.
   Contributed by @userlocalhost
-
-### Changed
-
-### Fixed
-
-* Fixed a problem that an exception will be occurred at edit Entry page.
-  Contributed by @ritsuxis
 
 ## v3.21.0
 
@@ -22,7 +36,7 @@
   Contributed by @userlocalhost
 
 ### Changed
-Upgrade flower version from 1.1.0 to 1.2.0
+* Upgrade flower version from 1.1.0 to 1.2.0
 
 ### Fixed
 * Fixed Elasticsearch not updating when updating Group and Role.
@@ -32,6 +46,10 @@ Upgrade flower version from 1.1.0 to 1.2.0
 * Fixed value not being displayed due to javascript error in entry edit.
   Contributed by @ritsuxis
 * Fixed duplicate entries in entry restore.
+  Contributed by @ritsuxis
+* Fixed a problem that an exception will be occurred at edit Entry page.
+  Contributed by @ritsuxis
+* Fixed entity's page paginate.
   Contributed by @ritsuxis
 
 ## v3.20.0

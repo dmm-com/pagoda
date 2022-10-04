@@ -10,6 +10,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 import custom_view
 from airone.lib.acl import ACLType
+from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, RequiredParameterError
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from user.models import History, User
@@ -54,14 +55,14 @@ class WebhookUpdateSerializer(serializers.ModelSerializer):
     def validate_id(self, id):
         entity: Entity = self.parent.parent.instance
         if not entity.webhooks.filter(id=id).exists():
-            raise ValidationError("Invalid id(%s) object does not exist" % id)
+            raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 
         return id
 
     def validate(self, webhook):
         # case create Webhook
         if "id" not in webhook and "url" not in webhook:
-            raise ValidationError("id or url field is required")
+            raise RequiredParameterError("id or url field is required")
 
         if not webhook.get("is_deleted"):
             validator = URLValidator()
@@ -88,7 +89,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
 
     def validate_type(self, type):
         if type not in AttrTypeValue.values():
-            raise ValidationError("attrs type(%s) does not exist" % type)
+            raise ObjectNotExistsError("attrs type(%s) does not exist" % type)
 
         return type
 
@@ -96,7 +97,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
         referral = attr.get("referral", [])
 
         if attr["type"] & AttrTypeValue["object"] and not len(referral):
-            raise ValidationError("When specified object type, referral field is required")
+            raise RequiredParameterError("When specified object type, referral field is required")
 
         return attr
 
@@ -124,13 +125,13 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
         entity: Entity = self.parent.parent.instance
         entity_attr: Optional[EntityAttr] = entity.attrs.filter(id=id, is_active=True).first()
         if not entity_attr:
-            raise ValidationError("Invalid id(%s) object does not exist" % id)
+            raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 
         return id
 
     def validate_type(self, type):
         if type not in AttrTypeValue.values():
-            raise ValidationError("attrs type(%s) does not exist" % type)
+            raise ObjectNotExistsError("attrs type(%s) does not exist" % type)
 
         return type
 
@@ -150,11 +151,13 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
         # case create EntityAttr
         else:
             if "name" not in attr or "type" not in attr:
-                raise ValidationError("id or (name and type) field is required")
+                raise RequiredParameterError("id or (name and type) field is required")
 
             referral = attr.get("referral", [])
             if attr["type"] & AttrTypeValue["object"] and not len(referral):
-                raise ValidationError("When specified object type, referral field is required")
+                raise RequiredParameterError(
+                    "When specified object type, referral field is required"
+                )
 
         return attr
 
@@ -308,7 +311,7 @@ class EntityCreateSerializer(EntitySerializer):
 
     def validate_name(self, name):
         if Entity.objects.filter(name=name, is_active=True).exists():
-            raise ValidationError("Duplication error. There is same named Entity")
+            raise DuplicatedObjectExistsError("Duplication error. There is same named Entity")
 
         return name
 
@@ -316,7 +319,7 @@ class EntityCreateSerializer(EntitySerializer):
         # duplication checks
         counter = collections.Counter([attr["name"] for attr in attrs])
         if len([v for v, count in counter.items() if count > 1]):
-            raise ValidationError("Duplicated attribute names are not allowed")
+            raise DuplicatedObjectExistsError("Duplicated attribute names are not allowed")
 
         return attrs
 
@@ -345,7 +348,7 @@ class EntityUpdateSerializer(EntitySerializer):
 
     def validate_name(self, name):
         if self.instance.name != name and Entity.objects.filter(name=name, is_active=True).exists():
-            raise ValidationError("Duplication error. There is same named Entity")
+            raise DuplicatedObjectExistsError("Duplication error. There is same named Entity")
 
         return name
 
@@ -368,7 +371,7 @@ class EntityUpdateSerializer(EntitySerializer):
             [x for x in attr_names.values()] + [attr["name"] for attr in attrs if "id" not in attr]
         )
         if len([v for v, count in counter.items() if count > 1]):
-            raise ValidationError("Duplicated attribute names are not allowed")
+            raise DuplicatedObjectExistsError("Duplicated attribute names are not allowed")
 
         return attrs
 

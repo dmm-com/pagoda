@@ -234,7 +234,8 @@ export const JobList: FC<Props> = ({ jobs }) => {
             </TableCell>
             <TableCell>
               {(job.operation == JobOperations.EXPORT_ENTRY ||
-                job.operation == JobOperations.EXPORT_SEARCH_RESULT) &&
+                job.operation == JobOperations.EXPORT_SEARCH_RESULT ||
+                job.operation == JobOperations.EXPORT_ENTRY_V2) &&
               job.status == JobStatuses.DONE ? (
                 <Link href={`/job/download/${job.id}`}>Download</Link>
               ) : (
