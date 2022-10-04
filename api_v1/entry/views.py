@@ -12,6 +12,35 @@ from entity.models import Entity
 from entry.models import Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
 
+from api_v1.entry.serializer import EntrySearchChainSerializer
+
+class EntrySearchChainAPI(APIView):
+
+    def post(self, request):
+        serializer = EntrySearchChainSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+        # search chainged entries
+        result = Entry.search_entries(
+            request.user,
+            serializer.validated_data.get('entities', []),
+            [{"name": x['name'], "keyword": x['value']} for x in serializer.validated_data['attrs']]
+        )
+        ret_data = []
+        for v in result["ret_values"]:
+            entry = Entry.objects.filter(id=v['entry']['id'], is_active=True).first()
+            if entry is None:
+                continue
+
+            if serializer.is_attr_chained(entry, serializer.validated_data['attrs']):
+                ret_data.append({
+                    'id': entry.id,
+                    'name': entry.name,
+                })
+
+        return Response({'entries': ret_data}, status=status.HTTP_200_OK)
+
 
 class EntrySearchAPI(APIView):
     def post(self, request, format=None):

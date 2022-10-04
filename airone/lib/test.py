@@ -66,6 +66,7 @@ class AironeTestCase(TestCase):
           - name : indicates name of creating EntityAttr
           - type : indicates type of creating EntityAttr [string by default]
           - is_mandatory : same parameter of EntityAttr [False by default]
+          - ref : Entity that Entry can refer to
         """
 
         entity: Entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)

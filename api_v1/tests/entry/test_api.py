@@ -483,3 +483,71 @@ class APITest(AironeViewTest):
         resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content, b'"The entities parameters are required"')
+
+    def test_search_chain(self):
+        user = self.guest_login()
+
+        # create Entities that have all referral Attribute types
+        entity_vlan = self.create_entity(user, "VLAN", attrs=[
+            {"name": "note", "type": AttrTypeValue["string"]},
+        ])
+        entity_network = self.create_entity(user, "Network", attrs=[
+            {"name": "vlan", "type": AttrTypeValue["object"], "ref": entity_vlan},
+        ])
+        entity_ipv4 = self.create_entity(user, "IPv4 Address", attrs=[
+            {"name": "network", "type": AttrTypeValue["named_object"], "ref": entity_network},
+        ])
+        entity_nic = self.create_entity(user, "NIC", attrs=[
+            {"name": "IP address", "type": AttrTypeValue["array_object"], "ref": entity_ipv4},
+        ])
+        entity_vm = self.create_entity(user, "VM", attrs=[
+            {"name": "Ports", "type": AttrTypeValue["array_named_object"], "ref": entity_nic},
+        ])
+
+        # create Entries, that will be used in this test case
+        entry_vlan = self.add_entry(user, "vlan100", entity_vlan, values={
+            "note": "test network",
+        })
+        entry_network = self.add_entry(user, "10.0.0.0/8", entity_network, values={
+            "vlan": entry_vlan,
+        })
+        entry_ipv4 = self.add_entry(user, "10.0.0.1", entity_ipv4, values={
+            "network": {"id": entry_network, "name": ""},
+        })
+        entry_nic = self.add_entry(user, "ens0", entity_nic, values={
+            "IP address": [entry_ipv4],
+        })
+        entry_vm1 = self.add_entry(user, "test-vm1", entity_vm, values={
+            "Ports": [{"id": entry_nic, "name": "ens0"}],
+        })
+        entry_vm2 = self.add_entry(user, "test-vm2", entity_vm)
+
+        # create query to search chained query
+        params = {
+            "entities": ['VM'],
+            "attrs": [{
+                "name": "Ports",
+                "value": "ens0",
+                "attrs": [{
+                    "name": "IP address",
+                    "value": "10.0.0.1",
+                    "attrs": [{
+                        "name": "network",
+                        "value": "10.0.0.0/8",
+                        "attrs": [{
+                            "name": "vlan",
+                            "value": "100",
+                            "attrs": [{
+                                "name": "note",
+                                "value": "test",
+                            }]
+                        }]
+                    }]
+                }]
+            }]
+        }
+
+        # This checks to get Entries that meets chaining conditions
+        resp = self.client.post("/api/v1/entry/search_chain", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {'entries': [{'id': entry_vm1.id, 'name': entry_vm1.name}]})
