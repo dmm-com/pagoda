@@ -3,6 +3,11 @@
 ## In development
 
 ### Added
+* Added a new API handler that user can retrieve Entries, which refers an Entry
+  at specific Attribute and that referred Entry refers another Entry. In that way,
+  user can specify this repeated (chained) reference condition to get Entry
+  that refers far away Entry without aware of intermediate ones.
+  Contributed by @userlocalhost
 
 ### Changed
 * Changed not to execute notify job when there is no update in entry import

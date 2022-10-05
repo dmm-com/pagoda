@@ -2,8 +2,6 @@ import json
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
-from entity.models import Entity, EntityAttr
-from entry.models import Entry
 
 
 class APITest(AironeViewTest):
@@ -181,7 +179,7 @@ class APITest(AironeViewTest):
                                         {
                                             "name": "vlan",
                                             "value": "100",
-                                            ## NOTE: This doesn't have attr chain
+                                            # NOTE: This doesn't have attr chain
                                         }
                                     ],
                                 }
@@ -212,7 +210,7 @@ class APITest(AironeViewTest):
                     "attrs": [
                         {
                             "name": "IP address",
-                            "value": "wrong VALUE",  ## This specifies wrong value
+                            "value": "wrong VALUE",  # This specifies wrong value
                             "attrs": [
                                 {
                                     "name": "network",
