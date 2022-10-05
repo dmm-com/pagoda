@@ -24,10 +24,7 @@ class EntrySearchChainAPI(APIView):
         result = Entry.search_entries(
             request.user,
             serializer.validated_data.get("entities", []),
-            [
-                {"name": x["name"], "keyword": x["value"]}
-                for x in serializer.validated_data["attrs"]
-            ],
+            [{"name": x["name"]} for x in serializer.validated_data["attrs"]],
         )
         ret_data = []
         for v in result["ret_values"]:
@@ -35,7 +32,7 @@ class EntrySearchChainAPI(APIView):
             if entry is None:
                 continue
 
-            if serializer.is_attr_chained(entry, serializer.validated_data["attrs"]):
+            if serializer.is_attr_chained(entry):
                 ret_data.append(
                     {
                         "id": entry.id,
