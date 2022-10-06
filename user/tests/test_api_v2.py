@@ -100,11 +100,11 @@ class ViewTest(AironeViewTest):
         )
 
     def test_get_user_token_via_apiv2_without_creation(self):
-        user = self.guest_login()
+        self.guest_login()
 
         resp = self.client.get("/user/api/v2/token/")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"message":"Not found.","code":"AE-230000"})
+        self.assertEqual(resp.json(), {"message": "Not found.", "code": "AE-230000"})
 
     def test_get_user_token_via_apiv2(self):
         user = self.guest_login()
