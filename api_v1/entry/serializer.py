@@ -60,30 +60,60 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
         # This is a helper method to check referral entry meets chaining conditions.
         def _is_attrv_referral_chained(attrv, info):
-            chained_entry = Entry.objects.get(id=attrv.referral.id)
-            if chained_entry is None and info.get("value") == "":
-                # The case when Attribute value doesn't refer Entry and query expects it is
-                return True
+            if attrv.referral is None or not attrv.referral.is_active:
+                if info.get("value") == "":
+                    # The case when Attribute value doesn't refer Entry and query expects it is
+                    return True
 
-            elif chained_entry is not None and info.get("value") == "":
+                elif info.get("value") is not None:
+                    return False
+
+                elif info.get("value") is None:
+                    # When user specified query has sub-query, this returns False.
+                    # but this returns True when query is terminated by this condition.
+                    return info.get("attrs") is None
+
+                else:
+                    raise RuntimeError("Unexpected situation was happend")
+
+            # In this code, attrv.referral.id must be existed
+            if info.get("value") == "":
                 # The case when Attribute value refers actual Entry but query expects it's blank
                 return False
 
-            elif chained_entry is None or info.get("value", "") not in chained_entry.name:
+            elif info.get("value", "") not in attrv.referral.name:
                 # The case when Attribute value deons't refer, or
                 # referred Entry is not expected one.
                 return False
 
             elif info.get("attrs"):
-                return self.is_attr_chained(chained_entry, info["attrs"], info["is_any"])
+                return self.is_attr_chained(
+                    Entry.objects.get(id=attrv.referral.id), info["attrs"], info["is_any"]
+                )
 
             return not info["is_any"]
 
         for info in attrs:
             attrv = entry.get_attrv(info["name"])
             if not attrv:
-                if is_any:
+                # NOTE: This describes logic procedure considered with is_any and info.get("value") context
+                #
+                # * is_any
+                #   - True: OR condition
+                #       - when failed:    continue next
+                #       - when succeeded: continue next
+                #   - False: AND condition
+                #       - when failed:  return False immediately
+                #       - when succeeded: continue next
+                #
+                # * info.get("value")
+                #   - None: match all value
+                #   - "": match only empty value
+                #   - other: match only contained value is matched with attrv.value or referral entry
+                #       - This processing is work in _is_attrv_referral_chained() for referral entry
+                if is_any or (info.get("vlaue") == "" and not is_any):
                     continue
+
                 else:
                     # In this case, it doesn't meet specified condition at least one.
                     # Then, there is no nocessity to check rest of query any more
@@ -91,7 +121,17 @@ class EntrySearchChainSerializer(serializers.Serializer):
                     return False
 
             v = attrv.get_value(with_metainfo=True)
-            if isinstance(v["value"], str) and info.get("value", "") in v["value"]:
+            if v["value"] is None:
+                if is_any or (info.get("vlaue") == "" and not is_any):
+                    continue
+
+                else:
+                    # In this case, it doesn't meet specified condition at least one.
+                    # Then, there is no nocessity to check rest of query any more
+                    # when is_any parameter is False (it means AND condition).
+                    return False
+
+            elif isinstance(v["value"], str) and info.get("value", "") in v["value"]:
                 # This confirms text attribute value (e.g. AttrTypeValue['string'])
                 # has expected value. It returns True when the "is_any" parameter
                 # is True (it means OR condition).

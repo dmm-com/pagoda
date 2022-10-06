@@ -454,3 +454,248 @@ class APITest(AironeViewTest):
                 ]
             },
         )
+
+    def test_search_chain_when_object_attrvalue_is_empty(self):
+        entry_network = self.add_entry(
+            self.user,
+            "192.168.0.1/8",
+            self.entity_network,
+            values={
+                "vlan": None,
+            },
+        )
+        entry_ipv4 = self.add_entry(
+            self.user,
+            "192.168.0.100",
+            self.entity_ipv4,
+            values={
+                "network": {"id": entry_network, "name": ""},
+            },
+        )
+        entry_nic = self.add_entry(
+            self.user,
+            "ens0",
+            self.entity_nic,
+            values={
+                "IP address": [entry_ipv4],
+            },
+        )
+        entry_vm = self.add_entry(
+            self.user,
+            "test-another-vm",
+            self.entity_vm,
+            values={
+                "Ports": [{"id": entry_nic, "name": "ens0"}],
+            },
+        )
+
+        # create query to search chained query that follows all attribute chain
+        params = {
+            "entities": ["VM"],
+            "attrs": [
+                {
+                    "name": "Ports",
+                    "attrs": [
+                        {
+                            "name": "IP address",
+                            "attrs": [
+                                {
+                                    "name": "network",
+                                    "attrs": [
+                                        {
+                                            "name": "vlan",
+                                            "attrs": [
+                                                {
+                                                    "name": "note",
+                                                    "value": "test",
+                                                }
+                                            ],
+                                        }
+                                    ],
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        # This checks to get Entries that meets chaining conditions
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+        )
+
+    def test_search_chain_when_named_object_attrvalue_is_empty(self):
+        entry_ipv4 = self.add_entry(
+            self.user,
+            "192.168.0.100",
+            self.entity_ipv4,
+            values={
+                "network": {"id": None, "name": "hoge"},
+            },
+        )
+        entry_nic = self.add_entry(
+            self.user,
+            "ens0",
+            self.entity_nic,
+            values={
+                "IP address": [entry_ipv4],
+            },
+        )
+        entry_vm = self.add_entry(
+            self.user,
+            "test-another-vm",
+            self.entity_vm,
+            values={
+                "Ports": [{"id": entry_nic, "name": "ens0"}],
+                "Status": self.entry_service_in,
+            },
+        )
+
+        # create query to search chained query that follows all attribute chain
+        params = {
+            "entities": ["VM"],
+            "attrs": [
+                {
+                    "name": "Ports",
+                    "attrs": [
+                        {
+                            "name": "IP address",
+                            "attrs": [
+                                {
+                                    "name": "network",
+                                    "attrs": [
+                                        {
+                                            "name": "vlan",
+                                            "attrs": [
+                                                {
+                                                    "name": "note",
+                                                    "value": "test",
+                                                }
+                                            ],
+                                        }
+                                    ],
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        # This checks to get Entries that meets chaining conditions
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        print("[onix-test(90)] %s" % str(resp.json()))
+
+    def test_search_chain_when_array_object_attrvalue_is_empty(self):
+        entry_nic = self.add_entry(
+            self.user,
+            "ens0",
+            self.entity_nic,
+            values={
+                "IP address": [],
+            },
+        )
+        entry_vm = self.add_entry(
+            self.user,
+            "test-another-vm",
+            self.entity_vm,
+            values={
+                "Ports": [{"id": entry_nic, "name": "ens0"}],
+                "Status": self.entry_service_in,
+            },
+        )
+
+        # create query to search chained query that follows all attribute chain
+        params = {
+            "entities": ["VM"],
+            "attrs": [
+                {
+                    "name": "Ports",
+                    "attrs": [
+                        {
+                            "name": "IP address",
+                            "attrs": [
+                                {
+                                    "name": "network",
+                                    "attrs": [
+                                        {
+                                            "name": "vlan",
+                                            "attrs": [
+                                                {
+                                                    "name": "note",
+                                                    "value": "test",
+                                                }
+                                            ],
+                                        }
+                                    ],
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        # This checks to get Entries that meets chaining conditions
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        print("[onix-test(90)] %s" % str(resp.json()))
+
+    def test_search_chain_when_array_named_object_attrvalue_is_empty(self):
+        entry_vm = self.add_entry(
+            self.user,
+            "test-another-vm",
+            self.entity_vm,
+            values={
+                "Ports": [{"id": None, "name": "ens0"}],
+                "Status": self.entry_service_in,
+            },
+        )
+
+        # create query to search chained query that follows all attribute chain
+        params = {
+            "entities": ["VM"],
+            "attrs": [
+                {
+                    "name": "Ports",
+                    "attrs": [
+                        {
+                            "name": "IP address",
+                            "attrs": [
+                                {
+                                    "name": "network",
+                                    "attrs": [
+                                        {
+                                            "name": "vlan",
+                                            "attrs": [
+                                                {
+                                                    "name": "note",
+                                                    "value": "test",
+                                                }
+                                            ],
+                                        }
+                                    ],
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        # This checks to get Entries that meets chaining conditions
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        print("[onix-test(90)] %s" % str(resp.json()))
