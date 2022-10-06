@@ -1,3 +1,5 @@
+from rest_framework.authtoken.models import Token
+
 from airone.lib.test import AironeViewTest
 from user.models import User
 
@@ -97,3 +99,28 @@ class ViewTest(AironeViewTest):
                 "message": "You do not have permission to perform this action.",
             },
         )
+
+    def test_get_user_token_via_apiv2_without_creation(self):
+        self.guest_login()
+
+        resp = self.client.get("/user/api/v2/token/")
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json(), {"message": "Not found.", "code": "AE-230000"})
+
+    def test_get_user_token_via_apiv2(self):
+        user = self.guest_login()
+        token = Token.objects.create(user=user)
+
+        resp = self.client.get("/user/api/v2/token/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {"key": str(token)})
+
+    def test_refresh_user_token_via_apiv2(self):
+        user = self.guest_login()
+
+        resp = self.client.post("/user/api/v2/token/")
+        self.assertEqual(resp.status_code, 200)
+
+        # get user token to compare with response data
+        token = Token.objects.get(user=user)
+        self.assertEqual(resp.json(), {"key": str(token)})
