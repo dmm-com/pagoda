@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { CopyEntryPage } from "./pages/CopyEntryPage";
 import { EntryDetailsPage } from "./pages/EntryDetailsPage";
 import { RestoreEntryPage } from "./pages/RestoreEntryPage";
+import { RolePage } from "./pages/RolePage";
 
 import {
   aclPath,
@@ -32,6 +33,7 @@ import {
   entryDetailsPath,
   copyEntryPath,
   restoreEntryPath,
+  rolesPath,
 } from "Routes";
 import { Header } from "components/Header";
 import { ACLPage } from "pages/ACLPage";
@@ -137,6 +139,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             <Route path={importUsersPath()} component={ImportUserPage} />
             <Route path={userPath(":userId")} component={EditUserPage} />
             <Route path={usersPath()} component={UserPage} />
+            <Route path={rolesPath()} component={RolePage} />
             <Route path="/" component={DashboardPage} />
           </Switch>
         </Route>

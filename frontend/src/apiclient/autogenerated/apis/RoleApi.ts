@@ -15,6 +15,10 @@
 import * as runtime from "../runtime";
 import { Role, RoleFromJSON, RoleToJSON } from "../models";
 
+export interface RoleApiV2DestroyRequest {
+  id: number;
+}
+
 export interface RoleApiV2RetrieveRequest {
   id: number;
 }
@@ -23,6 +27,62 @@ export interface RoleApiV2RetrieveRequest {
  *
  */
 export class RoleApi extends runtime.BaseAPI {
+  /**
+   */
+  async roleApiV2DestroyRaw(
+    requestParameters: RoleApiV2DestroyRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling roleApiV2Destroy."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/role/api/v2/{id}`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "DELETE",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async roleApiV2Destroy(
+    requestParameters: RoleApiV2DestroyRequest,
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.roleApiV2DestroyRaw(requestParameters, initOverrides);
+  }
+
   /**
    */
   async roleApiV2ListListRaw(

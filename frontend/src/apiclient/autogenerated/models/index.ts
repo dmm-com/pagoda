@@ -33,6 +33,8 @@ export * from "./PaginatedGetEntrySimpleList";
 export * from "./PaginatedJobSerializersList";
 export * from "./PaginatedUserListList";
 export * from "./Role";
+export * from "./RoleGroup";
+export * from "./RoleUser";
 export * from "./UserBase";
 export * from "./UserCreate";
 export * from "./UserList";

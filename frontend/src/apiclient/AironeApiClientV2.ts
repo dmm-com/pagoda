@@ -380,6 +380,20 @@ class AironeApiClientV2 {
     return await this.role.roleApiV2ListList();
   }
 
+  async deleteRole(roleId: number): Promise<void> {
+    return await this.role.roleApiV2Destroy(
+      {
+        id: roleId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
   async getEntries(
     entityId: number,
     isActive = true,
