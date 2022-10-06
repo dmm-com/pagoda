@@ -1,6 +1,7 @@
+from rest_framework.authtoken.models import Token
+
 from airone.lib.test import AironeViewTest
 from user.models import User
-from rest_framework.authtoken.models import Token
 
 
 class ViewTest(AironeViewTest):
