@@ -672,6 +672,18 @@ def _notify_event(notification_method, object_id, user):
 
 
 @app.task(bind=True)
+def update_es_documents(self, job_id):
+    job = Job.objects.get(id=job_id)
+    job.update(Job.STATUS["PROCESSING"])
+    params = json.loads(job.params)
+
+    entity = Entity.objects.get(id=job.target.id)
+    Entry.update_documents(entity, params.get("is_update", False))
+
+    job.delete()
+
+
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def notify_create_entry(self, job):
     return _notify_event(notify_entry_create, job.target.id, job.user)

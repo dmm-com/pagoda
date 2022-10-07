@@ -10,6 +10,7 @@ from django.conf import settings
 from django.db import models
 
 from acl.models import ACLBase
+from airone.lib import auto_complement
 from airone.lib.log import Logger
 from entity.models import Entity
 from entry.models import Entry
@@ -45,6 +46,7 @@ class JobOperation(Enum):
     GROUP_REGISTER_REFERRAL = 18
     ROLE_REGISTER_REFERRAL = 19
     EXPORT_ENTRY_V2 = 20
+    UPDATE_DOCUMENT = 21
 
 
 class Job(models.Model):
@@ -92,6 +94,7 @@ class Job(models.Model):
         JobOperation.NOTIFY_CREATE_ENTRY.value,
         JobOperation.NOTIFY_UPDATE_ENTRY.value,
         JobOperation.NOTIFY_DELETE_ENTRY.value,
+        JobOperation.UPDATE_DOCUMENT.value,
     ]
 
     CANCELABLE_OPERATIONS = [
@@ -113,6 +116,7 @@ class Job(models.Model):
         JobOperation.DO_COPY_ENTRY.value,
         JobOperation.IMPORT_ENTRY.value,
         JobOperation.EXPORT_ENTRY.value,
+        JobOperation.UPDATE_DOCUMENT.value,
     ]
 
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
@@ -315,6 +319,7 @@ class Job(models.Model):
                 JobOperation.NOTIFY_DELETE_ENTRY.value: entry_task.notify_delete_entry,
                 JobOperation.GROUP_REGISTER_REFERRAL.value: group_task.edit_group_referrals,
                 JobOperation.ROLE_REGISTER_REFERRAL.value: role_task.edit_role_referrals,
+                JobOperation.UPDATE_DOCUMENT.value: entry_task.update_es_documents,
             }
 
         return kls._METHOD_TABLE
@@ -464,6 +469,17 @@ class Job(models.Model):
     @classmethod
     def new_delete_entity(kls, user, target, text="", params={}):
         return kls._create_new_job(user, target, JobOperation.DELETE_ENTITY.value, text, params)
+
+    @classmethod
+    def new_update_documents(kls, target, text="", params={}):
+        user = auto_complement.get_auto_complement_user(None)
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.UPDATE_DOCUMENT.value,
+            text,
+            json.dumps(params, sort_keys=True),
+        )
 
     @classmethod
     def new_notify_create_entry(kls, user, target, text="", params={}):

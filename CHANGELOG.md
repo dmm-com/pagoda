@@ -18,6 +18,8 @@
 ### Changed
 * Changed not to execute notify job when there is no update in entry import
   Contributed by @hinashi
+* Changed Elasticsarch update process to faster.
+  Contributed by @hinashi
 
 ### Fixed
 * Fixed error in updating array_object attribute

@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 from unittest import skip
 
@@ -6,6 +7,7 @@ from django.conf import settings
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import ExceedLimitError
+from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrTypeArrObj, AttrTypeArrStr, AttrTypeObj, AttrTypeStr, AttrTypeValue
 from entity.models import Entity, EntityAttr
@@ -4289,7 +4291,7 @@ class ModelTest(AironeTestCase):
                 "key": [""],
                 "value": [""],
                 "referral_id": [""],
-                "date_value": [date(2018, 12, 31)],
+                "date_value": ["2018-12-31"],
             },
             "arr_str": {
                 "key": ["", "", ""],
@@ -4352,7 +4354,7 @@ class ModelTest(AironeTestCase):
                 "entry": {"id": entry.id, "name": "entry"},
                 "is_readble": True,
                 "attrs": {
-                    "bool": {"is_readble": True, "type": AttrTypeValue["boolean"], "value": ""},
+                    "bool": {"is_readble": True, "type": AttrTypeValue["boolean"], "value": False},
                     "date": {
                         "is_readble": True,
                         "type": AttrTypeValue["date"],
@@ -5286,3 +5288,62 @@ class ModelTest(AironeTestCase):
         # check duplicate entry
         ret = entry.check_duplication_entry_at_restoring(entry_chain=[])
         self.assertFalse(ret)
+
+    def test_update_documents(self):
+        all_attr_entity = self.create_entity_with_all_type_attributes(self._user)
+        all_attr_entry = Entry.objects.create(
+            name="all_attr_entry", created_user=self._user, schema=all_attr_entity
+        )
+        all_attr_entry.complement_attrs(self._user)
+
+        # register
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
+            Entry.update_documents(all_attr_entity)
+
+        self.assertTrue(
+            warning_log.output[0],
+            "WARNING:airone:Update elasticsearch document (entry_id: %s)" % all_attr_entry.id,
+        )
+
+        res = Entry.search_entries(self._user, [all_attr_entity.id], is_output_all=True)
+        self.assertEqual(res["ret_count"], 1)
+        self.assertEqual(
+            [x for x in res["ret_values"][0]["attrs"].keys()],
+            [x.name for x in all_attr_entity.attrs.all()],
+        )
+
+        res = Entry.search_entries(self._user, [self._entity.id])
+        self.assertEqual(res["ret_count"], 0)
+
+        Entry.update_documents(self._entity, True)
+
+        res = Entry.search_entries(self._user, [self._entity.id])
+        self.assertEqual(res["ret_count"], 1)
+
+        #  update
+        entry2 = Entry.objects.create(name="entry2", created_user=self._user, schema=self._entity)
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
+            Entry.update_documents(self._entity)
+
+        self.assertTrue(
+            warning_log.output[0],
+            "WARNING:airone:Update elasticsearch document (entry_id: %s)" % entry2.id,
+        )
+
+        res = Entry.search_entries(self._user, [self._entity.id])
+        self.assertEqual(res["ret_count"], 2)
+
+        entry2.is_active = False
+        entry2.save()
+
+        # delete
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
+            Entry.update_documents(self._entity)
+
+        self.assertTrue(
+            warning_log.output[0],
+            "WARNING:airone:Delete elasticsearch document (entry_id: %s)" % entry2.id,
+        )
+
+        res = Entry.search_entries(self._user, [self._entity.id])
+        self.assertEqual(res["ret_count"], 1)
