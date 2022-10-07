@@ -50,6 +50,12 @@ class AironeTestCase(TestCase):
         if not os.path.exists(settings.AIRONE["FILE_STORE_PATH"]):
             os.makedirs(settings.AIRONE["FILE_STORE_PATH"])
 
+        # Create auto_complement_user
+        User.objects.create(
+            username=settings.AIRONE["AUTO_COMPLEMENT_USER"],
+            email=settings.AIRONE["AUTO_COMPLEMENT_USER"] + "@example.com",
+        )
+
     def tearDown(self):
         # shutil.rmtree(settings.AIRONE['FILE_STORE_PATH'])
         for fname in os.listdir(settings.AIRONE["FILE_STORE_PATH"]):
