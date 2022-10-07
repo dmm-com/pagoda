@@ -21,6 +21,12 @@ import { exists, mapValues } from "../runtime";
 export interface RoleGroup {
   /**
    *
+   * @type {number}
+   * @memberof RoleGroup
+   */
+  readonly id: number;
+  /**
+   *
    * @type {string}
    * @memberof RoleGroup
    */
@@ -39,6 +45,7 @@ export function RoleGroupFromJSONTyped(
     return json;
   }
   return {
+    id: json["id"],
     name: json["name"],
   };
 }

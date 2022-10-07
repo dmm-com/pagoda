@@ -9,6 +9,7 @@ class RoleUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
+            "id",
             "username",
         ]
 
@@ -17,6 +18,7 @@ class RoleGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = [
+            "id",
             "name",
         ]
 
@@ -31,6 +33,20 @@ class RoleSerializer(serializers.ModelSerializer):
         model = Role
         fields = [
             "id",
+            "is_active",
+            "name",
+            "description",
+            "users",
+            "groups",
+            "admin_users",
+            "admin_groups",
+        ]
+
+
+class RoleCreateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = [
             "is_active",
             "name",
             "description",

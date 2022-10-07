@@ -7,11 +7,8 @@ import { RoleList } from "../components/role/RoleList";
 
 import { newRolePath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { DjangoContext } from "utils/DjangoContext";
 
 export const RolePage: FC = () => {
-  const djangoContext = DjangoContext.getInstance();
-
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>

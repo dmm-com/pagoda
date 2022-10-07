@@ -20,6 +20,12 @@ import { exists, mapValues } from "../runtime";
  */
 export interface RoleUser {
   /**
+   *
+   * @type {number}
+   * @memberof RoleUser
+   */
+  readonly id: number;
+  /**
    * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
    * @type {string}
    * @memberof RoleUser
@@ -39,6 +45,7 @@ export function RoleUserFromJSONTyped(
     return json;
   }
   return {
+    id: json["id"],
     username: json["username"],
   };
 }
