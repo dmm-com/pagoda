@@ -232,7 +232,7 @@ const ElemReferral: FC<
           sx={{ width: "280px" }}
           multiple={multiple}
           options={referrals}
-          getOptionLabel={(option) => option.name}
+          getOptionLabel={(option) => option?.name}
           isOptionEqualToValue={(option, value) => option.id === value?.id}
           value={attrValue ?? null}
           onChange={(e, value) => {

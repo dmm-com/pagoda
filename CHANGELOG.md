@@ -5,10 +5,18 @@
 ### Added
 
 ### Changed
-* Changed not to use memcached.
+* Changed not to execute notify job when there is no update in entry import
   Contributed by @hinashi
 
 ### Fixed
+* Fixed remove_from_attrv for array_named_entry attribute
+  Contributed by @hinashi
+
+## v3.23.0
+
+### Changed
+* Changed not to use memcached.
+  Contributed by @hinashi
 
 ## v3.22.0
 

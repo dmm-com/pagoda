@@ -347,6 +347,7 @@ class ModelTest(AironeTestCase):
         self.assertTrue(attr.is_updated([e1.id, e2.id, e3.id]))  # create
         self.assertTrue(attr.is_updated([e1.id, e3.id, e4.id]))  # create & update
         self.assertTrue(attr.is_updated([]))
+        self.assertTrue(attr.is_updated([None, e1.id]))
         self.assertTrue(attr.is_updated(["", e1.id]))
         self.assertTrue(attr.is_updated(["0", e1.id]))
         self.assertTrue(attr.is_updated(["hoge", e1.id]))
@@ -3305,13 +3306,32 @@ class ModelTest(AironeTestCase):
             sorted(["ref-0", "ref-1"]),
         )
 
-        attrs["arr_name"].remove_from_attrv(user, referral=None)
-        attrv = attrs["arr_name"].get_latest_value()
-        self.assertEqual(sorted([x.value for x in attrv.data_array.all()]), sorted(["foo", "bar"]))
-        self.assertEqual(
-            sorted([x.referral.name for x in attrv.data_array.all()]),
-            sorted(["ref-0", "ref-1"]),
-        )
+        param_list = [
+            {
+                "referral": None,
+                "value": "",
+            },
+            {
+                "referral": entry_refs[0],
+                "value": "",
+            },
+            {
+                "referral": None,
+                "value": "foo",
+            },
+        ]
+        for param in param_list:
+            attrs["arr_name"].remove_from_attrv(
+                user, referral=param["referral"], value=param["value"]
+            )
+            attrv = attrs["arr_name"].get_latest_value()
+            self.assertEqual(
+                sorted([x.value for x in attrv.data_array.all()]), sorted(["foo", "bar"])
+            )
+            self.assertEqual(
+                sorted([x.referral.name for x in attrv.data_array.all()]),
+                sorted(["ref-0", "ref-1"]),
+            )
 
         attrs["arr_group"].remove_from_attrv(user, value=None)
         self.assertEqual(
@@ -3330,7 +3350,7 @@ class ModelTest(AironeTestCase):
             sorted([x.referral.name for x in attrv.data_array.all()]), sorted(["ref-1"])
         )
 
-        attrs["arr_name"].remove_from_attrv(user, referral=entry_refs[0])
+        attrs["arr_name"].remove_from_attrv(user, referral=entry_refs[0], value="foo")
         attrv = attrs["arr_name"].get_latest_value()
         self.assertEqual(sorted([x.value for x in attrv.data_array.all()]), sorted(["bar"]))
         self.assertEqual(

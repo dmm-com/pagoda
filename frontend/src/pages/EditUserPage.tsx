@@ -135,6 +135,27 @@ export const EditUserPage: FC = () => {
     history.replace(usersPath());
   };
 
+  const handleRefreshToken = () => {
+    aironeApiClientV2
+      .updateUserToken()
+      .then((val) => {
+        setUserInfo({
+          ...userInfo,
+          token: {
+            ...userInfo.token,
+            value: val.key,
+          },
+        });
+      })
+      .catch((err) => {
+        const json = err.json();
+        const reason = json["code"];
+        enqueueSnackbar(`Token の更新に失敗しました。詳細: ${reason}`, {
+          variant: "error",
+        });
+      });
+  };
+
   return (
     <Box>
       <AironeBreadcrumbs>
@@ -158,6 +179,15 @@ export const EditUserPage: FC = () => {
                 onClick={handleSubmit}
               >
                 保存
+              </Button>
+            </Box>
+            <Box mx="4px">
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={handleRefreshToken}
+              >
+                Token を更新
               </Button>
             </Box>
             <Box mx="4px">

@@ -527,6 +527,8 @@ class Attribute(ACLBase):
                 try:
                     if isinstance(value, Entry):
                         entry_id = value.id
+                    elif not value:
+                        entry_id = 0
                     else:
                         entry_id = int(value)
 
@@ -1096,7 +1098,7 @@ class Attribute(ACLBase):
                         "id": x.referral.id if x.referral else None,
                         "boolean": x.boolean,
                     }
-                    for x in attrv.data_array.filter(~Q(referral__id=referral.id))
+                    for x in attrv.data_array.exclude(referral=referral, value=value)
                 ]
 
             elif self.schema.type & AttrTypeValue["string"]:

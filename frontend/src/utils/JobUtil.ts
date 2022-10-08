@@ -37,6 +37,7 @@ export const jobOperationLabel = (jobOperation: number): string => {
     case JobOperations.IMPORT_ENTRY_V2:
       return "インポート";
     case JobOperations.EXPORT_ENTRY:
+    case JobOperations.EXPORT_ENTRY_V2:
     case JobOperations.EXPORT_SEARCH_RESULT:
       return "エクスポート";
     case JobOperations.COPY_ENTRY:

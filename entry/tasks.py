@@ -2,6 +2,7 @@ import csv
 import io
 import json
 from datetime import datetime
+from typing import Optional
 
 import yaml
 from rest_framework.exceptions import ValidationError
@@ -113,6 +114,7 @@ def _do_import_entries(job: Job):
 
     # create or update entry
     for (index, entry_data) in enumerate(import_data):
+        job_notify: Optional[Job] = None
         job.text = "Now importing... (progress: [%5d/%5d] for %s)" % (
             index + 1,
             total_count,
@@ -129,16 +131,13 @@ def _do_import_entries(job: Job):
             entry = Entry.objects.create(name=entry_data["name"], schema=entity, created_user=user)
 
             # create job to notify create event to the WebHook URL
-            job_notify: Job = Job.new_notify_create_entry(user, entry)
+            job_notify = Job.new_notify_create_entry(user, entry)
 
-        elif not user.has_permission(entry, ACLType.Writable):
+        if not user.has_permission(entry, ACLType.Writable):
             continue
 
-        else:
-            # create job to notify edit event to the WebHook URL
-            job_notify = Job.new_notify_update_entry(user, entry)
-
         entry.complement_attrs(user)
+        is_update: bool = False
         for attr_name, value in entry_data["attrs"].items():
             # If user doesn't have readable permission for target Attribute,
             # it won't be created.
@@ -170,16 +169,21 @@ def _do_import_entries(job: Job):
             input_value = attr.convert_value_to_register(value)
             if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(input_value):
                 attr.add_value(user, input_value)
+                is_update = True
 
             # call custom-view processing corresponding to import entry
             if custom_view_handler:
                 custom_view.call_custom(custom_view_handler, entity.name, user, entry, attr, value)
 
-        # register entry to the Elasticsearch
-        entry.register_es()
+        if not job_notify and is_update:
+            job_notify = Job.new_notify_update_entry(user, entry)
 
-        # run notification job
-        job_notify.run()
+        if job_notify:
+            # register entry to the Elasticsearch
+            entry.register_es()
+
+            # run notification job
+            job_notify.run()
 
     job.update(status=Job.STATUS["DONE"], text="")
 
