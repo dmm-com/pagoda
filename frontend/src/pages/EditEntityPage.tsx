@@ -56,7 +56,6 @@ export const EditEntityPage: FC = () => {
   };
 
   const handleCancel = () => {
-    setSubmitted(true);
     history.replace(entitiesPath());
   };
 
@@ -127,7 +126,7 @@ export const EditEntityPage: FC = () => {
 
   useEffect(() => {
     if (!entity.loading && entity.value !== undefined) {
-      setEntityInfo({
+      _setEntityInfo({
         ...entity.value,
         attrs:
           entity.value.attrs.map((attr) => {

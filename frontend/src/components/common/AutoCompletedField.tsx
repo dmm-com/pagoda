@@ -6,7 +6,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import { styled } from "@mui/material/styles";
 import * as React from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Root = styled("div")(
   ({ theme }) => `
@@ -190,12 +190,19 @@ export const AutoCompletedField = <T,>({
     getOptionLabel: getOptionLabel,
   });
 
+  const [initialized, setInitialized] = useState(false);
+
   useEffect(() => {
     if (
       (multiple && value[0] instanceof String) ||
       (!multiple && value instanceof String)
     ) {
       throw Error(`unsupported value: ${value}`);
+    }
+
+    if (!initialized) {
+      setInitialized(true);
+      return;
     }
 
     if (multiple && Array.isArray(value)) {

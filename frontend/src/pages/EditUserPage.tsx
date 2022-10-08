@@ -132,7 +132,6 @@ export const EditUserPage: FC = () => {
   };
 
   const handleCancel = () => {
-    setSubmitted(true);
     history.replace(usersPath());
   };
 

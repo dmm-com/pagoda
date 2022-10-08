@@ -354,7 +354,6 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
   };
 
   const handleCancel = () => {
-    setSubmitted(true);
     if (entryId != null) {
       history.replace(entryDetailsPath(entityId, entryId));
     } else {
