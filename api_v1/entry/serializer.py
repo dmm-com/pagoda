@@ -132,53 +132,6 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
         return data
 
-    def _old_search_entries(self, user):
-        def _merge_search_result(stored_list, result_data):
-            for info in result_data:
-                if info["id"] not in [x["id"] for x in stored_list]:
-                    stored_list.append(info)
-
-        def _search_entries(condition, is_any):
-            # digging into the conditions tree to get to leaf condition by depth-first search
-            former_search_result = []
-            if "attrs" in condition:
-                for attrinfo in condition["attrs"]:
-                    ret_data = _search_entries(attrinfo, condition["is_any"])
-
-                    # merge former result
-                    _merge_search_result(former_search_result, ret_data)
-
-            else:
-                # In the leaf condition return nothing
-                return []
-
-            # declare search query for Entry.search_entries()
-            search_query = []
-            for attrinfo in condition["attrs"]:
-                search_keyword = "|".join([x["name"] for x in former_search_result])
-                if isinstance(condition.get("value"), str) and len(condition["value"]) > 0:
-                    search_keyword = condition.get("value")
-
-                search_query.append(
-                    {
-                        "name": attrinfo["name"],
-                        "keyword": search_keyword,
-                    }
-                )
-
-            search_result = Entry.search_entries(user, condition["entities"], search_query)
-
-            return [x["entry"] for x in search_result["ret_values"]]
-
-        final_search_result = []
-        for condition in self.validated_data["conditions"]:
-            result = _search_entries(condition, self.validated_data["is_any"])
-
-            # merge search result
-            _merge_search_result(final_search_result, result)
-
-        return final_search_result
-
     def search_entries(self, user, query=None):
         if query is None:
             query = self.validated_data
@@ -249,7 +202,9 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 for entity_id in query["entities"]:
                     entity = Entity.objects.get(id=entity_id)
 
-                search_result = Entry.search_entries(user, query["entities"], search_query)
+                search_result = Entry.search_entries(
+                    user, query["entities"], search_query, limit=99999
+                )
 
                 result_entry_info = [x["entry"] for x in search_result["ret_values"]]
                 if not accumulated_result:
