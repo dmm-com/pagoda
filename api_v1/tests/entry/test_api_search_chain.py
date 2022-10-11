@@ -62,7 +62,7 @@ class APITest(AironeViewTest):
         )
 
         # create Entries, that will be used in this test case
-        self.entry_vlan = self.add_entry(
+        self.entry_vlan1 = self.add_entry(
             self.user,
             "vlan100",
             self.entity_vlan,
@@ -70,12 +70,20 @@ class APITest(AironeViewTest):
                 "note": "test network",
             },
         )
+        self.entry_vlan2 = self.add_entry(
+            self.user,
+            "vlan200",
+            self.entity_vlan,
+            values={
+                "note": "another test network",
+            },
+        )
         self.entry_network = self.add_entry(
             self.user,
             "10.0.0.0/8",
             self.entity_network,
             values={
-                "vlan": self.entry_vlan,
+                "vlan": self.entry_vlan1,
             },
         )
         self.entry_ipv4 = self.add_entry(
@@ -118,7 +126,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "attrs": [
+            "conditions": [
                 {
                     "name": "Ports",
                     "value": "ens0",
@@ -163,7 +171,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that doesn't have last attr chain
         params = {
             "entities": ["VM"],
-            "attrs": [
+            "conditions": [
                 {
                     "name": "Ports",
                     "value": "ens0",
@@ -186,6 +194,9 @@ class APITest(AironeViewTest):
                             ],
                         }
                     ],
+                }, {
+                    "name": "Status",
+                    "value": "Service-In"
                 }
             ],
         }
@@ -203,7 +214,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that has wrong value
         params = {
             "entities": ["VM"],
-            "attrs": [
+            "conditions": [
                 {
                     "name": "Ports",
                     "value": "ens0",
@@ -235,7 +246,7 @@ class APITest(AironeViewTest):
         params = {
             "entities": ["VM"],
             "is_any": True,
-            "attrs": [
+            "conditions": [
                 # This condition will match only test-vm1
                 {"name": "Status", "value": "Service-In"},
                 # This condition will match only test-vm2
@@ -249,13 +260,8 @@ class APITest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
-            resp.json(),
-            {
-                "entries": [
-                    {"id": self.entry_vm1.id, "name": self.entry_vm1.name},
-                    {"id": self.entry_vm2.id, "name": self.entry_vm2.name},
-                ]
-            },
+            sorted([x['id'] for x in resp.json()['entries']]),
+            sorted([self.entry_vm1.id, self.entry_vm2.id])
         )
 
     def test_search_chain_using_AND_condition(self):
@@ -263,7 +269,7 @@ class APITest(AironeViewTest):
         params = {
             "entities": ["VM"],
             "is_any": False,
-            "attrs": [
+            "conditions": [
                 # This condition will match only test-vm1
                 {"name": "Status", "value": "Service-In"},
                 # This condition will match only test-vm2
@@ -299,10 +305,15 @@ class APITest(AironeViewTest):
         # create query to search chained query
         params = {
             "entities": ["VM"],
-            "attrs": [
+            "conditions": [
                 {
                     "name": "Ports",
-                    "attrs": [{"name": "IP address", "value": ""}],
+                    "attrs": [
+                        {
+                            "name": "IP address",
+                            "value": ""
+                        }
+                    ],
                 },
             ],
         }
@@ -353,7 +364,7 @@ class APITest(AironeViewTest):
         # termination Entry "10.0.0.0/8".
         params = {
             "entities": ["VM"],
-            "attrs": [
+            "conditions": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -401,7 +412,7 @@ class APITest(AironeViewTest):
         ]
         entry_nic = self.add_entry(
             self.user,
-            "ens0",
+            "ens1",
             self.entity_nic,
             values={
                 "IP address": entry_ipaddrs,
@@ -421,7 +432,7 @@ class APITest(AironeViewTest):
         params = {
             "entities": ["VM"],
             "is_any": True,
-            "attrs": [
+            "conditions": [
                 {
                     "name": "Ports",
                     "is_any": False,
@@ -446,13 +457,8 @@ class APITest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
-            resp.json(),
-            {
-                "entries": [
-                    {"id": entry_another_vm.id, "name": entry_another_vm.name},
-                    {"id": self.entry_vm2.id, "name": self.entry_vm2.name},
-                ]
-            },
+            sorted([x['id'] for x in resp.json()['entries']]),
+            sorted([entry_another_vm.id, self.entry_vm2.id])
         )
 
     def test_search_chain_when_object_attrvalue_is_empty(self):
@@ -474,7 +480,7 @@ class APITest(AironeViewTest):
         )
         entry_nic = self.add_entry(
             self.user,
-            "ens0",
+            "ens1",
             self.entity_nic,
             values={
                 "IP address": [entry_ipv4],
@@ -485,14 +491,14 @@ class APITest(AironeViewTest):
             "test-another-vm",
             self.entity_vm,
             values={
-                "Ports": [{"id": entry_nic, "name": "ens0"}],
+                "Ports": [{"id": entry_nic, "name": "ens1"}],
             },
         )
 
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "attrs": [
+            "conditions": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -540,7 +546,7 @@ class APITest(AironeViewTest):
         )
         entry_nic = self.add_entry(
             self.user,
-            "ens0",
+            "ens1",
             self.entity_nic,
             values={
                 "IP address": [entry_ipv4],
@@ -551,7 +557,7 @@ class APITest(AironeViewTest):
             "test-another-vm",
             self.entity_vm,
             values={
-                "Ports": [{"id": entry_nic, "name": "ens0"}],
+                "Ports": [{"id": entry_nic, "name": "ens1"}],
                 "Status": self.entry_service_in,
             },
         )
@@ -559,7 +565,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "attrs": [
+            "conditions": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -597,7 +603,7 @@ class APITest(AironeViewTest):
     def test_search_chain_when_array_object_attrvalue_is_empty(self):
         entry_nic = self.add_entry(
             self.user,
-            "ens0",
+            "ens1",
             self.entity_nic,
             values={
                 "IP address": [],
@@ -608,7 +614,7 @@ class APITest(AironeViewTest):
             "test-another-vm",
             self.entity_vm,
             values={
-                "Ports": [{"id": entry_nic, "name": "ens0"}],
+                "Ports": [{"id": entry_nic, "name": "ens1"}],
                 "Status": self.entry_service_in,
             },
         )
@@ -616,7 +622,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "attrs": [
+            "conditions": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -650,6 +656,9 @@ class APITest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         print("[onix-test(90)] %s" % str(resp.json()))
+        self.assertEqual(
+            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+        )
 
     def test_search_chain_when_array_named_object_attrvalue_is_empty(self):
         entry_vm = self.add_entry(
@@ -657,7 +666,7 @@ class APITest(AironeViewTest):
             "test-another-vm",
             self.entity_vm,
             values={
-                "Ports": [{"id": None, "name": "ens0"}],
+                "Ports": [{"id": None, "name": "ens1"}],
                 "Status": self.entry_service_in,
             },
         )
@@ -665,7 +674,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "attrs": [
+            "conditions": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -697,5 +706,9 @@ class APITest(AironeViewTest):
         resp = self.client.post(
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
+        print("[onix-test(80)] %s" % str(resp.content.decode('utf-8')))
         self.assertEqual(resp.status_code, 200)
         print("[onix-test(90)] %s" % str(resp.json()))
+        self.assertEqual(
+            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+        )
