@@ -5,10 +5,18 @@
 ### Added
 
 ### Changed
+
+### Fixed
+
+## v3.24.0
+
+### Changed
 * Changed not to execute notify job when there is no update in entry import
   Contributed by @hinashi
 
 ### Fixed
+* Fixed error in updating array_object attribute
+  Contributed by @hinashi
 * Fixed remove_from_attrv for array_named_entry attribute
   Contributed by @hinashi
 
@@ -23,7 +31,6 @@
 ### Added
 * Added airone error code to APIv2 for frontend.
   Contributed by @syucream, @userlocalhost, @hinashi
-
 * Added new parameter "as_member" at the Role.is_belonged_to() method to be able to
   confirm that specified user is belonged to this role as member.
   Contributed by @userlocalhost
