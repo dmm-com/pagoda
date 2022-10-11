@@ -83,7 +83,11 @@ class AironeTestCase(TestCase):
             )
 
             if "ref" in attr_info:
-                entity_attr.referral.add(attr_info["ref"])
+                if isinstance(attr_info["ref"], list):
+                    for ref in attr_info["ref"]:
+                        entity_attr.referral.add(ref)
+                else:
+                    entity_attr.referral.add(attr_info["ref"])
 
             entity.attrs.add(entity_attr)
 

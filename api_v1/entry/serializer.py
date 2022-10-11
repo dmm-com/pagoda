@@ -91,14 +91,19 @@ class EntrySearchChainSerializer(serializers.Serializer):
         def _complement_entities(condition, entities):
             if "name" in condition:
                 # This Attributes must be existed because existance check has already been done
+                entity_ids = []
                 for attr in [
                     EntityAttr.objects.get(
                         name=condition["name"], is_active=True, parent_entity__pk=x
                     )
                     for x in entities
                 ]:
+                    print('[onix/_complement_entities(10)] (%s) %s [%s]' % (attr.parent_entity.name, attr.name, attr.parent_entity.id))
                     # complements Entity IDs that this condition implicitly expects
-                    condition["entities"] = [x.id for x in attr.referral.filter(is_active=True)]
+                    entity_ids += [x.id for x in attr.referral.filter(is_active=True)]
+
+                # complement Entity IDs of each conditions
+                condition["entities"] = list(set(entity_ids))
 
         def _get_serializer(condition):
             # This determines which serializer is from condition context.
@@ -108,6 +113,10 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 return AttrSerializer
 
         def _may_validate_and_complement_condition(condition, entities, serializer_hint=None):
+            for entity_id in entities:
+                entity = Entity.objects.get(id=entity_id, is_active=True)
+                print('[onix/_may_validate_and_complement_condition(00)] entity: %s [%s]' % (entity.name, entity.id))
+
             serializer_class = serializer_hint
             if serializer_hint is None:
                 serializer_class = _get_serializer(condition)
@@ -126,10 +135,15 @@ class EntrySearchChainSerializer(serializers.Serializer):
             # complement "entities" parameter at this condition
             _complement_entities(validated_data, entities)
 
+            for entity_id in validated_data.get('entities', []):
+                entity = Entity.objects.get(id=entity_id, is_active=True)
+                print('[onix/_may_validate_and_complement_condition(10)] entity: %s [%s]' % (entity.name, entity.id))
+
             # call this method recursively to validate and complement value for each conditions
             if "attrs" in validated_data:
                 validated_data['attrs'] = [_may_validate_and_complement_condition(x, validated_data["entities"], AttrSerializer) for x in validated_data['attrs']]
 
+            print('[onix/_may_validate_and_complement_condition(99)] validated_data: %s' % str(validated_data))
             return validated_data
                 
 

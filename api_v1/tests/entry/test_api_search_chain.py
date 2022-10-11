@@ -706,9 +706,101 @@ class APITest(AironeViewTest):
         resp = self.client.post(
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
-        print("[onix-test(80)] %s" % str(resp.content.decode('utf-8')))
         self.assertEqual(resp.status_code, 200)
-        print("[onix-test(90)] %s" % str(resp.json()))
         self.assertEqual(
             resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+        )
+
+    def test_complex_entity_structure(self):
+        # create Entities that have all referral Attribute types
+        entity_ipv6_network = self.create_entity(
+            self.user,
+            "IPv6 Network",
+            attrs=[
+                {"name": "vlan", "type": AttrTypeValue["object"], "ref": self.entity_vlan},
+            ],
+        )
+        entity_ipv6_address = self.create_entity(
+            self.user,
+            "IPv6 Address",
+            attrs=[
+                {
+                    "name": "network",
+                    "type": AttrTypeValue["named_object"],
+                    "ref": entity_ipv6_network,
+                },
+            ],
+        )
+        entity_server = self.create_entity(
+            self.user,
+            "Server",
+            attrs=[
+                {
+                    "name": "IP addresses",
+                    "type": AttrTypeValue["array_object"],
+                    "ref": [
+                        self.entity_ipv4,
+                        entity_ipv6_address,
+                    ],
+                },
+            ],
+        )
+
+        # create Entries, that will be used in this test case
+        entry_ipv6_network = self.add_entry(
+            self.user,
+            "2001:0DB8:0:CD30:123:4567:89AB:CDEF/60",
+            entity_ipv6_network,
+            values={
+                "vlan": self.entry_vlan1,
+            },
+        )
+        entry_ipv6_address = self.add_entry(
+            self.user,
+            "2001:0DB8:0:CD30:123:4567:89AB:CDEF",
+            entity_ipv6_address,
+            values={
+                "network": {"id": entry_ipv6_network, "name": ""},
+            },
+        )
+        entry_server = self.add_entry(
+            self.user,
+            "srv001",
+            entity_server,
+            values={
+                "IP addresses": [entry_ipv6_address],
+            },
+        )
+
+        # create query to search chained query that follows all attribute chain
+        params = {
+            "entities": ["Server"],
+            "conditions": [
+                {
+                    "name": "IP addresses",
+                    "attrs": [
+                        {
+                            "name": "network",
+                            "attrs": [
+                                {
+                                    "name": "vlan",
+                                    "attrs": [
+                                        {
+                                            "name": "note",
+                                            "value": "test",
+                                        }
+                                    ],
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        }
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json(), {"entries": [{"id": entry_server.id, "name": entry_server.name}]}
         )
