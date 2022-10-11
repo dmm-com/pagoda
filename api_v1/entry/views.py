@@ -20,29 +20,7 @@ class EntrySearchChainAPI(APIView):
         if not serializer.is_valid():
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-        print('[onix/EntrySearchChainAPI(10)] %s' % str(serializer.validated_data['conditions']))
         (_, ret_data) = serializer.search_entries(request.user)
-        print('[onix/EntrySearchChainAPI(20)] %s' % str(ret_data))
-
-        ### XXX: There is obsoleted implementation from here
-#        # search chainged entries
-#        result = Entry.search_entries(
-#            request.user,
-#            serializer.validated_data.get("entities", []),
-#            [{"name": x["name"]} for x in serializer.validated_data["attrs"]],
-#        )
-#        for v in result["ret_values"]:
-#            entry = Entry.objects.filter(id=v["entry"]["id"], is_active=True).first()
-#            if entry is None:
-#                continue
-#
-#            if serializer.is_attr_chained(entry):
-#                ret_data.append(
-#                    {
-#                        "id": entry.id,
-#                        "name": entry.name,
-#                    }
-#                )
 
         return Response({"entries": ret_data}, status=status.HTTP_200_OK)
 

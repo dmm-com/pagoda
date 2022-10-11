@@ -20,26 +20,12 @@ class AttrSerializer(serializers.Serializer):
     attrs = serializers.ListField(required=False)
 
     def validate_name(self, name):
-        print('[onix/AttrSerializer.validate_name(00)] name: %s' % name)
         if not EntityAttr.objects.filter(name=name, is_active=True).exists():
             raise ValidationError("There is no specified Attribute (%s)" % name)
 
         return name
 
-#    def validate_attrs(self, attrs):
-#        print("[onix/AttrSerializer.validate_attrs(00)]")
-#        ret_data = []
-#        for attr_obj in attrs:
-#            obj = AttrSerializer(data=attr_obj)
-#            if not obj.is_valid():
-#                raise ValidationError("Failed to validate attrs query (%s)" % str(attr_obj))
-#
-#            ret_data.append(obj.validated_data)
-#
-#        return ret_data
-
     def validate_is_any(self, value):
-        print('[onix/AttrSerializer.validate_is_any(00)] value: %s' % value)
         return value
 
 
@@ -50,11 +36,9 @@ class EntrySearchChainSerializer(serializers.Serializer):
     is_any = serializers.BooleanField(default=False)
 
     def validate_is_any(self, value):
-        print('[onix/EntrySearchChainSerializer.validate_is_any(00)] value: %s' % value)
         return value
 
     def validate_entities(self, entities):
-        print("[onix/EntrySearchChainSerializer.validate_entities(00)]")
         ret_data = []
         for id_or_name in entities:
             if isinstance(id_or_name, int):
@@ -98,7 +82,6 @@ class EntrySearchChainSerializer(serializers.Serializer):
                     )
                     for x in entities
                 ]:
-                    print('[onix/_complement_entities(10)] (%s) %s [%s]' % (attr.parent_entity.name, attr.name, attr.parent_entity.id))
                     # complements Entity IDs that this condition implicitly expects
                     entity_ids += [x.id for x in attr.referral.filter(is_active=True)]
 
@@ -113,10 +96,6 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 return AttrSerializer
 
         def _may_validate_and_complement_condition(condition, entities, serializer_hint=None):
-            for entity_id in entities:
-                entity = Entity.objects.get(id=entity_id, is_active=True)
-                print('[onix/_may_validate_and_complement_condition(00)] entity: %s [%s]' % (entity.name, entity.id))
-
             serializer_class = serializer_hint
             if serializer_hint is None:
                 serializer_class = _get_serializer(condition)
@@ -135,99 +114,80 @@ class EntrySearchChainSerializer(serializers.Serializer):
             # complement "entities" parameter at this condition
             _complement_entities(validated_data, entities)
 
-            for entity_id in validated_data.get('entities', []):
-                entity = Entity.objects.get(id=entity_id, is_active=True)
-                print('[onix/_may_validate_and_complement_condition(10)] entity: %s [%s]' % (entity.name, entity.id))
-
             # call this method recursively to validate and complement value for each conditions
             if "attrs" in validated_data:
-                validated_data['attrs'] = [_may_validate_and_complement_condition(x, validated_data["entities"], AttrSerializer) for x in validated_data['attrs']]
+                validated_data["attrs"] = [
+                    _may_validate_and_complement_condition(
+                        x, validated_data["entities"], AttrSerializer
+                    )
+                    for x in validated_data["attrs"]
+                ]
 
-            print('[onix/_may_validate_and_complement_condition(99)] validated_data: %s' % str(validated_data))
             return validated_data
-                
 
         # validate and compelment "conditions" parameter context
-        data['conditions'] = [_may_validate_and_complement_condition(x, data["entities"]) for x in data['conditions']]
+        data["conditions"] = [
+            _may_validate_and_complement_condition(x, data["entities"]) for x in data["conditions"]
+        ]
 
         return data
 
     def _old_search_entries(self, user):
-
         def _merge_search_result(stored_list, result_data):
             for info in result_data:
-                if info['id'] not in [x['id'] for x in stored_list]:
+                if info["id"] not in [x["id"] for x in stored_list]:
                     stored_list.append(info)
 
         def _search_entries(condition, is_any):
-            print('[onix/_search_entries(00)] %s (%s)' % (str(condition), str(is_any)))
-
             # digging into the conditions tree to get to leaf condition by depth-first search
             former_search_result = []
             if "attrs" in condition:
-                for attrinfo in condition['attrs']:
-                    ret_data = _search_entries(attrinfo, condition['is_any'])
-            
+                for attrinfo in condition["attrs"]:
+                    ret_data = _search_entries(attrinfo, condition["is_any"])
+
                     # merge former result
                     _merge_search_result(former_search_result, ret_data)
 
             else:
-                print('[onix/_search_entries(--)] TERMINATED : %s' % str(condition))
                 # In the leaf condition return nothing
                 return []
 
-
-            print('[onix/_search_entries(15)] former_search_result: %s' % (str(former_search_result)))
-
             # declare search query for Entry.search_entries()
             search_query = []
-            for attrinfo in condition['attrs']:
-                search_keyword = "|".join([x['name'] for x in former_search_result])
-                if isinstance(condition.get('value'), str) and len(condition['value']) > 0:
-                    search_keyword = condition.get('value')
+            for attrinfo in condition["attrs"]:
+                search_keyword = "|".join([x["name"] for x in former_search_result])
+                if isinstance(condition.get("value"), str) and len(condition["value"]) > 0:
+                    search_keyword = condition.get("value")
 
-                search_query.append({
-                    "name": attrinfo['name'],
-                    "keyword": search_keyword,
-                })
+                search_query.append(
+                    {
+                        "name": attrinfo["name"],
+                        "keyword": search_keyword,
+                    }
+                )
 
-            # get Entry informations from result
-            for entity_id in condition["entities"]:
-                entity = Entity.objects.get(id=entity_id)
-                print('[onix/_search_entries(19)] (%s) %s' % (entity_id, str(entity.name)))
+            search_result = Entry.search_entries(user, condition["entities"], search_query)
 
-            print('[onix/_search_entries(20)] search_query: %s' % (str(search_query)))
-            search_result = Entry.search_entries(user, condition['entities'], search_query)
-            print('[onix/_search_entries(30)] search_result: %s' % (str(search_result)))
-
-            return [x['entry'] for x in search_result['ret_values']]
-
+            return [x["entry"] for x in search_result["ret_values"]]
 
         final_search_result = []
         for condition in self.validated_data["conditions"]:
-            result = _search_entries(
-                condition, self.validated_data["is_any"]
-            )
-            print('[onix/_search_entries(50)] result: %s' % (str(result)))
+            result = _search_entries(condition, self.validated_data["is_any"])
 
             # merge search result
             _merge_search_result(final_search_result, result)
 
-        print('[onix/_search_entries(60)] former_search_result: %s' % (str(final_search_result)))
         return final_search_result
 
     def search_entries(self, user, query=None):
         if query is None:
             query = self.validated_data
 
-        print('[onix/search_entries(00)] %s' % (str(query)))
-
         def _deduplication(item_list):
-            """This removes duplication items, that have same Entry-ID with other ones, from item_list
-            """
+            """This removes duplication items, that have same Entry-ID with other ones, from item_list"""
             returned_items = []
             for item in item_list:
-                if item['id'] not in [x['id'] for x in returned_items]:
+                if item["id"] not in [x["id"] for x in returned_items]:
                     returned_items.append(item)
 
             return returned_items
@@ -241,17 +201,17 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 # This is AND condition processing
                 # The "stored_id_list" is an explanatory variable that only has Entry-ID
                 # of stored_list Entry information
-                stored_id_list = [x['id'] for x in stored_list]
-                result = [x for x in result_data if x['id'] in stored_id_list]
+                stored_id_list = [x["id"] for x in stored_list]
+                result = [x for x in result_data if x["id"] in stored_id_list]
 
             return _deduplication(result)
 
         sub_queries = None
         if "conditions" in query:
-            sub_queries = query['conditions']
+            sub_queries = query["conditions"]
 
         elif "attrs" in query:
-            sub_queries = query['attrs']
+            sub_queries = query["attrs"]
 
         elif "refers" in query:
             raise RuntimeError("This is not impelemnted yet")
@@ -262,58 +222,52 @@ class EntrySearchChainSerializer(serializers.Serializer):
             # This expects only AttrSerialized sub-query
             for sub_query in sub_queries:
                 (is_leaf, sub_query_result) = self.search_entries(user, sub_query)
-                print('[onix/_search_entries(14)] sub_query_result: %s' % (str(sub_query_result)))
 
                 if not is_leaf and not sub_query_result:
                     # In this case, it's useless to continue to search processing because
                     # there is no possiblity to find out data that user wants to.
-                    print('[onix/_search_entries(E1)]')
                     return (False, [])
 
                 # make query to search Entries using Entry.search_entries()
-                search_keyword = "|".join([x['name'] for x in sub_query_result])
-                if isinstance(sub_query.get('value'), str) and len(sub_query['value']) > 0:
-                    search_keyword = sub_query.get('value')
+                search_keyword = "|".join([x["name"] for x in sub_query_result])
+                if isinstance(sub_query.get("value"), str) and len(sub_query["value"]) > 0:
+                    search_keyword = sub_query.get("value")
 
-                elif sub_query.get('value') == "":
+                elif sub_query.get("value") == "":
                     # When value has empty string, this specify special character "\",
                     # which will match Entries that refers nothing Entry at specified Attribute.
                     search_keyword = "\\"
 
-                search_query = [{
-                    "name": sub_query['name'],
-                    "keyword": search_keyword,
-                }]
-                print('[onix/_search_entries(17)] search_query: %s' % (str(search_query)))
+                search_query = [
+                    {
+                        "name": sub_query["name"],
+                        "keyword": search_keyword,
+                    }
+                ]
 
                 # get Entry informations from result
                 for entity_id in query["entities"]:
                     entity = Entity.objects.get(id=entity_id)
-                    print('[onix/_search_entries(19)] (%s) %s' % (entity_id, str(entity.name)))
 
-                search_result = Entry.search_entries(user, query['entities'], search_query)
-                print('[onix/_search_entries(21)] search_result: %s' % (str(search_result)))
+                search_result = Entry.search_entries(user, query["entities"], search_query)
 
-                result_entry_info = [x['entry'] for x in search_result['ret_values']]
-                print('[onix/_search_entries(22)] result_entry_info: %s' % (str(result_entry_info)))
+                result_entry_info = [x["entry"] for x in search_result["ret_values"]]
                 if not accumulated_result:
                     accumulated_result = result_entry_info
-                    print('[onix/_search_entries(30)] accumulated_result: %s' % (str(accumulated_result)))
                 else:
-                    accumulated_result = _merge_search_result(accumulated_result, result_entry_info, query['is_any'])
-                    print('[onix/_search_entries(31)] accumulated_result: %s' % (str(accumulated_result)))
-
+                    accumulated_result = _merge_search_result(
+                        accumulated_result, result_entry_info, query["is_any"]
+                    )
 
         else:
-            print('[onix/_search_entries(--)] TERMINATED : %s' % str(query))
             # In the leaf condition return nothing
             # The first return value describe whethere this is leaf condition or not.
             # (True means result is returned by leaf-node)
-            # 
+            #
             # Empty result of second returned value has different meaning depends on
             # whethere that is leaf condition or intermediate one.
             # * Leaf condition:
-            #   - it must return empty whatever condition. 
+            #   - it must return empty whatever condition.
             #     it should continue processing
             #
             # * Intermediate one:
@@ -322,32 +276,8 @@ class EntrySearchChainSerializer(serializers.Serializer):
             #     to find out any data, which user wants to
             return (True, [])
 
-#        # declare search query for Entry.search_entries()
-#        for attrinfo in sub_queries:
-#            search_keyword = "|".join([x['name'] for x in former_search_result])
-#            if isinstance(attrinfo.get('value'), str) and len(attrinfo['value']) > 0:
-#                search_keyword = attrinfo.get('value')
-#
-#            search_query = [{
-#                "name": attrinfo['name'],
-#                "keyword": search_keyword,
-#            }]
-#
-#            # get Entry informations from result
-#            for entity_id in query["entities"]:
-#                entity = Entity.objects.get(id=entity_id)
-#                print('[onix/_search_entries(19)] (%s) %s' % (entity_id, str(entity.name)))
-#
-#            print('[onix/_search_entries(20)] search_query: %s' % (str(search_query)))
-#            search_result = Entry.search_entries(user, query['entities'], search_query)
-#            print('[onix/_search_entries(21)] search_result: %s' % (str(search_result)))
-#
-#            _merge_search_result(former_search_result, [x['entry'] for x in search_result['ret_values']], query['is_any'])
-
         # The first return value (False) describe this result returned by NO-leaf-node
-        print('[onix/_search_entries(99)] accumulated_result: %s' % (str(accumulated_result)))
         return (False, accumulated_result)
-
 
     def is_attr_chained(self, entry, attrs=None, is_any=False):
         if not attrs:

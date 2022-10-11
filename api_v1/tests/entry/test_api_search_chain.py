@@ -194,10 +194,8 @@ class APITest(AironeViewTest):
                             ],
                         }
                     ],
-                }, {
-                    "name": "Status",
-                    "value": "Service-In"
-                }
+                },
+                {"name": "Status", "value": "Service-In"},
             ],
         }
 
@@ -260,8 +258,8 @@ class APITest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
-            sorted([x['id'] for x in resp.json()['entries']]),
-            sorted([self.entry_vm1.id, self.entry_vm2.id])
+            sorted([x["id"] for x in resp.json()["entries"]]),
+            sorted([self.entry_vm1.id, self.entry_vm2.id]),
         )
 
     def test_search_chain_using_AND_condition(self):
@@ -308,12 +306,7 @@ class APITest(AironeViewTest):
             "conditions": [
                 {
                     "name": "Ports",
-                    "attrs": [
-                        {
-                            "name": "IP address",
-                            "value": ""
-                        }
-                    ],
+                    "attrs": [{"name": "IP address", "value": ""}],
                 },
             ],
         }
@@ -457,8 +450,8 @@ class APITest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
-            sorted([x['id'] for x in resp.json()['entries']]),
-            sorted([entry_another_vm.id, self.entry_vm2.id])
+            sorted([x["id"] for x in resp.json()["entries"]]),
+            sorted([entry_another_vm.id, self.entry_vm2.id]),
         )
 
     def test_search_chain_when_object_attrvalue_is_empty(self):
@@ -598,7 +591,9 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        print("[onix-test(90)] %s" % str(resp.json()))
+        self.assertEqual(
+            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+        )
 
     def test_search_chain_when_array_object_attrvalue_is_empty(self):
         entry_nic = self.add_entry(
@@ -655,7 +650,6 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        print("[onix-test(90)] %s" % str(resp.json()))
         self.assertEqual(
             resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
         )
