@@ -1,9 +1,17 @@
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
-from role.api_v2.serializers import RoleSerializer
+from role.api_v2.serializers import RoleCreateUpdateSerializer, RoleSerializer
 from role.models import Role
 
 
-class RoleAPI(viewsets.ReadOnlyModelViewSet):
+class RoleAPI(viewsets.ModelViewSet):
     queryset = Role.objects.filter(is_active=True)
-    serializer_class = RoleSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        serializer = {
+            "create": RoleCreateUpdateSerializer,
+            "update": RoleCreateUpdateSerializer,
+        }
+        return serializer.get(self.action, RoleSerializer)

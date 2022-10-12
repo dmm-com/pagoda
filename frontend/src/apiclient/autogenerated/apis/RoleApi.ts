@@ -13,10 +13,30 @@
  */
 
 import * as runtime from "../runtime";
-import { Role, RoleFromJSON, RoleToJSON } from "../models";
+import {
+  Role,
+  RoleFromJSON,
+  RoleToJSON,
+  RoleCreateUpdate,
+  RoleCreateUpdateFromJSON,
+  RoleCreateUpdateToJSON,
+} from "../models";
+
+export interface RoleApiV2CreateRequest {
+  roleCreateUpdate: RoleCreateUpdate;
+}
+
+export interface RoleApiV2DestroyRequest {
+  id: number;
+}
 
 export interface RoleApiV2RetrieveRequest {
   id: number;
+}
+
+export interface RoleApiV2UpdateRequest {
+  id: number;
+  roleCreateUpdate: RoleCreateUpdate;
 }
 
 /**
@@ -25,7 +45,128 @@ export interface RoleApiV2RetrieveRequest {
 export class RoleApi extends runtime.BaseAPI {
   /**
    */
-  async roleApiV2ListListRaw(
+  async roleApiV2CreateRaw(
+    requestParameters: RoleApiV2CreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<RoleCreateUpdate>> {
+    if (
+      requestParameters.roleCreateUpdate === null ||
+      requestParameters.roleCreateUpdate === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "roleCreateUpdate",
+        "Required parameter requestParameters.roleCreateUpdate was null or undefined when calling roleApiV2Create."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/role/api/v2/`,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+        body: RoleCreateUpdateToJSON(requestParameters.roleCreateUpdate),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      RoleCreateUpdateFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async roleApiV2Create(
+    requestParameters: RoleApiV2CreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<RoleCreateUpdate> {
+    const response = await this.roleApiV2CreateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async roleApiV2DestroyRaw(
+    requestParameters: RoleApiV2DestroyRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling roleApiV2Destroy."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/role/api/v2/{id}`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "DELETE",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async roleApiV2Destroy(
+    requestParameters: RoleApiV2DestroyRequest,
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.roleApiV2DestroyRaw(requestParameters, initOverrides);
+  }
+
+  /**
+   */
+  async roleApiV2ListRaw(
     initOverrides?: RequestInit
   ): Promise<runtime.ApiResponse<Array<Role>>> {
     const queryParameters: any = {};
@@ -48,7 +189,7 @@ export class RoleApi extends runtime.BaseAPI {
 
     const response = await this.request(
       {
-        path: `/role/api/v2/list`,
+        path: `/role/api/v2/`,
         method: "GET",
         headers: headerParameters,
         query: queryParameters,
@@ -63,8 +204,8 @@ export class RoleApi extends runtime.BaseAPI {
 
   /**
    */
-  async roleApiV2ListList(initOverrides?: RequestInit): Promise<Array<Role>> {
-    const response = await this.roleApiV2ListListRaw(initOverrides);
+  async roleApiV2List(initOverrides?: RequestInit): Promise<Array<Role>> {
+    const response = await this.roleApiV2ListRaw(initOverrides);
     return await response.value();
   }
 
@@ -124,6 +265,81 @@ export class RoleApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<Role> {
     const response = await this.roleApiV2RetrieveRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async roleApiV2UpdateRaw(
+    requestParameters: RoleApiV2UpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<RoleCreateUpdate>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling roleApiV2Update."
+      );
+    }
+
+    if (
+      requestParameters.roleCreateUpdate === null ||
+      requestParameters.roleCreateUpdate === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "roleCreateUpdate",
+        "Required parameter requestParameters.roleCreateUpdate was null or undefined when calling roleApiV2Update."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/role/api/v2/{id}`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PUT",
+        headers: headerParameters,
+        query: queryParameters,
+        body: RoleCreateUpdateToJSON(requestParameters.roleCreateUpdate),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      RoleCreateUpdateFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async roleApiV2Update(
+    requestParameters: RoleApiV2UpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<RoleCreateUpdate> {
+    const response = await this.roleApiV2UpdateRaw(
       requestParameters,
       initOverrides
     );

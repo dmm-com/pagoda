@@ -59,6 +59,7 @@ export const userPath = (userId: number | string) =>
 export const usersPath = () => basePath + "users";
 
 // roles
+export const newRolePath = () => basePath + "roles/new";
 export const rolePath = (roleId: number | string) =>
   basePath + `roles/${roleId}`;
 export const rolesPath = () => basePath + "roles";

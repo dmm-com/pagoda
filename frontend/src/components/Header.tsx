@@ -34,6 +34,7 @@ import {
   entitiesPath,
   advancedSearchPath,
   loginPath,
+  rolesPath,
 } from "Routes";
 import { postLogout } from "utils/AironeAPIClient";
 import { DjangoContext } from "utils/DjangoContext";
@@ -136,6 +137,7 @@ export const Header: FC = () => {
               <Button href={advancedSearchPath()}>高度な検索</Button>
               <Button href={usersPath()}>ユーザ管理</Button>
               <Button href={groupsPath()}>グループ管理</Button>
+              <Button href={rolesPath()}>ロール管理</Button>
             </Box>
 
             <Box justifyContent="flex-end" className={classes.menuBox}>
