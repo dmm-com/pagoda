@@ -20,7 +20,7 @@ export const EditEntityPage: FC = () => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
 
-  const [entityInfo, setEntityInfo] = useState<EntityUpdate>({
+  const [entityInfo, _setEntityInfo] = useState<EntityUpdate>({
     id: 0,
     name: "",
     note: "",
@@ -30,6 +30,7 @@ export const EditEntityPage: FC = () => {
   });
   const [submittable, setSubmittable] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
+  const [edited, setEdited] = useState<boolean>(false);
 
   const entity = useAsync(async () => {
     if (entityId !== undefined) {
@@ -48,6 +49,11 @@ export const EditEntityPage: FC = () => {
     const entities = await aironeApiClientV2.getEntities();
     return entities.results;
   });
+
+  const setEntityInfo = (entityUpdate: EntityUpdate) => {
+    setEdited(true);
+    _setEntityInfo(entityUpdate);
+  };
 
   const handleCancel = () => {
     history.replace(entitiesPath());
@@ -120,7 +126,7 @@ export const EditEntityPage: FC = () => {
 
   useEffect(() => {
     if (!entity.loading && entity.value !== undefined) {
-      setEntityInfo({
+      _setEntityInfo({
         ...entity.value,
         attrs:
           entity.value.attrs.map((attr) => {
@@ -189,7 +195,7 @@ export const EditEntityPage: FC = () => {
         />
       </Box>
       <Prompt
-        when={!submitted}
+        when={edited && !submitted}
         message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
       />
     </Box>

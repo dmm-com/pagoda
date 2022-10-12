@@ -1,7 +1,7 @@
 import { Box, Typography, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -50,7 +50,7 @@ export const EditUserPage: FC = () => {
 
   const djangoContext = DjangoContext.getInstance();
 
-  const [userInfo, setUserInfo] = useState<AironeUserProps>({
+  const [userInfo, _setUserInfo] = useState<AironeUserProps>({
     id: 0,
     username: "",
     password: "",
@@ -65,6 +65,8 @@ export const EditUserPage: FC = () => {
     },
     authenticateType: djangoContext.userAuthenticateType.local,
   });
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [edited, setEdited] = useState<boolean>(false);
 
   useEffect(() => {
     if (!user.loading && user.value !== undefined) {
@@ -76,6 +78,11 @@ export const EditUserPage: FC = () => {
     return user.value?.id == null;
   }, [user.value]);
 
+  const setUserInfo = (userInfo: AironeUserProps) => {
+    setEdited(true);
+    _setUserInfo(userInfo);
+  };
+
   const handleSubmit = () => {
     if (isCreateMode) {
       aironeApiClientV2
@@ -86,6 +93,7 @@ export const EditUserPage: FC = () => {
           userInfo.isSuperuser
         )
         .then(() => {
+          setSubmitted(true);
           enqueueSnackbar("ユーザの作成に成功しました", {
             variant: "success",
           });
@@ -107,6 +115,7 @@ export const EditUserPage: FC = () => {
           userInfo.isSuperuser
         )
         .then(() => {
+          setSubmitted(true);
           enqueueSnackbar("ユーザの更新に成功しました", {
             variant: "success",
           });
@@ -120,6 +129,10 @@ export const EditUserPage: FC = () => {
           });
         });
     }
+  };
+
+  const handleCancel = () => {
+    history.replace(usersPath());
   };
 
   const handleRefreshToken = () => {
@@ -178,11 +191,7 @@ export const EditUserPage: FC = () => {
               </Button>
             </Box>
             <Box mx="4px">
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={() => history.replace(usersPath())}
-              >
+              <Button variant="outlined" color="primary" onClick={handleCancel}>
                 キャンセル
               </Button>
             </Box>
@@ -195,6 +204,11 @@ export const EditUserPage: FC = () => {
       ) : (
         <UserForm userInfo={userInfo} setUserInfo={setUserInfo} />
       )}
+
+      <Prompt
+        when={edited && !submitted}
+        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+      />
     </Box>
   );
 };

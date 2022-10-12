@@ -2,7 +2,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import { Box, Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, Prompt, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { PageHeader } from "../components/common/PageHeader";
@@ -20,16 +20,28 @@ export const ACLPage: FC = () => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { objectId } = useTypedParams<{ objectId: number }>();
+
   const [submittable, setSubmittable] = useState<boolean>(false);
-  const [aclInfo, setACLInfo] = useState({
+  const [aclInfo, _setACLInfo] = useState({
     isPublic: false,
     defaultPermission: 1,
     permissions: {},
   });
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [edited, setEdited] = useState<boolean>(false);
 
   const acl = useAsync(async () => {
     return await aironeApiClientV2.getAcl(objectId);
   });
+
+  const setACLInfo = (aclInfo: {
+    isPublic: boolean;
+    defaultPermission: number;
+    permissions: object;
+  }) => {
+    setEdited(true);
+    _setACLInfo(aclInfo);
+  };
 
   const handleSubmit = async () => {
     // TODO better name?
@@ -49,6 +61,7 @@ export const ACLPage: FC = () => {
         aclInfo.defaultPermission,
         aclSettings
       );
+      setSubmitted(true);
 
       enqueueSnackbar("ACL 設定の更新が成功しました", { variant: "success" });
       history.goBack();
@@ -62,7 +75,7 @@ export const ACLPage: FC = () => {
   /* initialize permissions and isPublic variables from acl parameter */
   useEffect(() => {
     if (!acl.loading) {
-      setACLInfo({
+      _setACLInfo({
         isPublic: acl.value.isPublic,
         defaultPermission: acl.value.defaultPermission,
         permissions: acl.value.roles.reduce((obj, role) => {
@@ -181,6 +194,11 @@ export const ACLPage: FC = () => {
           />
         </Box>
       )}
+
+      <Prompt
+        when={edited && !submitted}
+        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+      />
     </Box>
   );
 };

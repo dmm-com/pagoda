@@ -3,7 +3,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -43,8 +43,10 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
 
   const [entryAnchorEl, setEntryAnchorEl] =
     useState<HTMLButtonElement | null>();
-  const [entryInfo, setEntryInfo] = useState<EditableEntry>();
+  const [entryInfo, _setEntryInfo] = useState<EditableEntry>();
   const [submittable, setSubmittable] = useState<boolean>(false); // FIXME
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [edited, setEdited] = useState<boolean>(false);
 
   const entity = useAsync(async () => {
     return entityId != undefined
@@ -62,7 +64,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
 
   useEffect(() => {
     if (!entry.loading && entry.value !== undefined) {
-      setEntryInfo({
+      _setEntryInfo({
         name: entry.value.name,
         attrs: Object.fromEntries(
           entry.value.attrs
@@ -101,7 +103,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       !entity.loading &&
       entity.value !== undefined
     ) {
-      setEntryInfo({
+      _setEntryInfo({
         name: "",
         attrs: Object.fromEntries(
           entity.value.attrs.map((attr): [string, EditableEntryAttrs] => [
@@ -160,6 +162,11 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       setSubmittable(false);
     }
   }, [entryInfo]);
+
+  const setEntryInfo = (entryInfo: EditableEntry) => {
+    setEdited(true);
+    _setEntryInfo(entryInfo);
+  };
 
   const handleSubmit = async () => {
     const updatedAttr = Object.entries(entryInfo.attrs).map(
@@ -272,6 +279,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
           entryInfo.name,
           updatedAttr
         );
+        setSubmitted(true);
         enqueueSnackbar("エントリの作成が完了しました", {
           variant: "success",
         });
@@ -310,6 +318,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
           entryInfo.name,
           updatedAttr
         );
+        setSubmitted(true);
         enqueueSnackbar("エントリの更新が完了しました", {
           variant: "success",
         });
@@ -447,6 +456,11 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
           <EntryForm entryInfo={entryInfo} setEntryInfo={setEntryInfo} />
         )}
       </Box>
+
+      <Prompt
+        when={edited && !submitted}
+        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+      />
     </Box>
   );
 };
