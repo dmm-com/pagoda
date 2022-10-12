@@ -473,6 +473,8 @@ class Job(models.Model):
     @classmethod
     def new_update_documents(kls, target, text="", params={}):
         user = auto_complement.get_auto_complement_user(None)
+        if not user:
+            user = User.objects.create(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
         return kls._create_new_job(
             user,
             target,

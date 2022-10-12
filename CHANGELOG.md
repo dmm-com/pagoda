@@ -10,23 +10,23 @@
   Contributed by @userlocalhost
 
 ### Changed
+* Changed Elasticsarch update process to faster.
+  Contributed by @hinashi
 
 ### Fixed
+* Fixed advanced search not output after entity edit.
+  Contributed by @hinashi
 
 ## v3.24.0
 
 ### Changed
 * Changed not to execute notify job when there is no update in entry import
   Contributed by @hinashi
-* Changed Elasticsarch update process to faster.
-  Contributed by @hinashi
 
 ### Fixed
 * Fixed error in updating array_object attribute
   Contributed by @hinashi
 * Fixed remove_from_attrv for array_named_entry attribute
-  Contributed by @hinashi
-* Fixed advanced search not output after entity edit.
   Contributed by @hinashi
 
 ## v3.23.0

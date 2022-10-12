@@ -1,8 +1,6 @@
 import logging
 from unittest.mock import Mock, patch
 
-from django.conf import settings
-
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrTypeValue
@@ -18,7 +16,6 @@ class UpdateESDocuemntlTest(AironeTestCase):
     def setUp(self):
         super(UpdateESDocuemntlTest, self).setUp()
 
-        User.objects.create(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
         self.user = User(username="test")
         self.user.save()
 
@@ -52,7 +49,7 @@ class UpdateESDocuemntlTest(AironeTestCase):
             name="entry2", created_user=self.user, schema=self.entity2
         )
 
-    def test_register_entries(self):
+    def test_initialize_entries(self):
         ret = Entry.search_entries(self.user, [self.entity1.id, self.entity2.id])
         self.assertEqual(ret["ret_count"], 0)
 
