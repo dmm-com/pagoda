@@ -2095,14 +2095,26 @@ class Entry(ACLBase):
         exists: bool = True
         while exists:
             exists = False
+            register_docs = []
             for entry in entry_list[start_pos : start_pos + 1000]:
                 exists = True
                 es_doc = entry.get_es_document(entity_attrs=entity_attrs)
                 if es_doc not in results_from_es:
                     if not is_update:
                         Logger.warning("Update elasticsearch document (entry_id: %s)" % entry.id)
-                    es.index(doc_type="entry", id=entry.id, body=es_doc)
 
+                    # Elasticsearch bulk API format is add meta information and data pairs as sets.
+                    # [
+                    #     {"index": {"_id": 1}}
+                    #     {"name": {...}, "entity": {...}, "attr": {...}, "is_readble": {...}}
+                    #     {"index": {"_id": 2}}
+                    #     {"name": {...}, "entity": {...}, "attr": {...}, "is_readble": {...}}
+                    # ]
+                    register_docs.append({"index": {"_id": entry.id}})
+                    register_docs.append(es_doc)
+
+            if register_docs:
+                es.bulk(doc_type="entry", body=register_docs)
             start_pos = start_pos + 1000
 
         # delete
