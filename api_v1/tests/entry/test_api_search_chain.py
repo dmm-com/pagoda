@@ -479,7 +479,7 @@ class APITest(AironeViewTest):
                 "IP address": [entry_ipv4],
             },
         )
-        entry_vm = self.add_entry(
+        self.add_entry(
             self.user,
             "test-another-vm",
             self.entity_vm,
@@ -545,7 +545,7 @@ class APITest(AironeViewTest):
                 "IP address": [entry_ipv4],
             },
         )
-        entry_vm = self.add_entry(
+        self.add_entry(
             self.user,
             "test-another-vm",
             self.entity_vm,
@@ -604,7 +604,7 @@ class APITest(AironeViewTest):
                 "IP address": [],
             },
         )
-        entry_vm = self.add_entry(
+        self.add_entry(
             self.user,
             "test-another-vm",
             self.entity_vm,
@@ -655,7 +655,7 @@ class APITest(AironeViewTest):
         )
 
     def test_search_chain_when_array_named_object_attrvalue_is_empty(self):
-        entry_vm = self.add_entry(
+        self.add_entry(
             self.user,
             "test-another-vm",
             self.entity_vm,

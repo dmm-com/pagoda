@@ -137,7 +137,9 @@ class EntrySearchChainSerializer(serializers.Serializer):
             query = self.validated_data
 
         def _deduplication(item_list):
-            """This removes duplication items, that have same Entry-ID with other ones, from item_list"""
+            """
+            This removes duplication items, that have same Entry-ID with other ones,from item_list
+            """
             returned_items = []
             for item in item_list:
                 if item["id"] not in [x["id"] for x in returned_items]:
@@ -199,9 +201,6 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 ]
 
                 # get Entry informations from result
-                for entity_id in query["entities"]:
-                    entity = Entity.objects.get(id=entity_id)
-
                 search_result = Entry.search_entries(
                     user, query["entities"], search_query, limit=99999
                 )
@@ -277,7 +276,8 @@ class EntrySearchChainSerializer(serializers.Serializer):
         for info in attrs:
             attrv = entry.get_attrv(info["name"])
             if not attrv:
-                # NOTE: This describes logic procedure considered with is_any and info.get("value") context
+                # NOTE: This describes logic procedure considered with is_any and
+                #       info.get("value") context.
                 #
                 # * is_any
                 #   - True: OR condition
@@ -290,8 +290,9 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 # * info.get("value")
                 #   - None: match all value
                 #   - "": match only empty value
-                #   - other: match only contained value is matched with attrv.value or referral entry
-                #       - This processing is work in _is_attrv_referral_chained() for referral entry
+                #   - other: match only contained value is matched with attrv.value or
+                #            referral entry
+                #     (This processing is work in _is_attrv_referral_chained() for referral entry)
                 if is_any or (info.get("vlaue") == "" and not is_any):
                     continue
 
