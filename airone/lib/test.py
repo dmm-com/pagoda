@@ -66,6 +66,7 @@ class AironeTestCase(TestCase):
           - name : indicates name of creating EntityAttr
           - type : indicates type of creating EntityAttr [string by default]
           - is_mandatory : same parameter of EntityAttr [False by default]
+          - ref : Entity that Entry can refer to
         """
 
         entity: Entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
@@ -82,7 +83,11 @@ class AironeTestCase(TestCase):
             )
 
             if "ref" in attr_info:
-                entity_attr.referral.add(attr_info["ref"])
+                if isinstance(attr_info["ref"], list):
+                    for ref in attr_info["ref"]:
+                        entity_attr.referral.add(ref)
+                else:
+                    entity_attr.referral.add(attr_info["ref"])
 
             entity.attrs.add(entity_attr)
 

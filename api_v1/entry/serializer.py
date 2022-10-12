@@ -1,0 +1,374 @@
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
+from entity.models import Entity, EntityAttr
+from entry.models import Entry
+
+
+class ReferSerializer(serializers.Serializer):
+    entity = serializers.CharField(max_length=200)
+    entry = serializers.CharField(max_length=200, required=False)
+    is_any = serializers.BooleanField(default=False)
+    attrs = serializers.ListField(required=False)
+    refers = serializers.ListField(required=False)
+
+
+class AttrSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=200)
+    value = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    is_any = serializers.BooleanField(default=False)
+    attrs = serializers.ListField(required=False)
+
+    def validate_name(self, name):
+        if not EntityAttr.objects.filter(name=name, is_active=True).exists():
+            raise ValidationError("There is no specified Attribute (%s)" % name)
+
+        return name
+
+    def validate_is_any(self, value):
+        return value
+
+
+class EntrySearchChainSerializer(serializers.Serializer):
+    entities = serializers.ListField(child=serializers.CharField(max_length=200))
+    # conditions = serializers.ListField(child=SearchConditionSerializer())
+    conditions = serializers.ListField()
+    is_any = serializers.BooleanField(default=False)
+
+    def validate_is_any(self, value):
+        return value
+
+    def validate_entities(self, entities):
+        ret_data = []
+        for id_or_name in entities:
+            if isinstance(id_or_name, int):
+                if Entity.objects.filter(id=id_or_name, is_active=True).exists():
+                    ret_data.append(id_or_name)
+
+            elif isinstance(id_or_name, str):
+                if (
+                    id_or_name.isdecimal()
+                    and Entity.objects.filter(id=int(id_or_name), is_active=True).exists()
+                ):
+                    ret_data.append(int(id_or_name))
+
+                elif Entity.objects.filter(name=id_or_name, is_active=True).exists():
+                    ret_data.append(Entity.objects.get(name=id_or_name, is_active=True).id)
+
+        return ret_data
+
+    def validate(self, data):
+        # This validates and complements conditions contexts, expecially this method
+        # adds "entities" parameter for each Attribute conditions. That is an internal
+        # one to indicate Entity for searching Entries at Attribute conditions using
+        # Entry.search_entries() method.
+        def _validate_attribute(attrname, entities):
+            # This validates whethere it is possible that Entity has specified Attribute
+            if not any(
+                [
+                    EntityAttr.objects.filter(name=attrname, is_active=True, parent_entity__pk=x)
+                    for x in entities
+                ]
+            ):
+                raise ValidationError("Invalid Attribute name (%s) was specified" % str(attrname))
+
+        def _complement_entities(condition, entities):
+            if "name" in condition:
+                # This Attributes must be existed because existance check has already been done
+                entity_ids = []
+                for attr in [
+                    EntityAttr.objects.get(
+                        name=condition["name"], is_active=True, parent_entity__pk=x
+                    )
+                    for x in entities
+                ]:
+                    # complements Entity IDs that this condition implicitly expects
+                    entity_ids += [x.id for x in attr.referral.filter(is_active=True)]
+
+                # complement Entity IDs of each conditions
+                condition["entities"] = list(set(entity_ids))
+
+        def _get_serializer(condition):
+            # This determines which serializer is from condition context.
+            if "entity" in condition:
+                return ReferSerializer
+            else:
+                return AttrSerializer
+
+        def _may_validate_and_complement_condition(condition, entities, serializer_hint=None):
+            serializer_class = serializer_hint
+            if serializer_hint is None:
+                serializer_class = _get_serializer(condition)
+
+            serializer = serializer_class(data=condition)
+            if not serializer.is_valid():
+                raise ValidationError("Invalid condition was specified" % str(condition))
+
+            if not entities:
+                raise ValidationError("Condition(%s) couldn't find valid Entities" % str(condition))
+
+            validated_data = serializer.validated_data
+            if "name" in validated_data:
+                _validate_attribute(validated_data["name"], entities)
+
+            # complement "entities" parameter at this condition
+            _complement_entities(validated_data, entities)
+
+            # call this method recursively to validate and complement value for each conditions
+            if "attrs" in validated_data:
+                validated_data["attrs"] = [
+                    _may_validate_and_complement_condition(
+                        x, validated_data["entities"], AttrSerializer
+                    )
+                    for x in validated_data["attrs"]
+                ]
+
+            return validated_data
+
+        # validate and compelment "conditions" parameter context
+        data["conditions"] = [
+            _may_validate_and_complement_condition(x, data["entities"]) for x in data["conditions"]
+        ]
+
+        return data
+
+    def search_entries(self, user, query=None):
+        if query is None:
+            query = self.validated_data
+
+        def _deduplication(item_list):
+            """
+            This removes duplication items, that have same Entry-ID with other ones,from item_list
+            """
+            returned_items = []
+            for item in item_list:
+                if item["id"] not in [x["id"] for x in returned_items]:
+                    returned_items.append(item)
+
+            return returned_items
+
+        def _merge_search_result(stored_list, result_data, is_any):
+            if is_any:
+                # This is OR condition processing
+                result = result_data + stored_list
+
+            else:
+                # This is AND condition processing
+                # The "stored_id_list" is an explanatory variable that only has Entry-ID
+                # of stored_list Entry information
+                stored_id_list = [x["id"] for x in stored_list]
+                result = [x for x in result_data if x["id"] in stored_id_list]
+
+            return _deduplication(result)
+
+        sub_queries = None
+        if "conditions" in query:
+            sub_queries = query["conditions"]
+
+        elif "attrs" in query:
+            sub_queries = query["attrs"]
+
+        elif "refers" in query:
+            raise RuntimeError("This is not impelemnted yet")
+
+        # digging into the conditions tree to get to leaf condition by depth-first search
+        accumulated_result = []
+        if sub_queries:
+            # This expects only AttrSerialized sub-query
+            for sub_query in sub_queries:
+                (is_leaf, sub_query_result) = self.search_entries(user, sub_query)
+
+                if not is_leaf and not sub_query_result:
+                    # In this case, it's useless to continue to search processing because
+                    # there is no possiblity to find out data that user wants to.
+                    return (False, [])
+
+                # make query to search Entries using Entry.search_entries()
+                search_keyword = "|".join([x["name"] for x in sub_query_result])
+                if isinstance(sub_query.get("value"), str) and len(sub_query["value"]) > 0:
+                    search_keyword = sub_query.get("value")
+
+                elif sub_query.get("value") == "":
+                    # When value has empty string, this specify special character "\",
+                    # which will match Entries that refers nothing Entry at specified Attribute.
+                    search_keyword = "\\"
+
+                search_query = [
+                    {
+                        "name": sub_query["name"],
+                        "keyword": search_keyword,
+                    }
+                ]
+
+                # get Entry informations from result
+                search_result = Entry.search_entries(
+                    user, query["entities"], search_query, limit=99999
+                )
+
+                result_entry_info = [x["entry"] for x in search_result["ret_values"]]
+                if not accumulated_result:
+                    accumulated_result = result_entry_info
+                else:
+                    accumulated_result = _merge_search_result(
+                        accumulated_result, result_entry_info, query["is_any"]
+                    )
+
+        else:
+            # In the leaf condition return nothing
+            # The first return value describe whethere this is leaf condition or not.
+            # (True means result is returned by leaf-node)
+            #
+            # Empty result of second returned value has different meaning depends on
+            # whethere that is leaf condition or intermediate one.
+            # * Leaf condition:
+            #   - it must return empty whatever condition.
+            #     it should continue processing
+            #
+            # * Intermediate one:
+            #   - it returns empty when there is no result.
+            #     it's useless to continue this processing because there is no possibility
+            #     to find out any data, which user wants to
+            return (True, [])
+
+        # The first return value (False) describe this result returned by NO-leaf-node
+        return (False, accumulated_result)
+
+    def is_attr_chained(self, entry, attrs=None, is_any=False):
+        if not attrs:
+            attrs = self.validated_data["attrs"]
+            is_any = self.validated_data["is_any"]
+
+        # This is a helper method to check referral entry meets chaining conditions.
+        def _is_attrv_referral_chained(attrv, info):
+            if attrv.referral is None or not attrv.referral.is_active:
+                if info.get("value") == "":
+                    # The case when Attribute value doesn't refer Entry and query expects it is
+                    return True
+
+                elif info.get("value") is not None:
+                    return False
+
+                elif info.get("value") is None:
+                    # When user specified query has sub-query, this returns False.
+                    # but this returns True when query is terminated by this condition.
+                    return info.get("attrs") is None
+
+                else:
+                    raise RuntimeError("Unexpected situation was happend")
+
+            # In this code, attrv.referral.id must be existed
+            if info.get("value") == "":
+                # The case when Attribute value refers actual Entry but query expects it's blank
+                return False
+
+            elif info.get("value", "") not in attrv.referral.name:
+                # The case when Attribute value deons't refer, or
+                # referred Entry is not expected one.
+                return False
+
+            elif info.get("attrs"):
+                return self.is_attr_chained(
+                    Entry.objects.get(id=attrv.referral.id), info["attrs"], info["is_any"]
+                )
+
+            return not info["is_any"]
+
+        for info in attrs:
+            attrv = entry.get_attrv(info["name"])
+            if not attrv:
+                # NOTE: This describes logic procedure considered with is_any and
+                #       info.get("value") context.
+                #
+                # * is_any
+                #   - True: OR condition
+                #       - when failed:    continue next
+                #       - when succeeded: continue next
+                #   - False: AND condition
+                #       - when failed:  return False immediately
+                #       - when succeeded: continue next
+                #
+                # * info.get("value")
+                #   - None: match all value
+                #   - "": match only empty value
+                #   - other: match only contained value is matched with attrv.value or
+                #            referral entry
+                #     (This processing is work in _is_attrv_referral_chained() for referral entry)
+                if is_any or (info.get("vlaue") == "" and not is_any):
+                    continue
+
+                else:
+                    # In this case, it doesn't meet specified condition at least one.
+                    # Then, there is no nocessity to check rest of query any more
+                    # when is_any parameter is False (it means AND condition).
+                    return False
+
+            v = attrv.get_value(with_metainfo=True)
+            if v["value"] is None:
+                if is_any or (info.get("vlaue") == "" and not is_any):
+                    continue
+
+                else:
+                    # In this case, it doesn't meet specified condition at least one.
+                    # Then, there is no nocessity to check rest of query any more
+                    # when is_any parameter is False (it means AND condition).
+                    return False
+
+            elif isinstance(v["value"], str) and info.get("value", "") in v["value"]:
+                # This confirms text attribute value (e.g. AttrTypeValue['string'])
+                # has expected value. It returns True when the "is_any" parameter
+                # is True (it means OR condition).
+                if is_any:
+                    return True
+
+            elif isinstance(v["value"], dict):
+                # this confirms simple referral value (e.g. AttrTypeValue['object'])
+                # has expected referral
+                condition = _is_attrv_referral_chained(attrv, info)
+                if not condition and not is_any:
+                    # This returns False immediately whenever it doesn't meet specified
+                    # conditions at least one when the "is_any" parameter is False
+                    # (it means AND condition).
+                    return False
+
+                elif condition and is_any:
+                    # This returns True immediately whenever it doesn't meet specified
+                    # conditions at least one when the "is_any" parameter is True
+                    # (it means OR condition).
+                    return True
+
+            elif isinstance(v["value"], list):
+                # This is a termination condition when Attribute value refers no Entry.
+                if not attrv.data_array.exists() and info.get("value") != "" and not is_any:
+                    # This returns False immediately whenever there is no attribute value
+                    # when the "is_any" parameter is False (it means AND condition).
+                    # except for the case when query expects this Attribute value doesn't
+                    # refer any Entries
+                    return False
+
+                elif attrv.data_array.exists():
+                    # This variable (is_matched) is necessary for AND condition.
+                    # We couldn't determine whether search is faileda until all co-Attribute
+                    # value have been checked. It should return False when all co-Attribute
+                    # values wouldn't meet specified condition if "is_any" parameter is False
+                    # (it means AND condition).
+                    is_matched = False
+                    for co_attrv in attrv.data_array.all():
+                        condition = _is_attrv_referral_chained(co_attrv, info)
+                        if condition:
+                            is_matched = True
+
+                            # This returns True immediately whenever it doesn't meet specified
+                            # conditions at least one when the "is_any" parameter is True
+                            # (it means OR condition).
+                            if is_any:
+                                return True
+
+                    if not is_matched and not is_any:
+                        return False
+
+        # This returns False when "is_any" parameter is True (it means OR condition), because
+        # the query results didn't meet any specified conditions (it means there is no Entry
+        # that matches specified query).
+        # In opposiet, this returns True when "is_any" parameter is False (it means AND condition)
+        # because, result matches all specified conditions.
+        return not is_any

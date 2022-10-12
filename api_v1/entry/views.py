@@ -8,9 +8,21 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from airone.lib.acl import ACLType
+from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity
 from entry.models import Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
+
+
+class EntrySearchChainAPI(APIView):
+    def post(self, request):
+        serializer = EntrySearchChainSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+        (_, ret_data) = serializer.search_entries(request.user)
+
+        return Response({"entries": ret_data}, status=status.HTTP_200_OK)
 
 
 class EntrySearchAPI(APIView):
