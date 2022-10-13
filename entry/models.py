@@ -20,6 +20,7 @@ from airone.lib.elasticsearch import (
     make_search_results,
     make_search_results_for_simple,
 )
+from airone.lib.log import Logger
 from airone.lib.types import (
     AttrDefaultValue,
     AttrTypeArrObj,
@@ -1684,7 +1685,7 @@ class Entry(ACLBase):
         return {"name": self.name, "attrs": attrinfo}
 
     # NOTE: Type-Write
-    def get_es_document(self, es=None):
+    def get_es_document(self, es=None, entity_attrs=None):
         """This processing registers entry information to Elasticsearch"""
         # This innner method truncates value in taking multi-byte in account
         def truncate(value):
@@ -1704,6 +1705,10 @@ class Entry(ACLBase):
                 if (not attr or attr.is_public or attr.default_permission >= ACLType.Readable.id)
                 else False,
             }
+
+            # default value for boolean attributes is False.
+            if entity_attr.type & AttrTypeValue["boolean"]:
+                attrinfo["value"] = False
 
             def _set_attrinfo_data(model):
                 if attrv.value:
@@ -1726,7 +1731,7 @@ class Entry(ACLBase):
                 # parameter.
                 ret = is_date_check(attrv.value)
                 if ret and isinstance(ret[1], date):
-                    attrinfo["date_value"] = ret[1]
+                    attrinfo["date_value"] = ret[1].strftime("%Y-%m-%d")
                 else:
                     attrinfo["value"] = truncate(attrv.value)
 
@@ -1734,7 +1739,7 @@ class Entry(ACLBase):
                 attrinfo["value"] = str(attrv.boolean)
 
             elif entity_attr.type & AttrTypeValue["date"]:
-                attrinfo["date_value"] = attrv.date
+                attrinfo["date_value"] = attrv.date.strftime("%Y-%m-%d") if attrv.date else None
 
             elif entity_attr.type & AttrTypeValue["named"]:
                 attrinfo["key"] = attrv.value
@@ -1785,14 +1790,31 @@ class Entry(ACLBase):
         # objects are not existed in attr parameter because of delay processing. If this entry
         # doesn't have an Attribute object associated with an EntityAttr, this registers blank
         # value to the Elasticsearch.
-        for entity_attr in self.schema.attrs.filter(is_active=True):
+        if entity_attrs is None:
+            entity_attrs = self.schema.attrs.filter(is_active=True)
+
+        for entity_attr in entity_attrs:
             attrv = None
 
-            attr = self.attrs.filter(schema=entity_attr, is_active=True).first()
-            if attr:
-                attrv = attr.get_latest_value()
+            # Use it when exists prefetch for faster
+            if getattr(self, "prefetch_attrs", None):
+                entry_attrs = self.prefetch_attrs
+            else:
+                entry_attrs = self.attrs.filter(schema=entity_attr, is_active=True)
 
-            _set_attrinfo(entity_attr, attr, attrv, document["attr"])
+            entry_attr = None
+            for attr in entry_attrs:
+                if attr.schema == entity_attr:
+                    entry_attr = attr
+                    break
+
+            # Use it when exists prefetch for faster
+            if getattr(entry_attr, "prefetch_values", None):
+                attrv = entry_attr.prefetch_values[-1]
+            elif entry_attr:
+                attrv = entry_attr.get_latest_value()
+
+            _set_attrinfo(entity_attr, entry_attr, attrv, document["attr"])
 
         return document
 
@@ -2033,6 +2055,78 @@ class Entry(ACLBase):
     @classmethod
     def get_all_es_docs(kls):
         return ESS().search(body={"query": {"match_all": {}}}, ignore=[404])
+
+    @classmethod
+    def update_documents(kls, entity: Entity, is_update: bool = False):
+        es = ESS()
+        query = {
+            "query": {"nested": {"path": "entity", "query": {"match": {"entity.id": entity.id}}}}
+        }
+        res = es.search(body=query)
+
+        results_from_es = [x["_source"] for x in res["hits"]["hits"]]
+        entry_ids_from_es = [int(x["_id"]) for x in res["hits"]["hits"]]
+
+        value_prefetch = Prefetch(
+            "values",
+            queryset=AttributeValue.objects.filter(is_latest=True)
+            .select_related("referral")
+            .prefetch_related("data_array__referral"),
+            to_attr="prefetch_values",
+        )
+        attr_prefetch = Prefetch(
+            "attrs",
+            queryset=Attribute.objects.filter(is_active=True).prefetch_related(
+                "schema", value_prefetch
+            ),
+            to_attr="prefetch_attrs",
+        )
+
+        entry_list = (
+            Entry.objects.filter(schema=entity, is_active=True)
+            .select_related("schema")
+            .prefetch_related(attr_prefetch)
+        )
+
+        entity_attrs = entity.attrs.filter(is_active=True)
+
+        # check & update
+        start_pos = 0
+        exists: bool = True
+        while exists:
+            exists = False
+            register_docs = []
+            for entry in entry_list[start_pos : start_pos + 1000]:
+                exists = True
+                es_doc = entry.get_es_document(entity_attrs=entity_attrs)
+                if es_doc not in results_from_es:
+                    if not is_update:
+                        Logger.warning("Update elasticsearch document (entry_id: %s)" % entry.id)
+
+                    # Elasticsearch bulk API format is add meta information and data pairs as sets.
+                    # [
+                    #     {"index": {"_id": 1}}
+                    #     {"name": {...}, "entity": {...}, "attr": {...}, "is_readble": {...}}
+                    #     {"index": {"_id": 2}}
+                    #     {"name": {...}, "entity": {...}, "attr": {...}, "is_readble": {...}}
+                    # ]
+                    register_docs.append({"index": {"_id": entry.id}})
+                    register_docs.append(es_doc)
+
+            if register_docs:
+                es.bulk(doc_type="entry", body=register_docs)
+            start_pos = start_pos + 1000
+
+        # delete
+        entry_ids_from_db = Entry.objects.filter(schema=entity, is_active=True).values_list(
+            "id", flat=True
+        )
+        for entry_id in set(entry_ids_from_es) - set(entry_ids_from_db):
+            if not is_update:
+                Logger.warning("Delete elasticsearch document (entry_id: %s)" % entry.id)
+            es.delete(doc_type="entry", id=entry_id, ignore=[404])
+
+        es.indices.refresh()
 
     @classmethod
     def is_importable_data(kls, data):

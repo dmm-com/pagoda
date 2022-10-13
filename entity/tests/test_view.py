@@ -18,6 +18,7 @@ from entity import tasks
 from entity.models import Entity, EntityAttr
 from entity.settings import CONFIG
 from entry.models import Attribute, Entry
+from entry.tasks import update_es_documents
 from user.models import History, User
 
 
@@ -450,6 +451,7 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
 
+    @mock.patch("entry.tasks.update_es_documents.delay", mock.Mock(side_effect=update_es_documents))
     @mock.patch("entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity))
     def test_post_edit_with_valid_params(self):
         user = self.admin_login()
@@ -505,6 +507,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(History.objects.filter(operation=History.ADD_ATTR).count(), 1)
         self.assertEqual(History.objects.filter(operation=History.MOD_ATTR).count(), 2)
 
+    @mock.patch("entry.tasks.update_es_documents.delay", mock.Mock(side_effect=update_es_documents))
     @mock.patch("entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity))
     def test_post_edit_after_creating_entry(self):
         user = self.admin_login()
@@ -553,6 +556,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(entity.attrs.count(), 2)
         self.assertEqual(entry.attrs.count(), 1)
+
+        res = Entry.search_entries(user, [entity.id], is_output_all=True)
+        self.assertEqual([x for x in res["ret_values"][0]["attrs"].keys()], ["foo", "bar"])
 
     def test_post_edit_attribute_type(self):
         user = self.admin_login()

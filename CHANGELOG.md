@@ -10,8 +10,12 @@
   Contributed by @userlocalhost
 
 ### Changed
+* Changed Elasticsarch update process to faster.
+  Contributed by @hinashi
 
 ### Fixed
+* Fixed advanced search not output after entity edit.
+  Contributed by @hinashi
 
 ## v3.24.0
 

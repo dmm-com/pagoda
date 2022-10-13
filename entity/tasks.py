@@ -145,6 +145,9 @@ def edit_entity(self, job_id):
                 # register History to register adding EntityAttr
                 history.add_attr(attr_obj)
 
+        # update elasticsearch
+        Job.new_update_documents(entity, "", {"is_update": True}).run()
+
         # clear flag to specify this entity has been completed to edit
         entity.del_status(Entity.STATUS_EDITING)
 

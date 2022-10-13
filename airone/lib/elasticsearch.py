@@ -30,6 +30,9 @@ class ESS(Elasticsearch):
 
         super(ESS, self).__init__(settings.ES_CONFIG["NODES"], *args, **kwargs)
 
+    def bulk(self, *args, **kwargs):
+        return super(ESS, self).bulk(index=self._index, *args, **kwargs)
+
     def delete(self, *args, **kwargs):
         return super(ESS, self).delete(index=self._index, *args, **kwargs)
 

@@ -1,8 +1,14 @@
+import logging
+from unittest.mock import Mock, patch
+
+from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
-from tools.update_es_document import delete_unnecessary_documents, register_documents
+from entry.tasks import update_es_documents
+from tools.initialize_es_document import initialize_es_document
+from tools.update_es_document import update_es_document
 from user.models import User
 
 
@@ -14,23 +20,24 @@ class UpdateESDocuemntlTest(AironeTestCase):
         self.user.save()
 
         # create entity
-        self.entity = Entity.objects.create(name="Entity", created_user=self.user)
-        self.entity.attrs.add(
+        self.entity1 = Entity.objects.create(name="Entity1", created_user=self.user)
+        self.entity1.attrs.add(
             EntityAttr.objects.create(
                 **{
                     "name": "attr",
                     "type": AttrTypeValue["string"],
                     "created_user": self.user,
-                    "parent_entity": self.entity,
+                    "parent_entity": self.entity1,
                 }
             )
         )
+        self.entity2 = Entity.objects.create(name="Entity2", created_user=self.user)
 
         # create entry
         self.entries = []
         for index in range(3):
             entry = Entry.objects.create(
-                name="entry-%d" % index, created_user=self.user, schema=self.entity
+                name="entry-%d" % index, created_user=self.user, schema=self.entity1
             )
 
             entry.complement_attrs(self.user)
@@ -38,47 +45,88 @@ class UpdateESDocuemntlTest(AironeTestCase):
 
             self.entries.append(entry)
 
-    def test_register_entries(self):
-        ret = Entry.search_entries(self.user, [self.entity.id])
+        self.entry2 = Entry.objects.create(
+            name="entry2", created_user=self.user, schema=self.entity2
+        )
+
+    @patch("entry.tasks.update_es_documents.delay", Mock(side_effect=update_es_documents))
+    def test_initialize_entries(self):
+        ret = Entry.search_entries(self.user, [self.entity1.id, self.entity2.id])
         self.assertEqual(ret["ret_count"], 0)
-        self.assertEqual(ret["ret_values"], [])
 
-        register_documents(self._es, self._es._index)
+        initialize_es_document([])
 
-        ret = Entry.search_entries(self.user, [self.entity.id])
+        ret = Entry.search_entries(self.user, [self.entity1.id])
         self.assertEqual(ret["ret_count"], 3)
-        self.assertTrue(all([x["entity"]["id"] == self.entity.id for x in ret["ret_values"]]))
+        self.assertTrue(all([x["entity"]["id"] == self.entity1.id for x in ret["ret_values"]]))
         self.assertTrue(
             all([x["entry"]["id"] in [y.id for y in self.entries] for x in ret["ret_values"]])
         )
+        ret = Entry.search_entries(self.user, [self.entity2.id])
+        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual(ret["ret_values"][0]["entity"]["id"], self.entity2.id)
+        self.assertEqual(ret["ret_values"][0]["entry"]["id"], self.entry2.id)
 
+        # recreate index, specified entity
+        initialize_es_document([self.entity2.name])
+        ret = Entry.search_entries(self.user, [self.entity1.id, self.entity2.id])
+        self.assertEqual(ret["ret_count"], 1)
+
+    @patch("entry.tasks.update_es_documents.delay", Mock(side_effect=update_es_documents))
     def test_update_entry(self):
-        register_documents(self._es, self._es._index)
+        initialize_es_document([])
 
         # update entry-0
         entry = self.entries[0]
         entry.attrs.first().add_value(self.user, "new-attr-value")
-        entry.name = "new-entry-name"
         entry.save()
 
-        register_documents(self._es, self._es._index)
+        # specified other entity, no update
+        update_es_document([self.entity2.name])
 
-        ret = Entry.search_entries(self.user, [self.entity.id], [{"name": "attr"}])
+        ret = Entry.search_entries(self.user, [self.entity1.id], [{"name": "attr"}])
         self.assertEqual(ret["ret_count"], 3)
 
         entry_info = [x for x in ret["ret_values"] if x["entry"]["id"] == entry.id][0]
-        self.assertEqual(entry_info["entry"]["name"], "new-entry-name")
+        self.assertEqual(entry_info["attrs"]["attr"]["value"], "value-0")
+
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
+            # update es document
+            update_es_document([])
+            self.assertTrue(
+                warning_log.output[0],
+                "WARNING:airone:Update elasticsearch document (entry_id: %s)" % entry.id,
+            )
+
+        ret = Entry.search_entries(self.user, [self.entity1.id], [{"name": "attr"}])
+        self.assertEqual(ret["ret_count"], 3)
+
+        entry_info = [x for x in ret["ret_values"] if x["entry"]["id"] == entry.id][0]
         self.assertEqual(entry_info["attrs"]["attr"]["value"], "new-attr-value")
 
+    @patch("entry.tasks.update_es_documents.delay", Mock(side_effect=update_es_documents))
     def test_delete_entry(self):
-        register_documents(self._es, self._es._index)
+        initialize_es_document([])
 
         # delete entry-0
         entry = self.entries[0]
-        Entry.objects.get(id=entry.id).delete()
+        entry.is_active = False
+        entry.save()
 
-        delete_unnecessary_documents(self._es, self._es._index)
-        ret = Entry.search_entries(self.user, [self.entity.id])
+        # specified other entity, no update
+        update_es_document([self.entity2.name])
+        ret = Entry.search_entries(self.user, [self.entity1.id])
+
+        self.assertEqual(ret["ret_count"], 3)
+
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
+            # update es document
+            update_es_document([])
+            self.assertTrue(
+                warning_log.output[0],
+                "WARNING:airone:Delete elasticsearch document (entry_id: %s)" % entry.id,
+            )
+
+        ret = Entry.search_entries(self.user, [self.entity1.id])
 
         self.assertEqual(ret["ret_count"], 2)
-        self.assertFalse(any(x["entry"]["id"] == entry.id for x in ret["ret_values"]))
