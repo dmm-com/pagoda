@@ -27,12 +27,20 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
   const [userKeyword, setUserKeyword] = useState("");
   const [adminUserKeyword, setAdminUserKeyword] = useState("");
 
+  // TODO implement pagination and incremental search
   const groups = useAsync(async () => {
     const _groups = await aironeApiClientV2.getGroups();
     return _groups.map(
       (group): RoleGroup => ({ id: group.id, name: group.name })
     );
   });
+
+  const adminUsers = useAsync(async () => {
+    const _users = await aironeApiClientV2.getUsers(1, adminUserKeyword);
+    return _users.results?.map(
+      (user): RoleUser => ({ id: user.id, username: user.username })
+    );
+  }, [adminUserKeyword]);
   const users = useAsync(async () => {
     const _users = await aironeApiClientV2.getUsers(1, userKeyword);
     return _users.results?.map(
@@ -219,7 +227,7 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                     renderInput={(params) => (
                       <TextField {...params} variant="outlined" />
                     )}
-                    options={users.value ?? []}
+                    options={adminUsers.value ?? []}
                     getOptionLabel={(option: RoleUser) => option.username}
                     value={role.adminUsers}
                     onChange={(_, value: RoleUser[]) =>
