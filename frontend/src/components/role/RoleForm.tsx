@@ -40,12 +40,11 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
   }, [userKeyword]);
 
   const checkSubmittable = (): boolean => {
+    if (role.name === "") {
+      return false;
+    }
     return (
-      role.name !== "" &&
-      role.description !== "" &&
-      role.users.length > 0 &&
-      role.groups.length > 0 &&
-      role.adminUsers.length > 0 &&
+      role.adminUsers.length > 0 ||
       role.adminGroups.length > 0
     );
   };
