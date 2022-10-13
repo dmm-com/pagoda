@@ -1,6 +1,7 @@
 import {
   Autocomplete,
   Box,
+  Chip,
   Input,
   Table,
   TableBody,
@@ -126,6 +127,28 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                     isOptionEqualToValue={(option, value) =>
                       option.id === value.id
                     }
+                    renderTags={(value, getTagProps) => {
+                      return value.map((option, index) => {
+                        if (role.groups.some((u) => u.id == option.id)) {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.name}
+                              color="error"
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        } else {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.name}
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        }
+                      });
+                    }}
                     multiple
                   />
                 </TableCell>
@@ -146,6 +169,28 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                     isOptionEqualToValue={(option, value) =>
                       option.id === value.id
                     }
+                    renderTags={(value, getTagProps) => {
+                      return value.map((option, index) => {
+                        if (role.adminGroups.some((u) => u.id == option.id)) {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.name}
+                              color="error"
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        } else {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.name}
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        }
+                      });
+                    }}
                     multiple
                   />
                 </TableCell>
@@ -187,6 +232,28 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                     onInputChange={(_, value: string) =>
                       setAdminUserKeyword(value)
                     }
+                    renderTags={(value, getTagProps) => {
+                      return value.map((option, index) => {
+                        if (role.users.some((u) => u.id == option.id)) {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.username}
+                              color="error"
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        } else {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.username}
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        }
+                      });
+                    }}
                     multiple
                   />
                 </TableCell>
@@ -209,6 +276,28 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                     }
                     inputValue={userKeyword}
                     onInputChange={(_, value: string) => setUserKeyword(value)}
+                    renderTags={(value, getTagProps) => {
+                      return value.map((option, index) => {
+                        if (role.adminUsers.some((u) => u.id == option.id)) {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.username}
+                              color="error"
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        } else {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.username}
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        }
+                      });
+                    }}
                     multiple
                   />
                 </TableCell>
