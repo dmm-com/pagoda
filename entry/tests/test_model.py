@@ -2207,7 +2207,7 @@ class ModelTest(AironeTestCase):
 
         # call search_entries with 'hint_referral' parameter,
         # then checks that result includes referral entries
-        ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral=True)
+        ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral="")
         self.assertEqual(ret["ret_count"], 3)
         self.assertEqual(
             sorted([x["id"] for x in ret["ret_values"][0]["referrals"]]),

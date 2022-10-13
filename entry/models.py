@@ -1781,6 +1781,10 @@ class Entry(ACLBase):
             "entity": {"id": self.schema.id, "name": self.schema.name},
             "name": self.name,
             "attr": [],
+            "referrals": [
+                {"id": x.id, "name": x.name, "schema": {"id": x.schema.id, "name": x.schema.name}}
+                for x in self.get_referred_objects()
+            ],
             "is_readble": True
             if (self.is_public or self.default_permission >= ACLType.Readable.id)
             else False,
@@ -1886,7 +1890,7 @@ class Entry(ACLBase):
         hint_attrs=None,
         limit=CONFIG.MAX_LIST_ENTRIES,
         entry_name=None,
-        hint_referral=False,
+        hint_referral=None,
         is_output_all=False,
     ):
         """Main method called from advanced search.
@@ -1905,7 +1909,7 @@ class Entry(ACLBase):
             limit (int): Defaults to 100.
                 Maximum number of search results to return
             entry_name (str): Search string for entry name
-            hint_referral (str): Defaults to False.
+            hint_referral (str): Defaults to None.
                 Input value used to refine the reference entry.
                 Use only for advanced searches.
             is_output_all (bool): Defaults to False.
@@ -1960,7 +1964,7 @@ class Entry(ACLBase):
                 )
 
             # make query for elasticsearch to retrieve data user wants
-            query = make_query(entity, hint_attrs, entry_name)
+            query = make_query(entity, hint_attrs, entry_name, hint_referral)
 
             # sending request to elasticsearch with making query
             resp = execute_query(query)
@@ -1982,7 +1986,7 @@ class Entry(ACLBase):
                         )
 
             # retrieve data from database on the basis of the result of elasticsearch
-            search_result = make_search_results(user, resp, hint_attrs, limit, hint_referral)
+            search_result = make_search_results(user, resp, hint_attrs, limit)
             results["ret_count"] += search_result["ret_count"]
             results["ret_values"].extend(search_result["ret_values"])
             limit -= search_result["ret_count"]

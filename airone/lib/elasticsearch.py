@@ -73,6 +73,34 @@ class ESS(Elasticsearch):
                                         "keyword": {"type": "keyword"},
                                     },
                                 },
+                                "referrals": {
+                                    "type": "nested",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "index": "true",
+                                        },
+                                        "name": {
+                                            "type": "text",
+                                            "index": "true",
+                                            "analyzer": "keyword",
+                                        },
+                                        "schema": {
+                                            "type": "nested",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "index": "true",
+                                                },
+                                                "name": {
+                                                    "type": "text",
+                                                    "index": "true",
+                                                    "analyzer": "keyword",
+                                                },
+                                            }
+                                        },
+                                    },
+                                },
                                 "entity": {
                                     "type": "nested",
                                     "properties": {
@@ -150,7 +178,10 @@ __all__ = [
 
 
 def make_query(
-    hint_entity: Entity, hint_attrs: List[Dict[str, str]], entry_name: str
+    hint_entity: Entity,
+    hint_attrs: List[Dict[str, str]],
+    entry_name: str,
+    hint_referral: str = None,
 ) -> Dict[str, str]:
     """Create a search query for Elasticsearch.
 
@@ -166,6 +197,7 @@ def make_query(
         hint_entity (Entity): Entity ID specified in the search condition input
         hint_attrs (list(dict[str, str])): A list of search strings and attribute sets
         entry_name (str): Search string for entry name
+        hint_referral (str): Search string for referred entry name
 
     Returns:
         dict[str, str]: The created search query is returned.
@@ -190,6 +222,9 @@ def make_query(
     # Included in query if refinement is entered for 'Name' in advanced search
     if entry_name:
         query["query"]["bool"]["filter"].append(_make_entry_name_query(entry_name))
+
+    if hint_referral:
+        query["query"]["bool"]["filter"].append(_make_referral_query(hint_referral))
 
     # Set the attribute name so that all the attributes specified in the attribute,
     # to be searched can be used
@@ -383,6 +418,52 @@ def _make_entry_name_query(entry_name: str) -> Dict[str, str]:
         entry_name_or_query["bool"]["should"].append(entry_name_and_query)
 
     return entry_name_or_query
+
+
+def _make_referral_query(referral_name: str) -> Dict[str, str]:
+    referral_or_query: Dict = {"bool": {"should": []}}
+
+    # Split and process keywords with 'or'
+    for keyword_divided_or in referral_name.split(CONFIG.OR_SEARCH_CHARACTER):
+
+        referral_and_query: Dict = {
+            "bool": {
+                "must": [],
+                "must_not": [],
+            }
+        }
+
+        # Keyword divided by 'or' is processed by dividing by 'and'
+        for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
+            name_val = _get_hint_keyword_val(keyword)
+            if name_val and name_val != CONFIG.EMPTY_SEARCH_CHARACTER:
+                # When normal conditions are specified
+                referral_and_query["bool"]["must"].append({
+                    "nested": {
+                        "path": "referrals",
+                        "query": {
+                            "regexp": {
+                                "referrals.name": _get_regex_pattern(name_val)
+                            }
+                        }
+                    }
+                })
+            else:
+                # When blank is specified in the condition
+                referral_and_query["bool"]["must_not"].append({
+                    "nested": {
+                        "path": "referrals",
+                        "query": {
+                            "exists": {
+                                "field": "referrals"
+                            }
+                        }
+                    }
+                })
+
+        referral_or_query["bool"]["should"].append(referral_and_query)
+
+    return referral_or_query
 
 
 def _make_attr_query_for_simple(hint_string: str) -> Dict[str, str]:
@@ -703,7 +784,6 @@ def make_search_results(
     res: Dict[str, Any],
     hint_attrs: List[Dict[str, str]],
     limit: int,
-    hint_referral: str,
 ) -> Dict[str, str]:
     """Acquires and returns the attribute values held by each search result
 
@@ -732,8 +812,6 @@ def make_search_results(
         res (`str`, optional): Search results for Elasticsearch
         hint_attrs (list(dict[str, str])):  A list of search strings and attribute sets
         limit (int): Maximum number of search results to return
-        hint_referral (str): Input value used to refine the reference entry.
-            Use only for advanced searches.
 
     Returns:
         dict[str, str]: A set of attributes and attribute values associated with the entry
@@ -750,56 +828,7 @@ def make_search_results(
 
     # get django objects from the hit information from Elasticsearch
     hit_entry_ids = [x["_id"] for x in res["hits"]["hits"]]
-    if isinstance(hint_referral, str) and hint_referral:
-        # If the hint_referral parameter is specified,
-        # this filters results that only have specified referral entry.
-
-        if (
-            CONFIG.EMPTY_SEARCH_CHARACTER == hint_referral
-            or CONFIG.EMPTY_SEARCH_CHARACTER_CODE == hint_referral
-        ):
-
-            hit_entry_ids_num = [int(x) for x in hit_entry_ids]
-            filtered_ids = set(hit_entry_ids_num) - set(
-                AttributeValue.objects.filter(
-                    Q(
-                        referral__id__in=hit_entry_ids,
-                        parent_attr__is_active=True,
-                        is_latest=True,
-                    )
-                    | Q(
-                        referral__id__in=hit_entry_ids,
-                        parent_attr__is_active=True,
-                        parent_attrv__is_latest=True,
-                    )
-                ).values_list("referral_id", flat=True)
-            )
-
-        else:
-
-            filtered_ids = AttributeValue.objects.filter(
-                Q(
-                    parent_attr__parent_entry__name__iregex=prepend_escape_character(
-                        CONFIG.ESCAPE_CHARACTERS_REFERRALS_ENTRY, hint_referral
-                    ),
-                    referral__id__in=hit_entry_ids,
-                    is_latest=True,
-                )
-                | Q(
-                    parent_attr__parent_entry__name__iregex=prepend_escape_character(
-                        CONFIG.ESCAPE_CHARACTERS_REFERRALS_ENTRY, hint_referral
-                    ),
-                    referral__id__in=hit_entry_ids,
-                    parent_attrv__is_latest=True,
-                )
-            ).values_list("referral", flat=True)
-
-        hit_entries = Entry.objects.filter(pk__in=filtered_ids, is_active=True)
-
-        # reset matched count by filtered results by hint_referral parameter
-        results["ret_count"] = len(hit_entries)
-    else:
-        hit_entries = Entry.objects.filter(id__in=hit_entry_ids, is_active=True)
+    hit_entries = Entry.objects.filter(id__in=hit_entry_ids, is_active=True)
 
     hit_infos: Dict = {}
     for entry in hit_entries:
@@ -815,18 +844,8 @@ def make_search_results(
             "entity": {"id": entry.schema.id, "name": entry.schema.name},
             "entry": {"id": entry.id, "name": entry.name},
             "attrs": {},
+            "referrals": entry_info.get('referrals', []),
         }
-
-        # When 'hint_referral' parameter is specifed, return referred entries for each results
-        if hint_referral is not False:
-            ret_info["referrals"] = [
-                {
-                    "id": x.id,
-                    "name": x.name,
-                    "schema": x.schema.name,
-                }
-                for x in entry.get_referred_objects()
-            ]
 
         # Check for has permission to Entry
         if entry_info["is_readble"] or user.has_permission(entry, ACLType.Readable):
