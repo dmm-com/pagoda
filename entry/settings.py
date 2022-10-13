@@ -13,6 +13,7 @@ CONFIG = Settings(
         "MAX_QUERY_COUNT": 1000,
         "EMPTY_SEARCH_CHARACTER": "\\",
         "EMPTY_SEARCH_CHARACTER_CODE": chr(165),
+        "EXSIT_CHARACTER": "*",
         "AND_SEARCH_CHARACTER": "&",
         "OR_SEARCH_CHARACTER": "|",
         "ESCAPE_CHARACTERS": [

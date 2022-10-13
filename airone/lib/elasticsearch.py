@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
-from django.db.models import Q
 from elasticsearch import Elasticsearch
 
 from airone.lib.acl import ACLType
@@ -97,7 +96,7 @@ class ESS(Elasticsearch):
                                                     "index": "true",
                                                     "analyzer": "keyword",
                                                 },
-                                            }
+                                            },
                                         },
                                     },
                                 },
@@ -436,30 +435,26 @@ def _make_referral_query(referral_name: str) -> Dict[str, str]:
         # Keyword divided by 'or' is processed by dividing by 'and'
         for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
             name_val = _get_hint_keyword_val(keyword)
-            if name_val and name_val != CONFIG.EMPTY_SEARCH_CHARACTER:
+            if name_val == CONFIG.EXSIT_CHARACTER:
+                # When existed referral is specified in the condition
+                referral_and_query["bool"]["must"].append(
+                    {"nested": {"path": "referrals", "query": {"exists": {"field": "referrals"}}}}
+                )
+            elif name_val:
                 # When normal conditions are specified
-                referral_and_query["bool"]["must"].append({
-                    "nested": {
-                        "path": "referrals",
-                        "query": {
-                            "regexp": {
-                                "referrals.name": _get_regex_pattern(name_val)
-                            }
+                referral_and_query["bool"]["must"].append(
+                    {
+                        "nested": {
+                            "path": "referrals",
+                            "query": {"regexp": {"referrals.name": _get_regex_pattern(name_val)}},
                         }
                     }
-                })
+                )
             else:
                 # When blank is specified in the condition
-                referral_and_query["bool"]["must_not"].append({
-                    "nested": {
-                        "path": "referrals",
-                        "query": {
-                            "exists": {
-                                "field": "referrals"
-                            }
-                        }
-                    }
-                })
+                referral_and_query["bool"]["must_not"].append(
+                    {"nested": {"path": "referrals", "query": {"exists": {"field": "referrals"}}}}
+                )
 
         referral_or_query["bool"]["should"].append(referral_and_query)
 
@@ -719,7 +714,7 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
 
         # This is an exceptional bypass processing to be able to search Entries
         # that has substantial Attribute.
-        if hint_keyword_val == "*":
+        if hint_keyword_val == CONFIG.EXSIT_CHARACTER:
             cond_attr.append(
                 {
                     "bool": {
@@ -818,7 +813,7 @@ def make_search_results(
             that was hit in the search
 
     """
-    from entry.models import AttributeValue, Entry
+    from entry.models import Entry
 
     # set numbers of found entries
     results = {
@@ -844,7 +839,7 @@ def make_search_results(
             "entity": {"id": entry.schema.id, "name": entry.schema.name},
             "entry": {"id": entry.id, "name": entry.name},
             "attrs": {},
-            "referrals": entry_info.get('referrals', []),
+            "referrals": entry_info.get("referrals", []),
         }
 
         # Check for has permission to Entry
