@@ -49,6 +49,7 @@ class UpdateESDocuemntlTest(AironeTestCase):
             name="entry2", created_user=self.user, schema=self.entity2
         )
 
+    @patch("entry.tasks.update_es_documents.delay", Mock(side_effect=update_es_documents))
     def test_initialize_entries(self):
         ret = Entry.search_entries(self.user, [self.entity1.id, self.entity2.id])
         self.assertEqual(ret["ret_count"], 0)

@@ -230,7 +230,7 @@ This regists all entries which has been created in the database to the Elasticse
 You can do it just by following command. The configurations about the database to read and Elasticsearch to register are referred from airone/settings.py.
 
 ```
-(virtualenv) user@hostname:~/airone$ python tools/register_es_document.py
+(virtualenv) user@hostname:~/airone$ python tools/initialize_es_document.py
 ```
 
 ## Run AirOne

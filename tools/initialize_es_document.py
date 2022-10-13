@@ -33,7 +33,7 @@ def initialize_es_document(entities):
         target_entity = target_entity.filter(name__in=entities)
 
     for entity in target_entity:
-        Job.new_update_documents(entity, "", {"is_update": True}).run(False)
+        Job.new_update_documents(entity, "", {"is_update": True}).run()
 
 
 def get_options():
