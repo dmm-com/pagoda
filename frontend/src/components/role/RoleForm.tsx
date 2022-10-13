@@ -43,10 +43,7 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
     if (role.name === "") {
       return false;
     }
-    return (
-      role.adminUsers.length > 0 ||
-      role.adminGroups.length > 0
-    );
+    return role.adminUsers.length > 0 || role.adminGroups.length > 0;
   };
 
   useEffect(() => {
