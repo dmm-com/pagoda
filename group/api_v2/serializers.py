@@ -22,3 +22,24 @@ class GroupSerializer(serializers.ModelSerializer):
             }
             for u in users
         ]
+
+
+class GroupTreeSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField(method_name="get_children")
+
+    class Meta:
+        model = Group
+        fields = ["id", "name", "children"]
+
+    def get_children(self, obj: Group) -> List[Dict]:
+        def _make_hierarchical_group(groups: List[Group]) -> List[Dict]:
+            return [
+                {
+                    "id": g.id,
+                    "name": g.name,
+                    "children": _make_hierarchical_group(g.subordinates.filter(is_active=True)),
+                }
+                for g in groups
+            ]
+
+        return _make_hierarchical_group(obj.subordinates.filter(is_active=True))

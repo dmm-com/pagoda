@@ -13,7 +13,14 @@
  */
 
 import * as runtime from "../runtime";
-import { Group, GroupFromJSON, GroupToJSON } from "../models";
+import {
+  Group,
+  GroupFromJSON,
+  GroupToJSON,
+  GroupTree,
+  GroupTreeFromJSON,
+  GroupTreeToJSON,
+} from "../models";
 
 export interface GroupApiV2GroupsRetrieveRequest {
   id: number;
@@ -129,6 +136,53 @@ export class GroupApi extends runtime.BaseAPI {
       requestParameters,
       initOverrides
     );
+    return await response.value();
+  }
+
+  /**
+   */
+  async groupApiV2GroupsTreeListRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<Array<GroupTree>>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/group/api/v2/groups/tree`,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      jsonValue.map(GroupTreeFromJSON)
+    );
+  }
+
+  /**
+   */
+  async groupApiV2GroupsTreeList(
+    initOverrides?: RequestInit
+  ): Promise<Array<GroupTree>> {
+    const response = await this.groupApiV2GroupsTreeListRaw(initOverrides);
     return await response.value();
   }
 }
