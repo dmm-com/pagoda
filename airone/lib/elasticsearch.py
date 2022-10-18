@@ -63,74 +63,72 @@ class ESS(Elasticsearch):
             body=json.dumps(
                 {
                     "mappings": {
-                        "entry": {
-                            "properties": {
-                                "name": {
-                                    "type": "text",
-                                    "index": "true",
-                                    "analyzer": "keyword",
-                                    "fields": {
-                                        "keyword": {"type": "keyword"},
+                        "properties": {
+                            "name": {
+                                "type": "text",
+                                "index": "true",
+                                "analyzer": "keyword",
+                                "fields": {
+                                    "keyword": {"type": "keyword"},
+                                },
+                            },
+                            "entity": {
+                                "type": "nested",
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "index": "true",
+                                    },
+                                    "name": {
+                                        "type": "text",
+                                        "index": "true",
+                                        "analyzer": "keyword",
                                     },
                                 },
-                                "entity": {
-                                    "type": "nested",
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "index": "true",
-                                        },
-                                        "name": {
-                                            "type": "text",
-                                            "index": "true",
-                                            "analyzer": "keyword",
-                                        },
+                            },
+                            "attr": {
+                                "type": "nested",
+                                "properties": {
+                                    "name": {
+                                        "type": "text",
+                                        "index": "true",
+                                        "analyzer": "keyword",
+                                    },
+                                    "type": {
+                                        "type": "integer",
+                                        "index": "false",
+                                    },
+                                    "id": {
+                                        "type": "integer",
+                                        "index": "false",
+                                    },
+                                    "key": {
+                                        "type": "text",
+                                        "index": "true",
+                                    },
+                                    "date_value": {
+                                        "type": "date",
+                                        "index": "true",
+                                    },
+                                    "value": {
+                                        "type": "text",
+                                        "index": "true",
+                                        "analyzer": "keyword",
+                                    },
+                                    "referral_id": {
+                                        "type": "integer",
+                                        "index": "false",
+                                    },
+                                    "is_readble": {
+                                        "type": "boolean",
+                                        "index": "true",
                                     },
                                 },
-                                "attr": {
-                                    "type": "nested",
-                                    "properties": {
-                                        "name": {
-                                            "type": "text",
-                                            "index": "true",
-                                            "analyzer": "keyword",
-                                        },
-                                        "type": {
-                                            "type": "integer",
-                                            "index": "false",
-                                        },
-                                        "id": {
-                                            "type": "integer",
-                                            "index": "false",
-                                        },
-                                        "key": {
-                                            "type": "text",
-                                            "index": "true",
-                                        },
-                                        "date_value": {
-                                            "type": "date",
-                                            "index": "true",
-                                        },
-                                        "value": {
-                                            "type": "text",
-                                            "index": "true",
-                                            "analyzer": "keyword",
-                                        },
-                                        "referral_id": {
-                                            "type": "integer",
-                                            "index": "false",
-                                        },
-                                        "is_readble": {
-                                            "type": "boolean",
-                                            "index": "true",
-                                        },
-                                    },
-                                },
-                                "is_readble": {
-                                    "type": "boolean",
-                                    "index": "true",
-                                },
-                            }
+                            },
+                            "is_readble": {
+                                "type": "boolean",
+                                "index": "true",
+                            },
                         }
                     }
                 }
@@ -744,7 +742,7 @@ def make_search_results(
 
     # set numbers of found entries
     results = {
-        "ret_count": res["hits"]["total"],
+        "ret_count": res["hits"]["total"]["value"],
         "ret_values": [],
     }
 
@@ -949,7 +947,7 @@ def make_search_results(
 
 def make_search_results_for_simple(res: Dict[str, Any]) -> Dict[str, str]:
     result = {
-        "ret_count": res["hits"]["total"],
+        "ret_count": res["hits"]["total"]["value"],
         "ret_values": [],
     }
 

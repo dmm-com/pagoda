@@ -331,7 +331,7 @@ class ElasticSearchTest(TestCase):
 
         res = {
             "hits": {
-                "total": 1,
+                "total": {"value": 1},
                 "hits": [
                     {
                         "_type": "entry",
@@ -401,7 +401,7 @@ class ElasticSearchTest(TestCase):
 
         res = {
             "hits": {
-                "total": 1,
+                "total": {"value": 1},
                 "hits": [
                     {
                         "_type": "entry",

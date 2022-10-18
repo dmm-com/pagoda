@@ -2,7 +2,6 @@ import logging
 import re
 
 import mock
-from django.conf import settings
 from django.urls import reverse
 
 from acl.models import ACLBase
@@ -183,8 +182,8 @@ class ImportTest(AironeViewTest):
         )
 
         # checks that imported Entries were registered to the Elasticsearch
-        res = self._es.indices.stats(index=settings.ES_CONFIG["INDEX"])
-        self.assertEqual(res["_all"]["total"]["segments"]["count"], Entry.objects.count())
+        res = Entry.get_all_es_docs()
+        self.assertEqual(res["hits"]["total"]["value"], Entry.objects.count())
 
     def test_import_entry_without_mandatory_values(self):
         self.admin_login()

@@ -618,7 +618,7 @@ class ViewTest(AironeViewTest):
             },
         )
         search_result = self._es.search(body={"query": {"term": {"name": "entry-change"}}})
-        self.assertEqual(search_result["hits"]["total"], 1)
+        self.assertEqual(search_result["hits"]["total"]["value"], 1)
 
     def test_update_entry_without_permission(self):
         params = {
