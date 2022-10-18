@@ -2173,6 +2173,33 @@ class ModelTest(AironeTestCase):
                 # both True and False value will be matched for boolean type Attribute
                 self.assertEqual(result["ret_count"], 12)
 
+    def test_search_entries_with_hint_referral_entity(self):
+        user = User.objects.create(username="hoge")
+
+        # Initialize Entities and Entries which will be used in this test
+        ref_entity = self.create_entity(user, "Ref Entity")
+        ref_entry = self.add_entry(user, "Ref", ref_entity)
+        entity = self.create_entity(
+            user,
+            "Entity",
+            attrs=[
+                {
+                    "name": "ref",
+                    "type": AttrTypeValue["object"],
+                }
+            ],
+        )
+        self.add_entry(user, "Entry", entity, values={"ref": ref_entry})
+
+        # get Entries that refer Entry which belongs to specified Entity
+        result = Entry.search_entries(
+            user,
+            [x.id for x in Entity.objects.filter(is_active=True)],
+            hint_referral_entity_id=entity.id,
+        )
+        self.assertEqual(result["ret_count"], 1)
+        self.assertEqual(result["ret_values"][0]["entry"]["id"], ref_entry.id)
+
     def test_search_entries_with_hint_referral(self):
         user = User.objects.create(username="hoge")
 

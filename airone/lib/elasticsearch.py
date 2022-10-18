@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
-from django.db.models import Q
 from elasticsearch import Elasticsearch
 
 from airone.lib.acl import ACLType
@@ -97,7 +96,7 @@ class ESS(Elasticsearch):
                                                     "index": "true",
                                                     "analyzer": "keyword",
                                                 },
-                                            }
+                                            },
                                         },
                                     },
                                 },
@@ -182,6 +181,7 @@ def make_query(
     hint_attrs: List[Dict[str, str]],
     entry_name: str,
     hint_referral: str = None,
+    hint_referral_entity_id: int = None,
 ) -> Dict[str, str]:
     """Create a search query for Elasticsearch.
 
@@ -198,6 +198,9 @@ def make_query(
         hint_attrs (list(dict[str, str])): A list of search strings and attribute sets
         entry_name (str): Search string for entry name
         hint_referral (str): Search string for referred entry name
+        hint_referral_entity_id (int):
+            - Limit result to the Entries that refer to Entry, which belongs to
+              specified Entity.
 
     Returns:
         dict[str, str]: The created search query is returned.
@@ -225,6 +228,11 @@ def make_query(
 
     if hint_referral:
         query["query"]["bool"]["filter"].append(_make_referral_query(hint_referral))
+
+    if hint_referral_entity_id:
+        query["query"]["bool"]["filter"].append(
+            _make_referral_entity_query(hint_referral_entity_id)
+        )
 
     # Set the attribute name so that all the attributes specified in the attribute,
     # to be searched can be used
@@ -438,30 +446,38 @@ def _make_referral_query(referral_name: str) -> Dict[str, str]:
             name_val = _get_hint_keyword_val(keyword)
             if name_val and name_val != CONFIG.EMPTY_SEARCH_CHARACTER:
                 # When normal conditions are specified
-                referral_and_query["bool"]["must"].append({
-                    "nested": {
-                        "path": "referrals",
-                        "query": {
-                            "regexp": {
-                                "referrals.name": _get_regex_pattern(name_val)
-                            }
+                referral_and_query["bool"]["must"].append(
+                    {
+                        "nested": {
+                            "path": "referrals",
+                            "query": {"regexp": {"referrals.name": _get_regex_pattern(name_val)}},
                         }
                     }
-                })
+                )
             else:
                 # When blank is specified in the condition
-                referral_and_query["bool"]["must_not"].append({
-                    "nested": {
-                        "path": "referrals",
-                        "query": {
-                            "exists": {
-                                "field": "referrals"
-                            }
-                        }
-                    }
-                })
+                referral_and_query["bool"]["must_not"].append(
+                    {"nested": {"path": "referrals", "query": {"exists": {"field": "referrals"}}}}
+                )
 
         referral_or_query["bool"]["should"].append(referral_and_query)
+
+    return referral_or_query
+
+
+def _make_referral_entity_query(referral_entity_id: int) -> Dict[str, str]:
+    referral_or_query: Dict = {
+        "bool": {
+            "should": [
+                {
+                    "nested": {
+                        "path": "referrals.schema",
+                        "query": {"match": {"referrals.schema.id": referral_entity_id}},
+                    }
+                }
+            ]
+        }
+    }
 
     return referral_or_query
 
@@ -818,7 +834,7 @@ def make_search_results(
             that was hit in the search
 
     """
-    from entry.models import AttributeValue, Entry
+    from entry.models import Entry
 
     # set numbers of found entries
     results = {
@@ -844,7 +860,7 @@ def make_search_results(
             "entity": {"id": entry.schema.id, "name": entry.schema.name},
             "entry": {"id": entry.id, "name": entry.name},
             "attrs": {},
-            "referrals": entry_info.get('referrals', []),
+            "referrals": entry_info.get("referrals", []),
         }
 
         # Check for has permission to Entry

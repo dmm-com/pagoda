@@ -1301,6 +1301,20 @@ class Entry(ACLBase):
             self.attrs.add(attr)
         return attr
 
+    def get_refers_objects(self):
+        """
+        This returns all objects that this Entry refers to just by about twice SQL call.
+        """
+        query = Q(
+            Q(is_latest=True) | Q(parent_attrv__is_latest=True),
+            referral__is_active=True,
+            parent_attr__parent_entry=self,
+        )
+
+        entry_ids = [x.referral.id for x in AttributeValue.objects.filter(query)]
+
+        return Entry.objects.filter(id__in=entry_ids)
+
     def get_referred_objects(self, filter_entities=[], exclude_entities=[]):
         """
         This returns objects that refer current Entry in the AttributeValue
@@ -1822,13 +1836,26 @@ class Entry(ACLBase):
 
         return document
 
-    def register_es(self, es=None, skip_refresh=False):
+    def register_es(self, es=None, skip_refresh=False, recursive_call_stack=[]):
+        print("[onix/Entry.register_es(00)] %s" % self.name)
+        """
+        Arguments
+          * recursive_call_stack:
+            - Entris that has ever been called, which is necessary to prevent
+              falling into the infinite calling loop.
+        """
+
         if not es:
             es = ESS()
 
         es.index(doc_type="entry", id=self.id, body=self.get_es_document(es))
         if not skip_refresh:
             es.refresh()
+
+        # It's also needed to update es-document for Entries that this Entry refers to
+        if not recursive_call_stack:
+            for entry in [e for e in self.get_refers_objects() if e.id != self.id]:
+                entry.register_es(es, skip_refresh, recursive_call_stack + [self])
 
     def unregister_es(self, es=None):
         if not es:
@@ -1891,6 +1918,7 @@ class Entry(ACLBase):
         limit=CONFIG.MAX_LIST_ENTRIES,
         entry_name=None,
         hint_referral=None,
+        hint_referral_entity_id=None,
         is_output_all=False,
     ):
         """Main method called from advanced search.
@@ -1911,6 +1939,9 @@ class Entry(ACLBase):
             entry_name (str): Search string for entry name
             hint_referral (str): Defaults to None.
                 Input value used to refine the reference entry.
+                Use only for advanced searches.
+            hint_referral_entity_id (int): Defaults to None.
+                Input value used to refine the reference Entity.
                 Use only for advanced searches.
             is_output_all (bool): Defaults to False.
                 Flag to output all attribute values.
@@ -1964,7 +1995,9 @@ class Entry(ACLBase):
                 )
 
             # make query for elasticsearch to retrieve data user wants
-            query = make_query(entity, hint_attrs, entry_name, hint_referral)
+            query = make_query(
+                entity, hint_attrs, entry_name, hint_referral, hint_referral_entity_id
+            )
 
             # sending request to elasticsearch with making query
             resp = execute_query(query)
@@ -2092,6 +2125,9 @@ class Entry(ACLBase):
             .prefetch_related(attr_prefetch)
         )
 
+        # Include Entries which refers Entries that is belonged to specified Entity
+        # to update "referrals" parameters of each referred Entries
+
         entity_attrs = entity.attrs.filter(is_active=True)
 
         # check & update
@@ -2116,6 +2152,8 @@ class Entry(ACLBase):
                     # ]
                     register_docs.append({"index": {"_id": entry.id}})
                     register_docs.append(es_doc)
+
+                # This also update Entries that refers target Entry
 
             if register_docs:
                 es.bulk(doc_type="entry", body=register_docs)
