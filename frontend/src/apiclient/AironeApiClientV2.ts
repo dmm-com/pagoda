@@ -377,6 +377,30 @@ class AironeApiClientV2 {
     return await this.group.groupApiV2GroupsRetrieve({ id });
   }
 
+  async createGroup(group: Group): Promise<void> {
+    await this.group.groupApiV2GroupsCreate(
+      { group: group },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async updateGroup(id: number, group: Group): Promise<void> {
+    await this.group.groupApiV2GroupsUpdate(
+      { id: id, group: group },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
   async getRoles(): Promise<Role[]> {
     return await this.role.roleApiV2List();
   }

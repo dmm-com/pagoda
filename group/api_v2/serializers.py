@@ -22,3 +22,11 @@ class GroupSerializer(serializers.ModelSerializer):
             }
             for u in users
         ]
+
+
+# FIXME support members
+class GroupCreateUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Group
+        fields = ["id", "name"]

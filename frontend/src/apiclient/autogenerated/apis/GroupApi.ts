@@ -15,14 +15,88 @@
 import * as runtime from "../runtime";
 import { Group, GroupFromJSON, GroupToJSON } from "../models";
 
+export interface GroupApiV2GroupsCreateRequest {
+  group: Group;
+}
+
 export interface GroupApiV2GroupsRetrieveRequest {
   id: number;
+}
+
+export interface GroupApiV2GroupsUpdateRequest {
+  id: number;
+  group: Group;
 }
 
 /**
  *
  */
 export class GroupApi extends runtime.BaseAPI {
+  /**
+   */
+  async groupApiV2GroupsCreateRaw(
+    requestParameters: GroupApiV2GroupsCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<Group>> {
+    if (
+      requestParameters.group === null ||
+      requestParameters.group === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "group",
+        "Required parameter requestParameters.group was null or undefined when calling groupApiV2GroupsCreate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/group/api/v2/groups`,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+        body: GroupToJSON(requestParameters.group),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      GroupFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async groupApiV2GroupsCreate(
+    requestParameters: GroupApiV2GroupsCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<Group> {
+    const response = await this.groupApiV2GroupsCreateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
   /**
    */
   async groupApiV2GroupsListRaw(
@@ -126,6 +200,81 @@ export class GroupApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<Group> {
     const response = await this.groupApiV2GroupsRetrieveRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async groupApiV2GroupsUpdateRaw(
+    requestParameters: GroupApiV2GroupsUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<Group>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling groupApiV2GroupsUpdate."
+      );
+    }
+
+    if (
+      requestParameters.group === null ||
+      requestParameters.group === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "group",
+        "Required parameter requestParameters.group was null or undefined when calling groupApiV2GroupsUpdate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/group/api/v2/groups/{id}`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PUT",
+        headers: headerParameters,
+        query: queryParameters,
+        body: GroupToJSON(requestParameters.group),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      GroupFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async groupApiV2GroupsUpdate(
+    requestParameters: GroupApiV2GroupsUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<Group> {
+    const response = await this.groupApiV2GroupsUpdateRaw(
       requestParameters,
       initOverrides
     );
