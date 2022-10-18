@@ -444,7 +444,12 @@ def _make_referral_query(referral_name: str) -> Dict[str, str]:
         # Keyword divided by 'or' is processed by dividing by 'and'
         for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
             name_val = _get_hint_keyword_val(keyword)
-            if name_val and name_val != CONFIG.EMPTY_SEARCH_CHARACTER:
+            if name_val == CONFIG.EXSIT_CHARACTER:
+                # When existed referral is specified in the condition
+                referral_and_query["bool"]["must"].append(
+                    {"nested": {"path": "referrals", "query": {"exists": {"field": "referrals"}}}}
+                )
+            elif name_val:
                 # When normal conditions are specified
                 referral_and_query["bool"]["must"].append(
                     {
@@ -735,7 +740,7 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
 
         # This is an exceptional bypass processing to be able to search Entries
         # that has substantial Attribute.
-        if hint_keyword_val == "*":
+        if hint_keyword_val == CONFIG.EXSIT_CHARACTER:
             cond_attr.append(
                 {
                     "bool": {

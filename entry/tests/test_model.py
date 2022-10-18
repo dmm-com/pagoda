@@ -2263,6 +2263,12 @@ class ModelTest(AironeTestCase):
         self.assertEqual(ret["ret_count"], 1)
         self.assertEqual([x["entry"]["name"] for x in ret["ret_values"]], ["ref2"])
 
+        # call search_entries with 'asterisk' in the 'hint_referral' parameter as entry of name
+        ret = Entry.search_entries(
+            user, [ref_entity.id], [], hint_referral=CONFIG.EXSIT_CHARACTER
+        )
+        self.assertEqual(ret["ret_count"], 2)
+
     def test_search_entries_with_exclusive_attrs(self):
         user = User.objects.create(username="hoge")
         entity_info = {

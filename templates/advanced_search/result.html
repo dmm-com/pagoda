@@ -169,7 +169,7 @@
         <ul class='list-group'>
           {% for referral in result.referrals %}
           <li class='list-group-item'>
-            <a href='/entry/show/{{ referral.id }}/'>{{ referral.name }} / {{ referral.schema }}</a>
+            <a href='/entry/show/{{ referral.id }}/'>{{ referral.name }} / {{ referral.schema.name }}</a>
           </li>
           {% endfor %}
         </ul>
