@@ -687,6 +687,33 @@ class ModelTest(AironeTestCase):
             self.assertEqual(referred_entries.count(), 1)
             self.assertEqual(list(referred_entries), [self._entry])
 
+    def test_get_referred_objects_after_deleting_entity_attr(self):
+        user = User.objects.create(username="hoge")
+
+        # Initialize Entities and Entries which will be used in this test
+        ref_entity = self.create_entity(user, "Ref Entity")
+        ref_entry = self.add_entry(user, "Ref", ref_entity)
+        entity = self.create_entity(
+            user,
+            "Entity",
+            attrs=[
+                {
+                    "name": "ref",
+                    "type": AttrTypeValue["object"],
+                }
+            ],
+        )
+        self.add_entry(user, "Entry", entity, values={"ref": ref_entry})
+
+        # delete EntityAttr that refers Entity "Ref Entity"
+        entity_attr = entity.attrs.get(name="ref")
+        self.assertTrue(entity_attr.is_active)
+        entity_attr.delete()
+
+        # check the results of Entry.get_referred_objects() will be reflected by
+        # deleting EntityAttr
+        self.assertFalse(ref_entry.get_referred_objects().exists())
+
     def test_get_referred_objects_with_entity_param(self):
         for i in range(3, 6):
             entity = Entity.objects.create(name="Entity" + str(i), created_user=self._user)
@@ -2264,9 +2291,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual([x["entry"]["name"] for x in ret["ret_values"]], ["ref2"])
 
         # call search_entries with 'asterisk' in the 'hint_referral' parameter as entry of name
-        ret = Entry.search_entries(
-            user, [ref_entity.id], [], hint_referral=CONFIG.EXSIT_CHARACTER
-        )
+        ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral=CONFIG.EXSIT_CHARACTER)
         self.assertEqual(ret["ret_count"], 2)
 
     def test_search_entries_with_exclusive_attrs(self):

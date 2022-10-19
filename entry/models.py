@@ -1320,7 +1320,9 @@ class Entry(ACLBase):
         This returns objects that refer current Entry in the AttributeValue
         """
         ids = AttributeValue.objects.filter(
-            Q(referral=self, is_latest=True) | Q(referral=self, parent_attrv__is_latest=True)
+            Q(referral=self, is_latest=True) | Q(referral=self, parent_attrv__is_latest=True),
+            parent_attr__is_active=True,
+            parent_attr__schema__is_active=True,
         ).values_list("parent_attr__parent_entry", flat=True)
 
         # if entity_name param exists, add schema name to reduce filter execution time
@@ -1837,7 +1839,6 @@ class Entry(ACLBase):
         return document
 
     def register_es(self, es=None, skip_refresh=False, recursive_call_stack=[]):
-        print("[onix/Entry.register_es(00)] %s" % self.name)
         """
         Arguments
           * recursive_call_stack:
@@ -2119,14 +2120,25 @@ class Entry(ACLBase):
             to_attr="prefetch_attrs",
         )
 
-        entry_list = (
-            Entry.objects.filter(schema=entity, is_active=True)
+        # Include Entries which refers Entries that is belonged to specified Entity
+        # to update "referrals" parameters of each referred Entries
+        results = Entry.search_entries(
+            User.get_admin_user(),
+            [x.id for x in Entity.objects.filter(is_active=True)],
+            hint_referral_entity_id=entity.id,
+        )
+        referral_entry_ids = [x["entry"]["id"] for x in results["ret_values"]]
+
+        # This targets following Entries
+        # 1. belonging to specified Entity
+        #   - this indicates former query (Q(schema=entity))
+        # 2. referring Entries that is belonged to specified Entity
+        #   - this indicates latter query (Q(id__in=referral_entry_ids))
+        entry_list = list(
+            Entry.objects.filter(Q(schema=entity) | Q(id__in=referral_entry_ids), is_active=True)
             .select_related("schema")
             .prefetch_related(attr_prefetch)
         )
-
-        # Include Entries which refers Entries that is belonged to specified Entity
-        # to update "referrals" parameters of each referred Entries
 
         entity_attrs = entity.attrs.filter(is_active=True)
 
@@ -2152,8 +2164,6 @@ class Entry(ACLBase):
                     # ]
                     register_docs.append({"index": {"_id": entry.id}})
                     register_docs.append(es_doc)
-
-                # This also update Entries that refers target Entry
 
             if register_docs:
                 es.bulk(doc_type="entry", body=register_docs)

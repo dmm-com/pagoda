@@ -37,6 +37,10 @@ class User(AbstractUser):
     authorized_type = models.IntegerField(default=0)
     token_lifetime = models.IntegerField(default=TOKEN_LIFETIME)
 
+    @classmethod
+    def get_admin_user(kls):
+        return User.objects.filter(is_superuser=True).last()
+
     @property
     def airone_groups(self):
         """
