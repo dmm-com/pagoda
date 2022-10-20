@@ -1,9 +1,15 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, TypedDict
 
 from rest_framework import serializers
 
 from group.models import Group
+from job.models import Job, JobOperation
 from user.models import User
+
+
+class GroupMemberType(TypedDict):
+    id: int
+    username: str
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -13,7 +19,7 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ["id", "name", "members"]
 
-    def get_members(self, obj: Group) -> List[Dict[str, Any]]:
+    def get_members(self, obj: Group) -> List[GroupMemberType]:
         users = User.objects.filter(groups__name=obj.name, is_active=True).order_by("username")
         return [
             {
@@ -24,9 +30,79 @@ class GroupSerializer(serializers.ModelSerializer):
         ]
 
 
-# FIXME support members
 class GroupCreateUpdateSerializer(serializers.ModelSerializer):
+    members = serializers.ListField(child=serializers.IntegerField())
 
     class Meta:
         model = Group
-        fields = ["id", "name"]
+        fields = ["id", "name", "members"]
+
+    def create(self, validated_data: Dict):
+        new_group = Group(
+            name=validated_data["name"],
+            parent_group=Group.objects.filter(
+                id=validated_data.get("parent_group", 0), is_active=True
+            ).first(),
+        )
+        new_group.save()
+
+        for user in [User.objects.get(id=x) for x in validated_data.get("users", [])]:
+            user.groups.add(new_group)
+
+        return new_group
+
+    def update(self, instance: Group, validated_data: Dict):
+        job_register_referrals = None
+        if instance.name != validated_data["name"]:
+            job_register_referrals = Job.new_register_referrals(
+                self.context["request"].user,
+                None,
+                operation_value=JobOperation.GROUP_REGISTER_REFERRAL.value,
+                params={"group_id": instance.id},
+            )
+
+        # update group_name with specified one
+        instance.name = validated_data["name"]
+        instance.parent_group = Group.objects.filter(
+            id=validated_data.get("parent_group", 0), is_active=True
+        ).first()
+        instance.save()
+
+        if job_register_referrals:
+            job_register_referrals.run()
+
+        # the processing for deleted users
+        old_users = [str(x.id) for x in User.objects.filter(groups__id=instance.id, is_active=True)]
+        for user in [
+            User.objects.get(id=x) for x in set(old_users) - set(validated_data.get("users", []))
+        ]:
+            user.groups.remove(instance)
+
+        # the processing for added users
+        for user in [
+            User.objects.get(id=x) for x in set(validated_data.get("users", [])) - set(old_users)
+        ]:
+            user.groups.add(instance)
+
+        return instance
+
+
+class GroupTreeSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField(method_name="get_children")
+
+    class Meta:
+        model = Group
+        fields = ["id", "name", "children"]
+
+    def get_children(self, obj: Group) -> List[Dict]:
+        def _make_hierarchical_group(groups: List[Group]) -> List[Dict]:
+            return [
+                {
+                    "id": g.id,
+                    "name": g.name,
+                    "children": _make_hierarchical_group(g.subordinates.filter(is_active=True)),
+                }
+                for g in groups
+            ]
+
+        return _make_hierarchical_group(obj.subordinates.filter(is_active=True))

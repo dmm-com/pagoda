@@ -25,17 +25,11 @@ def _send_request_to_webhook_endpoint(entry, user, event_type):
 
 
 def notify_entry_create(entry, user):
-    # complement attrs before sending request
-    entry.complement_attrs(user)
-
     # send a request to the registered WebHook URL
     _send_request_to_webhook_endpoint(entry, user, "entry.create")
 
 
 def notify_entry_update(entry, user):
-    # complement attrs before sending request
-    entry.complement_attrs(user)
-
     # send a request to the registered WebHook URL
     _send_request_to_webhook_endpoint(entry, user, "entry.update")
 

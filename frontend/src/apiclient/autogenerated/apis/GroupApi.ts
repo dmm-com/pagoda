@@ -13,10 +13,20 @@
  */
 
 import * as runtime from "../runtime";
-import { Group, GroupFromJSON, GroupToJSON } from "../models";
+import {
+  Group,
+  GroupFromJSON,
+  GroupToJSON,
+  GroupCreateUpdate,
+  GroupCreateUpdateFromJSON,
+  GroupCreateUpdateToJSON,
+  GroupTree,
+  GroupTreeFromJSON,
+  GroupTreeToJSON,
+} from "../models";
 
 export interface GroupApiV2GroupsCreateRequest {
-  group: Group;
+  groupCreateUpdate: GroupCreateUpdate;
 }
 
 export interface GroupApiV2GroupsRetrieveRequest {
@@ -25,7 +35,7 @@ export interface GroupApiV2GroupsRetrieveRequest {
 
 export interface GroupApiV2GroupsUpdateRequest {
   id: number;
-  group: Group;
+  groupCreateUpdate: GroupCreateUpdate;
 }
 
 /**
@@ -37,14 +47,14 @@ export class GroupApi extends runtime.BaseAPI {
   async groupApiV2GroupsCreateRaw(
     requestParameters: GroupApiV2GroupsCreateRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<Group>> {
+  ): Promise<runtime.ApiResponse<GroupCreateUpdate>> {
     if (
-      requestParameters.group === null ||
-      requestParameters.group === undefined
+      requestParameters.groupCreateUpdate === null ||
+      requestParameters.groupCreateUpdate === undefined
     ) {
       throw new runtime.RequiredError(
-        "group",
-        "Required parameter requestParameters.group was null or undefined when calling groupApiV2GroupsCreate."
+        "groupCreateUpdate",
+        "Required parameter requestParameters.groupCreateUpdate was null or undefined when calling groupApiV2GroupsCreate."
       );
     }
 
@@ -74,13 +84,13 @@ export class GroupApi extends runtime.BaseAPI {
         method: "POST",
         headers: headerParameters,
         query: queryParameters,
-        body: GroupToJSON(requestParameters.group),
+        body: GroupCreateUpdateToJSON(requestParameters.groupCreateUpdate),
       },
       initOverrides
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      GroupFromJSON(jsonValue)
+      GroupCreateUpdateFromJSON(jsonValue)
     );
   }
 
@@ -89,7 +99,7 @@ export class GroupApi extends runtime.BaseAPI {
   async groupApiV2GroupsCreate(
     requestParameters: GroupApiV2GroupsCreateRequest,
     initOverrides?: RequestInit
-  ): Promise<Group> {
+  ): Promise<GroupCreateUpdate> {
     const response = await this.groupApiV2GroupsCreateRaw(
       requestParameters,
       initOverrides
@@ -208,10 +218,57 @@ export class GroupApi extends runtime.BaseAPI {
 
   /**
    */
+  async groupApiV2GroupsTreeListRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<Array<GroupTree>>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/group/api/v2/groups/tree`,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      jsonValue.map(GroupTreeFromJSON)
+    );
+  }
+
+  /**
+   */
+  async groupApiV2GroupsTreeList(
+    initOverrides?: RequestInit
+  ): Promise<Array<GroupTree>> {
+    const response = await this.groupApiV2GroupsTreeListRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   */
   async groupApiV2GroupsUpdateRaw(
     requestParameters: GroupApiV2GroupsUpdateRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<Group>> {
+  ): Promise<runtime.ApiResponse<GroupCreateUpdate>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
         "id",
@@ -220,12 +277,12 @@ export class GroupApi extends runtime.BaseAPI {
     }
 
     if (
-      requestParameters.group === null ||
-      requestParameters.group === undefined
+      requestParameters.groupCreateUpdate === null ||
+      requestParameters.groupCreateUpdate === undefined
     ) {
       throw new runtime.RequiredError(
-        "group",
-        "Required parameter requestParameters.group was null or undefined when calling groupApiV2GroupsUpdate."
+        "groupCreateUpdate",
+        "Required parameter requestParameters.groupCreateUpdate was null or undefined when calling groupApiV2GroupsUpdate."
       );
     }
 
@@ -258,13 +315,13 @@ export class GroupApi extends runtime.BaseAPI {
         method: "PUT",
         headers: headerParameters,
         query: queryParameters,
-        body: GroupToJSON(requestParameters.group),
+        body: GroupCreateUpdateToJSON(requestParameters.groupCreateUpdate),
       },
       initOverrides
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      GroupFromJSON(jsonValue)
+      GroupCreateUpdateFromJSON(jsonValue)
     );
   }
 
@@ -273,7 +330,7 @@ export class GroupApi extends runtime.BaseAPI {
   async groupApiV2GroupsUpdate(
     requestParameters: GroupApiV2GroupsUpdateRequest,
     initOverrides?: RequestInit
-  ): Promise<Group> {
+  ): Promise<GroupCreateUpdate> {
     const response = await this.groupApiV2GroupsUpdateRaw(
       requestParameters,
       initOverrides
