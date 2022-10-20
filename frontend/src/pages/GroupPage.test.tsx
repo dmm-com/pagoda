@@ -21,30 +21,23 @@ test("should match snapshot", async () => {
     {
       id: 1,
       name: "group1",
-      members: [
+      children: [
         {
           id: 1,
-          username: "user1",
+          name: "group1",
+          children: [],
         },
         {
           id: 2,
-          username: "user2",
+          name: "group2",
+          children: [],
         },
       ],
     },
     {
       id: 2,
       name: "group2",
-      members: [
-        {
-          id: 11,
-          username: "user11",
-        },
-        {
-          id: 12,
-          username: "user12",
-        },
-      ],
+      children: [],
     },
   ];
 
@@ -52,7 +45,7 @@ test("should match snapshot", async () => {
   jest
     .spyOn(
       require("../apiclient/AironeApiClientV2").aironeApiClientV2,
-      "getGroups"
+      "getGroupTrees"
     )
     .mockResolvedValue(Promise.resolve(groups));
   /* eslint-enable */
