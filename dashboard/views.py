@@ -182,12 +182,6 @@ def advanced_search_result(request):
     if len(entry_name) > CONFIG_ENTRY.MAX_QUERY_SIZE:
         return HttpResponse("Sending parameter is too large", status=400)
 
-    # check referral params
-    # # process of converting older param for backward compatibility
-    hint_referral = "" if has_referral else False
-    if referral_name:
-        hint_referral = referral_name
-
     # check attribute params
     # The "attr" parameter guarantees backward compatibility.
     # The "atterinfo" is another parameter,
@@ -252,7 +246,7 @@ def advanced_search_result(request):
                 hint_attrs,
                 CONFIG.MAXIMUM_SEARCH_RESULTS,
                 entry_name,
-                hint_referral,
+                referral_name,
             ),
             "max_num": CONFIG.MAXIMUM_SEARCH_RESULTS,
             "entities": ",".join([str(x) for x in hint_entity_ids]),

@@ -2558,7 +2558,7 @@ class ModelTest(AironeTestCase):
 
         # checks that all entries are registered to the ElasticSearch.
         res = self._es.indices.stats(index=settings.ES_CONFIG["INDEX"])
-        self.assertEqual(res["_all"]["total"]["segments"]["count"], ENTRY_COUNTS)
+        self.assertEqual(res["_all"]["total"]["segments"]["count"], ENTRY_COUNTS + 2)
 
         # checks that all registered entries can be got from Elasticsearch
         for entry in Entry.objects.filter(schema=entity):
@@ -2637,9 +2637,9 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.filter(schema=entity).last()
         entry.delete()
 
+        # Total count is one less than initial value.
         res = self._es.indices.stats(index=settings.ES_CONFIG["INDEX"])
-        self.assertEqual(res["_all"]["total"]["segments"]["count"], ENTRY_COUNTS - 1)
-
+        self.assertEqual(res["_all"]["total"]["segments"]["count"], ENTRY_COUNTS + 1)
         res = self._es.get(
             index=settings.ES_CONFIG["INDEX"],
             doc_type="entry",
@@ -4411,6 +4411,7 @@ class ModelTest(AironeTestCase):
                 "entity": {"id": entity.id, "name": "all_attr_entity"},
                 "entry": {"id": entry.id, "name": "entry"},
                 "is_readble": True,
+                "referrals": [],
                 "attrs": {
                     "bool": {"is_readble": True, "type": AttrTypeValue["boolean"], "value": False},
                     "date": {

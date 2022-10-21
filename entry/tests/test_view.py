@@ -3369,7 +3369,7 @@ class ViewTest(AironeViewTest):
 
         # prepare to Entity and Entries which importing data refers to
         ref_entity = Entity.objects.create(name="RefEntity", created_user=user)
-        Entry.objects.create(name="ref", created_user=user, schema=ref_entity)
+        ref_entry = Entry.objects.create(name="ref", created_user=user, schema=ref_entity)
         Group.objects.create(name="group")
 
         entity = Entity.objects.create(name="Entity", created_user=user)
@@ -3420,10 +3420,11 @@ class ViewTest(AironeViewTest):
 
         # check imported data was registered to the ElasticSearch
         res = self._es.indices.stats(index=settings.ES_CONFIG["INDEX"])
-        self.assertEqual(res["_all"]["total"]["segments"]["count"], 1)
+        self.assertEqual(res["_all"]["total"]["segments"]["count"], 2)
 
-        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
-        self.assertTrue(res["found"])
+        for e in [entry, ref_entry]:
+            res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=e.id)
+            self.assertTrue(res["found"])
 
     @skip("When a file which is encodeed by non UTF-8, django-test-client fails encoding")
     def test_import_entry_by_multi_encoded_files(self):

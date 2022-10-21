@@ -534,6 +534,7 @@ class ViewTest(AironeViewTest):
             },
         )
 
+        resp = Entry.search_entries(user, [ref_entity.id], hint_referral_entity_id=entity.id)
         params = {
             "name": "Changed-Entity",
             "note": "bar",
@@ -826,7 +827,7 @@ class ViewTest(AironeViewTest):
         ref_entity = self.create_entity(user, "Ref")
         entity = self.create_entity(
             user,
-            "Old-Entity",
+            "old-Entity",
             attrs=[
                 {"name": "foo", "type": AttrTypeValue["string"]},
                 {"name": "ref", "type": AttrTypeValue["object"], "ref": ref_entity},
@@ -846,7 +847,7 @@ class ViewTest(AironeViewTest):
 
         permission_count = Permission.objects.count()
         params = {
-            "name": "new-entity",
+            "name": "new-Entity",
             "note": "hoge",
             "is_toplevel": False,
             "attrs": [

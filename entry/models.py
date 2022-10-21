@@ -1919,8 +1919,8 @@ class Entry(ACLBase):
         limit=CONFIG.MAX_LIST_ENTRIES,
         entry_name=None,
         hint_referral=None,
-        hint_referral_entity_id=None,
         is_output_all=False,
+        hint_referral_entity_id=None,
     ):
         """Main method called from advanced search.
 
@@ -2120,22 +2120,9 @@ class Entry(ACLBase):
             to_attr="prefetch_attrs",
         )
 
-        # Include Entries which refers Entries that is belonged to specified Entity
-        # to update "referrals" parameters of each referred Entries
-        results = Entry.search_entries(
-            User.get_admin_user(),
-            [x.id for x in Entity.objects.filter(is_active=True)],
-            hint_referral_entity_id=entity.id,
-        )
-        referral_entry_ids = [x["entry"]["id"] for x in results["ret_values"]]
-
-        # This targets following Entries
-        # 1. belonging to specified Entity
-        #   - this indicates former query (Q(schema=entity))
-        # 2. referring Entries that is belonged to specified Entity
-        #   - this indicates latter query (Q(id__in=referral_entry_ids))
+        # This targets following Entries that belong to specified Entity
         entry_list = list(
-            Entry.objects.filter(Q(schema=entity) | Q(id__in=referral_entry_ids), is_active=True)
+            Entry.objects.filter(schema=entity, is_active=True)
             .select_related("schema")
             .prefetch_related(attr_prefetch)
         )
