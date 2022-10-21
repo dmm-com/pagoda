@@ -3,14 +3,34 @@
 ## In development
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## v3.26.0
+
+### Added
+* Added group list page.
+  Contributed by @syucream
+
+### Fixed
+* Fixed an issue where complement_attrs() called duplicates.
+  Contributed by @userlocalhost
+
+## v3.25.0
+
+### Added
 * Added a new API handler that user can retrieve Entries, which refers an Entry
   at specific Attribute and that referred Entry refers another Entry. In that way,
   user can specify this repeated (chained) reference condition to get Entry
   that refers far away Entry without aware of intermediate ones.
   Contributed by @userlocalhost
+* Added role list and role edit page.
+  Contributed by @syucream
 
 ### Changed
-* Changed Elasticsarch update process to faster.
+* Changed Elasticsearch update process to faster.
   Contributed by @hinashi
 
 ### Fixed

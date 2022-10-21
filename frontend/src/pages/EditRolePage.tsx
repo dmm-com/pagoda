@@ -31,7 +31,7 @@ export const EditRolePage: FC = () => {
       } else {
         _setRole({
           id: 0,
-          isActive: false,
+          isActive: true,
           name: "",
           description: "",
           users: [],
