@@ -1,6 +1,7 @@
 import {
   Autocomplete,
   Box,
+  Chip,
   Input,
   Table,
   TableBody,
@@ -26,12 +27,20 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
   const [userKeyword, setUserKeyword] = useState("");
   const [adminUserKeyword, setAdminUserKeyword] = useState("");
 
+  // TODO implement pagination and incremental search
   const groups = useAsync(async () => {
     const _groups = await aironeApiClientV2.getGroups();
     return _groups.map(
       (group): RoleGroup => ({ id: group.id, name: group.name })
     );
   });
+
+  const adminUsers = useAsync(async () => {
+    const _users = await aironeApiClientV2.getUsers(1, adminUserKeyword);
+    return _users.results?.map(
+      (user): RoleUser => ({ id: user.id, username: user.username })
+    );
+  }, [adminUserKeyword]);
   const users = useAsync(async () => {
     const _users = await aironeApiClientV2.getUsers(1, userKeyword);
     return _users.results?.map(
@@ -40,14 +49,10 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
   }, [userKeyword]);
 
   const checkSubmittable = (): boolean => {
-    return (
-      role.name !== "" &&
-      role.description !== "" &&
-      role.users.length > 0 &&
-      role.groups.length > 0 &&
-      role.adminUsers.length > 0 &&
-      role.adminGroups.length > 0
-    );
+    if (role.name === "") {
+      return false;
+    }
+    return role.adminUsers.length > 0 || role.adminGroups.length > 0;
   };
 
   useEffect(() => {
@@ -130,6 +135,28 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                     isOptionEqualToValue={(option, value) =>
                       option.id === value.id
                     }
+                    renderTags={(value, getTagProps) => {
+                      return value.map((option, index) => {
+                        if (role.groups.some((u) => u.id == option.id)) {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.name}
+                              color="error"
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        } else {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.name}
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        }
+                      });
+                    }}
                     multiple
                   />
                 </TableCell>
@@ -150,6 +177,28 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                     isOptionEqualToValue={(option, value) =>
                       option.id === value.id
                     }
+                    renderTags={(value, getTagProps) => {
+                      return value.map((option, index) => {
+                        if (role.adminGroups.some((u) => u.id == option.id)) {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.name}
+                              color="error"
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        } else {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.name}
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        }
+                      });
+                    }}
                     multiple
                   />
                 </TableCell>
@@ -178,7 +227,7 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                     renderInput={(params) => (
                       <TextField {...params} variant="outlined" />
                     )}
-                    options={users.value ?? []}
+                    options={adminUsers.value ?? []}
                     getOptionLabel={(option: RoleUser) => option.username}
                     value={role.adminUsers}
                     onChange={(_, value: RoleUser[]) =>
@@ -191,6 +240,28 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                     onInputChange={(_, value: string) =>
                       setAdminUserKeyword(value)
                     }
+                    renderTags={(value, getTagProps) => {
+                      return value.map((option, index) => {
+                        if (role.users.some((u) => u.id == option.id)) {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.username}
+                              color="error"
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        } else {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.username}
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        }
+                      });
+                    }}
                     multiple
                   />
                 </TableCell>
@@ -213,6 +284,28 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                     }
                     inputValue={userKeyword}
                     onInputChange={(_, value: string) => setUserKeyword(value)}
+                    renderTags={(value, getTagProps) => {
+                      return value.map((option, index) => {
+                        if (role.adminUsers.some((u) => u.id == option.id)) {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.username}
+                              color="error"
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        } else {
+                          return (
+                            <Chip
+                              key={option.id}
+                              label={option.username}
+                              {...getTagProps({ index })}
+                            />
+                          );
+                        }
+                      });
+                    }}
                     multiple
                   />
                 </TableCell>

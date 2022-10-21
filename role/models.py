@@ -13,12 +13,12 @@ class Role(models.Model):
     name = models.CharField(max_length=200, unique=True)
     permissions = models.ManyToManyField(Permission, blank=True)
     is_active = models.BooleanField(default=True)
-    description = models.TextField()
+    description = models.TextField(blank=True)
 
-    users = models.ManyToManyField("user.User", related_name="role")
-    groups = models.ManyToManyField("group.Group", related_name="role")
-    admin_users = models.ManyToManyField("user.User", related_name="admin_role")
-    admin_groups = models.ManyToManyField("group.Group", related_name="admin_role")
+    users = models.ManyToManyField("user.User", related_name="role", blank=True)
+    groups = models.ManyToManyField("group.Group", related_name="role", blank=True)
+    admin_users = models.ManyToManyField("user.User", related_name="admin_role", blank=True)
+    admin_groups = models.ManyToManyField("group.Group", related_name="admin_role", blank=True)
 
     @classmethod
     def editable(kls, user, admin_users, admin_groups):
