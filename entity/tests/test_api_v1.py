@@ -13,8 +13,12 @@ class ViewTest(AironeViewTest):
         for info in entity_info:
             Entity.objects.create(name=info["name"], is_public=info["is_public"], created_user=user)
 
+        print("debug0")
+
         resp = self.client.get("/entity/api/v1/get_entities")
         self.assertEqual(resp.status_code, 200)
+
+        print("debug1")
 
         entities = resp.json()["entities"]
         self.assertEqual(len(entities), 1)

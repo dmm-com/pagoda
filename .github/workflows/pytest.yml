@@ -1,0 +1,51 @@
+name: pytest
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: ["3.8"]
+    services:
+      mysql:
+        image: mysql:5.7.34
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_USER: airone
+          MYSQL_PASSWORD: password
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: airone
+    steps:
+      - name: Runs Elasticsearch
+        uses: elastic/elastic-github-actions/elasticsearch@master
+        with:
+          stack-version: 6.8.16
+          security-enabled: false
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install tox codecov
+        run: pip install tox codecov
+      - name: Install dependencies
+        run: |
+            sudo apt-get update
+            sudo apt-get install -y libldap2-dev libsasl2-dev libxmlsec1-dev default-mysql-client
+      - name: Grant permission for airone user to be able to manipulate test_airone
+        run: mysql -uroot -h127.0.0.1 -ppassword -e "GRANT ALL ON test_airone.* to airone@'%'"
+      - name: tox (pytest)
+        run: tox
+        env: 
+          TOXENV: pytest
+      - name: codecov
+        run: codecov

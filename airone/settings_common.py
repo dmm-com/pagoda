@@ -298,7 +298,7 @@ class Common(Configuration):
 
     AUTH_CONFIG = {
         "LDAP": {
-            "SERVER_ADDRESS": "localhost",
+            "SERVER_ADDRESS": "127.0.0.1",
             "USER_FILTER": "sn={username},ou=User,dc=example,dc=com",
         }
     }

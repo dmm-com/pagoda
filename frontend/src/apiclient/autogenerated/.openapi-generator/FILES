@@ -40,6 +40,7 @@ models/PaginatedGetEntrySimpleList.ts
 models/PaginatedJobSerializersList.ts
 models/PaginatedUserListList.ts
 models/Role.ts
+models/RoleCreateUpdate.ts
 models/RoleGroup.ts
 models/RoleUser.ts
 models/UserBase.ts

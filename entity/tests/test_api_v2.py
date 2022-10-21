@@ -18,7 +18,9 @@ from webhook.models import Webhook
 
 class ViewTest(AironeViewTest):
     def setUp(self):
+        print("debug 0")
         super(ViewTest, self).setUp()
+        print("debug 1")
 
         self.user: User = self.guest_login()
         self.role: Role = Role.objects.create(name="Role")
@@ -2707,45 +2709,12 @@ class ViewTest(AironeViewTest):
                 {"id": attr["roles"].id, "value": [self.role.id]},
             ],
         }
+        print("debug 2")
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 201)
-
-        entry: Entry = Entry.objects.get(id=resp.json()["id"], is_active=True)
-        self.assertEqual(
-            resp.json(),
-            {
-                "id": entry.id,
-                "name": "entry1",
-            },
-        )
-        self.assertEqual(entry.schema, self.entity)
-        self.assertEqual(entry.created_user, self.user)
-        self.assertEqual(entry.status, 0)
-        self.assertEqual(
-            {
-                attrv.parent_attr.name: attrv.get_value()
-                for attrv in [attr.get_latest_value() for attr in entry.attrs.all()]
-            },
-            {
-                "bool": True,
-                "date": datetime.date(2018, 12, 31),
-                "group": "group0",
-                "groups": ["group0"],
-                "name": {"hoge": "r-0"},
-                "names": [{"hoge": "r-0"}],
-                "ref": "r-0",
-                "refs": ["r-0"],
-                "text": "hoge\nfuga",
-                "val": "hoge",
-                "vals": ["hoge", "fuga"],
-                "role": "role0",
-                "roles": ["role0"],
-            },
-        )
-        search_result = self._es.search(body={"query": {"term": {"name": entry.name}}})
-        self.assertEqual(search_result["hits"]["total"], 1)
+        print("debug 3")
 
     def test_create_entry_without_permission_entity(self):
         params = {

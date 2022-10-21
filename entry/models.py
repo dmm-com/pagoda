@@ -4,7 +4,7 @@ from datetime import date, datetime
 from typing import Any, Optional, Tuple
 
 from django.conf import settings
-from django.db import models
+from django.db import IntegrityError, models
 from django.db.models import Prefetch, Q
 
 from acl.models import ACLBase
@@ -433,6 +433,11 @@ class Attribute(ACLBase):
     # This parameter is needed to make a relationship with corresponding EntityAttr
     schema = models.ForeignKey(EntityAttr, on_delete=models.DO_NOTHING)
     parent_entry = models.ForeignKey("Entry", on_delete=models.DO_NOTHING)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["parent_entry", "schema"], name="unique_attribute")
+        ]
 
     def __init__(self, *args, **kwargs):
         super(Attribute, self).__init__(*args, **kwargs)
@@ -1288,17 +1293,41 @@ class Entry(ACLBase):
 
         # If multiple requests are invoked to make requests at the same time,
         # some may create the same attribute. So use get_or_create().
-        attr, is_created = Attribute.objects.get_or_create(
-            schema=base,
-            parent_entry=self,
-            is_active=True,
-            defaults={
-                "name": base.name,
-                "created_user": request_user,
-            },
-        )
-        if is_created:
-            self.attrs.add(attr)
+        """
+        attr_queryset = Attribute.objects.filter(
+            schema=base, parent_entry=self, is_active=True
+        ).select_for_update()
+        with transaction.atomic():
+            if attr_queryset:
+                return attr_queryset.first()
+            else:
+                attr = Attribute.objects.create(
+                    schema=base,
+                    parent_entry=self,
+                    is_active=True,
+                    name=base.name,
+                    created_user=request_user,
+                )
+                print(attr.name)
+                self.attrs.add(attr)
+        """
+        try:
+            attr, is_created = Attribute.objects.get_or_create(
+                schema=base,
+                parent_entry=self,
+                is_active=True,
+                defaults={
+                    "name": base.name,
+                    "created_user": request_user,
+                },
+            )
+            if is_created:
+                print(attr.name)
+                self.attrs.add(attr)
+        except IntegrityError:
+            print("IntegrityError")
+            attr = self.attrs.get(schema=base, is_active=True)
+
         return attr
 
     def get_referred_objects(self, filter_entities=[], exclude_entities=[]):
