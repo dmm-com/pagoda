@@ -5,6 +5,9 @@
 ### Added
 
 ### Changed
+* Improved processing to get referred Entry from elasticsearch
+  (reducing number of DB access)
+  Contributed by @userlocalhost, @hinashi
 
 ### Fixed
 
