@@ -8,6 +8,16 @@
 
 ### Fixed
 
+## v3.26.0
+
+### Added
+* Added group list page.
+  Contributed by @syucream
+
+### Fixed
+* Fixed an issue where complement_attrs() called duplicates.
+  Contributed by @userlocalhost
+
 ## v3.25.0
 
 ### Added
