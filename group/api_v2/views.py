@@ -1,9 +1,9 @@
 from rest_framework import viewsets
 
 from group.api_v2.serializers import (
+    GroupCreateUpdateSerializer,
     GroupSerializer,
     GroupTreeSerializer,
-    GroupCreateUpdateSerializer,
 )
 from group.models import Group
 

@@ -1,7 +1,6 @@
 import {
   Box,
   Checkbox,
-  Divider,
   List,
   ListItem,
   Theme,
@@ -29,7 +28,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface Props {
   groupTrees: GroupTree[];
-  selectedGroupId: number;
+  selectedGroupId?: number;
   handleSelectGroupId: (groupId: number | null) => void;
 }
 
@@ -42,10 +41,6 @@ export const GroupTreeRoot: FC<Props> = ({
 
   return (
     <Box>
-      <Typography mt="16px">
-        選択したいグループにチェックマークを入れてください。
-      </Typography>
-      <Divider sx={{ mt: "16px" }} />
       <List>
         {groupTrees.map((groupTree) => (
           <ListItem key={groupTree.id} className={classes.listItem}>

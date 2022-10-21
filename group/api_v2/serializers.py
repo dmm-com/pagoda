@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, TypedDict
+from typing import Dict, List, TypedDict
 
 from rest_framework import serializers
 
@@ -17,7 +17,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Group
-        fields = ["id", "name", "members"]
+        fields = ["id", "name", "parent_group", "members"]
 
     def get_members(self, obj: Group) -> List[GroupMemberType]:
         users = User.objects.filter(groups__name=obj.name, is_active=True).order_by("username")
@@ -31,22 +31,24 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class GroupCreateUpdateSerializer(serializers.ModelSerializer):
-    members = serializers.ListField(child=serializers.IntegerField())
+    members = serializers.ListField(child=serializers.IntegerField(), write_only=True)
 
     class Meta:
         model = Group
-        fields = ["id", "name", "members"]
+        fields = ["id", "name", "parent_group", "members"]
 
     def create(self, validated_data: Dict):
+        parent_group = validated_data.get("parent_group")
+        if parent_group and not parent_group.is_active:
+            parent_group = None
+
         new_group = Group(
             name=validated_data["name"],
-            parent_group=Group.objects.filter(
-                id=validated_data.get("parent_group", 0), is_active=True
-            ).first(),
+            parent_group=parent_group,
         )
         new_group.save()
 
-        for user in [User.objects.get(id=x) for x in validated_data.get("users", [])]:
+        for user in [User.objects.get(id=x) for x in validated_data.get("members", [])]:
             user.groups.add(new_group)
 
         return new_group
@@ -61,11 +63,13 @@ class GroupCreateUpdateSerializer(serializers.ModelSerializer):
                 params={"group_id": instance.id},
             )
 
+        parent_group = validated_data.get("parent_group")
+        if parent_group and not parent_group.is_active:
+            parent_group = None
+
         # update group_name with specified one
         instance.name = validated_data["name"]
-        instance.parent_group = Group.objects.filter(
-            id=validated_data.get("parent_group", 0), is_active=True
-        ).first()
+        instance.parent_group = parent_group
         instance.save()
 
         if job_register_referrals:
@@ -74,13 +78,13 @@ class GroupCreateUpdateSerializer(serializers.ModelSerializer):
         # the processing for deleted users
         old_users = [str(x.id) for x in User.objects.filter(groups__id=instance.id, is_active=True)]
         for user in [
-            User.objects.get(id=x) for x in set(old_users) - set(validated_data.get("users", []))
+            User.objects.get(id=x) for x in set(old_users) - set(validated_data.get("members", []))
         ]:
             user.groups.remove(instance)
 
         # the processing for added users
         for user in [
-            User.objects.get(id=x) for x in set(validated_data.get("users", [])) - set(old_users)
+            User.objects.get(id=x) for x in set(validated_data.get("members", [])) - set(old_users)
         ]:
             user.groups.add(instance)
 

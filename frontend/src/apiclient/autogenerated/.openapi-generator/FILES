@@ -32,6 +32,8 @@ models/EntryUpdate.ts
 models/GetEntryAttrReferral.ts
 models/GetEntrySimple.ts
 models/Group.ts
+models/GroupCreateUpdate.ts
+models/GroupMembers.ts
 models/GroupTree.ts
 models/JobSerializers.ts
 models/JobSerializersTarget.ts
