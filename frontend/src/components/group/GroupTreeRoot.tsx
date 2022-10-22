@@ -16,7 +16,7 @@ import { GroupTree } from "../../apiclient/AironeApiClientV2";
 
 import { GroupTreeItem } from "./GroupTreeItem";
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   listItem: {
     "&:nth-of-type(odd)": {
       backgroundColor: "white",

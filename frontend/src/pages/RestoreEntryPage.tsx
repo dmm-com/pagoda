@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { EntityControlMenu } from "../components/entity/EntityControlMenu";
+import { EntryImportModal } from "../components/entry/EntryImportModal";
 import { RestorableEntryList } from "../components/entry/RestorableEntryList";
 import { useTypedParams } from "../hooks/useTypedParams";
 
@@ -76,6 +77,10 @@ export const RestoreEntryPage: FC = () => {
               anchorElem={entityAnchorEl}
               handleClose={() => setEntityAnchorEl(null)}
               setOpenImportModal={setOpenImportModal}
+            />
+            <EntryImportModal
+              openImportModal={openImportModal}
+              closeImportModal={() => setOpenImportModal(false)}
             />
           </Box>
         </Box>

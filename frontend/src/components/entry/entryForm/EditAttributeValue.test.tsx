@@ -9,9 +9,9 @@ import { DjangoContext } from "../../../utils/DjangoContext";
 
 import { EditAttributeValue } from "./EditAttributeValue";
 
-const mockHandleChangeAttribute = (e) => undefined;
-const mockHandleClickDeleteListItem = (e) => undefined;
-const mockHandleClickAddListItem = (e) => undefined;
+const mockHandleChangeAttribute = () => undefined;
+const mockHandleClickDeleteListItem = () => undefined;
+const mockHandleClickAddListItem = () => undefined;
 
 beforeAll(() => {
   Object.defineProperty(window, "django_context", {
@@ -166,7 +166,7 @@ arrayAttributes.forEach((arrayAttribute) => {
       arrayAttribute.type == "array_object"
     ) {
       expect(wrapper.find(arrayAttribute.elem).length).toEqual(1);
-      wrapper.find(arrayAttribute.elem).forEach((arrayAttributeElem, i) => {
+      wrapper.find(arrayAttribute.elem).forEach((arrayAttributeElem) => {
         expect(arrayAttributeElem.prop("attrName")).toEqual(attrName);
         expect(arrayAttributeElem.prop("attrType")).toEqual(attrType);
       });

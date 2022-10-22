@@ -34,7 +34,7 @@ import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
 import { FailedToGetEntry } from "utils/Exceptions";
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   title: {
     height: "72px",
     maxWidth: "700px",

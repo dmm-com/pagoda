@@ -14,7 +14,6 @@ import React, { FC, useEffect } from "react";
 import { DjangoContext } from "utils/DjangoContext";
 
 interface Props {
-  objectId: number;
   aclInfo: {
     isPublic: boolean;
     defaultPermission: number;
@@ -24,12 +23,7 @@ interface Props {
   setSubmittable: (isSubmittable: boolean) => void;
 }
 
-export const ACLForm: FC<Props> = ({
-  objectId,
-  setSubmittable,
-  aclInfo,
-  setACLInfo,
-}) => {
+export const ACLForm: FC<Props> = ({ setSubmittable, aclInfo, setACLInfo }) => {
   const djangoContext = DjangoContext.getInstance();
 
   const checkSubmittable = () => {

@@ -187,7 +187,6 @@ export const ACLPage: FC = () => {
           sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}
         >
           <ACLForm
-            objectId={objectId}
             aclInfo={aclInfo}
             setACLInfo={setACLInfo}
             setSubmittable={setSubmittable}
