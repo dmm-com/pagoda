@@ -1844,8 +1844,13 @@ class Entry(ACLBase):
           * recursive_call_stack:
             - Entris that has ever been called, which is necessary to prevent
               falling into the infinite calling loop.
-        """
 
+        This updates es-documents which are associated with following Entries
+        * 1. Entries that this Entry referred (This is necessary because es-documents of Entries,
+             which were referred before but now are not, should be updated.
+        * 2. This Entry (the variable "self" indicate)
+        * 3. Entries that this Entry refers
+        """
         if not es:
             es = ESS()
 

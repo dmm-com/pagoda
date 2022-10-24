@@ -964,33 +964,24 @@ class ViewTest(AironeViewTest):
     def test_post_edit_with_array_object_value(self):
         user = self.admin_login()
 
-        entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrTypeValue["array_named_object"],
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
-        )
+        # This create referral Entries (e0, e1 and e2).
+        # Initially the e0 and e1 are registered at the "attr" of "entry" out of those.
+        # Then, this test send a request to edit the "entry" to change referral Entries
+        # at the "attr" to e1 and e2.
+        ref_entity = self.create_entity(user, "RefEntity")
+        ref_entries = [self.add_entry(user, "e%s" % i, ref_entity) for i in range(3)]
 
-        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
-        entry.complement_attrs(user)
-
-        (e1, e2, e3) = [
-            Entry.objects.create(name="E%d" % i, created_user=user, schema=entity) for i in range(3)
-        ]
-
-        attr = entry.attrs.first()
-        attr.add_value(
-            user,
-            [
-                {"name": "", "id": e1},
-                {"name": "", "id": e2},
+        entity = self.create_entity(user, "Entity", attrs=[
+                {"name": "attr", "type": AttrTypeValue["array_named_object"], "ref": ref_entity}
             ],
         )
+        entry = self.add_entry(user, "entry", entity, values={
+            "attr": [
+                {"name": "", "id": ref_entries[0]},
+                {"name": "", "id": ref_entries[1]},
+            ]
+        })
+        attr = entry.attrs.last()
 
         parent_values_count = AttributeValue.objects.extra(
             **{"where": ["status & %s = 1" % AttributeValue.STATUS_DATA_ARRAY_PARENT]}
@@ -1004,8 +995,8 @@ class ViewTest(AironeViewTest):
                     "id": str(attr.id),
                     "type": str(AttrTypeArrObj),
                     "value": [
-                        {"data": e2.id, "index": 0},
-                        {"data": e3.id, "index": 1},
+                        {"data": ref_entries[1].id, "index": 0},
+                        {"data": ref_entries[2].id, "index": 1},
                     ],
                     "referral_key": [],
                 }
@@ -1016,8 +1007,12 @@ class ViewTest(AironeViewTest):
             json.dumps(params),
             "application/json",
         )
-
         self.assertEqual(resp.status_code, 200)
+
+        # check es-documents of both e0 (was referred before) and e2 (is referred now)
+        ret = Entry.search_entries(user, [ref_entity.id])
+        for info in ret['ret_values']:
+            print('[onix-test(10)] %s' % str(info))
 
         # checks to set correct status flags
         leaf_values = [
@@ -1038,7 +1033,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(attr.values.last().data_array.count(), 2)
         self.assertTrue(
-            all([x.referral.id in [e2.id, e3.id] for x in attr.values.last().data_array.all()])
+            all([x.referral.id in [ref_entries[1].id, ref_entries[2].id] for x in attr.values.last().data_array.all()])
         )
 
     def test_get_detail_with_invalid_param(self):
