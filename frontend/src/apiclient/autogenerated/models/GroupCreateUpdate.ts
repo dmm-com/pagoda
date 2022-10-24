@@ -13,53 +13,46 @@
  */
 
 import { exists, mapValues } from "../runtime";
-import {
-  GroupMembers,
-  GroupMembersFromJSON,
-  GroupMembersFromJSONTyped,
-  GroupMembersToJSON,
-} from "./GroupMembers";
-
 /**
  *
  * @export
- * @interface Group
+ * @interface GroupCreateUpdate
  */
-export interface Group {
+export interface GroupCreateUpdate {
   /**
    *
    * @type {number}
-   * @memberof Group
+   * @memberof GroupCreateUpdate
    */
   readonly id: number;
   /**
    *
    * @type {string}
-   * @memberof Group
+   * @memberof GroupCreateUpdate
    */
   name: string;
   /**
    *
    * @type {number}
-   * @memberof Group
+   * @memberof GroupCreateUpdate
    */
   parentGroup?: number | null;
   /**
    *
-   * @type {Array<GroupMembers>}
-   * @memberof Group
+   * @type {Array<number>}
+   * @memberof GroupCreateUpdate
    */
-  readonly members: Array<GroupMembers>;
+  members: Array<number>;
 }
 
-export function GroupFromJSON(json: any): Group {
-  return GroupFromJSONTyped(json, false);
+export function GroupCreateUpdateFromJSON(json: any): GroupCreateUpdate {
+  return GroupCreateUpdateFromJSONTyped(json, false);
 }
 
-export function GroupFromJSONTyped(
+export function GroupCreateUpdateFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): Group {
+): GroupCreateUpdate {
   if (json === undefined || json === null) {
     return json;
   }
@@ -69,11 +62,11 @@ export function GroupFromJSONTyped(
     parentGroup: !exists(json, "parent_group")
       ? undefined
       : json["parent_group"],
-    members: (json["members"] as Array<any>).map(GroupMembersFromJSON),
+    members: json["members"],
   };
 }
 
-export function GroupToJSON(value?: Group | null): any {
+export function GroupCreateUpdateToJSON(value?: GroupCreateUpdate | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -83,5 +76,6 @@ export function GroupToJSON(value?: Group | null): any {
   return {
     name: value.name,
     parent_group: value.parentGroup,
+    members: value.members,
   };
 }
