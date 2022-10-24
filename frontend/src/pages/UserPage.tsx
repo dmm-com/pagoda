@@ -1,23 +1,12 @@
-import { Box, Container, Theme, Typography } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { Box, Container, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
 import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { UserList } from "components/user/UserList";
-import { DjangoContext } from "utils/DjangoContext";
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-}));
 
 export const UserPage: FC = () => {
-  const classes = useStyles();
-  const djangoContext = DjangoContext.getInstance();
-
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
@@ -26,34 +15,6 @@ export const UserPage: FC = () => {
         </Typography>
         <Typography color="textPrimary">ユーザ管理</Typography>
       </AironeBreadcrumbs>
-
-      {/*
-      <Box className="row">
-        <Box className="col">
-          <Box className="float-left">
-            <CreateButton to={newUserPath()}>新規作成</CreateButton>
-            <Button
-              className={classes.button}
-              variant="outlined"
-              color="secondary"
-              onClick={() => downloadExportedUsers("user.yaml")}
-            >
-              エクスポート
-            </Button>
-            <Button
-              className={classes.button}
-              variant="outlined"
-              color="secondary"
-              component={Link}
-              to={importUsersPath()}
-            >
-              インポート
-            </Button>
-          </Box>
-          <Box className="float-right"></Box>
-        </Box>
-      </Box>
-      */}
 
       <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
         <Box

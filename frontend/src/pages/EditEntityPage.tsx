@@ -187,7 +187,6 @@ export const EditEntityPage: FC = () => {
 
       <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
         <EntityForm
-          entity={entity.value}
           entityInfo={entityInfo}
           setEntityInfo={setEntityInfo}
           referralEntities={referralEntities.value}

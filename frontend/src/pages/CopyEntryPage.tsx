@@ -56,14 +56,14 @@ export const CopyEntryPage: FC = () => {
   const handleCopy = async () => {
     await aironeApiClientV2
       .copyEntry(entryId, entries.split("\n"))
-      .then((resp) => {
+      .then(() => {
         setSubmitted(true);
         enqueueSnackbar("エントリコピーのジョブ登録が成功しました", {
           variant: "success",
         });
         history.replace(entityEntriesPath(entityId));
       })
-      .catch((error) => {
+      .catch(() => {
         enqueueSnackbar("エントリコピーのジョブ登録が失敗しました", {
           variant: "error",
         });

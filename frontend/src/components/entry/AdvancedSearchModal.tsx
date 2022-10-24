@@ -49,7 +49,7 @@ export const AdvancedSearchModal: FC<Props> = ({
     params.get("has_referral") === "true"
   );
 
-  const handleUpdatePageURL = (event) => {
+  const handleUpdatePageURL = () => {
     const params = new URLSearchParams(location.search);
     const attrinfo = JSON.parse(params.get("attrinfo"));
 
@@ -121,7 +121,7 @@ export const AdvancedSearchModal: FC<Props> = ({
             <Checkbox
               checked={hasReferral}
               onChange={(e) => setHasReferral(e.target.checked)}
-            ></Checkbox>
+            />
           </Box>
         </Box>
         <Box display="flex" justifyContent="flex-end" my="8px">

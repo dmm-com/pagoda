@@ -100,7 +100,6 @@ const ElemBool: FC<CommonProps & { attrValue: boolean }> = ({
   attrName,
   attrValue,
   attrType,
-  isMandatory,
   handleChange,
 }) => {
   return (

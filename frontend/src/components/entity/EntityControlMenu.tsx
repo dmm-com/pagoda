@@ -44,7 +44,7 @@ export const EntityControlMenu: FC<Props> = ({
   const handleDelete = async (event, entityId: number) => {
     await aironeApiClientV2
       .deleteEntity(entityId)
-      .then((resp) => {
+      .then(() => {
         enqueueSnackbar("エンティティの削除が完了しました", {
           variant: "success",
         });
@@ -52,7 +52,7 @@ export const EntityControlMenu: FC<Props> = ({
         history.replace(topPath());
         history.replace(entitiesPath());
       })
-      .catch((e) => {
+      .catch(() => {
         enqueueSnackbar("エンティティの削除が失敗しました", {
           variant: "error",
         });
