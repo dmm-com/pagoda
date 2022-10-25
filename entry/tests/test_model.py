@@ -1621,7 +1621,7 @@ class ModelTest(AironeTestCase):
 
             # test return value of get_value method with 'with_metainfo' parameter
             expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
-            if attr.schema.type & AttrTypeValue["array"]:
+            if attr.is_array():
                 if attr.schema.type & AttrTypeValue["named"]:
                     expected_value["value"] = [{"hoge": {"id": test_ref.id, "name": test_ref.name}}]
                 elif attr.schema.type & AttrTypeValue["object"]:
@@ -2451,6 +2451,38 @@ class ModelTest(AironeTestCase):
             self.assertEqual(ret["ret_count"], 0)
             self.assertEqual(ret["ret_values"], [])
 
+    def test_search_entries_for_priviledged_ones(self):
+        user = User.objects.create(username="test-user")
+
+        ref_entity = self.create_entity(user, "Ref Entity", is_public=False)
+        ref_entry = self.add_entry(user, "Ref", ref_entity)
+        entity = self.create_entity(
+            user,
+            "Entity",
+            attrs=[
+                {
+                    "name": "ref",
+                    "type": AttrTypeValue["object"],
+                }
+            ],
+            is_public=False,
+        )
+        entry = self.add_entry(user, "Entry", entity, values={"ref": ref_entry})
+
+        ret = Entry.search_entries(user, [entity.id])
+        self.assertEqual(ret["ret_count"], 0)
+        self.assertEqual(ret["ret_values"], [])
+
+        ret = Entry.search_entries(None, [entity.id])
+        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual(
+            ret["ret_values"][0]["entry"],
+            {
+                "name": entry.name,
+                "id": entry.id,
+            },
+        )
+
     def test_search_entries_with_regex_hint_attrs(self):
         user = User.objects.create(username="hoge")
 
@@ -2670,6 +2702,59 @@ class ModelTest(AironeTestCase):
 
         res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=self._entry.id)
         self.assertEqual(res["_source"]["attr"][0]["value"], "hoge")
+
+    def test_es_documents_of_entry_when_it_is_updated(self):
+        """
+        This checks "referrals" parameter of es-document at an Entry when
+        it is changed to refer another Entry.
+        """
+        user = User.objects.create(username="test-user")
+        ref_entity = self.create_entity(user, "RefEntity")
+        (ref_entry0, ref_entry1) = [self.add_entry(user, "e%s" % i, ref_entity) for i in range(2)]
+
+        entity = self.create_entity(
+            user,
+            "Entity",
+            attrs=[{"name": "attr", "type": AttrTypeValue["object"], "ref": ref_entity}],
+        )
+        entry = self.add_entry(user, "entry", entity, values={"attr": ref_entry0})
+
+        # This checks initial es-documents of referral Entries (e0 and e1)
+        ret = Entry.search_entries(user, [ref_entity.id])
+        self.assertEqual(ret["ret_count"], 2)
+        expected_entry_info = [
+            {
+                "id": entry.id,
+                "name": entry.name,
+                "schema": {
+                    "id": entity.id,
+                    "name": entity.name,
+                },
+            }
+        ]
+        for info in ret["ret_values"]:
+            if info["entry"]["id"] == ref_entry0.id:
+                self.assertEqual(info["referrals"], expected_entry_info)
+            elif info["entry"]["id"] == ref_entry1.id:
+                self.assertEqual(info["referrals"], [])
+            else:
+                raise RuntimeError("Unexpected es-document was returned")
+
+        # After chaning referral Entry from e0 to e1, the es-documents of those
+        # "referrals" parameters also must be changed.
+        attr = entry.attrs.get(schema__name="attr", is_active=True)
+        attr.add_value(user, ref_entry1)
+        entry.register_es()
+
+        # Check es-documents after editing Entry
+        ret = Entry.search_entries(user, [ref_entity.id])
+        for info in ret["ret_values"]:
+            if info["entry"]["id"] == ref_entry0.id:
+                self.assertEqual(info["referrals"], [])
+            elif info["entry"]["id"] == ref_entry1.id:
+                self.assertEqual(info["referrals"], expected_entry_info)
+            else:
+                raise RuntimeError("Unexpected es-document was returned")
 
     def test_unregister_entry_to_elasticsearch(self):
         user = User.objects.create(username="hoge")
@@ -3162,7 +3247,7 @@ class ModelTest(AironeTestCase):
 
             # test return value of get_value method with 'with_metainfo' parameter
             expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
-            if attr.schema.type & AttrTypeValue["array"]:
+            if attr.is_array():
                 if attr.schema.type & AttrTypeValue["named"]:
                     expected_value["value"] = [{"hoge": {"id": test_ref.id, "name": test_ref.name}}]
                 elif attr.schema.type & AttrTypeValue["object"]:
@@ -3222,7 +3307,7 @@ class ModelTest(AironeTestCase):
             # 'with_metainfo, is_active=False' parameter
 
             expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
-            if attr.schema.type & AttrTypeValue["array"]:
+            if attr.is_array():
                 if attr.schema.type & AttrTypeValue["named"]:
                     expected_value["value"] = [{"hoge": {"id": test_ref.id, "name": test_ref.name}}]
                 elif attr.schema.type & AttrTypeValue["object"]:
@@ -5406,3 +5491,61 @@ class ModelTest(AironeTestCase):
 
         res = Entry.search_entries(self._user, [self._entity.id])
         self.assertEqual(res["ret_count"], 1)
+
+    def test_get_prev_refers_objects_for_object_attr(self):
+        user = User.objects.create(username="test-user")
+
+        # Initiate Entities and Entries for this test
+        ref_entity = self.create_entity(user, "RefEntity")
+        (e0, e1, e2) = [self.add_entry(user, "e%s" % i, ref_entity) for i in range(3)]
+
+        entity = self.create_entity(
+            user,
+            "Entity",
+            attrs=[{"name": "attr", "type": AttrTypeValue["object"], "ref": ref_entity}],
+        )
+        entry = self.add_entry(user, "entry", entity, values={"attr": e0})
+        attr = entry.attrs.get(schema__name="attr", is_active=True)
+
+        # check initial referring Entries and last referring ones.
+        self.assertEqual(list(entry.get_refers_objects()), [e0])
+        self.assertEqual(list(entry.get_prev_refers_objects()), [])
+
+        # update referring Entry and check them
+        attr.add_value(user, e1)
+        self.assertEqual(list(entry.get_refers_objects()), [e1])
+        self.assertEqual(list(entry.get_prev_refers_objects()), [e0])
+
+        # update referring Entry and check them
+        attr.add_value(user, e2)
+        self.assertEqual(list(entry.get_refers_objects()), [e2])
+        self.assertEqual(list(entry.get_prev_refers_objects()), [e1])
+
+    def test_get_prev_refers_objects_for_array_object_attr(self):
+        user = User.objects.create(username="test-user")
+
+        # Initiate Entities and Entries for this test
+        ref_entity = self.create_entity(user, "RefEntity")
+        (e0, e1, e2) = [self.add_entry(user, "e%s" % i, ref_entity) for i in range(3)]
+
+        entity = self.create_entity(
+            user,
+            "Entity",
+            attrs=[{"name": "attr", "type": AttrTypeValue["array_object"], "ref": ref_entity}],
+        )
+        entry = self.add_entry(user, "entry", entity, values={"attr": [e0, e1]})
+        attr = entry.attrs.get(schema__name="attr", is_active=True)
+
+        # check initial referring Entries and last referring ones.
+        self.assertEqual(list(entry.get_refers_objects()), [e0, e1])
+        self.assertEqual(list(entry.get_prev_refers_objects()), [])
+
+        # update referring Entry and check them
+        attr.add_value(user, [e1, e2])
+        self.assertEqual(list(entry.get_refers_objects()), [e1, e2])
+        self.assertEqual(list(entry.get_prev_refers_objects()), [e0, e1])
+
+        # update referring Entry and check them
+        attr.add_value(user, [e0])
+        self.assertEqual(list(entry.get_refers_objects()), [e0])
+        self.assertEqual(list(entry.get_prev_refers_objects()), [e1, e2])

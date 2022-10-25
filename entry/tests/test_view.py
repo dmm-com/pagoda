@@ -971,16 +971,24 @@ class ViewTest(AironeViewTest):
         ref_entity = self.create_entity(user, "RefEntity")
         ref_entries = [self.add_entry(user, "e%s" % i, ref_entity) for i in range(3)]
 
-        entity = self.create_entity(user, "Entity", attrs=[
+        entity = self.create_entity(
+            user,
+            "Entity",
+            attrs=[
                 {"name": "attr", "type": AttrTypeValue["array_named_object"], "ref": ref_entity}
             ],
         )
-        entry = self.add_entry(user, "entry", entity, values={
-            "attr": [
-                {"name": "", "id": ref_entries[0]},
-                {"name": "", "id": ref_entries[1]},
-            ]
-        })
+        entry = self.add_entry(
+            user,
+            "entry",
+            entity,
+            values={
+                "attr": [
+                    {"name": "", "id": ref_entries[0]},
+                    {"name": "", "id": ref_entries[1]},
+                ]
+            },
+        )
         attr = entry.attrs.last()
 
         parent_values_count = AttributeValue.objects.extra(
@@ -1011,8 +1019,25 @@ class ViewTest(AironeViewTest):
 
         # check es-documents of both e0 (was referred before) and e2 (is referred now)
         ret = Entry.search_entries(user, [ref_entity.id])
-        for info in ret['ret_values']:
-            print('[onix-test(10)] %s' % str(info))
+        self.assertEqual(ret["ret_count"], 3)
+        for info in ret["ret_values"]:
+            if info["entry"]["id"] == ref_entries[0].id:
+                self.assertEqual(info["referrals"], [])
+            elif (
+                info["entry"]["id"] == ref_entries[1].id or info["entry"]["id"] == ref_entries[2].id
+            ):
+                self.assertEqual(
+                    info["referrals"],
+                    [
+                        {
+                            "id": entry.id,
+                            "name": entry.name,
+                            "schema": {"id": entity.id, "name": entity.name},
+                        }
+                    ],
+                )
+            else:
+                raise RuntimeError("Unexpected es-document was returned")
 
         # checks to set correct status flags
         leaf_values = [
@@ -1033,7 +1058,12 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(attr.values.last().data_array.count(), 2)
         self.assertTrue(
-            all([x.referral.id in [ref_entries[1].id, ref_entries[2].id] for x in attr.values.last().data_array.all()])
+            all(
+                [
+                    x.referral.id in [ref_entries[1].id, ref_entries[2].id]
+                    for x in attr.values.last().data_array.all()
+                ]
+            )
         )
 
     def test_get_detail_with_invalid_param(self):

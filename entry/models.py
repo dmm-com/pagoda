@@ -183,7 +183,7 @@ class AttributeValue(models.Model):
         elif self.parent_attr.schema.type == AttrTypeValue["role"] and self.value:
             value = _get_model_value(self, Role)
 
-        elif self.parent_attr.schema.type & AttrTypeValue["array"]:
+        elif self.parent_attr.is_array():
             if self.parent_attr.schema.type & AttrTypeValue["named"]:
                 value = [_get_named_value(x, is_active) for x in self.data_array.all()]
 
@@ -438,6 +438,9 @@ class Attribute(ACLBase):
         super(Attribute, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.EntryAttr
 
+    def is_array(self):
+        return self.schema.type & AttrTypeValue["array"]
+
     # This checks whether each specified attribute needs to update
     def is_updated(self, recv_value):
         def _is_updated_for_array_value(last_value, model):
@@ -630,14 +633,14 @@ class Attribute(ACLBase):
 
     # These are helper funcitons to get differental AttributeValue(s) by an update request.
     def _validate_attr_values_of_array(self):
-        if not int(self.schema.type) & AttrTypeValue["array"]:
+        if not self.is_array():
             return False
         return True
 
     def get_values(self, where_extra=[]):
         where_cond = [] + where_extra
 
-        if self.schema.type & AttrTypeValue["array"]:
+        if self.is_array():
             where_cond.append("status & %d > 0" % AttributeValue.STATUS_DATA_ARRAY_PARENT)
         else:
             where_cond.append("status & %d = 0" % AttributeValue.STATUS_DATA_ARRAY_PARENT)
@@ -659,7 +662,7 @@ class Attribute(ACLBase):
                 "data_type": self.schema.type,
                 "status": 0,
             }
-            if self.schema.type & AttrTypeValue["array"]:
+            if self.is_array():
                 params["status"] |= AttributeValue.STATUS_DATA_ARRAY_PARENT
 
             attrv = AttributeValue.objects.create(**params)
@@ -739,7 +742,7 @@ class Attribute(ACLBase):
             new_attrv = attrv.clone(user, parent_attr=cloned_attr)
 
             # When the Attribute is array, this method also clone co-AttributeValues
-            if self.schema.type & AttrTypeValue["array"]:
+            if self.is_array():
                 for co_attrv in attrv.data_array.all():
                     new_co_attrv = co_attrv.clone(
                         user, parent_attr=cloned_attr, parent_attrv=new_attrv
@@ -760,7 +763,7 @@ class Attribute(ACLBase):
         def _is_group_object(val, model):
             return isinstance(val, model) or isinstance(val, int) or isinstance(val, str) or not val
 
-        if self.schema.type & AttrTypeValue["array"]:
+        if self.is_array():
             if value is None:
                 return True
 
@@ -915,7 +918,7 @@ class Attribute(ACLBase):
         # Initialize AttrValue as None, because this may not created
         # according to the specified parameters.
         attr_value = AttributeValue.create(user, self)
-        if self.schema.type & AttrTypeValue["array"]:
+        if self.is_array():
             attr_value.boolean = boolean
 
             # set status of parent data_array
@@ -1035,7 +1038,7 @@ class Attribute(ACLBase):
 
             return get_named_object(value)
 
-        elif self.schema.type & AttrTypeValue["array"]:
+        elif self.is_array():
             if not isinstance(value, list):
                 return None
 
@@ -1087,7 +1090,7 @@ class Attribute(ACLBase):
             ]
 
         attrv = self.get_latest_value()
-        if self.schema.type & AttrTypeValue["array"]:
+        if self.is_array():
 
             if self.schema.type & AttrTypeValue["named"]:
                 if referral is None:
@@ -1137,7 +1140,7 @@ class Attribute(ACLBase):
         This method adds target entry to specified attribute with referral_key
         """
         attrv = self.get_latest_value()
-        if self.schema.type & AttrTypeValue["array"]:
+        if self.is_array():
 
             updated_data = None
             if self.schema.type & AttrTypeValue["named"]:
@@ -1193,7 +1196,7 @@ class Attribute(ACLBase):
         if self.schema.is_delete_in_chain and self.schema.type & AttrTypeValue["object"]:
             attrv = self.get_latest_value()
 
-            if self.schema.type & AttrTypeValue["array"]:
+            if self.is_array():
                 [_may_remove_referral(x.referral) for x in attrv.data_array.all()]
             else:
                 _may_remove_referral(attrv.referral)
@@ -1231,7 +1234,7 @@ class Attribute(ACLBase):
         if self.schema.is_delete_in_chain and self.schema.type & AttrTypeValue["object"]:
             attrv = self.get_latest_value()
 
-            if self.schema.type & AttrTypeValue["array"]:
+            if self.is_array():
                 ret = [_check(x.referral) for x in attrv.data_array.all()]
                 if True in ret:
                     return True
@@ -1260,7 +1263,7 @@ class Attribute(ACLBase):
         if self.schema.is_delete_in_chain and self.schema.type & AttrTypeValue["object"]:
             attrv = self.get_latest_value()
 
-            if self.schema.type & AttrTypeValue["array"]:
+            if self.is_array():
                 [_may_restore_referral(x.referral) for x in attrv.data_array.all()]
             else:
                 _may_restore_referral(attrv.referral)
@@ -1300,6 +1303,38 @@ class Entry(ACLBase):
         if is_created:
             self.attrs.add(attr)
         return attr
+
+    def get_prev_refers_objects(self):
+        """
+        This returns objects to which this Entry referred just one before.
+        """
+        entry_ids = []
+        for attr in self.attrs.filter(is_active=True, schema__is_active=True).prefetch_related(
+            "values__data_array__referral"
+        ):
+            if attr.is_array():
+                before_last_attrv = (
+                    attr.values.filter(is_latest=False).order_by("created_time").last()
+                )
+                if before_last_attrv is None:
+                    continue
+
+                entry_ids += [
+                    x.referral.id
+                    for x in before_last_attrv.data_array.all()
+                    if x.referral is not None
+                ]
+
+            else:
+                before_last_attrv = (
+                    attr.values.filter(is_latest=False).order_by("created_time").last()
+                )
+                if before_last_attrv is None or before_last_attrv.referral is None:
+                    continue
+
+                entry_ids.append(before_last_attrv.referral.id)
+
+        return Entry.objects.filter(id__in=entry_ids)
 
     def get_refers_objects(self):
         """
@@ -1846,22 +1881,35 @@ class Entry(ACLBase):
               falling into the infinite calling loop.
 
         This updates es-documents which are associated with following Entries
-        * 1. Entries that this Entry referred (This is necessary because es-documents of Entries,
+        - 1. Entries that this Entry referred (This is necessary because es-documents of Entries,
              which were referred before but now are not, should be updated.
-        * 2. This Entry (the variable "self" indicate)
-        * 3. Entries that this Entry refers
+        - 2. This Entry (the variable "self" indicate)
+        - 3. Entries that this Entry refers
         """
         if not es:
             es = ESS()
+
+        # This retrieve Entries information that was referred before
+        result = Entry.search_entries(
+            None, [x.id for x in Entity.objects.filter(is_active=True)], hint_referral=self.name
+        )
+        old_refers_entry_ids = [x["entry"]["id"] for x in result["ret_values"]]
 
         es.index(doc_type="entry", id=self.id, body=self.get_es_document(es))
         if not skip_refresh:
             es.refresh()
 
         # It's also needed to update es-document for Entries that this Entry refers to
+        new_refers_entries = [e for e in self.get_refers_objects() if e.id != self.id]
         if not recursive_call_stack:
-            for entry in [e for e in self.get_refers_objects() if e.id != self.id]:
+            for entry in new_refers_entries:
                 entry.register_es(es, skip_refresh, recursive_call_stack + [self])
+
+            # This updates Entries that were referred this Entry before
+            for entry_id in set(old_refers_entry_ids) - set([e.id for e in new_refers_entries]):
+                entry = Entry.objects.filter(id=entry_id, is_active=True).last()
+                if entry:
+                    entry.register_es(es, skip_refresh, recursive_call_stack + [self])
 
     def unregister_es(self, es=None):
         if not es:
@@ -1981,7 +2029,7 @@ class Entry(ACLBase):
         for hint_entity_id in hint_entity_ids:
             # Check for has permission to Entity
             entity = Entity.objects.filter(id=hint_entity_id, is_active=True).first()
-            if not (entity and user.has_permission(entity, ACLType.Readable)):
+            if user and not (entity and user.has_permission(entity, ACLType.Readable)):
                 continue
 
             # Check for has permission to EntityAttr
@@ -1995,7 +2043,11 @@ class Entry(ACLBase):
                 hint_attr["is_readble"] = (
                     True
                     if (
-                        hint_entity_attr and user.has_permission(hint_entity_attr, ACLType.Readable)
+                        user is None
+                        or (
+                            hint_entity_attr
+                            and user.has_permission(hint_entity_attr, ACLType.Readable)
+                        )
                     )
                     else False
                 )
@@ -2019,7 +2071,10 @@ class Entry(ACLBase):
                             {
                                 "name": entity_attr.name,
                                 "is_readble": True
-                                if (user.has_permission(entity_attr, ACLType.Readable))
+                                if (
+                                    user is None
+                                    or user.has_permission(entity_attr, ACLType.Readable)
+                                )
                                 else False,
                             }
                         )
