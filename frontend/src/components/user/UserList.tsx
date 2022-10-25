@@ -10,12 +10,10 @@ import {
   IconButton,
   Pagination,
   Stack,
-  Theme,
   Typography,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
@@ -27,16 +25,7 @@ import { UserControlMenu } from "./UserControlMenu";
 import { newUserPath, userPath } from "Routes";
 import { UserList as ConstUserList } from "utils/Constants";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-}));
-
 export const UserList: FC = ({}) => {
-  const classes = useStyles();
-  const history = useHistory();
-
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = useState(1);
 

@@ -69,7 +69,6 @@ export const SearchResults: FC<Props> = ({
     defaultAttrsFilter ?? []
   );
 
-  const attrNames = results.length > 0 ? Object.keys(results[0].attrs) : [];
   const hasReferral = results.length > 0 ? results[0].referrals : false;
 
   const handleKeyPress = (event) => {

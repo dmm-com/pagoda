@@ -114,11 +114,17 @@ export const GroupPage: FC = () => {
           {groupTrees.loading ? (
             <Loading />
           ) : (
-            <GroupTreeRoot
-              groupTrees={groupTrees.value}
-              selectedGroupId={selectedGroupId}
-              handleSelectGroupId={handleSelectGroupId}
-            />
+            <Box>
+              <Typography mt="16px">
+                選択したいグループにチェックマークを入れてください。
+              </Typography>
+              <Divider sx={{ mt: "16px" }} />
+              <GroupTreeRoot
+                groupTrees={groupTrees.value}
+                selectedGroupId={selectedGroupId}
+                handleSelectGroupId={handleSelectGroupId}
+              />
+            </Box>
           )}
         </Grid>
         <Grid

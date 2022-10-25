@@ -48,6 +48,30 @@ test("should match snapshot", async () => {
     ],
   };
 
+  const groups = [
+    {
+      id: 1,
+      name: "group1",
+      children: [
+        {
+          id: 1,
+          name: "group1",
+          children: [],
+        },
+        {
+          id: 2,
+          name: "group2",
+          children: [],
+        },
+      ],
+    },
+    {
+      id: 2,
+      name: "group2",
+      children: [],
+    },
+  ];
+
   /* eslint-disable */
   jest
     .spyOn(
@@ -61,6 +85,12 @@ test("should match snapshot", async () => {
       "getGroup"
     )
     .mockResolvedValue(Promise.resolve(group));
+  jest
+    .spyOn(
+      require("../apiclient/AironeApiClientV2").aironeApiClientV2,
+      "getGroupTrees"
+    )
+    .mockResolvedValue(Promise.resolve(groups));
   /* eslint-enable */
 
   // wait async calls and get rendered fragment

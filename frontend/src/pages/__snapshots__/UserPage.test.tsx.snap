@@ -9,13 +9,13 @@ Object {
         class="container-fluid MuiBox-root css-0"
       >
         <div
-          class="makeStyles-frame-2 MuiBox-root css-0"
+          class="makeStyles-frame-1 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-fixed-3 MuiBox-root css-0"
+            class="makeStyles-fixed-2 MuiBox-root css-0"
           >
             <div
-              class="makeStyles-breadcrumb-4 MuiBox-root css-0"
+              class="makeStyles-breadcrumb-3 MuiBox-root css-0"
             >
               <nav
                 aria-label="breadcrumb"
@@ -301,13 +301,13 @@ Object {
       class="container-fluid MuiBox-root css-0"
     >
       <div
-        class="makeStyles-frame-2 MuiBox-root css-0"
+        class="makeStyles-frame-1 MuiBox-root css-0"
       >
         <div
-          class="makeStyles-fixed-3 MuiBox-root css-0"
+          class="makeStyles-fixed-2 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-breadcrumb-4 MuiBox-root css-0"
+            class="makeStyles-breadcrumb-3 MuiBox-root css-0"
           >
             <nav
               aria-label="breadcrumb"
