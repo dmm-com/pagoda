@@ -2181,7 +2181,7 @@ class Entry(ACLBase):
         )
 
         # This targets following Entries that belong to specified Entity
-        entry_list = list(
+        entry_list = (
             Entry.objects.filter(schema=entity, is_active=True)
             .select_related("schema")
             .prefetch_related(attr_prefetch)
