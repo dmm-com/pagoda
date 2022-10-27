@@ -132,10 +132,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
         return data
 
-    def search_entries(self, user, query=None):
-        if query is None:
-            query = self.validated_data
-
+    def merge_search_result(self, stored_list, result_data, is_any):
         def _deduplication(item_list):
             """
             This removes duplication items, that have same Entry-ID with other ones,from item_list
@@ -147,91 +144,96 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
             return returned_items
 
-        def _merge_search_result(stored_list, result_data, is_any):
-            if is_any:
-                # This is OR condition processing
-                result = result_data + stored_list
+        if is_any:
+            # This is OR condition processing
+            result = result_data + stored_list
 
+        else:
+            # This is AND condition processing
+            # The "stored_id_list" is an explanatory variable that only has Entry-ID
+            # of stored_list Entry information
+            stored_id_list = [x["id"] for x in stored_list]
+            result = [x for x in result_data if x["id"] in stored_id_list]
+
+        return _deduplication(result)
+
+    def backward_search_entries(self, user, queries):
+        pass
+
+    def forward_search_entries(self, user, queries, entity_id_list, is_any):
+        # digging into the conditions tree to get to leaf condition by depth-first search
+        accumulated_result = []
+
+        # This expects only AttrSerialized sub-query
+        for sub_query in queries:
+            (is_leaf, sub_query_result) = self.search_entries(user, sub_query)
+            if not is_leaf and not sub_query_result:
+                # In this case, it's useless to continue to search processing because
+                # there is no possiblity to find out data that user wants to.
+                return (False, [])
+
+            # make query to search Entries using Entry.search_entries()
+            search_keyword = "|".join([x["name"] for x in sub_query_result])
+            if isinstance(sub_query.get("value"), str) and len(sub_query["value"]) > 0:
+                search_keyword = sub_query.get("value")
+
+            elif sub_query.get("value") == "":
+                # When value has empty string, this specify special character "\",
+                # which will match Entries that refers nothing Entry at specified Attribute.
+                search_keyword = "\\"
+
+            # Query for forward search
+            hint_attrs = [
+                {
+                    "name": sub_query["name"],
+                    "keyword": search_keyword,
+                }
+            ]
+
+            # get Entry informations from result
+            search_result = Entry.search_entries(user, entity_id_list, hint_attrs, limit=99999)
+
+            result_entry_info = [x["entry"] for x in search_result["ret_values"]]
+            if not accumulated_result:
+                accumulated_result = result_entry_info
             else:
-                # This is AND condition processing
-                # The "stored_id_list" is an explanatory variable that only has Entry-ID
-                # of stored_list Entry information
-                stored_id_list = [x["id"] for x in stored_list]
-                result = [x for x in result_data if x["id"] in stored_id_list]
+                accumulated_result = self.merge_search_result(
+                    accumulated_result, result_entry_info, is_any
+                )
 
-            return _deduplication(result)
+        # The first return value (False) describe this result returned by NO-leaf-node
+        return (False, accumulated_result)
 
-        sub_queries = None
-        if "conditions" in query:
-            sub_queries = query["conditions"]
+    def search_entries(self, user, query=None):
+        if query is None:
+            query = self.validated_data
 
-        elif "attrs" in query:
-            sub_queries = query["attrs"]
+        result = None
+        if "attrs" in query or "conditions" in query:
+            sub_query = query.get("attrs", [])
+            if not sub_query:
+                sub_query = query.get("conditions", [])
+
+            return self.forward_search_entries(user, sub_query, query["entities"], query["is_any"])
 
         elif "refers" in query:
             raise RuntimeError("This is not impelemnted yet")
 
-        # digging into the conditions tree to get to leaf condition by depth-first search
-        accumulated_result = []
-        if sub_queries:
-            # This expects only AttrSerialized sub-query
-            for sub_query in sub_queries:
-                (is_leaf, sub_query_result) = self.search_entries(user, sub_query)
-
-                if not is_leaf and not sub_query_result:
-                    # In this case, it's useless to continue to search processing because
-                    # there is no possiblity to find out data that user wants to.
-                    return (False, [])
-
-                # make query to search Entries using Entry.search_entries()
-                search_keyword = "|".join([x["name"] for x in sub_query_result])
-                if isinstance(sub_query.get("value"), str) and len(sub_query["value"]) > 0:
-                    search_keyword = sub_query.get("value")
-
-                elif sub_query.get("value") == "":
-                    # When value has empty string, this specify special character "\",
-                    # which will match Entries that refers nothing Entry at specified Attribute.
-                    search_keyword = "\\"
-
-                search_query = [
-                    {
-                        "name": sub_query["name"],
-                        "keyword": search_keyword,
-                    }
-                ]
-
-                # get Entry informations from result
-                search_result = Entry.search_entries(
-                    user, query["entities"], search_query, limit=99999
-                )
-
-                result_entry_info = [x["entry"] for x in search_result["ret_values"]]
-                if not accumulated_result:
-                    accumulated_result = result_entry_info
-                else:
-                    accumulated_result = _merge_search_result(
-                        accumulated_result, result_entry_info, query["is_any"]
-                    )
-
-        else:
-            # In the leaf condition return nothing
-            # The first return value describe whethere this is leaf condition or not.
-            # (True means result is returned by leaf-node)
-            #
-            # Empty result of second returned value has different meaning depends on
-            # whethere that is leaf condition or intermediate one.
-            # * Leaf condition:
-            #   - it must return empty whatever condition.
-            #     it should continue processing
-            #
-            # * Intermediate one:
-            #   - it returns empty when there is no result.
-            #     it's useless to continue this processing because there is no possibility
-            #     to find out any data, which user wants to
-            return (True, [])
-
-        # The first return value (False) describe this result returned by NO-leaf-node
-        return (False, accumulated_result)
+        # In the leaf condition return nothing
+        # The first return value describe whethere this is leaf condition or not.
+        # (True means result is returned by leaf-node)
+        #
+        # Empty result of second returned value has different meaning depends on
+        # whethere that is leaf condition or intermediate one.
+        # * Leaf condition:
+        #   - it must return empty whatever condition.
+        #     it should continue processing
+        #
+        # * Intermediate one:
+        #   - it returns empty when there is no result.
+        #     it's useless to continue this processing because there is no possibility
+        #     to find out any data, which user wants to
+        return (True, [])
 
     def is_attr_chained(self, entry, attrs=None, is_any=False):
         if not attrs:

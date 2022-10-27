@@ -798,3 +798,13 @@ class APITest(AironeViewTest):
         self.assertEqual(
             resp.json(), {"entries": [{"id": entry_server.id, "name": entry_server.name}]}
         )
+
+    def test_basic_backward_reference(self):
+        # create query to search chained query
+        params = {
+            "entities": ["NIC"],
+            "conditions": [{"entity": "VM", "entry": "test-vm1"}],
+        }
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
