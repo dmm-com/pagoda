@@ -122,7 +122,7 @@ class APITest(AironeViewTest):
 
             result = resp.json()["result"]
             self.assertEqual(result["ret_count"], 2)
-            [self.assertFalse("referrals" in x) for x in result["ret_values"]]
+            [self.assertEqual(x["referrals"], []) for x in result["ret_values"]]
 
         # send search request with 'hint_referral' parameter
         params = {

@@ -138,7 +138,7 @@ function reconstruct_tbody(results) {
       let elem_ref_ul = $("<ul class='list-group'/>");
 
       for(let ref of result.referrals) {
-        elem_ref_ul.append($(`<li class='list-group-item'><a href='/entry/show/${ ref.id }/'>${ ref.name } / ${ ref.schema }</a></li>`));
+        elem_ref_ul.append($(`<li class='list-group-item'><a href='/entry/show/${ ref.id }/'>${ ref.name } / ${ ref.schema.name }</a></li>`));
       }
 
       elem_ref_td.append(elem_ref_ul)

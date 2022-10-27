@@ -289,30 +289,23 @@ class ComplexViewTest(AironeViewTest):
     def test_cache_referred_entry_at_deleting_attr(self):
         user = self.admin_login()
 
+        # initialize Entities and Entries
         ref_entity = Entity.objects.create(name="ref_entity", created_user=user)
         ref_entry = Entry.objects.create(name="ref_entry", schema=ref_entity, created_user=user)
-
-        entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                name="ref",
-                type=AttrTypeValue["object"],
-                parent_entity=entity,
-                created_user=user,
-            )
+        entity = self.create_entity(
+            user,
+            "entity",
+            attrs=[
+                {
+                    "name": "ref",
+                    "type": AttrTypeValue["object"],
+                    "ref": ref_entity,
+                }
+            ],
         )
-        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
-        entry.complement_attrs(user)
+        entry = self.add_entry(user, "entry", entity, values={"ref": ref_entry})
 
-        attrv_params = {
-            "value": "",
-            "created_user": user,
-            "parent_attr": entry.attrs.get(name="ref"),
-            "referral": ref_entry,
-        }
-        entry.attrs.get(name="ref").values.add(AttributeValue.objects.create(**attrv_params))
-
-        # make referred entry cache
+        # check initial condition
         ref_entries = ref_entry.get_referred_objects()
         self.assertEqual(list(ref_entries), [entry])
         self.assertEqual(ref_entries.count(), 1)

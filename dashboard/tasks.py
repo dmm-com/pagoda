@@ -91,7 +91,7 @@ def _csv_export(job, values, recv_data, has_referral):
 
         if has_referral is not False:
             line_data.append(
-                str(["%s / %s" % (x["name"], x["schema"]) for x in entry_info["referrals"]])
+                str(["%s / %s" % (x["name"], x["schema"]["name"]) for x in entry_info["referrals"]])
             )
 
         writer.writerow(line_data)
@@ -171,13 +171,10 @@ def export_search_result(self, job_id):
     user = job.user
     recv_data = json.loads(job.params)
 
+    # Do not care whether the "has_referral" value is
     has_referral = recv_data.get("has_referral", False)
     referral_name = recv_data.get("referral_name")
     entry_name = recv_data.get("entry_name")
-
-    hint_referral = "" if has_referral else False
-    if referral_name:
-        hint_referral = referral_name
 
     resp = Entry.search_entries(
         user,
@@ -185,7 +182,7 @@ def export_search_result(self, job_id):
         recv_data["attrinfo"],
         settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
         entry_name,
-        hint_referral,
+        referral_name,
     )
 
     io_stream = None

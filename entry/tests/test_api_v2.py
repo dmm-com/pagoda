@@ -1851,8 +1851,8 @@ class ViewTest(AironeViewTest):
         attrs_data = entry_data["attrs"]
         self.assertTrue(all(["name" in x and "value" in x for x in attrs_data]))
         self.assertEqual(len(attrs_data), entry.attrs.count())
-        self.assertEqual(attrs_data[0]["name"], "foo")
-        self.assertEqual(attrs_data[1]["name"], "bar")
+        self.assertEqual(sorted([x["name"] for x in attrs_data]), sorted(["foo", "bar"]))
+        self.assertTrue(all([x["value"] == "fuga" for x in attrs_data]))
 
         resp = self.client.post(
             "/entry/api/v2/%d/export/" % entity.id,
