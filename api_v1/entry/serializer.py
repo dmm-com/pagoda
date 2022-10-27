@@ -179,7 +179,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
         return _deduplication(result)
 
-    def backward_search_entries(self, user, queries, entity_id, is_any):
+    def backward_search_entries(self, user, queries, entity_id_list, is_any):
         # digging into the condition tree to get to leaf condition by depth-first search
         accumulated_result = []
 
@@ -216,7 +216,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
             # get Entry informations from result
             search_result = Entry.search_entries(
                 user,
-                "",
+                entity_id_list,
                 hint_referral=hint_referral,
                 hint_referral_entity_id=hint_referral_entity_id,
                 limit=99999,
