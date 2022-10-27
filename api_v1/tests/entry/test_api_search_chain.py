@@ -126,7 +126,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "value": "ens0",
@@ -171,7 +171,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that doesn't have last attr chain
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "value": "ens0",
@@ -212,7 +212,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that has wrong value
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "value": "ens0",
@@ -244,7 +244,7 @@ class APITest(AironeViewTest):
         params = {
             "entities": ["VM"],
             "is_any": True,
-            "conditions": [
+            "attrs": [
                 # This condition will match only test-vm1
                 {"name": "Status", "value": "Service-In"},
                 # This condition will match only test-vm2
@@ -267,7 +267,7 @@ class APITest(AironeViewTest):
         params = {
             "entities": ["VM"],
             "is_any": False,
-            "conditions": [
+            "attrs": [
                 # This condition will match only test-vm1
                 {"name": "Status", "value": "Service-In"},
                 # This condition will match only test-vm2
@@ -303,7 +303,7 @@ class APITest(AironeViewTest):
         # create query to search chained query
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "attrs": [{"name": "IP address", "value": ""}],
@@ -357,7 +357,7 @@ class APITest(AironeViewTest):
         # termination Entry "10.0.0.0/8".
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -425,7 +425,7 @@ class APITest(AironeViewTest):
         params = {
             "entities": ["VM"],
             "is_any": True,
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "is_any": False,
@@ -491,7 +491,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -558,7 +558,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -617,7 +617,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -668,7 +668,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -769,7 +769,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["Server"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "IP addresses",
                     "attrs": [
@@ -803,7 +803,7 @@ class APITest(AironeViewTest):
         # create query to search chained query
         params = {
             "entities": ["NIC"],
-            "conditions": [{"entity": "VM", "entry": "test-vm1"}],
+            "refers": [{"entity": "VM", "entry": "test-vm1"}],
         }
         resp = self.client.post(
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"

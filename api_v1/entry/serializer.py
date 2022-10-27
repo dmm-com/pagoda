@@ -12,12 +12,24 @@ class ReferSerializer(serializers.Serializer):
     attrs = serializers.ListField(required=False)
     refers = serializers.ListField(required=False)
 
+    def validate_entity(self, entity_name):
+        if not Entity.objects.filter(name=entity_name, is_active=True).exists():
+            raise ValidationError("There is no specified Entity (%s)" % entity_name)
+
+        return entity_name
+
+    def validate(self, data):
+        entity = Entity.objects.filter(name=data["entity"], is_active=True).first()
+        data["entity_id"] = entity.id
+        return data
+
 
 class AttrSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200)
     value = serializers.CharField(max_length=200, required=False, allow_blank=True)
     is_any = serializers.BooleanField(default=False)
     attrs = serializers.ListField(required=False)
+    refers = serializers.ListField(required=False)
 
     def validate_name(self, name):
         if not EntityAttr.objects.filter(name=name, is_active=True).exists():
@@ -31,8 +43,8 @@ class AttrSerializer(serializers.Serializer):
 
 class EntrySearchChainSerializer(serializers.Serializer):
     entities = serializers.ListField(child=serializers.CharField(max_length=200))
-    # conditions = serializers.ListField(child=SearchConditionSerializer())
-    conditions = serializers.ListField()
+    attrs = serializers.ListField(child=AttrSerializer(), required=False)
+    refers = serializers.ListField(child=ReferSerializer(), required=False)
     is_any = serializers.BooleanField(default=False)
 
     def validate_is_any(self, value):
@@ -111,8 +123,12 @@ class EntrySearchChainSerializer(serializers.Serializer):
             if "name" in validated_data:
                 _validate_attribute(validated_data["name"], entities)
 
-            # complement "entities" parameter at this condition
-            _complement_entities(validated_data, entities)
+            if isinstance(serializer, AttrSerializer):
+                # complement "entities" parameter at this condition
+                _complement_entities(validated_data, entities)
+
+            if isinstance(serializer, ReferSerializer):
+                condition["entities"] = [validated_data["entity_id"]]
 
             # call this method recursively to validate and complement value for each conditions
             if "attrs" in validated_data:
@@ -125,10 +141,16 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
             return validated_data
 
-        # validate and compelment "conditions" parameter context
-        data["conditions"] = [
-            _may_validate_and_complement_condition(x, data["entities"]) for x in data["conditions"]
-        ]
+        # validate parameter context
+        if data.get("attrs"):
+            data["attrs"] = [
+                _may_validate_and_complement_condition(x, data["entities"]) for x in data["attrs"]
+            ]
+
+        if data.get("refers"):
+            data["refers"] = [
+                _may_validate_and_complement_condition(x, data["entities"]) for x in data["refers"]
+            ]
 
         return data
 
@@ -157,11 +179,62 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
         return _deduplication(result)
 
-    def backward_search_entries(self, user, queries):
-        pass
+    def backward_search_entries(self, user, queries, entity_id, is_any):
+        # digging into the condition tree to get to leaf condition by depth-first search
+        accumulated_result = []
+
+        # This expects only AttrSerialized sub-query
+        for sub_query in queries:
+            (is_leaf, sub_query_result) = self.search_entries(user, sub_query)
+            if not is_leaf and not sub_query_result:
+                # In this case, it's useless to continue to search processing because
+                # there is no possiblity to find out data that user wants to.
+                return (False, [])
+
+            # make query to search Entries using Entry.search_entries()
+            search_keyword = "|".join([x["name"] for x in sub_query_result])
+            if isinstance(sub_query.get("value"), str) and len(sub_query["value"]) > 0:
+                search_keyword = sub_query.get("value")
+
+            elif sub_query.get("value") == "":
+                # When value has empty string, this specify special character "\",
+                # which will match Entries that refers nothing Entry at specified Attribute.
+                search_keyword = "\\"
+
+            # Query for forward search
+            """
+            hint_attrs = [
+                {
+                    "name": sub_query["name"],
+                    "keyword": search_keyword,
+                }
+            ]
+            """
+            hint_referral = sub_query.get("entry")
+            hint_referral_entity_id = sub_query["entity_id"]
+
+            # get Entry informations from result
+            search_result = Entry.search_entries(
+                user,
+                "",
+                hint_referral=hint_referral,
+                hint_referral_entity_id=hint_referral_entity_id,
+                limit=99999,
+            )
+
+            result_entry_info = [x["entry"] for x in search_result["ret_values"]]
+            if not accumulated_result:
+                accumulated_result = result_entry_info
+            else:
+                accumulated_result = self.merge_search_result(
+                    accumulated_result, result_entry_info, is_any
+                )
+
+        # The first return value (False) describe this result returned by NO-leaf-node
+        return (False, accumulated_result)
 
     def forward_search_entries(self, user, queries, entity_id_list, is_any):
-        # digging into the conditions tree to get to leaf condition by depth-first search
+        # digging into the condition tree to get to leaf condition by depth-first search
         accumulated_result = []
 
         # This expects only AttrSerialized sub-query
@@ -208,16 +281,15 @@ class EntrySearchChainSerializer(serializers.Serializer):
         if query is None:
             query = self.validated_data
 
-        result = None
-        if "attrs" in query or "conditions" in query:
+        if query.get("attrs"):
             sub_query = query.get("attrs", [])
-            if not sub_query:
-                sub_query = query.get("conditions", [])
 
             return self.forward_search_entries(user, sub_query, query["entities"], query["is_any"])
 
-        elif "refers" in query:
-            raise RuntimeError("This is not impelemnted yet")
+        elif query.get("refers"):
+            sub_query = query.get("refers", [])
+
+            return self.backward_search_entries(user, sub_query, query["entities"], query["is_any"])
 
         # In the leaf condition return nothing
         # The first return value describe whethere this is leaf condition or not.
