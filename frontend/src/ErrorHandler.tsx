@@ -8,8 +8,14 @@ import {
   Typography,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import React, { FC, useState } from "react";
+import React, { FC, useCallback, useEffect, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { useError } from "react-use";
+
+import { ForbiddenErrorPage } from "./pages/ForbiddenErrorPage";
+import { NotFoundErrorPage } from "./pages/NotFoundErrorPage";
+import { ForbiddenError, NotFoundError } from "./utils/Exceptions";
+import { toError } from "./utils/ResponseUtil";
 
 import { topPath } from "Routes";
 
@@ -77,21 +83,48 @@ const GenericError: FC<GenericErrorProps> = ({ children }) => {
 
 const ErrorFallback: FC<Props> = ({ error }) => {
   switch (error.name) {
-    case "FailedToGetEntry":
-      return <Box>(TBC) Failed to get Entry</Box>;
-    case "FailedToGetEntity":
-      return <Box>(TBC) Failed to get Entity</Box>;
-    case "FailedToGetUser":
-      return <Box>(TBC) Failed to get User</Box>;
-    case "UnAuthorizedToGetUser":
-      return <Box>(TBC) UnAuthorized to get User</Box>;
+    case ForbiddenError.errorName:
+      return <ForbiddenErrorPage />;
+    case NotFoundError.errorName:
+      return <NotFoundErrorPage />;
     default:
       return <GenericError>{error.toString()}</GenericError>;
   }
 };
 
+const ErrorBridge: FC = ({ children }) => {
+  const dispatchError = useError();
+
+  const handleUnhandledRejection = useCallback(
+    (event: PromiseRejectionEvent) => {
+      if (event.reason instanceof Response) {
+        const httpError = toError(event.reason);
+        if (httpError != null) {
+          dispatchError(httpError);
+        }
+      }
+      dispatchError(event.reason);
+    },
+    []
+  );
+
+  useEffect(() => {
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+    return () => {
+      window.removeEventListener(
+        "unhandledrejection",
+        handleUnhandledRejection
+      );
+    };
+  }, [handleUnhandledRejection]);
+
+  return <>{children}</>;
+};
+
 export const ErrorHandler: FC = ({ children }) => {
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallback}>{children}</ErrorBoundary>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <ErrorBridge>{children}</ErrorBridge>
+    </ErrorBoundary>
   );
 };

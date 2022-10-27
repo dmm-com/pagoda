@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 
 import { groupPath } from "../../Routes";
 import { GroupTree } from "../../apiclient/AironeApiClientV2";
+import { DjangoContext } from "../../utils/DjangoContext";
 
 import { GroupTreeItem } from "./GroupTreeItem";
 
@@ -38,6 +39,7 @@ export const GroupTreeRoot: FC<Props> = ({
   handleSelectGroupId,
 }) => {
   const classes = useStyles();
+  const isSuperuser = DjangoContext.getInstance().user.isSuperuser;
 
   return (
     <Box>
@@ -56,7 +58,7 @@ export const GroupTreeRoot: FC<Props> = ({
                   variant="h5"
                   my="8px"
                   component={Link}
-                  to={groupPath(groupTree.id)}
+                  to={isSuperuser ? groupPath(groupTree.id) : "#"}
                 >
                   {groupTree.name}
                 </Typography>

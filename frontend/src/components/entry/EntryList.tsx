@@ -14,7 +14,8 @@ import {
 } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 
 import { newEntryPath, entryDetailsPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -22,7 +23,6 @@ import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryList as ConstEntryList } from "utils/Constants";
-import { FailedToGetEntity } from "utils/Exceptions";
 
 interface Props {
   entityId: number;
@@ -33,14 +33,9 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = React.useState(1);
 
-  const entries = useAsync(async () => {
+  const entries = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getEntries(entityId, true, page, keyword);
   }, [page, keyword]);
-  if (!entries.loading && entries.error) {
-    throw new FailedToGetEntity(
-      "Failed to get Entity from AirOne APIv2 endpoint"
-    );
-  }
 
   const handleChange = (event, value) => {
     setPage(value);

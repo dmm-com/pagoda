@@ -1,27 +1,25 @@
-export class FailedToGetEntry extends Error {
+export class ForbiddenError extends Error {
+  static errorName = "ForbiddenError";
+
   constructor(message) {
     super(message);
-    this.name = "FailedToGetEntry";
+    this.name = ForbiddenError.errorName;
+  }
+}
+export class NotFoundError extends Error {
+  static errorName = "NotFoundError";
+
+  constructor(message) {
+    super(message);
+    this.name = NotFoundError.errorName;
   }
 }
 
-export class FailedToGetEntity extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "FailedToGetEntity";
-  }
-}
+export class UnknownError extends Error {
+  static errorName = "UnknownError";
 
-export class FailedToGetUser extends Error {
   constructor(message) {
     super(message);
-    this.name = "FailedToGetUser";
-  }
-}
-
-export class UnAuthorizedToGetUser extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "UnAuthorizedToGetUser";
+    this.name = UnknownError.errorName;
   }
 }

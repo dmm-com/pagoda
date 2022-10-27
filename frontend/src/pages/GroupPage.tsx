@@ -15,6 +15,7 @@ import { useAsync } from "react-use";
 
 import { SearchBox } from "../components/common/SearchBox";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
+import { DjangoContext } from "../utils/DjangoContext";
 
 import { importGroupsPath, newGroupPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -55,6 +56,8 @@ export const GroupPage: FC = () => {
     setSelectedGroupId(groupId);
   };
 
+  const isSuperuser = DjangoContext.getInstance().user.isSuperuser;
+
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">
       <AironeBreadcrumbs>
@@ -91,6 +94,7 @@ export const GroupPage: FC = () => {
               <Button
                 variant="contained"
                 color="secondary"
+                disabled={!isSuperuser}
                 component={Link}
                 to={newGroupPath()}
                 sx={{ height: "48px", borderRadius: "24px" }}
