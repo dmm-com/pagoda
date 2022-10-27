@@ -142,7 +142,7 @@ def _yaml_export(job, values, recv_data, has_referral):
         if has_referral is not False:
             data["referrals"] = [
                 {
-                    "entity": x["schema"],
+                    "entity": x["schema"]["name"],
                     "entry": x["name"],
                 }
                 for x in entry_info["referrals"]
