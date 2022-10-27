@@ -1478,5 +1478,5 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp_data["ReferredEntity"]), 1)
         referrals = resp_data["ReferredEntity"][0]["referrals"]
         self.assertEqual(len(referrals), 1)
-        self.assertEqual(referrals[0]["entity"]["name"], "entity")
+        self.assertEqual(referrals[0]["entity"], "entity")
         self.assertEqual(referrals[0]["entry"], "entry")
