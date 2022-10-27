@@ -107,14 +107,11 @@ class EntrySearchChainSerializer(serializers.Serializer):
             else:
                 return AttrSerializer
 
-        def _may_validate_and_complement_condition(condition, entities, serializer_hint=None):
-            serializer_class = serializer_hint
-            if serializer_hint is None:
-                serializer_class = _get_serializer(condition)
-
+        def _may_validate_and_complement_condition(condition, entities, serializer_class):
+            print('[onix/_may_validate_and_complement_condition(00)] condition: %s' % str(condition))
             serializer = serializer_class(data=condition)
             if not serializer.is_valid():
-                raise ValidationError("Invalid condition was specified" % str(condition))
+                raise ValidationError("Invalid condition(%s) was specified" % str(condition))
 
             if not entities:
                 raise ValidationError("Condition(%s) couldn't find valid Entities" % str(condition))
@@ -128,7 +125,9 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 _complement_entities(validated_data, entities)
 
             if isinstance(serializer, ReferSerializer):
-                condition["entities"] = [validated_data["entity_id"]]
+                validated_data["entities"] = [validated_data["entity_id"]]
+
+            print('[onix/_may_validate_and_complement_condition(10)] validated_data: %s' % str(validated_data))
 
             # call this method recursively to validate and complement value for each conditions
             if "attrs" in validated_data:
@@ -139,17 +138,25 @@ class EntrySearchChainSerializer(serializers.Serializer):
                     for x in validated_data["attrs"]
                 ]
 
+            elif "refers" in validated_data:
+                validated_data["refers"] = [
+                    _may_validate_and_complement_condition(
+                        x, validated_data["entities"], ReferSerializer
+                    )
+                    for x in validated_data["refers"]
+                ]
+
             return validated_data
 
         # validate parameter context
         if data.get("attrs"):
             data["attrs"] = [
-                _may_validate_and_complement_condition(x, data["entities"]) for x in data["attrs"]
+                _may_validate_and_complement_condition(x, data["entities"], AttrSerializer) for x in data["attrs"]
             ]
 
         if data.get("refers"):
             data["refers"] = [
-                _may_validate_and_complement_condition(x, data["entities"]) for x in data["refers"]
+                _may_validate_and_complement_condition(x, data["entities"], ReferSerializer) for x in data["refers"]
             ]
 
         return data
@@ -180,12 +187,14 @@ class EntrySearchChainSerializer(serializers.Serializer):
         return _deduplication(result)
 
     def backward_search_entries(self, user, queries, entity_id_list, is_any):
+        print('[onix/backward_search_entries(00)] %s' % str(queries))
         # digging into the condition tree to get to leaf condition by depth-first search
         accumulated_result = []
 
         # This expects only AttrSerialized sub-query
         for sub_query in queries:
             (is_leaf, sub_query_result) = self.search_entries(user, sub_query)
+            print('[onix/backward_search_entries(10)] (%s) sub_query_result: %s' % (is_leaf, str(sub_query_result)))
             if not is_leaf and not sub_query_result:
                 # In this case, it's useless to continue to search processing because
                 # there is no possiblity to find out data that user wants to.
@@ -193,34 +202,29 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
             # make query to search Entries using Entry.search_entries()
             search_keyword = "|".join([x["name"] for x in sub_query_result])
-            if isinstance(sub_query.get("value"), str) and len(sub_query["value"]) > 0:
-                search_keyword = sub_query.get("value")
-
-            elif sub_query.get("value") == "":
-                # When value has empty string, this specify special character "\",
-                # which will match Entries that refers nothing Entry at specified Attribute.
-                search_keyword = "\\"
+            if isinstance(sub_query.get("entry"), str) and len(sub_query["entry"]) > 0:
+                search_keyword = sub_query.get("entry")
 
             # Query for forward search
-            """
-            hint_attrs = [
-                {
-                    "name": sub_query["name"],
-                    "keyword": search_keyword,
-                }
-            ]
-            """
-            hint_referral = sub_query.get("entry")
-            hint_referral_entity_id = sub_query["entity_id"]
+            query_params = {
+                "user": user,
+                "hint_entity_ids": entity_id_list,
+                "hint_referral": search_keyword,
+                "hint_referral_entity_id": sub_query["entity_id"],
+                "limit": 99999,
+            }
+            # XXX for debug
+            for entity_id in entity_id_list:
+                e = Entity.objects.get(id=entity_id)
+                print('[onix/backward_search_entries(11)] target: (e-id: %s) %s' % (e.id, e.name))
+
+            e = Entity.objects.get(id=sub_query["entity_id"])
+            print('[onix/backward_search_entries(12)] referral: (e-id: %s) %s' % (e.id, e.name))
+                
 
             # get Entry informations from result
-            search_result = Entry.search_entries(
-                user,
-                entity_id_list,
-                hint_referral=hint_referral,
-                hint_referral_entity_id=hint_referral_entity_id,
-                limit=99999,
-            )
+            print('[onix/backward_search_entries(20)] query_params: %s' % str(query_params))
+            search_result = Entry.search_entries(**query_params)
 
             result_entry_info = [x["entry"] for x in search_result["ret_values"]]
             if not accumulated_result:
@@ -234,6 +238,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
         return (False, accumulated_result)
 
     def forward_search_entries(self, user, queries, entity_id_list, is_any):
+        print('[onix/forward_search_entries(00)] %s' % str(queries))
         # digging into the condition tree to get to leaf condition by depth-first search
         accumulated_result = []
 
@@ -278,6 +283,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
         return (False, accumulated_result)
 
     def search_entries(self, user, query=None):
+        print('[onix/search_entries(00)] query: %s' % str(query))
         if query is None:
             query = self.validated_data
 

@@ -805,6 +805,63 @@ class APITest(AironeViewTest):
             "entities": ["NIC"],
             "refers": [{"entity": "VM", "entry": "test-vm1"}],
         }
+
+        # check results of backward search Entries
         resp = self.client.post(
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json(), {"entries": [{"id": self.entry_nic.id, "name": self.entry_nic.name}]}
+        )
+
+    def test_basic_backward_and_forward_reference(self):
+        # create query to search chained query
+        params = {
+            "entities": ["NIC"],
+            "refers": [{
+                "entity": "VM",
+                "attrs": [{
+                    "name": "Status",
+                    "value": "Service-In",
+                }]
+            }],
+        }
+
+        # check results of backward and forward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json(), {"entries": [{"id": self.entry_nic.id, "name": self.entry_nic.name}]}
+        )
+
+    def test_nested_backward_reference(self):
+        entry_network1 = self.add_entry(
+            self.user,
+            "192.168.10.0/24",
+            self.entity_network,
+            values={
+                "vlan": self.entry_vlan2,
+            },
+        )
+
+        # create query to search chained query
+        params = {
+            "entities": ["VLAN"],
+            "refers": [{
+                "entity": "Network",
+                "refers": [{
+                    "entity": "IPv4 Address",
+                    "entry": "10.0.0.1",
+                }]
+            }],
+        }
+
+        # check results of nested backward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        print('[onix-test(10)] status_code: %s' % (resp.status_code))
+        print('[onix-test(10)] %s' % str(resp.json()))
