@@ -163,8 +163,18 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
+        )
+        print("[onix-test] %s" % str(resp.json()["ret_values"]))
+        self.assertEqual(
+            [(k, v["value"]) for (k, v) in resp.json()["ret_values"][0]["attrs"].items()],
+            [
+                ("Ports", [{"ens0": {"id": self.entry_nic.id, "name": self.entry_nic.name}}]),
+                ("Status", {"id": self.entry_service_in.id, "name": self.entry_service_in.name}),
+            ],
         )
 
     def test_search_chain_with_partial_chained_query(self):
@@ -204,8 +214,10 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
         )
 
     def test_search_chain_with_wrong_keyword_value(self):
@@ -237,7 +249,8 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), {"entries": []})
+        self.assertEqual(resp.json()["ret_count"], 0)
+        self.assertEqual(resp.json()["ret_values"], [])
 
     def test_search_chain_using_OR_condition(self):
         # create query to search chained query
@@ -257,9 +270,13 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 2)
         self.assertEqual(
-            sorted([x["id"] for x in resp.json()["entries"]]),
-            sorted([self.entry_vm1.id, self.entry_vm2.id]),
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_vm1, self.entry_vm2]],
+                key=lambda x: x["id"],
+            ),
         )
 
     def test_search_chain_using_AND_condition(self):
@@ -280,7 +297,8 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), {"entries": []})
+        self.assertEqual(resp.json()["ret_count"], 0)
+        self.assertEqual(resp.json()["ret_values"], [])
 
     def test_search_chain_to_get_entry_that_refers_nothing(self):
         # Prepare NIC Entry that doens't refer any IP address Entries.
@@ -315,13 +333,12 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(),
-            {
-                "entries": [
-                    {"id": entry_another_vm.id, "name": entry_another_vm.name},
-                ]
-            },
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [entry_another_vm]], key=lambda x: x["id"]
+            ),
         )
 
     def test_search_chain_do_not_care_intermediate_entry_name(self):
@@ -380,14 +397,13 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 2)
         self.assertEqual(
-            resp.json(),
-            {
-                "entries": [
-                    {"id": self.entry_vm1.id, "name": self.entry_vm1.name},
-                    {"id": entry_another_vm.id, "name": entry_another_vm.name},
-                ]
-            },
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_vm1, entry_another_vm]],
+                key=lambda x: x["id"],
+            ),
         )
 
     def test_search_chain_with_complex_is_any_condition(self):
@@ -449,9 +465,13 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 2)
         self.assertEqual(
-            sorted([x["id"] for x in resp.json()["entries"]]),
-            sorted([entry_another_vm.id, self.entry_vm2.id]),
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_vm2, entry_another_vm]],
+                key=lambda x: x["id"],
+            ),
         )
 
     def test_search_chain_when_object_attrvalue_is_empty(self):
@@ -524,8 +544,10 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
         )
 
     def test_search_chain_when_named_object_attrvalue_is_empty(self):
@@ -591,8 +613,10 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
         )
 
     def test_search_chain_when_array_object_attrvalue_is_empty(self):
@@ -650,8 +674,10 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
         )
 
     def test_search_chain_when_array_named_object_attrvalue_is_empty(self):
@@ -701,8 +727,10 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
         )
 
     def test_complex_entity_structure(self):
@@ -795,8 +823,10 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": entry_server.id, "name": entry_server.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [entry_server]], key=lambda x: x["id"]),
         )
 
     def test_basic_backward_reference(self):
@@ -811,21 +841,27 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_nic.id, "name": self.entry_nic.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_nic]], key=lambda x: x["id"]),
         )
 
     def test_basic_backward_and_forward_reference(self):
         # create query to search chained query
         params = {
             "entities": ["NIC"],
-            "refers": [{
-                "entity": "VM",
-                "attrs": [{
-                    "name": "Status",
-                    "value": "Service-In",
-                }]
-            }],
+            "refers": [
+                {
+                    "entity": "VM",
+                    "attrs": [
+                        {
+                            "name": "Status",
+                            "value": "Service-In",
+                        }
+                    ],
+                }
+            ],
         }
 
         # check results of backward and forward search Entries
@@ -833,8 +869,10 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_nic.id, "name": self.entry_nic.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_nic]], key=lambda x: x["id"]),
         )
 
     def test_nested_backward_reference(self):
@@ -850,18 +888,57 @@ class APITest(AironeViewTest):
         # create query to search chained query
         params = {
             "entities": ["VLAN"],
-            "refers": [{
-                "entity": "Network",
-                "refers": [{
-                    "entity": "IPv4 Address",
-                    "entry": "10.0.0.1",
-                }]
-            }],
+            "refers": [
+                {
+                    "entity": "Network",
+                    "refers": [
+                        {
+                            "entity": "IPv4 Address",
+                            "entry": "10.0.0.1",
+                        }
+                    ],
+                }
+            ],
         }
-
         # check results of nested backward search Entries
         resp = self.client.post(
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
-        print('[onix-test(10)] status_code: %s' % (resp.status_code))
-        print('[onix-test(10)] %s' % str(resp.json()))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_vlan1]], key=lambda x: x["id"]
+            ),
+        )
+
+    def test_basic_forward_and_backward_reference(self):
+        # create query to search chained query
+        params = {
+            "entities": ["IPv4 Address"],
+            "attrs": [
+                {
+                    "name": "network",
+                    "refers": [
+                        {
+                            "entity": "IPv4 Address",
+                            "entry": "10.0.0.1",
+                        }
+                    ],
+                }
+            ],
+        }
+
+        # check results of forward and backward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_ipv4]], key=lambda x: x["id"]
+            ),
+        )
