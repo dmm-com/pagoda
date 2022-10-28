@@ -180,8 +180,11 @@ class EntrySearchChainSerializer(serializers.Serializer):
             # This is AND condition processing
             # The "stored_id_list" is an explanatory variable that only has Entry-ID
             # of stored_list Entry information
-            stored_id_list = [x["id"] for x in stored_list]
-            result = [x for x in result_data if x["id"] in stored_id_list]
+            if stored_list:
+                stored_id_list = [x["id"] for x in stored_list]
+                result = [x for x in result_data if x["id"] in stored_id_list]
+            else:
+                result = result_data
 
         return _deduplication(result)
 
@@ -214,13 +217,10 @@ class EntrySearchChainSerializer(serializers.Serializer):
             # get Entry informations from result
             search_result = Entry.search_entries(**query_params)
 
-            result_entry_info = [x["entry"] for x in search_result["ret_values"]]
-            if not accumulated_result:
-                accumulated_result = result_entry_info
-            else:
-                accumulated_result = self.merge_search_result(
-                    accumulated_result, result_entry_info, is_any
-                )
+            # merge result to the accumulated ones considering is_any value
+            accumulated_result = self.merge_search_result(
+                accumulated_result, [x["entry"] for x in search_result["ret_values"]], is_any
+            )
 
         # The first return value (False) describe this result returned by NO-leaf-node
         return (False, accumulated_result)
@@ -258,13 +258,10 @@ class EntrySearchChainSerializer(serializers.Serializer):
             # get Entry informations from result
             search_result = Entry.search_entries(user, entity_id_list, hint_attrs, limit=99999)
 
-            result_entry_info = [x["entry"] for x in search_result["ret_values"]]
-            if not accumulated_result:
-                accumulated_result = result_entry_info
-            else:
-                accumulated_result = self.merge_search_result(
-                    accumulated_result, result_entry_info, is_any
-                )
+            # merge current result to the accumulated ones considering is_any value
+            accumulated_result = self.merge_search_result(
+                accumulated_result, [x["entry"] for x in search_result["ret_values"]], is_any
+            )
 
         # The first return value (False) describe this result returned by NO-leaf-node
         return (False, accumulated_result)
@@ -273,15 +270,29 @@ class EntrySearchChainSerializer(serializers.Serializer):
         if query is None:
             query = self.validated_data
 
-        if query.get("attrs"):
+        accumulated_result = []
+        is_leaf = True
+        if len(query.get("attrs", [])) > 0:
+            is_leaf = False
             sub_query = query.get("attrs", [])
 
-            return self.forward_search_entries(user, sub_query, query["entities"], query["is_any"])
+            (_, results) = self.forward_search_entries(
+                user, sub_query, query["entities"], query["is_any"]
+            )
+            accumulated_result = self.merge_search_result(
+                accumulated_result, results, query["is_any"]
+            )
 
-        elif query.get("refers"):
+        if len(query.get("refers", [])) > 0:
+            is_leaf = False
             sub_query = query.get("refers", [])
 
-            return self.backward_search_entries(user, sub_query, query["entities"], query["is_any"])
+            (_, results) = self.backward_search_entries(
+                user, sub_query, query["entities"], query["is_any"]
+            )
+            accumulated_result = self.merge_search_result(
+                accumulated_result, results, query["is_any"]
+            )
 
         # In the leaf condition return nothing
         # The first return value describe whethere this is leaf condition or not.
@@ -297,7 +308,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
         #   - it returns empty when there is no result.
         #     it's useless to continue this processing because there is no possibility
         #     to find out any data, which user wants to
-        return (True, [])
+        return (is_leaf, accumulated_result)
 
     def is_attr_chained(self, entry, attrs=None, is_any=False):
         if not attrs:
