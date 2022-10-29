@@ -109,6 +109,50 @@ export class GroupApi extends runtime.BaseAPI {
 
   /**
    */
+  async groupApiV2GroupsImportCreateRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/group/api/v2/groups/import`,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async groupApiV2GroupsImportCreate(
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.groupApiV2GroupsImportCreateRaw(initOverrides);
+  }
+
+  /**
+   */
   async groupApiV2GroupsListRaw(
     initOverrides?: RequestInit
   ): Promise<runtime.ApiResponse<Array<Group>>> {

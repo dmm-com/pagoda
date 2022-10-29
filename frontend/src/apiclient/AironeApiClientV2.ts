@@ -428,6 +428,16 @@ class AironeApiClientV2 {
     }));
   }
 
+  async importGroups(formData: FormData): Promise<void> {
+    return await this.group.groupApiV2GroupsImportCreate({
+      headers: {
+        "Content-Type": "application/yaml",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: formData,
+    });
+  }
+
   async getRoles(): Promise<Role[]> {
     return await this.role.roleApiV2List();
   }

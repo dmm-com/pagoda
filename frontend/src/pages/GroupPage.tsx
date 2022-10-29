@@ -14,9 +14,10 @@ import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { SearchBox } from "../components/common/SearchBox";
+import { GroupImportModal } from "../components/group/GroupImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
 
-import { importGroupsPath, newGroupPath, topPath } from "Routes";
+import { newGroupPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
@@ -25,6 +26,7 @@ import { downloadExportedGroups } from "utils/AironeAPIClient";
 export const GroupPage: FC = () => {
   const [keyword, setKeyword] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState<number>();
+  const [openImportModal, setOpenImportModal] = React.useState(false);
 
   const groupTrees = useAsync(async () => {
     return await aironeApiClientV2.getGroupTrees();
@@ -82,11 +84,14 @@ export const GroupPage: FC = () => {
                   variant="contained"
                   color="info"
                   sx={{ margin: "0 4px" }}
-                  component={Link}
-                  to={importGroupsPath()}
+                  onClick={() => setOpenImportModal(true)}
                 >
                   インポート
                 </Button>
+                <GroupImportModal
+                  openImportModal={openImportModal}
+                  closeImportModal={() => setOpenImportModal(false)}
+                />
               </Box>
               <Button
                 variant="contained"

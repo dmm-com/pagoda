@@ -31,7 +31,9 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class GroupCreateUpdateSerializer(serializers.ModelSerializer):
-    members = serializers.ListField(child=serializers.IntegerField(), write_only=True)
+    members = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False
+    )
 
     class Meta:
         model = Group
@@ -110,3 +112,7 @@ class GroupTreeSerializer(serializers.ModelSerializer):
             ]
 
         return _make_hierarchical_group(obj.subordinates.filter(is_active=True))
+
+
+class GroupImportSerializer(serializers.ListSerializer):
+    child = GroupCreateUpdateSerializer()
