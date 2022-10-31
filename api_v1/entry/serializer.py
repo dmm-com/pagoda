@@ -4,6 +4,8 @@ from rest_framework.exceptions import ValidationError
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 
+SEARCH_ENTRY_LIMIT = 50
+
 
 class ReferSerializer(serializers.Serializer):
     entity = serializers.CharField(max_length=200)
@@ -192,14 +194,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
         # digging into the condition tree to get to leaf condition by depth-first search
         accumulated_result = []
 
-        # This expects only AttrSerialized sub-query
-        for sub_query in queries:
-            (is_leaf, sub_query_result) = self.search_entries(user, sub_query)
-            if not is_leaf and not sub_query_result:
-                # In this case, it's useless to continue to search processing because
-                # there is no possiblity to find out data that user wants to.
-                return (False, [])
-
+        def _do_backward_search(sub_query, sub_query_result):
             # make query to search Entries using Entry.search_entries()
             search_keyword = "|".join([x["name"] for x in sub_query_result])
             if isinstance(sub_query.get("entry"), str) and len(sub_query["entry"]) > 0:
@@ -217,17 +212,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
             # get Entry informations from result
             search_result = Entry.search_entries(**query_params)
 
-            # merge result to the accumulated ones considering is_any value
-            accumulated_result = self.merge_search_result(
-                accumulated_result, [x["entry"] for x in search_result["ret_values"]], is_any
-            )
-
-        # The first return value (False) describe this result returned by NO-leaf-node
-        return (False, accumulated_result)
-
-    def forward_search_entries(self, user, queries, entity_id_list, is_any):
-        # digging into the condition tree to get to leaf condition by depth-first search
-        accumulated_result = []
+            return [x["entry"] for x in search_result["ret_values"]]
 
         # This expects only AttrSerialized sub-query
         for sub_query in queries:
@@ -237,6 +222,39 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 # there is no possiblity to find out data that user wants to.
                 return (False, [])
 
+            # This divides results into small chunks, that will be sent to the elasticsearch again
+            # when it has large amount of data. The size of each chunks is SEARCH_ENTRY_LIMIT
+            # at most.
+            dividing_index = 0
+            if len(sub_query_result) > 0:
+                search_results = []
+                while (dividing_index * SEARCH_ENTRY_LIMIT) < len(sub_query_result):
+                    chunk_result = sub_query_result[
+                        dividing_index
+                        * SEARCH_ENTRY_LIMIT : (dividing_index + 1)
+                        * SEARCH_ENTRY_LIMIT
+                    ]
+                    dividing_index += 1
+
+                    search_results += _do_backward_search(sub_query, chunk_result)
+
+            else:
+                # This search Entries with hint values from sub_query and sub_query_result
+                search_results = _do_backward_search(sub_query, sub_query_result)
+
+            # merge result to the accumulated ones considering is_any value
+            accumulated_result = self.merge_search_result(
+                accumulated_result, search_results, is_any
+            )
+
+        # The first return value (False) describe this result returned by NO-leaf-node
+        return (False, accumulated_result)
+
+    def forward_search_entries(self, user, queries, entity_id_list, is_any):
+        # digging into the condition tree to get to leaf condition by depth-first search
+        accumulated_result = []
+
+        def _do_forward_search(sub_query, sub_query_result):
             # make query to search Entries using Entry.search_entries()
             search_keyword = "|".join([x["name"] for x in sub_query_result])
             if isinstance(sub_query.get("value"), str) and len(sub_query["value"]) > 0:
@@ -258,9 +276,39 @@ class EntrySearchChainSerializer(serializers.Serializer):
             # get Entry informations from result
             search_result = Entry.search_entries(user, entity_id_list, hint_attrs, limit=99999)
 
+            return [x["entry"] for x in search_result["ret_values"]]
+
+        # This expects only AttrSerialized sub-query
+        for sub_query in queries:
+            (is_leaf, sub_query_result) = self.search_entries(user, sub_query)
+            if not is_leaf and not sub_query_result:
+                # In this case, it's useless to continue to search processing because
+                # there is no possiblity to find out data that user wants to.
+                return (False, [])
+
+            # This divides results into small chunks, that will be sent to the elasticsearch again
+            # when it has large amount of data. The size of each chunks is SEARCH_ENTRY_LIMIT
+            # at most.
+            dividing_index = 0
+            if len(sub_query_result) > 0:
+                search_results = []
+                while (dividing_index * SEARCH_ENTRY_LIMIT) < len(sub_query_result):
+                    chunk_result = sub_query_result[
+                        dividing_index
+                        * SEARCH_ENTRY_LIMIT : (dividing_index + 1)
+                        * SEARCH_ENTRY_LIMIT
+                    ]
+                    dividing_index += 1
+
+                    search_results += _do_forward_search(sub_query, chunk_result)
+
+            else:
+                # This search Entries with hint values from sub_query and sub_query_result
+                search_results = _do_forward_search(sub_query, sub_query_result)
+
             # merge current result to the accumulated ones considering is_any value
             accumulated_result = self.merge_search_result(
-                accumulated_result, [x["entry"] for x in search_result["ret_values"]], is_any
+                accumulated_result, search_results, is_any
             )
 
         # The first return value (False) describe this result returned by NO-leaf-node

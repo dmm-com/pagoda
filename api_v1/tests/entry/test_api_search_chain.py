@@ -3,6 +3,8 @@ import json
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 
+from api_v1.entry import serializer
+
 
 class APITest(AironeViewTest):
     def setUp(self):
@@ -167,13 +169,6 @@ class APITest(AironeViewTest):
         self.assertEqual(
             sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
             sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
-        )
-        self.assertEqual(
-            [(k, v["value"]) for (k, v) in resp.json()["ret_values"][0]["attrs"].items()],
-            [
-                ("Ports", [{"ens0": {"id": self.entry_nic.id, "name": self.entry_nic.name}}]),
-                ("Status", {"id": self.entry_service_in.id, "name": self.entry_service_in.name}),
-            ],
         )
 
     def test_search_chain_with_partial_chained_query(self):
@@ -1023,3 +1018,111 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["ret_count"], 0)
         self.assertEqual(resp.json()["ret_values"], [])
+
+    def test_search_forward_chain_exceeding_search_limit(self):
+        # check the case that the number of Entries of Entry.search_results() exceeds
+        # expected limit.
+        serializer.SEARCH_ENTRY_LIMIT = 2
+
+        # create number of Entries exceeding SEARCH_ENTRY_LIMIT
+        another_ipaddrs = [
+            self.add_entry(
+                self.user,
+                "10.0.10.%d" % i,
+                self.entity_ipv4,
+                values={
+                    "network": {"id": self.entry_network, "name": ""},
+                },
+            )
+            for i in range(1, 5)
+        ]
+        another_nic = self.add_entry(
+            self.user,
+            "ensX",
+            self.entity_nic,
+            values={
+                "IP address": another_ipaddrs,
+            },
+        )
+        another_vm = self.add_entry(
+            self.user,
+            "test-another-vm",
+            self.entity_vm,
+            values={
+                "Ports": [{"id": another_nic, "name": "ens-X"}],
+            },
+        )
+
+        # create query to search above Entries
+        params = {
+            "entities": [self.entity_vm.name],
+            "attrs": [
+                {
+                    "name": "Ports",
+                    "attrs": [
+                        {
+                            "name": "IP address",
+                            "attrs": [{"name": "network", "value": self.entry_network.name}],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        # check results of forward and backward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 2)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_vm1, another_vm]],
+                key=lambda x: x["id"],
+            ),
+        )
+
+    def test_search_backward_chain_exceeding_search_limit(self):
+        # check the case that the number of Entries of Entry.search_results() exceeds
+        # expected limit.
+        serializer.SEARCH_ENTRY_LIMIT = 2
+
+        # create number of Entries exceeding SEARCH_ENTRY_LIMIT
+        another_ipaddrs = [
+            self.add_entry(
+                self.user,
+                "10.0.10.%d" % i,
+                self.entity_ipv4,
+                values={
+                    "network": {"id": self.entry_network, "name": ""},
+                },
+            )
+            for i in range(1, 5)
+        ]
+        self.add_entry(
+            self.user,
+            "ensX",
+            self.entity_nic,
+            values={
+                "IP address": another_ipaddrs,
+            },
+        )
+
+        # create query to search above Entries
+        params = {
+            "entities": ["Network"],
+            "refers": [{"entity": "IPv4 Address", "refers": [{"entity": "NIC", "entry": "ens"}]}],
+        }
+        # check results of forward and backward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_network]], key=lambda x: x["id"]
+            ),
+        )
