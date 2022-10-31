@@ -1,3 +1,8 @@
+import io
+from typing import TypedDict, List
+
+import yaml
+from django.http import HttpResponse
 from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -10,6 +15,11 @@ from group.api_v2.serializers import (
     GroupImportSerializer,
 )
 from group.models import Group
+
+
+class GroupExport(TypedDict):
+    id: int
+    name: str
 
 
 class GroupAPI(viewsets.ModelViewSet):
@@ -73,3 +83,23 @@ class GroupImportAPI(generics.GenericAPIView):
                 group.save()
 
         return Response(status=status.HTTP_200_OK)
+
+
+class GroupExportAPI(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        data: List[GroupExport] = []
+
+        for group in Group.objects.filter(is_active=True):
+            data.append(
+                {
+                    "id": group.id,
+                    "name": group.name,
+                }
+            )
+
+        output = io.StringIO()
+        output.write(yaml.dump(data, default_flow_style=False, allow_unicode=True))
+
+        return HttpResponse(output.getvalue(), content_type="application/yaml")

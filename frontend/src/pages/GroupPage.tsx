@@ -21,7 +21,6 @@ import { newGroupPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
-import { downloadExportedGroups } from "utils/AironeAPIClient";
 
 export const GroupPage: FC = () => {
   const [keyword, setKeyword] = useState("");
@@ -57,6 +56,10 @@ export const GroupPage: FC = () => {
     setSelectedGroupId(groupId);
   };
 
+  const handleExport = async () => {
+    await aironeApiClientV2.exportGroups("group.yaml");
+  };
+
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">
       <AironeBreadcrumbs>
@@ -76,7 +79,7 @@ export const GroupPage: FC = () => {
                   variant="contained"
                   color="info"
                   sx={{ margin: "0 4px" }}
-                  onClick={() => downloadExportedGroups("user_group.yaml")}
+                  onClick={handleExport}
                 >
                   エクスポート
                 </Button>

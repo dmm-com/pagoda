@@ -42,7 +42,7 @@ export interface GroupCreateUpdate {
    * @type {Array<number>}
    * @memberof GroupCreateUpdate
    */
-  members: Array<number>;
+  members?: Array<number>;
 }
 
 export function GroupCreateUpdateFromJSON(json: any): GroupCreateUpdate {
@@ -62,7 +62,7 @@ export function GroupCreateUpdateFromJSONTyped(
     parentGroup: !exists(json, "parent_group")
       ? undefined
       : json["parent_group"],
-    members: json["members"],
+    members: !exists(json, "members") ? undefined : json["members"],
   };
 }
 

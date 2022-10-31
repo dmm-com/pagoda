@@ -116,3 +116,14 @@ class GroupTreeSerializer(serializers.ModelSerializer):
 
 class GroupImportSerializer(serializers.ListSerializer):
     child = GroupCreateUpdateSerializer()
+
+
+class GroupExportChildSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Group
+        fields = ["id", "name"]
+
+
+class GroupExportSerializer(serializers.ListSerializer):
+    child = GroupExportChildSerializer()

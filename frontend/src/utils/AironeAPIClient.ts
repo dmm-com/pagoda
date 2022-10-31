@@ -266,13 +266,6 @@ export function deleteGroup(groupId: number): Promise<Response> {
   });
 }
 
-// NOTE it calls non-API endpoint
-export function downloadExportedGroups(filename: string): Promise<void> {
-  return fetch("/group/export/")
-    .then((resp) => resp.blob())
-    .then((blob) => fileDownload(blob, filename));
-}
-
 export function importGroups(formData: FormData): Promise<Response> {
   return fetch(`/group/do_import/`, {
     method: "POST",

@@ -1,4 +1,5 @@
 import Cookies from "js-cookie";
+import fileDownload from "js-file-download";
 
 import {
   ACL,
@@ -436,6 +437,12 @@ class AironeApiClientV2 {
       },
       body: formData,
     });
+  }
+
+  async exportGroups(filename: string): Promise<void> {
+    const resp = await this.group.groupApiV2GroupsExportRetrieveRaw();
+    const data = await resp.raw.text();
+    fileDownload(data, filename);
   }
 
   async getRoles(): Promise<Role[]> {
