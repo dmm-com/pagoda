@@ -119,7 +119,6 @@ class GroupImportSerializer(serializers.ListSerializer):
 
 
 class GroupExportChildSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Group
         fields = ["id", "name"]

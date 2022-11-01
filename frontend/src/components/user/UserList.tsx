@@ -12,7 +12,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import React, { FC, useState } from "react";
+import React, { FC, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -21,6 +21,7 @@ import { Loading } from "../common/Loading";
 import { SearchBox } from "../common/SearchBox";
 
 import { UserControlMenu } from "./UserControlMenu";
+import { UserImportModal } from "./UserImportModal";
 
 import { newUserPath, userPath } from "Routes";
 import { UserList as ConstUserList } from "utils/Constants";
@@ -28,6 +29,7 @@ import { UserList as ConstUserList } from "utils/Constants";
 export const UserList: FC = ({}) => {
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = useState(1);
+  const [openImportModal, setOpenImportModal] = useState(false);
 
   const [userAnchorEls, setUserAnchorEls] = useState<{
     [key: number]: HTMLButtonElement;
@@ -44,9 +46,15 @@ export const UserList: FC = ({}) => {
     setPage(value);
   };
 
-  const totalPageCount = users.loading
-    ? 0
-    : Math.ceil(users.value.count / ConstUserList.MAX_ROW_COUNT);
+  const handleExport = useCallback(async () => {
+    await aironeApiClientV2.exportUsers("user.yaml");
+  }, []);
+
+  const totalPageCount = useMemo(() => {
+    return users.loading
+      ? 0
+      : Math.ceil(users.value.count / ConstUserList.MAX_ROW_COUNT);
+  }, [users.loading, users.value]);
 
   return (
     <Box>
@@ -63,16 +71,40 @@ export const UserList: FC = ({}) => {
             }}
           />
         </Box>
-        <Button
-          color="secondary"
-          variant="contained"
-          component={Link}
-          to={newUserPath()}
-          sx={{ borderRadius: "24px" }}
-        >
-          <AddIcon />
-          新規ユーザを登録
-        </Button>
+        <Box display="flex" alignItems="center">
+          <Box mx="8px">
+            <Button
+              variant="contained"
+              color="info"
+              sx={{ margin: "0 4px" }}
+              onClick={handleExport}
+            >
+              エクスポート
+            </Button>
+            <Button
+              variant="contained"
+              color="info"
+              sx={{ margin: "0 4px" }}
+              onClick={() => setOpenImportModal(true)}
+            >
+              インポート
+            </Button>
+            <UserImportModal
+              openImportModal={openImportModal}
+              closeImportModal={() => setOpenImportModal(false)}
+            />
+          </Box>
+          <Button
+            color="secondary"
+            variant="contained"
+            component={Link}
+            to={newUserPath()}
+            sx={{ borderRadius: "24px", height: "100%" }}
+          >
+            <AddIcon />
+            新規ユーザを登録
+          </Button>
+        </Box>
       </Box>
 
       {users.loading ? (

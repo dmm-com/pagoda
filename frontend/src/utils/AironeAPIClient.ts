@@ -160,13 +160,6 @@ export function deleteUser(userId: number): Promise<Response> {
   });
 }
 
-// NOTE it calls non-API endpoint
-export function downloadExportedUsers(filename: string): Promise<void> {
-  return fetch("/user/export/")
-    .then((resp) => resp.blob())
-    .then((blob) => fileDownload(blob, filename));
-}
-
 // FIXME implement V2 API
 export function refreshAccessToken(): Promise<Response> {
   return fetch("/api/v1/user/access_token", {
@@ -263,16 +256,6 @@ export function deleteGroup(groupId: number): Promise<Response> {
       "X-CSRFToken": getCsrfToken(),
     },
     body: JSON.stringify({}),
-  });
-}
-
-export function importGroups(formData: FormData): Promise<Response> {
-  return fetch(`/group/do_import/`, {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": getCsrfToken(),
-    },
-    body: formData,
   });
 }
 

@@ -9,7 +9,7 @@ import {
   ListItem,
   Typography,
 } from "@mui/material";
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -25,7 +25,7 @@ import { Loading } from "components/common/Loading";
 export const GroupPage: FC = () => {
   const [keyword, setKeyword] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState<number>();
-  const [openImportModal, setOpenImportModal] = React.useState(false);
+  const [openImportModal, setOpenImportModal] = useState(false);
 
   const groupTrees = useAsync(async () => {
     return await aironeApiClientV2.getGroupTrees();
@@ -56,9 +56,9 @@ export const GroupPage: FC = () => {
     setSelectedGroupId(groupId);
   };
 
-  const handleExport = async () => {
+  const handleExport = useCallback(async () => {
     await aironeApiClientV2.exportGroups("group.yaml");
-  };
+  }, []);
 
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">

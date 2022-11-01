@@ -46,14 +46,12 @@ export const entitiesPath = () => basePath + "entities";
 
 // groups
 export const newGroupPath = () => basePath + "groups/new";
-export const importGroupsPath = () => basePath + "groups/import";
 export const groupPath = (groupId: number | string) =>
   basePath + `groups/${groupId}`;
 export const groupsPath = () => basePath + "groups";
 
 // users
 export const newUserPath = () => basePath + "users/new";
-export const importUsersPath = () => basePath + "users/import";
 export const userPath = (userId: number | string) =>
   basePath + `users/${userId}`;
 export const usersPath = () => basePath + "users";

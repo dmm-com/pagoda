@@ -19,8 +19,6 @@ import {
   groupsPath,
   importEntriesPath,
   importEntitiesPath,
-  importGroupsPath,
-  importUsersPath,
   jobsPath,
   newEntityPath,
   newEntryPath,
@@ -53,8 +51,6 @@ import { EntryListPage } from "pages/EntryListPage";
 import { GroupPage } from "pages/GroupPage";
 import { ImportEntityPage } from "pages/ImportEntityPage";
 import { ImportEntryPage } from "pages/ImportEntryPage";
-import { ImportGroupPage } from "pages/ImportGroupPage";
-import { ImportUserPage } from "pages/ImportUserPage";
 import { JobPage } from "pages/JobPage";
 import { LoginPage } from "pages/LoginPage";
 import { ShowEntryHistoryPage } from "pages/ShowEntryHistoryPage";
@@ -133,13 +129,11 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             <Route path={entityPath(":entityId")} component={EditEntityPage} />
             <Route path={entitiesPath()} component={EntityPage} />
             <Route path={newGroupPath()} component={EditGroupPage} />
-            <Route path={importGroupsPath()} component={ImportGroupPage} />
             <Route path={groupPath(":groupId")} component={EditGroupPage} />
             <Route path={groupsPath()} component={GroupPage} />
             <Route path={jobsPath()} component={JobPage} />
             <Route path={aclPath(":objectId")} component={ACLPage} />
             <Route path={newUserPath()} component={EditUserPage} />
-            <Route path={importUsersPath()} component={ImportUserPage} />
             <Route path={userPath(":userId")} component={EditUserPage} />
             <Route path={usersPath()} component={UserPage} />
             <Route path={newRolePath()} component={EditRolePage} />
