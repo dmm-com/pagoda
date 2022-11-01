@@ -2,7 +2,6 @@ import json
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
-
 from api_v1.entry import serializer
 
 
@@ -870,7 +869,7 @@ class APITest(AironeViewTest):
         )
 
     def test_nested_backward_reference(self):
-        entry_network1 = self.add_entry(
+        self.add_entry(
             self.user,
             "192.168.10.0/24",
             self.entity_network,
