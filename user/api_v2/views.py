@@ -4,7 +4,7 @@ from typing import List, TypedDict
 import yaml
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status, viewsets, generics
+from rest_framework import filters, generics, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
@@ -15,11 +15,11 @@ from airone.lib.drf import YAMLParser
 from group.models import Group
 from user.api_v2.serializers import (
     UserCreateSerializer,
+    UserImportSerializer,
     UserListSerializer,
     UserRetrieveSerializer,
     UserTokenSerializer,
     UserUpdateSerializer,
-    UserImportSerializer,
 )
 from user.models import User
 

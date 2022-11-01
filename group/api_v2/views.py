@@ -1,18 +1,18 @@
 import io
-from typing import TypedDict, List
+from typing import List, TypedDict
 
 import yaml
 from django.http import HttpResponse
-from rest_framework import viewsets, generics, status
+from rest_framework import generics, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from airone.lib.drf import YAMLParser
 from group.api_v2.serializers import (
     GroupCreateUpdateSerializer,
+    GroupImportSerializer,
     GroupSerializer,
     GroupTreeSerializer,
-    GroupImportSerializer,
 )
 from group.models import Group
 
