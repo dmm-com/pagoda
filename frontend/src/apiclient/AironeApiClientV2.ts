@@ -1,4 +1,5 @@
 import Cookies from "js-cookie";
+import fileDownload from "js-file-download";
 
 import {
   ACL,
@@ -477,6 +478,22 @@ class AironeApiClientV2 {
         },
       }
     );
+  }
+
+  async importRoles(formData: FormData): Promise<void> {
+    await this.role.roleApiV2ImportCreate({
+      headers: {
+        "Content-Type": "application/yaml",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: formData,
+    });
+  }
+
+  async exportRoles(filename: string): Promise<void> {
+    const resp = await this.role.roleApiV2ExportListRaw();
+    const data = await resp.raw.text();
+    fileDownload(data, filename);
   }
 
   async getEntries(
