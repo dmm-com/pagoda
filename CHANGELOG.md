@@ -3,6 +3,9 @@
 ## In development
 
 ### Added
+* Added API handler that searchs Entries across multiple referral structure
+  (/api/v1/search_chain)
+  Contributed by @userlocalhost, @hinashi
 
 ### Changed
 * Improved processing to get referred Entry from elasticsearch
