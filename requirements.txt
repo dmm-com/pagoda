@@ -4,7 +4,7 @@ django-debug-toolbar==3.2.4
 django-filter==2.4.0
 django-import-export==2.5.0
 django-replicated==2.7
-django==3.2.15
+django==3.2.16
 djangorestframework==3.11.2
 drf_spectacular==0.17.3
 elasticsearch==7.17.6

@@ -20,11 +20,11 @@ test("should render a component with essential props", function () {
           attrs: [],
           webhooks: [],
         }}
-        setEntityInfo={(d) => {
+        setEntityInfo={() => {
           /* no operation */
         }}
         referralEntities={[]}
-        setSubmittable={(b) => {
+        setSubmittable={() => {
           /* no operation */
         }}
       />,

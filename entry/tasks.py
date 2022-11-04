@@ -61,7 +61,7 @@ def _merge_referrals_by_index(ref_list, name_list):
 
 
 def _convert_data_value(attr, info):
-    if attr.schema.type & AttrTypeValue["array"]:
+    if attr.is_array():
         recv_value = []
         if "value" in info and info["value"]:
             recv_value = [x["data"] for x in info["value"] if "data" in x]

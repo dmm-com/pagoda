@@ -22,7 +22,18 @@ class EntrySearchChainAPI(APIView):
 
         (_, ret_data) = serializer.search_entries(request.user)
 
-        return Response({"entries": ret_data}, status=status.HTTP_200_OK)
+        if ret_data:
+            # output all Attributes of returned Entries
+            result = Entry.search_entries(
+                request.user,
+                serializer.validated_data["entities"],
+                entry_name="|".join([x["name"] for x in ret_data]),
+                is_output_all=True,
+            )
+            return Response(result, status=status.HTTP_200_OK)
+
+        else:
+            return Response({"ret_count": 0, "ret_values": []}, status=status.HTTP_200_OK)
 
 
 class EntrySearchAPI(APIView):

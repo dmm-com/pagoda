@@ -36,31 +36,31 @@ export interface RoleCreateUpdate {
    * @type {string}
    * @memberof RoleCreateUpdate
    */
-  description: string;
+  description?: string;
   /**
    *
    * @type {Array<number>}
    * @memberof RoleCreateUpdate
    */
-  users: Array<number>;
+  users?: Array<number>;
   /**
    *
    * @type {Array<number>}
    * @memberof RoleCreateUpdate
    */
-  groups: Array<number>;
+  groups?: Array<number>;
   /**
    *
    * @type {Array<number>}
    * @memberof RoleCreateUpdate
    */
-  adminUsers: Array<number>;
+  adminUsers?: Array<number>;
   /**
    *
    * @type {Array<number>}
    * @memberof RoleCreateUpdate
    */
-  adminGroups: Array<number>;
+  adminGroups?: Array<number>;
 }
 
 export function RoleCreateUpdateFromJSON(json: any): RoleCreateUpdate {
@@ -77,11 +77,13 @@ export function RoleCreateUpdateFromJSONTyped(
   return {
     isActive: !exists(json, "is_active") ? undefined : json["is_active"],
     name: json["name"],
-    description: json["description"],
-    users: json["users"],
-    groups: json["groups"],
-    adminUsers: json["admin_users"],
-    adminGroups: json["admin_groups"],
+    description: !exists(json, "description") ? undefined : json["description"],
+    users: !exists(json, "users") ? undefined : json["users"],
+    groups: !exists(json, "groups") ? undefined : json["groups"],
+    adminUsers: !exists(json, "admin_users") ? undefined : json["admin_users"],
+    adminGroups: !exists(json, "admin_groups")
+      ? undefined
+      : json["admin_groups"],
   };
 }
 

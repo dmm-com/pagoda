@@ -19,17 +19,10 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import { useHistory } from "react-router-dom";
 
 import { UserPasswordFormModal } from "./UserPasswordFormModal";
 
-import { usersPath } from "Routes";
 import { AironeUserProps } from "pages/EditUserPage";
-import {
-  createUser,
-  refreshAccessToken,
-  updateUser,
-} from "utils/AironeAPIClient";
 import { DjangoContext } from "utils/DjangoContext";
 
 interface Props {
@@ -63,7 +56,7 @@ const InputBox: FC = ({ children }) => {
   );
 };
 
-const ElemChangingPassword: FC<Props> = ({ userInfo, setUserInfo }) => {
+const ElemChangingPassword: FC<Props> = ({ userInfo }) => {
   const [openModal, setOpenModal] = useState(false);
   const handleOpenModal = () => {
     setOpenModal(true);
@@ -94,7 +87,7 @@ const ElemChangingPassword: FC<Props> = ({ userInfo, setUserInfo }) => {
   );
 };
 
-const ElemAuthenticationMethod: FC<Props> = ({ userInfo, setUserInfo }) => {
+const ElemAuthenticationMethod: FC<Props> = ({ userInfo }) => {
   const djangoContext = DjangoContext.getInstance();
 
   return (
@@ -179,7 +172,7 @@ const ElemAccessTokenConfiguration: FC<Props> = ({ userInfo, setUserInfo }) => {
   );
 };
 
-const ElemAccessToken: FC<Props> = ({ userInfo, setUserInfo }) => {
+const ElemAccessToken: FC<Props> = ({ userInfo }) => {
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
@@ -299,38 +292,6 @@ const ElemIsSuperuser: FC<Props> = ({ userInfo, setUserInfo }) => {
 };
 
 export const UserForm: FC<Props> = ({ userInfo, setUserInfo }) => {
-  const history = useHistory();
-
-  const isCreateMode = userInfo.id === 0;
-  const [password, setPassword] = useState(isCreateMode ? "" : undefined);
-  const [tokenLifetime, setTokenLifetime] = useState(userInfo?.token?.lifetime);
-
-  const handleSubmit = (event) => {
-    if (isCreateMode) {
-      createUser(
-        userInfo.username,
-        userInfo.email,
-        password,
-        userInfo.isSuperuser,
-        userInfo.token.lifetime
-      ).then(() => history.replace(usersPath()));
-    } else {
-      updateUser(
-        userInfo.id,
-        userInfo.username,
-        userInfo.email,
-        userInfo.isSuperuser,
-        userInfo.token.lifetime
-      ).then(() => history.replace(usersPath()));
-    }
-    event.preventDefault();
-  };
-
-  const handleRefreshAccessToken = async () => {
-    await refreshAccessToken();
-    history.go(0);
-  };
-
   return (
     <Container maxWidth="lg" sx={{ pt: "50px", pb: "50px" }}>
       <TableContainer component={Paper}>

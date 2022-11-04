@@ -7,7 +7,7 @@ interface Props {
   setEntries: (entries: string) => void;
 }
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   sampleBox: {
     width: "100%",
     margin: "80px 0",

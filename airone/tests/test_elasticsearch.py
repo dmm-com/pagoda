@@ -358,7 +358,7 @@ class ElasticSearchTest(TestCase):
         }
 
         hint_attrs = [{"name": "test_attr", "keyword": "", "is_readble": True}]
-        results = elasticsearch.make_search_results(self._user, res, hint_attrs, 100, False)
+        results = elasticsearch.make_search_results(self._user, res, hint_attrs, 100)
 
         self.assertEqual(results["ret_count"], 1)
         self.assertEqual(
@@ -378,6 +378,7 @@ class ElasticSearchTest(TestCase):
                         }
                     },
                     "is_readble": True,
+                    "referrals": [],
                 }
             ],
         )

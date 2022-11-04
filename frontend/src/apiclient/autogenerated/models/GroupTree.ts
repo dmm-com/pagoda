@@ -13,67 +13,51 @@
  */
 
 import { exists, mapValues } from "../runtime";
-import {
-  GroupMembers,
-  GroupMembersFromJSON,
-  GroupMembersFromJSONTyped,
-  GroupMembersToJSON,
-} from "./GroupMembers";
-
 /**
  *
  * @export
- * @interface Group
+ * @interface GroupTree
  */
-export interface Group {
+export interface GroupTree {
   /**
    *
    * @type {number}
-   * @memberof Group
+   * @memberof GroupTree
    */
   readonly id: number;
   /**
    *
    * @type {string}
-   * @memberof Group
+   * @memberof GroupTree
    */
   name: string;
   /**
    *
-   * @type {number}
-   * @memberof Group
+   * @type {Array<{ [key: string]: any; }>}
+   * @memberof GroupTree
    */
-  parentGroup?: number | null;
-  /**
-   *
-   * @type {Array<GroupMembers>}
-   * @memberof Group
-   */
-  readonly members: Array<GroupMembers>;
+  readonly children: Array<{ [key: string]: any }>;
 }
 
-export function GroupFromJSON(json: any): Group {
-  return GroupFromJSONTyped(json, false);
+export function GroupTreeFromJSON(json: any): GroupTree {
+  return GroupTreeFromJSONTyped(json, false);
 }
 
-export function GroupFromJSONTyped(
+export function GroupTreeFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): Group {
+): GroupTree {
   if (json === undefined || json === null) {
     return json;
   }
   return {
     id: json["id"],
     name: json["name"],
-    parentGroup: !exists(json, "parent_group")
-      ? undefined
-      : json["parent_group"],
-    members: (json["members"] as Array<any>).map(GroupMembersFromJSON),
+    children: json["children"],
   };
 }
 
-export function GroupToJSON(value?: Group | null): any {
+export function GroupTreeToJSON(value?: GroupTree | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -82,6 +66,5 @@ export function GroupToJSON(value?: Group | null): any {
   }
   return {
     name: value.name,
-    parent_group: value.parentGroup,
   };
 }

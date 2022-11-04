@@ -247,6 +247,7 @@ class ViewTest(AironeViewTest):
                     }
                 },
                 "is_readble": entry.is_public,
+                "referrals": [],
             },
         )
         self.assertEqual(resp.context["max_num"], 100)
@@ -470,7 +471,10 @@ class ViewTest(AironeViewTest):
                 {
                     "id": ref_entry.id,
                     "name": ref_entry.name,
-                    "schema": ref_entry.schema.name,
+                    "schema": {
+                        "id": ref_entry.schema.id,
+                        "name": ref_entry.schema.name,
+                    },
                 }
             ],
         )
@@ -501,7 +505,6 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context["results"]["ret_count"], 3)
-        self.assertTrue(all(["referrals" not in x for x in resp.context["results"]["ret_values"]]))
         self.assertEqual(resp.context["has_referral"], False)
 
     def test_show_advanced_search_results_with_no_permission(self):
@@ -1009,6 +1012,7 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
         entry.attrs.first().add_value(user, ref_entry)
+        entry.register_es()
 
         # export with 'has_referral' parameter which has blank value
         resp = self.client.post(
@@ -1454,6 +1458,7 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
         entry.attrs.first().add_value(user, ref_entry)
+        entry.register_es()
 
         resp = self.client.post(
             reverse("dashboard:export_search_result"),

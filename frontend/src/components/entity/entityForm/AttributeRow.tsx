@@ -229,7 +229,7 @@ export const AttributeRow: FC<Props> = ({
             <IconButton
               disabled={index === 0}
               className={classes.button}
-              onClick={(e) => handleChangeOrderAttribute(index, 1)}
+              onClick={() => handleChangeOrderAttribute(index, 1)}
             >
               <ArrowUpwardIcon />
             </IconButton>
@@ -237,7 +237,7 @@ export const AttributeRow: FC<Props> = ({
             <IconButton
               disabled={index === allAttrs.length - 1}
               className={classes.button}
-              onClick={(e) => handleChangeOrderAttribute(index, -1)}
+              onClick={() => handleChangeOrderAttribute(index, -1)}
             >
               <ArrowDownwardIcon />
             </IconButton>
@@ -249,7 +249,7 @@ export const AttributeRow: FC<Props> = ({
         {index !== undefined && (
           <IconButton
             className={classes.button}
-            onClick={(e) => handleDeleteAttribute(index)}
+            onClick={() => handleDeleteAttribute(index)}
           >
             <DeleteOutlineIcon />
           </IconButton>

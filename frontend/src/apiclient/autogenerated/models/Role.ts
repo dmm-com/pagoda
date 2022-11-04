@@ -55,7 +55,7 @@ export interface Role {
    * @type {string}
    * @memberof Role
    */
-  description: string;
+  description?: string;
   /**
    *
    * @type {Array<RoleUser>}
@@ -97,7 +97,7 @@ export function RoleFromJSONTyped(
     id: json["id"],
     isActive: !exists(json, "is_active") ? undefined : json["is_active"],
     name: json["name"],
-    description: json["description"],
+    description: !exists(json, "description") ? undefined : json["description"],
     users: (json["users"] as Array<any>).map(RoleUserFromJSON),
     groups: (json["groups"] as Array<any>).map(RoleGroupFromJSON),
     adminUsers: (json["admin_users"] as Array<any>).map(RoleUserFromJSON),

@@ -512,21 +512,31 @@ class ViewTest(AironeViewTest):
     def test_post_edit_after_creating_entry(self):
         user = self.admin_login()
 
-        entity = Entity.objects.create(name="hoge", note="fuga", created_user=user)
-        attrbase = EntityAttr.objects.create(
-            name="puyo",
-            created_user=user,
-            is_mandatory=True,
-            type=AttrTypeStr,
-            parent_entity=entity,
+        # create Entities wihch will be used in this test
+        ref_entity = self.create_entity(user, "Ref")
+        entity = self.create_entity(
+            user,
+            "Old-Entity",
+            attrs=[
+                {"name": "puyo", "type": AttrTypeValue["string"]},
+                {"name": "ref", "type": AttrTypeValue["object"], "ref": ref_entity},
+            ],
         )
-        entity.attrs.add(attrbase)
 
-        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
-        entry.add_attribute_from_base(attrbase, user)
+        # create Entries wihch will be used in this test
+        ref_entry = self.add_entry(user, "entry", ref_entity)
+        entry = self.add_entry(
+            user,
+            "entry",
+            entity,
+            values={
+                "ref": ref_entry,
+            },
+        )
 
+        resp = Entry.search_entries(user, [ref_entity.id], hint_referral_entity_id=entity.id)
         params = {
-            "name": "foo",
+            "name": "Changed-Entity",
             "note": "bar",
             "is_toplevel": False,
             "attrs": [
@@ -535,7 +545,7 @@ class ViewTest(AironeViewTest):
                     "type": str(AttrTypeStr),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
-                    "id": attrbase.id,
+                    "id": entity.attrs.get(name="puyo", is_active=True).id,
                     "row_index": "1",
                 },
                 {
@@ -554,11 +564,19 @@ class ViewTest(AironeViewTest):
         )
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(entity.attrs.count(), 2)
-        self.assertEqual(entry.attrs.count(), 1)
+        self.assertEqual(entity.attrs.count(), 3)
+        self.assertEqual(entry.attrs.count(), 2)
 
         res = Entry.search_entries(user, [entity.id], is_output_all=True)
-        self.assertEqual([x for x in res["ret_values"][0]["attrs"].keys()], ["foo", "bar"])
+        self.assertEqual(
+            sorted([x for x in res["ret_values"][0]["attrs"].keys()]), sorted(["foo", "bar", "ref"])
+        )
+
+        # Check the elasticsearch data is also changed when
+        # referred Entity name is changed.
+        res = Entry.search_entries(user, [ref_entity.id], is_output_all=True)
+        self.assertEqual(res["ret_count"], 1)
+        self.assertEqual(res["ret_values"][0]["referrals"][0]["schema"]["name"], "Changed-Entity")
 
     def test_post_edit_attribute_type(self):
         user = self.admin_login()
@@ -800,30 +818,42 @@ class ViewTest(AironeViewTest):
         self.assertFalse(any([x.is_mandatory for x in created_entity.attrs.all()]))
         self.assertTrue(all([x.is_delete_in_chain for x in created_entity.attrs.all()]))
 
+    @mock.patch("entry.tasks.update_es_documents.delay", mock.Mock(side_effect=update_es_documents))
     @mock.patch("entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity))
     def test_post_delete_attribute(self):
         user = self.admin_login()
 
-        entity = Entity.objects.create(name="entity", created_user=user)
-        for name in ["foo", "bar"]:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    name=name, type=AttrTypeStr, created_user=user, parent_entity=entity
-                )
-            )
+        # create Entities wihch will be used in this test
+        ref_entity = self.create_entity(user, "Ref")
+        entity = self.create_entity(
+            user,
+            "old-Entity",
+            attrs=[
+                {"name": "foo", "type": AttrTypeValue["string"]},
+                {"name": "ref", "type": AttrTypeValue["object"], "ref": ref_entity},
+            ],
+        )
 
-        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
-        [entry.add_attribute_from_base(x, user) for x in entity.attrs.all()]
+        # create Entries wihch will be used in this test
+        ref_entry = self.add_entry(user, "entry", ref_entity)
+        entry = self.add_entry(
+            user,
+            "entry",
+            entity,
+            values={
+                "ref": ref_entry,
+            },
+        )
 
         permission_count = Permission.objects.count()
         params = {
-            "name": "new-entity",
+            "name": "new-Entity",
             "note": "hoge",
             "is_toplevel": False,
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrTypeValue["string"]),
                     "id": entity.attrs.first().id,
                     "is_delete_in_chain": True,
                     "is_mandatory": False,
@@ -831,7 +861,7 @@ class ViewTest(AironeViewTest):
                 },
                 {
                     "name": "bar",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrTypeValue["string"]),
                     "id": entity.attrs.last().id,
                     "is_delete_in_chain": True,
                     "is_mandatory": False,
@@ -852,11 +882,20 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Permission.objects.count(), permission_count)
         self.assertEqual(entity.attrs.count(), 2)
         self.assertEqual(entry.attrs.count(), 2)
+        self.assertEqual(entity.attrs.filter(is_active=True).count(), 1)
+        self.assertEqual(entry.attrs.filter(schema__is_active=True).count(), 1)
 
         # tests for operation history is registered correctly
         self.assertEqual(History.objects.count(), 3)
         self.assertEqual(History.objects.filter(operation=History.MOD_ENTITY).count(), 2)
         self.assertEqual(History.objects.filter(operation=History.DEL_ATTR).count(), 1)
+
+        # Check the elasticsearch data (the referrals parameter) is also removed when
+        # referring EntityAttr is deleted.
+        res = Entry.search_entries(user, [ref_entity.id], is_output_all=True)
+        self.assertEqual(res["ret_count"], 1)
+        self.assertEqual(res["ret_values"][0]["entry"]["id"], ref_entry.id)
+        self.assertEqual(res["ret_values"][0]["referrals"], [])
 
     def test_export_data(self):
         user = self.admin_login()
