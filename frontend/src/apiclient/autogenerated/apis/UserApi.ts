@@ -17,6 +17,12 @@ import {
   PaginatedUserListList,
   PaginatedUserListListFromJSON,
   PaginatedUserListListToJSON,
+  PasswordReset,
+  PasswordResetFromJSON,
+  PasswordResetToJSON,
+  PasswordResetConfirm,
+  PasswordResetConfirmFromJSON,
+  PasswordResetConfirmToJSON,
   UserCreate,
   UserCreateFromJSON,
   UserCreateToJSON,
@@ -43,6 +49,14 @@ export interface UserApiV2ListRequest {
   ordering?: string;
   page?: number;
   search?: string;
+}
+
+export interface UserApiV2PasswordResetConfirmCreateRequest {
+  passwordResetConfirm: PasswordResetConfirm;
+}
+
+export interface UserApiV2PasswordResetCreateRequest {
+  passwordReset: PasswordReset;
 }
 
 export interface UserApiV2RetrieveRequest {
@@ -241,6 +255,138 @@ export class UserApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<PaginatedUserListList> {
     const response = await this.userApiV2ListRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async userApiV2PasswordResetConfirmCreateRaw(
+    requestParameters: UserApiV2PasswordResetConfirmCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<PasswordResetConfirm>> {
+    if (
+      requestParameters.passwordResetConfirm === null ||
+      requestParameters.passwordResetConfirm === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "passwordResetConfirm",
+        "Required parameter requestParameters.passwordResetConfirm was null or undefined when calling userApiV2PasswordResetConfirmCreate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/password_reset/confirm`,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+        body: PasswordResetConfirmToJSON(
+          requestParameters.passwordResetConfirm
+        ),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      PasswordResetConfirmFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async userApiV2PasswordResetConfirmCreate(
+    requestParameters: UserApiV2PasswordResetConfirmCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<PasswordResetConfirm> {
+    const response = await this.userApiV2PasswordResetConfirmCreateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async userApiV2PasswordResetCreateRaw(
+    requestParameters: UserApiV2PasswordResetCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<PasswordReset>> {
+    if (
+      requestParameters.passwordReset === null ||
+      requestParameters.passwordReset === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "passwordReset",
+        "Required parameter requestParameters.passwordReset was null or undefined when calling userApiV2PasswordResetCreate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/password_reset`,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+        body: PasswordResetToJSON(requestParameters.passwordReset),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      PasswordResetFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async userApiV2PasswordResetCreate(
+    requestParameters: UserApiV2PasswordResetCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<PasswordReset> {
+    const response = await this.userApiV2PasswordResetCreateRaw(
       requestParameters,
       initOverrides
     );

@@ -31,4 +31,20 @@ urlpatterns = [
             }
         ),
     ),
+    path(
+        "password_reset",
+        views.PasswordResetAPI.as_view(
+            {
+                "post": "reset",
+            }
+        ),
+    ),
+    path(
+        "password_reset/confirm",
+        views.PasswordResetConfirmAPI.as_view(
+            {
+                "post": "confirm",
+            }
+        ),
+    ),
 ]
