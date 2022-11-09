@@ -1834,7 +1834,7 @@ class Entry(ACLBase):
             "attr": [],
             "referrals": [
                 {"id": x.id, "name": x.name, "schema": {"id": x.schema.id, "name": x.schema.name}}
-                for x in self.get_referred_objects()
+                for x in self.get_referred_objects().select_related("schema")
             ],
             "is_readble": True
             if (self.is_public or self.default_permission >= ACLType.Readable.id)
@@ -1873,7 +1873,7 @@ class Entry(ACLBase):
 
         return document
 
-    def register_es(self, es=None, skip_refresh=False, recursive_call_stack=[]):
+    def register_es(self, es=None, recursive_call_stack=[]):
         """
         Arguments
           * recursive_call_stack:
@@ -1889,27 +1889,53 @@ class Entry(ACLBase):
         if not es:
             es = ESS()
 
-        # This retrieve Entries information that was referred before
-        result = Entry.search_entries(
-            None, [x.id for x in Entity.objects.filter(is_active=True)], hint_referral=self.name
-        )
-        old_refers_entry_ids = [x["entry"]["id"] for x in result["ret_values"]]
-
         es.index(doc_type="entry", id=self.id, body=self.get_es_document(es))
-        if not skip_refresh:
-            es.refresh()
+        es.refresh()
+
+        if recursive_call_stack:
+            return
 
         # It's also needed to update es-document for Entries that this Entry refers to
-        new_refers_entries = [e for e in self.get_refers_objects() if e.id != self.id]
-        if not recursive_call_stack:
-            for entry in new_refers_entries:
-                entry.register_es(es, skip_refresh, recursive_call_stack + [self])
+        search_result = es.search(
+            body={
+                "query": {
+                    "nested": {
+                        "path": "referrals",
+                        "query": {"term": {"referrals.id": self.id}},
+                        "inner_hits": {},
+                    }
+                }
+            }
+        )
 
-            # This updates Entries that were referred this Entry before
-            for entry_id in set(old_refers_entry_ids) - set([e.id for e in new_refers_entries]):
-                entry = Entry.objects.filter(id=entry_id, is_active=True).last()
-                if entry:
-                    entry.register_es(es, skip_refresh, recursive_call_stack + [self])
+        refers_from_es = [
+            {
+                "dst_entry_id": int(x["_id"]),
+                "entry_name": x["inner_hits"]["referrals"]["hits"]["hits"][0]["_source"]["name"],
+            }
+            for x in search_result["hits"]["hits"]
+        ]
+
+        refers_from_db = [
+            {"dst_entry_id": e.id, "entry_name": self.name}
+            for e in self.get_refers_objects()
+            if e.id != self.id
+        ]
+
+        # elasticsearch: exists
+        # db: not esixts
+        # (or change entry name)
+        for refer in refers_from_es:
+            if refer not in refers_from_db:
+                entry = Entry.objects.get(id=refer["dst_entry_id"])
+                entry.register_es(es, recursive_call_stack + [self])
+
+        # elasticsearch: not exists
+        # db: esixts
+        for refer in refers_from_db:
+            if refer["dst_entry_id"] not in [x["dst_entry_id"] for x in refers_from_es]:
+                entry = Entry.objects.get(id=refer["dst_entry_id"])
+                entry.register_es(es, recursive_call_stack + [self])
 
     def unregister_es(self, es=None):
         if not es:
