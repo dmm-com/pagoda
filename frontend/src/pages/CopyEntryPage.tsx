@@ -4,9 +4,9 @@ import { Box, IconButton, Typography, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 import { Link, Prompt, useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
 
 import { EntryControlMenu } from "../components/entry/EntryControlMenu";
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
 import {
@@ -20,7 +20,6 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { CopyForm } from "components/entry/CopyForm";
-import { FailedToGetEntry } from "utils/Exceptions";
 
 export const CopyEntryPage: FC = () => {
   const history = useHistory();
@@ -34,15 +33,9 @@ export const CopyEntryPage: FC = () => {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);
 
-  const entry = useAsync(async () => {
+  const entry = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getEntry(entryId);
   }, [entryId]);
-
-  if (!entry.loading && entry.error) {
-    throw new FailedToGetEntry(
-      "Failed to get Entry from AirOne APIv2 endpoint"
-    );
-  }
 
   if (entry.loading) {
     return <Loading />;
