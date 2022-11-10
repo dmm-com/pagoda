@@ -90,3 +90,37 @@ class RoleCreateUpdateSerializer(serializers.ModelSerializer):
             )
 
         return role
+
+
+class RoleImportExportChildSerializer(serializers.ModelSerializer):
+    users = serializers.ListField(child=serializers.CharField())
+    groups = serializers.ListField(child=serializers.CharField())
+    admin_users = serializers.ListField(child=serializers.CharField())
+    admin_groups = serializers.ListField(child=serializers.CharField())
+
+    class Meta:
+        model = Role
+        fields = [
+            "id",
+            "name",
+            "description",
+            "users",
+            "groups",
+            "admin_users",
+            "admin_groups",
+        ]
+
+    def to_representation(self, instance: Role):
+        return {
+            "id": instance.id,
+            "name": instance.name,
+            "description": instance.description,
+            "users": [x.username for x in instance.users.all()],
+            "groups": [x.name for x in instance.groups.all()],
+            "admin_users": [x.username for x in instance.admin_users.all()],
+            "admin_groups": [x.name for x in instance.admin_groups.all()],
+        }
+
+
+class RoleImportSerializer(serializers.ListSerializer):
+    child = RoleImportExportChildSerializer()
