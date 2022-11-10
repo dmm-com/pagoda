@@ -13,16 +13,18 @@ class APITest(AironeViewTest):
     def tearDown(self):
         super(APITest, self).tearDown()
 
-        # restore originl configuration data
+        # restore originl configuration data and method
         ENTRY_CONFIG.conf = self._orig_entry_config
+        Entry.search_entries = self._entry_search_entries
 
     def setUp(self):
         super(APITest, self).setUp()
 
         self.user = self.guest_login()
 
-        # dump originl configuration data
+        # dump originl configuration data and emthod
         self._orig_entry_config = copy.copy(ENTRY_CONFIG.conf)
+        self._entry_search_entries = Entry.search_entries
 
         # create Entities that have all referral Attribute types
         self.entity_vlan = self.create_entity(
