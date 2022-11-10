@@ -1,12 +1,12 @@
 import copy
 import json
+from unittest import mock
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 from api_v1.entry import serializer
 from entry.models import Entry
 from entry.settings import CONFIG as ENTRY_CONFIG
-from unittest import mock
 
 
 class APITest(AironeViewTest):
