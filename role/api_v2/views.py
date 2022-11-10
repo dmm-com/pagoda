@@ -1,8 +1,17 @@
-from rest_framework import viewsets
+from rest_framework import generics, status, viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from role.api_v2.serializers import RoleCreateUpdateSerializer, RoleSerializer
+from airone.lib.drf import YAMLParser, YAMLRenderer
+from group.models import Group
+from role.api_v2.serializers import (
+    RoleCreateUpdateSerializer,
+    RoleImportExportChildSerializer,
+    RoleImportSerializer,
+    RoleSerializer,
+)
 from role.models import Role
+from user.models import User
 
 
 class RoleAPI(viewsets.ModelViewSet):
@@ -15,3 +24,83 @@ class RoleAPI(viewsets.ModelViewSet):
             "update": RoleCreateUpdateSerializer,
         }
         return serializer.get(self.action, RoleSerializer)
+
+
+class RoleImportAPI(generics.GenericAPIView):
+    parser_classes = [YAMLParser]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        import_datas = request.data
+        serializer = RoleImportSerializer(data=import_datas)
+        serializer.is_valid(raise_exception=True)
+
+        # TODO better to move the saving logic into the serializer
+        for role_data in import_datas:
+            if "name" not in role_data:
+                return Response("Role name is required", status=status.HTTP_400_BAD_REQUEST)
+
+            if "id" in role_data:
+                # update group by id
+                role = Role.objects.filter(id=role_data["id"]).first()
+                if not role:
+                    return Response(
+                        "Specified id role does not exist(id:%s, group:%s)"
+                        % (role_data["id"], role_data["name"]),
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                # check new name is not used
+                if (role.name != role_data["name"]) and (
+                    Role.objects.filter(name=role_data["name"]).count() > 0
+                ):
+                    return Response(
+                        "New role name is already used(id:%s, group:%s->%s)"
+                        % (role_data["id"], role.name, role_data["name"]),
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                role.name = role_data["name"]
+            else:
+                # update group by name
+                role = Role.objects.filter(name=role_data["name"]).first()
+                if not role:
+                    # create group
+                    role = Role.objects.create(name=role_data["name"])
+                else:
+                    # clear registered members (users, groups and administrative ones) to that role
+                    for key in ["users", "groups", "admin_users", "admin_groups"]:
+                        getattr(role, key).clear()
+
+            role.description = role_data["description"]
+
+            # set registered members (users, groups and administrative ones) to that role
+            for key in ["users", "admin_users"]:
+                for name in role_data[key]:
+                    instance = User.objects.filter(username=name, is_active=True).first()
+                    if not instance:
+                        return Response(
+                            "specified user is not found (username: %s)" % name,
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    getattr(role, key).add(instance)
+            for key in ["groups", "admin_groups"]:
+                for name in role_data[key]:
+                    instance = Group.objects.filter(name=name, is_active=True).first()
+                    if not instance:
+                        return Response(
+                            "specified group is not found (name: %s)" % name,
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    getattr(role, key).add(instance)
+
+            role.save()
+
+        return Response()
+
+
+class RoleExportAPI(generics.ListAPIView):
+    queryset = Role.objects.filter(is_active=True)
+    serializer_class = RoleImportExportChildSerializer
+    renderer_classes = [YAMLRenderer]
+    permission_classes = [IsAuthenticated]

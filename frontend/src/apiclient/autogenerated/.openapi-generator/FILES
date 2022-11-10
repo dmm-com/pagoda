@@ -47,6 +47,7 @@ models/PasswordResetConfirm.ts
 models/Role.ts
 models/RoleCreateUpdate.ts
 models/RoleGroup.ts
+models/RoleImportExportChild.ts
 models/RoleUser.ts
 models/UserBase.ts
 models/UserCreate.ts

@@ -2,9 +2,14 @@ import yaml
 from django.conf import settings
 from rest_framework.exceptions import APIException, ParseError, ValidationError
 from rest_framework.parsers import BaseParser
+from rest_framework.renderers import BaseRenderer
+from rest_framework.utils.serializer_helpers import ReturnList
 from rest_framework.views import exception_handler
+from yaml import SafeDumper
 
 from airone.lib.log import Logger
+
+SafeDumper.add_representer(ReturnList, yaml.representer.SafeRepresenter.represent_list)
 
 
 class YAMLParser(BaseParser):
@@ -26,6 +31,21 @@ class YAMLParser(BaseParser):
             return yaml.safe_load(data)
         except (ValueError, yaml.parser.ParserError, yaml.scanner.ScannerError) as exc:
             raise ParseError("YAML parse error - %s" % str(exc))
+
+
+class YAMLRenderer(BaseRenderer):
+    """
+    Renders JSON-serialized data.
+    """
+
+    media_type = "application/yaml"
+    format = "yaml"
+    charset = "utf-8"
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        return yaml.dump(
+            data, Dumper=SafeDumper, stream=None, default_flow_style=False, allow_unicode=True
+        )
 
 
 # error codes:

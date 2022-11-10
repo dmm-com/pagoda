@@ -5,7 +5,8 @@
 import { render } from "@testing-library/react";
 import React from "react";
 
-import { ImportGroupPage } from "pages/ImportGroupPage";
+import { NotFoundErrorPage } from "./NotFoundErrorPage";
+
 import { TestWrapper } from "utils/TestWrapper";
 
 afterEach(() => {
@@ -13,7 +14,8 @@ afterEach(() => {
 });
 
 test("should match snapshot", async () => {
-  const result = render(<ImportGroupPage />, {
+  // wait async calls and get rendered fragment
+  const result = render(<NotFoundErrorPage />, {
     wrapper: TestWrapper,
   });
 

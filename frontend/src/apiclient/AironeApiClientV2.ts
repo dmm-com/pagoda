@@ -1,4 +1,5 @@
 import Cookies from "js-cookie";
+import fileDownload from "js-file-download";
 
 import {
   ACL,
@@ -428,6 +429,22 @@ class AironeApiClientV2 {
     }));
   }
 
+  async importGroups(formData: FormData): Promise<void> {
+    return await this.group.groupApiV2GroupsImportCreate({
+      headers: {
+        "Content-Type": "application/yaml",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: formData,
+    });
+  }
+
+  async exportGroups(filename: string): Promise<void> {
+    const resp = await this.group.groupApiV2GroupsExportRetrieveRaw();
+    const data = await resp.raw.text();
+    fileDownload(data, filename);
+  }
+
   async getRoles(): Promise<Role[]> {
     return await this.role.roleApiV2List();
   }
@@ -477,6 +494,22 @@ class AironeApiClientV2 {
         },
       }
     );
+  }
+
+  async importRoles(formData: FormData): Promise<void> {
+    await this.role.roleApiV2ImportCreate({
+      headers: {
+        "Content-Type": "application/yaml",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: formData,
+    });
+  }
+
+  async exportRoles(filename: string): Promise<void> {
+    const resp = await this.role.roleApiV2ExportListRaw();
+    const data = await resp.raw.text();
+    fileDownload(data, filename);
   }
 
   async getEntries(
@@ -586,6 +619,22 @@ class AironeApiClientV2 {
     });
   }
 
+  async importUsers(formData: FormData): Promise<void> {
+    return await this.user.userApiV2ImportCreate({
+      headers: {
+        "Content-Type": "application/yaml",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: formData,
+    });
+  }
+
+  async exportUsers(filename: string): Promise<void> {
+    const resp = await this.user.userApiV2ExportRetrieveRaw();
+    const data = await resp.raw.text();
+    fileDownload(data, filename);
+  }
+
   async getJobs(page = 1): Promise<PaginatedJobSerializersList> {
     return await this.job.jobApiV2JobsList({
       offset: (page - 1) * JobList.MAX_ROW_COUNT,
@@ -606,7 +655,7 @@ class AironeApiClientV2 {
     return resp.results;
   }
 
-  async importEntries(formData): Promise<void> {
+  async importEntries(formData: FormData): Promise<void> {
     return await this.entry.entryApiV2ImportCreate({
       headers: {
         "Content-Type": "application/yaml",

@@ -40,6 +40,7 @@ export * from "./PasswordResetConfirm";
 export * from "./Role";
 export * from "./RoleCreateUpdate";
 export * from "./RoleGroup";
+export * from "./RoleImportExportChild";
 export * from "./RoleUser";
 export * from "./UserBase";
 export * from "./UserCreate";

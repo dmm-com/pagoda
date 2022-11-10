@@ -9,22 +9,24 @@ import {
   ListItem,
   Typography,
 } from "@mui/material";
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { SearchBox } from "../components/common/SearchBox";
+import { GroupImportModal } from "../components/group/GroupImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
+import { DjangoContext } from "../utils/DjangoContext";
 
-import { importGroupsPath, newGroupPath, topPath } from "Routes";
+import { newGroupPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
-import { downloadExportedGroups } from "utils/AironeAPIClient";
 
 export const GroupPage: FC = () => {
   const [keyword, setKeyword] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState<number>();
+  const [openImportModal, setOpenImportModal] = useState(false);
 
   const groupTrees = useAsync(async () => {
     return await aironeApiClientV2.getGroupTrees();
@@ -55,6 +57,12 @@ export const GroupPage: FC = () => {
     setSelectedGroupId(groupId);
   };
 
+  const handleExport = useCallback(async () => {
+    await aironeApiClientV2.exportGroups("group.yaml");
+  }, []);
+
+  const isSuperuser = DjangoContext.getInstance().user.isSuperuser;
+
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">
       <AironeBreadcrumbs>
@@ -74,7 +82,7 @@ export const GroupPage: FC = () => {
                   variant="contained"
                   color="info"
                   sx={{ margin: "0 4px" }}
-                  onClick={() => downloadExportedGroups("user_group.yaml")}
+                  onClick={handleExport}
                 >
                   エクスポート
                 </Button>
@@ -82,15 +90,19 @@ export const GroupPage: FC = () => {
                   variant="contained"
                   color="info"
                   sx={{ margin: "0 4px" }}
-                  component={Link}
-                  to={importGroupsPath()}
+                  onClick={() => setOpenImportModal(true)}
                 >
                   インポート
                 </Button>
+                <GroupImportModal
+                  openImportModal={openImportModal}
+                  closeImportModal={() => setOpenImportModal(false)}
+                />
               </Box>
               <Button
                 variant="contained"
                 color="secondary"
+                disabled={!isSuperuser}
                 component={Link}
                 to={newGroupPath()}
                 sx={{ height: "48px", borderRadius: "24px" }}

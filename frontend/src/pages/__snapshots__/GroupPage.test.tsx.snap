@@ -84,16 +84,16 @@ Object {
                       class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
                   </button>
-                  <a
+                  <button
                     class="MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-xb2qhg-MuiButtonBase-root-MuiButton-root"
-                    href="/new-ui/groups/import"
                     tabindex="0"
+                    type="button"
                   >
                     インポート
                     <span
                       class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
-                  </a>
+                  </button>
                 </div>
                 <a
                   class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-x1f2a7-MuiButtonBase-root-MuiButton-root"
@@ -147,7 +147,7 @@ Object {
                   class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
                 >
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-6 css-1p823my-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-8 css-1p823my-MuiListItem-root"
                   >
                     <ul
                       class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
@@ -254,7 +254,7 @@ Object {
                     </ul>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-6 css-1p823my-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-8 css-1p823my-MuiListItem-root"
                   >
                     <ul
                       class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
@@ -446,16 +446,16 @@ Object {
                     class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                   />
                 </button>
-                <a
+                <button
                   class="MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-xb2qhg-MuiButtonBase-root-MuiButton-root"
-                  href="/new-ui/groups/import"
                   tabindex="0"
+                  type="button"
                 >
                   インポート
                   <span
                     class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                   />
-                </a>
+                </button>
               </div>
               <a
                 class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-x1f2a7-MuiButtonBase-root-MuiButton-root"
@@ -509,7 +509,7 @@ Object {
                 class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
               >
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-6 css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-8 css-1p823my-MuiListItem-root"
                 >
                   <ul
                     class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
@@ -616,7 +616,7 @@ Object {
                   </ul>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-6 css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-8 css-1p823my-MuiListItem-root"
                 >
                   <ul
                     class="MuiList-root MuiList-padding css-h4y409-MuiList-root"

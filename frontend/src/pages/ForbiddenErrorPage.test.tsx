@@ -5,7 +5,8 @@
 import { render } from "@testing-library/react";
 import React from "react";
 
-import { ImportUserPage } from "pages/ImportUserPage";
+import { ForbiddenErrorPage } from "./ForbiddenErrorPage";
+
 import { TestWrapper } from "utils/TestWrapper";
 
 afterEach(() => {
@@ -13,7 +14,8 @@ afterEach(() => {
 });
 
 test("should match snapshot", async () => {
-  const result = render(<ImportUserPage />, {
+  // wait async calls and get rendered fragment
+  const result = render(<ForbiddenErrorPage />, {
     wrapper: TestWrapper,
   });
 

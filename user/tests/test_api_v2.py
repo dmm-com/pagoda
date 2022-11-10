@@ -1,12 +1,14 @@
 import json
 from unittest import mock
 
+import yaml
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework.authtoken.models import Token
 
 from airone.lib.test import AironeViewTest
+from group.models import Group
 from user.models import User
 
 
@@ -28,6 +30,9 @@ class ViewTest(AironeViewTest):
         user.save()
 
         return user
+
+    def _create_group(self, name):
+        return Group.objects.create(name=name)
 
     def test_get_user(self):
         login_user = self.guest_login()
@@ -130,6 +135,42 @@ class ViewTest(AironeViewTest):
         # get user token to compare with response data
         token = Token.objects.get(user=user)
         self.assertEqual(resp.json(), {"key": str(token)})
+
+    def test_import(self):
+        self.admin_login()
+
+        self._create_group("Group1")
+        self._create_group("Group2")
+
+        fp = self.open_fixture_file("import_user.yaml")
+        resp = self.client.post("/user/api/v2/import/", fp.read(), content_type="application/yaml")
+
+        self.assertEqual(resp.status_code, 200)
+
+        user1 = User.objects.filter(username="User1").first()
+
+        self.assertEqual(user1.email, "user1@example.com")
+        self.assertEqual(user1.groups.count(), 2)
+
+    def test_export(self):
+        self.admin_login()
+
+        group1 = self._create_group("Group1")
+        group2 = self._create_group("Group2")
+
+        user1 = self._create_user("user1")
+        user1.groups.add(group1)
+        user1.groups.add(group2)
+
+        user2 = self._create_user("user2")
+        user2.groups.add(group1)
+
+        resp = self.client.get("/user/api/v2/export/")
+        self.assertEqual(resp.status_code, 200)
+
+        obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
+        self.assertTrue(isinstance(obj, list))
+        self.assertEqual(len(obj), 3)
 
     @mock.patch("user.api_v2.views.EmailMultiAlternatives")
     def test_password_reset(self, mock_email):

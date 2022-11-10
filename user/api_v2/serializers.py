@@ -99,6 +99,24 @@ class UserListSerializer(UserBaseSerializer):
         fields = ["id", "username", "email", "is_superuser", "date_joined"]
 
 
+class UserImportChildSerializer(serializers.ModelSerializer):
+    groups = serializers.CharField(required=True, allow_blank=True, write_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "groups",
+            "email",
+            "is_superuser",
+        ]
+
+
+class UserImportSerializer(serializers.ListSerializer):
+    child = UserImportChildSerializer()
+
+
 class PasswordResetSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
 
