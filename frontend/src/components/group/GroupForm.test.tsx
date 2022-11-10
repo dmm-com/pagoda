@@ -11,6 +11,15 @@ import { GroupForm } from "components/group/GroupForm";
 import { TestWrapper } from "utils/TestWrapper";
 
 test("should render a component with essential props", function () {
+  Object.defineProperty(window, "django_context", {
+    value: {
+      user: {
+        isSuperuser: true,
+      },
+    },
+    writable: false,
+  });
+
   const groups = [
     {
       id: 1,

@@ -5,11 +5,23 @@
 ### Added
 
 ### Changed
+
+### Fixed
+
+## v3.27.0
+
+### Added
+* Added API handler that searchs Entries across multiple referral structure
+  (/api/v1/search_chain)
+  Contributed by @userlocalhost, @hinashi
+* Added group edit page.
+  Contributed by @syucream
+
+### Changed
 * Improved processing to get referred Entry from elasticsearch
   (reducing number of DB access)
   Contributed by @userlocalhost, @hinashi
-
-### Fixed
+* Upgrade django version from 3.2.15 to 3.2.16
 
 ## v3.26.0
 

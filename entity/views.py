@@ -44,7 +44,7 @@ def index(request):
         # Page numbers on the entity index page start at 0, wheres Paginator start at 1.
         page_obj = p.page(page + 1)
 
-    except ValueError or PageNotAnInteger:
+    except (ValueError, PageNotAnInteger):
         return HttpResponse("Invalid page number. It must be unsigned integer", status=400)
     except EmptyPage:
         return HttpResponse("Invalid page number. The page doesn't have anything", status=400)

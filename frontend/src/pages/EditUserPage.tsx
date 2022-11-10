@@ -3,9 +3,9 @@ import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { Link, Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
 import { topPath, usersPath } from "Routes";
@@ -15,7 +15,6 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { UserForm } from "components/user/UserForm";
 import { DjangoContext } from "utils/DjangoContext";
-import { FailedToGetUser, UnAuthorizedToGetUser } from "utils/Exceptions";
 
 export interface AironeUserProps extends UserRetrieve {
   password?: string;
@@ -26,27 +25,11 @@ export const EditUserPage: FC = () => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
 
-  const user = useAsync(async () => {
+  const user = useAsyncWithThrow(async () => {
     if (userId) {
-      try {
-        return await aironeApiClientV2.getUser(userId);
-      } catch (error) {
-        if (error.status === 403) {
-          throw new UnAuthorizedToGetUser(
-            "Failed to get User from AirOne APIv2 endpoint"
-          );
-        } else {
-          throw new FailedToGetUser(
-            "Failed to get User from AirOne APIv2 endpoint"
-          );
-        }
-      }
+      return await aironeApiClientV2.getUser(userId);
     }
   }, [userId]);
-
-  if (!user.loading && user.error) {
-    throw user.error;
-  }
 
   const djangoContext = DjangoContext.getInstance();
 

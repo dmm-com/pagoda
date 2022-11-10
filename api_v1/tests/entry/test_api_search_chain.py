@@ -2,6 +2,7 @@ import json
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
+from api_v1.entry import serializer
 
 
 class APITest(AironeViewTest):
@@ -126,7 +127,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "value": "ens0",
@@ -163,15 +164,17 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
         )
 
     def test_search_chain_with_partial_chained_query(self):
         # create query to search chained query that doesn't have last attr chain
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "value": "ens0",
@@ -204,15 +207,17 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
         )
 
     def test_search_chain_with_wrong_keyword_value(self):
         # create query to search chained query that has wrong value
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "value": "ens0",
@@ -237,14 +242,15 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), {"entries": []})
+        self.assertEqual(resp.json()["ret_count"], 0)
+        self.assertEqual(resp.json()["ret_values"], [])
 
     def test_search_chain_using_OR_condition(self):
         # create query to search chained query
         params = {
             "entities": ["VM"],
             "is_any": True,
-            "conditions": [
+            "attrs": [
                 # This condition will match only test-vm1
                 {"name": "Status", "value": "Service-In"},
                 # This condition will match only test-vm2
@@ -257,9 +263,13 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 2)
         self.assertEqual(
-            sorted([x["id"] for x in resp.json()["entries"]]),
-            sorted([self.entry_vm1.id, self.entry_vm2.id]),
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_vm1, self.entry_vm2]],
+                key=lambda x: x["id"],
+            ),
         )
 
     def test_search_chain_using_AND_condition(self):
@@ -267,7 +277,7 @@ class APITest(AironeViewTest):
         params = {
             "entities": ["VM"],
             "is_any": False,
-            "conditions": [
+            "attrs": [
                 # This condition will match only test-vm1
                 {"name": "Status", "value": "Service-In"},
                 # This condition will match only test-vm2
@@ -280,7 +290,8 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), {"entries": []})
+        self.assertEqual(resp.json()["ret_count"], 0)
+        self.assertEqual(resp.json()["ret_values"], [])
 
     def test_search_chain_to_get_entry_that_refers_nothing(self):
         # Prepare NIC Entry that doens't refer any IP address Entries.
@@ -303,7 +314,7 @@ class APITest(AironeViewTest):
         # create query to search chained query
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "attrs": [{"name": "IP address", "value": ""}],
@@ -315,13 +326,12 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(),
-            {
-                "entries": [
-                    {"id": entry_another_vm.id, "name": entry_another_vm.name},
-                ]
-            },
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [entry_another_vm]], key=lambda x: x["id"]
+            ),
         )
 
     def test_search_chain_do_not_care_intermediate_entry_name(self):
@@ -357,7 +367,7 @@ class APITest(AironeViewTest):
         # termination Entry "10.0.0.0/8".
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -380,14 +390,13 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 2)
         self.assertEqual(
-            resp.json(),
-            {
-                "entries": [
-                    {"id": self.entry_vm1.id, "name": self.entry_vm1.name},
-                    {"id": entry_another_vm.id, "name": entry_another_vm.name},
-                ]
-            },
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_vm1, entry_another_vm]],
+                key=lambda x: x["id"],
+            ),
         )
 
     def test_search_chain_with_complex_is_any_condition(self):
@@ -425,7 +434,7 @@ class APITest(AironeViewTest):
         params = {
             "entities": ["VM"],
             "is_any": True,
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "is_any": False,
@@ -449,9 +458,13 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 2)
         self.assertEqual(
-            sorted([x["id"] for x in resp.json()["entries"]]),
-            sorted([entry_another_vm.id, self.entry_vm2.id]),
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_vm2, entry_another_vm]],
+                key=lambda x: x["id"],
+            ),
         )
 
     def test_search_chain_when_object_attrvalue_is_empty(self):
@@ -491,7 +504,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -524,8 +537,10 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
         )
 
     def test_search_chain_when_named_object_attrvalue_is_empty(self):
@@ -558,7 +573,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -591,8 +606,10 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
         )
 
     def test_search_chain_when_array_object_attrvalue_is_empty(self):
@@ -617,7 +634,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -650,8 +667,10 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
         )
 
     def test_search_chain_when_array_named_object_attrvalue_is_empty(self):
@@ -668,7 +687,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["VM"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "Ports",
                     "attrs": [
@@ -701,8 +720,10 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": self.entry_vm1.id, "name": self.entry_vm1.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_vm1]], key=lambda x: x["id"]),
         )
 
     def test_complex_entity_structure(self):
@@ -769,7 +790,7 @@ class APITest(AironeViewTest):
         # create query to search chained query that follows all attribute chain
         params = {
             "entities": ["Server"],
-            "conditions": [
+            "attrs": [
                 {
                     "name": "IP addresses",
                     "attrs": [
@@ -795,6 +816,312 @@ class APITest(AironeViewTest):
             "/api/v1/entry/search_chain", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
         self.assertEqual(
-            resp.json(), {"entries": [{"id": entry_server.id, "name": entry_server.name}]}
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [entry_server]], key=lambda x: x["id"]),
+        )
+
+    def test_basic_backward_reference(self):
+        # create query to search chained query
+        params = {
+            "entities": ["NIC"],
+            "refers": [{"entity": "VM", "entry": "test-vm1"}],
+        }
+
+        # check results of backward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_nic]], key=lambda x: x["id"]),
+        )
+
+    def test_basic_backward_and_forward_reference(self):
+        # create query to search chained query
+        params = {
+            "entities": ["NIC"],
+            "refers": [
+                {
+                    "entity": "VM",
+                    "attrs": [
+                        {
+                            "name": "Status",
+                            "value": "Service-In",
+                        }
+                    ],
+                }
+            ],
+        }
+
+        # check results of backward and forward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_nic]], key=lambda x: x["id"]),
+        )
+
+    def test_nested_backward_reference(self):
+        self.add_entry(
+            self.user,
+            "192.168.10.0/24",
+            self.entity_network,
+            values={
+                "vlan": self.entry_vlan2,
+            },
+        )
+
+        # create query to search chained query
+        params = {
+            "entities": ["VLAN"],
+            "refers": [
+                {
+                    "entity": "Network",
+                    "refers": [
+                        {
+                            "entity": "IPv4 Address",
+                            "entry": "10.0.0.1",
+                        }
+                    ],
+                }
+            ],
+        }
+        # check results of nested backward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_vlan1]], key=lambda x: x["id"]
+            ),
+        )
+
+    def test_basic_forward_and_backward_reference(self):
+        # create query to search chained query
+        params = {
+            "entities": ["IPv4 Address"],
+            "attrs": [
+                {
+                    "name": "network",
+                    "refers": [
+                        {
+                            "entity": "IPv4 Address",
+                            "entry": "10.0.0.1",
+                        }
+                    ],
+                }
+            ],
+        }
+
+        # check results of forward and backward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_ipv4]], key=lambda x: x["id"]
+            ),
+        )
+
+    def test_specify_both_attrs_and_refers_at_the_same_time_using_OR_condition(self):
+        # create Entries that are used for this test
+        another_nic = self.add_entry(self.user, "ens1", self.entity_nic, values={})
+        another_vm = self.add_entry(
+            self.user,
+            "test-another-vm",
+            self.entity_vm,
+            values={
+                "Ports": [{"id": another_nic, "name": ""}],
+            },
+        )
+
+        # create query to search chained query
+        params = {
+            "entities": ["NIC"],
+            "is_any": True,
+            "attrs": [{"name": "IP address", "value": self.entry_ipv4.name}],
+            "refers": [{"entity": "VM", "entry": another_vm.name}],
+        }
+
+        # check results of forward and backward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 2)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_nic, another_nic]],
+                key=lambda x: x["id"],
+            ),
+        )
+
+    def test_specify_both_attrs_and_refers_at_the_same_time_using_AND_condition(self):
+        # create another Entry that refers self.entry_ipv4, but this is not referred by anyone
+        self.add_entry(
+            self.user,
+            "ens1",
+            self.entity_nic,
+            values={
+                "IP address": [self.entry_ipv4],
+            },
+        )
+
+        # create query to search Entry that
+        # - refers to Entry (self.entry_ipv4)
+        # - referred by Entry (self.entry_vm1)
+        params = {
+            "entities": ["NIC"],
+            "is_any": False,
+            "attrs": [{"name": "IP address", "value": self.entry_ipv4.name}],
+            "refers": [{"entity": "VM", "entry": self.entry_vm1.name}],
+        }
+
+        # check results of forward and backward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_nic]], key=lambda x: x["id"]),
+        )
+
+    def test_search_chain_with_empty_conditions(self):
+        # create query to search chained query
+        params = {
+            "entities": ["VM"],
+            "attrs": [],
+            "refers": [],
+        }
+
+        # This checks to get Entries that meets chaining conditions
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 0)
+        self.assertEqual(resp.json()["ret_values"], [])
+
+    def test_search_forward_chain_exceeding_search_limit(self):
+        # check the case that the number of Entries of Entry.search_results() exceeds
+        # expected limit.
+        serializer.SEARCH_ENTRY_LIMIT = 2
+
+        # create number of Entries exceeding SEARCH_ENTRY_LIMIT
+        another_ipaddrs = [
+            self.add_entry(
+                self.user,
+                "10.0.10.%d" % i,
+                self.entity_ipv4,
+                values={
+                    "network": {"id": self.entry_network, "name": ""},
+                },
+            )
+            for i in range(1, 5)
+        ]
+        another_nic = self.add_entry(
+            self.user,
+            "ensX",
+            self.entity_nic,
+            values={
+                "IP address": another_ipaddrs,
+            },
+        )
+        another_vm = self.add_entry(
+            self.user,
+            "test-another-vm",
+            self.entity_vm,
+            values={
+                "Ports": [{"id": another_nic, "name": "ens-X"}],
+            },
+        )
+
+        # create query to search above Entries
+        params = {
+            "entities": [self.entity_vm.name],
+            "attrs": [
+                {
+                    "name": "Ports",
+                    "attrs": [
+                        {
+                            "name": "IP address",
+                            "attrs": [{"name": "network", "value": self.entry_network.name}],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        # check results of forward and backward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 2)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_vm1, another_vm]],
+                key=lambda x: x["id"],
+            ),
+        )
+
+    def test_search_backward_chain_exceeding_search_limit(self):
+        # check the case that the number of Entries of Entry.search_results() exceeds
+        # expected limit.
+        serializer.SEARCH_ENTRY_LIMIT = 2
+
+        # create number of Entries exceeding SEARCH_ENTRY_LIMIT
+        another_ipaddrs = [
+            self.add_entry(
+                self.user,
+                "10.0.10.%d" % i,
+                self.entity_ipv4,
+                values={
+                    "network": {"id": self.entry_network, "name": ""},
+                },
+            )
+            for i in range(1, 5)
+        ]
+        self.add_entry(
+            self.user,
+            "ensX",
+            self.entity_nic,
+            values={
+                "IP address": another_ipaddrs,
+            },
+        )
+
+        # create query to search above Entries
+        params = {
+            "entities": ["Network"],
+            "refers": [{"entity": "IPv4 Address", "refers": [{"entity": "NIC", "entry": "ens"}]}],
+        }
+        # check results of forward and backward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_network]], key=lambda x: x["id"]
+            ),
         )

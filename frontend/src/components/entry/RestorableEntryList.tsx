@@ -24,8 +24,8 @@ import { styled } from "@mui/material/styles";
 import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
 
+import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { restoreEntry } from "../../utils/AironeAPIClient";
 import { formatDate } from "../../utils/DateUtil";
 import { Confirmable } from "../common/Confirmable";
@@ -36,7 +36,6 @@ import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { EntryList as ConstEntryList } from "utils/Constants";
-import { FailedToGetEntity } from "utils/Exceptions";
 
 interface Props {
   entityId: number;
@@ -83,10 +82,11 @@ export const RestorableEntryList: FC<Props> = ({
   const [openModal, setOpenModal] = useState(false);
   const [selectedEntryId, setSelectedEntryId] = useState<number>();
 
-  const entries = useAsync(async () => {
+  const entries = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getEntries(entityId, false, page, keyword);
   }, [page, keyword]);
-  const entryDetail = useAsync(async () => {
+
+  const entryDetail = useAsyncWithThrow(async () => {
     if (selectedEntryId == null) {
       return null;
     }
@@ -101,17 +101,6 @@ export const RestorableEntryList: FC<Props> = ({
     await restoreEntry(entryId);
     history.go(0);
   };
-
-  if (!entries.loading && entries.error) {
-    throw new FailedToGetEntity(
-      "Failed to get entries from AirOne APIv2 endpoint"
-    );
-  }
-  if (!entryDetail.loading && entryDetail.error) {
-    throw new FailedToGetEntity(
-      "Failed to get entry from AirOne APIv2 endpoint"
-    );
-  }
 
   const totalPageCount = entries.loading
     ? 0

@@ -4,7 +4,7 @@ from typing import List, TypedDict
 import yaml
 from django.http import HttpResponse
 from rest_framework import generics, status, viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 
 from airone.lib.drf import YAMLParser
@@ -15,6 +15,19 @@ from group.api_v2.serializers import (
     GroupTreeSerializer,
 )
 from group.models import Group
+from user.models import User
+
+
+class UserPermission(BasePermission):
+    def has_object_permission(self, request, view, obj: User):
+        current_user: User = request.user
+        permisson = {
+            "retrieve": True,
+            "destroy": current_user.is_superuser,
+            "create": current_user.is_superuser,
+            "update": current_user.is_superuser,
+        }
+        return permisson.get(view.action)
 
 
 class GroupExport(TypedDict):
@@ -24,6 +37,7 @@ class GroupExport(TypedDict):
 
 class GroupAPI(viewsets.ModelViewSet):
     queryset = Group.objects.filter(is_active=True)
+    permission_classes = [IsAuthenticated & UserPermission]
 
     def get_serializer_class(self):
         serializer = {
@@ -36,6 +50,7 @@ class GroupAPI(viewsets.ModelViewSet):
 class GroupTreeAPI(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.filter(parent_group__isnull=True, is_active=True)
     serializer_class = GroupTreeSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class GroupImportAPI(generics.GenericAPIView):

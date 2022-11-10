@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { CopyEntryPage } from "./pages/CopyEntryPage";
 import { EditRolePage } from "./pages/EditRolePage";
 import { EntryDetailsPage } from "./pages/EntryDetailsPage";
+import { NotFoundErrorPage } from "./pages/NotFoundErrorPage";
 import { RestoreEntryPage } from "./pages/RestoreEntryPage";
 import { RolePage } from "./pages/RolePage";
 
@@ -35,6 +36,7 @@ import {
   rolesPath,
   rolePath,
   newRolePath,
+  topPath,
 } from "Routes";
 import { Header } from "components/Header";
 import { ACLPage } from "pages/ACLPage";
@@ -139,7 +141,8 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             <Route path={newRolePath()} component={EditRolePage} />
             <Route path={rolePath(":roleId")} component={EditRolePage} />
             <Route path={rolesPath()} component={RolePage} />
-            <Route path="/" component={DashboardPage} />
+            <Route exact path={topPath()} component={DashboardPage} />
+            <Route component={NotFoundErrorPage} />
           </Switch>
         </Route>
       </Switch>
