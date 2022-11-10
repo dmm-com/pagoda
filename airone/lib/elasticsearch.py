@@ -1,4 +1,3 @@
-import json
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
@@ -59,109 +58,107 @@ class ESS(Elasticsearch):
         self.indices.create(
             index=self._index,
             ignore=400,
-            body=json.dumps(
-                {
-                    "mappings": {
-                        "entry": {
-                            "properties": {
-                                "name": {
-                                    "type": "text",
-                                    "index": "true",
-                                    "analyzer": "keyword",
-                                    "fields": {
-                                        "keyword": {"type": "keyword"},
-                                    },
+            body={
+                "mappings": {
+                    "entry": {
+                        "properties": {
+                            "name": {
+                                "type": "text",
+                                "index": "true",
+                                "analyzer": "keyword",
+                                "fields": {
+                                    "keyword": {"type": "keyword"},
                                 },
-                                "referrals": {
-                                    "type": "nested",
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "index": "true",
-                                        },
-                                        "name": {
-                                            "type": "text",
-                                            "index": "true",
-                                            "analyzer": "keyword",
-                                        },
-                                        "schema": {
-                                            "type": "nested",
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "index": "true",
-                                                },
-                                                "name": {
-                                                    "type": "text",
-                                                    "index": "true",
-                                                    "analyzer": "keyword",
-                                                },
+                            },
+                            "referrals": {
+                                "type": "nested",
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "index": "true",
+                                    },
+                                    "name": {
+                                        "type": "text",
+                                        "index": "true",
+                                        "analyzer": "keyword",
+                                    },
+                                    "schema": {
+                                        "type": "nested",
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "index": "true",
+                                            },
+                                            "name": {
+                                                "type": "text",
+                                                "index": "true",
+                                                "analyzer": "keyword",
                                             },
                                         },
                                     },
                                 },
-                                "entity": {
-                                    "type": "nested",
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer",
-                                            "index": "true",
-                                        },
-                                        "name": {
-                                            "type": "text",
-                                            "index": "true",
-                                            "analyzer": "keyword",
-                                        },
+                            },
+                            "entity": {
+                                "type": "nested",
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "index": "true",
+                                    },
+                                    "name": {
+                                        "type": "text",
+                                        "index": "true",
+                                        "analyzer": "keyword",
                                     },
                                 },
-                                "attr": {
-                                    "type": "nested",
-                                    "properties": {
-                                        "name": {
-                                            "type": "text",
-                                            "index": "true",
-                                            "analyzer": "keyword",
-                                        },
-                                        "type": {
-                                            "type": "integer",
-                                            "index": "false",
-                                        },
-                                        "id": {
-                                            "type": "integer",
-                                            "index": "false",
-                                        },
-                                        "key": {
-                                            "type": "text",
-                                            "index": "true",
-                                        },
-                                        "date_value": {
-                                            "type": "date",
-                                            "index": "true",
-                                        },
-                                        "value": {
-                                            "type": "text",
-                                            "index": "true",
-                                            "analyzer": "keyword",
-                                        },
-                                        "referral_id": {
-                                            "type": "integer",
-                                            "index": "false",
-                                        },
-                                        "is_readble": {
-                                            "type": "boolean",
-                                            "index": "true",
-                                        },
+                            },
+                            "attr": {
+                                "type": "nested",
+                                "properties": {
+                                    "name": {
+                                        "type": "text",
+                                        "index": "true",
+                                        "analyzer": "keyword",
+                                    },
+                                    "type": {
+                                        "type": "integer",
+                                        "index": "false",
+                                    },
+                                    "id": {
+                                        "type": "integer",
+                                        "index": "false",
+                                    },
+                                    "key": {
+                                        "type": "text",
+                                        "index": "true",
+                                    },
+                                    "date_value": {
+                                        "type": "date",
+                                        "index": "true",
+                                    },
+                                    "value": {
+                                        "type": "text",
+                                        "index": "true",
+                                        "analyzer": "keyword",
+                                    },
+                                    "referral_id": {
+                                        "type": "integer",
+                                        "index": "false",
+                                    },
+                                    "is_readble": {
+                                        "type": "boolean",
+                                        "index": "true",
                                     },
                                 },
-                                "is_readble": {
-                                    "type": "boolean",
-                                    "index": "true",
-                                },
-                            }
+                            },
+                            "is_readble": {
+                                "type": "boolean",
+                                "index": "true",
+                            },
                         }
                     }
                 }
-            ),
+            },
         )
 
 
@@ -180,8 +177,8 @@ def make_query(
     hint_entity: Entity,
     hint_attrs: List[Dict[str, str]],
     entry_name: str,
-    hint_referral: str = None,
-    hint_referral_entity_id: int = None,
+    hint_referral: Optional[str] = None,
+    hint_referral_entity_id: Optional[int] = None,
 ) -> Dict[str, str]:
     """Create a search query for Elasticsearch.
 
