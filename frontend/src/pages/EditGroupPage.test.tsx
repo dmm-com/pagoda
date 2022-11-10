@@ -17,6 +17,15 @@ afterEach(() => {
 });
 
 test("should match snapshot", async () => {
+  Object.defineProperty(window, "django_context", {
+    value: {
+      user: {
+        isSuperuser: true,
+      },
+    },
+    writable: false,
+  });
+
   const users = {
     count: 2,
     next: null,

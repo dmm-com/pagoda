@@ -15,8 +15,8 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Element, scroller } from "react-scroll";
-import { useAsync } from "react-use";
 
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
 import {
@@ -32,7 +32,6 @@ import { Loading } from "components/common/Loading";
 import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
-import { FailedToGetEntry } from "utils/Exceptions";
 
 const useStyles = makeStyles<Theme>(() => ({
   title: {
@@ -67,7 +66,7 @@ export const EntryDetailsPage: FC<Props> = ({
   const [entryAnchorEl, setEntryAnchorEl] =
     useState<HTMLButtonElement | null>();
 
-  const entry = useAsync(async () => {
+  const entry = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getEntry(entryId);
   }, [entryId]);
 
@@ -84,12 +83,6 @@ export const EntryDetailsPage: FC<Props> = ({
       );
     }
   }, [entry.loading]);
-
-  if (!entry.loading && entry.error) {
-    throw new FailedToGetEntry(
-      "Failed to get Entry from AirOne APIv2 endpoint"
-    );
-  }
 
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">

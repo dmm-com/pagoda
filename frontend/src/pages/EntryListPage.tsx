@@ -3,9 +3,9 @@ import LockIcon from "@mui/icons-material/Lock";
 import { Box, Container, IconButton, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAsync } from "react-use";
 
 import { EntityControlMenu } from "../components/entity/EntityControlMenu";
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
 import { entitiesPath, topPath } from "Routes";
@@ -13,7 +13,6 @@ import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { EntryList } from "components/entry/EntryList";
-import { FailedToGetEntity } from "utils/Exceptions";
 
 interface Props {
   canCreateEntry?: boolean;
@@ -26,14 +25,9 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
     useState<HTMLButtonElement | null>();
   const [openImportModal, setOpenImportModal] = React.useState(false);
 
-  const entity = useAsync(async () => {
+  const entity = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getEntity(entityId);
   });
-  if (!entity.loading && entity.error) {
-    throw new FailedToGetEntity(
-      "Failed to get Entity from AirOne APIv2 endpoint"
-    );
-  }
 
   return (
     <Box>
