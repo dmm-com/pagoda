@@ -8,6 +8,18 @@
 
 ### Fixed
 
+## v3.28.0
+
+### Added
+* Added API v2 for User, Group, Role
+  Contributed by @syucream
+* Added new UI error page
+  Contributed by @syucream
+
+### Fixed
+* Fixed the problem that ES registration process takes time
+  Contributed by @hinashi
+
 ## v3.27.0
 
 ### Added
