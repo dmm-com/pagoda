@@ -52,7 +52,7 @@ export const EditUserPage: FC = () => {
   const [edited, setEdited] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!user.loading && user.value !== undefined) {
+    if (!user.loading && user.value !== undefined && userInfo.id == 0) {
       setUserInfo(user.value);
     }
   }, [user]);
@@ -157,25 +157,11 @@ export const EditUserPage: FC = () => {
           <Box display="flex" justifyContent="center">
             <Box mx="4px">
               <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleSubmit}
-              >
-                保存
-              </Button>
-            </Box>
-            <Box mx="4px">
-              <Button
                 variant="outlined"
                 color="primary"
                 onClick={handleRefreshToken}
               >
                 Token を更新
-              </Button>
-            </Box>
-            <Box mx="4px">
-              <Button variant="outlined" color="primary" onClick={handleCancel}>
-                キャンセル
               </Button>
             </Box>
           </Box>
@@ -185,7 +171,12 @@ export const EditUserPage: FC = () => {
       {user.loading ? (
         <Loading />
       ) : (
-        <UserForm userInfo={userInfo} setUserInfo={setUserInfo} />
+        <UserForm
+          userInfo={userInfo}
+          setUserInfo={setUserInfo}
+          handleSubmit={handleSubmit}
+          handleCancel={handleCancel}
+        />
       )}
 
       <Prompt

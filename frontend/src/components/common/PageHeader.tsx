@@ -31,7 +31,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   titleBox: {
     display: "flex",
     alignItems: "flex-end",
-    margin: "8px 0",
+    margin: "8px 24px",
   },
   title: {
     height: "72px",
@@ -70,11 +70,15 @@ export const PageHeader: FC<Props> = ({
               {subTitle}
             </Typography>
           </Box>
-          <Box ml="auto">{componentControl}</Box>
+          <Box ml="auto" mr="24px">
+            {componentControl}
+          </Box>
         </Box>
         <Box className={classes.headerBottom}>
           <Typography>{description}</Typography>
-          <Box ml="auto">{componentSubmits}</Box>
+          <Box ml="auto" mr="24px">
+            {componentSubmits}
+          </Box>
         </Box>
         <Divider flexItem sx={{ mt: "32px", borderColor: "black" }} />
       </Box>

@@ -211,11 +211,13 @@ const ElemEmailAddress: FC<Props> = ({ userInfo, setUserInfo }) => {
             placeholder="メールアドレスを入力してください"
             sx={{ width: "100%" }}
             value={userInfo.email}
-            onChange={(e) =>
+            onChange={(e) => {
+              console.log("ElemEmailAddress");
               setUserInfo({
                 ...userInfo,
                 email: e.target.value,
               })
+            }
             }
           />
         </InputBox>
@@ -291,9 +293,33 @@ const ElemIsSuperuser: FC<Props> = ({ userInfo, setUserInfo }) => {
   );
 };
 
-export const UserForm: FC<Props> = ({ userInfo, setUserInfo }) => {
+interface UserFormProps {
+  userInfo: AironeUserProps;
+  setUserInfo: (userInfo: AironeUserProps) => void;
+  handleSubmit: () => void;
+  handleCancel: () => void;
+}
+
+export const UserForm: FC<UserFormProps> = ({
+  userInfo,
+  setUserInfo,
+  handleSubmit,
+  handleCancel,
+}) => {
   return (
     <Container maxWidth="lg" sx={{ pt: "50px", pb: "50px" }}>
+      <Box display="flex" justifyContent="flex-end" pb="24px">
+        <Box mx="4px">
+          <Button variant="contained" color="secondary" onClick={handleSubmit}>
+            保存
+          </Button>
+        </Box>
+        <Box mx="4px">
+          <Button variant="outlined" color="primary" onClick={handleCancel}>
+            キャンセル
+          </Button>
+        </Box>
+      </Box>
       <TableContainer component={Paper}>
         <Table className="table table-bordered">
           <TableHead>
