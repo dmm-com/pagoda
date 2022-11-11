@@ -1,10 +1,13 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from airone.exceptions import ElasticsearchException
+from airone.lib.log import Logger
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
+from entry.settings import CONFIG
 
-SEARCH_ENTRY_LIMIT = 50
+SEARCH_ENTRY_LIMIT = 999999
 
 
 class ReferSerializer(serializers.Serializer):
@@ -210,7 +213,15 @@ class EntrySearchChainSerializer(serializers.Serializer):
             }
 
             # get Entry informations from result
-            search_result = Entry.search_entries(**query_params)
+            try:
+                search_result = Entry.search_entries(**query_params)
+            except Exception as e:
+                Logger.warning("Search Chain API error:%s" % e)
+                raise ElasticsearchException()
+
+            if search_result["ret_count"] > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
+                Logger.warning("Search Chain API error: SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT")
+                raise ElasticsearchException()
 
             return [x["entry"] for x in search_result["ret_values"]]
 
@@ -274,7 +285,15 @@ class EntrySearchChainSerializer(serializers.Serializer):
             ]
 
             # get Entry informations from result
-            search_result = Entry.search_entries(user, entity_id_list, hint_attrs, limit=99999)
+            try:
+                search_result = Entry.search_entries(user, entity_id_list, hint_attrs, limit=99999)
+            except Exception as e:
+                Logger.warning("Search Chain API error:%s" % e)
+                raise ElasticsearchException()
+
+            if search_result["ret_count"] > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
+                Logger.warning("Search Chain API error: SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT")
+                raise ElasticsearchException()
 
             return [x["entry"] for x in search_result["ret_values"]]
 

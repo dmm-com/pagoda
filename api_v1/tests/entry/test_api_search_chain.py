@@ -1,15 +1,30 @@
+import copy
 import json
+from unittest import mock
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 from api_v1.entry import serializer
+from entry.models import Entry
+from entry.settings import CONFIG as ENTRY_CONFIG
 
 
 class APITest(AironeViewTest):
+    def tearDown(self):
+        super(APITest, self).tearDown()
+
+        # restore originl configuration data and method
+        ENTRY_CONFIG.conf = self._orig_entry_config
+        Entry.search_entries = self._entry_search_entries
+
     def setUp(self):
         super(APITest, self).setUp()
 
         self.user = self.guest_login()
+
+        # dump originl configuration data and emthod
+        self._orig_entry_config = copy.copy(ENTRY_CONFIG.conf)
+        self._entry_search_entries = Entry.search_entries
 
         # create Entities that have all referral Attribute types
         self.entity_vlan = self.create_entity(
@@ -1124,4 +1139,55 @@ class APITest(AironeViewTest):
             sorted(
                 [{"id": x.id, "name": x.name} for x in [self.entry_network]], key=lambda x: x["id"]
             ),
+        )
+
+    def test_search_chain_when_result_exceeds_acceptable_count(self):
+        # Change configuration to test processing for acceptable result from elasticsearch
+        ENTRY_CONFIG.conf["SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT"] = 2
+
+        # Create Entries that exceeds above changing configuration
+        [
+            self.add_entry(
+                self.user,
+                "test-%s" % x,
+                self.entity_vm,
+                values={
+                    "Status": self.entry_service_in,
+                },
+            )
+            for x in range(2)
+        ]
+
+        # create query to search chained query
+        params = {"entities": ["VM"], "attrs": [{"name": "Status", "value": "Service-In"}]}
+
+        # check results of backward and forward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"reason": "Data overflow was happened. Please narrow down intermediate conditions"},
+        )
+
+    # @mock.patch('entry.models.Entry')
+    def test_search_chain_when_elasticsearch_raise_an_exception(self):
+        def side_effect(*args, **kwargs):
+            raise RuntimeError("Dummy Exception of Elasticsearch")
+
+        mock_method = mock.Mock(side_effect=side_effect)
+        Entry.search_entries = mock_method
+
+        # create query to search chained query
+        params = {"entities": ["VM"], "attrs": [{"name": "Status", "value": "Service-In"}]}
+
+        # check results of backward and forward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"reason": "Data overflow was happened. Please narrow down intermediate conditions"},
         )
