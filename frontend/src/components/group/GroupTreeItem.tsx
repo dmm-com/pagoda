@@ -1,4 +1,5 @@
-import { Checkbox, ListItem, Typography } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { Checkbox, IconButton, ListItem, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
@@ -13,6 +14,9 @@ interface Props {
   groupTrees: GroupTree[];
   selectedGroupId: number;
   handleSelectGroupId: (groupId: number | null) => void;
+  setGroupAnchorEls?: (
+    els: { groupId: number; el: HTMLButtonElement } | null
+  ) => void;
 }
 
 export const GroupTreeItem: FC<Props> = ({
@@ -20,6 +24,7 @@ export const GroupTreeItem: FC<Props> = ({
   groupTrees,
   selectedGroupId,
   handleSelectGroupId,
+  setGroupAnchorEls,
 }) => {
   const isSuperuser = DjangoContext.getInstance().user.isSuperuser;
 
@@ -27,7 +32,12 @@ export const GroupTreeItem: FC<Props> = ({
     <>
       {groupTrees.map((groupTree) => (
         <React.Fragment key={groupTree.id}>
-          <ListItem sx={{ ml: `${depth * CHILDREN_INDENT_WIDTH}px` }}>
+          <ListItem
+            sx={{
+              width: "100%",
+              pl: `${(depth + 1) * CHILDREN_INDENT_WIDTH}px`,
+            }}
+          >
             <Checkbox
               checked={groupTree.id === selectedGroupId}
               onChange={(e) =>
@@ -42,6 +52,19 @@ export const GroupTreeItem: FC<Props> = ({
             >
               {groupTree.name}
             </Typography>
+            {setGroupAnchorEls != null && (
+              <IconButton
+                sx={{ margin: "0 0 0 auto" }}
+                onClick={(e) => {
+                  setGroupAnchorEls({
+                    groupId: groupTree.id,
+                    el: e.currentTarget,
+                  });
+                }}
+              >
+                <MoreVertIcon />
+              </IconButton>
+            )}
           </ListItem>
           {groupTree.children.length > 0 && (
             <GroupTreeItem
@@ -49,6 +72,7 @@ export const GroupTreeItem: FC<Props> = ({
               groupTrees={groupTree.children}
               selectedGroupId={selectedGroupId}
               handleSelectGroupId={handleSelectGroupId}
+              setGroupAnchorEls={setGroupAnchorEls}
             />
           )}
         </React.Fragment>

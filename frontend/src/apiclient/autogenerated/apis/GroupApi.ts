@@ -29,6 +29,10 @@ export interface GroupApiV2GroupsCreateRequest {
   groupCreateUpdate: GroupCreateUpdate;
 }
 
+export interface GroupApiV2GroupsDestroyRequest {
+  id: number;
+}
+
 export interface GroupApiV2GroupsRetrieveRequest {
   id: number;
 }
@@ -105,6 +109,62 @@ export class GroupApi extends runtime.BaseAPI {
       initOverrides
     );
     return await response.value();
+  }
+
+  /**
+   */
+  async groupApiV2GroupsDestroyRaw(
+    requestParameters: GroupApiV2GroupsDestroyRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling groupApiV2GroupsDestroy."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/group/api/v2/groups/{id}`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "DELETE",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async groupApiV2GroupsDestroy(
+    requestParameters: GroupApiV2GroupsDestroyRequest,
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.groupApiV2GroupsDestroyRaw(requestParameters, initOverrides);
   }
 
   /**
