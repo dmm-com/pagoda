@@ -178,6 +178,9 @@ def advanced_search_result(request):
     attrinfo = request.GET.get("attrinfo")
     entry_name = request.GET.get("entry_name", "")
 
+    if has_referral and referral_name is None:
+        referral_name = ""
+
     # forbid to input large size request
     if len(entry_name) > CONFIG_ENTRY.MAX_QUERY_SIZE:
         return HttpResponse("Sending parameter is too large", status=400)

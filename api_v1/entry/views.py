@@ -52,7 +52,7 @@ class EntrySearchAPI(APIView):
         hint_entities = request.data.get("entities")
         hint_entry_name = request.data.get("entry_name", "")
         hint_attrs = request.data.get("attrinfo")
-        hint_referral = request.data.get("referral", False)
+        hint_referral = request.data.get("referral")
         is_output_all = request.data.get("is_output_all", True)
         entry_limit = request.data.get("entry_limit", CONFIG_ENTRY.MAX_LIST_ENTRIES)
 
@@ -61,7 +61,7 @@ class EntrySearchAPI(APIView):
             or not isinstance(hint_entry_name, str)
             or not isinstance(hint_attrs, list)
             or not isinstance(is_output_all, bool)
-            or not isinstance(hint_referral, (str, bool))
+            or (hint_referral and not isinstance(hint_referral, str))
             or not isinstance(entry_limit, int)
         ):
             return Response(

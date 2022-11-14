@@ -188,7 +188,7 @@ class AdvancedSearchAPI(APIView):
         is_all_entities = request.data.get("is_all_entities", False)
         entry_limit = request.data.get("entry_limit", self.MAX_LIST_ENTRIES)
 
-        hint_referral = False
+        hint_referral = None
         if hint_has_referral:
             hint_referral = hint_referral_name
 
@@ -198,7 +198,7 @@ class AdvancedSearchAPI(APIView):
             or not isinstance(hint_attrs, list)
             or not isinstance(is_output_all, bool)
             or not isinstance(is_all_entities, bool)
-            or not isinstance(hint_referral, (str, bool))
+            or (hint_referral and not isinstance(hint_referral, str))
             or not isinstance(entry_limit, int)
         ):
             return Response(
