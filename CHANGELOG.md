@@ -59,6 +59,8 @@
 ### Changed
 * Changed Elasticsearch update process to faster.
   Contributed by @hinashi
+* Upgrade Elasticsearch version from 6.8.16 to 7.17.6
+  Contributed by @hinashi
 
 ### Fixed
 * Fixed advanced search not output after entity edit.
