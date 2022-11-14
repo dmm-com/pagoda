@@ -33,4 +33,12 @@ urlpatterns = [
             }
         ),
     ),
+    path(
+        "<int:entity_id>/histories/",
+        views.EntityHistoryAPI.as_view(
+            {
+                "get": "list",
+            }
+        ),
+    ),
 ]

@@ -26,6 +26,9 @@ import {
   EntryCreate,
   EntryCreateFromJSON,
   EntryCreateToJSON,
+  PaginatedEntityHistoryList,
+  PaginatedEntityHistoryListFromJSON,
+  PaginatedEntityHistoryListToJSON,
   PaginatedEntityListList,
   PaginatedEntityListListFromJSON,
   PaginatedEntityListListToJSON,
@@ -55,6 +58,12 @@ export interface EntityApiV2EntriesListRequest {
   ordering?: string;
   page?: number;
   search?: string;
+}
+
+export interface EntityApiV2HistoriesListRequest {
+  entityId: number;
+  limit?: number;
+  offset?: number;
 }
 
 export interface EntityApiV2ListRequest {
@@ -362,6 +371,79 @@ export class EntityApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<PaginatedEntryBaseList> {
     const response = await this.entityApiV2EntriesListRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async entityApiV2HistoriesListRaw(
+    requestParameters: EntityApiV2HistoriesListRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<PaginatedEntityHistoryList>> {
+    if (
+      requestParameters.entityId === null ||
+      requestParameters.entityId === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "entityId",
+        "Required parameter requestParameters.entityId was null or undefined when calling entityApiV2HistoriesList."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters.limit !== undefined) {
+      queryParameters["limit"] = requestParameters.limit;
+    }
+
+    if (requestParameters.offset !== undefined) {
+      queryParameters["offset"] = requestParameters.offset;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entity/api/v2/{entity_id}/histories/`.replace(
+          `{${"entity_id"}}`,
+          encodeURIComponent(String(requestParameters.entityId))
+        ),
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      PaginatedEntityHistoryListFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async entityApiV2HistoriesList(
+    requestParameters: EntityApiV2HistoriesListRequest,
+    initOverrides?: RequestInit
+  ): Promise<PaginatedEntityHistoryList> {
+    const response = await this.entityApiV2HistoriesListRaw(
       requestParameters,
       initOverrides
     );
