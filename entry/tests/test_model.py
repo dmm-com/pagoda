@@ -2720,7 +2720,11 @@ class ModelTest(AironeTestCase):
         entry = self.add_entry(user, "entry", entity, values={"attr": ref_entry0})
 
         # This checks initial es-documents of referral Entries (e0 and e1)
-        ret = Entry.search_entries(user, [ref_entity.id])
+        ret = Entry.search_entries(
+            user,
+            [ref_entity.id],
+            hint_referral="",
+        )
         self.assertEqual(ret["ret_count"], 2)
         expected_entry_info = [
             {
@@ -2747,7 +2751,11 @@ class ModelTest(AironeTestCase):
         entry.register_es()
 
         # Check es-documents after editing Entry
-        ret = Entry.search_entries(user, [ref_entity.id])
+        ret = Entry.search_entries(
+            user,
+            [ref_entity.id],
+            hint_referral="",
+        )
         for info in ret["ret_values"]:
             if info["entry"]["id"] == ref_entry0.id:
                 self.assertEqual(info["referrals"], [])
@@ -4496,7 +4504,6 @@ class ModelTest(AironeTestCase):
                 "entity": {"id": entity.id, "name": "all_attr_entity"},
                 "entry": {"id": entry.id, "name": "entry"},
                 "is_readble": True,
-                "referrals": [],
                 "attrs": {
                     "bool": {"is_readble": True, "type": AttrTypeValue["boolean"], "value": False},
                     "date": {
