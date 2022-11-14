@@ -150,10 +150,10 @@ Object {
                     class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-8 css-1p823my-MuiListItem-root"
                   >
                     <ul
-                      class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
+                      class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
                     >
                       <li
-                        class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                        class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
                       >
                         <span
                           class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
@@ -184,9 +184,29 @@ Object {
                         >
                           group1
                         </a>
+                        <button
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1lsk2dv-MuiButtonBase-root-MuiIconButton-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="MoreVertIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                            />
+                          </svg>
+                          <span
+                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                          />
+                        </button>
                       </li>
                       <li
-                        class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-dip7uj-MuiListItem-root"
+                        class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
                       >
                         <span
                           class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
@@ -217,9 +237,29 @@ Object {
                         >
                           group1
                         </a>
+                        <button
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1lsk2dv-MuiButtonBase-root-MuiIconButton-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="MoreVertIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                            />
+                          </svg>
+                          <span
+                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                          />
+                        </button>
                       </li>
                       <li
-                        class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-dip7uj-MuiListItem-root"
+                        class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
                       >
                         <span
                           class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
@@ -250,6 +290,26 @@ Object {
                         >
                           group2
                         </a>
+                        <button
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1lsk2dv-MuiButtonBase-root-MuiIconButton-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="MoreVertIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                            />
+                          </svg>
+                          <span
+                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                          />
+                        </button>
                       </li>
                     </ul>
                   </li>
@@ -257,10 +317,10 @@ Object {
                     class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-8 css-1p823my-MuiListItem-root"
                   >
                     <ul
-                      class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
+                      class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
                     >
                       <li
-                        class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                        class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
                       >
                         <span
                           class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
@@ -291,6 +351,26 @@ Object {
                         >
                           group2
                         </a>
+                        <button
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1lsk2dv-MuiButtonBase-root-MuiIconButton-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="MoreVertIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                            />
+                          </svg>
+                          <span
+                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                          />
+                        </button>
                       </li>
                     </ul>
                   </li>
@@ -512,10 +592,10 @@ Object {
                   class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-8 css-1p823my-MuiListItem-root"
                 >
                   <ul
-                    class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
+                    class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
                   >
                     <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
                     >
                       <span
                         class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
@@ -546,9 +626,29 @@ Object {
                       >
                         group1
                       </a>
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1lsk2dv-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="MoreVertIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                          />
+                        </svg>
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                        />
+                      </button>
                     </li>
                     <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-dip7uj-MuiListItem-root"
+                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
                     >
                       <span
                         class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
@@ -579,9 +679,29 @@ Object {
                       >
                         group1
                       </a>
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1lsk2dv-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="MoreVertIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                          />
+                        </svg>
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                        />
+                      </button>
                     </li>
                     <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-dip7uj-MuiListItem-root"
+                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
                     >
                       <span
                         class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
@@ -612,6 +732,26 @@ Object {
                       >
                         group2
                       </a>
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1lsk2dv-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="MoreVertIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                          />
+                        </svg>
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                        />
+                      </button>
                     </li>
                   </ul>
                 </li>
@@ -619,10 +759,10 @@ Object {
                   class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-8 css-1p823my-MuiListItem-root"
                 >
                   <ul
-                    class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
+                    class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
                   >
                     <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
                     >
                       <span
                         class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
@@ -653,6 +793,26 @@ Object {
                       >
                         group2
                       </a>
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1lsk2dv-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="MoreVertIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                          />
+                        </svg>
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                        />
+                      </button>
                     </li>
                   </ul>
                 </li>

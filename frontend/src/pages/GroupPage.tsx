@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { SearchBox } from "../components/common/SearchBox";
+import { GroupControlMenu } from "../components/group/GroupControlMenu";
 import { GroupImportModal } from "../components/group/GroupImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
 import { DjangoContext } from "../utils/DjangoContext";
@@ -27,6 +28,10 @@ export const GroupPage: FC = () => {
   const [keyword, setKeyword] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState<number>();
   const [openImportModal, setOpenImportModal] = useState(false);
+  const [groupAnchorEls, setGroupAnchorEls] = useState<{
+    groupId: number;
+    el: HTMLButtonElement;
+  } | null>();
 
   const groupTrees = useAsync(async () => {
     return await aironeApiClientV2.getGroupTrees();
@@ -135,7 +140,15 @@ export const GroupPage: FC = () => {
                 groupTrees={groupTrees.value}
                 selectedGroupId={selectedGroupId}
                 handleSelectGroupId={handleSelectGroupId}
+                setGroupAnchorEls={setGroupAnchorEls}
               />
+              {groupAnchorEls != null && (
+                <GroupControlMenu
+                  groupId={groupAnchorEls.groupId}
+                  anchorElem={groupAnchorEls.el}
+                  handleClose={() => setGroupAnchorEls(null)}
+                />
+              )}
             </Box>
           )}
         </Grid>

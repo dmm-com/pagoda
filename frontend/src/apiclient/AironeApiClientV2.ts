@@ -408,6 +408,20 @@ class AironeApiClientV2 {
     );
   }
 
+  async deleteGroup(groupId: number): Promise<void> {
+    await this.group.groupApiV2GroupsDestroy(
+      {
+        id: groupId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
   async getGroupTrees(): Promise<GroupTree[]> {
     const groupTrees = await this.group.groupApiV2GroupsTreeList();
 

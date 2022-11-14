@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from rest_framework import generics, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
 from airone.lib.drf import YAMLParser
 from group.api_v2.serializers import (
@@ -43,6 +44,7 @@ class GroupAPI(viewsets.ModelViewSet):
         serializer = {
             "create": GroupCreateUpdateSerializer,
             "update": GroupCreateUpdateSerializer,
+            "destroy": Serializer,
         }
         return serializer.get(self.action, GroupSerializer)
 
