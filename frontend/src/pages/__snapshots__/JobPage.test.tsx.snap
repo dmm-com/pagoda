@@ -179,10 +179,10 @@ Object {
                       </p>
                     </div>
                     <div
-                      class="MuiBox-root css-1ho43uv"
+                      class="MuiBox-root css-fu33gk"
                     >
                       <button
-                        class="MuiButton-root MuiButton-contained MuiButton-containedError MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-1sszw6i-MuiButtonBase-root-MuiButton-root"
+                        class="MuiButton-root MuiButton-contained MuiButton-containedError MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-fc0zcf-MuiButtonBase-root-MuiButton-root"
                         tabindex="0"
                         type="button"
                       >
@@ -195,7 +195,7 @@ Object {
                         class="MuiBox-root css-0"
                       >
                         <button
-                          class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                          class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-1c5ka3i-MuiButtonBase-root-MuiButton-root"
                           tabindex="0"
                           type="button"
                         >
@@ -277,7 +277,7 @@ Object {
                       </p>
                     </div>
                     <div
-                      class="MuiBox-root css-1ho43uv"
+                      class="MuiBox-root css-fu33gk"
                     />
                   </div>
                 </td>
@@ -573,10 +573,10 @@ Object {
                     </p>
                   </div>
                   <div
-                    class="MuiBox-root css-1ho43uv"
+                    class="MuiBox-root css-fu33gk"
                   >
                     <button
-                      class="MuiButton-root MuiButton-contained MuiButton-containedError MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-1sszw6i-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButton-root MuiButton-contained MuiButton-containedError MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-fc0zcf-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -589,7 +589,7 @@ Object {
                       class="MuiBox-root css-0"
                     >
                       <button
-                        class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root makeStyles-button-6 css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                        class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-1c5ka3i-MuiButtonBase-root-MuiButton-root"
                         tabindex="0"
                         type="button"
                       >
@@ -671,7 +671,7 @@ Object {
                     </p>
                   </div>
                   <div
-                    class="MuiBox-root css-1ho43uv"
+                    class="MuiBox-root css-fu33gk"
                   />
                 </div>
               </td>
