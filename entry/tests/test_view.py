@@ -1018,7 +1018,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # check es-documents of both e0 (was referred before) and e2 (is referred now)
-        ret = Entry.search_entries(user, [ref_entity.id])
+        ret = Entry.search_entries(
+            user,
+            [ref_entity.id],
+            hint_referral="",
+        )
         self.assertEqual(ret["ret_count"], 3)
         for info in ret["ret_values"]:
             if info["entry"]["id"] == ref_entries[0].id:

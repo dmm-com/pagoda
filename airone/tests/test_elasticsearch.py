@@ -358,7 +358,8 @@ class ElasticSearchTest(TestCase):
         }
 
         hint_attrs = [{"name": "test_attr", "keyword": "", "is_readble": True}]
-        results = elasticsearch.make_search_results(self._user, res, hint_attrs, 100)
+        hint_referral = ""
+        results = elasticsearch.make_search_results(self._user, res, hint_attrs, hint_referral, 100)
 
         self.assertEqual(results["ret_count"], 1)
         self.assertEqual(
@@ -382,6 +383,10 @@ class ElasticSearchTest(TestCase):
                 }
             ],
         )
+
+        hint_referral = None
+        results = elasticsearch.make_search_results(self._user, res, hint_attrs, hint_referral, 100)
+        self.assertFalse("referrals" in results["ret_values"])
 
     def test_make_search_results_for_simple(self):
         entry = Entry.objects.create(

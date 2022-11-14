@@ -801,6 +801,7 @@ def make_search_results(
     user: User,
     res: Dict[str, Any],
     hint_attrs: List[Dict[str, str]],
+    hint_referral: Optional[str],
     limit: int,
 ) -> Dict[str, str]:
     """Acquires and returns the attribute values held by each search result
@@ -862,8 +863,10 @@ def make_search_results(
             "entity": {"id": entry.schema.id, "name": entry.schema.name},
             "entry": {"id": entry.id, "name": entry.name},
             "attrs": {},
-            "referrals": entry_info.get("referrals", []),
         }
+
+        if hint_referral is not None:
+            ret_info["referrals"] = entry_info.get("referrals", [])
 
         # Check for has permission to Entry
         if entry_info["is_readble"] or user.has_permission(entry, ACLType.Readable):

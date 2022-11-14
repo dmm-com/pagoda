@@ -247,7 +247,6 @@ class ViewTest(AironeViewTest):
                     }
                 },
                 "is_readble": entry.is_public,
-                "referrals": [],
             },
         )
         self.assertEqual(resp.context["max_num"], 100)

@@ -176,6 +176,9 @@ def export_search_result(self, job_id):
     referral_name = recv_data.get("referral_name")
     entry_name = recv_data.get("entry_name")
 
+    if has_referral and referral_name is None:
+        referral_name = ""
+
     resp = Entry.search_entries(
         user,
         recv_data["entities"],

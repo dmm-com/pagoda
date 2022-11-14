@@ -534,7 +534,6 @@ class ViewTest(AironeViewTest):
             },
         )
 
-        resp = Entry.search_entries(user, [ref_entity.id], hint_referral_entity_id=entity.id)
         params = {
             "name": "Changed-Entity",
             "note": "bar",
@@ -574,7 +573,7 @@ class ViewTest(AironeViewTest):
 
         # Check the elasticsearch data is also changed when
         # referred Entity name is changed.
-        res = Entry.search_entries(user, [ref_entity.id], is_output_all=True)
+        res = Entry.search_entries(user, [ref_entity.id], hint_referral="", is_output_all=True)
         self.assertEqual(res["ret_count"], 1)
         self.assertEqual(res["ret_values"][0]["referrals"][0]["schema"]["name"], "Changed-Entity")
 
@@ -892,7 +891,7 @@ class ViewTest(AironeViewTest):
 
         # Check the elasticsearch data (the referrals parameter) is also removed when
         # referring EntityAttr is deleted.
-        res = Entry.search_entries(user, [ref_entity.id], is_output_all=True)
+        res = Entry.search_entries(user, [ref_entity.id], hint_referral="", is_output_all=True)
         self.assertEqual(res["ret_count"], 1)
         self.assertEqual(res["ret_values"][0]["entry"]["id"], ref_entry.id)
         self.assertEqual(res["ret_values"][0]["referrals"], [])

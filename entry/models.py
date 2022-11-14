@@ -2106,7 +2106,7 @@ class Entry(ACLBase):
                         )
 
             # retrieve data from database on the basis of the result of elasticsearch
-            search_result = make_search_results(user, resp, hint_attrs, limit)
+            search_result = make_search_results(user, resp, hint_attrs, hint_referral, limit)
             results["ret_count"] += search_result["ret_count"]
             results["ret_values"].extend(search_result["ret_values"])
             limit -= search_result["ret_count"]
