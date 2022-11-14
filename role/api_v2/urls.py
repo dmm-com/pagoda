@@ -22,4 +22,12 @@ urlpatterns = [
             }
         ),
     ),
+    url(
+        r"^import$",
+        views.RoleImportAPI.as_view(),
+    ),
+    url(
+        r"^export$",
+        views.RoleExportAPI.as_view(),
+    ),
 ]

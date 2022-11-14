@@ -20,6 +20,9 @@ import {
   RoleCreateUpdate,
   RoleCreateUpdateFromJSON,
   RoleCreateUpdateToJSON,
+  RoleImportExportChild,
+  RoleImportExportChildFromJSON,
+  RoleImportExportChildToJSON,
 } from "../models";
 
 export interface RoleApiV2CreateRequest {
@@ -162,6 +165,95 @@ export class RoleApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<void> {
     await this.roleApiV2DestroyRaw(requestParameters, initOverrides);
+  }
+
+  /**
+   */
+  async roleApiV2ExportListRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<Array<RoleImportExportChild>>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/role/api/v2/export`,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      jsonValue.map(RoleImportExportChildFromJSON)
+    );
+  }
+
+  /**
+   */
+  async roleApiV2ExportList(
+    initOverrides?: RequestInit
+  ): Promise<Array<RoleImportExportChild>> {
+    const response = await this.roleApiV2ExportListRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   */
+  async roleApiV2ImportCreateRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/role/api/v2/import`,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async roleApiV2ImportCreate(initOverrides?: RequestInit): Promise<void> {
+    await this.roleApiV2ImportCreateRaw(initOverrides);
   }
 
   /**

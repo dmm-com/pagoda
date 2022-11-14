@@ -31,4 +31,6 @@ urlpatterns = [
             }
         ),
     ),
+    path("import/", views.UserImportAPI.as_view()),
+    path("export/", views.UserExportAPI.as_view()),
 ]
