@@ -33,4 +33,20 @@ urlpatterns = [
     ),
     path("import/", views.UserImportAPI.as_view()),
     path("export/", views.UserExportAPI.as_view()),
+    path(
+        "password_reset",
+        views.PasswordResetAPI.as_view(
+            {
+                "post": "reset",
+            }
+        ),
+    ),
+    path(
+        "password_reset/confirm",
+        views.PasswordResetConfirmAPI.as_view(
+            {
+                "post": "confirm",
+            }
+        ),
+    ),
 ]

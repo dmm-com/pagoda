@@ -35,6 +35,8 @@ export * from "./PaginatedEntryBaseList";
 export * from "./PaginatedGetEntrySimpleList";
 export * from "./PaginatedJobSerializersList";
 export * from "./PaginatedUserListList";
+export * from "./PasswordReset";
+export * from "./PasswordResetConfirm";
 export * from "./Role";
 export * from "./RoleCreateUpdate";
 export * from "./RoleGroup";

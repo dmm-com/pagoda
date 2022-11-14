@@ -12,15 +12,50 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { FC } from "react";
+import React, { FC, useCallback, useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
+
+import { PasswordResetConfirmModal } from "../components/user/PasswordResetConfirmModal";
+import { PasswordResetModal } from "../components/user/PasswordResetModal";
 
 import { postLogin } from "utils/AironeAPIClient";
 import { DjangoContext } from "utils/DjangoContext";
 
 export const LoginPage: FC = () => {
   const djangoContext = DjangoContext.getInstance();
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [isAlert, setIsAlert] = React.useState(false);
+  const history = useHistory();
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [isAlert, setIsAlert] = useState(false);
+  const [openPasswordResetModal, setOpenPasswordResetModal] = useState(false);
+  const [uidb64, setUidb64] = useState<string>();
+  const [token, setToken] = useState<string>();
+  const [openPasswordResetConfirmModal, setOpenPasswordResetConfirmModal] =
+    useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+
+    const _uidb64 = params.get("uidb64");
+    if (_uidb64 != null) {
+      setUidb64(_uidb64);
+    }
+
+    // get token from query parameter, then delete it to avoid leaking via Referer header(a similar logic to Django auth module).
+    const _token = params.get("token");
+    if (_token != null) {
+      setToken(_token);
+      params.delete("token");
+      history.replace({
+        pathname: location.pathname,
+        search: "?" + params.toString(),
+      });
+    }
+
+    if (_uidb64 != null && _token != null) {
+      setOpenPasswordResetConfirmModal(true);
+    }
+  }, [location.search]);
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
@@ -38,6 +73,18 @@ export const LoginPage: FC = () => {
       }
     });
   };
+
+  const handleOpenPasswordResetModal = useCallback(() => {
+    setOpenPasswordResetModal(true);
+  }, [setOpenPasswordResetModal]);
+
+  const handleClosePasswordResetModal = useCallback(() => {
+    setOpenPasswordResetModal(false);
+  }, [setOpenPasswordResetModal]);
+
+  const handleClosePasswordResetConfirmModal = useCallback(() => {
+    setOpenPasswordResetConfirmModal(false);
+  }, [setOpenPasswordResetConfirmModal]);
 
   return (
     <Box
@@ -62,7 +109,7 @@ export const LoginPage: FC = () => {
           {djangoContext.title}
         </Typography>
         <Typography variant="subtitle2" mt={2}>
-          {djangoContext.subTitle}
+          仮想マシンや各機材を検索することができる情報管理システム。
         </Typography>
         <Box width={500} height={50} mt={2}>
           {isAlert ? (
@@ -116,24 +163,34 @@ export const LoginPage: FC = () => {
             type="hidden"
             value={djangoContext.loginNext}
           />
-          {/* TODO change href url*/}
-          <Link
-            color="secondary"
-            ml="auto"
-            href={djangoContext.noteLink}
-            target="_blank"
-            rel="noopener pnoreferrer"
-          >
-            <InfoIcon
-              sx={{
-                fontSize: "14px",
-                verticalAlign: "middle",
-              }}
-            />
-            <Typography fontSize="12px" ml={1} display="inline">
-              {djangoContext.noteDesc}
-            </Typography>
-          </Link>
+          <Box display="flex" flexDirection="column" width="100%" my="8px">
+            <Link color="secondary" sx={{ cursor: "pointer" }}>
+              <InfoIcon
+                sx={{
+                  fontSize: "14px",
+                  verticalAlign: "middle",
+                }}
+              />
+              <Typography fontSize="16px" ml={1} display="inline">
+                ユーザネーム、パスワードが分からない
+              </Typography>
+            </Link>
+            <Link
+              color="secondary"
+              onClick={handleOpenPasswordResetModal}
+              sx={{ cursor: "pointer" }}
+            >
+              <InfoIcon
+                sx={{
+                  fontSize: "14px",
+                  verticalAlign: "middle",
+                }}
+              />
+              <Typography fontSize="16px" ml={1} display="inline">
+                パスワードリセット
+              </Typography>
+            </Link>
+          </Box>
           <Button
             type="submit"
             variant="contained"
@@ -143,6 +200,17 @@ export const LoginPage: FC = () => {
           </Button>
         </Box>
       </Box>
+
+      <PasswordResetModal
+        openModal={openPasswordResetModal}
+        closeModal={handleClosePasswordResetModal}
+      />
+      <PasswordResetConfirmModal
+        openModal={openPasswordResetConfirmModal}
+        closeModal={handleClosePasswordResetConfirmModal}
+        uidb64={uidb64}
+        token={token}
+      />
     </Box>
   );
 };

@@ -1,4 +1,10 @@
+import json
+from unittest import mock
+
 import yaml
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from rest_framework.authtoken.models import Token
 
 from airone.lib.test import AironeViewTest
@@ -165,3 +171,122 @@ class ViewTest(AironeViewTest):
         obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
         self.assertTrue(isinstance(obj, list))
         self.assertEqual(len(obj), 3)
+
+    @mock.patch("user.api_v2.views.EmailMultiAlternatives")
+    def test_password_reset(self, mock_email):
+        user = self._create_user("user")
+
+        params = {
+            "username": user.username,
+        }
+        resp = self.client.post(
+            "/user/api/v2/password_reset", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        mock_email.assert_called_once()
+
+    def test_password_reset_with_unknown_user(self):
+        params = {
+            "username": "unknown",
+        }
+        resp = self.client.post(
+            "/user/api/v2/password_reset", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_password_reset_confirm(self):
+        user = self._create_user("user")
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        password = "new-password"
+        params = {
+            "uidb64": uidb64,
+            "token": token,
+            "password1": password,
+            "password2": password,
+        }
+        resp = self.client.post(
+            "/user/api/v2/password_reset/confirm", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        updated_user = User.objects.filter(id=user.id).first()
+        self.assertIsNotNone(updated_user)
+        self.assertTrue(updated_user.check_password(password))
+
+    def test_password_reset_confirm_with_invalid_user(self):
+        user = self._create_user("user")
+        token = default_token_generator.make_token(user)
+
+        password = "new-password"
+        params = {
+            "uidb64": "invalid",
+            "token": token,
+            "password1": password,
+            "password2": password,
+        }
+        resp = self.client.post(
+            "/user/api/v2/password_reset/confirm", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_password_reset_confirm_with_invalid_token(self):
+        user = self._create_user("user")
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+
+        password = "new-password"
+        params = {
+            "uidb64": uidb64,
+            "token": "invalid",
+            "password1": password,
+            "password2": password,
+        }
+        resp = self.client.post(
+            "/user/api/v2/password_reset/confirm", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_password_reset_confirm_with_invalid_password(self):
+        user = self._create_user("user")
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        # too common
+        password = "password"
+        params = {
+            "uidb64": uidb64,
+            "token": token,
+            "password1": password,
+            "password2": password,
+        }
+        resp = self.client.post(
+            "/user/api/v2/password_reset/confirm", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+        # too short
+        password = "pw"
+        params = {
+            "uidb64": uidb64,
+            "token": token,
+            "password1": password,
+            "password2": password,
+        }
+        resp = self.client.post(
+            "/user/api/v2/password_reset/confirm", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+        # unmatch 2 password fields
+        params = {
+            "uidb64": uidb64,
+            "token": token,
+            "password1": "new-password",
+            "password2": "unmatched-password",
+        }
+        resp = self.client.post(
+            "/user/api/v2/password_reset/confirm", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)

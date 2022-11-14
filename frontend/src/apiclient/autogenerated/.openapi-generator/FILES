@@ -42,6 +42,8 @@ models/PaginatedEntryBaseList.ts
 models/PaginatedGetEntrySimpleList.ts
 models/PaginatedJobSerializersList.ts
 models/PaginatedUserListList.ts
+models/PasswordReset.ts
+models/PasswordResetConfirm.ts
 models/Role.ts
 models/RoleCreateUpdate.ts
 models/RoleGroup.ts

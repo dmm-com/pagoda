@@ -664,6 +664,46 @@ class AironeApiClientV2 {
       body: formData,
     });
   }
+
+  async resetPassword(username: string): Promise<void> {
+    await this.user.userApiV2PasswordResetCreate(
+      {
+        passwordReset: {
+          username: username,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async confirmResetPassword(
+    uidb64: string,
+    token: string,
+    password1: string,
+    password2: string
+  ): Promise<void> {
+    await this.user.userApiV2PasswordResetConfirmCreate(
+      {
+        passwordResetConfirm: {
+          uidb64,
+          token,
+          password1,
+          password2,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
 }
 
 export const aironeApiClientV2 = new AironeApiClientV2();
