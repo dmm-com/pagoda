@@ -12,7 +12,7 @@ import { useHistory } from "react-router-dom";
 
 import { DjangoContext } from "../../utils/DjangoContext";
 
-import { topPath, usersPath } from "Routes";
+import { loginPath, topPath, usersPath } from "Routes";
 import {
   updateUserPassword,
   updateUserPasswordAsSuperuser,
@@ -91,8 +91,12 @@ export const UserPasswordFormModal: FC<Props> = ({
     // This calls event handler, which is specified by caller component
     onSubmit();
 
-    history.replace(topPath());
-    history.replace(usersPath());
+    if (DjangoContext.getInstance().user.id == userId) {
+      history.replace(loginPath());
+    } else {
+      history.replace(topPath());
+      history.replace(usersPath());
+    }
   };
 
   return (
