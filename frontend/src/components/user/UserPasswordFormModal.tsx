@@ -1,4 +1,11 @@
-import { Box, Button, TextField, Input, Modal, Theme, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Modal,
+  Theme,
+  Typography,
+} from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -32,7 +39,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: "#90A4AE",
   },
   passwordFieldInput: {
-    witdh: "100%",
+    width: "100%",
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
@@ -61,12 +68,20 @@ export const UserPasswordFormModal: FC<Props> = ({
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [checkPassword, setCheckPassword] = useState("");
+  const [isUnmatch, setIsUnmatch] = useState(false);
 
   const asSuperuser = useMemo(() => {
     return DjangoContext.getInstance().user.isSuperuser;
   }, []);
 
   const handleSubmit = async () => {
+    if (newPassword != checkPassword) {
+      // abort to submit password
+      setIsUnmatch(true);
+
+      return;
+    }
+
     if (asSuperuser) {
       await updateUserPasswordAsSuperuser(userId, newPassword, checkPassword);
     } else {
@@ -124,17 +139,32 @@ export const UserPasswordFormModal: FC<Props> = ({
               確認のためもう一度、新しいパスワードをご入力ください。
             </label>
           </Box>
-          <Input
+          <TextField
+            error={isUnmatch}
             className={classes.passwordFieldInput}
+            variant={"standard"}
             type="password"
             placeholder="Confirm new password"
             value={checkPassword}
-            onChange={(e) => setCheckPassword(e.target.value)}
+            helperText={
+              isUnmatch ? "新しいパスワードと、入力内容が一致しません" : ""
+            }
+            onChange={(e) => {
+              setCheckPassword(e.target.value);
+              setIsUnmatch(false);
+            }}
           />
         </Box>
 
         <Box className={classes.buttons}>
           <Button
+            disabled={
+              (asSuperuser && (!newPassword.length || !checkPassword.length)) ||
+              (!asSuperuser &&
+                (!oldPassword.length ||
+                  !newPassword.length ||
+                  !checkPassword.length))
+            }
             type="submit"
             variant="contained"
             color="secondary"
