@@ -1889,7 +1889,7 @@ class Entry(ACLBase):
         if not es:
             es = ESS()
 
-        es.index(doc_type="entry", id=self.id, body=self.get_es_document(es))
+        es.index(id=self.id, body=self.get_es_document(es))
         es.refresh()
 
         if recursive_call_stack:
@@ -1941,7 +1941,7 @@ class Entry(ACLBase):
         if not es:
             es = ESS()
 
-        es.delete(doc_type="entry", id=self.id, ignore=[404])
+        es.delete(id=self.id, ignore=[404])
         es.refresh(ignore=[404])
 
     def get_value_history(self, user, count=CONFIG.MAX_HISTORY_COUNT, index=0):
@@ -2106,7 +2106,7 @@ class Entry(ACLBase):
                         )
 
             # retrieve data from database on the basis of the result of elasticsearch
-            search_result = make_search_results(user, resp, hint_attrs, limit)
+            search_result = make_search_results(user, resp, hint_attrs, hint_referral, limit)
             results["ret_count"] += search_result["ret_count"]
             results["ret_values"].extend(search_result["ret_values"])
             limit -= search_result["ret_count"]
@@ -2239,7 +2239,7 @@ class Entry(ACLBase):
                     register_docs.append(es_doc)
 
             if register_docs:
-                es.bulk(doc_type="entry", body=register_docs)
+                es.bulk(body=register_docs)
             start_pos = start_pos + 1000
 
         # delete
@@ -2249,7 +2249,7 @@ class Entry(ACLBase):
         for entry_id in set(entry_ids_from_es) - set(entry_ids_from_db):
             if not is_update:
                 Logger.warning("Delete elasticsearch document (entry_id: %s)" % entry.id)
-            es.delete(doc_type="entry", id=entry_id, ignore=[404])
+            es.delete(id=entry_id, ignore=[404])
 
         es.indices.refresh()
 

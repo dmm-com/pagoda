@@ -2,7 +2,14 @@ import io
 from typing import List, TypedDict
 
 import yaml
+from django.contrib.auth.forms import UserModel
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import EmailMultiAlternatives
 from django.http import HttpResponse
+from django.template import loader
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.authtoken.models import Token
@@ -14,6 +21,8 @@ from rest_framework.response import Response
 from airone.lib.drf import YAMLParser
 from group.models import Group
 from user.api_v2.serializers import (
+    PasswordResetConfirmSerializer,
+    PasswordResetSerializer,
     UserCreateSerializer,
     UserImportSerializer,
     UserListSerializer,
@@ -166,3 +175,95 @@ class UserExportAPI(generics.RetrieveAPIView):
         output.write(yaml.dump(data, default_flow_style=False, allow_unicode=True))
 
         return HttpResponse(output.getvalue(), content_type="application/yaml")
+
+
+class PasswordResetAPI(viewsets.GenericViewSet):
+    serializer_class = PasswordResetSerializer
+    permission_classes = []
+
+    def reset(self, request):
+        serializer = PasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # TODO may be better to implement it in serializer
+        username = serializer.validated_data.get("username")
+        user = self._get_user(username)
+        if not user:
+            return Response("user %s not found" % username, status=status.HTTP_400_BAD_REQUEST)
+
+        user_email = getattr(user, UserModel.get_email_field_name())
+        use_https = request.is_secure()
+        token_generator = default_token_generator
+        current_site = get_current_site(request)
+        site_name = current_site.name
+        domain = current_site.domain
+        context = {
+            "email": user_email,
+            "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+            "user": user,
+            "domain": domain,
+            "site_name": site_name,
+            "token": token_generator.make_token(user),
+            "protocol": "https" if use_https else "http",
+        }
+        self._send_mail(
+            subject_template_name="registration/password_reset_subject.txt",
+            email_template_name="registration/new_ui/password_reset_email.html",
+            context=context,
+            from_email=None,
+            to_email=user_email,
+            html_email_template_name=None,
+        )
+
+        return Response(serializer.validated_data)
+
+    def _get_user(self, username):
+        """
+        Given a username, return matching user who should receive a reset or None.
+        """
+        active_users = UserModel._default_manager.filter(
+            **{
+                "%s__iexact" % UserModel.USERNAME_FIELD: username,
+                "is_active": True,
+            }
+        )
+        if len(active_users) == 1 and active_users[0].has_usable_password():
+            return active_users[0]
+        else:
+            return None
+
+    def _send_mail(
+        self,
+        subject_template_name,
+        email_template_name,
+        context,
+        from_email,
+        to_email,
+        html_email_template_name=None,
+    ):
+        """
+        Sends a django.core.mail.EmailMultiAlternatives to `to_email`.
+        """
+        subject = loader.render_to_string(subject_template_name, context)
+        # Email subject *must not* contain newlines
+        subject = "".join(subject.splitlines())
+        body = loader.render_to_string(email_template_name, context)
+
+        email_message = EmailMultiAlternatives(subject, body, from_email, [to_email])
+        if html_email_template_name is not None:
+            html_email = loader.render_to_string(html_email_template_name, context)
+            email_message.attach_alternative(html_email, "text/html")
+
+        email_message.send()
+
+
+class PasswordResetConfirmAPI(viewsets.GenericViewSet):
+    serializer_class = PasswordResetConfirmSerializer
+    permission_classes = []
+
+    def confirm(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.validated_data)

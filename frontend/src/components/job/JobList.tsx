@@ -187,7 +187,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
                     }
                   })()}
                 </Box>
-                <Box mx="12px">
+                <Box flexGrow="1" mx="16px">
                   {![
                     JobStatuses.DONE,
                     JobStatuses.PROCESSING,
@@ -196,21 +196,23 @@ export const JobList: FC<Props> = ({ jobs }) => {
                     <Button
                       variant="contained"
                       color="error"
-                      className={classes.button}
+                      sx={{ my: "4px" }}
                       onClick={() => handleRerun(job.id)}
                     >
                       再実行
                     </Button>
                   )}
-                  {![JobStatuses.DONE, JobStatuses.CANCELED].includes(
-                    job.status
-                  ) && (
+                  {![
+                    JobStatuses.DONE,
+                    JobStatuses.ERROR,
+                    JobStatuses.CANCELED,
+                  ].includes(job.status) && (
                     <Confirmable
                       componentGenerator={(handleOpen) => (
                         <Button
                           variant="contained"
                           color="secondary"
-                          className={classes.button}
+                          sx={{ my: "4px" }}
                           onClick={handleOpen}
                         >
                           キャンセル

@@ -818,9 +818,7 @@ class ModelTest(AironeTestCase):
         # register entry to the Elasticsearch to check that will be deleted
         deleting_entry_id = self._entry.id
         self._entry.register_es()
-        res = self._es.get(
-            index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=deleting_entry_id
-        )
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], id=deleting_entry_id)
         self.assertTrue(res["found"])
 
         # delete an entry that have an attribute which refers to the entry of ReferredEntity
@@ -836,7 +834,6 @@ class ModelTest(AironeTestCase):
         # checks that the document in the Elasticsearch associated with the entry was also deleted
         res = self._es.get(
             index=settings.ES_CONFIG["INDEX"],
-            doc_type="entry",
             id=deleting_entry_id,
             ignore=[404],
         )
@@ -2589,12 +2586,12 @@ class ModelTest(AironeTestCase):
             entry.register_es()
 
         # checks that all entries are registered to the ElasticSearch.
-        res = self._es.indices.stats(index=settings.ES_CONFIG["INDEX"])
-        self.assertEqual(res["_all"]["total"]["segments"]["count"], ENTRY_COUNTS + 2)
+        res = Entry.get_all_es_docs()
+        self.assertEqual(res["hits"]["total"]["value"], ENTRY_COUNTS + 2)
 
         # checks that all registered entries can be got from Elasticsearch
         for entry in Entry.objects.filter(schema=entity):
-            res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
+            res = self._es.get(index=settings.ES_CONFIG["INDEX"], id=entry.id)
             self.assertTrue(res["found"])
 
             # This checks whether returned results have all values of attributes
@@ -2670,11 +2667,10 @@ class ModelTest(AironeTestCase):
         entry.delete()
 
         # Total count is one less than initial value.
-        res = self._es.indices.stats(index=settings.ES_CONFIG["INDEX"])
-        self.assertEqual(res["_all"]["total"]["segments"]["count"], ENTRY_COUNTS + 1)
+        res = Entry.get_all_es_docs()
+        self.assertEqual(res["hits"]["total"]["value"], ENTRY_COUNTS + 1)
         res = self._es.get(
             index=settings.ES_CONFIG["INDEX"],
-            doc_type="entry",
             id=entry.id,
             ignore=[404],
         )
@@ -2700,7 +2696,7 @@ class ModelTest(AironeTestCase):
 
         self._entry.register_es()
 
-        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=self._entry.id)
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], id=self._entry.id)
         self.assertEqual(res["_source"]["attr"][0]["value"], "hoge")
 
     def test_es_documents_of_entry_when_it_is_updated(self):
@@ -2720,7 +2716,11 @@ class ModelTest(AironeTestCase):
         entry = self.add_entry(user, "entry", entity, values={"attr": ref_entry0})
 
         # This checks initial es-documents of referral Entries (e0 and e1)
-        ret = Entry.search_entries(user, [ref_entity.id])
+        ret = Entry.search_entries(
+            user,
+            [ref_entity.id],
+            hint_referral="",
+        )
         self.assertEqual(ret["ret_count"], 2)
         expected_entry_info = [
             {
@@ -2747,7 +2747,11 @@ class ModelTest(AironeTestCase):
         entry.register_es()
 
         # Check es-documents after editing Entry
-        ret = Entry.search_entries(user, [ref_entity.id])
+        ret = Entry.search_entries(
+            user,
+            [ref_entity.id],
+            hint_referral="",
+        )
         for info in ret["ret_values"]:
             if info["entry"]["id"] == ref_entry0.id:
                 self.assertEqual(info["referrals"], [])
@@ -2802,7 +2806,7 @@ class ModelTest(AironeTestCase):
         entry.register_es()
 
         # checks registered value is corrected
-        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], id=entry.id)
         self.assertEqual(res["_source"]["attr"][0]["name"], entity_attr.name)
         self.assertEqual(res["_source"]["attr"][0]["type"], entity_attr.type)
         self.assertEqual(res["_source"]["attr"][0]["value"], "hoge")
@@ -2812,7 +2816,7 @@ class ModelTest(AironeTestCase):
         entry.register_es()
 
         # checks registered value was also updated
-        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], id=entry.id)
         self.assertEqual(res["_source"]["attr"][0]["value"], "fuga")
 
     def test_search_entries_from_elasticsearch(self):
@@ -4496,7 +4500,6 @@ class ModelTest(AironeTestCase):
                 "entity": {"id": entity.id, "name": "all_attr_entity"},
                 "entry": {"id": entry.id, "name": "entry"},
                 "is_readble": True,
-                "referrals": [],
                 "attrs": {
                     "bool": {"is_readble": True, "type": AttrTypeValue["boolean"], "value": False},
                     "date": {

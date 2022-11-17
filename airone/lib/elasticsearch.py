@@ -60,102 +60,100 @@ class ESS(Elasticsearch):
             ignore=400,
             body={
                 "mappings": {
-                    "entry": {
-                        "properties": {
-                            "name": {
-                                "type": "text",
-                                "index": "true",
-                                "analyzer": "keyword",
-                                "fields": {
-                                    "keyword": {"type": "keyword"},
-                                },
+                    "properties": {
+                        "name": {
+                            "type": "text",
+                            "index": "true",
+                            "analyzer": "keyword",
+                            "fields": {
+                                "keyword": {"type": "keyword"},
                             },
-                            "referrals": {
-                                "type": "nested",
-                                "properties": {
-                                    "id": {
-                                        "type": "integer",
-                                        "index": "true",
-                                    },
-                                    "name": {
-                                        "type": "text",
-                                        "index": "true",
-                                        "analyzer": "keyword",
-                                    },
-                                    "schema": {
-                                        "type": "nested",
-                                        "properties": {
-                                            "id": {
-                                                "type": "integer",
-                                                "index": "true",
-                                            },
-                                            "name": {
-                                                "type": "text",
-                                                "index": "true",
-                                                "analyzer": "keyword",
-                                            },
+                        },
+                        "referrals": {
+                            "type": "nested",
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "index": "true",
+                                },
+                                "name": {
+                                    "type": "text",
+                                    "index": "true",
+                                    "analyzer": "keyword",
+                                },
+                                "schema": {
+                                    "type": "nested",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "index": "true",
+                                        },
+                                        "name": {
+                                            "type": "text",
+                                            "index": "true",
+                                            "analyzer": "keyword",
                                         },
                                     },
                                 },
                             },
-                            "entity": {
-                                "type": "nested",
-                                "properties": {
-                                    "id": {
-                                        "type": "integer",
-                                        "index": "true",
-                                    },
-                                    "name": {
-                                        "type": "text",
-                                        "index": "true",
-                                        "analyzer": "keyword",
-                                    },
+                        },
+                        "entity": {
+                            "type": "nested",
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "index": "true",
+                                },
+                                "name": {
+                                    "type": "text",
+                                    "index": "true",
+                                    "analyzer": "keyword",
                                 },
                             },
-                            "attr": {
-                                "type": "nested",
-                                "properties": {
-                                    "name": {
-                                        "type": "text",
-                                        "index": "true",
-                                        "analyzer": "keyword",
-                                    },
-                                    "type": {
-                                        "type": "integer",
-                                        "index": "false",
-                                    },
-                                    "id": {
-                                        "type": "integer",
-                                        "index": "false",
-                                    },
-                                    "key": {
-                                        "type": "text",
-                                        "index": "true",
-                                    },
-                                    "date_value": {
-                                        "type": "date",
-                                        "index": "true",
-                                    },
-                                    "value": {
-                                        "type": "text",
-                                        "index": "true",
-                                        "analyzer": "keyword",
-                                    },
-                                    "referral_id": {
-                                        "type": "integer",
-                                        "index": "false",
-                                    },
-                                    "is_readble": {
-                                        "type": "boolean",
-                                        "index": "true",
-                                    },
+                        },
+                        "attr": {
+                            "type": "nested",
+                            "properties": {
+                                "name": {
+                                    "type": "text",
+                                    "index": "true",
+                                    "analyzer": "keyword",
+                                },
+                                "type": {
+                                    "type": "integer",
+                                    "index": "false",
+                                },
+                                "id": {
+                                    "type": "integer",
+                                    "index": "false",
+                                },
+                                "key": {
+                                    "type": "text",
+                                    "index": "true",
+                                },
+                                "date_value": {
+                                    "type": "date",
+                                    "index": "true",
+                                },
+                                "value": {
+                                    "type": "text",
+                                    "index": "true",
+                                    "analyzer": "keyword",
+                                },
+                                "referral_id": {
+                                    "type": "integer",
+                                    "index": "false",
+                                },
+                                "is_readble": {
+                                    "type": "boolean",
+                                    "index": "true",
                                 },
                             },
-                            "is_readble": {
-                                "type": "boolean",
-                                "index": "true",
-                            },
-                        }
+                        },
+                        "is_readble": {
+                            "type": "boolean",
+                            "index": "true",
+                        },
                     }
                 }
             },
@@ -801,6 +799,7 @@ def make_search_results(
     user: User,
     res: Dict[str, Any],
     hint_attrs: List[Dict[str, str]],
+    hint_referral: Optional[str],
     limit: int,
 ) -> Dict[str, str]:
     """Acquires and returns the attribute values held by each search result
@@ -840,7 +839,7 @@ def make_search_results(
 
     # set numbers of found entries
     results = {
-        "ret_count": res["hits"]["total"],
+        "ret_count": res["hits"]["total"]["value"],
         "ret_values": [],
     }
 
@@ -862,8 +861,10 @@ def make_search_results(
             "entity": {"id": entry.schema.id, "name": entry.schema.name},
             "entry": {"id": entry.id, "name": entry.name},
             "attrs": {},
-            "referrals": entry_info.get("referrals", []),
         }
+
+        if hint_referral is not None:
+            ret_info["referrals"] = entry_info.get("referrals", [])
 
         # Check for has permission to Entry
         if entry_info["is_readble"] or user.has_permission(entry, ACLType.Readable):
@@ -986,7 +987,7 @@ def make_search_results(
 
 def make_search_results_for_simple(res: Dict[str, Any]) -> Dict[str, str]:
     result = {
-        "ret_count": res["hits"]["total"],
+        "ret_count": res["hits"]["total"]["value"],
         "ret_values": [],
     }
 

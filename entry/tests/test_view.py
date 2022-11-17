@@ -290,7 +290,7 @@ class ViewTest(AironeViewTest):
         self.assertTrue(attrvalue.is_latest)
 
         # checks that created entry is also registered in the Elasticsearch
-        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], id=entry.id)
         self.assertTrue(res["found"])
         self.assertEqual(res["_source"]["entity"]["id"], self._entity.id)
         self.assertEqual(res["_source"]["name"], entry.name)
@@ -1018,7 +1018,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # check es-documents of both e0 (was referred before) and e2 (is referred now)
-        ret = Entry.search_entries(user, [ref_entity.id])
+        ret = Entry.search_entries(
+            user,
+            [ref_entity.id],
+            hint_referral="",
+        )
         self.assertEqual(ret["ret_count"], 3)
         for info in ret["ret_values"]:
             if info["entry"]["id"] == ref_entries[0].id:
@@ -1495,7 +1499,6 @@ class ViewTest(AironeViewTest):
         # Checks Elasticsearch also removes document of removed entry
         res = self._es.get(
             index=settings.ES_CONFIG["INDEX"],
-            doc_type="entry",
             id=entry.id,
             ignore=[404],
         )
@@ -2979,8 +2982,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len([x for x in results if x["status"] == "success"]), 3)
 
         # checks copied entries were registered to the Elasticsearch
-        res = self._es.indices.stats(index=settings.ES_CONFIG["INDEX"])
-        self.assertEqual(res["_all"]["total"]["segments"]["count"], 3)
+        res = Entry.get_all_es_docs()
+        self.assertEqual(res["hits"]["total"]["value"], 3)
 
         # checks jobs were created as expected
         copy_job = Job.objects.filter(user=user, operation=JobOperation.COPY_ENTRY.value).first()
@@ -3253,7 +3256,7 @@ class ViewTest(AironeViewTest):
             self.assertIsNone(obj.dependent_job)
 
         # checks that created entry was registered to the Elasticsearch
-        res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=entry.id)
+        res = self._es.get(index=settings.ES_CONFIG["INDEX"], id=entry.id)
         self.assertTrue(res["found"])
 
     def test_import_entry_invalid_param(self):
@@ -3444,11 +3447,11 @@ class ViewTest(AironeViewTest):
         self.assertTrue(all([x.parent_attrv == attrv for x in attrv.data_array.all()]))
 
         # check imported data was registered to the ElasticSearch
-        res = self._es.indices.stats(index=settings.ES_CONFIG["INDEX"])
-        self.assertEqual(res["_all"]["total"]["segments"]["count"], 2)
+        res = Entry.get_all_es_docs()
+        self.assertEqual(res["hits"]["total"]["value"], 2)
 
         for e in [entry, ref_entry]:
-            res = self._es.get(index=settings.ES_CONFIG["INDEX"], doc_type="entry", id=e.id)
+            res = self._es.get(index=settings.ES_CONFIG["INDEX"], id=e.id)
             self.assertTrue(res["found"])
 
     @skip("When a file which is encodeed by non UTF-8, django-test-client fails encoding")

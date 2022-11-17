@@ -1,6 +1,8 @@
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
   Box,
   Checkbox,
+  IconButton,
   List,
   ListItem,
   Theme,
@@ -31,12 +33,16 @@ interface Props {
   groupTrees: GroupTree[];
   selectedGroupId?: number;
   handleSelectGroupId: (groupId: number | null) => void;
+  setGroupAnchorEls?: (
+    els: { groupId: number; el: HTMLButtonElement } | null
+  ) => void;
 }
 
 export const GroupTreeRoot: FC<Props> = ({
   groupTrees,
   selectedGroupId,
   handleSelectGroupId,
+  setGroupAnchorEls,
 }) => {
   const classes = useStyles();
   const isSuperuser = DjangoContext.getInstance().user.isSuperuser;
@@ -46,8 +52,8 @@ export const GroupTreeRoot: FC<Props> = ({
       <List>
         {groupTrees.map((groupTree) => (
           <ListItem key={groupTree.id} className={classes.listItem}>
-            <List>
-              <ListItem>
+            <List sx={{ width: "100%" }}>
+              <ListItem sx={{ width: "100%" }}>
                 <Checkbox
                   checked={groupTree.id === selectedGroupId}
                   onChange={(e) =>
@@ -62,6 +68,19 @@ export const GroupTreeRoot: FC<Props> = ({
                 >
                   {groupTree.name}
                 </Typography>
+                {setGroupAnchorEls != null && (
+                  <IconButton
+                    sx={{ margin: "0 0 0 auto" }}
+                    onClick={(e) => {
+                      setGroupAnchorEls({
+                        groupId: groupTree.id,
+                        el: e.currentTarget,
+                      });
+                    }}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                )}
               </ListItem>
               {groupTree.children.length > 0 && (
                 <GroupTreeItem
@@ -69,6 +88,7 @@ export const GroupTreeRoot: FC<Props> = ({
                   groupTrees={groupTree.children}
                   selectedGroupId={selectedGroupId}
                   handleSelectGroupId={handleSelectGroupId}
+                  setGroupAnchorEls={setGroupAnchorEls}
                 />
               )}
             </List>

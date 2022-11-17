@@ -8,6 +8,28 @@
 
 ### Fixed
 
+## v3.29.0
+
+### Added
+* Added new UI password reset page
+  Contributed by @syucream
+
+### Changed
+* Upgrade Elasticsearch version from 6.8.16 to 7.17.6
+  Contributed by @hinashi
+
+## v3.28.0
+
+### Added
+* Added API v2 for User, Group, Role
+  Contributed by @syucream
+* Added new UI error page
+  Contributed by @syucream
+
+### Fixed
+* Fixed the problem that ES registration process takes time
+  Contributed by @hinashi
+
 ## v3.27.0
 
 ### Added
@@ -46,6 +68,8 @@
 
 ### Changed
 * Changed Elasticsearch update process to faster.
+  Contributed by @hinashi
+* Upgrade Elasticsearch version from 6.8.16 to 7.17.6
   Contributed by @hinashi
 
 ### Fixed
