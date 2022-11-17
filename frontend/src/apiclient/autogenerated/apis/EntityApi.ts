@@ -20,6 +20,9 @@ import {
   EntityDetail,
   EntityDetailFromJSON,
   EntityDetailToJSON,
+  EntityImportExportRoot,
+  EntityImportExportRootFromJSON,
+  EntityImportExportRootToJSON,
   EntityUpdate,
   EntityUpdateFromJSON,
   EntityUpdateToJSON,
@@ -366,6 +369,95 @@ export class EntityApi extends runtime.BaseAPI {
       initOverrides
     );
     return await response.value();
+  }
+
+  /**
+   */
+  async entityApiV2ExportRetrieveRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<EntityImportExportRoot>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entity/api/v2/export`,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      EntityImportExportRootFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async entityApiV2ExportRetrieve(
+    initOverrides?: RequestInit
+  ): Promise<EntityImportExportRoot> {
+    const response = await this.entityApiV2ExportRetrieveRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   */
+  async entityApiV2ImportCreateRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entity/api/v2/import`,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async entityApiV2ImportCreate(initOverrides?: RequestInit): Promise<void> {
+    await this.entityApiV2ImportCreateRaw(initOverrides);
   }
 
   /**
