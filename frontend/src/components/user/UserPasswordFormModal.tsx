@@ -1,4 +1,4 @@
-import { Box, Button, Input, Modal, Theme, Typography } from "@mui/material";
+import { Box, Button, TextField, Input, Modal, Theme, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import React, { FC, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -32,6 +32,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: "#90A4AE",
   },
   passwordFieldInput: {
+    witdh: "100%",
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
@@ -91,8 +92,9 @@ export const UserPasswordFormModal: FC<Props> = ({
                 今まで使用していたパスワードをご入力ください。
               </label>
             </Box>
-            <Input
+            <TextField
               className={classes.passwordFieldInput}
+              variant={"standard"}
               type="password"
               placeholder="Old password"
               value={oldPassword}
@@ -107,8 +109,9 @@ export const UserPasswordFormModal: FC<Props> = ({
               新しいパスワードをご入力ください。
             </label>
           </Box>
-          <Input
+          <TextField
             className={classes.passwordFieldInput}
+            variant={"standard"}
             type="password"
             placeholder="New password"
             value={newPassword}
