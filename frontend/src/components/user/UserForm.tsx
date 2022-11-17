@@ -17,10 +17,8 @@ import {
   Checkbox,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-
-import { UserPasswordFormModal } from "./UserPasswordFormModal";
 
 import { AironeUserProps } from "pages/EditUserPage";
 import { DjangoContext } from "utils/DjangoContext";
@@ -53,37 +51,6 @@ const InputBox: FC = ({ children }) => {
     >
       {children}
     </Box>
-  );
-};
-
-const ElemChangingPassword: FC<Props> = ({ userInfo }) => {
-  const [openModal, setOpenModal] = useState(false);
-  const handleOpenModal = () => {
-    setOpenModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
-
-  return (
-    <StyledTableRow>
-      <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
-        パスワード変更
-      </TableCell>
-      <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
-        <InputBox>
-          <Button variant="contained" onClick={handleOpenModal}>
-            パスワードの再設定
-          </Button>
-          <UserPasswordFormModal
-            userId={userInfo.id}
-            openModal={openModal}
-            onClose={handleCloseModal}
-          />
-        </InputBox>
-      </TableCell>
-    </StyledTableRow>
   );
 };
 
@@ -211,12 +178,13 @@ const ElemEmailAddress: FC<Props> = ({ userInfo, setUserInfo }) => {
             placeholder="メールアドレスを入力してください"
             sx={{ width: "100%" }}
             value={userInfo.email}
-            onChange={(e) =>
+            onChange={(e) => {
+              console.log("ElemEmailAddress");
               setUserInfo({
                 ...userInfo,
                 email: e.target.value,
-              })
-            }
+              });
+            }}
           />
         </InputBox>
       </TableCell>
@@ -291,9 +259,33 @@ const ElemIsSuperuser: FC<Props> = ({ userInfo, setUserInfo }) => {
   );
 };
 
-export const UserForm: FC<Props> = ({ userInfo, setUserInfo }) => {
+interface UserFormProps {
+  userInfo: AironeUserProps;
+  setUserInfo: (userInfo: AironeUserProps) => void;
+  handleSubmit: () => void;
+  handleCancel: () => void;
+}
+
+export const UserForm: FC<UserFormProps> = ({
+  userInfo,
+  setUserInfo,
+  handleSubmit,
+  handleCancel,
+}) => {
   return (
     <Container maxWidth="lg" sx={{ pt: "50px", pb: "50px" }}>
+      <Box display="flex" justifyContent="flex-end" pb="24px">
+        <Box mx="4px">
+          <Button variant="contained" color="secondary" onClick={handleSubmit}>
+            保存
+          </Button>
+        </Box>
+        <Box mx="4px">
+          <Button variant="outlined" color="primary" onClick={handleCancel}>
+            キャンセル
+          </Button>
+        </Box>
+      </Box>
       <TableContainer component={Paper}>
         <Table className="table table-bordered">
           <TableHead>
@@ -323,11 +315,6 @@ export const UserForm: FC<Props> = ({ userInfo, setUserInfo }) => {
                 )}
 
                 <ElemAuthenticationMethod
-                  userInfo={userInfo}
-                  setUserInfo={setUserInfo}
-                />
-
-                <ElemChangingPassword
                   userInfo={userInfo}
                   setUserInfo={setUserInfo}
                 />

@@ -45,12 +45,14 @@ interface Props {
   userId: number;
   openModal: boolean;
   onClose: () => void;
+  onSubmit: () => void;
 }
 
 export const UserPasswordFormModal: FC<Props> = ({
   userId,
   openModal,
   onClose,
+  onSubmit,
 }) => {
   const classes = useStyles();
   const history = useHistory();
@@ -69,6 +71,9 @@ export const UserPasswordFormModal: FC<Props> = ({
     } else {
       await updateUserPassword(userId, oldPassword, newPassword, checkPassword);
     }
+
+    // This calls event handler, which is specified by caller component
+    onSubmit();
 
     history.replace(topPath());
     history.replace(usersPath());

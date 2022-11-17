@@ -3,7 +3,7 @@ import React, { ReactElement, FC, SyntheticEvent, useState } from "react";
 
 interface Props {
   componentGenerator: (handleOpen: () => void) => ReactElement;
-  dialogTitle: string;
+  dialogTitle: any;
   onClickYes: (e: SyntheticEvent) => void;
 }
 
@@ -38,11 +38,11 @@ export const Confirmable: FC<Props> = ({
       >
         <DialogTitle id="alert-dialog-title">{dialogTitle}</DialogTitle>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            No
-          </Button>
           <Button onClick={handleConfirmed} color="primary" autoFocus>
             Yes
+          </Button>
+          <Button onClick={handleClose} color="primary">
+            No
           </Button>
         </DialogActions>
       </Dialog>

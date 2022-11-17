@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Refactored create/edit user page, along with amended design.
+  Contributed by @hinashi, @userlocalhost
 
 ### Fixed
 
