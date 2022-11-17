@@ -94,7 +94,7 @@ export const UserControlMenu: FC<UserControlProps> = ({
           userId={user.id}
           openModal={openModal}
           onClose={handleCloseModal}
-          onSubmit={() => {}}  // This is used at page/EditUserPage component
+          onSubmit={() => {}} // This is used at page/EditUserPage component
         />
       </Box>
     </Menu>

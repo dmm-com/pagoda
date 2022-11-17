@@ -17,10 +17,8 @@ import {
   Checkbox,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-
-import { UserPasswordFormModal } from "./UserPasswordFormModal";
 
 import { AironeUserProps } from "pages/EditUserPage";
 import { DjangoContext } from "utils/DjangoContext";
@@ -185,9 +183,8 @@ const ElemEmailAddress: FC<Props> = ({ userInfo, setUserInfo }) => {
               setUserInfo({
                 ...userInfo,
                 email: e.target.value,
-              })
-            }
-            }
+              });
+            }}
           />
         </InputBox>
       </TableCell>
