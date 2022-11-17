@@ -8,6 +8,16 @@
 
 ### Fixed
 
+## v3.29.0
+
+### Added
+* Added new UI password reset page
+  Contributed by @syucream
+
+### Changed
+* Upgrade Elasticsearch version from 6.8.16 to 7.17.6
+  Contributed by @hinashi
+
 ## v3.28.0
 
 ### Added
