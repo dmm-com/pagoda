@@ -56,37 +56,6 @@ const InputBox: FC = ({ children }) => {
   );
 };
 
-const ElemChangingPassword: FC<Props> = ({ userInfo }) => {
-  const [openModal, setOpenModal] = useState(false);
-  const handleOpenModal = () => {
-    setOpenModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
-
-  return (
-    <StyledTableRow>
-      <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
-        パスワード変更
-      </TableCell>
-      <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
-        <InputBox>
-          <Button variant="contained" onClick={handleOpenModal}>
-            パスワードの再設定
-          </Button>
-          <UserPasswordFormModal
-            userId={userInfo.id}
-            openModal={openModal}
-            onClose={handleCloseModal}
-          />
-        </InputBox>
-      </TableCell>
-    </StyledTableRow>
-  );
-};
-
 const ElemAuthenticationMethod: FC<Props> = ({ userInfo }) => {
   const djangoContext = DjangoContext.getInstance();
 
@@ -349,11 +318,6 @@ export const UserForm: FC<UserFormProps> = ({
                 )}
 
                 <ElemAuthenticationMethod
-                  userInfo={userInfo}
-                  setUserInfo={setUserInfo}
-                />
-
-                <ElemChangingPassword
                   userInfo={userInfo}
                   setUserInfo={setUserInfo}
                 />

@@ -39,7 +39,10 @@ test("should render a component with essential props", function () {
   };
 
   expect(() =>
-    render(<UserForm userInfo={userInfo} setUserInfo={setUserInfo} />, {
+    render(<UserForm userInfo={userInfo} setUserInfo={setUserInfo}
+                     handleSubmit={() => {}}
+                     handleCancel={() => {}}
+                     />, {
       wrapper: TestWrapper,
     })
   ).not.toThrow();

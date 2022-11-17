@@ -16,6 +16,13 @@ import { PageHeader } from "components/common/PageHeader";
 import { UserForm } from "components/user/UserForm";
 import { DjangoContext } from "utils/DjangoContext";
 
+import {
+  updateUserPassword,
+  updateUserPasswordAsSuperuser,
+} from "utils/AironeAPIClient";
+
+import { UserPasswordFormModal } from "components/user/UserPasswordFormModal";
+
 export interface AironeUserProps extends UserRetrieve {
   password?: string;
 }
@@ -50,6 +57,15 @@ export const EditUserPage: FC = () => {
   });
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);
+
+  // These state variables and handlers are used for password reset feature
+  const [openModal, setOpenModal] = useState(false);
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
 
   useEffect(() => {
     if (!user.loading && user.value !== undefined && userInfo.id == 0) {
@@ -156,12 +172,25 @@ export const EditUserPage: FC = () => {
         componentSubmits={
           <Box display="flex" justifyContent="center">
             <Box mx="4px">
+              <Button variant="outlined"
+                onClick={handleOpenModal}
+              >
+                パスワードの再設定
+              </Button>
+              <UserPasswordFormModal
+                userId={userInfo.id}
+                openModal={openModal}
+                onClose={handleCloseModal}
+                onSubmit={() => {setSubmitted(true)}}
+              />
+            </Box>
+            <Box mx="4px">
               <Button
                 variant="outlined"
                 color="primary"
                 onClick={handleRefreshToken}
               >
-                Token を更新
+                Access Token をリフレッシュ
               </Button>
             </Box>
           </Box>
