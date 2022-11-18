@@ -235,6 +235,7 @@ class Common(Configuration):
         "NODES": ["localhost:9200"],
         "INDEX": "airone",
         "MAXIMUM_RESULTS_NUM": 500000,
+        "MAXIMUM_NESTED_OBJECT_NUM": 999999,
         "TIMEOUT": None,
     }
 

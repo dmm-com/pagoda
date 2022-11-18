@@ -19,6 +19,7 @@ from .elasticsearch import ESS
         "NODES": settings.ES_CONFIG["NODES"],
         "INDEX": "test-airone",
         "MAXIMUM_RESULTS_NUM": 10000,
+        "MAXIMUM_NESTED_OBJECT_NUM": 999999,
         "TIMEOUT": 300,
     }
 )
