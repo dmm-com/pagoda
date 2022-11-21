@@ -1,14 +1,18 @@
+from collections import OrderedDict
+
 import yaml
 from django.conf import settings
 from rest_framework.exceptions import APIException, ParseError, ValidationError
 from rest_framework.parsers import BaseParser
 from rest_framework.renderers import BaseRenderer
-from rest_framework.utils.serializer_helpers import ReturnList
+from rest_framework.utils.serializer_helpers import ReturnDict, ReturnList
 from rest_framework.views import exception_handler
 from yaml import SafeDumper
 
 from airone.lib.log import Logger
 
+SafeDumper.add_representer(OrderedDict, yaml.representer.SafeRepresenter.represent_dict)
+SafeDumper.add_representer(ReturnDict, yaml.representer.SafeRepresenter.represent_dict)
 SafeDumper.add_representer(ReturnList, yaml.representer.SafeRepresenter.represent_list)
 
 

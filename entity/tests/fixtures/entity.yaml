@@ -1,0 +1,14 @@
+Entity:
+- {created_user: admin, id: 1001, name: entity1, note: '', status: 0}
+- {created_user: admin, id: 1002, name: entity2, note: '', status: 0}
+- {created_user: admin, id: 1003, name: entity, note: note1, status: 1}
+
+EntityAttr:
+- {created_user: admin, entity: entity, is_mandatory: '0', name: attr-str, refer: '',
+  type: 2}
+- {created_user: admin, entity: entity, id: 1005, is_mandatory: '1', name: attr-obj, refer: entity1,
+  type: 1}
+- {created_user: admin, entity: entity, id: 1006, is_mandatory: '0', name: attr-arr-str,
+  refer: '', type: 1026}
+- {created_user: admin, entity: entity, id: 1007, is_mandatory: '0', name: attr-arr-obj,
+  refer: "entity1,entity2", type: 1025}

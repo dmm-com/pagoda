@@ -1,10 +1,15 @@
 import datetime
 import json
+import logging
 from unittest import mock
 
+import yaml
 from django.urls import reverse
 from rest_framework.exceptions import ValidationError
 
+from acl.models import ACLBase
+from airone.lib import types as atype
+from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeArrStr, AttrTypeStr, AttrTypeText, AttrTypeValue
 from entity import tasks
@@ -3156,3 +3161,135 @@ class ViewTest(AironeViewTest):
         histories = resp.json()
         self.assertEqual(len(histories), 1)
         self.assertEqual(len(histories[0]["details"]), 6)
+
+    def test_import(self):
+        self.admin_login()
+
+        self.ref_entity.delete()
+        self.entity.attrs.all().delete()
+        self.entity.delete()
+
+        user = User.objects.get(username="admin")
+        ACLBase.objects.create(id=1000, name="entity1", created_user=user)
+
+        fp = self.open_fixture_file("entity.yaml")
+        resp = self.client.post("/entity/api/v2/import", fp.read(), content_type="application/yaml")
+        self.assertEqual(resp.status_code, 200)
+        fp.close()
+
+        # checks each objects are created safety
+        self.assertEqual(Entity.objects.filter(is_active=True).count(), 3)
+        self.assertEqual(EntityAttr.objects.filter(is_active=True).count(), 4)
+
+        # checks keeping the correspondence relationship with id and name
+        self.assertEqual(Entity.objects.get(id="1001").name, "entity1")
+        self.assertEqual(EntityAttr.objects.get(id="1005").name, "attr-obj")
+
+        # checks contains required attributes (for Entity)
+        entity = Entity.objects.get(name="entity")
+        self.assertEqual(entity.note, "note1")
+        self.assertTrue(entity.status & Entity.STATUS_TOP_LEVEL)
+
+        entity1 = Entity.objects.get(name="entity1")
+        self.assertEqual(entity1.note, "")
+        self.assertFalse(entity1.status & Entity.STATUS_TOP_LEVEL)
+
+        # checks contains required attributes (for EntityAttr)
+        self.assertEqual(entity.attrs.count(), 4)
+        self.assertEqual(entity.attrs.get(name="attr-str").type, atype.AttrTypeStr)
+        self.assertEqual(entity.attrs.get(name="attr-obj").type, atype.AttrTypeObj)
+        self.assertEqual(entity.attrs.get(name="attr-arr-str").type, atype.AttrTypeArrStr)
+        self.assertEqual(entity.attrs.get(name="attr-arr-obj").type, atype.AttrTypeArrObj)
+        self.assertFalse(entity.attrs.get(name="attr-str").is_mandatory)
+        self.assertTrue(entity.attrs.get(name="attr-obj").is_mandatory)
+        self.assertEqual(entity.attrs.get(name="attr-obj").referral.count(), 1)
+        self.assertEqual(entity.attrs.get(name="attr-arr-obj").referral.count(), 2)
+
+    def test_import_with_unnecessary_param(self):
+        self.admin_login()
+
+        self.ref_entity.delete()
+        self.entity.attrs.all().delete()
+        self.entity.delete()
+
+        fp = self.open_fixture_file("entity_with_unnecessary_param.yaml")
+        resp = self.client.post("/entity/api/v2/import", fp.read(), content_type="application/yaml")
+        self.assertEqual(resp.status_code, 200)
+        fp.close()
+
+        # unnecessary params are simply ignored
+        self.assertEqual(Entity.objects.filter(is_active=True).count(), 3)
+        self.assertEqual(EntityAttr.objects.filter(is_active=True).count(), 4)
+
+    def test_import_without_mandatory_param(self):
+        self.admin_login()
+
+        self.ref_entity.delete()
+        self.entity.attrs.all().delete()
+        self.entity.delete()
+
+        fp = self.open_fixture_file("entity_without_mandatory_param.yaml")
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
+            resp = self.client.post(
+                "/entity/api/v2/import", fp.read(), content_type="application/yaml"
+            )
+            self.assertEqual(resp.status_code, 200)
+
+            # checks that warning messagees were outputted
+            self.assertEqual(len(warning_log.output), 3)
+            self.assertRegex(warning_log.output[0], "Entity.*Mandatory key doesn't exist$")
+            self.assertRegex(
+                warning_log.output[1],
+                "The parameter 'type' is mandatory when a new EntityAtter create$",
+            )
+            self.assertRegex(warning_log.output[2], "refer to invalid entity object$")
+        fp.close()
+
+        # checks not to create EntityAttr that refers invalid object
+        self.assertEqual(Entity.objects.filter(is_active=True).count(), 2)
+        self.assertEqual(EntityAttr.objects.filter(is_active=True).count(), 2)
+        self.assertEqual(EntityAttr.objects.filter(name="attr-arr-obj").count(), 0)
+
+    def test_import_with_spoofing_user(self):
+        self.admin_login()
+
+        self.ref_entity.delete()
+        self.entity.attrs.all().delete()
+        self.entity.delete()
+
+        # A user who creates original mock object
+        user = User.objects.create(username="test-user")
+        Entity.objects.create(id=1003, name="baz-original", created_user=user)
+
+        fp = self.open_fixture_file("entity.yaml")
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
+            resp = self.client.post(
+                "/entity/api/v2/import", fp.read(), content_type="application/yaml"
+            )
+            self.assertEqual(resp.status_code, 200)
+
+            # checks to show warning messages
+            self.assertEqual(len(warning_log.output), 4)
+            for warn_msg in warning_log.output:
+                self.assertRegex(warn_msg, "failed to identify entity object$")
+        fp.close()
+
+        # checks that import data doens't appied
+        entity = Entity.objects.get(id=1003)
+        self.assertEqual(entity.name, "baz-original")
+
+        # checks that the EntityAttr objects which refers invalid Entity won't create
+        self.assertEqual(entity.attrs.count(), 0)
+        self.assertEqual(EntityAttr.objects.filter(name="attr-str").count(), 0)
+
+    def test_export(self):
+        self.admin_login()
+
+        resp = self.client.get("/entity/api/v2/export")
+        self.assertEqual(resp.status_code, 200)
+
+        obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
+        self.assertTrue(isinstance(obj, dict))
+        self.assertEqual(sorted(obj.keys()), ["Entity", "EntityAttr"])
+        self.assertEqual(len(obj["EntityAttr"]), self.entity.attrs.count())
+        self.assertEqual(len(obj["Entity"]), 2)

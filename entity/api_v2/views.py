@@ -6,19 +6,20 @@ from django.http.response import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, generics, status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 
 import custom_view
-from airone.lib.acl import ACLType
-from airone.lib.drf import ObjectNotExistsError
+from airone.lib.acl import ACLType, get_permitted_objects
+from airone.lib.drf import ObjectNotExistsError, YAMLParser, YAMLRenderer
 from airone.lib.http import http_get
 from entity.api_v2.serializers import (
     EntityCreateSerializer,
     EntityDetailSerializer,
+    EntityImportExportRootSerializer,
     EntityListSerializer,
     EntityUpdateSerializer,
 )
@@ -181,3 +182,32 @@ class EntityEntryAPI(viewsets.ModelViewSet):
     def create(self, request, entity_id):
         request.data["schema"] = entity_id
         return super().create(request)
+
+
+class EntityImportAPI(generics.GenericAPIView):
+    parser_classes = [YAMLParser]
+
+    def post(self, request):
+        import_datas = request.data
+        serializer = EntityImportExportRootSerializer(
+            data=import_datas, context={"request": self.request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response()
+
+
+class EntityExportAPI(generics.RetrieveAPIView):
+    serializer_class = EntityImportExportRootSerializer
+    renderer_classes = [YAMLRenderer]
+
+    def get_object(self):
+        user: User = self.request.user
+        entities = get_permitted_objects(user, Entity, ACLType.Readable)
+        attrs = get_permitted_objects(user, EntityAttr, ACLType.Readable)
+
+        return {
+            "Entity": entities,
+            "EntityAttr": attrs,
+        }
