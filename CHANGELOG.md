@@ -14,6 +14,10 @@
 * Added new UI entity export and import.
   Contributed by @syucream
 
+### Fixed
+* Fixed problem not to be able to get boolean typed data with correct type
+  Contributed by @hinashi, @userlocalhost
+
 ## v3.30.0
 
 ### Changed
