@@ -5,10 +5,20 @@
 ### Added
 
 ### Changed
-* Refactored create/edit user page, along with amended design.
-  Contributed by @hinashi, @userlocalhost
 
 ### Fixed
+
+## v3.31.0
+
+### Added
+* Added new UI entity export and import.
+  Contributed by @syucream
+
+## v3.30.0
+
+### Changed
+* Refactored create/edit user page, along with amended design.
+  Contributed by @hinashi, @userlocalhost
 
 ## v3.29.0
 
