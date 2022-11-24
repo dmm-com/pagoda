@@ -1787,7 +1787,7 @@ class Entry(ACLBase):
                     attrinfo["value"] = truncate(attrv.value)
 
             elif entity_attr.type & AttrTypeValue["boolean"]:
-                attrinfo["value"] = str(attrv.boolean)
+                attrinfo["value"] = attrv.boolean
 
             elif entity_attr.type & AttrTypeValue["date"]:
                 attrinfo["date_value"] = attrv.date.strftime("%Y-%m-%d") if attrv.date else None

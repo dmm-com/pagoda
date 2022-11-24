@@ -2222,7 +2222,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(result["ret_values"][0]["entry"]["name"], "test-entry")
         self.assertEqual(result["ret_values"][0]["entity"]["name"], "test-entity")
         attrs = {
-            "bool": "True",
+            "bool": True,
             "date": "2018-12-31",
             "group": {"id": self.group.id, "name": "group0"},
             "groups": [{"id": self.group.id, "name": "group0"}],
@@ -2267,7 +2267,7 @@ class ViewTest(AironeViewTest):
             "names": [{"foo": {"id": self.ref_entry.id, "name": "r-0"}}],
             "group": {"id": self.group.id, "name": "group0"},
             "groups": [{"id": self.group.id, "name": "group0"}],
-            "bool": "True",
+            "bool": True,
             "text": "foo\nbar",
             "date": "2018-12-31",
             "role": {"id": self.role.id, "name": "role0"},
@@ -2312,7 +2312,7 @@ class ViewTest(AironeViewTest):
             "names": [],
             "group": {"id": "", "name": ""},
             "groups": [],
-            "bool": "False",
+            "bool": False,
             # "text": None,
             "date": None,
             "role": {"id": "", "name": ""},
