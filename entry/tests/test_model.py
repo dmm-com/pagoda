@@ -4501,7 +4501,7 @@ class ModelTest(AironeTestCase):
                 "entry": {"id": entry.id, "name": "entry"},
                 "is_readble": True,
                 "attrs": {
-                    "bool": {"is_readble": True, "type": AttrTypeValue["boolean"], "value": False},
+                    "bool": {"is_readble": True, "type": AttrTypeValue["boolean"], "value": ""},
                     "date": {
                         "is_readble": True,
                         "type": AttrTypeValue["date"],

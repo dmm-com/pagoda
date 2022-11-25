@@ -1757,10 +1757,6 @@ class Entry(ACLBase):
                 else False,
             }
 
-            # default value for boolean attributes is False.
-            if entity_attr.type & AttrTypeValue["boolean"]:
-                attrinfo["value"] = False
-
             def _set_attrinfo_data(model):
                 if attrv.value:
                     obj = model.objects.filter(id=attrv.value, is_active=True).first()
