@@ -2063,7 +2063,7 @@ class ModelTest(AironeTestCase):
                     self.assertEqual(attrinfo["value"][key]["name"], attrv.referral.name)
 
                 elif attrname == "bool":
-                    self.assertEqual(attrinfo["value"], attrv.boolean)
+                    self.assertEqual(attrinfo["value"], str(attrv.boolean))
 
                 elif attrname == "date":
                     self.assertEqual(attrinfo["value"], str(attrv.date))
@@ -2621,7 +2621,7 @@ class ModelTest(AironeTestCase):
 
                 elif k == "bool":
                     self.assertEqual(len(value), 1)
-                    self.assertEqual(value[0]["value"], False)
+                    self.assertEqual(value[0]["value"], "False")
 
                 elif k == "date":
                     self.assertEqual(len(value), 1)
@@ -4423,7 +4423,7 @@ class ModelTest(AironeTestCase):
                 "value": [ref_entry.name],
                 "referral_id": [ref_entry.id],
             },
-            "bool": {"key": [""], "value": [False], "referral_id": [""]},
+            "bool": {"key": [""], "value": ["False"], "referral_id": [""]},
             "group": {
                 "key": [""],
                 "value": [test_group.name],

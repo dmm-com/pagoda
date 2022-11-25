@@ -482,34 +482,3 @@ class APITest(AironeViewTest):
         resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content, b'"The entities parameters are required"')
-
-    def test_search_boolean_type_value(self):
-        user = self.guest_login()
-
-        test_entity = self.create_entity(
-            user,
-            "TestEntity",
-            attrs=[
-                {
-                    "name": "boolean",
-                    "type": AttrTypeValue["boolean"],
-                }
-            ],
-        )
-
-        entry = self.add_entry(user, "Entry", test_entity)
-        attr = entry.attrs.last()
-
-        # This checks boolean typed results of advanced search are expected value and expected type
-        for value in [True, False]:
-            attr.add_value(user, value)
-            entry.register_es()
-
-            params = {
-                "entities": [test_entity.id],
-                "attrinfo": [{"name": "boolean"}],
-            }
-            resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")
-            self.assertEqual(
-                resp.json()["result"]["ret_values"][0]["attrs"]["boolean"]["value"], value
-            )

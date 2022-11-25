@@ -4491,7 +4491,7 @@ class ViewTest(AironeViewTest):
 
             value = attr_info[attr_name]["values"][0]
             if data["type"] == AttrTypeValue["boolean"]:
-                self.assertEqual(data["value"], value)
+                self.assertEqual(data["value"], str(value))
 
             elif data["type"] == AttrTypeValue["group"]:
                 self.assertEqual(data["value"], {"name": value.name, "id": value.id})
