@@ -15,6 +15,14 @@ urlpatterns = [
         ),
     ),
     path(
+        "import",
+        views.EntityImportAPI.as_view(),
+    ),
+    path(
+        "export",
+        views.EntityExportAPI.as_view(),
+    ),
+    path(
         "<int:pk>/",
         views.EntityAPI.as_view(
             {

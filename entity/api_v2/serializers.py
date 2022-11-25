@@ -11,7 +11,9 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, RequiredParameterError
+from airone.lib.log import Logger
 from airone.lib.types import AttrTypeValue
+from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr
 from user.models import History, User
 from webhook.models import Webhook
@@ -456,3 +458,69 @@ class EntityHistorySerializer(serializers.ModelSerializer):
 
     def get_username(self, obj: History) -> str:
         return obj.user.username
+
+
+# The format keeps compatibility with entity.views and dashboard.views
+class EntityAttrImportExportSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    name = serializers.CharField(required=False)
+    type = serializers.IntegerField(required=False)
+    entity = serializers.CharField(required=False)
+    created_user = serializers.CharField(required=False)
+    refer = serializers.CharField(allow_blank=True)
+
+    class Meta:
+        model = EntityAttr
+        fields = ["id", "name", "type", "entity", "is_mandatory", "created_user", "refer"]
+
+    def to_representation(self, instance: EntityAttr):
+        return {
+            "created_user": instance.created_user.username,
+            "entity": instance.parent_entity.name,
+            "id": instance.id,
+            "is_mandatory": instance.is_mandatory,
+            "name": instance.name,
+            "refer": ",".join(
+                list(map(lambda x: x.name, instance.referral.filter(is_active=True)))
+            ),
+            "type": instance.type,
+        }
+
+
+# The format keeps compatibility with entity.views and dashboard.views
+class EntityImportExportSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    name = serializers.CharField(required=False)
+    created_user = serializers.CharField(required=False)
+
+    class Meta:
+        model = Entity
+        fields = ["id", "name", "note", "status", "created_user"]
+
+    def to_representation(self, instance: Entity):
+        ret = super().to_representation(instance)
+        ret["created_user"] = instance.created_user.username
+        return ret
+
+
+# The format keeps compatibility with entity.views and dashboard.views
+class EntityImportExportRootSerializer(serializers.Serializer):
+    Entity = EntityImportExportSerializer(many=True)
+    EntityAttr = EntityAttrImportExportSerializer(many=True)
+
+    def save(self, **kwargs):
+        user: User = self.context.get("request").user
+
+        def _do_import(resource, iter_data):
+            results = []
+            for data in iter_data:
+                try:
+                    result = resource.import_data_from_request(data, user)
+                    results.append({"result": result, "data": data})
+                except RuntimeError as e:
+                    Logger.warning(("(%s) %s " % (resource, data)) + str(e))
+            if results:
+                resource.after_import_completion(results)
+
+        _do_import(EntityResource, self.validated_data["Entity"])
+        _do_import(EntityAttrResource, self.validated_data["EntityAttr"])

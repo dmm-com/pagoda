@@ -31,7 +31,7 @@ test("should match snapshot", async () => {
     results: [
       {
         operation: 1,
-        time: new Date(),
+        time: new Date(2022, 0, 1, 0, 0, 0),
         username: "aaa",
         targetObj: "aaa",
         text: "text",
@@ -39,7 +39,7 @@ test("should match snapshot", async () => {
       },
       {
         operation: 1,
-        time: new Date(),
+        time: new Date(2022, 0, 1, 0, 0, 0),
         username: "bbb",
         targetObj: "bbb",
         text: "text",

@@ -295,6 +295,22 @@ class AironeApiClientV2 {
     });
   }
 
+  async importEntities(formData: FormData): Promise<void> {
+    return await this.entity.entityApiV2ImportCreate({
+      headers: {
+        "Content-Type": "application/yaml",
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: formData,
+    });
+  }
+
+  async exportEntities(filename: string): Promise<void> {
+    const resp = await this.entity.entityApiV2ExportRetrieveRaw();
+    const data = await resp.raw.text();
+    fileDownload(data, filename);
+  }
+
   async getEntry(id: number): Promise<EntryRetrieve> {
     return await this.entry.entryApiV2Retrieve({ id });
   }

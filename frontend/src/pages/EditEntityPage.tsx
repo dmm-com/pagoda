@@ -39,7 +39,7 @@ export const EditEntityPage: FC = () => {
     } else {
       return undefined;
     }
-  });
+  }, []);
 
   const referralEntities = useAsync(async () => {
     const entities = await aironeApiClientV2.getEntities();
@@ -130,7 +130,7 @@ export const EditEntityPage: FC = () => {
           }) ?? [],
       });
     }
-  }, [entity]);
+  }, [entity.loading, entity.value]);
 
   if (entity.loading || referralEntities.loading) {
     return <Loading />;

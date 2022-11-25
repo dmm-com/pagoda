@@ -12,11 +12,14 @@ models/ACLParent.ts
 models/Attribute.ts
 models/Entity.ts
 models/EntityAttrCreate.ts
+models/EntityAttrImportExport.ts
 models/EntityAttrUpdate.ts
 models/EntityCreate.ts
 models/EntityDetail.ts
 models/EntityDetailAttrs.ts
 models/EntityHistory.ts
+models/EntityImportExport.ts
+models/EntityImportExportRoot.ts
 models/EntityList.ts
 models/EntityUpdate.ts
 models/EntryBase.ts
