@@ -19,79 +19,57 @@ import {
   EntryHistoryAttributeValueValueAsObjectSchemaFromJSONTyped,
   EntryHistoryAttributeValueValueAsObjectSchemaToJSON,
 } from "./EntryHistoryAttributeValueValueAsObjectSchema";
-import {
-  EntryRetrieveValue,
-  EntryRetrieveValueFromJSON,
-  EntryRetrieveValueFromJSONTyped,
-  EntryRetrieveValueToJSON,
-} from "./EntryRetrieveValue";
 
 /**
  *
  * @export
- * @interface EntryRetrieveAttrs
+ * @interface EntryHistoryAttributeValueValueAsObject
  */
-export interface EntryRetrieveAttrs {
+export interface EntryHistoryAttributeValueValueAsObject {
   /**
    *
    * @type {number}
-   * @memberof EntryRetrieveAttrs
+   * @memberof EntryHistoryAttributeValueValueAsObject
    */
-  id?: number | null;
+  id?: number;
   /**
    *
-   * @type {number}
-   * @memberof EntryRetrieveAttrs
+   * @type {string}
+   * @memberof EntryHistoryAttributeValueValueAsObject
    */
-  type?: number;
-  /**
-   *
-   * @type {boolean}
-   * @memberof EntryRetrieveAttrs
-   */
-  isMandatory?: boolean;
-  /**
-   *
-   * @type {EntryRetrieveValue}
-   * @memberof EntryRetrieveAttrs
-   */
-  value?: EntryRetrieveValue;
+  name?: string;
   /**
    *
    * @type {EntryHistoryAttributeValueValueAsObjectSchema}
-   * @memberof EntryRetrieveAttrs
+   * @memberof EntryHistoryAttributeValueValueAsObject
    */
   schema?: EntryHistoryAttributeValueValueAsObjectSchema;
 }
 
-export function EntryRetrieveAttrsFromJSON(json: any): EntryRetrieveAttrs {
-  return EntryRetrieveAttrsFromJSONTyped(json, false);
+export function EntryHistoryAttributeValueValueAsObjectFromJSON(
+  json: any
+): EntryHistoryAttributeValueValueAsObject {
+  return EntryHistoryAttributeValueValueAsObjectFromJSONTyped(json, false);
 }
 
-export function EntryRetrieveAttrsFromJSONTyped(
+export function EntryHistoryAttributeValueValueAsObjectFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntryRetrieveAttrs {
+): EntryHistoryAttributeValueValueAsObject {
   if (json === undefined || json === null) {
     return json;
   }
   return {
     id: !exists(json, "id") ? undefined : json["id"],
-    type: !exists(json, "type") ? undefined : json["type"],
-    isMandatory: !exists(json, "is_mandatory")
-      ? undefined
-      : json["is_mandatory"],
-    value: !exists(json, "value")
-      ? undefined
-      : EntryRetrieveValueFromJSON(json["value"]),
+    name: !exists(json, "name") ? undefined : json["name"],
     schema: !exists(json, "schema")
       ? undefined
       : EntryHistoryAttributeValueValueAsObjectSchemaFromJSON(json["schema"]),
   };
 }
 
-export function EntryRetrieveAttrsToJSON(
-  value?: EntryRetrieveAttrs | null
+export function EntryHistoryAttributeValueValueAsObjectToJSON(
+  value?: EntryHistoryAttributeValueValueAsObject | null
 ): any {
   if (value === undefined) {
     return undefined;
@@ -101,9 +79,7 @@ export function EntryRetrieveAttrsToJSON(
   }
   return {
     id: value.id,
-    type: value.type,
-    is_mandatory: value.isMandatory,
-    value: EntryRetrieveValueToJSON(value.value),
+    name: value.name,
     schema: EntryHistoryAttributeValueValueAsObjectSchemaToJSON(value.schema),
   };
 }

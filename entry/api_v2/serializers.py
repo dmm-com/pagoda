@@ -680,3 +680,153 @@ class GetEntryAttrReferralSerializer(serializers.ModelSerializer):
     class Meta:
         model = ACLBase
         fields = ("id", "name")
+
+
+class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
+    type = serializers.IntegerField(source="data_type")
+    value = serializers.SerializerMethodField()
+    created_user = serializers.CharField(source="created_user.username")
+
+    class Meta:
+        model = AttributeValue
+        fields = ("id", "type", "value", "created_time", "created_user")
+
+    def get_value(self, obj: AttributeValue) -> EntryAttributeValue:
+        if obj.data_type == AttrTypeValue["array_string"]:
+            return {"as_array_string": [x.value for x in obj.data_array.all()]}
+
+        elif obj.data_type == AttrTypeValue["array_object"]:
+            return {
+                "as_array_object": [
+                    {
+                        "id": x.referral.id if x.referral else None,
+                        "name": x.referral.name if x.referral else "",
+                        "schema": {
+                            "id": x.referral.entry.schema.id,
+                            "name": x.referral.entry.schema.name,
+                        },
+                    }
+                    if x.referral and x.referral.is_active
+                    else None
+                    for x in obj.data_array.all()
+                ]
+            }
+
+        elif obj.data_type == AttrTypeValue["object"]:
+            return {
+                "as_object": {
+                    "id": obj.referral.id if obj.referral else None,
+                    "name": obj.referral.name if obj.referral else "",
+                    "schema": {
+                        "id": obj.referral.entry.schema.id,
+                        "name": obj.referral.entry.schema.name,
+                    },
+                }
+                if obj.referral and obj.referral.is_active
+                else None
+            }
+
+        elif obj.data_type == AttrTypeValue["boolean"]:
+            return {"as_boolean": obj.boolean}
+
+        elif obj.data_type == AttrTypeValue["date"]:
+            return {"as_string": obj.date if obj.date else None}
+
+        elif obj.data_type == AttrTypeValue["named_object"]:
+            named: Dict[str, Optional[EntryAttributeValueObject]] = {
+                obj.value: {
+                    "id": obj.referral.id if obj.referral else None,
+                    "name": obj.referral.name if obj.referral else "",
+                    "schema": {
+                        "id": obj.referral.entry.schema.id,
+                        "name": obj.referral.entry.schema.name,
+                    },
+                }
+                if obj.referral and obj.referral.is_active
+                else None
+            }
+            return {"as_named_object": named}
+
+        elif obj.data_type == AttrTypeValue["array_named_object"]:
+            array_named_object: List[
+                Dict[
+                    str,
+                    Optional[
+                        Union[
+                            EntryAttributeValueObject,
+                            EntryAttributeValueObjectBoolean,
+                            EntryAttributeValueBoolean,
+                        ]
+                    ],
+                ]
+            ] = [
+                {
+                    x.value: {
+                        "id": x.referral.id if x.referral else None,
+                        "name": x.referral.name if x.referral else "",
+                        "schema": {
+                            "id": x.referral.entry.schema.id,
+                            "name": x.referral.entry.schema.name,
+                        },
+                    }
+                    if x.referral and x.referral.is_active
+                    else None,
+                }
+                for x in obj.data_array.all()
+            ]
+            return {"as_array_named_object": array_named_object}
+
+        elif obj.data_type == AttrTypeValue["group"] and obj.value:
+            group = Group.objects.get(id=obj.value)
+            return {
+                "as_group": {
+                    "id": group.id,
+                    "name": group.name,
+                }
+            }
+
+        elif obj.data_type == AttrTypeValue["array_group"]:
+            groups = [Group.objects.get(id=x.value) for x in obj.data_array.all()]
+            return {
+                "as_array_group": [
+                    {
+                        "id": group.id,
+                        "name": group.name,
+                    }
+                    for group in groups
+                ]
+            }
+
+        elif obj.data_type == AttrTypeValue["role"] and obj.value:
+            role = Role.objects.get(id=obj.value)
+            return {
+                "as_role": {
+                    "id": role.id,
+                    "name": role.name,
+                }
+            }
+
+        elif obj.data_type == AttrTypeValue["array_role"]:
+            roles = [Role.objects.get(id=x.value) for x in obj.data_array.all()]
+            return {
+                "as_array_role": [
+                    {
+                        "id": role.id,
+                        "name": role.name,
+                    }
+                    for role in roles
+                ]
+            }
+
+        elif obj.data_type == AttrTypeValue["string"] or obj.data_type == AttrTypeValue["text"]:
+            return {"as_string": obj.value}
+
+        return {}
+
+
+class EntryHistorySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    type = serializers.IntegerField()
+    curr = EntryHistoryAttributeValueSerializer()
+    prev = EntryHistoryAttributeValueSerializer(allow_null=True)

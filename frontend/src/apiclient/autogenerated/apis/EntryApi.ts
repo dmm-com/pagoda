@@ -32,6 +32,9 @@ import {
   GetEntryAttrReferral,
   GetEntryAttrReferralFromJSON,
   GetEntryAttrReferralToJSON,
+  PaginatedEntryHistoryList,
+  PaginatedEntryHistoryListFromJSON,
+  PaginatedEntryHistoryListToJSON,
   PaginatedGetEntrySimpleList,
   PaginatedGetEntrySimpleListFromJSON,
   PaginatedGetEntrySimpleListToJSON,
@@ -54,6 +57,12 @@ export interface EntryApiV2DestroyRequest {
 export interface EntryApiV2ExportCreateRequest {
   entityId: number;
   entryExport?: EntryExport;
+}
+
+export interface EntryApiV2HistoriesListRequest {
+  id: number;
+  limit?: number;
+  offset?: number;
 }
 
 export interface EntryApiV2ReferralListRequest {
@@ -393,6 +402,76 @@ export class EntryApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<EntryExport> {
     const response = await this.entryApiV2ExportCreateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async entryApiV2HistoriesListRaw(
+    requestParameters: EntryApiV2HistoriesListRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<PaginatedEntryHistoryList>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling entryApiV2HistoriesList."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    if (requestParameters.limit !== undefined) {
+      queryParameters["limit"] = requestParameters.limit;
+    }
+
+    if (requestParameters.offset !== undefined) {
+      queryParameters["offset"] = requestParameters.offset;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/{id}/histories/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      PaginatedEntryHistoryListFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async entryApiV2HistoriesList(
+    requestParameters: EntryApiV2HistoriesListRequest,
+    initOverrides?: RequestInit
+  ): Promise<PaginatedEntryHistoryList> {
+    const response = await this.entryApiV2HistoriesListRaw(
       requestParameters,
       initOverrides
     );

@@ -24,13 +24,13 @@ export interface EntityImportExport {
    * @type {number}
    * @memberof EntityImportExport
    */
-  readonly id: number;
+  id?: number;
   /**
    *
    * @type {string}
    * @memberof EntityImportExport
    */
-  name: string;
+  name?: string;
   /**
    *
    * @type {string}
@@ -48,7 +48,7 @@ export interface EntityImportExport {
    * @type {string}
    * @memberof EntityImportExport
    */
-  createdUser: string;
+  createdUser?: string;
 }
 
 export function EntityImportExportFromJSON(json: any): EntityImportExport {
@@ -63,11 +63,13 @@ export function EntityImportExportFromJSONTyped(
     return json;
   }
   return {
-    id: json["id"],
-    name: json["name"],
+    id: !exists(json, "id") ? undefined : json["id"],
+    name: !exists(json, "name") ? undefined : json["name"],
     note: !exists(json, "note") ? undefined : json["note"],
     status: !exists(json, "status") ? undefined : json["status"],
-    createdUser: json["created_user"],
+    createdUser: !exists(json, "created_user")
+      ? undefined
+      : json["created_user"],
   };
 }
 
@@ -81,6 +83,7 @@ export function EntityImportExportToJSON(
     return null;
   }
   return {
+    id: value.id,
     name: value.name,
     note: value.note,
     status: value.status,

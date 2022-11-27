@@ -38,6 +38,10 @@ urlpatterns = [
         ),
     ),
     path(
+        "<int:pk>/histories/",
+        views.EntryHistoryAPI.as_view(),
+    ),
+    path(
         "search/",
         views.searchAPI.as_view(
             {

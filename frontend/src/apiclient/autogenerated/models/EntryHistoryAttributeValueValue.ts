@@ -35,85 +35,87 @@ import {
 /**
  *
  * @export
- * @interface EntryRetrieveValue
+ * @interface EntryHistoryAttributeValueValue
  */
-export interface EntryRetrieveValue {
+export interface EntryHistoryAttributeValueValue {
   /**
    *
    * @type {EntryHistoryAttributeValueValueAsObject}
-   * @memberof EntryRetrieveValue
+   * @memberof EntryHistoryAttributeValueValue
    */
   asObject?: EntryHistoryAttributeValueValueAsObject | null;
   /**
    *
    * @type {string}
-   * @memberof EntryRetrieveValue
+   * @memberof EntryHistoryAttributeValueValue
    */
   asString?: string;
   /**
    *
    * @type {{ [key: string]: EntryHistoryAttributeValueValueAsObject; }}
-   * @memberof EntryRetrieveValue
+   * @memberof EntryHistoryAttributeValueValue
    */
   asNamedObject?: { [key: string]: EntryHistoryAttributeValueValueAsObject };
   /**
    *
    * @type {Array<EntryHistoryAttributeValueValueAsObject>}
-   * @memberof EntryRetrieveValue
+   * @memberof EntryHistoryAttributeValueValue
    */
   asArrayObject?: Array<EntryHistoryAttributeValueValueAsObject>;
   /**
    *
    * @type {Array<string>}
-   * @memberof EntryRetrieveValue
+   * @memberof EntryHistoryAttributeValueValue
    */
   asArrayString?: Array<string>;
   /**
    *
    * @type {Array<{ [key: string]: object; }>}
-   * @memberof EntryRetrieveValue
+   * @memberof EntryHistoryAttributeValueValue
    */
   asArrayNamedObject?: Array<{ [key: string]: object }>;
   /**
    *
    * @type {Array<EntryHistoryAttributeValueValueAsObjectSchema>}
-   * @memberof EntryRetrieveValue
+   * @memberof EntryHistoryAttributeValueValue
    */
   asArrayGroup?: Array<EntryHistoryAttributeValueValueAsObjectSchema>;
   /**
    *
    * @type {boolean}
-   * @memberof EntryRetrieveValue
+   * @memberof EntryHistoryAttributeValueValue
    */
   asBoolean?: boolean;
   /**
    *
    * @type {EntryHistoryAttributeValueValueAsGroup}
-   * @memberof EntryRetrieveValue
+   * @memberof EntryHistoryAttributeValueValue
    */
   asGroup?: EntryHistoryAttributeValueValueAsGroup | null;
   /**
    *
    * @type {EntryHistoryAttributeValueValueAsGroup}
-   * @memberof EntryRetrieveValue
+   * @memberof EntryHistoryAttributeValueValue
    */
   asRole?: EntryHistoryAttributeValueValueAsGroup | null;
   /**
    *
    * @type {Array<EntryHistoryAttributeValueValueAsObjectSchema>}
-   * @memberof EntryRetrieveValue
+   * @memberof EntryHistoryAttributeValueValue
    */
   asArrayRole?: Array<EntryHistoryAttributeValueValueAsObjectSchema>;
 }
 
-export function EntryRetrieveValueFromJSON(json: any): EntryRetrieveValue {
-  return EntryRetrieveValueFromJSONTyped(json, false);
+export function EntryHistoryAttributeValueValueFromJSON(
+  json: any
+): EntryHistoryAttributeValueValue {
+  return EntryHistoryAttributeValueValueFromJSONTyped(json, false);
 }
 
-export function EntryRetrieveValueFromJSONTyped(
+export function EntryHistoryAttributeValueValueFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntryRetrieveValue {
+): EntryHistoryAttributeValueValue {
   if (json === undefined || json === null) {
     return json;
   }
@@ -159,8 +161,8 @@ export function EntryRetrieveValueFromJSONTyped(
   };
 }
 
-export function EntryRetrieveValueToJSON(
-  value?: EntryRetrieveValue | null
+export function EntryHistoryAttributeValueValueToJSON(
+  value?: EntryHistoryAttributeValueValue | null
 ): any {
   if (value === undefined) {
     return undefined;
