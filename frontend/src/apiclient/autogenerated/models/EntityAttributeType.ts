@@ -16,44 +16,42 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface EntryHistoryAttributeValueValueAsGroup
+ * @interface EntityAttributeType
  */
-export interface EntryHistoryAttributeValueValueAsGroup {
+export interface EntityAttributeType {
   /**
    *
    * @type {number}
-   * @memberof EntryHistoryAttributeValueValueAsGroup
+   * @memberof EntityAttributeType
    */
-  id?: number;
+  id: number;
   /**
    *
    * @type {string}
-   * @memberof EntryHistoryAttributeValueValueAsGroup
+   * @memberof EntityAttributeType
    */
-  name?: string;
+  name: string;
 }
 
-export function EntryHistoryAttributeValueValueAsGroupFromJSON(
-  json: any
-): EntryHistoryAttributeValueValueAsGroup {
-  return EntryHistoryAttributeValueValueAsGroupFromJSONTyped(json, false);
+export function EntityAttributeTypeFromJSON(json: any): EntityAttributeType {
+  return EntityAttributeTypeFromJSONTyped(json, false);
 }
 
-export function EntryHistoryAttributeValueValueAsGroupFromJSONTyped(
+export function EntityAttributeTypeFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntryHistoryAttributeValueValueAsGroup {
+): EntityAttributeType {
   if (json === undefined || json === null) {
     return json;
   }
   return {
-    id: !exists(json, "id") ? undefined : json["id"],
-    name: !exists(json, "name") ? undefined : json["name"],
+    id: json["id"],
+    name: json["name"],
   };
 }
 
-export function EntryHistoryAttributeValueValueAsGroupToJSON(
-  value?: EntryHistoryAttributeValueValueAsGroup | null
+export function EntityAttributeTypeToJSON(
+  value?: EntityAttributeType | null
 ): any {
   if (value === undefined) {
     return undefined;

@@ -8,6 +8,7 @@ import React from "react";
 import { DjangoContext } from "../../../utils/DjangoContext";
 
 import { EditAttributeValue } from "./EditAttributeValue";
+import { EditableEntryAttrValue } from "./EditableEntry";
 
 const mockHandleChangeAttribute = () => undefined;
 const mockHandleClickDeleteListItem = () => undefined;
@@ -114,7 +115,8 @@ attributes.forEach((attribute) => {
       <EditAttributeValue
         attrName={attrName}
         attrInfo={{
-          value: attrValue,
+          id: 9999,
+          value: attrValue as EditableEntryAttrValue,
           type: attrType,
           isMandatory: false,
           schema: {
@@ -147,7 +149,8 @@ arrayAttributes.forEach((arrayAttribute) => {
       <EditAttributeValue
         attrName={attrName}
         attrInfo={{
-          value: attrValue,
+          id: 9999,
+          value: attrValue as EditableEntryAttrValue,
           type: attrType,
           isMandatory: false,
           schema: {

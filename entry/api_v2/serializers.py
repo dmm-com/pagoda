@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, TypedDict, Union
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 import custom_view
 from acl.models import ACLBase
@@ -88,6 +88,61 @@ class EntryAttributeType(TypedDict):
     is_mandatory: bool
     value: EntryAttributeValue
     schema: EntityAttributeType
+
+
+class EntityAttributeTypeSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+
+
+class EntryAttributeValueObjectSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    schema = EntityAttributeTypeSerializer()
+    boolean = serializers.BooleanField()
+
+
+class EntryAttributeValueGroupSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+
+
+class EntryAttributeValueRoleSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+
+
+class EntryAttributeValueSerializer(serializers.Serializer):
+    as_object = EntryAttributeValueObjectSerializer(allow_null=True, required=False)
+    as_string = serializers.CharField(required=False)
+    as_named_object = serializers.DictField(
+        child=EntryAttributeValueObjectSerializer(allow_null=True), required=False
+    )
+    as_array_object = serializers.ListField(
+        child=EntryAttributeValueObjectSerializer(allow_null=True), required=False
+    )
+    as_array_string = serializers.ListField(child=serializers.CharField(), required=False)
+    as_array_named_object = serializers.ListField(
+        child=serializers.DictField(child=EntryAttributeValueObjectSerializer(allow_null=True)),
+        required=False,
+    )
+    as_array_group = serializers.ListField(
+        child=EntryAttributeValueGroupSerializer(), required=False
+    )
+    # text; use string instead
+    as_boolean = serializers.BooleanField(required=False)
+    as_group = EntryAttributeValueGroupSerializer(allow_null=True, required=False)
+    # date; use string instead
+    as_role = EntryAttributeValueRoleSerializer(allow_null=True, required=False)
+    as_array_role = serializers.ListField(child=EntryAttributeValueRoleSerializer(), required=False)
+
+
+class EntryAttributeTypeSerializer(serializers.Serializer):
+    id = serializers.IntegerField(allow_null=True)
+    type = serializers.IntegerField()
+    is_mandatory = serializers.BooleanField()
+    value = EntryAttributeValueSerializer()
+    schema = EntityAttributeTypeSerializer()
 
 
 class EntryBaseSerializer(serializers.ModelSerializer):
@@ -320,6 +375,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
         ]
         read_only_fields = ["is_active"]
 
+    @extend_schema_field(serializers.ListField(child=EntryAttributeTypeSerializer()))
     def get_attrs(self, obj: Entry) -> List[EntryAttributeType]:
         def get_attr_value(attr: Attribute) -> EntryAttributeValue:
             attrv = attr.get_latest_value(is_readonly=True)
@@ -682,6 +738,11 @@ class GetEntryAttrReferralSerializer(serializers.ModelSerializer):
         fields = ("id", "name")
 
 
+# FIXME ???
+
+# FIXME ???
+
+
 class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
     type = serializers.IntegerField(source="data_type")
     value = serializers.SerializerMethodField()
@@ -689,8 +750,9 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AttributeValue
-        fields = ("id", "type", "value", "created_time", "created_user")
+        fields = ("id", "type", "value", "created_time", "is_latest", "created_user")
 
+    @extend_schema_field(EntryAttributeValueSerializer())
     def get_value(self, obj: AttributeValue) -> EntryAttributeValue:
         if obj.data_type == AttrTypeValue["array_string"]:
             return {"as_array_string": [x.value for x in obj.data_array.all()]}
@@ -830,3 +892,35 @@ class EntryHistorySerializer(serializers.Serializer):
     type = serializers.IntegerField()
     curr = EntryHistoryAttributeValueSerializer()
     prev = EntryHistoryAttributeValueSerializer(allow_null=True)
+
+
+class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AttributeValue
+        fields = []
+
+    def create(self, validated_data):
+        raise ValidationError("unsupported")
+
+    def update(self, instance: AttributeValue, validated_data):
+        if not self.partial:
+            raise ValidationError("only partial update is supported")
+
+        attr = instance.parent_attr
+        entry = attr.parent_entry
+        user: User = self.context["request"].user
+
+        # skip for unpermitted attributes
+        if not user.has_permission(attr, ACLType.Writable):
+            raise ValidationError(
+                "user ({}) is not permitted for the recovery operation", user.username
+            )
+
+        attr.add_value(user, instance.value)
+        entry.register_es()
+
+        # running job to notify changing entry event
+        job_notify_event: Job = Job.new_notify_update_entry(user, entry)
+        job_notify_event.run()
+
+        return instance

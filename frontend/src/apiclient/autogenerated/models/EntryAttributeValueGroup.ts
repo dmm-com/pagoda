@@ -16,44 +16,44 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface EntryRetrieveValueAsObjectSchema
+ * @interface EntryAttributeValueGroup
  */
-export interface EntryRetrieveValueAsObjectSchema {
+export interface EntryAttributeValueGroup {
   /**
    *
    * @type {number}
-   * @memberof EntryRetrieveValueAsObjectSchema
+   * @memberof EntryAttributeValueGroup
    */
-  id?: number;
+  id: number;
   /**
    *
    * @type {string}
-   * @memberof EntryRetrieveValueAsObjectSchema
+   * @memberof EntryAttributeValueGroup
    */
-  name?: string;
+  name: string;
 }
 
-export function EntryRetrieveValueAsObjectSchemaFromJSON(
+export function EntryAttributeValueGroupFromJSON(
   json: any
-): EntryRetrieveValueAsObjectSchema {
-  return EntryRetrieveValueAsObjectSchemaFromJSONTyped(json, false);
+): EntryAttributeValueGroup {
+  return EntryAttributeValueGroupFromJSONTyped(json, false);
 }
 
-export function EntryRetrieveValueAsObjectSchemaFromJSONTyped(
+export function EntryAttributeValueGroupFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntryRetrieveValueAsObjectSchema {
+): EntryAttributeValueGroup {
   if (json === undefined || json === null) {
     return json;
   }
   return {
-    id: !exists(json, "id") ? undefined : json["id"],
-    name: !exists(json, "name") ? undefined : json["name"],
+    id: json["id"],
+    name: json["name"],
   };
 }
 
-export function EntryRetrieveValueAsObjectSchemaToJSON(
-  value?: EntryRetrieveValueAsObjectSchema | null
+export function EntryAttributeValueGroupToJSON(
+  value?: EntryAttributeValueGroup | null
 ): any {
   if (value === undefined) {
     return undefined;

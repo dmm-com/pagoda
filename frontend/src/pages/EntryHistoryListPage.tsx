@@ -118,6 +118,7 @@ export const EntryHistoryListPage: FC = () => {
           ) : (
             <EntryHistoryList
               histories={histories.value.results}
+              entryId={entryId}
               page={page}
               maxPage={maxPage}
               handleChangePage={handleChangePage}

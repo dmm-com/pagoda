@@ -13,6 +13,7 @@ test("should render a component with essential props", function () {
     render(
       <EntryHistoryList
         histories={[]}
+        entryId={1}
         page={1}
         maxPage={1}
         handleChangePage={() => {

@@ -14,11 +14,11 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  EntryHistoryAttributeValueValue,
-  EntryHistoryAttributeValueValueFromJSON,
-  EntryHistoryAttributeValueValueFromJSONTyped,
-  EntryHistoryAttributeValueValueToJSON,
-} from "./EntryHistoryAttributeValueValue";
+  EntryAttributeValue,
+  EntryAttributeValueFromJSON,
+  EntryAttributeValueFromJSONTyped,
+  EntryAttributeValueToJSON,
+} from "./EntryAttributeValue";
 
 /**
  *
@@ -40,16 +40,22 @@ export interface EntryHistoryAttributeValue {
   type: number;
   /**
    *
-   * @type {EntryHistoryAttributeValueValue}
+   * @type {EntryAttributeValue}
    * @memberof EntryHistoryAttributeValue
    */
-  value: EntryHistoryAttributeValueValue;
+  readonly value: EntryAttributeValue | null;
   /**
    *
    * @type {Date}
    * @memberof EntryHistoryAttributeValue
    */
   readonly createdTime: Date;
+  /**
+   *
+   * @type {boolean}
+   * @memberof EntryHistoryAttributeValue
+   */
+  isLatest?: boolean;
   /**
    *
    * @type {string}
@@ -74,8 +80,9 @@ export function EntryHistoryAttributeValueFromJSONTyped(
   return {
     id: json["id"],
     type: json["type"],
-    value: EntryHistoryAttributeValueValueFromJSON(json["value"]),
+    value: EntryAttributeValueFromJSON(json["value"]),
     createdTime: new Date(json["created_time"]),
+    isLatest: !exists(json, "is_latest") ? undefined : json["is_latest"],
     createdUser: json["created_user"],
   };
 }
@@ -91,7 +98,7 @@ export function EntryHistoryAttributeValueToJSON(
   }
   return {
     type: value.type,
-    value: EntryHistoryAttributeValueValueToJSON(value.value),
+    is_latest: value.isLatest,
     created_user: value.createdUser,
   };
 }

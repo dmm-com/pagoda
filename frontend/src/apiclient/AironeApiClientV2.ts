@@ -404,6 +404,19 @@ class AironeApiClientV2 {
     });
   }
 
+  async restoreEntryHistory(attrValueId: number): Promise<void> {
+    return await this.entry.entryApiV2AttrvRestorePartialUpdate(
+      {
+        id: attrValueId,
+      },
+      {
+        headers: {
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
   async getGroups(): Promise<Group[]> {
     return await this.group.groupApiV2GroupsList();
   }

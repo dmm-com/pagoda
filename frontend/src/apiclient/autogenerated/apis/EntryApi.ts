@@ -45,6 +45,14 @@ export interface EntryApiV2AttrReferralsListRequest {
   keyword?: string;
 }
 
+export interface EntryApiV2AttrvRestorePartialUpdateRequest {
+  id: number;
+}
+
+export interface EntryApiV2AttrvRestoreUpdateRequest {
+  id: number;
+}
+
 export interface EntryApiV2CopyCreateRequest {
   id: number;
   entryCopy: EntryCopy;
@@ -207,6 +215,124 @@ export class EntryApi extends runtime.BaseAPI {
       initOverrides
     );
     return await response.value();
+  }
+
+  /**
+   */
+  async entryApiV2AttrvRestorePartialUpdateRaw(
+    requestParameters: EntryApiV2AttrvRestorePartialUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling entryApiV2AttrvRestorePartialUpdate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/{id}/attrv_restore/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PATCH",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async entryApiV2AttrvRestorePartialUpdate(
+    requestParameters: EntryApiV2AttrvRestorePartialUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.entryApiV2AttrvRestorePartialUpdateRaw(
+      requestParameters,
+      initOverrides
+    );
+  }
+
+  /**
+   */
+  async entryApiV2AttrvRestoreUpdateRaw(
+    requestParameters: EntryApiV2AttrvRestoreUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling entryApiV2AttrvRestoreUpdate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/{id}/attrv_restore/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PUT",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async entryApiV2AttrvRestoreUpdate(
+    requestParameters: EntryApiV2AttrvRestoreUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.entryApiV2AttrvRestoreUpdateRaw(
+      requestParameters,
+      initOverrides
+    );
   }
 
   /**

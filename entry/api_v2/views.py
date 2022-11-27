@@ -24,6 +24,7 @@ from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
+    EntryAttributeValueRestoreSerializer,
     EntryBaseSerializer,
     EntryCopySerializer,
     EntryExportSerializer,
@@ -538,3 +539,9 @@ class EntryHistoryAPI(generics.ListAPIView):
                 )
 
         return ret_values
+
+
+class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
+    queryset = AttributeValue.objects.all()
+    serializer_class = EntryAttributeValueRestoreSerializer
+    permission_classes = [IsAuthenticated]
