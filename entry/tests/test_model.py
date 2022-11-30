@@ -2936,7 +2936,7 @@ class ModelTest(AironeTestCase):
         )
         self.assertEqual(resp["ret_count"], 1)
         self.assertEqual(resp["ret_values"][0]["entry"]["name"], "entry1")
-        self.assertEqual(resp["ret_values"][0]["attrs"]["attr-0"]["value"], "2018-01-01")
+        self.assertEqual(resp["ret_values"][0]["attrs"]["attr-0"]["value"], "2018/01/01")
 
         # search entries with date keyword parameter in date type from Elasticsearch
         for x in ["2018-01-02", "2018/01/02", "2018-1-2", "2018-01-2", "2018-1-02"]:
@@ -2949,11 +2949,11 @@ class ModelTest(AironeTestCase):
 
         # search entries with date keyword parameter in string array type from Elasticsearch
         resp = Entry.search_entries(
-            user, [entities[0].id], [{"name": "attr-arr", "keyword": "2018-01-01"}]
+            user, [entities[0].id], [{"name": "attr-arr", "keyword": "2018/01/01"}]
         )
         self.assertEqual(resp["ret_count"], 1)
         self.assertEqual(resp["ret_values"][0]["entry"]["name"], "entry2")
-        self.assertEqual(resp["ret_values"][0]["attrs"]["attr-arr"]["value"], ["2018-01-01"])
+        self.assertEqual(resp["ret_values"][0]["attrs"]["attr-arr"]["value"], ["2018/01/01"])
 
         # search entries with keyword parameter that other entry has same value in untarget attr
         resp = Entry.search_entries(user, [entities[0].id], [{"name": "attr-0", "keyword": "hoge"}])
@@ -4527,8 +4527,8 @@ class ModelTest(AironeTestCase):
                         "type": AttrTypeValue["object"],
                         "value": {"id": "", "name": ""},
                     },
-                    "str": {"is_readble": True, "type": AttrTypeValue["string"]},
-                    "text": {"is_readble": True, "type": AttrTypeValue["text"]},
+                    "str": {"is_readble": True, "type": AttrTypeValue["string"], "value": ""},
+                    "text": {"is_readble": True, "type": AttrTypeValue["text"], "value": ""},
                 },
             },
         )
