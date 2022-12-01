@@ -28,7 +28,6 @@ export const EntityHistoryList = {
   MAX_ROW_COUNT: 30,
 };
 
-
 export const BaseAttributeTypes = {
   object: 1 << 0,
   string: 1 << 1,
