@@ -38,6 +38,10 @@ urlpatterns = [
         ),
     ),
     path(
+        "<int:pk>/histories/",
+        views.EntryHistoryAPI.as_view(),
+    ),
+    path(
         "search/",
         views.searchAPI.as_view(
             {
@@ -56,6 +60,10 @@ urlpatterns = [
                 "get": "list",
             }
         ),
+    ),
+    path(
+        "<int:pk>/attrv_restore/",
+        views.EntryAttributeValueRestoreAPI.as_view(),
     ),
     path("advanced_search/", views.AdvancedSearchAPI.as_view()),
     path("import/", views.EntryImportAPI.as_view()),

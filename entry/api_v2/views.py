@@ -1,10 +1,12 @@
 import re
+from typing import Any, Dict, List
 
 from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
 from rest_framework.exceptions import NotFound
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,13 +19,16 @@ from airone.lib.drf import (
     ObjectNotExistsError,
     YAMLParser,
 )
+from airone.lib.http import get_obj_with_check_perm
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
+    EntryAttributeValueRestoreSerializer,
     EntryBaseSerializer,
     EntryCopySerializer,
     EntryExportSerializer,
+    EntryHistorySerializer,
     EntryImportSerializer,
     EntryRetrieveSerializer,
     EntryUpdateSerializer,
@@ -461,3 +466,82 @@ class EntryImportAPI(generics.GenericAPIView):
         return Response(
             {"result": {"job_ids": job_ids, "error": error_list}}, status=status.HTTP_200_OK
         )
+
+
+class EntryHistoryAPI(generics.ListAPIView):
+    serializer_class = EntryHistorySerializer
+    permission_classes = [IsAuthenticated & EntryPermission]
+    pagination_class = LimitOffsetPagination
+
+    def list(self, request, pk):
+        all_attrv = self.get_queryset()
+        histories = self._get_objects(all_attrv, self.request.user)
+        print(histories)
+
+        # use LimitOffsetPaginator directly to paginate query result manually
+        # NOTE it should use the paginator on normal use case if the query result is huge
+        self.paginator.limit = self.paginator.get_limit(request)
+        self.paginator.offset = self.paginator.get_offset(request)
+        results = histories[self.paginator.offset : (self.paginator.offset + self.paginator.limit)]
+        self.paginator.count = len(results)
+
+        serializer = self.get_serializer(results, many=True)
+        return self.paginator.get_paginated_response(serializer.data)
+
+    def get_queryset(self):
+        pk = self.kwargs.get("pk")
+        entry, error = get_obj_with_check_perm(self.request.user, Entry, pk, ACLType.Readable)
+        if error:
+            return error
+
+        if entry.get_status(Entry.STATUS_CREATING):
+            return Response(
+                "Target entry is now under processing", status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not entry.is_active:
+            return Response("Target entry is now inactive", status=status.HTTP_302_FOUND)
+
+        return AttributeValue.objects.filter(
+            parent_attr__in=entry.attrs.all(), parent_attrv__isnull=True
+        ).order_by("-created_time")
+
+    def _get_objects(self, all_attrv, user: User):
+        ret_values: List[Dict[str, Any]] = []
+
+        for (i, attrv) in enumerate(all_attrv):
+            if len(ret_values) >= CONFIG.MAX_HISTORY_COUNT:
+                break
+
+            attr = attrv.parent_attr
+            if (
+                attr.is_active
+                and attr.schema.is_active
+                and user.has_permission(attr, ACLType.Readable)
+                and user.has_permission(attr.schema, ACLType.Readable)
+            ):
+
+                # try to get next attrv
+                next_attrv = None
+                for _attrv in all_attrv[(i + 1) :]:
+                    if _attrv.parent_attr == attr:
+                        next_attrv = _attrv
+                        break
+
+                ret_values.append(
+                    {
+                        "id": attr.id,
+                        "name": attr.schema.name,
+                        "type": attr.schema.type,
+                        "curr": attrv,
+                        "prev": next_attrv if next_attrv else None,
+                    }
+                )
+
+        return ret_values
+
+
+class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
+    queryset = AttributeValue.objects.all()
+    serializer_class = EntryAttributeValueRestoreSerializer
+    permission_classes = [IsAuthenticated]

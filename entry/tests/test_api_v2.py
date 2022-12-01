@@ -2595,3 +2595,30 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         # TODO assert result
+
+    def test_restore_entry_attribute_value(self):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+
+        attr = self.entity.attrs.get(name="val")
+        prev_attrv = entry.attrs.get(schema=attr).get_latest_value()
+
+        # update
+        params = {
+            "name": "entry-change",
+            "attrs": [
+                {"id": attr.id, "value": "updated"},
+            ],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # restore to previous value
+        resp = self.client.patch(
+            "/entry/api/v2/%s/attrv_restore/" % prev_attrv.id, json.dumps({}), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        attrv = entry.attrs.get(schema=attr).get_latest_value()
+        self.assertEqual(attrv.value, prev_attrv.value)

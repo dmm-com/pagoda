@@ -49,13 +49,13 @@ import { EditGroupPage } from "pages/EditGroupPage";
 import { EditUserPage } from "pages/EditUserPage";
 import { EntityHistoryPage } from "pages/EntityHistoryPage";
 import { EntityPage } from "pages/EntityPage";
+import { EntryHistoryListPage } from "pages/EntryHistoryListPage";
 import { EntryListPage } from "pages/EntryListPage";
 import { GroupPage } from "pages/GroupPage";
 import { ImportEntityPage } from "pages/ImportEntityPage";
 import { ImportEntryPage } from "pages/ImportEntryPage";
 import { JobPage } from "pages/JobPage";
 import { LoginPage } from "pages/LoginPage";
-import { ShowEntryHistoryPage } from "pages/ShowEntryHistoryPage";
 import { UserPage } from "pages/UserPage";
 
 interface Props {
@@ -116,7 +116,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             />
             <Route
               path={showEntryHistoryPath(":entryId")}
-              component={ShowEntryHistoryPage}
+              component={EntryHistoryListPage}
             />
             <Route
               path={entityEntriesPath(":entityId")}

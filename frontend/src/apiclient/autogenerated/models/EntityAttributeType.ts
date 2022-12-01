@@ -16,44 +16,42 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface EntryRetrieveValueAsGroup
+ * @interface EntityAttributeType
  */
-export interface EntryRetrieveValueAsGroup {
+export interface EntityAttributeType {
   /**
    *
    * @type {number}
-   * @memberof EntryRetrieveValueAsGroup
+   * @memberof EntityAttributeType
    */
-  id?: number;
+  id: number;
   /**
    *
    * @type {string}
-   * @memberof EntryRetrieveValueAsGroup
+   * @memberof EntityAttributeType
    */
-  name?: string;
+  name: string;
 }
 
-export function EntryRetrieveValueAsGroupFromJSON(
-  json: any
-): EntryRetrieveValueAsGroup {
-  return EntryRetrieveValueAsGroupFromJSONTyped(json, false);
+export function EntityAttributeTypeFromJSON(json: any): EntityAttributeType {
+  return EntityAttributeTypeFromJSONTyped(json, false);
 }
 
-export function EntryRetrieveValueAsGroupFromJSONTyped(
+export function EntityAttributeTypeFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntryRetrieveValueAsGroup {
+): EntityAttributeType {
   if (json === undefined || json === null) {
     return json;
   }
   return {
-    id: !exists(json, "id") ? undefined : json["id"],
-    name: !exists(json, "name") ? undefined : json["name"],
+    id: json["id"],
+    name: json["name"],
   };
 }
 
-export function EntryRetrieveValueAsGroupToJSON(
-  value?: EntryRetrieveValueAsGroup | null
+export function EntityAttributeTypeToJSON(
+  value?: EntityAttributeType | null
 ): any {
   if (value === undefined) {
     return undefined;

@@ -20,11 +20,11 @@ import {
   EntityToJSON,
 } from "./Entity";
 import {
-  EntryRetrieveAttrs,
-  EntryRetrieveAttrsFromJSON,
-  EntryRetrieveAttrsFromJSONTyped,
-  EntryRetrieveAttrsToJSON,
-} from "./EntryRetrieveAttrs";
+  EntryAttributeType,
+  EntryAttributeTypeFromJSON,
+  EntryAttributeTypeFromJSONTyped,
+  EntryAttributeTypeToJSON,
+} from "./EntryAttributeType";
 import {
   UserBase,
   UserBaseFromJSON,
@@ -76,10 +76,10 @@ export interface EntryRetrieve {
   deletedTime?: Date | null;
   /**
    *
-   * @type {Array<EntryRetrieveAttrs>}
+   * @type {Array<EntryAttributeType>}
    * @memberof EntryRetrieve
    */
-  readonly attrs: Array<EntryRetrieveAttrs>;
+  readonly attrs: Array<EntryAttributeType>;
   /**
    *
    * @type {boolean}
@@ -110,7 +110,7 @@ export function EntryRetrieveFromJSONTyped(
       : json["deleted_time"] === null
       ? null
       : new Date(json["deleted_time"]),
-    attrs: (json["attrs"] as Array<any>).map(EntryRetrieveAttrsFromJSON),
+    attrs: (json["attrs"] as Array<any>).map(EntryAttributeTypeFromJSON),
     isPublic: !exists(json, "is_public") ? undefined : json["is_public"],
   };
 }

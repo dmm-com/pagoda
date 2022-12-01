@@ -16,31 +16,33 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface GroupExportChild
+ * @interface EntryAttributeValueRole
  */
-export interface GroupExportChild {
+export interface EntryAttributeValueRole {
   /**
    *
    * @type {number}
-   * @memberof GroupExportChild
+   * @memberof EntryAttributeValueRole
    */
-  readonly id: number;
+  id: number;
   /**
    *
    * @type {string}
-   * @memberof GroupExportChild
+   * @memberof EntryAttributeValueRole
    */
   name: string;
 }
 
-export function GroupExportChildFromJSON(json: any): GroupExportChild {
-  return GroupExportChildFromJSONTyped(json, false);
+export function EntryAttributeValueRoleFromJSON(
+  json: any
+): EntryAttributeValueRole {
+  return EntryAttributeValueRoleFromJSONTyped(json, false);
 }
 
-export function GroupExportChildFromJSONTyped(
+export function EntryAttributeValueRoleFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): GroupExportChild {
+): EntryAttributeValueRole {
   if (json === undefined || json === null) {
     return json;
   }
@@ -50,7 +52,9 @@ export function GroupExportChildFromJSONTyped(
   };
 }
 
-export function GroupExportChildToJSON(value?: GroupExportChild | null): any {
+export function EntryAttributeValueRoleToJSON(
+  value?: EntryAttributeValueRole | null
+): any {
   if (value === undefined) {
     return undefined;
   }
@@ -58,6 +62,7 @@ export function GroupExportChildToJSON(value?: GroupExportChild | null): any {
     return null;
   }
   return {
+    id: value.id,
     name: value.name,
   };
 }
