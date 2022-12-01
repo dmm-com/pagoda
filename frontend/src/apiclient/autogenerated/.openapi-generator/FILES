@@ -17,6 +17,7 @@ models/EntityAttrUpdate.ts
 models/EntityCreate.ts
 models/EntityDetail.ts
 models/EntityDetailAttrs.ts
+models/EntityHistory.ts
 models/EntityImportExport.ts
 models/EntityImportExportRoot.ts
 models/EntityList.ts
@@ -40,6 +41,7 @@ models/GroupMembers.ts
 models/GroupTree.ts
 models/JobSerializers.ts
 models/JobSerializersTarget.ts
+models/PaginatedEntityHistoryList.ts
 models/PaginatedEntityListList.ts
 models/PaginatedEntryBaseList.ts
 models/PaginatedGetEntrySimpleList.ts

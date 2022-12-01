@@ -24,25 +24,25 @@ export interface EntityAttrImportExport {
    * @type {number}
    * @memberof EntityAttrImportExport
    */
-  readonly id: number;
+  id?: number;
   /**
    *
    * @type {string}
    * @memberof EntityAttrImportExport
    */
-  name: string;
+  name?: string;
   /**
    *
    * @type {number}
    * @memberof EntityAttrImportExport
    */
-  type: number;
+  type?: number;
   /**
    *
    * @type {string}
    * @memberof EntityAttrImportExport
    */
-  entity: string;
+  entity?: string;
   /**
    *
    * @type {boolean}
@@ -54,13 +54,13 @@ export interface EntityAttrImportExport {
    * @type {string}
    * @memberof EntityAttrImportExport
    */
-  createdUser: string;
+  createdUser?: string;
   /**
    *
-   * @type {Array<string>}
+   * @type {string}
    * @memberof EntityAttrImportExport
    */
-  refer: Array<string>;
+  refer: string;
 }
 
 export function EntityAttrImportExportFromJSON(
@@ -77,14 +77,16 @@ export function EntityAttrImportExportFromJSONTyped(
     return json;
   }
   return {
-    id: json["id"],
-    name: json["name"],
-    type: json["type"],
-    entity: json["entity"],
+    id: !exists(json, "id") ? undefined : json["id"],
+    name: !exists(json, "name") ? undefined : json["name"],
+    type: !exists(json, "type") ? undefined : json["type"],
+    entity: !exists(json, "entity") ? undefined : json["entity"],
     isMandatory: !exists(json, "is_mandatory")
       ? undefined
       : json["is_mandatory"],
-    createdUser: json["created_user"],
+    createdUser: !exists(json, "created_user")
+      ? undefined
+      : json["created_user"],
     refer: json["refer"],
   };
 }
@@ -99,6 +101,7 @@ export function EntityAttrImportExportToJSON(
     return null;
   }
   return {
+    id: value.id,
     name: value.name,
     type: value.type,
     entity: value.entity,

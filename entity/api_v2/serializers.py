@@ -447,6 +447,19 @@ class EntityDetailSerializer(EntityListSerializer):
         return attrinfo
 
 
+class EntityHistorySerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+    target_obj = serializers.CharField(source="target_obj.name")
+
+    class Meta:
+        model = History
+        fields = ["operation", "time", "username", "text", "target_obj", "is_detail"]
+        read_only_fields = ["operation", "time", "username", "text", "target_obj", "is_detail"]
+
+    def get_username(self, obj: History) -> str:
+        return obj.user.username
+
+
 # The format keeps compatibility with entity.views and dashboard.views
 class EntityAttrImportExportSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
