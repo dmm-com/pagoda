@@ -2304,7 +2304,7 @@ class ViewTest(AironeViewTest):
 
         result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
         attrs = {
-            # "val": None,
+            "val": "",
             "vals": [],
             "ref": {"id": "", "name": ""},
             "refs": [],
@@ -2313,7 +2313,7 @@ class ViewTest(AironeViewTest):
             "group": {"id": "", "name": ""},
             "groups": [],
             "bool": False,
-            # "text": None,
+            "text": "",
             "date": None,
             "role": {"id": "", "name": ""},
             "roles": [],

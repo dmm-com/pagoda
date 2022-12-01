@@ -1,52 +1,59 @@
-import {
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-} from "@mui/material";
-import React, { FC } from "react";
-import { Link } from "react-router-dom";
+import AppsIcon from "@mui/icons-material/Apps";
+import { Box, Container, IconButton, Typography } from "@mui/material";
+import React, { FC, useCallback, useMemo, useState } from "react";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+import { EntityControlMenu } from "../components/entity/EntityControlMenu";
+import { EntityHistoryList } from "../components/entity/EntityHistoryList";
+import { EntryImportModal } from "../components/entry/EntryImportModal";
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
+import { EntityHistoryList as ConstEntityHistoryList } from "../utils/Constants";
 
 import { entitiesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
-import { getEntityHistory } from "utils/AironeAPIClient";
-
-const Operations = {
-  ADD: 1 << 0,
-  MOD: 1 << 1,
-  DEL: 1 << 2,
-};
-
-const Targets = {
-  ENTITY: 1 << 3,
-  ATTR: 1 << 4,
-  ENTRY: 1 << 5,
-};
-
-const TargetOperation = {
-  ADD_ENTITY: Operations.ADD + Targets.ENTITY,
-  ADD_ATTR: Operations.ADD + Targets.ATTR,
-  MOD_ENTITY: Operations.MOD + Targets.ENTITY,
-  MOD_ATTR: Operations.MOD + Targets.ATTR,
-  DEL_ENTITY: Operations.DEL + Targets.ENTITY,
-  DEL_ATTR: Operations.DEL + Targets.ATTR,
-  DEL_ENTRY: Operations.DEL + Targets.ENTRY,
-};
 
 export const EntityHistoryPage: FC = () => {
+  const history = useHistory();
+  const location = useLocation();
+
   const { entityId } = useTypedParams<{ entityId: number }>();
 
-  const history = useAsync(async () => {
-    const resp = await getEntityHistory(entityId);
-    return await resp.json();
-  });
+  const params = new URLSearchParams(location.search);
+  const [page, setPage] = useState<number>(
+    params.has("page") ? Number(params.get("page")) : 1
+  );
+  const [entityAnchorEl, setEntityAnchorEl] =
+    useState<HTMLButtonElement | null>();
+  const [openImportModal, setOpenImportModal] = React.useState(false);
+
+  const entity = useAsyncWithThrow(async () => {
+    return await aironeApiClientV2.getEntity(entityId);
+  }, [entityId]);
+  const histories = useAsync(async () => {
+    return await aironeApiClientV2.getEntityHistories(entityId, page);
+  }, [entityId, page]);
+
+  const handleChangePage = useCallback((newPage: number) => {
+    setPage(newPage);
+
+    history.push({
+      pathname: location.pathname,
+      search: `?page=${newPage}`,
+    });
+  }, []);
+
+  const maxPage = useMemo(() => {
+    if (histories.loading) {
+      return 0;
+    }
+    return Math.ceil(
+      histories.value.count / ConstEntityHistoryList.MAX_ROW_COUNT
+    );
+  }, [histories.loading, histories.value?.count]);
 
   return (
     <Box className="container">
@@ -60,77 +67,66 @@ export const EntityHistoryPage: FC = () => {
         <Typography color="textPrimary">変更履歴</Typography>
       </AironeBreadcrumbs>
 
-      <Table className="table">
-        <TableHead>
-          <TableRow>
-            <TableCell>Operator</TableCell>
-            <TableCell>Operation</TableCell>
-            <TableCell>Details</TableCell>
-            <TableCell>Time</TableCell>
-          </TableRow>
-        </TableHead>
+      <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
+        {/* NOTE: This Box component that has CSS tuning should be custom component */}
+        <Box
+          display="flex"
+          sx={{ borderBottom: 1, borderColor: "gray", mb: "64px", pb: "64px" }}
+        >
+          <Box width="50px" />
+          <Box flexGrow="1">
+            {!entity.loading && (
+              <Typography
+                variant="h2"
+                align="center"
+                sx={{
+                  margin: "auto",
+                  maxWidth: "md",
+                  textOverflow: "ellipsis",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {entity.value.name}
+              </Typography>
+            )}
+            <Typography variant="h4" align="center">
+              変更履歴
+            </Typography>
+          </Box>
+          <Box width="50px">
+            <IconButton
+              onClick={(e) => {
+                setEntityAnchorEl(e.currentTarget);
+              }}
+            >
+              <AppsIcon />
+            </IconButton>
+            <EntityControlMenu
+              entityId={entityId}
+              anchorElem={entityAnchorEl}
+              handleClose={() => setEntityAnchorEl(null)}
+              setOpenImportModal={setOpenImportModal}
+            />
+          </Box>
+        </Box>
 
-        <TableBody>
-          {history.loading ? (
-            <Loading />
-          ) : (
-            <>
-              {history.value.map((column, index) => (
-                <TableRow key={index}>
-                  <TableCell>{column.user.username}</TableCell>
-                  <TableCell>
-                    {(() => {
-                      switch (column.operation) {
-                        case TargetOperation.ADD_ENTITY:
-                          return <Typography>作成</Typography>;
-                        case TargetOperation.MOD_ENTITY:
-                          return <Typography>変更</Typography>;
-                        case TargetOperation.DEL_ENTITY:
-                          return <Typography>削除</Typography>;
-                        default:
-                          return (
-                            <Typography>
-                              {column.operation} ({TargetOperation.ADD_ENTITY})
-                            </Typography>
-                          );
-                      }
-                    })()}
-                  </TableCell>
-                  <TableCell>
-                    <Table>
-                      <TableBody>
-                        {column.details.map((detail, index) => (
-                          <TableRow key={index}>
-                            <TableCell>
-                              {(() => {
-                                switch (detail.operation) {
-                                  case TargetOperation.MOD_ENTITY:
-                                    return <Typography>変更</Typography>;
-                                  case TargetOperation.ADD_ATTR:
-                                    return <Typography>属性追加</Typography>;
-                                  case TargetOperation.MOD_ATTR:
-                                    return <Typography>属性変更</Typography>;
-                                  case TargetOperation.DEL_ATTR:
-                                    return <Typography>属性削除</Typography>;
-                                  default:
-                                    return <Typography />;
-                                }
-                              })()}
-                            </TableCell>
-                            <TableCell>{detail.target_obj.name}</TableCell>
-                            <TableCell>{detail.text}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableCell>
-                  <TableCell>{column.time}</TableCell>
-                </TableRow>
-              ))}
-            </>
-          )}
-        </TableBody>
-      </Table>
+        {histories.loading ? (
+          <Loading />
+        ) : (
+          <EntityHistoryList
+            histories={histories.value.results}
+            page={page}
+            maxPage={maxPage}
+            handleChangePage={handleChangePage}
+          />
+        )}
+      </Container>
+
+      <EntryImportModal
+        openImportModal={openImportModal}
+        closeImportModal={() => setOpenImportModal(false)}
+      />
     </Box>
   );
 };
