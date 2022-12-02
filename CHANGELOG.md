@@ -8,6 +8,24 @@
 
 ### Fixed
 
+## v3.32.0
+
+### Added
+* Added new UI entity history.
+  Contributed by @syucream
+* Added new UI entry history.
+  Contributed by @syucream
+
+### Changed
+* Changed str type and text type to not date format.
+  Contributed by @hinashi
+
+### Fixed
+* Fixed not outputting in YAML export when there is no value in str, text type.
+  Contributed by @hinashi
+* Fixed an issue where role, array_role, boolean type was not output correctly in YAML export.
+  Contributed by @hinashi
+
 ## v3.31.0
 
 ### Added
