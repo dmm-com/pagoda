@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Upgrade node version from 7.2 to 8.12
+  Contributed by @hinashi
 
 ### Fixed
 
