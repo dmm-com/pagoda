@@ -45,13 +45,21 @@ class ACLBase(models.Model):
     # This fields describes the sub-class of this object
     objtype = models.IntegerField(default=0)
 
+    def save_without_historical_record(self, *args, **kwargs):
+        self.skip_history_when_saving = True
+        try:
+            ret = self.save(*args, **kwargs)
+        finally:
+            del self.skip_history_when_saving
+        return ret
+
     def set_status(self, val):
         self.status |= val
-        self.save(update_fields=["status"])
+        self.save_without_historical_record(update_fields=["status"])
 
     def del_status(self, val):
         self.status &= ~val
-        self.save(update_fields=["status"])
+        self.save_without_historical_record(update_fields=["status"])
 
     def get_status(self, val):
         return self.status & val
