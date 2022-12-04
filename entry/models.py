@@ -14,7 +14,6 @@ from airone.lib.drf import ExceedLimitError
 from airone.lib.elasticsearch import (
     ESS,
     execute_query,
-    is_date_check,
     make_query,
     make_query_for_simple,
     make_search_results,
@@ -1795,14 +1794,7 @@ class Entry(ACLBase):
                 entity_attr.type & AttrTypeValue["string"]
                 or entity_attr.type & AttrTypeValue["text"]
             ):
-                # When the value was date format, Elasticsearch detect it date type
-                # automatically. This processing explicitly set value to the date typed
-                # parameter.
-                ret = is_date_check(attrv.value)
-                if ret and isinstance(ret[1], date):
-                    attrinfo["date_value"] = ret[1].strftime("%Y-%m-%d")
-                else:
-                    attrinfo["value"] = truncate(attrv.value)
+                attrinfo["value"] = truncate(attrv.value)
 
             elif entity_attr.type & AttrTypeValue["boolean"]:
                 attrinfo["value"] = attrv.boolean

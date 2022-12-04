@@ -734,7 +734,8 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
                 date_cond["range"]["attr.date_value"]["gte"] = timestr
                 date_cond["range"]["attr.date_value"]["lte"] = timestr
 
-        cond_attr.append(date_cond)
+        str_cond = {"regexp": {"attr.value": _get_regex_pattern(keyword)}}
+        cond_attr.append({"bool": {"should": [date_cond, str_cond]}})
 
     else:
         hint_keyword_val = _get_hint_keyword_val(keyword)
@@ -924,14 +925,8 @@ def make_search_results(
             if (
                 attrinfo["type"] == AttrTypeValue["string"]
                 or attrinfo["type"] == AttrTypeValue["text"]
+                or attrinfo["type"] == AttrTypeValue["boolean"]
             ):
-
-                if attrinfo["value"]:
-                    ret_attrinfo["value"] = attrinfo["value"]
-                elif attrinfo["date_value"]:
-                    ret_attrinfo["value"] = attrinfo["date_value"].split("T")[0]
-
-            elif attrinfo["type"] == AttrTypeValue["boolean"]:
                 ret_attrinfo["value"] = attrinfo["value"]
 
             elif attrinfo["type"] == AttrTypeValue["date"]:
@@ -961,8 +956,7 @@ def make_search_results(
 
                 # If there is no value, it will be skipped.
                 if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == "":
-                    if not attrinfo["date_value"]:
-                        continue
+                    continue
 
                 if attrinfo["type"] & AttrTypeValue["named"]:
                     ret_attrinfo["value"].append(
@@ -975,10 +969,7 @@ def make_search_results(
                     )
 
                 elif attrinfo["type"] & AttrTypeValue["string"]:
-                    if attrinfo["date_value"]:
-                        ret_attrinfo["value"].append(attrinfo["date_value"].split("T")[0])
-                    else:
-                        ret_attrinfo["value"].append(attrinfo["value"])
+                    ret_attrinfo["value"].append(attrinfo["value"])
 
                 elif attrinfo["type"] & (
                     AttrTypeValue["object"] | AttrTypeValue["group"] | AttrTypeValue["role"]

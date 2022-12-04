@@ -618,6 +618,7 @@ class ViewTest(AironeViewTest):
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
         ref_entry = Entry.objects.create(name="ref_entry", schema=ref_entity, created_user=user)
         grp_entry = Group.objects.create(name="group_entry")
+        role_entry = Role.objects.create(name="role_entry")
         attr_info = {
             "str": {"type": AttrTypeValue["string"], "value": "foo"},
             "text": {"type": AttrTypeValue["text"], "value": "foo"},
@@ -625,6 +626,7 @@ class ViewTest(AironeViewTest):
             "date": {"type": AttrTypeValue["date"], "value": "2020-01-01"},
             "obj": {"type": AttrTypeValue["object"], "value": ref_entry},
             "grp": {"type": AttrTypeValue["group"], "value": grp_entry},
+            "role": {"type": AttrTypeValue["role"], "value": role_entry},
             "name": {
                 "type": AttrTypeValue["named_object"],
                 "value": {"name": "bar", "id": ref_entry.id},
@@ -632,6 +634,7 @@ class ViewTest(AironeViewTest):
             "arr_str": {"type": AttrTypeValue["array_string"], "value": ["foo"]},
             "arr_obj": {"type": AttrTypeValue["array_object"], "value": [ref_entry]},
             "arr_grp": {"type": AttrTypeValue["array_group"], "value": [grp_entry]},
+            "arr_role": {"type": AttrTypeValue["array_role"], "value": [role_entry]},
             "arr_name": {
                 "type": AttrTypeValue["array_named_object"],
                 "value": [{"name": "hoge", "id": ref_entry.id}],
@@ -660,18 +663,20 @@ class ViewTest(AironeViewTest):
         # register entry information to the index database
         entry.register_es()
 
-        exporting_attr_names = [
-            "str",
-            "text",
-            "bool",
-            "date",
-            "obj",
-            "grp",
-            "name",
-            "arr_str",
-            "arr_obj",
-            "arr_grp",
-            "arr_name",
+        exporting_attrs = [
+            {"name": "str", "value": "foo"},
+            {"name": "text", "value": "foo"},
+            {"name": "bool", "value": "True"},
+            {"name": "date", "value": "2020-01-01"},
+            {"name": "obj", "value": "ref_entry"},
+            {"name": "grp", "value": "group_entry"},
+            {"name": "role", "value": "role_entry"},
+            {"name": "name", "value": "bar: ref_entry"},
+            {"name": "arr_str", "value": "foo"},
+            {"name": "arr_obj", "value": "ref_entry"},
+            {"name": "arr_grp", "value": "group_entry"},
+            {"name": "arr_role", "value": "role_entry"},
+            {"name": "arr_name", "value": "hoge: ref_entry"},
         ]
 
         # test to export_search_result without mandatory params
@@ -679,7 +684,7 @@ class ViewTest(AironeViewTest):
             reverse("dashboard:export_search_result"),
             json.dumps(
                 {
-                    "attrinfo": [{"name": x} for x in exporting_attr_names],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
                     "export_style": "csv",
                 }
             ),
@@ -706,7 +711,7 @@ class ViewTest(AironeViewTest):
             json.dumps(
                 {
                     "entities": [entity.id],
-                    "attrinfo": [{"name": x} for x in exporting_attr_names],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
                 }
             ),
             "application/json",
@@ -720,7 +725,7 @@ class ViewTest(AironeViewTest):
             json.dumps(
                 {
                     "entities": "hoge",
-                    "attrinfo": [{"name": x} for x in exporting_attr_names],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
                     "export_style": "csv",
                 }
             ),
@@ -734,7 +739,7 @@ class ViewTest(AironeViewTest):
             json.dumps(
                 {
                     "entities": [{"key": "value"}],
-                    "attrinfo": [{"name": x} for x in exporting_attr_names],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
                     "export_style": "csv",
                 }
             ),
@@ -748,7 +753,7 @@ class ViewTest(AironeViewTest):
             json.dumps(
                 {
                     "entities": ["hoge"],
-                    "attrinfo": [{"name": x} for x in exporting_attr_names],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
                     "export_style": "csv",
                 }
             ),
@@ -762,7 +767,7 @@ class ViewTest(AironeViewTest):
             json.dumps(
                 {
                     "entities": [9999],
-                    "attrinfo": [{"name": x} for x in exporting_attr_names],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
                     "export_style": "csv",
                 }
             ),
@@ -846,7 +851,7 @@ class ViewTest(AironeViewTest):
             json.dumps(
                 {
                     "entities": [entity.id],
-                    "attrinfo": [{"name": x} for x in exporting_attr_names],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
                     "export_style": "hoge",
                 }
             ),
@@ -860,7 +865,7 @@ class ViewTest(AironeViewTest):
             json.dumps(
                 {
                     "entities": [entity.id],
-                    "attrinfo": [{"name": x} for x in exporting_attr_names],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
                     "export_style": "csv",
                     "entry_name": [],
                 }
@@ -875,7 +880,7 @@ class ViewTest(AironeViewTest):
             json.dumps(
                 {
                     "entities": [entity.id],
-                    "attrinfo": [{"name": x} for x in exporting_attr_names],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
                     "export_style": "csv",
                     "has_referral": "hoge",
                 }
@@ -890,7 +895,7 @@ class ViewTest(AironeViewTest):
             json.dumps(
                 {
                     "entities": [entity.id],
-                    "attrinfo": [{"name": x} for x in exporting_attr_names],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
                     "export_style": "csv",
                     "referral_name": [],
                 }
@@ -963,7 +968,7 @@ class ViewTest(AironeViewTest):
             json.dumps(
                 {
                     "entities": [entity.id],
-                    "attrinfo": [{"name": x} for x in exporting_attr_names],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
                     "export_style": "csv",
                 }
             ),
@@ -975,14 +980,13 @@ class ViewTest(AironeViewTest):
         csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
 
         # checks all attribute are exported in order of specified sequence
-        self.assertEqual(csv_contents[0], "Name,Entity,%s" % ",".join(exporting_attr_names))
+        self.assertEqual(
+            csv_contents[0], "Name,Entity,%s" % ",".join([x["name"] for x in exporting_attrs])
+        )
 
         # checks all data value are exported
         self.assertEqual(
-            csv_contents[1],
-            "entry,Entity,foo,foo,True,2020-01-01,ref_entry,"
-            "group_entry,bar: ref_entry,foo,ref_entry,"
-            "group_entry,hoge: ref_entry",
+            csv_contents[1], "entry,Entity,%s" % ",".join([x["value"] for x in exporting_attrs])
         )
 
     @patch(
@@ -1203,6 +1207,8 @@ class ViewTest(AironeViewTest):
         # create entity
         entity_ref = Entity.objects.create(name="RefEntity", created_user=user)
         entry_ref = Entry.objects.create(name="ref", schema=entity_ref, created_user=user)
+        entry_group = Group.objects.create(name="group")
+        entry_role = Role.objects.create(name="role")
 
         attr_info = {
             "str": {
@@ -1233,7 +1239,19 @@ class ViewTest(AironeViewTest):
             },
             "group": {
                 "type": AttrTypeValue["group"],
-                "value": str(Group.objects.create(name="group").id),
+                "value": str(entry_group.id),
+            },
+            "arr_group": {
+                "type": AttrTypeValue["array_group"],
+                "value": [str(entry_group.id)],
+            },
+            "role": {
+                "type": AttrTypeValue["role"],
+                "value": str(entry_role.id),
+            },
+            "arr_role": {
+                "type": AttrTypeValue["array_role"],
+                "value": [str(entry_role.id)],
             },
             "date": {"type": AttrTypeValue["date"], "value": date(2020, 1, 1)},
         }
@@ -1293,11 +1311,33 @@ class ViewTest(AironeViewTest):
                 self.assertTrue(e_data["name"] in ["e-0", "e-1"])
                 self.assertTrue(all([x in attr_info.keys() for x in e_data["attrs"]]))
 
+        self.assertEqual(
+            resp_data["Entity-0"][0]["attrs"],
+            {
+                "str": "foo",
+                "obj": "ref",
+                "name": {"bar": "ref"},
+                "bool": False,
+                "arr_str": ["foo", "bar", "baz"],
+                "arr_obj": ["ref"],
+                "arr_name": [
+                    {"hoge": "ref"},
+                    {"fuga": ""},
+                ],
+                "group": "group",
+                "arr_group": ["group"],
+                "role": "role",
+                "arr_role": ["role"],
+                "date": "2020-01-01",
+            },
+        )
+
         # Checked to be able to import exported data
         entry_another_ref = Entry.objects.create(
             name="another_ref", schema=entity_ref, created_user=user
         )
         new_group = Group.objects.create(name="new_group")
+        new_role = Role.objects.create(name="new_role")
         new_attr_values = {
             "str": "bar",
             "obj": "another_ref",
@@ -1307,6 +1347,9 @@ class ViewTest(AironeViewTest):
             "arr_obj": ["another_ref"],
             "arr_name": [{"foo": "another_ref"}, {"bar": "ref"}],
             "group": "new_group",
+            "arr_group": ["new_group"],
+            "role": "new_role",
+            "arr_role": ["new_role"],
             "date": "1999-01-01",
         }
         resp_data["Entity-1"][0]["attrs"] = new_attr_values
@@ -1357,6 +1400,18 @@ class ViewTest(AironeViewTest):
                 )
             elif attr_name == "group":
                 self.assertEqual(int(attrv.value), new_group.id)
+            elif attr_name == "arr_group":
+                self.assertEqual(
+                    [int(x.value) for x in attrv.data_array.all()],
+                    [new_group.id],
+                )
+            elif attr_name == "role":
+                self.assertEqual(int(attrv.value), new_role.id)
+            elif attr_name == "arr_role":
+                self.assertEqual(
+                    [int(x.value) for x in attrv.data_array.all()],
+                    [new_role.id],
+                )
             elif attr_name == "date":
                 self.assertEqual(attrv.date, date(1999, 1, 1))
 
@@ -1479,3 +1534,82 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(referrals), 1)
         self.assertEqual(referrals[0]["entity"], "entity")
         self.assertEqual(referrals[0]["entry"], "entry")
+
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
+    def test_export_advanced_search_result_with_no_value(self):
+        entity: Entity = self.create_entity(
+            **{
+                "user": self.admin,
+                "name": "test-entity",
+                "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+            }
+        )
+        entry = Entry.objects.create(name="test-entry", schema=entity, created_user=self.admin)
+        entry.complement_attrs(self.admin)
+        entry.register_es()
+
+        results = [
+            {"column": "val", "csv": "", "yaml": ""},
+            {"column": "vals", "csv": "", "yaml": []},
+            {"column": "ref", "csv": "", "yaml": ""},
+            {"column": "refs", "csv": "", "yaml": []},
+            {"column": "name", "csv": ": ", "yaml": {"": ""}},
+            {"column": "names", "csv": "", "yaml": []},
+            {"column": "group", "csv": "", "yaml": ""},
+            {"column": "groups", "csv": "", "yaml": []},
+            {"column": "bool", "csv": "False", "yaml": False},
+            {"column": "text", "csv": "", "yaml": ""},
+            {"column": "date", "csv": "", "yaml": None},
+            {"column": "role", "csv": "", "yaml": ""},
+            {"column": "roles", "csv": "", "yaml": []},
+        ]
+
+        # send request to export data
+        resp = self.client.post(
+            reverse("dashboard:export_search_result"),
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [
+                        {"name": x["name"]} for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+                    ],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # verifying result
+        csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
+        self.assertEqual(
+            csv_contents[0], "Name,Entity,%s" % ",".join([x["column"] for x in results])
+        )
+        self.assertEqual(
+            csv_contents[1], "test-entry,test-entity,%s" % ",".join([x["csv"] for x in results])
+        )
+
+        # send request to export data
+        resp = self.client.post(
+            reverse("dashboard:export_search_result"),
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [
+                        {"name": x["name"]} for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+                    ],
+                    "export_style": "yaml",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # verifying result
+        yaml_contents = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        self.assertEqual(
+            yaml_contents["test-entity"][0]["attrs"], {x["column"]: x["yaml"] for x in results}
+        )

@@ -51,7 +51,7 @@ def _csv_export(job, values, recv_data, has_referral):
             if (value is not None) and ("value" in value):
                 vval = value["value"]
 
-            if not value or "value" not in value or not value["value"]:
+            if not value or "value" not in value or value["value"] is None:
                 line_data.append("")
 
             elif (
@@ -63,7 +63,11 @@ def _csv_export(job, values, recv_data, has_referral):
 
                 line_data.append(str(vval))
 
-            elif vtype == AttrTypeValue["object"] or vtype == AttrTypeValue["group"]:
+            elif (
+                vtype == AttrTypeValue["object"]
+                or vtype == AttrTypeValue["group"]
+                or vtype == AttrTypeValue["role"]
+            ):
 
                 line_data.append(str(vval["name"]))
 
@@ -76,7 +80,11 @@ def _csv_export(job, values, recv_data, has_referral):
 
                 line_data.append("\n".join(natsorted(vval)))
 
-            elif vtype == AttrTypeValue["array_object"] or vtype == AttrTypeValue["array_group"]:
+            elif (
+                vtype == AttrTypeValue["array_object"]
+                or vtype == AttrTypeValue["array_group"]
+                or vtype == AttrTypeValue["array_role"]
+            ):
 
                 line_data.append("\n".join(natsorted([x["name"] for x in vval])))
 
@@ -111,11 +119,12 @@ def _yaml_export(job, values, recv_data, has_referral):
 
             return {key: val["name"]}
 
-        elif atype == AttrTypeValue["object"] or atype == AttrTypeValue["group"]:
+        elif (
+            atype == AttrTypeValue["object"]
+            or atype == AttrTypeValue["group"]
+            or atype == AttrTypeValue["role"]
+        ):
             return value["name"]
-
-        elif atype == AttrTypeValue["boolean"]:
-            return True if value == "True" else False
 
         else:
             return value
