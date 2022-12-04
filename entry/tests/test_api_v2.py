@@ -522,11 +522,7 @@ class ViewTest(AironeViewTest):
             next(filter(lambda x: x["schema"]["name"] == "refs", resp_data["attrs"])),
             {
                 "type": AttrTypeValue["array_object"],
-                "value": {
-                    "as_array_object": [
-                        None,
-                    ]
-                },
+                "value": {"as_array_object": []},
                 "id": entry.attrs.get(schema__name="refs").id,
                 "is_mandatory": False,
                 "schema": {
