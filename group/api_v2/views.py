@@ -3,10 +3,9 @@ from typing import List, TypedDict
 
 import yaml
 from django.http import HttpResponse
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, serializers, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.serializers import Serializer
 
 from airone.lib.drf import YAMLParser
 from group.api_v2.serializers import (
@@ -44,7 +43,7 @@ class GroupAPI(viewsets.ModelViewSet):
         serializer = {
             "create": GroupCreateUpdateSerializer,
             "update": GroupCreateUpdateSerializer,
-            "destroy": Serializer,
+            "destroy": serializers.Serializer,
         }
         return serializer.get(self.action, GroupSerializer)
 
@@ -58,6 +57,7 @@ class GroupTreeAPI(viewsets.ReadOnlyModelViewSet):
 class GroupImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     permission_classes = [IsAuthenticated]
+    serializer_class = serializers.Serializer
 
     def post(self, request):
         import_datas = request.data
@@ -104,6 +104,7 @@ class GroupImportAPI(generics.GenericAPIView):
 
 class GroupExportAPI(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = serializers.Serializer
 
     def get(self, request, *args, **kwargs):
         data: List[GroupExport] = []
