@@ -130,7 +130,7 @@ jobs:
 
   frontend:
     docker:
-      - image: cimg/node:18.2
+      - image: cimg/node:18.12
     steps:
       - checkout
       - run:
