@@ -36,10 +36,11 @@ module.exports = {
       },
       {
         test: /\.js$/,
-	enforce: "pre",
+        enforce: "pre",
         use: ["source-map-loader"],
       },
     ]
   },
+  ignoreWarnings: [/Failed to parse source map/],
   plugins: [new ForkTsCheckerWebpackPlugin()]
 };
