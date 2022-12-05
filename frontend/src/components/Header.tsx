@@ -141,6 +141,7 @@ export const Header: FC = () => {
             </Box>
 
             <Box justifyContent="flex-end" className={classes.menuBox}>
+              <Button href="/dashboard/">旧デザイン</Button>
               <IconButton
                 aria-controls="user-menu"
                 aria-haspopup="true"
