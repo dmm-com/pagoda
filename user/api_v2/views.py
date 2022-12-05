@@ -11,7 +11,7 @@ from django.template import loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, status, viewsets
+from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
@@ -93,6 +93,7 @@ class UserTokenAPI(viewsets.ModelViewSet):
 class UserImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     permission_classes = [IsAuthenticated]
+    serializer_class = serializers.Serializer
 
     def post(self, request):
         import_datas = request.data
@@ -155,6 +156,7 @@ class UserImportAPI(generics.GenericAPIView):
 
 class UserExportAPI(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = serializers.Serializer
 
     def get(self, request, *args, **kwargs):
         data: List[UserExport] = []
