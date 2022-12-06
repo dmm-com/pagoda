@@ -1731,14 +1731,14 @@ class Entry(ACLBase):
                     # remove elements have None value
                     value = [x for x in latest_value.get_value() if x]
                 elif latest_value.data_type == AttrTypeValue["named_object"]:
-                    # remove elements have empty name
-                    value = {n: v for n, v in latest_value.get_value().items() if len(n) > 0}
+                    # remove elements have empty name and None value
+                    value = {n: v for n, v in latest_value.get_value().items() if len(n) > 0 or v}
                 elif latest_value.data_type == AttrTypeValue["array_named_object"]:
-                    # remove elements have empty name or None value
+                    # remove elements have empty name and None value
                     value = [
                         x
                         for x in latest_value.get_value()
-                        if len(list(x.keys())[0]) > 0 and list(x.values())[0]
+                        if len(list(x.keys())[0]) > 0 or list(x.values())[0]
                     ]
                 else:
                     value = latest_value.get_value()

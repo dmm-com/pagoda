@@ -1947,6 +1947,16 @@ class ViewTest(AironeViewTest):
         )
         entity_attr_named_object.referral.add(self.ref_entity)
         entity.attrs.add(entity_attr_named_object)
+        entity_attr_named_object_without_key = EntityAttr.objects.create(
+            **{
+                "name": "named_object_without_key",
+                "type": AttrTypeValue["named_object"],
+                "created_user": user,
+                "parent_entity": entity,
+            }
+        )
+        entity_attr_named_object_without_key.referral.add(self.ref_entity)
+        entity.attrs.add(entity_attr_named_object_without_key)
         entity_attr_array_named_object = EntityAttr.objects.create(
             **{
                 "name": "array_named_object",
@@ -1964,6 +1974,9 @@ class ViewTest(AironeViewTest):
         entry.attrs.get(name="array_object").add_value(self.user, [self.ref_entry.id])
         entry.attrs.get(name="named_object").add_value(
             self.user, {"id": self.ref_entry.id, "name": "name1"}
+        )
+        entry.attrs.get(name="named_object_without_key").add_value(
+            self.user, {"id": self.ref_entry.id, "name": ""}
         )
         entry.attrs.get(name="array_named_object").add_value(
             self.user,
@@ -2014,7 +2027,8 @@ class ViewTest(AironeViewTest):
                 {"name": "object", "value": None},
                 {"name": "array_object", "value": []},
                 {"name": "named_object", "value": {"name1": None}},
-                {"name": "array_named_object", "value": []},
+                {"name": "named_object_without_key", "value": {}},
+                {"name": "array_named_object", "value": [{"name1": None}]},
             ],
         )
 
