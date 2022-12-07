@@ -6,7 +6,7 @@ module.exports = {
     index: "./frontend/src/App.tsx"
   },
   output: {
-    filename: "new-ui.js",
+    filename: "ui.js",
     path: path.resolve('static/js')
   },
   resolve: {

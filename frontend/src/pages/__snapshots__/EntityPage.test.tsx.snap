@@ -29,7 +29,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/"
+                      href="/ui/"
                     >
                       Top
                     </a>
@@ -97,7 +97,7 @@ Object {
                 </div>
                 <a
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-x1f2a7-MuiButtonBase-root-MuiButton-root"
-                  href="/new-ui/entities/new"
+                  href="/ui/entities/new"
                   tabindex="0"
                 >
                   <svg
@@ -200,7 +200,7 @@ Object {
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/1/entries"
+                          href="/ui/entities/1/entries"
                           tabindex="0"
                         >
                           <h6
@@ -268,7 +268,7 @@ Object {
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/2/entries"
+                          href="/ui/entities/2/entries"
                           tabindex="0"
                         >
                           <h6
@@ -336,7 +336,7 @@ Object {
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/3/entries"
+                          href="/ui/entities/3/entries"
                           tabindex="0"
                         >
                           <h6
@@ -479,7 +479,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                    href="/ui/"
                   >
                     Top
                   </a>
@@ -547,7 +547,7 @@ Object {
               </div>
               <a
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-x1f2a7-MuiButtonBase-root-MuiButton-root"
-                href="/new-ui/entities/new"
+                href="/ui/entities/new"
                 tabindex="0"
               >
                 <svg
@@ -650,7 +650,7 @@ Object {
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/1/entries"
+                        href="/ui/entities/1/entries"
                         tabindex="0"
                       >
                         <h6
@@ -718,7 +718,7 @@ Object {
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/2/entries"
+                        href="/ui/entities/2/entries"
                         tabindex="0"
                       >
                         <h6
@@ -786,7 +786,7 @@ Object {
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/3/entries"
+                        href="/ui/entities/3/entries"
                         tabindex="0"
                       >
                         <h6

@@ -99,19 +99,19 @@ Object {
             >
               <a
                 class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
-                href="/new-ui/entities/1/entries"
+                href="/ui/entities/1/entries"
               >
                 aaa
               </a>
               <a
                 class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
-                href="/new-ui/entities/2/entries"
+                href="/ui/entities/2/entries"
               >
                 aaaaa
               </a>
               <a
                 class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
-                href="/new-ui/entities/3/entries"
+                href="/ui/entities/3/entries"
               >
                 bbbbb
               </a>
@@ -216,19 +216,19 @@ Object {
           >
             <a
               class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
-              href="/new-ui/entities/1/entries"
+              href="/ui/entities/1/entries"
             >
               aaa
             </a>
             <a
               class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
-              href="/new-ui/entities/2/entries"
+              href="/ui/entities/2/entries"
             >
               aaaaa
             </a>
             <a
               class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
-              href="/new-ui/entities/3/entries"
+              href="/ui/entities/3/entries"
             >
               bbbbb
             </a>
