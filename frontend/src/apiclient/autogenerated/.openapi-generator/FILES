@@ -40,6 +40,7 @@ models/GetEntryAttrReferral.ts
 models/GetEntrySimple.ts
 models/Group.ts
 models/GroupCreateUpdate.ts
+models/GroupExport.ts
 models/GroupMembers.ts
 models/GroupTree.ts
 models/JobSerializers.ts
@@ -60,6 +61,7 @@ models/RoleImportExportChild.ts
 models/RoleUser.ts
 models/UserBase.ts
 models/UserCreate.ts
+models/UserExport.ts
 models/UserList.ts
 models/UserRetrieve.ts
 models/UserRetrieveToken.ts

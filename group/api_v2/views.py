@@ -1,15 +1,11 @@
-import io
-from typing import List, TypedDict
-
-import yaml
-from django.http import HttpResponse
 from rest_framework import generics, serializers, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 
-from airone.lib.drf import YAMLParser
+from airone.lib.drf import YAMLParser, YAMLRenderer
 from group.api_v2.serializers import (
     GroupCreateUpdateSerializer,
+    GroupExportSerializer,
     GroupImportSerializer,
     GroupSerializer,
     GroupTreeSerializer,
@@ -28,11 +24,6 @@ class UserPermission(BasePermission):
             "update": current_user.is_superuser,
         }
         return permisson.get(view.action)
-
-
-class GroupExport(TypedDict):
-    id: int
-    name: str
 
 
 class GroupAPI(viewsets.ModelViewSet):
@@ -61,14 +52,11 @@ class GroupImportAPI(generics.GenericAPIView):
 
     def post(self, request):
         import_datas = request.data
-        serializer = GroupImportSerializer(data=import_datas)
+        serializer = GroupImportSerializer(data=import_datas, many=True)
         serializer.is_valid(raise_exception=True)
 
         # TODO better to move the saving logic into the serializer
         for group_data in import_datas:
-            if "name" not in group_data:
-                return Response("Group name is required", status=status.HTTP_400_BAD_REQUEST)
-
             if "id" in group_data:
                 # update group by id
                 group = Group.objects.filter(id=group_data["id"]).first()
@@ -102,22 +90,8 @@ class GroupImportAPI(generics.GenericAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class GroupExportAPI(generics.RetrieveAPIView):
+class GroupExportAPI(generics.ListAPIView):
+    queryset = Group.objects.filter(is_active=True)
+    serializer_class = GroupExportSerializer
+    renderer_classes = [YAMLRenderer]
     permission_classes = [IsAuthenticated]
-    serializer_class = serializers.Serializer
-
-    def get(self, request, *args, **kwargs):
-        data: List[GroupExport] = []
-
-        for group in Group.objects.filter(is_active=True):
-            data.append(
-                {
-                    "id": group.id,
-                    "name": group.name,
-                }
-            )
-
-        output = io.StringIO()
-        output.write(yaml.dump(data, default_flow_style=False, allow_unicode=True))
-
-        return HttpResponse(output.getvalue(), content_type="application/yaml")

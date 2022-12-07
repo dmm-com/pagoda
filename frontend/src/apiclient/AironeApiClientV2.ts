@@ -509,7 +509,7 @@ class AironeApiClientV2 {
   }
 
   async exportGroups(filename: string): Promise<void> {
-    const resp = await this.group.groupApiV2GroupsExportRetrieveRaw();
+    const resp = await this.group.groupApiV2GroupsExportListRaw();
     const data = await resp.raw.text();
     fileDownload(data, filename);
   }
@@ -699,7 +699,7 @@ class AironeApiClientV2 {
   }
 
   async exportUsers(filename: string): Promise<void> {
-    const resp = await this.user.userApiV2ExportRetrieveRaw();
+    const resp = await this.user.userApiV2ExportListRaw();
     const data = await resp.raw.text();
     fileDownload(data, filename);
   }
