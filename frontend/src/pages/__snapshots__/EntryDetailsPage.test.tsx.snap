@@ -29,7 +29,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/"
+                      href="/ui/"
                     >
                       Top
                     </a>
@@ -45,7 +45,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/entities"
+                      href="/ui/entities"
                     >
                       エンティティ一覧
                     </a>
@@ -64,7 +64,7 @@ Object {
                     >
                       <a
                         class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                        href="/new-ui/entities/2/entries"
+                        href="/ui/entities/2/entries"
                       >
                         bbb
                       </a>
@@ -345,7 +345,7 @@ Object {
                 >
                   <a
                     class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters MuiListItemButton-root MuiListItemButton-gutters css-16ac5r2-MuiButtonBase-root-MuiListItemButton-root"
-                    href="/new-ui/entities/2/entries/1/details"
+                    href="/ui/entities/2/entries/1/details"
                     tabindex="0"
                   >
                     <div
@@ -448,7 +448,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                    href="/ui/"
                   >
                     Top
                   </a>
@@ -464,7 +464,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/entities"
+                    href="/ui/entities"
                   >
                     エンティティ一覧
                   </a>
@@ -483,7 +483,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/entities/2/entries"
+                      href="/ui/entities/2/entries"
                     >
                       bbb
                     </a>
@@ -764,7 +764,7 @@ Object {
               >
                 <a
                   class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters MuiListItemButton-root MuiListItemButton-gutters css-16ac5r2-MuiButtonBase-root-MuiListItemButton-root"
-                  href="/new-ui/entities/2/entries/1/details"
+                  href="/ui/entities/2/entries/1/details"
                   tabindex="0"
                 >
                   <div

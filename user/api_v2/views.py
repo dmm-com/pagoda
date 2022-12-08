@@ -210,7 +210,7 @@ class PasswordResetAPI(viewsets.GenericViewSet):
         }
         self._send_mail(
             subject_template_name="registration/password_reset_subject.txt",
-            email_template_name="registration/new_ui/password_reset_email.html",
+            email_template_name="registration/ui/password_reset_email.html",
             context=context,
             from_email=None,
             to_email=user_email,

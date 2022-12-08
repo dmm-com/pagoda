@@ -29,7 +29,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/"
+                      href="/ui/"
                     >
                       Top
                     </a>
@@ -45,7 +45,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/users"
+                      href="/ui/users"
                     >
                       ユーザ管理
                     </a>
@@ -360,7 +360,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                    href="/ui/"
                   >
                     Top
                   </a>
@@ -376,7 +376,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/users"
+                    href="/ui/users"
                   >
                     ユーザ管理
                   </a>

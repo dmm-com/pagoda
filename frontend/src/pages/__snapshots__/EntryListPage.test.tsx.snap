@@ -29,7 +29,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/"
+                      href="/ui/"
                     >
                       Top
                     </a>
@@ -45,7 +45,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/entities"
+                      href="/ui/entities"
                     >
                       エンティティ一覧
                     </a>
@@ -195,7 +195,7 @@ Object {
               </div>
               <a
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1rn41qt-MuiButtonBase-root-MuiButton-root"
-                href="/new-ui/entities/undefined/entries/new"
+                href="/ui/entities/undefined/entries/new"
                 tabindex="0"
               >
                 <svg
@@ -235,7 +235,7 @@ Object {
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/undefined/entries/1/details"
+                          href="/ui/entities/undefined/entries/1/details"
                           tabindex="0"
                         >
                           <h6
@@ -296,7 +296,7 @@ Object {
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/undefined/entries/2/details"
+                          href="/ui/entities/undefined/entries/2/details"
                           tabindex="0"
                         >
                           <h6
@@ -357,7 +357,7 @@ Object {
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/undefined/entries/3/details"
+                          href="/ui/entities/undefined/entries/3/details"
                           tabindex="0"
                         >
                           <h6
@@ -493,7 +493,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                    href="/ui/"
                   >
                     Top
                   </a>
@@ -509,7 +509,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/entities"
+                    href="/ui/entities"
                   >
                     エンティティ一覧
                   </a>
@@ -659,7 +659,7 @@ Object {
             </div>
             <a
               class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1rn41qt-MuiButtonBase-root-MuiButton-root"
-              href="/new-ui/entities/undefined/entries/new"
+              href="/ui/entities/undefined/entries/new"
               tabindex="0"
             >
               <svg
@@ -699,7 +699,7 @@ Object {
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/undefined/entries/1/details"
+                        href="/ui/entities/undefined/entries/1/details"
                         tabindex="0"
                       >
                         <h6
@@ -760,7 +760,7 @@ Object {
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/undefined/entries/2/details"
+                        href="/ui/entities/undefined/entries/2/details"
                         tabindex="0"
                       >
                         <h6
@@ -821,7 +821,7 @@ Object {
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/undefined/entries/3/details"
+                        href="/ui/entities/undefined/entries/3/details"
                         tabindex="0"
                       >
                         <h6

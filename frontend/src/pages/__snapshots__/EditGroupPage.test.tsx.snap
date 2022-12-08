@@ -29,7 +29,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/"
+                      href="/ui/"
                     >
                       Top
                     </a>
@@ -45,7 +45,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/groups"
+                      href="/ui/groups"
                     >
                       グループ管理
                     </a>
@@ -347,7 +347,7 @@ Object {
                         </span>
                         <a
                           class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                          href="/new-ui/groups/1"
+                          href="/ui/groups/1"
                         >
                           group1
                         </a>
@@ -380,7 +380,7 @@ Object {
                         </span>
                         <a
                           class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                          href="/new-ui/groups/1"
+                          href="/ui/groups/1"
                         >
                           group1
                         </a>
@@ -413,7 +413,7 @@ Object {
                         </span>
                         <a
                           class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                          href="/new-ui/groups/2"
+                          href="/ui/groups/2"
                         >
                           group2
                         </a>
@@ -454,7 +454,7 @@ Object {
                         </span>
                         <a
                           class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                          href="/new-ui/groups/2"
+                          href="/ui/groups/2"
                         >
                           group2
                         </a>
@@ -494,7 +494,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                    href="/ui/"
                   >
                     Top
                   </a>
@@ -510,7 +510,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/groups"
+                    href="/ui/groups"
                   >
                     グループ管理
                   </a>
@@ -812,7 +812,7 @@ Object {
                       </span>
                       <a
                         class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                        href="/new-ui/groups/1"
+                        href="/ui/groups/1"
                       >
                         group1
                       </a>
@@ -845,7 +845,7 @@ Object {
                       </span>
                       <a
                         class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                        href="/new-ui/groups/1"
+                        href="/ui/groups/1"
                       >
                         group1
                       </a>
@@ -878,7 +878,7 @@ Object {
                       </span>
                       <a
                         class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                        href="/new-ui/groups/2"
+                        href="/ui/groups/2"
                       >
                         group2
                       </a>
@@ -919,7 +919,7 @@ Object {
                       </span>
                       <a
                         class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                        href="/new-ui/groups/2"
+                        href="/ui/groups/2"
                       >
                         group2
                       </a>

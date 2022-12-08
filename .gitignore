@@ -176,4 +176,4 @@ static_root
 
 # React
 node_modules
-static/js/new-ui.js*
+static/js/ui.js*

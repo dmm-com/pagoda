@@ -29,7 +29,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/"
+                      href="/ui/"
                     >
                       Top
                     </a>
@@ -45,7 +45,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/entities"
+                      href="/ui/entities"
                     >
                       エンティティ一覧
                     </a>
@@ -64,7 +64,7 @@ Object {
                     >
                       <a
                         class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                        href="/new-ui/entities/2/entries"
+                        href="/ui/entities/2/entries"
                       >
                         bbb
                       </a>
@@ -95,7 +95,7 @@ Object {
                     >
                       <a
                         class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                        href="/new-ui/entities/2/entries/1/details"
+                        href="/ui/entities/2/entries/1/details"
                       >
                         aaa
                       </a>
@@ -367,7 +367,7 @@ vm0006
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                    href="/ui/"
                   >
                     Top
                   </a>
@@ -383,7 +383,7 @@ vm0006
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/entities"
+                    href="/ui/entities"
                   >
                     エンティティ一覧
                   </a>
@@ -402,7 +402,7 @@ vm0006
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/entities/2/entries"
+                      href="/ui/entities/2/entries"
                     >
                       bbb
                     </a>
@@ -433,7 +433,7 @@ vm0006
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/entities/2/entries/1/details"
+                      href="/ui/entities/2/entries/1/details"
                     >
                       aaa
                     </a>

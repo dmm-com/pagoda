@@ -58,7 +58,7 @@ test("should match snapshot", async () => {
 
   // wait async calls and get rendered fragment
   const result = render(
-    <MemoryRouter initialEntries={["/new-ui/entities/2/entries/1/details"]}>
+    <MemoryRouter initialEntries={["/ui/entities/2/entries/1/details"]}>
       <Route
         path={entryDetailsPath(":entityId", ":entryId")}
         component={EntryDetailsPage}

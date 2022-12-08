@@ -1,4 +1,4 @@
-const basePath = "/new-ui/";
+export const basePath = "/ui/";
 
 export const loginPath = () => "/auth/login/";
 export const topPath = () => basePath;

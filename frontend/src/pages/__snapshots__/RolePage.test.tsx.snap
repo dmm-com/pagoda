@@ -29,7 +29,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/"
+                      href="/ui/"
                     >
                       Top
                     </a>
@@ -94,7 +94,7 @@ Object {
               </div>
               <a
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-x1f2a7-MuiButtonBase-root-MuiButton-root"
-                href="/new-ui/roles/new"
+                href="/ui/roles/new"
                 tabindex="0"
               >
                 <svg
@@ -207,7 +207,7 @@ Object {
                   >
                     <a
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-6 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-                      href="/new-ui/roles/0"
+                      href="/ui/roles/0"
                       tabindex="0"
                     >
                       <svg
@@ -259,7 +259,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                    href="/ui/"
                   >
                     Top
                   </a>
@@ -324,7 +324,7 @@ Object {
             </div>
             <a
               class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-x1f2a7-MuiButtonBase-root-MuiButton-root"
-              href="/new-ui/roles/new"
+              href="/ui/roles/new"
               tabindex="0"
             >
               <svg
@@ -437,7 +437,7 @@ Object {
                 >
                   <a
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-6 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-                    href="/new-ui/roles/0"
+                    href="/ui/roles/0"
                     tabindex="0"
                   >
                     <svg
