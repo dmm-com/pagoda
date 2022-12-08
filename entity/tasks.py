@@ -75,9 +75,13 @@ def edit_entity(self, job_id):
         if entity.name != recv_data["name"]:
             history.mod_entity(entity, 'old name: "%s"' % (entity.name))
 
-        entity.name = recv_data["name"]
-        entity.note = recv_data["note"]
-        entity.save(update_fields=["name", "note"])
+        if entity.name != recv_data["name"]:
+            entity.name = recv_data["name"]
+            entity.save(update_fields=["name"])
+
+        if entity.note != recv_data["note"]:
+            entity.note = recv_data["note"]
+            entity.save(update_fields=["note"])
 
         # This describes job pamraeters of Job.update_es_docuemnt()
         jp_update_es_document = {
