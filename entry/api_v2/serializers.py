@@ -429,9 +429,8 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                                     "name": x.referral.entry.schema.name,
                                 },
                             }
-                            if x.referral and x.referral.is_active
-                            else None
                             for x in attrv.data_array.all()
+                            if x.referral and x.referral.is_active
                         ]
                     }
 
