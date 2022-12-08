@@ -18,8 +18,6 @@ import {
   entityPath,
   groupPath,
   groupsPath,
-  importEntriesPath,
-  importEntitiesPath,
   jobsPath,
   newEntityPath,
   newEntryPath,
@@ -52,8 +50,6 @@ import { EntityPage } from "pages/EntityPage";
 import { EntryHistoryListPage } from "pages/EntryHistoryListPage";
 import { EntryListPage } from "pages/EntryListPage";
 import { GroupPage } from "pages/GroupPage";
-import { ImportEntityPage } from "pages/ImportEntityPage";
-import { ImportEntryPage } from "pages/ImportEntryPage";
 import { JobPage } from "pages/JobPage";
 import { LoginPage } from "pages/LoginPage";
 import { UserPage } from "pages/UserPage";
@@ -111,10 +107,6 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               component={EditEntryPage}
             />
             <Route
-              path={importEntriesPath(":entityId")}
-              component={ImportEntryPage}
-            />
-            <Route
               path={showEntryHistoryPath(":entryId")}
               component={EntryHistoryListPage}
             />
@@ -127,7 +119,6 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               component={EntityHistoryPage}
             />
             <Route path={newEntityPath()} component={EditEntityPage} />
-            <Route path={importEntitiesPath()} component={ImportEntityPage} />
             <Route path={entityPath(":entityId")} component={EditEntityPage} />
             <Route path={entitiesPath()} component={EntityPage} />
             <Route path={newGroupPath()} component={EditGroupPage} />
