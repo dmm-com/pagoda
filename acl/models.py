@@ -8,6 +8,7 @@ from django.utils.timezone import make_aware
 
 from airone.lib.acl import ACLObjType, ACLType
 from user.models import User
+from role.models import HistoricalPermission
 
 
 # Add comparison operations to the Permission model
@@ -102,7 +103,7 @@ class ACLBase(models.Model):
         return self._get_permission(ACLType.Full.id)
 
     def _get_permission(self, acltype):
-        return Permission.objects.get(codename="%s.%s" % (self.id, acltype))
+        return HistoricalPermission.objects.get(codename="%s.%s" % (self.id, acltype))
 
     def get_subclass_object(self):
         # Use importlib to prevent circular import
