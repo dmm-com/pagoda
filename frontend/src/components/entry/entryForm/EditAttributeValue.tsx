@@ -175,11 +175,15 @@ const ElemReferral: FC<
 
         // Add current attr value to referrals.
         if (multiple) {
-          (attrValue as Array<EntryAttributeValueObject>).forEach((value) => {
-            if (!referrals.map((referral) => referral.id).includes(value.id)) {
-              addReferrals.push(value);
-            }
-          });
+          (attrValue as Array<EntryAttributeValueObject | null>)
+            .filter((value) => value != null)
+            .forEach((value) => {
+              if (
+                !referrals.map((referral) => referral.id).includes(value.id)
+              ) {
+                addReferrals.push(value);
+              }
+            });
         } else {
           if (attrValue) {
             if (

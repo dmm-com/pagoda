@@ -1725,10 +1725,28 @@ class Entry(ACLBase):
                 continue
 
             latest_value = attr.get_latest_value()
+            value = None
+            if latest_value:
+                if latest_value.data_type == AttrTypeValue["array_object"]:
+                    # remove elements have None value
+                    value = [x for x in latest_value.get_value() if x]
+                elif latest_value.data_type == AttrTypeValue["named_object"]:
+                    # remove elements have empty name and None value
+                    value = {n: v for n, v in latest_value.get_value().items() if len(n) > 0 or v}
+                elif latest_value.data_type == AttrTypeValue["array_named_object"]:
+                    # remove elements have empty name and None value
+                    value = [
+                        x
+                        for x in latest_value.get_value()
+                        if len(list(x.keys())[0]) > 0 or list(x.values())[0]
+                    ]
+                else:
+                    value = latest_value.get_value()
+
             attrinfo.append(
                 {
                     "name": attr.schema.name,
-                    "value": latest_value.get_value() if latest_value else None,
+                    "value": value,
                 }
             )
 

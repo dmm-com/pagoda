@@ -522,11 +522,7 @@ class ViewTest(AironeViewTest):
             next(filter(lambda x: x["schema"]["name"] == "refs", resp_data["attrs"])),
             {
                 "type": AttrTypeValue["array_object"],
-                "value": {
-                    "as_array_object": [
-                        None,
-                    ]
-                },
+                "value": {"as_array_object": []},
                 "id": entry.attrs.get(schema__name="refs").id,
                 "is_mandatory": False,
                 "schema": {
@@ -1915,6 +1911,133 @@ class ViewTest(AironeViewTest):
 
         if e.exception.errno == errno.ENOENT:
             job.get_cache()
+
+    @patch("entry.tasks.export_entries_v2.delay", Mock(side_effect=tasks.export_entries_v2))
+    def test_post_export_with_referrals(self):
+        user = self.admin_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entity_attr_object = EntityAttr.objects.create(
+            **{
+                "name": "object",
+                "type": AttrTypeValue["object"],
+                "created_user": user,
+                "parent_entity": entity,
+            }
+        )
+        entity_attr_object.referral.add(self.ref_entity)
+        entity.attrs.add(entity_attr_object)
+        entity_attr_array_object = EntityAttr.objects.create(
+            **{
+                "name": "array_object",
+                "type": AttrTypeValue["array_object"],
+                "created_user": user,
+                "parent_entity": entity,
+            }
+        )
+        entity_attr_array_object.referral.add(self.ref_entity)
+        entity.attrs.add(entity_attr_array_object)
+        entity_attr_named_object = EntityAttr.objects.create(
+            **{
+                "name": "named_object",
+                "type": AttrTypeValue["named_object"],
+                "created_user": user,
+                "parent_entity": entity,
+            }
+        )
+        entity_attr_named_object.referral.add(self.ref_entity)
+        entity.attrs.add(entity_attr_named_object)
+        entity_attr_named_object_without_key = EntityAttr.objects.create(
+            **{
+                "name": "named_object_without_key",
+                "type": AttrTypeValue["named_object"],
+                "created_user": user,
+                "parent_entity": entity,
+            }
+        )
+        entity_attr_named_object_without_key.referral.add(self.ref_entity)
+        entity.attrs.add(entity_attr_named_object_without_key)
+        entity_attr_array_named_object = EntityAttr.objects.create(
+            **{
+                "name": "array_named_object",
+                "type": AttrTypeValue["array_named_object"],
+                "created_user": user,
+                "parent_entity": entity,
+            }
+        )
+        entity_attr_array_named_object.referral.add(self.ref_entity)
+        entity.attrs.add(entity_attr_array_named_object)
+
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry.attrs.get(name="object").add_value(self.user, self.ref_entry.id)
+        entry.attrs.get(name="array_object").add_value(self.user, [self.ref_entry.id])
+        entry.attrs.get(name="named_object").add_value(
+            self.user, {"id": self.ref_entry.id, "name": "name1"}
+        )
+        entry.attrs.get(name="named_object_without_key").add_value(
+            self.user, {"id": self.ref_entry.id, "name": ""}
+        )
+        entry.attrs.get(name="array_named_object").add_value(
+            self.user,
+            [{"id": self.ref_entry.id, "name": "name1"}, {"id": self.ref_entry.id, "name": ""}],
+        )
+
+        # delete referred entry
+        self.ref_entry.delete()
+
+        resp = self.client.post(
+            "/entry/api/v2/%d/export/" % entity.id,
+            json.dumps({}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json(),
+            {"result": "Succeed in registering export processing. Please check Job list."},
+        )
+
+        job = Job.objects.last()
+        self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY_V2.value)
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+
+        obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
+
+        self.assertEqual(len(obj), 1)
+        entity_data = obj[0]
+        self.assertEqual(entity_data["entity"], "entity")
+
+        self.assertEqual(len(entity_data["entries"]), 1)
+        entry_data = entity_data["entries"][0]
+        self.assertEqual(entry_data["name"], "entry")
+        self.assertTrue("attrs" in entry_data)
+
+        attrs_data = entry_data["attrs"]
+        self.assertTrue(all(["name" in x and "value" in x for x in attrs_data]))
+        self.assertEqual(len(attrs_data), entry.attrs.count())
+
+        # object related typed value refers deleted entry follows the rule:
+        # on object type, value must be None
+        # on array-object type, value must not have the element
+        # on named-object type, value must be {"<name>": None}
+        # on array-named-object type, value must not have the element
+        self.assertEqual(
+            attrs_data,
+            [
+                {"name": "object", "value": None},
+                {"name": "array_object", "value": []},
+                {"name": "named_object", "value": {"name1": None}},
+                {"name": "named_object_without_key", "value": {}},
+                {"name": "array_named_object", "value": [{"name1": None}]},
+            ],
+        )
+
+        resp = self.client.post(
+            "/entry/api/v2/%d/export/" % entity.id,
+            json.dumps({"format": "CSV"}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
 
     @patch("entry.tasks.export_entries_v2.delay", Mock(side_effect=tasks.export_entries_v2))
     def test_get_export_csv_escape(self):
