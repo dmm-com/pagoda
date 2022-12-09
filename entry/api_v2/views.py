@@ -305,7 +305,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     raise IncorrectTypeError(f"unexpected type: {type}")
 
                 entry["attrs"][name] = {
-                    "is_readble": attr["is_readble"],
+                    "is_readable": attr["is_readable"],
                     "type": attr["type"],
                     "value": {
                         _get_typed_value(attr["type"]): attr.get("value", ""),
