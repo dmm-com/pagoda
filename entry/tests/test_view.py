@@ -2125,34 +2125,34 @@ class ViewTest(AironeViewTest):
         test_params = [
             {
                 "user": admin,
-                "is_readble": ACLType.Writable,
+                "is_readable": ACLType.Writable,
                 "attrs": [
-                    {"name": "attr0", "is_readble": True, "last_value": "hoge"},
-                    {"name": "attr1", "is_readble": True, "last_value": "fuga"},
+                    {"name": "attr0", "is_readable": True, "last_value": "hoge"},
+                    {"name": "attr1", "is_readable": True, "last_value": "fuga"},
                 ],
             },
             {
                 "user": user,
-                "is_readble": ACLType.Readable,
+                "is_readable": ACLType.Readable,
                 "attrs": [
-                    {"name": "attr0", "is_readble": True, "last_value": "hoge"},
-                    {"name": "attr1", "is_readble": True, "last_value": "fuga"},
+                    {"name": "attr0", "is_readable": True, "last_value": "hoge"},
+                    {"name": "attr1", "is_readable": True, "last_value": "fuga"},
                 ],
             },
             {
                 "user": user,
-                "is_readble": ACLType.Writable,
+                "is_readable": ACLType.Writable,
                 "attrs": [
-                    {"name": "attr0", "is_readble": False, "last_value": ""},
-                    {"name": "attr1", "is_readble": True, "last_value": "fuga"},
+                    {"name": "attr0", "is_readable": False, "last_value": ""},
+                    {"name": "attr1", "is_readable": True, "last_value": "fuga"},
                 ],
             },
         ]
         for test_param in test_params:
-            context = entry.get_available_attrs(test_param["user"], test_param["is_readble"])
+            context = entry.get_available_attrs(test_param["user"], test_param["is_readable"])
             for index, test_param_attr in enumerate(test_param["attrs"]):
                 self.assertEqual(context[index]["name"], test_param_attr["name"])
-                self.assertEqual(context[index]["is_readble"], test_param_attr["is_readble"])
+                self.assertEqual(context[index]["is_readable"], test_param_attr["is_readable"])
                 self.assertEqual(context[index]["last_value"], test_param_attr["last_value"])
 
     @patch(

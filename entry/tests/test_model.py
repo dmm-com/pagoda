@@ -1291,7 +1291,7 @@ class ModelTest(AironeTestCase):
             self.assertEqual(result["type"], attr.schema.type)
             self.assertEqual(result["is_mandatory"], attr.schema.is_mandatory)
             self.assertEqual(result["index"], attr.schema.index)
-            self.assertEqual(result["is_readble"], True)
+            self.assertEqual(result["is_readable"], True)
             self.assertEqual(result["last_value"], attrinfo[attr.name]["exp_val"])
 
     def test_get_available_attrs_with_multi_attribute(self):
@@ -4296,7 +4296,7 @@ class ModelTest(AironeTestCase):
         ret = Entry.search_entries(self._user, [self._entity.id], is_output_all=True)
         self.assertEqual(
             ret["ret_values"][0]["attrs"],
-            {"attr": {"value": "hoge", "is_readble": True, "type": 2}},
+            {"attr": {"value": "hoge", "is_readable": True, "type": 2}},
         )
 
         ret = Entry.search_entries(
@@ -4478,7 +4478,7 @@ class ModelTest(AironeTestCase):
             set_attrs = [x for x in es_registering_value["attr"] if x["name"] == attrname]
 
             self.assertTrue(all([x["type"] == attr.schema.type for x in set_attrs]))
-            self.assertTrue(all([x["is_readble"] is True for x in set_attrs]))
+            self.assertTrue(all([x["is_readable"] is True for x in set_attrs]))
             for param_name in ["key", "value", "referral_id", "date_value"]:
                 if param_name in attrinfo:
                     self.assertEqual(
@@ -4499,36 +4499,36 @@ class ModelTest(AironeTestCase):
             {
                 "entity": {"id": entity.id, "name": "all_attr_entity"},
                 "entry": {"id": entry.id, "name": "entry"},
-                "is_readble": True,
+                "is_readable": True,
                 "attrs": {
-                    "bool": {"is_readble": True, "type": AttrTypeValue["boolean"], "value": False},
+                    "bool": {"is_readable": True, "type": AttrTypeValue["boolean"], "value": False},
                     "date": {
-                        "is_readble": True,
+                        "is_readable": True,
                         "type": AttrTypeValue["date"],
                         "value": None,
                     },
                     "group": {
-                        "is_readble": True,
+                        "is_readable": True,
                         "type": AttrTypeValue["group"],
                         "value": {"id": "", "name": ""},
                     },
                     "role": {
-                        "is_readble": True,
+                        "is_readable": True,
                         "type": AttrTypeValue["role"],
                         "value": {"id": "", "name": ""},
                     },
                     "name": {
-                        "is_readble": True,
+                        "is_readable": True,
                         "type": AttrTypeValue["named_object"],
                         "value": {"": {"id": "", "name": ""}},
                     },
                     "obj": {
-                        "is_readble": True,
+                        "is_readable": True,
                         "type": AttrTypeValue["object"],
                         "value": {"id": "", "name": ""},
                     },
-                    "str": {"is_readble": True, "type": AttrTypeValue["string"], "value": ""},
-                    "text": {"is_readble": True, "type": AttrTypeValue["text"], "value": ""},
+                    "str": {"is_readable": True, "type": AttrTypeValue["string"], "value": ""},
+                    "text": {"is_readable": True, "type": AttrTypeValue["text"], "value": ""},
                 },
             },
         )
@@ -4548,7 +4548,7 @@ class ModelTest(AironeTestCase):
                     "value": "",
                     "date_value": None,
                     "referral_id": "",
-                    "is_readble": True,
+                    "is_readable": True,
                 }
             ],
         )
@@ -4584,7 +4584,7 @@ class ModelTest(AironeTestCase):
                     "value": self._entry.name,
                     "date_value": None,
                     "referral_id": self._entry.id,
-                    "is_readble": True,
+                    "is_readable": True,
                 }
             ],
         )
@@ -4605,7 +4605,7 @@ class ModelTest(AironeTestCase):
                     "value": "",  # expected not to have information about deleted entry
                     "date_value": None,
                     "referral_id": "",  # expected not to have information about deleted entry
-                    "is_readble": True,
+                    "is_readable": True,
                 }
             ],
         )

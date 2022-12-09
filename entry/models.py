@@ -1448,20 +1448,20 @@ class Entry(ACLBase):
             attrinfo["type"] = entity_attr.type
             attrinfo["is_mandatory"] = entity_attr.is_mandatory
             attrinfo["index"] = entity_attr.index
-            attrinfo["is_readble"] = True
+            attrinfo["is_readable"] = True
             attrinfo["last_value"] = AttrDefaultValue[entity_attr.type]
 
             # check that attribute exists
             attr = entity_attr.attr_list[0] if entity_attr.attr_list else None
             if not attr:
-                attrinfo["is_readble"] = user.has_permission(entity_attr, permission)
+                attrinfo["is_readable"] = user.has_permission(entity_attr, permission)
                 ret_attrs.append(attrinfo)
                 continue
             attrinfo["id"] = attr.id
 
             # check permission of attributes
             if not user.has_permission(attr, permission):
-                attrinfo["is_readble"] = False
+                attrinfo["is_readable"] = False
                 ret_attrs.append(attrinfo)
                 continue
 
@@ -1769,7 +1769,7 @@ class Entry(ACLBase):
                 "value": "",
                 "date_value": None,
                 "referral_id": "",
-                "is_readble": True
+                "is_readable": True
                 if (not attr or attr.is_public or attr.default_permission >= ACLType.Readable.id)
                 else False,
             }
@@ -1846,7 +1846,7 @@ class Entry(ACLBase):
                 {"id": x.id, "name": x.name, "schema": {"id": x.schema.id, "name": x.schema.name}}
                 for x in self.get_referred_objects().select_related("schema")
             ],
-            "is_readble": True
+            "is_readable": True
             if (self.is_public or self.default_permission >= ACLType.Readable.id)
             else False,
         }
@@ -2048,10 +2048,10 @@ class Entry(ACLBase):
                         'Name of Attribute': {
                             'type': (int),
                             'value': (any),
-                            'is_readble': (bool),
+                            'is_readable': (bool),
                         }
                     }
-                    'is_readble': (bool),
+                    'is_readable': (bool),
                 ],
             }
         """
@@ -2076,7 +2076,7 @@ class Entry(ACLBase):
                 hint_entity_attr = entity.attrs.filter(
                     name=hint_attr["name"], is_active=True
                 ).first()
-                hint_attr["is_readble"] = (
+                hint_attr["is_readable"] = (
                     True
                     if (
                         user is None
@@ -2106,7 +2106,7 @@ class Entry(ACLBase):
                         hint_attrs.append(
                             {
                                 "name": entity_attr.name,
-                                "is_readble": True
+                                "is_readable": True
                                 if (
                                     user is None
                                     or user.has_permission(entity_attr, ACLType.Readable)
@@ -2241,9 +2241,9 @@ class Entry(ACLBase):
                     # Elasticsearch bulk API format is add meta information and data pairs as sets.
                     # [
                     #     {"index": {"_id": 1}}
-                    #     {"name": {...}, "entity": {...}, "attr": {...}, "is_readble": {...}}
+                    #     {"name": {...}, "entity": {...}, "attr": {...}, "is_readable": {...}}
                     #     {"index": {"_id": 2}}
-                    #     {"name": {...}, "entity": {...}, "attr": {...}, "is_readble": {...}}
+                    #     {"name": {...}, "entity": {...}, "attr": {...}, "is_readable": {...}}
                     # ]
                     register_docs.append({"index": {"_id": entry.id}})
                     register_docs.append(es_doc)
