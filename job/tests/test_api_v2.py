@@ -1,7 +1,8 @@
 from datetime import timedelta
 
 from airone.lib.test import AironeViewTest
-from entity.models import Entity
+from airone.lib.types import AttrTypeValue
+from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from job.models import Job, JobOperation
 
@@ -139,3 +140,122 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/job/api/v2/%d/" % job.id)
         self.assertEqual(resp.status_code, 404)
         self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+
+    def test_cancel_job(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+
+        # make a job which isn't cancellable
+        job = Job.new_delete(user, entry)
+        self.assertEqual(job.status, Job.STATUS["PREPARING"])
+
+        # send request with invalid job id
+        resp = self.client.delete("/job/api/v2/%d/" % 99999)
+        self.assertEqual(resp.status_code, 404)
+
+        # target jobs that cannot be canceled
+        resp = self.client.delete("/job/api/v2/%d/" % job.id)
+        self.assertEqual(resp.status_code, 400)
+
+        # make a cancellable job
+        job = Job.new_create(user, entry)
+        self.assertEqual(job.status, Job.STATUS["PREPARING"])
+        resp = self.client.delete("/job/api/v2/%d/" % job.id)
+        self.assertEqual(resp.status_code, 204)
+
+    def test_rerun_jobs(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        attr = EntityAttr.objects.create(
+            name="attr",
+            created_user=user,
+            type=AttrTypeValue["string"],
+            parent_entity=entity,
+        )
+        entity.attrs.add(attr)
+
+        # make a job to create an entry
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        job = Job.new_create(
+            user,
+            entry,
+            params={
+                "attrs": [
+                    {
+                        "id": str(attr.id),
+                        "value": [{"data": "hoge", "index": 0}],
+                        "referral_key": [],
+                    }
+                ]
+            },
+        )
+
+        # send request to run job
+        resp = self.client.patch("/job/api/v2/%d/rerun" % job.id)
+        self.assertEqual(resp.status_code, 200)
+
+        job = Job.objects.get(id=job.id)
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(entry.attrs.count(), 1)
+
+        attrv = entry.attrs.first().get_latest_value()
+        self.assertEqual(attrv.value, "hoge")
+
+        # send request to run job with finished job-id
+        resp = self.client.patch("/job/api/v2/%d/rerun" % job.id)
+        self.assertEqual(resp.status_code, 200)
+
+        # send request to run job with invalid job-id
+        resp = self.client.patch("/job/api/v2/%d/rerun" % 9999)
+        self.assertEqual(resp.status_code, 404)
+
+        # make and send a job to update entry
+        job = Job.new_edit(
+            user,
+            entry,
+            params={
+                "attrs": [
+                    {
+                        "id": str(entry.attrs.first().id),
+                        "value": [{"data": "fuga", "index": 0}],
+                        "referral_key": [],
+                    }
+                ]
+            },
+        )
+        resp = self.client.patch("/job/api/v2/%d/rerun" % job.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(Job.objects.get(id=job.id).status, Job.STATUS["DONE"])
+        self.assertEqual(entry.attrs.first().get_latest_value().value, "fuga")
+
+        # make and send a job to copy entry
+        job = Job.new_do_copy(user, entry, params={"new_name": "new_entry"})
+        resp = self.client.patch("/job/api/v2/%d/rerun" % job.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(Job.objects.get(id=job.id).status, Job.STATUS["DONE"])
+
+        # checks it's success to clone entry
+        new_entry = Entry.objects.get(name="new_entry", schema=entity)
+        self.assertEqual(new_entry.attrs.first().get_latest_value().value, "fuga")
+
+        # make and send a job to delete entry
+        job = Job.new_delete(user, entry)
+        resp = self.client.patch("/job/api/v2/%d/rerun" % job.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(Entry.objects.get(id=entry.id).is_active)
+
+    def test_rerun_deleted_job(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
+        job = Job.new_create(user, entry)
+
+        # delete target entry
+        entry.delete()
+
+        resp = self.client.patch("/job/api/v2/%d/rerun" % job.id)
+        self.assertEqual(resp.status_code, 400)
