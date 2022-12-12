@@ -1,12 +1,7 @@
-import io
-from typing import List, TypedDict
-
-import yaml
 from django.contrib.auth.forms import UserModel
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMultiAlternatives
-from django.http import HttpResponse
 from django.template import loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -18,12 +13,13 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 
-from airone.lib.drf import YAMLParser
+from airone.lib.drf import YAMLParser, YAMLRenderer
 from group.models import Group
 from user.api_v2.serializers import (
     PasswordResetConfirmSerializer,
     PasswordResetSerializer,
     UserCreateSerializer,
+    UserExportSerializer,
     UserImportSerializer,
     UserListSerializer,
     UserRetrieveSerializer,
@@ -31,13 +27,6 @@ from user.api_v2.serializers import (
     UserUpdateSerializer,
 )
 from user.models import User
-
-
-class UserExport(TypedDict):
-    id: int
-    username: str
-    email: str
-    groups: str
 
 
 class UserPermission(BasePermission):
@@ -154,29 +143,11 @@ class UserImportAPI(generics.GenericAPIView):
         return Response()
 
 
-class UserExportAPI(generics.RetrieveAPIView):
+class UserExportAPI(generics.ListAPIView):
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = UserExportSerializer
     permission_classes = [IsAuthenticated]
-    serializer_class = serializers.Serializer
-
-    def get(self, request, *args, **kwargs):
-        data: List[UserExport] = []
-
-        for user in User.objects.filter(is_active=True):
-            data.append(
-                {
-                    "email": user.email,
-                    "groups": ",".join(
-                        list(map(lambda x: x.name, user.groups.filter(group__is_active=True)))
-                    ),
-                    "id": user.id,
-                    "username": user.username,
-                }
-            )
-
-        output = io.StringIO()
-        output.write(yaml.dump(data, default_flow_style=False, allow_unicode=True))
-
-        return HttpResponse(output.getvalue(), content_type="application/yaml")
+    renderer_classes = [YAMLRenderer]
 
 
 class PasswordResetAPI(viewsets.GenericViewSet):

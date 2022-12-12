@@ -117,6 +117,22 @@ class UserImportSerializer(serializers.ListSerializer):
     child = UserImportChildSerializer()
 
 
+class UserExportSerializer(serializers.ModelSerializer):
+    groups = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "groups",
+            "email",
+        ]
+
+    def get_groups(self, obj: User) -> str:
+        return ",".join(list(map(lambda x: x.name, obj.groups.filter(group__is_active=True))))
+
+
 class PasswordResetSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
 

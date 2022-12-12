@@ -114,21 +114,12 @@ class GroupTreeSerializer(serializers.ModelSerializer):
         return _make_hierarchical_group(obj.subordinates.filter(is_active=True))
 
 
-class GroupImportChildSerializer(serializers.ModelSerializer):
+class GroupImportSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
+    name = serializers.CharField()
+
+
+class GroupExportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ["id", "name"]
-
-
-class GroupImportSerializer(serializers.ListSerializer):
-    child = GroupImportChildSerializer()
-
-
-class GroupExportChildSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Group
-        fields = ["id", "name"]
-
-
-class GroupExportSerializer(serializers.ListSerializer):
-    child = GroupExportChildSerializer()

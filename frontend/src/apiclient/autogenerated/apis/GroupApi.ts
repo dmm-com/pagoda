@@ -20,6 +20,9 @@ import {
   GroupCreateUpdate,
   GroupCreateUpdateFromJSON,
   GroupCreateUpdateToJSON,
+  GroupExport,
+  GroupExportFromJSON,
+  GroupExportToJSON,
   GroupTree,
   GroupTreeFromJSON,
   GroupTreeToJSON,
@@ -169,9 +172,9 @@ export class GroupApi extends runtime.BaseAPI {
 
   /**
    */
-  async groupApiV2GroupsExportRetrieveRaw(
+  async groupApiV2GroupsExportListRaw(
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<void>> {
+  ): Promise<runtime.ApiResponse<Array<GroupExport>>> {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -200,15 +203,18 @@ export class GroupApi extends runtime.BaseAPI {
       initOverrides
     );
 
-    return new runtime.VoidApiResponse(response);
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      jsonValue.map(GroupExportFromJSON)
+    );
   }
 
   /**
    */
-  async groupApiV2GroupsExportRetrieve(
+  async groupApiV2GroupsExportList(
     initOverrides?: RequestInit
-  ): Promise<void> {
-    await this.groupApiV2GroupsExportRetrieveRaw(initOverrides);
+  ): Promise<Array<GroupExport>> {
+    const response = await this.groupApiV2GroupsExportListRaw(initOverrides);
+    return await response.value();
   }
 
   /**
