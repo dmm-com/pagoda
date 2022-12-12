@@ -724,6 +724,30 @@ class AironeApiClientV2 {
     return resp.results;
   }
 
+  async rerunJob(id: number): Promise<void> {
+    await this.job.jobApiV2RerunPartialUpdate(
+      { id: id },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async cancelJob(id: number): Promise<void> {
+    await this.job.jobApiV2Destroy(
+      { id: id },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
   async importEntries(formData: FormData): Promise<void> {
     return await this.entry.entryApiV2ImportCreate({
       headers: {
