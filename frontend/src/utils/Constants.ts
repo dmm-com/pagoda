@@ -142,3 +142,5 @@ export const JobOperations = {
   ROLE_REGISTER_REFERRAL: 19,
   EXPORT_ENTRY_V2: 20,
 };
+
+export const JobRefreshIntervalMilliSec = 60 * 1000;
