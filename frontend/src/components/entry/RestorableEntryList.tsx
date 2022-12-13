@@ -26,7 +26,6 @@ import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
-import { restoreEntry } from "../../utils/AironeAPIClient";
 import { formatDate } from "../../utils/DateUtil";
 import { Confirmable } from "../common/Confirmable";
 
@@ -98,7 +97,7 @@ export const RestorableEntryList: FC<Props> = ({
   };
 
   const handleRestore = async (entryId: number) => {
-    await restoreEntry(entryId);
+    await aironeApiClientV2.restoreEntry(entryId);
     history.go(0);
   };
 

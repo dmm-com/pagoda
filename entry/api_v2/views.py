@@ -9,6 +9,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
 import custom_view
 from airone.lib.acl import ACLType
@@ -23,6 +24,7 @@ from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
+    AdvancedSearchResultExportSerializer,
     EntryAttributeValueRestoreSerializer,
     EntryBaseSerializer,
     EntryCopySerializer,
@@ -129,7 +131,7 @@ class EntryAPI(viewsets.ModelViewSet):
         job_notify_event = Job.new_notify_create_entry(user, entry)
         job_notify_event.run()
 
-        return Response(status=status.HTTP_201_CREATED)
+        return Response({}, status=status.HTTP_201_CREATED)
 
     def copy(self, request, pk):
         src_entry: Entry = self.get_object()
@@ -313,6 +315,16 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 }
 
         return Response({"result": resp})
+
+
+class AdvancedSearchResultAPI(generics.GenericAPIView):
+    serializer_class = AdvancedSearchResultExportSerializer
+
+    def post(self, request):
+        serializer: Serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.validated_data)
 
 
 @extend_schema(

@@ -14,10 +14,6 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
-import {
-  exportAdvancedSearchResults,
-  getEntityAttrs,
-} from "utils/AironeAPIClient";
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
@@ -41,10 +37,7 @@ export const AdvancedSearchResultsPage: FC = () => {
     : [];
 
   const entityAttrs = useAsync(async () => {
-    const resp = await getEntityAttrs(entityIds, searchAllEntities);
-    const data = await resp.json();
-
-    return data.result;
+    return await aironeApiClientV2.getEntityAttrs(entityIds, searchAllEntities);
   });
 
   const results = useAsync(async () => {
@@ -61,18 +54,19 @@ export const AdvancedSearchResultsPage: FC = () => {
   });
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
-    const resp = await exportAdvancedSearchResults(
-      entityIds,
-      attrInfo,
-      entryName,
-      hasReferral,
-      exportStyle
-    );
-    if (resp.ok) {
+    try {
+      await aironeApiClientV2.exportAdvancedSearchResults(
+        entityIds,
+        attrInfo,
+        entryName,
+        hasReferral,
+        exportStyle
+      );
       enqueueSnackbar("エクスポートジョブの登録に成功しました", {
         variant: "success",
       });
-    } else {
+    } catch (e) {
+      console.log(e);
       enqueueSnackbar("エクスポートジョブの登録に失敗しました", {
         variant: "error",
       });

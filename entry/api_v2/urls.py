@@ -50,6 +50,10 @@ urlpatterns = [
         ),
     ),
     path(
+        "advanced_search_result_export/",
+        views.AdvancedSearchResultAPI.as_view(),
+    ),
+    path(
         "<int:entity_id>/export/",
         views.EntryExportAPI.as_view(),
     ),

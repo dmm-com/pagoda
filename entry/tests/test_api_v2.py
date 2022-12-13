@@ -1,10 +1,12 @@
 import datetime
 import errno
 import json
+from datetime import date
 from unittest import mock
 from unittest.mock import Mock, patch
 
 import yaml
+from django.urls import reverse
 from rest_framework.exceptions import ValidationError
 
 from airone.lib.test import AironeViewTest
@@ -18,8 +20,10 @@ from airone.lib.types import (
     AttrTypeText,
     AttrTypeValue,
 )
+from dashboard import tasks as dashboard_tasks
 from entity.models import Entity, EntityAttr
 from entry import tasks
+from entry import tasks as entry_tasks
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
 from group.models import Group
@@ -29,11 +33,28 @@ from user.models import User
 
 
 class ViewTest(AironeViewTest):
+    def _create_user(
+        self,
+        name,
+        email="email",
+        is_superuser=False,
+        authenticate_type=User.AUTH_TYPE_LOCAL,
+    ):
+        user = User(
+            username=name,
+            email=email,
+            is_superuser=is_superuser,
+            authenticate_type=authenticate_type,
+        )
+        user.set_password(name)
+        user.save()
+
+        return user
+
     def setUp(self):
         super(ViewTest, self).setUp()
 
         self.user: User = self.guest_login()
-        self.role: Role = Role.objects.create(name="Role")
 
         # create Entities, Entries and Group for using this test case
         self.ref_entity: Entity = self.create_entity(self.user, "ref_entity")
@@ -1158,7 +1179,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 201)
-        self.assertEqual(resp.content, b"")
+        self.assertEqual(resp.content, b"{}")
 
         entry.refresh_from_db()
         self.assertRegex(entry.name, "entry")
@@ -2022,14 +2043,17 @@ class ViewTest(AironeViewTest):
         # on named-object type, value must be {"<name>": None}
         # on array-named-object type, value must not have the element
         self.assertEqual(
-            attrs_data,
-            [
-                {"name": "object", "value": None},
-                {"name": "array_object", "value": []},
-                {"name": "named_object", "value": {"name1": None}},
-                {"name": "named_object_without_key", "value": {}},
-                {"name": "array_named_object", "value": [{"name1": None}]},
-            ],
+            sorted(attrs_data, key=lambda e: e["name"]),
+            sorted(
+                [
+                    {"name": "object", "value": None},
+                    {"name": "array_object", "value": []},
+                    {"name": "named_object", "value": {"name1": None}},
+                    {"name": "named_object_without_key", "value": {}},
+                    {"name": "array_named_object", "value": [{"name1": None}]},
+                ],
+                key=lambda e: e["name"],
+            ),
         )
 
         resp = self.client.post(
@@ -2745,3 +2769,1014 @@ class ViewTest(AironeViewTest):
 
         attrv = entry.attrs.get(schema=attr).get_latest_value()
         self.assertEqual(attrv.value, prev_attrv.value)
+
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
+    def test_export_advanced_search_result(self):
+        user = self._create_user("admin", is_superuser=True)
+
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
+        ref_entry = Entry.objects.create(name="ref_entry", schema=ref_entity, created_user=user)
+        grp_entry = Group.objects.create(name="group_entry")
+        role_entry = Role.objects.create(name="role_entry")
+        attr_info = {
+            "str": {"type": AttrTypeValue["string"], "value": "foo"},
+            "text": {"type": AttrTypeValue["text"], "value": "foo"},
+            "bool": {"type": AttrTypeValue["boolean"], "value": True},
+            "date": {"type": AttrTypeValue["date"], "value": "2020-01-01"},
+            "obj": {"type": AttrTypeValue["object"], "value": ref_entry},
+            "grp": {"type": AttrTypeValue["group"], "value": grp_entry},
+            "role": {"type": AttrTypeValue["role"], "value": role_entry},
+            "name": {
+                "type": AttrTypeValue["named_object"],
+                "value": {"name": "bar", "id": ref_entry.id},
+            },
+            "arr_str": {"type": AttrTypeValue["array_string"], "value": ["foo"]},
+            "arr_obj": {"type": AttrTypeValue["array_object"], "value": [ref_entry]},
+            "arr_grp": {"type": AttrTypeValue["array_group"], "value": [grp_entry]},
+            "arr_role": {"type": AttrTypeValue["array_role"], "value": [role_entry]},
+            "arr_name": {
+                "type": AttrTypeValue["array_named_object"],
+                "value": [{"name": "hoge", "id": ref_entry.id}],
+            },
+        }
+
+        entity = Entity.objects.create(name="Entity", created_user=user)
+        for attr_name, info in attr_info.items():
+            entity.attrs.add(
+                EntityAttr.objects.create(
+                    **{
+                        "name": attr_name,
+                        "type": info["type"],
+                        "created_user": user,
+                        "parent_entity": entity,
+                    }
+                )
+            )
+
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        for attr_name, info in attr_info.items():
+            attr = entry.attrs.get(schema__name=attr_name)
+            attr.add_value(user, info["value"])
+
+        # register entry information to the index database
+        entry.register_es()
+
+        exporting_attrs = [
+            {"name": "str", "value": "foo"},
+            {"name": "text", "value": "foo"},
+            {"name": "bool", "value": "True"},
+            {"name": "date", "value": "2020-01-01"},
+            {"name": "obj", "value": "ref_entry"},
+            {"name": "grp", "value": "group_entry"},
+            {"name": "role", "value": "role_entry"},
+            {"name": "name", "value": "bar: ref_entry"},
+            {"name": "arr_str", "value": "foo"},
+            {"name": "arr_obj", "value": "ref_entry"},
+            {"name": "arr_grp", "value": "group_entry"},
+            {"name": "arr_role", "value": "role_entry"},
+            {"name": "arr_name", "value": "hoge: ref_entry"},
+        ]
+
+        # test to export_search_result without mandatory params
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("entities", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("attrinfo", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("export_style", resp.json())
+
+        # test to export_search_result with invalid params
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": "hoge",
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("entities", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [{"key": "value"}],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("entities", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": ["hoge"],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("entities", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [9999],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("entities", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": "hoge",
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("attrinfo", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": ["hoge"],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("attrinfo", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"hoge": "value"}],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("attrinfo", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": ["hoge"]}],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("attrinfo", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": "hoge", "keyword": ["hoge"]}],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("attrinfo", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
+                    "export_style": "hoge",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("export_style", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
+                    "export_style": "csv",
+                    "entry_name": [],
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("entry_name", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
+                    "export_style": "csv",
+                    "has_referral": "hoge",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("has_referral", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
+                    "export_style": "csv",
+                    "referral_name": [],
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("referral_name", resp.json())
+
+        # test to show advanced_search_result page with large param
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": "attr"}],
+                    "export_style": "csv",
+                    "entry_name": "a" * 250,
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("entry_name", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": "attr", "keyword": "a" * 250}],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("attrinfo", resp.json())
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": "attr"}],
+                    "export_style": "csv",
+                    "entry_name": "a" * 249,
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": "attr", "keyword": "a" * 249}],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # send request to export data
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # verifying result has referral entry's infomations
+        csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
+
+        # checks all attribute are exported in order of specified sequence
+        self.assertEqual(
+            csv_contents[0], "Name,Entity,%s" % ",".join([x["name"] for x in exporting_attrs])
+        )
+
+        # checks all data value are exported
+        self.assertEqual(
+            csv_contents[1], "entry,Entity,%s" % ",".join([x["value"] for x in exporting_attrs])
+        )
+
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
+    def test_export_advanced_search_result_with_referral(self):
+        user = self._create_user("admin", is_superuser=True)
+
+        # initialize Entities
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entity_attr = EntityAttr.objects.create(
+            name="attr_ref",
+            type=AttrTypeValue["object"],
+            created_user=user,
+            parent_entity=entity,
+        )
+        entity_attr.referral.add(ref_entity)
+        entity.attrs.add(entity_attr)
+
+        # initialize Entries
+        ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)
+        ref_entry.register_es()
+
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry.attrs.first().add_value(user, ref_entry)
+        entry.register_es()
+
+        # export with 'has_referral' parameter which has blank value
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [ref_entity.id],
+                    "attrinfo": [],
+                    "has_referral": True,
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # verifying result has referral entry's infomations
+        csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
+        self.assertEqual(len(csv_contents), 2)
+        self.assertEqual(csv_contents[0], "Name,Entity,Referral")
+        self.assertEqual(csv_contents[1], "ref,Referred Entity,['entry / entity']")
+
+        # export with 'has_referral' parameter which has invalid value
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [ref_entity.id],
+                    "attrinfo": [],
+                    "has_referral": True,
+                    "referral_name": "hogefuga",
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
+        self.assertEqual(len(csv_contents), 1)
+
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
+    def test_export_advanced_search_result_with_no_permission(self):
+        admin = self._create_user("admin", is_superuser=True)
+
+        entry = Entry.objects.create(name="private", schema=self.entity, created_user=admin)
+        entry.is_public = False
+        entry.save(update_fields=["is_public"])
+        entry.register_es()
+
+        self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [self.entity.id],
+                    "attrinfo": [{"name": "text"}],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+
+        csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
+        self.assertEqual(csv_contents[0], "Name,Entity,text")
+        self.assertEqual(csv_contents[1], "private,test-entity,")
+
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
+    def test_show_advanced_search_results_csv_escape(self):
+        user = self._create_user("admin", is_superuser=True)
+
+        dummy_entity = Entity.objects.create(name="Dummy", created_user=user)
+        dummy_entry = Entry(name='D,U"MM"Y', schema=dummy_entity, created_user=user)
+        dummy_entry.save()
+
+        CASES = [
+            [AttrTypeStr, 'raison,de"tre', '"raison,de""tre"'],
+            [AttrTypeObj, dummy_entry, '"D,U""MM""Y"'],
+            [AttrTypeText, "1st line\r\n2nd line", '"1st line' + "\r\n" + '2nd line"'],
+            [AttrTypeNamedObj, {"key": dummy_entry}, '"key: D,U""MM""Y"'],
+            [AttrTypeArrStr, ["one", "two", "three"], '"one\nthree\ntwo"'],
+            [AttrTypeArrObj, [dummy_entry], '"D,U""MM""Y"'],
+            [AttrTypeArrNamedObj, [{"key1": dummy_entry}], '"key1: D,U""MM""Y"'],
+        ]
+
+        for case in CASES:
+            # setup data
+            type_name = case[0].__name__  # AttrTypeStr -> 'AttrTypeStr'
+            attr_name = type_name + ',"ATTR"'
+
+            test_entity = Entity.objects.create(name="TestEntity_" + type_name, created_user=user)
+
+            test_entity_attr = EntityAttr.objects.create(
+                name=attr_name,
+                type=case[0],
+                created_user=user,
+                parent_entity=test_entity,
+            )
+
+            test_entity.attrs.add(test_entity_attr)
+            test_entity.save()
+
+            test_entry = Entry.objects.create(
+                name=type_name + ',"ENTRY"', schema=test_entity, created_user=user
+            )
+            test_entry.save()
+
+            test_attr = Attribute.objects.create(
+                name=attr_name,
+                schema=test_entity_attr,
+                created_user=user,
+                parent_entry=test_entry,
+            )
+
+            test_attr.save()
+            test_entry.attrs.add(test_attr)
+            test_entry.save()
+
+            test_val = None
+
+            if case[0].TYPE & AttrTypeValue["array"] == 0:
+                if case[0] == AttrTypeStr:
+                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
+                elif case[0] == AttrTypeObj:
+                    test_val = AttributeValue.create(user=user, attr=test_attr, referral=case[1])
+                elif case[0] == AttrTypeText:
+                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
+                elif case[0] == AttrTypeNamedObj:
+                    [(k, v)] = case[1].items()
+                    test_val = AttributeValue.create(user=user, attr=test_attr, value=k, referral=v)
+            else:
+                test_val = AttributeValue.create(user=user, attr=test_attr)
+                test_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
+                for child in case[1]:
+                    test_val_child = None
+                    if case[0] == AttrTypeArrStr:
+                        test_val_child = AttributeValue.create(
+                            user=user, attr=test_attr, value=child
+                        )
+                    elif case[0] == AttrTypeArrObj:
+                        test_val_child = AttributeValue.create(
+                            user=user, attr=test_attr, referral=child
+                        )
+                    elif case[0] == AttrTypeArrNamedObj:
+                        [(k, v)] = child.items()
+                        test_val_child = AttributeValue.create(
+                            user=user, attr=test_attr, value=k, referral=v
+                        )
+                    test_val.data_array.add(test_val_child)
+
+            test_val.save()
+            test_attr.values.add(test_val)
+            test_attr.save()
+
+            test_entry.register_es()
+
+            resp = self.client.post(
+                "/entry/api/v2/advanced_search_result_export/",
+                json.dumps(
+                    {
+                        "entities": [test_entity.id],
+                        "attrinfo": [{"name": test_attr.name, "keyword": ""}],
+                        "export_style": "csv",
+                    }
+                ),
+                "application/json",
+            )
+            self.assertEqual(resp.status_code, 200)
+
+            content = Job.objects.last().get_cache()
+            header = content.splitlines()[0]
+            self.assertEqual(header, 'Name,Entity,"%s,""ATTR"""' % type_name)
+
+            data = content.replace(header, "", 1).strip()
+            self.assertEqual(data, '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, case[2]))
+
+    @patch("entry.tasks.import_entries.delay", Mock(side_effect=entry_tasks.import_entries))
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
+    def test_yaml_export(self):
+        user = self.admin_login()
+
+        # create entity
+        entity_ref = Entity.objects.create(name="RefEntity", created_user=user)
+        entry_ref = Entry.objects.create(name="ref", schema=entity_ref, created_user=user)
+        entry_group = Group.objects.create(name="group")
+        entry_role = Role.objects.create(name="role")
+
+        attr_info = {
+            "str": {
+                "type": AttrTypeValue["string"],
+                "value": "foo",
+                "invalid_values": [123, entry_ref, True],
+            },
+            "obj": {"type": AttrTypeValue["object"], "value": str(entry_ref.id)},
+            "name": {
+                "type": AttrTypeValue["named_object"],
+                "value": {"name": "bar", "id": str(entry_ref.id)},
+            },
+            "bool": {"type": AttrTypeValue["boolean"], "value": False},
+            "arr_str": {
+                "type": AttrTypeValue["array_string"],
+                "value": ["foo", "bar", "baz"],
+            },
+            "arr_obj": {
+                "type": AttrTypeValue["array_object"],
+                "value": [str(entry_ref.id)],
+            },
+            "arr_name": {
+                "type": AttrTypeValue["array_named_object"],
+                "value": [
+                    {"name": "hoge", "id": str(entry_ref.id)},
+                    {"name": "fuga", "boolean": False},  # specify boolean parameter
+                ],
+            },
+            "group": {
+                "type": AttrTypeValue["group"],
+                "value": str(entry_group.id),
+            },
+            "arr_group": {
+                "type": AttrTypeValue["array_group"],
+                "value": [str(entry_group.id)],
+            },
+            "role": {
+                "type": AttrTypeValue["role"],
+                "value": str(entry_role.id),
+            },
+            "arr_role": {
+                "type": AttrTypeValue["array_role"],
+                "value": [str(entry_role.id)],
+            },
+            "date": {"type": AttrTypeValue["date"], "value": date(2020, 1, 1)},
+        }
+        entities = []
+        for index in range(2):
+            entity = Entity.objects.create(name="Entity-%d" % index, created_user=user)
+            for attr_name, info in attr_info.items():
+                attr = EntityAttr.objects.create(
+                    name=attr_name,
+                    type=info["type"],
+                    created_user=user,
+                    parent_entity=entity,
+                )
+
+                if info["type"] & AttrTypeValue["object"]:
+                    attr.referral.add(entity_ref)
+
+                entity.attrs.add(attr)
+
+            # create an entry of Entity
+            for e_index in range(2):
+                entry = Entry.objects.create(
+                    name="e-%d" % e_index, schema=entity, created_user=user
+                )
+                entry.complement_attrs(user)
+
+                for attr_name, info in attr_info.items():
+                    attr = entry.attrs.get(name=attr_name)
+                    attrv = attr.add_value(user, info["value"])
+
+                entry.register_es()
+
+            entities.append(entity)
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [x.id for x in Entity.objects.filter(name__regex="^Entity-")],
+                    "attrinfo": [{"name": x, "keyword": ""} for x in attr_info.keys()],
+                    "export_style": "yaml",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        for index in range(2):
+            entity = Entity.objects.get(name="Entity-%d" % index)
+            e_data = resp_data[entity.name]
+
+            self.assertEqual(
+                len(resp_data[entity.name]), Entry.objects.filter(schema=entity).count()
+            )
+            for e_data in resp_data[entity.name]:
+                self.assertTrue(e_data["name"] in ["e-0", "e-1"])
+                self.assertTrue(all([x in attr_info.keys() for x in e_data["attrs"]]))
+
+        self.assertEqual(
+            resp_data["Entity-0"][0]["attrs"],
+            {
+                "str": "foo",
+                "obj": "ref",
+                "name": {"bar": "ref"},
+                "bool": False,
+                "arr_str": ["foo", "bar", "baz"],
+                "arr_obj": ["ref"],
+                "arr_name": [
+                    {"hoge": "ref"},
+                    {"fuga": ""},
+                ],
+                "group": "group",
+                "arr_group": ["group"],
+                "role": "role",
+                "arr_role": ["role"],
+                "date": "2020-01-01",
+            },
+        )
+
+        # Checked to be able to import exported data
+        entry_another_ref = Entry.objects.create(
+            name="another_ref", schema=entity_ref, created_user=user
+        )
+        new_group = Group.objects.create(name="new_group")
+        new_role = Role.objects.create(name="new_role")
+        new_attr_values = {
+            "str": "bar",
+            "obj": "another_ref",
+            "name": {"hoge": "another_ref"},
+            "bool": True,
+            "arr_str": ["hoge", "fuga"],
+            "arr_obj": ["another_ref"],
+            "arr_name": [{"foo": "another_ref"}, {"bar": "ref"}],
+            "group": "new_group",
+            "arr_group": ["new_group"],
+            "role": "new_role",
+            "arr_role": ["new_role"],
+            "date": "1999-01-01",
+        }
+        resp_data["Entity-1"][0]["attrs"] = new_attr_values
+
+        mockio = mock.mock_open(read_data=yaml.dump(resp_data))
+        with mock.patch("builtins.open", mockio):
+            with open("hogefuga.yaml") as fp:
+                resp = self.client.post(
+                    reverse("entry:do_import", args=[entities[1].id]), {"file": fp}
+                )
+                self.assertEqual(resp.status_code, 303)
+
+        self.assertEqual(entry_another_ref.get_referred_objects().count(), 1)
+
+        updated_entry = entry_another_ref.get_referred_objects().first()
+        self.assertEqual(updated_entry.name, resp_data["Entity-1"][0]["name"])
+
+        for (attr_name, value_info) in new_attr_values.items():
+            attrv = updated_entry.attrs.get(name=attr_name).get_latest_value()
+
+            if attr_name == "str":
+                self.assertEqual(attrv.value, value_info)
+            elif attr_name == "obj":
+                self.assertEqual(attrv.referral.id, entry_another_ref.id)
+            elif attr_name == "name":
+                self.assertEqual(attrv.value, list(value_info.keys())[0])
+                self.assertEqual(attrv.referral.id, entry_another_ref.id)
+            elif attr_name == "bool":
+                self.assertTrue(attrv.boolean)
+            elif attr_name == "arr_str":
+                self.assertEqual(
+                    sorted([x.value for x in attrv.data_array.all()]),
+                    sorted(value_info),
+                )
+            elif attr_name == "arr_obj":
+                self.assertEqual(
+                    [x.referral.id for x in attrv.data_array.all()],
+                    [entry_another_ref.id],
+                )
+            elif attr_name == "arr_name":
+                self.assertEqual(
+                    sorted([x.value for x in attrv.data_array.all()]),
+                    sorted([list(x.keys())[0] for x in value_info]),
+                )
+                self.assertEqual(
+                    sorted([x.referral.name for x in attrv.data_array.all()]),
+                    sorted([list(x.values())[0] for x in value_info]),
+                )
+            elif attr_name == "group":
+                self.assertEqual(int(attrv.value), new_group.id)
+            elif attr_name == "arr_group":
+                self.assertEqual(
+                    [int(x.value) for x in attrv.data_array.all()],
+                    [new_group.id],
+                )
+            elif attr_name == "role":
+                self.assertEqual(int(attrv.value), new_role.id)
+            elif attr_name == "arr_role":
+                self.assertEqual(
+                    [int(x.value) for x in attrv.data_array.all()],
+                    [new_role.id],
+                )
+            elif attr_name == "date":
+                self.assertEqual(attrv.date, date(1999, 1, 1))
+
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
+    def test_duplicate_export(self):
+        user = self.admin_login()
+
+        entity = Entity.objects.create(name="Entity", created_user=user)
+        export_params = {
+            "entities": [entity.id],
+            "attrinfo": [{"name": "attr", "keyword": "data-5"}],
+            "export_style": "csv",
+        }
+
+        # create a job to export search result
+        job = Job.new_export(user, params=export_params)
+
+        # A request with same parameter which is under execution will be denied
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(export_params, sort_keys=True),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+
+        # A request with another condition will be accepted
+        new_export_params = dict(export_params, **{"export_style": "yaml"})
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(new_export_params, sort_keys=True),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # When the job is finished, the processing is passed.
+        job.status = Job.STATUS["DONE"]
+        job.save(update_fields=["status"])
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(export_params, sort_keys=True),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
+    def test_export_with_hint_entry_name(self):
+        admin = self._create_user("admin", is_superuser=True)
+
+        entity = Entity.objects.create(name="Entity", created_user=admin)
+        for name in ["foo", "bar", "baz"]:
+            Entry.objects.create(name=name, schema=entity, created_user=admin).register_es()
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [],
+                    "entry_name": "ba",
+                    "export_style": "yaml",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        self.assertEqual(len(resp_data["Entity"]), 2)
+        self.assertEqual([x["name"] for x in resp_data["Entity"]], ["bar", "baz"])
+
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
+    def test_yaml_export_with_referral(self):
+        user = self._create_user("admin", is_superuser=True)
+
+        # initialize Entities
+        ref_entity = Entity.objects.create(name="ReferredEntity", created_user=user)
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entity_attr = EntityAttr.objects.create(
+            name="attr_ref",
+            type=AttrTypeValue["object"],
+            created_user=user,
+            parent_entity=entity,
+        )
+        entity_attr.referral.add(ref_entity)
+        entity.attrs.add(entity_attr)
+
+        # initialize Entries
+        ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)
+        ref_entry.register_es()
+
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry.attrs.first().add_value(user, ref_entry)
+        entry.register_es()
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [ref_entity.id],
+                    "attrinfo": [],
+                    "export_style": "yaml",
+                    "has_referral": True,
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        self.assertEqual(len(resp_data["ReferredEntity"]), 1)
+        referrals = resp_data["ReferredEntity"][0]["referrals"]
+        self.assertEqual(len(referrals), 1)
+        self.assertEqual(referrals[0]["entity"], "entity")
+        self.assertEqual(referrals[0]["entry"], "entry")
+
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
+    def test_export_advanced_search_result_with_no_value(self):
+        admin = self._create_user("admin", is_superuser=True)
+
+        entity: Entity = self.create_entity(
+            **{
+                "user": admin,
+                "name": "test-entity",
+                "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+            }
+        )
+        entry = Entry.objects.create(name="test-entry", schema=entity, created_user=admin)
+        entry.complement_attrs(admin)
+        entry.register_es()
+
+        results = [
+            {"column": "val", "csv": "", "yaml": ""},
+            {"column": "vals", "csv": "", "yaml": []},
+            {"column": "ref", "csv": "", "yaml": ""},
+            {"column": "refs", "csv": "", "yaml": []},
+            {"column": "name", "csv": ": ", "yaml": {"": ""}},
+            {"column": "names", "csv": "", "yaml": []},
+            {"column": "group", "csv": "", "yaml": ""},
+            {"column": "groups", "csv": "", "yaml": []},
+            {"column": "bool", "csv": "False", "yaml": False},
+            {"column": "text", "csv": "", "yaml": ""},
+            {"column": "date", "csv": "", "yaml": None},
+            {"column": "role", "csv": "", "yaml": ""},
+            {"column": "roles", "csv": "", "yaml": []},
+        ]
+
+        # send request to export data
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [
+                        {"name": x["name"]} for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+                    ],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # verifying result
+        csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
+        self.assertEqual(
+            csv_contents[0], "Name,Entity,%s" % ",".join([x["column"] for x in results])
+        )
+        self.assertEqual(
+            csv_contents[1], "test-entry,test-entity,%s" % ",".join([x["csv"] for x in results])
+        )
+
+        # send request to export data
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [
+                        {"name": x["name"]} for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+                    ],
+                    "export_style": "yaml",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # verifying result
+        yaml_contents = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        self.assertEqual(
+            yaml_contents["test-entity"][0]["attrs"], {x["column"]: x["yaml"] for x in results}
+        )

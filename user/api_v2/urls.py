@@ -23,6 +23,14 @@ urlpatterns = [
         ),
     ),
     path(
+        "<int:pk>/edit_passwd",
+        views.UserPasswordAPI.as_view(),
+    ),
+    path(
+        "<int:pk>/su_edit_passwd",
+        views.UserPasswordBySuperuserAPI.as_view(),
+    ),
+    path(
         "token/",
         views.UserTokenAPI.as_view(
             {

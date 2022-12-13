@@ -17,7 +17,6 @@ import { PageHeader } from "../components/common/PageHeader";
 
 import { advancedSearchResultPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { getEntityAttrs } from "utils/AironeAPIClient";
 
 export const AdvancedSearchPage: FC = () => {
   const history = useHistory();
@@ -36,12 +35,10 @@ export const AdvancedSearchPage: FC = () => {
 
   const attrs = useAsync(async () => {
     if (selectedEntities.length > 0 || searchAllEntities) {
-      const resp = await getEntityAttrs(
+      return await aironeApiClientV2.getEntityAttrs(
         selectedEntities.map((e) => e.id),
         searchAllEntities
       );
-      const data = await resp.json();
-      return data.result;
     }
     return [];
   }, [selectedEntities, searchAllEntities]);
