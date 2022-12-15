@@ -1784,8 +1784,21 @@ class ViewTest(AironeViewTest):
         resp_data = resp.json()
         results = resp_data["results"]
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]["id"], entry.id)
-        self.assertEqual(results[0]["name"], entry.name)
+        self.assertEqual(
+            results[0],
+            {
+                "id": entry.id,
+                "name": entry.name,
+                "schema": {
+                    "id": entry.schema.id,
+                    "name": entry.schema.name,
+                    "is_public": True,
+                },
+                "is_active": True,
+                "deleted_user": None,
+                "deleted_time": None,
+            },
+        )
 
     def test_referral_unrelated_to_entry(self):
         resp = self.client.get("/entry/api/v2/%s/referral/" % 99999)  # invalid entry id

@@ -21,6 +21,10 @@ test("should render a component with essential props", async () => {
     {
       id: 1,
       name: "name",
+      schema: {
+        id: 2,
+        name: "entity",
+      },
     },
   ];
 

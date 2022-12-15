@@ -620,12 +620,6 @@ class EntryCopySerializer(serializers.Serializer):
                 )
 
 
-class GetEntrySimpleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Entry
-        fields = ("id", "name")
-
-
 class EntryExportSerializer(serializers.Serializer):
     format = serializers.CharField(default="yaml")
 

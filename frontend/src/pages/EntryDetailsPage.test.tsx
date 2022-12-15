@@ -34,7 +34,10 @@ test("should match snapshot", async () => {
     {
       id: 1,
       name: "aaa",
-      entity: "bbb",
+      schema: {
+        id: 2,
+        name: "bbb",
+      },
     },
   ];
 

@@ -32,7 +32,6 @@ from entry.api_v2.serializers import (
     EntryRetrieveSerializer,
     EntryUpdateSerializer,
     GetEntryAttrReferralSerializer,
-    GetEntrySimpleSerializer,
 )
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
@@ -321,7 +320,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
     ],
 )
 class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
-    serializer_class = GetEntrySimpleSerializer
+    serializer_class = EntryBaseSerializer
     pagination_class = EntryReferralPagination
 
     def get_queryset(self):
@@ -341,7 +340,7 @@ class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
         if keyword:
             query &= Q(name__iregex=r"%s" % keyword)
 
-        return Entry.objects.filter(query)
+        return Entry.objects.filter(query).select_related("schema")
 
 
 class EntryExportAPI(generics.GenericAPIView):
