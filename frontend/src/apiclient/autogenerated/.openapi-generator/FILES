@@ -37,7 +37,6 @@ models/EntryHistoryAttributeValue.ts
 models/EntryRetrieve.ts
 models/EntryUpdate.ts
 models/GetEntryAttrReferral.ts
-models/GetEntrySimple.ts
 models/Group.ts
 models/GroupCreateUpdate.ts
 models/GroupExport.ts
@@ -49,7 +48,6 @@ models/PaginatedEntityHistoryList.ts
 models/PaginatedEntityListList.ts
 models/PaginatedEntryBaseList.ts
 models/PaginatedEntryHistoryList.ts
-models/PaginatedGetEntrySimpleList.ts
 models/PaginatedJobSerializersList.ts
 models/PaginatedUserListList.ts
 models/PasswordReset.ts

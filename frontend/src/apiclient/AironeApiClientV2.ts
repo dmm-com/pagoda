@@ -28,7 +28,6 @@ import {
   UserRetrieve,
   Webhook,
   EntityAttrUpdate,
-  PaginatedGetEntrySimpleList,
   GetEntryAttrReferral,
   PaginatedJobSerializersList,
   JobApi,
@@ -321,7 +320,7 @@ class AironeApiClientV2 {
     id: number,
     page: number,
     keyword?: string
-  ): Promise<PaginatedGetEntrySimpleList> {
+  ): Promise<PaginatedEntryBaseList> {
     return await this.entry.entryApiV2ReferralList({
       id: id,
       keyword: keyword,
