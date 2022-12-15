@@ -296,7 +296,7 @@ class ViewTest(AironeViewTest):
 
         # permission readble entity
         self.role.users.add(self.user)
-        self.role.permissions.add(self.entity.readable)
+        self.entity.readable.roles.add(self.role)
         resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
         self.assertEqual(resp.status_code, 200)
 
@@ -2453,7 +2453,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission readble Entity
-        self.role.permissions.add(self.entity.readable)
+        self.entity.readable.roles.add(self.role)
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(paramas), "application/json"
         )
@@ -2467,7 +2467,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission writable Entity
-        self.role.permissions.add(self.entity.writable)
+        self.entity.writable.roles.add(self.role)
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(paramas), "application/json"
         )
@@ -2490,7 +2490,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission readble EntityAttr update
-        self.role.permissions.add(entity_attr.readable)
+        entity_attr.readable.roles.add(self.role)
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
@@ -2501,7 +2501,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission writable EntityAttr update
-        self.role.permissions.add(entity_attr.writable)
+        entity_attr.writable.roles.add(self.role)
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
@@ -2519,7 +2519,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission full EntityAttr delete
-        self.role.permissions.add(entity_attr.full)
+        entity_attr.full.roles.add(self.role)
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
@@ -2675,7 +2675,7 @@ class ViewTest(AironeViewTest):
             },
         )
 
-        self.role.permissions.add(self.entity.readable)
+        self.entity.readable.roles.add(self.role)
         self.role.users.add(self.user)
 
         resp = self.client.get("/entity/api/v2/%d/entries/" % self.entity.id)
@@ -2773,7 +2773,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission readable
-        self.role.permissions.add(self.entity.readable)
+        self.entity.readable.roles.add(self.role)
         self.role.users.add(self.user)
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
@@ -2788,7 +2788,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission writable
-        self.role.permissions.add(self.entity.writable)
+        self.entity.writable.roles.add(self.role)
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )

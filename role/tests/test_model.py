@@ -134,8 +134,6 @@ class ModelTest(RoleTestBase):
         # set permission for created Entity
         permission = entity.writable
         permission.roles.add(self.role)
-        # NOTE: replace ↓ processing to ↑
-        # self.role.permissions.add(entity.writable)
 
         # check permission check processing would be worked well
         self.assertTrue(self.role.is_permitted(entity, ACLType.Readable))

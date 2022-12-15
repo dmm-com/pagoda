@@ -1,5 +1,3 @@
-#from django.contrib.auth.models import Permission
-from role.models import HistoricalPermission
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -7,6 +5,7 @@ from django.dispatch import receiver
 from airone.lib.acl import ACLType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
+from role.models import HistoricalPermission
 
 from .models import ACLBase
 
