@@ -4,12 +4,11 @@ from typing import Any, Dict, List
 from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, serializers, status, viewsets
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 import custom_view
 from airone.lib.acl import ACLType
@@ -33,7 +32,6 @@ from entry.api_v2.serializers import (
     EntryRetrieveSerializer,
     EntryUpdateSerializer,
     GetEntryAttrReferralSerializer,
-    GetEntrySimpleSerializer,
 )
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
@@ -174,11 +172,13 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
         return results["ret_values"]
 
 
-class AdvancedSearchAPI(APIView):
+class AdvancedSearchAPI(generics.GenericAPIView):
     """
     NOTE for now it's just copied from /api/v1/entry/search, but it should be
     rewritten with DRF components.
     """
+
+    serializer_class = serializers.Serializer
 
     MAX_LIST_ENTRIES = 100
     MAX_QUERY_SIZE = 64
@@ -304,7 +304,7 @@ class AdvancedSearchAPI(APIView):
                     raise IncorrectTypeError(f"unexpected type: {type}")
 
                 entry["attrs"][name] = {
-                    "is_readble": attr["is_readble"],
+                    "is_readable": attr["is_readable"],
                     "type": attr["type"],
                     "value": {
                         _get_typed_value(attr["type"]): attr.get("value", ""),
@@ -320,7 +320,7 @@ class AdvancedSearchAPI(APIView):
     ],
 )
 class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
-    serializer_class = GetEntrySimpleSerializer
+    serializer_class = EntryBaseSerializer
     pagination_class = EntryReferralPagination
 
     def get_queryset(self):
@@ -340,7 +340,7 @@ class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
         if keyword:
             query &= Q(name__iregex=r"%s" % keyword)
 
-        return Entry.objects.filter(query)
+        return Entry.objects.filter(query).select_related("schema")
 
 
 class EntryExportAPI(generics.GenericAPIView):
@@ -438,6 +438,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
 
 class EntryImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
+    serializer_class = serializers.Serializer
 
     def post(self, request):
         import_datas = request.data

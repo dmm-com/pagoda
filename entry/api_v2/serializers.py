@@ -429,9 +429,8 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                                     "name": x.referral.entry.schema.name,
                                 },
                             }
-                            if x.referral and x.referral.is_active
-                            else None
                             for x in attrv.data_array.all()
+                            if x.referral and x.referral.is_active
                         ]
                     }
 
@@ -619,12 +618,6 @@ class EntryCopySerializer(serializers.Serializer):
                 raise DuplicatedObjectExistsError(
                     "specified name(%s) already exists" % copy_entry_name
                 )
-
-
-class GetEntrySimpleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Entry
-        fields = ("id", "name")
 
 
 class EntryExportSerializer(serializers.Serializer):

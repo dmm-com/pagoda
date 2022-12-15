@@ -28,7 +28,6 @@ import {
   UserRetrieve,
   Webhook,
   EntityAttrUpdate,
-  PaginatedGetEntrySimpleList,
   GetEntryAttrReferral,
   PaginatedJobSerializersList,
   JobApi,
@@ -321,7 +320,7 @@ class AironeApiClientV2 {
     id: number,
     page: number,
     keyword?: string
-  ): Promise<PaginatedGetEntrySimpleList> {
+  ): Promise<PaginatedEntryBaseList> {
     return await this.entry.entryApiV2ReferralList({
       id: id,
       keyword: keyword,
@@ -509,7 +508,7 @@ class AironeApiClientV2 {
   }
 
   async exportGroups(filename: string): Promise<void> {
-    const resp = await this.group.groupApiV2GroupsExportRetrieveRaw();
+    const resp = await this.group.groupApiV2GroupsExportListRaw();
     const data = await resp.raw.text();
     fileDownload(data, filename);
   }
@@ -699,7 +698,7 @@ class AironeApiClientV2 {
   }
 
   async exportUsers(filename: string): Promise<void> {
-    const resp = await this.user.userApiV2ExportRetrieveRaw();
+    const resp = await this.user.userApiV2ExportListRaw();
     const data = await resp.raw.text();
     fileDownload(data, filename);
   }
@@ -722,6 +721,30 @@ class AironeApiClientV2 {
       createdAfter: createdAfter,
     });
     return resp.results;
+  }
+
+  async rerunJob(id: number): Promise<void> {
+    await this.job.jobApiV2RerunPartialUpdate(
+      { id: id },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async cancelJob(id: number): Promise<void> {
+    await this.job.jobApiV2Destroy(
+      { id: id },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
   }
 
   async importEntries(formData: FormData): Promise<void> {

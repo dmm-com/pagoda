@@ -47,11 +47,11 @@
     "babel-loader": "^8.2.2",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "enzyme": "^3.11.0",
-    "eslint": "^7.32.0",
+    "eslint": "^8.28.0",
     "eslint-import-resolver-webpack": "^0.13.2",
     "eslint-plugin-import": "^2.24.2",
     "eslint-plugin-react": "^7.26.1",
-    "eslint-plugin-unused-imports": "^1.1.5",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "fork-ts-checker-webpack-plugin": "^7.0.0",
     "isomorphic-fetch": "^3.0.0",
     "jest": "^27.3.1",
@@ -84,7 +84,7 @@
     "react-router-dom": "^5.2.0",
     "react-scroll": "^1.8.5",
     "react-use": "^17.2.4",
-    "recharts": "^2.1.14",
+    "recharts": "^2.1.16",
     "ts-loader": "^9.2.6"
   }
 }

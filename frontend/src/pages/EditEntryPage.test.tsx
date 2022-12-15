@@ -10,8 +10,9 @@ import {
 import React from "react";
 import { MemoryRouter, Route } from "react-router-dom";
 
-import { entryDetailsPath } from "Routes";
-import { EntryDetailsPage } from "pages/EntryDetailsPage";
+import { EditEntryPage } from "./EditEntryPage";
+
+import { entryEditPath } from "Routes";
 import { TestWrapper } from "utils/TestWrapper";
 
 afterEach(() => {
@@ -19,6 +20,23 @@ afterEach(() => {
 });
 
 test("should match snapshot", async () => {
+  Object.defineProperty(window, "django_context", {
+    value: {
+      user: {
+        is_superuser: false,
+      },
+    },
+    writable: false,
+  });
+
+  const entity = {
+    id: 2,
+    name: "bbb",
+    note: "",
+    isToplevel: false,
+    attrs: [],
+  };
+
   const entry = {
     id: 1,
     name: "aaa",
@@ -30,29 +48,13 @@ test("should match snapshot", async () => {
     attrs: [],
   };
 
-  const referredEntries = [
-    {
-      id: 1,
-      name: "aaa",
-      schema: {
-        id: 2,
-        name: "bbb",
-      },
-    },
-  ];
-
   /* eslint-disable */
   jest
     .spyOn(
-      require("apiclient/AironeApiClientV2").aironeApiClientV2,
-      "getEntryReferral"
+      require("../apiclient/AironeApiClientV2").aironeApiClientV2,
+      "getEntity"
     )
-    .mockResolvedValue(
-      Promise.resolve({
-        results: referredEntries,
-        count: referredEntries.length,
-      })
-    );
+    .mockResolvedValue(Promise.resolve(entity));
 
   jest
     .spyOn(require("apiclient/AironeApiClientV2").aironeApiClientV2, "getEntry")
@@ -61,10 +63,10 @@ test("should match snapshot", async () => {
 
   // wait async calls and get rendered fragment
   const result = render(
-    <MemoryRouter initialEntries={["/ui/entities/2/entries/1/details"]}>
+    <MemoryRouter initialEntries={["/ui/entities/2/entries/1/edit"]}>
       <Route
-        path={entryDetailsPath(":entityId", ":entryId")}
-        component={EntryDetailsPage}
+        path={entryEditPath(":entityId", ":entryId")}
+        component={EditEntryPage}
       />
     </MemoryRouter>,
     {
@@ -74,6 +76,4 @@ test("should match snapshot", async () => {
   await waitForElementToBeRemoved(screen.getByTestId("loading"));
 
   expect(result).toMatchSnapshot();
-
-  jest.clearAllMocks();
 });

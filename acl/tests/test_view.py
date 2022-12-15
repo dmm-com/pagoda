@@ -149,7 +149,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(self._role.permissions.last(), attr.writable)
         self.assertFalse(Attribute.objects.get(id=attr.id).is_public)
         search_result = self._es.search(body={"query": {"term": {"name": entry.name}}})
-        self.assertFalse(search_result["hits"]["hits"][0]["_source"]["attr"][0]["is_readble"])
+        self.assertFalse(search_result["hits"]["hits"][0]["_source"]["attr"][0]["is_readable"])
 
     def test_post_acl_set_entry(self):
         user = self.admin_login()
@@ -163,7 +163,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(self._role.permissions.last(), entry.writable)
         self.assertFalse(Entry.objects.get(id=entry.id).is_public)
         search_result = self._es.search(body={"query": {"term": {"name": entry.name}}})
-        self.assertFalse(search_result["hits"]["hits"][0]["_source"]["is_readble"])
+        self.assertFalse(search_result["hits"]["hits"][0]["_source"]["is_readable"])
 
     def test_post_acl_set_nothing(self):
         self.admin_login()

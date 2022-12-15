@@ -102,7 +102,7 @@ export const EntryReferral: FC<Props> = ({ entityId, entryId }) => {
           >
             <ListItemButton
               component={Link}
-              to={entryDetailsPath(entityId, entry.id)}
+              to={entryDetailsPath(entry.schema.id, entry.id)}
             >
               <ListItemText sx={{ px: "16px" }}>{entry.name}</ListItemText>
             </ListItemButton>

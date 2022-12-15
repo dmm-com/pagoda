@@ -346,10 +346,10 @@ class ElasticSearchTest(TestCase):
                                     "key": "",
                                     "value": attr_value.value,
                                     "referral_id": "",
-                                    "is_readble": True,
+                                    "is_readable": True,
                                 }
                             ],
-                            "is_readble": True,
+                            "is_readable": True,
                         },
                         "sort": [entry.name],
                     }
@@ -357,7 +357,7 @@ class ElasticSearchTest(TestCase):
             }
         }
 
-        hint_attrs = [{"name": "test_attr", "keyword": "", "is_readble": True}]
+        hint_attrs = [{"name": "test_attr", "keyword": "", "is_readable": True}]
         hint_referral = ""
         results = elasticsearch.make_search_results(self._user, res, hint_attrs, hint_referral, 100)
 
@@ -375,10 +375,10 @@ class ElasticSearchTest(TestCase):
                         attr.name: {
                             "type": attr.schema.type,
                             "value": attr_value.value,
-                            "is_readble": True,
+                            "is_readable": True,
                         }
                     },
-                    "is_readble": True,
+                    "is_readable": True,
                     "referrals": [],
                 }
             ],

@@ -48,7 +48,7 @@ Object {
               class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-3wf0vq-MuiFormControl-root-MuiTextField-root"
             >
               <div
-                class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-8j6b76-MuiInputBase-root-MuiOutlinedInput-root"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-8j6b76-MuiInputBase-root-MuiOutlinedInput-root"
               >
                 <div
                   class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
@@ -72,7 +72,7 @@ Object {
                 </div>
                 <input
                   aria-invalid="false"
-                  class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                   id="mui-1"
                   placeholder="Search"
                   type="text"
@@ -83,7 +83,7 @@ Object {
                   class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                 >
                   <legend
-                    class="css-hdw1oc"
+                    class="css-ihdtdm"
                   >
                     <span
                       class="notranslate"
@@ -99,19 +99,19 @@ Object {
             >
               <a
                 class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
-                href="/new-ui/entities/1/entries"
+                href="/ui/entities/1/entries"
               >
                 aaa
               </a>
               <a
                 class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
-                href="/new-ui/entities/2/entries"
+                href="/ui/entities/2/entries"
               >
                 aaaaa
               </a>
               <a
                 class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
-                href="/new-ui/entities/3/entries"
+                href="/ui/entities/3/entries"
               >
                 bbbbb
               </a>
@@ -165,7 +165,7 @@ Object {
             class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-3wf0vq-MuiFormControl-root-MuiTextField-root"
           >
             <div
-              class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-8j6b76-MuiInputBase-root-MuiOutlinedInput-root"
+              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-8j6b76-MuiInputBase-root-MuiOutlinedInput-root"
             >
               <div
                 class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
@@ -189,7 +189,7 @@ Object {
               </div>
               <input
                 aria-invalid="false"
-                class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
+                class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                 id="mui-1"
                 placeholder="Search"
                 type="text"
@@ -200,7 +200,7 @@ Object {
                 class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
               >
                 <legend
-                  class="css-hdw1oc"
+                  class="css-ihdtdm"
                 >
                   <span
                     class="notranslate"
@@ -216,19 +216,19 @@ Object {
           >
             <a
               class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
-              href="/new-ui/entities/1/entries"
+              href="/ui/entities/1/entries"
             >
               aaa
             </a>
             <a
               class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
-              href="/new-ui/entities/2/entries"
+              href="/ui/entities/2/entries"
             >
               aaaaa
             </a>
             <a
               class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
-              href="/new-ui/entities/3/entries"
+              href="/ui/entities/3/entries"
             >
               bbbbb
             </a>

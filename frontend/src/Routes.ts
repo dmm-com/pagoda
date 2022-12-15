@@ -1,4 +1,4 @@
-const basePath = "/new-ui/";
+export const basePath = "/ui/";
 
 export const loginPath = () => "/auth/login/";
 export const topPath = () => basePath;
@@ -25,8 +25,6 @@ export const entryEditPath = (
   entityId: number | string,
   entryId: number | string
 ) => basePath + `entities/${entityId}/entries/${entryId}/edit`;
-export const importEntriesPath = (entityId: number | string) =>
-  basePath + `entities/${entityId}/entries/import`;
 export const entityEntriesPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries`;
 export const restoreEntryPath = (entityId: number | string, keyword?: string) =>
@@ -39,7 +37,6 @@ export const showEntryHistoryPath = (entryId: number | string) =>
 export const entityHistoryPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/history`;
 export const newEntityPath = () => basePath + "entities/new";
-export const importEntitiesPath = () => basePath + "entities/import";
 export const entityPath = (entityId: number | string) =>
   basePath + `entities/${entityId}`;
 export const entitiesPath = () => basePath + "entities";

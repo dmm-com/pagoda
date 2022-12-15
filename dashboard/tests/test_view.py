@@ -224,7 +224,7 @@ class ViewTest(AironeViewTest):
         attr = entry.attrs.first()
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
-            resp.context["hint_attrs"], [{"name": "attr", "is_readble": attr.is_public}]
+            resp.context["hint_attrs"], [{"name": "attr", "is_readable": attr.is_public}]
         )
         self.assertEqual(resp.context["results"]["ret_count"], 20)
         self.assertEqual(len(resp.context["results"]["ret_values"]), 20)
@@ -241,12 +241,12 @@ class ViewTest(AironeViewTest):
                 },
                 "attrs": {
                     "attr": {
-                        "is_readble": attr.is_public,
+                        "is_readable": attr.is_public,
                         "type": attr.schema.type,
                         "value": attr.get_latest_value().value,
                     }
                 },
-                "is_readble": entry.is_public,
+                "is_readable": entry.is_public,
             },
         )
         self.assertEqual(resp.context["max_num"], 100)
@@ -540,8 +540,8 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.context["results"]["ret_count"], 1)
         resp_attrs = resp.context["results"]["ret_values"][0]["attrs"]
-        self.assertFalse(resp_attrs["attr-str"]["is_readble"])
-        self.assertTrue(resp_attrs["attr-obj"]["is_readble"])
+        self.assertFalse(resp_attrs["attr-str"]["is_readable"])
+        self.assertTrue(resp_attrs["attr-obj"]["is_readable"])
 
         # check when not have permission to read Entry
         entry = Entry.objects.get(name="srv001", schema__name="Server")
@@ -558,7 +558,7 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.context["results"]["ret_count"], 1)
         resp_entry = resp.context["results"]["ret_values"][0]
-        self.assertFalse(resp_entry["is_readble"])
+        self.assertFalse(resp_entry["is_readable"])
         self.assertEqual(resp_entry["attrs"], {})
 
         role = Role.objects.create(name="Role")
@@ -574,7 +574,7 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.context["results"]["ret_count"], 1)
         resp_entry = resp.context["results"]["ret_values"][0]
-        self.assertTrue(resp_entry["is_readble"])
+        self.assertTrue(resp_entry["is_readable"])
         self.assertEqual(resp_entry["attrs"]["attr-obj"]["value"], {"id": 8, "name": "entry11"})
 
         # check when not have permission to read Attribute
@@ -592,7 +592,7 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.context["results"]["ret_count"], 1)
         resp_attr = resp.context["results"]["ret_values"][0]["attrs"]["attr-obj"]
-        self.assertFalse(resp_attr["is_readble"])
+        self.assertFalse(resp_attr["is_readable"])
         self.assertFalse("value" in resp_attr)
 
         attr.readable.roles.add(role)
@@ -605,7 +605,7 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.context["results"]["ret_count"], 1)
         resp_attr = resp.context["results"]["ret_values"][0]["attrs"]["attr-obj"]
-        self.assertTrue(resp_attr["is_readble"])
+        self.assertTrue(resp_attr["is_readable"])
         self.assertEqual(resp_attr["value"], {"id": 8, "name": "entry11"})
 
     @patch(

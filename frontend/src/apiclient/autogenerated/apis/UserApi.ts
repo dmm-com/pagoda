@@ -26,6 +26,9 @@ import {
   UserCreate,
   UserCreateFromJSON,
   UserCreateToJSON,
+  UserExport,
+  UserExportFromJSON,
+  UserExportToJSON,
   UserRetrieve,
   UserRetrieveFromJSON,
   UserRetrieveToJSON,
@@ -199,9 +202,9 @@ export class UserApi extends runtime.BaseAPI {
 
   /**
    */
-  async userApiV2ExportRetrieveRaw(
+  async userApiV2ExportListRaw(
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<void>> {
+  ): Promise<runtime.ApiResponse<Array<UserExport>>> {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -230,13 +233,18 @@ export class UserApi extends runtime.BaseAPI {
       initOverrides
     );
 
-    return new runtime.VoidApiResponse(response);
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      jsonValue.map(UserExportFromJSON)
+    );
   }
 
   /**
    */
-  async userApiV2ExportRetrieve(initOverrides?: RequestInit): Promise<void> {
-    await this.userApiV2ExportRetrieveRaw(initOverrides);
+  async userApiV2ExportList(
+    initOverrides?: RequestInit
+  ): Promise<Array<UserExport>> {
+    const response = await this.userApiV2ExportListRaw(initOverrides);
+    return await response.value();
   }
 
   /**

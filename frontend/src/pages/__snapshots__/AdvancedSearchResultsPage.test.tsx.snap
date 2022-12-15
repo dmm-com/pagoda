@@ -29,7 +29,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/"
+                      href="/ui/"
                     >
                       Top
                     </a>
@@ -94,7 +94,7 @@ Object {
                   class="MuiBox-root css-1l4w6pd"
                 >
                   <button
-                    class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
@@ -122,7 +122,7 @@ Object {
                     class="MuiBox-root css-0"
                   >
                     <button
-                      class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-109grml-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-109grml-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -136,7 +136,7 @@ Object {
                     class="MuiBox-root css-0"
                   >
                     <button
-                      class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1y7fz8o-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1y7fz8o-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -185,7 +185,7 @@ Object {
                         class="MuiFormControl-root MuiTextField-root css-aq4grv-MuiFormControl-root-MuiTextField-root"
                       >
                         <div
-                          class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-adornedStart css-1xbailo-MuiInputBase-root-MuiOutlinedInput-root"
+                          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-adornedStart css-1wpm5vl-MuiInputBase-root-MuiOutlinedInput-root"
                         >
                           <div
                             class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
@@ -209,7 +209,7 @@ Object {
                           </div>
                           <input
                             aria-invalid="false"
-                            class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
+                            class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                             id="mui-1"
                             style="padding: 8px 0px 8px 4px;"
                             type="text"
@@ -220,7 +220,7 @@ Object {
                             class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                           >
                             <legend
-                              class="css-hdw1oc"
+                              class="css-ihdtdm"
                             >
                               <span
                                 class="notranslate"
@@ -245,8 +245,7 @@ Object {
                     >
                       <a
                         class="MuiBox-root css-0"
-                        href="/new-ui/entities/0/entries/undefined/details"
-                        sx="[object Object]"
+                        href="/ui/entities/0/entries/undefined/details"
                       >
                         entry1
                       </a>
@@ -272,13 +271,12 @@ Object {
                 </p>
                 <div
                   class="MuiInputBase-root MuiInputBase-colorPrimary css-16c50h-MuiInputBase-root-MuiTablePagination-select"
-                  variant="standard"
                 >
                   <div
                     aria-expanded="false"
                     aria-haspopup="listbox"
                     aria-labelledby="mui-3 mui-2"
-                    class="MuiTablePagination-select MuiSelect-select MuiSelect-standard MuiInputBase-input css-194a1fa-MuiSelect-select-MuiInputBase-input"
+                    class="MuiSelect-select MuiTablePagination-select MuiSelect-standard MuiInputBase-input css-194a1fa-MuiSelect-select-MuiInputBase-input"
                     id="mui-2"
                     role="button"
                     tabindex="0"
@@ -293,7 +291,7 @@ Object {
                   />
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTablePagination-selectIcon MuiSelect-icon MuiSelect-iconStandard css-pqjvzy-MuiSvgIcon-root-MuiSelect-icon"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiTablePagination-selectIcon MuiSelect-iconStandard css-pqjvzy-MuiSvgIcon-root-MuiSelect-icon"
                     data-testid="ArrowDropDownIcon"
                     focusable="false"
                     viewBox="0 0 24 24"
@@ -384,7 +382,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                    href="/ui/"
                   >
                     Top
                   </a>
@@ -449,7 +447,7 @@ Object {
                 class="MuiBox-root css-1l4w6pd"
               >
                 <button
-                  class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
                   tabindex="0"
                   type="button"
                 >
@@ -477,7 +475,7 @@ Object {
                   class="MuiBox-root css-0"
                 >
                   <button
-                    class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-109grml-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-109grml-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
@@ -491,7 +489,7 @@ Object {
                   class="MuiBox-root css-0"
                 >
                   <button
-                    class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1y7fz8o-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1y7fz8o-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
@@ -540,7 +538,7 @@ Object {
                       class="MuiFormControl-root MuiTextField-root css-aq4grv-MuiFormControl-root-MuiTextField-root"
                     >
                       <div
-                        class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-adornedStart css-1xbailo-MuiInputBase-root-MuiOutlinedInput-root"
+                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-adornedStart css-1wpm5vl-MuiInputBase-root-MuiOutlinedInput-root"
                       >
                         <div
                           class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
@@ -564,7 +562,7 @@ Object {
                         </div>
                         <input
                           aria-invalid="false"
-                          class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
+                          class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                           id="mui-1"
                           style="padding: 8px 0px 8px 4px;"
                           type="text"
@@ -575,7 +573,7 @@ Object {
                           class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                         >
                           <legend
-                            class="css-hdw1oc"
+                            class="css-ihdtdm"
                           >
                             <span
                               class="notranslate"
@@ -600,8 +598,7 @@ Object {
                   >
                     <a
                       class="MuiBox-root css-0"
-                      href="/new-ui/entities/0/entries/undefined/details"
-                      sx="[object Object]"
+                      href="/ui/entities/0/entries/undefined/details"
                     >
                       entry1
                     </a>
@@ -627,13 +624,12 @@ Object {
               </p>
               <div
                 class="MuiInputBase-root MuiInputBase-colorPrimary css-16c50h-MuiInputBase-root-MuiTablePagination-select"
-                variant="standard"
               >
                 <div
                   aria-expanded="false"
                   aria-haspopup="listbox"
                   aria-labelledby="mui-3 mui-2"
-                  class="MuiTablePagination-select MuiSelect-select MuiSelect-standard MuiInputBase-input css-194a1fa-MuiSelect-select-MuiInputBase-input"
+                  class="MuiSelect-select MuiTablePagination-select MuiSelect-standard MuiInputBase-input css-194a1fa-MuiSelect-select-MuiInputBase-input"
                   id="mui-2"
                   role="button"
                   tabindex="0"
@@ -648,7 +644,7 @@ Object {
                 />
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTablePagination-selectIcon MuiSelect-icon MuiSelect-iconStandard css-pqjvzy-MuiSvgIcon-root-MuiSelect-icon"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiTablePagination-selectIcon MuiSelect-iconStandard css-pqjvzy-MuiSvgIcon-root-MuiSelect-icon"
                   data-testid="ArrowDropDownIcon"
                   focusable="false"
                   viewBox="0 0 24 24"

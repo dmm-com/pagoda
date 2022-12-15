@@ -6,7 +6,7 @@ from django.http.response import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import filters, generics, status, viewsets
+from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
@@ -204,6 +204,7 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
 
 class EntityImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
+    serializer_class = serializers.Serializer
 
     def post(self, request):
         import_datas = request.data

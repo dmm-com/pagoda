@@ -32,12 +32,12 @@ import {
   GetEntryAttrReferral,
   GetEntryAttrReferralFromJSON,
   GetEntryAttrReferralToJSON,
+  PaginatedEntryBaseList,
+  PaginatedEntryBaseListFromJSON,
+  PaginatedEntryBaseListToJSON,
   PaginatedEntryHistoryList,
   PaginatedEntryHistoryListFromJSON,
   PaginatedEntryHistoryListToJSON,
-  PaginatedGetEntrySimpleList,
-  PaginatedGetEntrySimpleListFromJSON,
-  PaginatedGetEntrySimpleListToJSON,
 } from "../models";
 
 export interface EntryApiV2AttrReferralsListRequest {
@@ -651,7 +651,7 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2ReferralListRaw(
     requestParameters: EntryApiV2ReferralListRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<PaginatedGetEntrySimpleList>> {
+  ): Promise<runtime.ApiResponse<PaginatedEntryBaseList>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
         "id",
@@ -703,7 +703,7 @@ export class EntryApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      PaginatedGetEntrySimpleListFromJSON(jsonValue)
+      PaginatedEntryBaseListFromJSON(jsonValue)
     );
   }
 
@@ -712,7 +712,7 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2ReferralList(
     requestParameters: EntryApiV2ReferralListRequest,
     initOverrides?: RequestInit
-  ): Promise<PaginatedGetEntrySimpleList> {
+  ): Promise<PaginatedEntryBaseList> {
     const response = await this.entryApiV2ReferralListRaw(
       requestParameters,
       initOverrides

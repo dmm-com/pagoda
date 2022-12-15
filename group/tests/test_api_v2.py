@@ -5,7 +5,7 @@ from group.models import Group
 from user.models import User
 
 
-class GroupAPITest(AironeViewTest):
+class ViewTest(AironeViewTest):
     def _create_user(self, name):
         return User.objects.create(username=name)
 
