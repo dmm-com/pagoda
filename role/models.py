@@ -5,9 +5,9 @@ from datetime import datetime
 from django.contrib.auth.models import Permission
 from django.db import models
 from django.db.models import Q
+from simple_history.models import HistoricalRecords
 
 from airone.lib.types import AttrTypeValue
-from simple_history.models import HistoricalRecords
 
 
 class Role(models.Model):

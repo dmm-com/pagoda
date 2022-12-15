@@ -7,8 +7,8 @@ from django.db import models
 from django.utils.timezone import make_aware
 
 from airone.lib.acl import ACLObjType, ACLType
-from user.models import User
 from role.models import HistoricalPermission
+from user.models import User
 
 
 # Add comparison operations to the Permission model
