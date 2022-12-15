@@ -183,8 +183,10 @@ class ACLSerializer(serializers.ModelSerializer):
         # clear unset permissions of target ACLbased object
         for _acltype in ACLType.all():
             if _acltype != acl_type and _acltype != ACLType.Nothing:
-                role.permissions.remove(getattr(acl_obj, _acltype.name))
+                permission = getattr(acl_obj, _acltype.name)
+                permission.roles.remove(role)
 
-        # set new permissoin to be specified except for 'Nothing' permission
+        # set new permission to be specified except for 'Nothing' permission
         if acl_type != ACLType.Nothing:
-            role.permissions.add(getattr(acl_obj, acl_type.name))
+            permission = getattr(acl_obj, acl_type.name)
+            permission.roles.add(role)
