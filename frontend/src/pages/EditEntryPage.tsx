@@ -69,6 +69,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
         attrs: Object.fromEntries(
           entry.value.attrs
             .filter((attr) => !excludeAttrs.includes(attr.schema.name))
+            .filter((attr) => attr.schema.id != 0)
             .map((attr): [string, EditableEntryAttrs] => {
               function getAttrValue(attr) {
                 switch (attr.type) {
