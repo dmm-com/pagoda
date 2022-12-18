@@ -40,6 +40,7 @@ import {
   advancedSearchPath,
   loginPath,
   rolesPath,
+  topPath,
 } from "Routes";
 import { postLogout } from "utils/AironeAPIClient";
 import { DjangoContext } from "utils/DjangoContext";
@@ -69,6 +70,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   title: {
     color: "white",
+    textDecoration: "none",
   },
   version: {
     color: "#FFFFFF8A",
@@ -129,7 +131,12 @@ export const Header: FC = () => {
         <AppBar position="static" elevation={0} className={classes.appBar}>
           <Toolbar variant="dense" className={classes.toolBar}>
             <Box className={classes.titleBox}>
-              <Typography fontSize="24px" className={classes.title}>
+              <Typography
+                fontSize="24px"
+                className={classes.title}
+                component={Link}
+                to={topPath()}
+              >
                 AirOne
               </Typography>
               <Typography fontSize="16px" className={classes.version}>
