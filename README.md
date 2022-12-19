@@ -296,6 +296,7 @@ user@hostname:~/airone$ npm run build:custom
 ```
 user@hostname:~$ cd airone
 user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone$ autoflake .
 (virtualenv) user@hostname:~/airone$ black .
 (virtualenv) user@hostname:~/airone$ isort .
 

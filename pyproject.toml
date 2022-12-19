@@ -11,3 +11,13 @@ skip = "virtualenv, .tox"
 allow_untyped_globals = true
 follow_imports = "silent"
 ignore_missing_imports = true
+
+[tool.autoflake]
+in_place = true
+recursive = true
+imports = ["django", "requests", "urllib3"]
+exclude = ["venv", "virtualenv"]
+remove_all_unused_imports = true
+ignore_init_module_imports = true
+ignore_pass_statements = true
+ignore_pass_after_docstring = true
