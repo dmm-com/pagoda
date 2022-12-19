@@ -3293,3 +3293,44 @@ class ViewTest(AironeViewTest):
         self.assertEqual(sorted(obj.keys()), ["Entity", "EntityAttr"])
         self.assertEqual(len(obj["EntityAttr"]), self.entity.attrs.count())
         self.assertEqual(len(obj["Entity"]), 2)
+
+    def test_get_entity_attr_names(self):
+        user = self.admin_login()
+
+        entity_info = {
+            "test_entity1": ["foo", "bar", "fuga"],
+            "test_entity2": ["bar", "hoge", "fuga"],
+        }
+        for (entity_name, attrnames) in entity_info.items():
+            entity = Entity.objects.create(name=entity_name, created_user=user)
+
+            for attrname in attrnames:
+                entity.attrs.add(
+                    EntityAttr.objects.create(
+                        name=attrname,
+                        type=AttrTypeValue["string"],
+                        created_user=user,
+                        parent_entity=entity,
+                    )
+                )
+
+        self.ref_entity.delete()
+        self.entity.attrs.all().delete()
+        self.entity.delete()
+
+        # get partially
+        entities = Entity.objects.filter(name__contains="test_entity")
+        resp = self.client.get(
+            "/entity/api/v2/attrs?entity_ids=%s" % ",".join([str(x.id) for x in entities])
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), sorted(["bar", "fuga"]))
+
+        # get all
+        resp = self.client.get("/entity/api/v2/attrs")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), sorted(["foo", "bar", "hoge", "fuga"]))
+
+        # invalid entity_id(s)
+        resp = self.client.get("/entity/api/v2/attrs?entity_ids=9999")
+        self.assertEqual(resp.status_code, 400)

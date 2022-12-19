@@ -9,6 +9,8 @@ apis/index.ts
 index.ts
 models/ACL.ts
 models/ACLParent.ts
+models/AdvancedSearchResultExport.ts
+models/AdvancedSearchResultExportAttrInfo.ts
 models/Attribute.ts
 models/Entity.ts
 models/EntityAttrCreate.ts
@@ -52,6 +54,8 @@ models/PaginatedJobSerializersList.ts
 models/PaginatedUserListList.ts
 models/PasswordReset.ts
 models/PasswordResetConfirm.ts
+models/PatchedUserPassword.ts
+models/PatchedUserPasswordBySuperuser.ts
 models/Role.ts
 models/RoleCreateUpdate.ts
 models/RoleGroup.ts
@@ -61,6 +65,8 @@ models/UserBase.ts
 models/UserCreate.ts
 models/UserExport.ts
 models/UserList.ts
+models/UserPassword.ts
+models/UserPasswordBySuperuser.ts
 models/UserRetrieve.ts
 models/UserRetrieveToken.ts
 models/UserToken.ts

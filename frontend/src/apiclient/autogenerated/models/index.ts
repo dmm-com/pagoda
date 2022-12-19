@@ -2,6 +2,8 @@
 /* eslint-disable */
 export * from "./ACL";
 export * from "./ACLParent";
+export * from "./AdvancedSearchResultExport";
+export * from "./AdvancedSearchResultExportAttrInfo";
 export * from "./Attribute";
 export * from "./Entity";
 export * from "./EntityAttrCreate";
@@ -45,6 +47,8 @@ export * from "./PaginatedJobSerializersList";
 export * from "./PaginatedUserListList";
 export * from "./PasswordReset";
 export * from "./PasswordResetConfirm";
+export * from "./PatchedUserPassword";
+export * from "./PatchedUserPasswordBySuperuser";
 export * from "./Role";
 export * from "./RoleCreateUpdate";
 export * from "./RoleGroup";
@@ -54,6 +58,8 @@ export * from "./UserBase";
 export * from "./UserCreate";
 export * from "./UserExport";
 export * from "./UserList";
+export * from "./UserPassword";
+export * from "./UserPasswordBySuperuser";
 export * from "./UserRetrieve";
 export * from "./UserRetrieveToken";
 export * from "./UserToken";
