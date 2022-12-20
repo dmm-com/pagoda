@@ -4,7 +4,7 @@ import React, { FC, useCallback, useMemo, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entitiesPath, entityPath, topPath } from "../Routes";
+import { entitiesPath, entityPath, entryDetailsPath, topPath } from "../Routes";
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
@@ -62,6 +62,14 @@ export const EntryHistoryListPage: FC = () => {
         {!entry.loading && (
           <Typography component={Link} to={entityPath(entry.value.schema.id)}>
             {entry.value.schema.name}
+          </Typography>
+        )}
+        {!entry.loading && (
+          <Typography
+            component={Link}
+            to={entryDetailsPath(entry.value.schema.id, entry.value.id)}
+          >
+            {entry.value.name}
           </Typography>
         )}
         {!entry.loading && (
