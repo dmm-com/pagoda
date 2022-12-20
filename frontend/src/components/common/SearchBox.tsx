@@ -1,5 +1,5 @@
 import SearchIcon from "@mui/icons-material/Search";
-import { InputAdornment, TextField } from "@mui/material";
+import { InputAdornment, SxProps, TextField, Theme } from "@mui/material";
 import React, { FC } from "react";
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
   onKeyPress?: (e: any) => void;
   value?: string;
   defaultValue?: string;
+  inputSx?: SxProps<Theme>;
 }
 
 export const SearchBox: FC<Props> = ({
@@ -16,6 +17,7 @@ export const SearchBox: FC<Props> = ({
   onKeyPress,
   value,
   defaultValue,
+  inputSx,
 }) => {
   return (
     <TextField
@@ -25,10 +27,11 @@ export const SearchBox: FC<Props> = ({
             <SearchIcon />
           </InputAdornment>
         ),
+        sx: inputSx,
       }}
       placeholder={placeholder}
       sx={{
-        background: "#0000000B",
+        background: "#F4F4F4",
         "& fieldset": {
           borderColor: "white",
         },

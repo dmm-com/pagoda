@@ -6,6 +6,7 @@ import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+import { useSimpleSearch } from "../hooks/useSimpleSearch";
 
 import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -44,13 +45,13 @@ export const DashboardPage: FC = () => {
   const history = useHistory();
   const location = useLocation();
 
-  const params = new URLSearchParams(location.search);
+  const [query, submitQuery] = useSimpleSearch();
 
   const entries = useAsync(async () => {
-    if (params.get("query")) {
-      return await aironeApiClientV2.getSearchEntries(params.get("query"));
+    if (query != null) {
+      return await aironeApiClientV2.getSearchEntries(query);
     }
-  }, [location]);
+  }, [location, query]);
 
   const entities = useAsync(async () => {
     return await aironeApiClientV2.getEntities(undefined, undefined, true);
@@ -63,15 +64,6 @@ export const DashboardPage: FC = () => {
     );
   }
 
-  const handleSearchQuery = (event) => {
-    if (event.key === "Enter") {
-      history.push({
-        pathname: location.pathname,
-        search: "query=" + event.target.value,
-      });
-    }
-  };
-
   return (
     <Box>
       <AironeBreadcrumbs>
@@ -82,8 +74,10 @@ export const DashboardPage: FC = () => {
         <Box className={classes.dashboard}>
           <SearchBox
             placeholder="Search"
-            onKeyPress={handleSearchQuery}
-            defaultValue={params.get("query") ?? ""}
+            defaultValue={query}
+            onKeyPress={(e) => {
+              e.key === "Enter" && submitQuery(e.target.value);
+            }}
           />
           {entries.loading ? (
             <Loading />
