@@ -18,6 +18,7 @@ import {
   copyEntryPath,
   entityEntriesPath,
   topPath,
+  entryDetailsPath,
 } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Confirmable } from "components/common/Confirmable";
@@ -70,6 +71,9 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
       disableScrollLock
     >
       <Box sx={{ width: 150 }}>
+        <MenuItem component={Link} to={entryDetailsPath(entityId, entryId)}>
+          <Typography>詳細</Typography>
+        </MenuItem>
         <MenuItem component={Link} to={entryEditPath(entityId, entryId)}>
           <Typography>編集</Typography>
         </MenuItem>
