@@ -874,8 +874,12 @@ def make_search_results(
         if hint_referral is not None:
             ret_info["referrals"] = entry_info.get("referrals", [])
 
-        # Check for has permission to Entry
-        if entry_info["is_readable"] or user.has_permission(entry, ACLType.Readable):
+        # Check for has permission to Entry. But it will be omitted when user is None.
+        if (
+            entry_info["is_readable"]
+            or user is None
+            or user.has_permission(entry, ACLType.Readable)
+        ):
             ret_info["is_readable"] = True
         else:
             ret_info["is_readable"] = False

@@ -8,6 +8,9 @@
 
 ### Fixed
 
+* Fixed a bug of Entry.search_entries() when None is passed at the user parameter.
+  Contributed by @userlocalhost
+
 ## v3.34.0
 
 ### Changed

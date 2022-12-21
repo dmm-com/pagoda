@@ -5552,3 +5552,29 @@ class ModelTest(AironeTestCase):
         attr.add_value(user, [e0])
         self.assertEqual(list(entry.get_refers_objects()), [e0])
         self.assertEqual(list(entry.get_prev_refers_objects()), [e1, e2])
+
+    def test_search_entries_without_user(self):
+        entity = self.create_entity(
+            self._user,
+            "Test Another Entity",
+            attrs=[{"name": "attr", "type": AttrTypeValue["string"]}],
+        )
+        entry = self.add_entry(
+            self._user, "Test Entry", entity, is_public=False, values={"attr": "value"}
+        )
+
+        # set permission for creating user to read
+        role = Role.objects.create(name="role")
+        role.permissions.add(entry.full)
+        role.users.add(self._user)
+
+        # Check the result of Entry.search_entries() when the 1st argument of user is None,
+        # that returns all data regardless of the permission settings.
+        search_params = {
+            "hint_entity_ids": [entity.id],
+            "hint_attrs": [{"name": "attr", "keyword": ""}],
+        }
+        self.assertEqual(
+            Entry.search_entries(self._user, **search_params),
+            Entry.search_entries(None, **search_params),
+        )
