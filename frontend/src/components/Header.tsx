@@ -158,11 +158,21 @@ export const Header: FC = () => {
             </Box>
 
             <Box className={classes.menuBox}>
-              <Button href={entitiesPath()}>エンティティ一覧</Button>
-              <Button href={advancedSearchPath()}>高度な検索</Button>
-              <Button href={usersPath()}>ユーザ管理</Button>
-              <Button href={groupsPath()}>グループ管理</Button>
-              <Button href={rolesPath()}>ロール管理</Button>
+              <Button component={Link} to={entitiesPath()}>
+                エンティティ一覧
+              </Button>
+              <Button component={Link} to={advancedSearchPath()}>
+                高度な検索
+              </Button>
+              <Button component={Link} to={usersPath()}>
+                ユーザ管理
+              </Button>
+              <Button component={Link} to={groupsPath()}>
+                グループ管理
+              </Button>
+              <Button component={Link} to={rolesPath()}>
+                ロール管理
+              </Button>
             </Box>
 
             <Box justifyContent="flex-end" className={classes.menuBox}>
