@@ -97,7 +97,7 @@ class RoleImportExportChildSerializer(serializers.ModelSerializer):
     groups = serializers.ListField(child=serializers.CharField())
     admin_users = serializers.ListField(child=serializers.CharField())
     admin_groups = serializers.ListField(child=serializers.CharField())
-    permissoins = serializers.ListField(child=serializers.DictField())
+    permissions = serializers.ListField(required=False, child=serializers.DictField())
 
     class Meta:
         model = Role

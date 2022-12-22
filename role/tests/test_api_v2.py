@@ -30,6 +30,26 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Role.objects.filter(name="role1").count(), 1)
 
+    def test_import_with_permissions(self):
+        admin = self.admin_login()
+
+        self._create_user("user1")
+        self._create_user("user2")
+        self._create_group("group1")
+        self._create_group("group2")
+
+        entity = self.create_entity(user=admin, name="test-entity")
+
+        fp = self.open_fixture_file("import_roles_with_permissions.yaml")
+        import_data = fp.read().replace("<test_obj_id>", str(entity.id))
+        resp = self.client.post("/role/api/v2/import", import_data, content_type="application/yaml")
+
+        self.assertEqual(resp.status_code, 200)
+        role = Role.objects.filter(name="role1").first()
+        self.assertIsNotNone(role)
+        permission = role.permissions.first()
+        self.assertEqual(permission, entity.full)
+
     def test_export(self):
         admin = self.admin_login()
 
