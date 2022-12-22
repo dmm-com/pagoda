@@ -97,6 +97,7 @@ class RoleImportExportChildSerializer(serializers.ModelSerializer):
     groups = serializers.ListField(child=serializers.CharField())
     admin_users = serializers.ListField(child=serializers.CharField())
     admin_groups = serializers.ListField(child=serializers.CharField())
+    permissoins = serializers.ListField(child=serializers.DictField())
 
     class Meta:
         model = Role
@@ -108,9 +109,16 @@ class RoleImportExportChildSerializer(serializers.ModelSerializer):
             "groups",
             "admin_users",
             "admin_groups",
+            "permissions",
         ]
 
     def to_representation(self, instance: Role):
+        def _get_permission_data(permission_obj):
+            return {
+                "obj_id": permission_obj.get_objid(),
+                "permission": permission_obj.name,
+            }
+
         return {
             "id": instance.id,
             "name": instance.name,
@@ -119,6 +127,7 @@ class RoleImportExportChildSerializer(serializers.ModelSerializer):
             "groups": [x.name for x in instance.groups.all()],
             "admin_users": [x.username for x in instance.admin_users.all()],
             "admin_groups": [x.name for x in instance.admin_groups.all()],
+            "permissions": [_get_permission_data(x) for x in instance.permissions.all()],
         }
 
 
