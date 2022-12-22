@@ -100,6 +100,7 @@ class UserListSerializer(UserBaseSerializer):
 
 
 class UserImportChildSerializer(serializers.ModelSerializer):
+    username = serializers.CharField()
     groups = serializers.CharField(required=True, allow_blank=True, write_only=True)
 
     class Meta:

@@ -93,6 +93,7 @@ class RoleCreateUpdateSerializer(serializers.ModelSerializer):
 
 
 class RoleImportExportChildSerializer(serializers.ModelSerializer):
+    name = serializers.CharField()
     users = serializers.ListField(child=serializers.CharField())
     groups = serializers.ListField(child=serializers.CharField())
     admin_users = serializers.ListField(child=serializers.CharField())
