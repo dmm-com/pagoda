@@ -49,7 +49,7 @@ export const EntryImportModal: FC<Props> = ({
           インポートするファイルを選択してください。
         </Typography>
         <Typography variant={"caption"} my="4px">
-          ※CVS形式のファイルは選択できません。
+          ※CSV形式のファイルは選択できません。
         </Typography>
         <ImportForm
           handleImport={(formData: FormData) =>
