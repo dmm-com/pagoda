@@ -75,11 +75,8 @@ class ViewTest(AironeViewTest):
     def test_export(self):
         admin = self.admin_login()
 
-        self._create_user("user1")
-        self._create_group("group1")
+        # set full-permission for exporting Role instance
         role = self._create_role("test-role")
-
-        # set full-permission for created Role instance
         entity = self.create_entity(admin, "Entity")
         role.permissions.add(entity.full)
 
