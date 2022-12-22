@@ -4,6 +4,11 @@
 
 ### Added
 
+* Added following features
+  - Added attribute 'permissions' at export role feature.
+  - Enable to receive data that has permissions attribute from import file.
+  Contributed by @syucream, @userlocalhost, @hinagawa
+
 ### Changed
 
 ### Fixed
