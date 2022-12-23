@@ -650,8 +650,10 @@ class AironeApiClientV2 {
     hasReferral = false,
     referralName = "",
     searchAllEntities = false,
-    entryLimit = 100
+    page: number
   ): Promise<Response> {
+    const limit = 100;
+    const offset = (page - 1) * limit;
     return fetch(`/entry/api/v2/advanced_search/`, {
       method: "POST",
       headers: {
@@ -665,8 +667,9 @@ class AironeApiClientV2 {
         has_referral: hasReferral,
         is_all_entities: searchAllEntities,
         referral_name: referralName,
-        entry_limit: entryLimit,
+        entry_limit: limit,
         is_output_all: false,
+        entry_offset: offset,
       }),
     });
   }

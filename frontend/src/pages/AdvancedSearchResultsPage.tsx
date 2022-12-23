@@ -1,13 +1,14 @@
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { FC, useMemo, useState } from "react";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { PageHeader } from "../components/common/PageHeader";
 import { RateLimitedClickable } from "../components/common/RateLimitedClickable";
+import { AdvancedSerarchResultList } from "../utils/Constants";
 
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -17,8 +18,8 @@ import { SearchResults } from "components/entry/SearchResults";
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
+  const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-  const [openModal, setOpenModal] = useState(false);
 
   const params = new URLSearchParams(location.search);
   const entityIds = params.getAll("entity").map((id) => Number(id));
@@ -36,6 +37,11 @@ export const AdvancedSearchResultsPage: FC = () => {
     ? JSON.parse(params.get("attrinfo"))
     : [];
 
+  const [openModal, setOpenModal] = useState(false);
+  const [page, setPage] = useState<number>(
+    params.has("page") ? Number(params.get("page")) : 1
+  );
+
   const entityAttrs = useAsync(async () => {
     return await aironeApiClientV2.getEntityAttrs(entityIds, searchAllEntities);
   });
@@ -47,11 +53,21 @@ export const AdvancedSearchResultsPage: FC = () => {
       attrInfo,
       hasReferral,
       referralName,
-      searchAllEntities
+      searchAllEntities,
+      page
     );
     const data = await resp.json();
     return data.result;
-  });
+  }, [page]);
+
+  const maxPage = useMemo(() => {
+    if (results.loading) {
+      return 0;
+    }
+    return Math.ceil(
+      results.value.ret_count / AdvancedSerarchResultList.MAX_ROW_COUNT
+    );
+  }, [results.loading, results.value?.ret_count]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {
@@ -66,11 +82,21 @@ export const AdvancedSearchResultsPage: FC = () => {
         variant: "success",
       });
     } catch (e) {
-      console.log(e);
       enqueueSnackbar("エクスポートジョブの登録に失敗しました", {
         variant: "error",
       });
     }
+  };
+
+  const handleChangePage = (newPage: number) => {
+    setPage(newPage);
+
+    params.set("page", newPage.toString());
+
+    history.push({
+      pathname: location.pathname,
+      search: params.toString(),
+    });
   };
 
   return (
@@ -126,6 +152,9 @@ export const AdvancedSearchResultsPage: FC = () => {
         {!results.loading ? (
           <SearchResults
             results={results.value.ret_values}
+            page={page}
+            maxPage={maxPage}
+            handleChangePage={handleChangePage}
             defaultEntryFilter={entryName}
             defaultReferralFilter={referralName}
             defaultAttrsFilter={Object.fromEntries(
