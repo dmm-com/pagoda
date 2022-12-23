@@ -16,6 +16,9 @@
 * Fixed a bug of Entry.search_entries() when None is passed at the user parameter.
   Contributed by @userlocalhost
 
+* Fixed a bug not to be able to import Role just after exporting.
+  Contributed by @hinashi, @userlocalhost
+
 ## v3.34.0
 
 ### Changed
