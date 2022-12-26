@@ -194,6 +194,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         is_output_all = request.data.get("is_output_all", True)
         is_all_entities = request.data.get("is_all_entities", False)
         entry_limit = request.data.get("entry_limit", self.MAX_LIST_ENTRIES)
+        entry_offset = request.data.get("entry_offset", 0)
 
         hint_referral = None
         if hint_has_referral:
@@ -270,6 +271,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             hint_entry_name,
             hint_referral,
             is_output_all,
+            offset=entry_offset,
         )
 
         # convert field values to fit entry retrieve API data type, as a workaround.

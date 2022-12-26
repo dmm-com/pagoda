@@ -809,6 +809,7 @@ def make_search_results(
     hint_attrs: List[Dict[str, str]],
     hint_referral: Optional[str],
     limit: int,
+    offset: int = 0,
 ) -> Dict[str, str]:
     """Acquires and returns the attribute values held by each search result
 
@@ -837,6 +838,7 @@ def make_search_results(
         res (`str`, optional): Search results for Elasticsearch
         hint_attrs (list(dict[str, str])):  A list of search strings and attribute sets
         limit (int): Maximum number of search results to return
+        offset (int): The number of offset to get a part of a large amount of search results
 
     Returns:
         dict[str, str]: A set of attributes and attribute values associated with the entry
@@ -856,10 +858,7 @@ def make_search_results(
     hit_entries = Entry.objects.filter(id__in=hit_entry_ids, is_active=True)
 
     hit_infos: Dict = {}
-    for entry in hit_entries:
-        if len(hit_infos) >= limit:
-            break
-
+    for entry in hit_entries[offset : offset + limit]:
         hit_infos[entry] = [x["_source"] for x in res["hits"]["hits"] if int(x["_id"]) == entry.id][
             0
         ]

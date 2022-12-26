@@ -2010,6 +2010,7 @@ class Entry(ACLBase):
         hint_referral=None,
         is_output_all=False,
         hint_referral_entity_id=None,
+        offset=0,
     ):
         """Main method called from advanced search.
 
@@ -2035,6 +2036,8 @@ class Entry(ACLBase):
                 Use only for advanced searches.
             is_output_all (bool): Defaults to False.
                 Flag to output all attribute values.
+            offset (int): Defaults to 0.
+                The number of offset to get a part of a large amount of search results
 
         Returns:
             dict[str, any]: As a result of the search,
@@ -2116,7 +2119,9 @@ class Entry(ACLBase):
                         )
 
             # retrieve data from database on the basis of the result of elasticsearch
-            search_result = make_search_results(user, resp, hint_attrs, hint_referral, limit)
+            search_result = make_search_results(
+                user, resp, hint_attrs, hint_referral, limit, offset
+            )
             results["ret_count"] += search_result["ret_count"]
             results["ret_values"].extend(search_result["ret_values"])
             limit -= search_result["ret_count"]
