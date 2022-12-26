@@ -78,6 +78,7 @@ export const DashboardPage: FC = () => {
             onKeyPress={(e) => {
               e.key === "Enter" && submitQuery(e.target.value);
             }}
+            autoFocus
           />
           {entries.loading ? (
             <Loading />
