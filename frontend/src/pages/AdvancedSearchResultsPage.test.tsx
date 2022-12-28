@@ -60,6 +60,12 @@ test("should match snapshot", async () => {
         });
       },
     });
+  jest
+    .spyOn(
+      require("apiclient/AironeApiClientV2").aironeApiClientV2,
+      "getEntityAttrs"
+    )
+    .mockResolvedValue(Promise.resolve([]));
   /* eslint-enable */
 
   // wait async calls and get rendered fragment

@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@mui/material/styles";
 import React from "react";
 import { FC } from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 
 import { AironeSnackbarProvider } from "AironeSnackbarProvider";
 import { AppRouter } from "AppRouter";
@@ -20,4 +20,6 @@ const App: FC = () => {
   );
 };
 
-ReactDOM.render(<App />, document.getElementById("app"));
+const container = document.getElementById("app");
+const root = createRoot(container);
+root.render(<App />);

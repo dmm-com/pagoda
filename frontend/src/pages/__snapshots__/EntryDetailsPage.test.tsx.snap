@@ -242,7 +242,7 @@ Object {
                     <input
                       aria-invalid="false"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                      id="mui-1"
+                      id=":r0:"
                       placeholder="エントリを絞り込む"
                       type="text"
                       value=""
@@ -357,9 +357,6 @@ Object {
                         aaa
                       </span>
                     </div>
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </a>
                 </li>
               </ul>
@@ -661,7 +658,7 @@ Object {
                   <input
                     aria-invalid="false"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                    id="mui-1"
+                    id=":r0:"
                     placeholder="エントリを絞り込む"
                     type="text"
                     value=""
@@ -776,9 +773,6 @@ Object {
                       aaa
                     </span>
                   </div>
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
                 </a>
               </li>
             </ul>

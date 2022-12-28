@@ -210,7 +210,7 @@ Object {
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                            id="mui-1"
+                            id=":r0:"
                             style="padding: 8px 0px 8px 4px;"
                             type="text"
                             value=""
@@ -297,9 +297,6 @@ Object {
                         type="button"
                       >
                         1
-                        <span
-                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                        />
                       </button>
                     </li>
                     <li>
@@ -538,7 +535,7 @@ Object {
                         <input
                           aria-invalid="false"
                           class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                          id="mui-1"
+                          id=":r0:"
                           style="padding: 8px 0px 8px 4px;"
                           type="text"
                           value=""
@@ -625,9 +622,6 @@ Object {
                       type="button"
                     >
                       1
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
                     </button>
                   </li>
                   <li>

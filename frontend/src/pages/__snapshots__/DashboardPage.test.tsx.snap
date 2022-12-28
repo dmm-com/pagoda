@@ -73,7 +73,7 @@ Object {
                 <input
                   aria-invalid="false"
                   class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                  id="mui-1"
+                  id=":r0:"
                   placeholder="Search"
                   type="text"
                   value=""
@@ -190,7 +190,7 @@ Object {
               <input
                 aria-invalid="false"
                 class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                id="mui-1"
+                id=":r0:"
                 placeholder="Search"
                 type="text"
                 value=""

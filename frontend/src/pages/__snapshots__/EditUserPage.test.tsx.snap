@@ -162,9 +162,6 @@ Object {
                 type="button"
               >
                 保存
-                <span
-                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                />
               </button>
             </div>
             <div
@@ -176,9 +173,6 @@ Object {
                 type="button"
               >
                 キャンセル
-                <span
-                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                />
               </button>
             </div>
           </div>
@@ -493,9 +487,6 @@ Object {
               type="button"
             >
               保存
-              <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
             </button>
           </div>
           <div
@@ -507,9 +498,6 @@ Object {
               type="button"
             >
               キャンセル
-              <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
             </button>
           </div>
         </div>
