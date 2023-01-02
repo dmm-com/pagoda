@@ -2,12 +2,13 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useMemo, useState } from "react";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { PageHeader } from "../components/common/PageHeader";
 import { RateLimitedClickable } from "../components/common/RateLimitedClickable";
+import { usePage } from "../hooks/usePage";
 import { AdvancedSerarchResultList } from "../utils/Constants";
 
 import { advancedSearchPath, topPath } from "Routes";
@@ -18,8 +19,9 @@ import { SearchResults } from "components/entry/SearchResults";
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
-  const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
+
+  const [page, changePage] = usePage();
 
   const params = new URLSearchParams(location.search);
   const entityIds = params.getAll("entity").map((id) => Number(id));
@@ -38,9 +40,6 @@ export const AdvancedSearchResultsPage: FC = () => {
     : [];
 
   const [openModal, setOpenModal] = useState(false);
-  const [page, setPage] = useState<number>(
-    params.has("page") ? Number(params.get("page")) : 1
-  );
 
   const entityAttrs = useAsync(async () => {
     return await aironeApiClientV2.getEntityAttrs(entityIds, searchAllEntities);
@@ -86,17 +85,6 @@ export const AdvancedSearchResultsPage: FC = () => {
         variant: "error",
       });
     }
-  };
-
-  const handleChangePage = (newPage: number) => {
-    setPage(newPage);
-
-    params.set("page", newPage.toString());
-
-    history.push({
-      pathname: location.pathname,
-      search: params.toString(),
-    });
   };
 
   return (
@@ -154,7 +142,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             results={results.value.ret_values}
             page={page}
             maxPage={maxPage}
-            handleChangePage={handleChangePage}
+            handleChangePage={changePage}
             defaultEntryFilter={entryName}
             defaultReferralFilter={referralName}
             defaultAttrsFilter={Object.fromEntries(

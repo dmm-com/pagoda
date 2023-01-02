@@ -4,8 +4,7 @@ import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 interface Props {
-  // FIXME describe concrete types
-  handleImport: (importData: any) => Promise<any>;
+  handleImport: (data: string | ArrayBuffer) => Promise<void>;
   handleCancel?: () => void;
 }
 

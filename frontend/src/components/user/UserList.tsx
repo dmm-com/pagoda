@@ -13,10 +13,12 @@ import {
   Typography,
 } from "@mui/material";
 import React, { FC, useCallback, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
+import { usePage } from "../../hooks/usePage";
+import { normalizeToMatch } from "../../utils/StringUtil";
 import { Loading } from "../common/Loading";
 import { SearchBox } from "../common/SearchBox";
 
@@ -27,23 +29,38 @@ import { newUserPath, userPath } from "Routes";
 import { UserList as ConstUserList } from "utils/Constants";
 
 export const UserList: FC = ({}) => {
+  const location = useLocation();
+  const history = useHistory();
+
+  const [page, changePage] = usePage();
+
   const [keyword, setKeyword] = useState("");
-  const [page, setPage] = useState(1);
   const [openImportModal, setOpenImportModal] = useState(false);
+
+  const params = new URLSearchParams(location.search);
+  const [query, setQuery] = useState<string>(
+    params.has("query") ? params.get("query") : undefined
+  );
 
   const [userAnchorEls, setUserAnchorEls] = useState<{
     [key: number]: HTMLButtonElement;
   } | null>({});
 
   const users = useAsync(async () => {
-    return await aironeApiClientV2.getUsers(page, keyword);
-  }, [page, keyword]);
+    return await aironeApiClientV2.getUsers(page, query);
+  }, [page, query]);
   if (!users.loading && users.error) {
     throw new Error("Failed to get users from AirOne APIv2 endpoint");
   }
 
-  const handleChange = (event, value) => {
-    setPage(value);
+  const handleChangeQuery = (newQuery?: string) => {
+    changePage(1);
+    setQuery(newQuery);
+
+    history.push({
+      pathname: location.pathname,
+      search: newQuery ? `?query=${newQuery}` : "",
+    });
   };
 
   const handleExport = useCallback(async () => {
@@ -63,11 +80,12 @@ export const UserList: FC = ({}) => {
           <SearchBox
             placeholder="ユーザを絞り込む"
             value={keyword}
-            onChange={(e) => {
-              setKeyword(e.target.value);
-              /* Reset page number to prevent vanishing entities from display
-               * when user move other page */
-              setPage(1);
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyPress={(e) => {
+              e.key === "Enter" &&
+                handleChangeQuery(
+                  keyword.length > 0 ? normalizeToMatch(keyword) : undefined
+                );
             }}
           />
         </Box>
@@ -176,7 +194,7 @@ export const UserList: FC = ({}) => {
           <Pagination
             count={totalPageCount}
             page={page}
-            onChange={handleChange}
+            onChange={(_, newPage) => changePage(newPage)}
             color="primary"
           />
         </Stack>
