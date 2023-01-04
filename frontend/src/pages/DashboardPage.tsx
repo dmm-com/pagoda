@@ -30,6 +30,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     flexWrap: "wrap",
     gap: "32px",
   },
+  resultEntityForEntry: {
+    color: "gray",
+  },
   result: {
     color: theme.palette.primary.main,
     textDecoration: "none",
@@ -85,14 +88,18 @@ export const DashboardPage: FC = () => {
           ) : entries.value ? (
             <Box className={classes.resultBox}>
               {entries.value.map((entry) => (
-                <Typography
-                  key={entry.id}
-                  className={classes.result}
-                  component={Link}
-                  to={entryDetailsPath(entry.schema.id, entry.id)}
-                >
-                  {entry.name}
-                </Typography>
+                <Box key={entry.id}>
+                  <Typography
+                    className={classes.result}
+                    component={Link}
+                    to={entryDetailsPath(entry.schema.id, entry.id)}
+                  >
+                    {entry.name}
+                  </Typography>
+                  <Typography className={classes.resultEntityForEntry}>
+                    {entry.schema.name}
+                  </Typography>
+                </Box>
               ))}
             </Box>
           ) : entities.loading ? (
