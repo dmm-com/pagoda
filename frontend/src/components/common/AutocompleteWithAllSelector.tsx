@@ -127,7 +127,6 @@ export const AutocompleteWithAllSelector = <
     return [...allSelector, ...filtered];
   };
 
-  console.log(filterOptionResult.current);
   return (
     <Autocomplete
       {...autocompleteProps}
