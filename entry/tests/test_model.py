@@ -4390,6 +4390,31 @@ class ModelTest(AironeTestCase):
         self.assertEqual(ret["ret_count"], 0)
         self.assertEqual(ret["ret_values"], [])
 
+    def test_search_entries_for_simple_with_sort(self):
+        entry = Entry.objects.create(name="[entry]", schema=self._entity, created_user=self._user)
+        entry.register_es()
+        self._entry.register_es()
+
+        ret = Entry.search_entries_for_simple("entry")
+        self.assertEqual(
+            ret,
+            {
+                "ret_count": 2,
+                "ret_values": [
+                    {
+                        "id": str(self._entry.id),
+                        "name": "entry",
+                        "schema": {"id": self._entity.id, "name": "entity"},
+                    },
+                    {
+                        "id": str(entry.id),
+                        "name": "[entry]",
+                        "schema": {"id": self._entity.id, "name": "entity"},
+                    },
+                ],
+            },
+        )
+
     def test_get_es_document(self):
         user = User.objects.create(username="hoge")
         test_group = Group.objects.create(name="test-group")
