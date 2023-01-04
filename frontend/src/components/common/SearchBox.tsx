@@ -9,6 +9,7 @@ interface Props {
   value?: string;
   defaultValue?: string;
   inputSx?: SxProps<Theme>;
+  autoFocus?: boolean;
 }
 
 export const SearchBox: FC<Props> = ({
@@ -18,6 +19,7 @@ export const SearchBox: FC<Props> = ({
   value,
   defaultValue,
   inputSx,
+  autoFocus,
 }) => {
   return (
     <TextField
@@ -44,6 +46,7 @@ export const SearchBox: FC<Props> = ({
       value={value}
       onChange={onChange}
       onKeyPress={onKeyPress}
+      autoFocus={autoFocus}
     />
   );
 };
