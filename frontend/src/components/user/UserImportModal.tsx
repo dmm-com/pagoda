@@ -33,8 +33,8 @@ export const UserImportModal: FC<Props> = ({
 }) => {
   const classes = useStyles();
 
-  const handleImport = useCallback(async (formData: FormData) => {
-    await aironeApiClientV2.importUsers(formData);
+  const handleImport = useCallback(async (data: string | ArrayBuffer) => {
+    await aironeApiClientV2.importUsers(data);
   }, []);
 
   return (

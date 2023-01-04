@@ -297,13 +297,13 @@ class AironeApiClientV2 {
     });
   }
 
-  async importEntities(formData: FormData): Promise<void> {
+  async importEntities(data: string | ArrayBuffer): Promise<void> {
     return await this.entity.entityApiV2ImportCreate({
       headers: {
         "Content-Type": "application/yaml",
         "X-CSRFToken": getCsrfToken(),
       },
-      body: formData,
+      body: data,
     });
   }
 
@@ -509,13 +509,13 @@ class AironeApiClientV2 {
     }));
   }
 
-  async importGroups(formData: FormData): Promise<void> {
+  async importGroups(data: string | ArrayBuffer): Promise<void> {
     return await this.group.groupApiV2GroupsImportCreate({
       headers: {
         "Content-Type": "application/yaml",
         "X-CSRFToken": getCsrfToken(),
       },
-      body: formData,
+      body: data,
     });
   }
 
@@ -576,13 +576,13 @@ class AironeApiClientV2 {
     );
   }
 
-  async importRoles(formData: FormData): Promise<void> {
+  async importRoles(data: string | ArrayBuffer): Promise<void> {
     await this.role.roleApiV2ImportCreate({
       headers: {
         "Content-Type": "application/yaml",
         "X-CSRFToken": getCsrfToken(),
       },
-      body: formData,
+      body: data,
     });
   }
 
@@ -728,13 +728,13 @@ class AironeApiClientV2 {
     });
   }
 
-  async importUsers(formData: FormData): Promise<void> {
+  async importUsers(data: string | ArrayBuffer): Promise<void> {
     return await this.user.userApiV2ImportCreate({
       headers: {
         "Content-Type": "application/yaml",
         "X-CSRFToken": getCsrfToken(),
       },
-      body: formData,
+      body: data,
     });
   }
 
@@ -834,13 +834,13 @@ class AironeApiClientV2 {
     );
   }
 
-  async importEntries(formData: FormData): Promise<void> {
+  async importEntries(data: string | ArrayBuffer): Promise<void> {
     return await this.entry.entryApiV2ImportCreate({
       headers: {
         "Content-Type": "application/yaml",
         "X-CSRFToken": getCsrfToken(),
       },
-      body: formData,
+      body: data,
     });
   }
 

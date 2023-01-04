@@ -49,7 +49,7 @@ test("should render a component with essential props", function () {
     name: "test",
     members: [],
   };
-  const setGroup = (group: Group) => {
+  const setGroup = () => {
     /* do nothing */
   };
 

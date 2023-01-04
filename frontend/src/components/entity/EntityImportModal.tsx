@@ -34,8 +34,8 @@ export const EntityImportModal: FC<Props> = ({
 }) => {
   const classes = useStyles();
 
-  const handleImport = useCallback(async (formData: FormData) => {
-    await aironeApiClientV2.importEntities(formData);
+  const handleImport = useCallback(async (data: string | ArrayBuffer) => {
+    await aironeApiClientV2.importEntities(data);
   }, []);
 
   return (

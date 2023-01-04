@@ -105,7 +105,7 @@ export const EntryHistoryList: FC<Props> = ({
                       </IconButton>
                     )}
                     dialogTitle={`本当に復旧しますか？`}
-                    onClickYes={(e) => handleRestore(history.curr.id)}
+                    onClickYes={() => handleRestore(history.curr.id)}
                   />
                 )}
               </TableCell>
