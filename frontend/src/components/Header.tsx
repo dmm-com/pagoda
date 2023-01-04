@@ -69,7 +69,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   titleBox: {
     display: "flex",
-    alignItems: "center",
+    alignItems: "baseline",
   },
   title: {
     color: "white",
@@ -96,6 +96,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
       color: "inherit",
       margin: "0px 4px",
     },
+  },
+  searchBox: {
+    display: "flex",
+    alignItems: "center",
+    width: "240px",
   },
 }));
 
@@ -149,7 +154,7 @@ export const Header: FC = () => {
                 AirOne
               </Typography>
               <Typography
-                fontSize="16px"
+                fontSize="12px"
                 className={classes.version}
                 title={djangoContext.version}
               >
@@ -175,7 +180,7 @@ export const Header: FC = () => {
               </Button>
             </Box>
 
-            <Box justifyContent="flex-end" className={classes.menuBox}>
+            <Box className={classes.menuBox}>
               <Button href="/dashboard/">旧デザイン</Button>
               <IconButton
                 aria-controls="user-menu"
@@ -245,7 +250,7 @@ export const Header: FC = () => {
                   </Typography>
                 </MenuItem>
               </Menu>
-              <Box display="flex" alignItems="center">
+              <Box className={classes.searchBox}>
                 <SearchBox
                   placeholder="Search"
                   defaultValue={query}
