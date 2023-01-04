@@ -296,7 +296,7 @@ def make_query_for_simple(
         "from": offset,
     }
 
-    hint_query: Dict = {"bool": {"should": []}}
+    hint_query: Dict = {"bool": {"should": [{"match": {"name": hint_string}}]}}
     hint_query["bool"]["should"].append(_make_entry_name_query(hint_string))
     hint_query["bool"]["should"].append(_make_attr_query_for_simple(hint_string))
     query["query"]["bool"]["must"].append(hint_query)
