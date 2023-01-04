@@ -27,7 +27,10 @@ export const SearchBox: FC<Props> = ({
             <SearchIcon />
           </InputAdornment>
         ),
-        sx: inputSx,
+        sx: {
+          borderRadius: "0px",
+          ...inputSx,
+        },
       }}
       placeholder={placeholder}
       sx={{
