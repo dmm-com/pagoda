@@ -449,13 +449,33 @@ class EntityDetailSerializer(EntityListSerializer):
 
 class EntityHistorySerializer(serializers.Serializer):
     # we need diff values, not a snapshot
+    user = serializers.SerializerMethodField()
+    time = serializers.SerializerMethodField()
     changes = serializers.SerializerMethodField(method_name="get_entity_changes")
 
-    def get_entity_changes(self, hisotry) -> dict:
+    def get_user(self, history):
         return {
-            "action": "create"
+            "id": history.history_user.id,
+            "username": history.history_user.username,
         }
 
+    def get_time(self, history):
+        return history.history_date
+
+    def get_entity_changes(self, history):
+        if history.prev_record:
+            delta = history.diff_against(history.prev_record)
+            return [
+                {
+                    "action": "update",
+                    "target": change.field,
+                    "old": change.old,
+                    "new": change.new,
+                }
+                for change in delta.changes
+            ]
+        else:
+            return {"action": "create"}
 
 
 # The format keeps compatibility with entity.views and dashboard.views
