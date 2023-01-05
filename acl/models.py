@@ -49,7 +49,9 @@ class ACLBase(models.Model):
 
     def show_diffing(instance, offset=0):
         try:
-            (before_last, last) = list(reversed(instance.history.order_by("history_id")))[offset:offset+2]
+            (before_last, last) = list(reversed(instance.history.order_by("history_id")))[
+                offset : offset + 2
+            ]
             for change in before_last.diff_against(last).changes:
                 print("{} changed from {} to {}".format(change.field, change.old, change.new))
         except AttributeError as e:
@@ -62,6 +64,10 @@ class ACLBase(models.Model):
         finally:
             del self.skip_history_when_saving
         return ret
+
+    def save_with_historical_record(self, user: User, *args, **kwargs):
+        self._history_user = user
+        self.save(*args, **kwargs)
 
     def set_status(self, val):
         self.status |= val

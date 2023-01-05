@@ -454,6 +454,9 @@ class EntityHistorySerializer(serializers.Serializer):
     changes = serializers.SerializerMethodField(method_name="get_entity_changes")
 
     def get_user(self, history):
+        if not history.history_user:
+            return {}
+
         return {
             "id": history.history_user.id,
             "username": history.history_user.username,
@@ -475,7 +478,10 @@ class EntityHistorySerializer(serializers.Serializer):
                 for change in delta.changes
             ]
         else:
-            return {"action": "create"}
+            return [
+                {"action": "create", "target": field, "old": "", "new": getattr(history, field)}
+                for field in ["name", "note"]
+            ]
 
 
 # The format keeps compatibility with entity.views and dashboard.views

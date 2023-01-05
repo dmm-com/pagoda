@@ -81,7 +81,7 @@ def edit_entity(self, job_id):
 
         if entity.note != recv_data["note"]:
             entity.note = recv_data["note"]
-            entity.save(update_fields=["note"])
+            entity.save_with_historical_record(user, update_fields=["note"])
 
         # This describes job pamraeters of Job.update_es_docuemnt()
         jp_update_es_document = {
