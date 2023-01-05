@@ -447,17 +447,10 @@ class EntityDetailSerializer(EntityListSerializer):
         return attrinfo
 
 
-class EntityHistorySerializer(serializers.ModelSerializer):
-    username = serializers.SerializerMethodField()
-    target_obj = serializers.CharField(source="target_obj.name")
-
-    class Meta:
-        model = History
-        fields = ["operation", "time", "username", "text", "target_obj", "is_detail"]
-        read_only_fields = ["operation", "time", "username", "text", "target_obj", "is_detail"]
-
-    def get_username(self, obj: History) -> str:
-        return obj.user.username
+class EntityHistorySerializer(serializers.Serializer):
+    # we need diff values, not a snapshot
+    id = serializers.IntegerField()
+    name = serializers.CharField()
 
 
 # The format keeps compatibility with entity.views and dashboard.views
