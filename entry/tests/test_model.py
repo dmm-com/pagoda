@@ -1293,7 +1293,7 @@ class ModelTest(AironeTestCase):
             self.assertEqual(result["type"], attr.schema.type)
             self.assertEqual(result["is_mandatory"], attr.schema.is_mandatory)
             self.assertEqual(result["index"], attr.schema.index)
-            self.assertEqual(result["is_readble"], True)
+            self.assertEqual(result["is_readable"], True)
             self.assertEqual(result["last_value"], attrinfo[attr.name]["exp_val"])
 
     def test_get_available_attrs_with_multi_attribute(self):
@@ -4298,7 +4298,7 @@ class ModelTest(AironeTestCase):
         ret = Entry.search_entries(self._user, [self._entity.id], is_output_all=True)
         self.assertEqual(
             ret["ret_values"][0]["attrs"],
-            {"attr": {"value": "hoge", "is_readble": True, "type": 2}},
+            {"attr": {"value": "hoge", "is_readable": True, "type": 2}},
         )
 
         ret = Entry.search_entries(
@@ -4392,6 +4392,31 @@ class ModelTest(AironeTestCase):
         self.assertEqual(ret["ret_count"], 0)
         self.assertEqual(ret["ret_values"], [])
 
+    def test_search_entries_for_simple_with_sort(self):
+        entry = Entry.objects.create(name="[entry]", schema=self._entity, created_user=self._user)
+        entry.register_es()
+        self._entry.register_es()
+
+        ret = Entry.search_entries_for_simple("entry")
+        self.assertEqual(
+            ret,
+            {
+                "ret_count": 2,
+                "ret_values": [
+                    {
+                        "id": str(self._entry.id),
+                        "name": "entry",
+                        "schema": {"id": self._entity.id, "name": "entity"},
+                    },
+                    {
+                        "id": str(entry.id),
+                        "name": "[entry]",
+                        "schema": {"id": self._entity.id, "name": "entity"},
+                    },
+                ],
+            },
+        )
+
     def test_get_es_document(self):
         user = User.objects.create(username="hoge")
         test_group = Group.objects.create(name="test-group")
@@ -4480,7 +4505,7 @@ class ModelTest(AironeTestCase):
             set_attrs = [x for x in es_registering_value["attr"] if x["name"] == attrname]
 
             self.assertTrue(all([x["type"] == attr.schema.type for x in set_attrs]))
-            self.assertTrue(all([x["is_readble"] is True for x in set_attrs]))
+            self.assertTrue(all([x["is_readable"] is True for x in set_attrs]))
             for param_name in ["key", "value", "referral_id", "date_value"]:
                 if param_name in attrinfo:
                     self.assertEqual(
@@ -4501,36 +4526,36 @@ class ModelTest(AironeTestCase):
             {
                 "entity": {"id": entity.id, "name": "all_attr_entity"},
                 "entry": {"id": entry.id, "name": "entry"},
-                "is_readble": True,
+                "is_readable": True,
                 "attrs": {
-                    "bool": {"is_readble": True, "type": AttrTypeValue["boolean"], "value": False},
+                    "bool": {"is_readable": True, "type": AttrTypeValue["boolean"], "value": False},
                     "date": {
-                        "is_readble": True,
+                        "is_readable": True,
                         "type": AttrTypeValue["date"],
                         "value": None,
                     },
                     "group": {
-                        "is_readble": True,
+                        "is_readable": True,
                         "type": AttrTypeValue["group"],
                         "value": {"id": "", "name": ""},
                     },
                     "role": {
-                        "is_readble": True,
+                        "is_readable": True,
                         "type": AttrTypeValue["role"],
                         "value": {"id": "", "name": ""},
                     },
                     "name": {
-                        "is_readble": True,
+                        "is_readable": True,
                         "type": AttrTypeValue["named_object"],
                         "value": {"": {"id": "", "name": ""}},
                     },
                     "obj": {
-                        "is_readble": True,
+                        "is_readable": True,
                         "type": AttrTypeValue["object"],
                         "value": {"id": "", "name": ""},
                     },
-                    "str": {"is_readble": True, "type": AttrTypeValue["string"], "value": ""},
-                    "text": {"is_readble": True, "type": AttrTypeValue["text"], "value": ""},
+                    "str": {"is_readable": True, "type": AttrTypeValue["string"], "value": ""},
+                    "text": {"is_readable": True, "type": AttrTypeValue["text"], "value": ""},
                 },
             },
         )
@@ -4550,7 +4575,7 @@ class ModelTest(AironeTestCase):
                     "value": "",
                     "date_value": None,
                     "referral_id": "",
-                    "is_readble": True,
+                    "is_readable": True,
                 }
             ],
         )
@@ -4586,7 +4611,7 @@ class ModelTest(AironeTestCase):
                     "value": self._entry.name,
                     "date_value": None,
                     "referral_id": self._entry.id,
-                    "is_readble": True,
+                    "is_readable": True,
                 }
             ],
         )
@@ -4607,7 +4632,7 @@ class ModelTest(AironeTestCase):
                     "value": "",  # expected not to have information about deleted entry
                     "date_value": None,
                     "referral_id": "",  # expected not to have information about deleted entry
-                    "is_readble": True,
+                    "is_readable": True,
                 }
             ],
         )
@@ -5554,3 +5579,29 @@ class ModelTest(AironeTestCase):
         attr.add_value(user, [e0])
         self.assertEqual(list(entry.get_refers_objects()), [e0])
         self.assertEqual(list(entry.get_prev_refers_objects()), [e1, e2])
+
+    def test_search_entries_without_user(self):
+        entity = self.create_entity(
+            self._user,
+            "Test Another Entity",
+            attrs=[{"name": "attr", "type": AttrTypeValue["string"]}],
+        )
+        entry = self.add_entry(
+            self._user, "Test Entry", entity, is_public=False, values={"attr": "value"}
+        )
+
+        # set permission for creating user to read
+        role = Role.objects.create(name="role")
+        entry.full.roles.add(role)
+        role.users.add(self._user)
+
+        # Check the result of Entry.search_entries() when the 1st argument of user is None,
+        # that returns all data regardless of the permission settings.
+        search_params = {
+            "hint_entity_ids": [entity.id],
+            "hint_attrs": [{"name": "attr", "keyword": ""}],
+        }
+        self.assertEqual(
+            Entry.search_entries(self._user, **search_params),
+            Entry.search_entries(None, **search_params),
+        )

@@ -26,7 +26,7 @@ import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
-import { restoreEntry } from "../../utils/AironeAPIClient";
+import { usePage } from "../../hooks/usePage";
 import { formatDate } from "../../utils/DateUtil";
 import { Confirmable } from "../common/Confirmable";
 
@@ -77,8 +77,9 @@ export const RestorableEntryList: FC<Props> = ({
 
   const history = useHistory();
 
+  const [page, changePage] = usePage();
+
   const [keyword, setKeyword] = useState(initialKeyword ?? "");
-  const [page, setPage] = React.useState(1);
   const [openModal, setOpenModal] = useState(false);
   const [selectedEntryId, setSelectedEntryId] = useState<number>();
 
@@ -93,12 +94,8 @@ export const RestorableEntryList: FC<Props> = ({
     return await aironeApiClientV2.getEntry(selectedEntryId);
   }, [selectedEntryId]);
 
-  const handleChange = (event, value) => {
-    setPage(value);
-  };
-
   const handleRestore = async (entryId: number) => {
-    await restoreEntry(entryId);
+    await aironeApiClientV2.restoreEntry(entryId);
     history.go(0);
   };
 
@@ -118,7 +115,7 @@ export const RestorableEntryList: FC<Props> = ({
               setKeyword(e.target.value);
               /* Reset page number to prevent vanishing entities from display
                * when user move other page */
-              setPage(1);
+              changePage(1);
             }}
           />
         </Box>
@@ -185,7 +182,7 @@ export const RestorableEntryList: FC<Props> = ({
           <Pagination
             count={totalPageCount}
             page={page}
-            onChange={handleChange}
+            onChange={(_, newPage) => changePage(newPage)}
             color="primary"
           />
         </Stack>

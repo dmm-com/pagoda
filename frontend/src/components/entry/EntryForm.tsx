@@ -164,6 +164,8 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
               },
             };
         }
+        changeAttributes({ ...entryInfo.attrs });
+        break;
 
       case djangoContext.attrTypeValue.array_named_object_boolean:
         (
@@ -218,9 +220,25 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
       switch (attrType) {
         case djangoContext.attrTypeValue.array_string:
           entryInfo.attrs[attrName].value.asArrayString.splice(index, 1);
+          // auto-fill an empty element
+          if (entryInfo.attrs[attrName].value.asArrayString.length === 0) {
+            entryInfo.attrs[attrName].value.asArrayString.splice(
+              index + 1,
+              0,
+              ""
+            );
+          }
           break;
         case djangoContext.attrTypeValue.array_named_object:
           entryInfo.attrs[attrName].value.asArrayNamedObject.splice(index, 1);
+          // auto-fill an empty element
+          if (entryInfo.attrs[attrName].value.asArrayNamedObject.length === 0) {
+            entryInfo.attrs[attrName].value.asArrayNamedObject.splice(
+              index + 1,
+              0,
+              { "": null }
+            );
+          }
           break;
         default:
           throw new Error(`${attrType} is not array-like type`);

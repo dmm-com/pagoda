@@ -16,41 +16,55 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface GetEntrySimple
+ * @interface UserExport
  */
-export interface GetEntrySimple {
+export interface UserExport {
   /**
    *
    * @type {number}
-   * @memberof GetEntrySimple
+   * @memberof UserExport
    */
   readonly id: number;
   /**
+   * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+   * @type {string}
+   * @memberof UserExport
+   */
+  username: string;
+  /**
    *
    * @type {string}
-   * @memberof GetEntrySimple
+   * @memberof UserExport
    */
-  name: string;
+  readonly groups: string;
+  /**
+   *
+   * @type {string}
+   * @memberof UserExport
+   */
+  email?: string;
 }
 
-export function GetEntrySimpleFromJSON(json: any): GetEntrySimple {
-  return GetEntrySimpleFromJSONTyped(json, false);
+export function UserExportFromJSON(json: any): UserExport {
+  return UserExportFromJSONTyped(json, false);
 }
 
-export function GetEntrySimpleFromJSONTyped(
+export function UserExportFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): GetEntrySimple {
+): UserExport {
   if (json === undefined || json === null) {
     return json;
   }
   return {
     id: json["id"],
-    name: json["name"],
+    username: json["username"],
+    groups: json["groups"],
+    email: !exists(json, "email") ? undefined : json["email"],
   };
 }
 
-export function GetEntrySimpleToJSON(value?: GetEntrySimple | null): any {
+export function UserExportToJSON(value?: UserExport | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -58,6 +72,7 @@ export function GetEntrySimpleToJSON(value?: GetEntrySimple | null): any {
     return null;
   }
   return {
-    name: value.name,
+    username: value.username,
+    email: value.email,
   };
 }

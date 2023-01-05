@@ -1,12 +1,7 @@
-import io
-from typing import List, TypedDict
-
-import yaml
 from django.contrib.auth.forms import UserModel
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMultiAlternatives
-from django.http import HttpResponse
 from django.template import loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -17,27 +12,24 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
-from airone.lib.drf import YAMLParser
+from airone.lib.drf import YAMLParser, YAMLRenderer
 from group.models import Group
 from user.api_v2.serializers import (
     PasswordResetConfirmSerializer,
     PasswordResetSerializer,
     UserCreateSerializer,
+    UserExportSerializer,
     UserImportSerializer,
     UserListSerializer,
+    UserPasswordBySuperuserSerializer,
+    UserPasswordSerializer,
     UserRetrieveSerializer,
     UserTokenSerializer,
     UserUpdateSerializer,
 )
 from user.models import User
-
-
-class UserExport(TypedDict):
-    id: int
-    username: str
-    email: str
-    groups: str
 
 
 class UserPermission(BasePermission):
@@ -49,6 +41,11 @@ class UserPermission(BasePermission):
             "update": current_user.is_superuser or current_user == obj,
         }
         return permisson.get(view.action)
+
+
+class SuperuserPermission(BasePermission):
+    def has_object_permission(self, request, view, obj: User):
+        return request.user.is_superuser
 
 
 class UserAPI(viewsets.ModelViewSet):
@@ -93,6 +90,7 @@ class UserTokenAPI(viewsets.ModelViewSet):
 class UserImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     permission_classes = [IsAuthenticated]
+    serializer_class = Serializer
 
     def post(self, request):
         import_datas = request.data
@@ -153,28 +151,55 @@ class UserImportAPI(generics.GenericAPIView):
         return Response()
 
 
-class UserExportAPI(generics.RetrieveAPIView):
+class UserExportAPI(generics.ListAPIView):
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = UserExportSerializer
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [YAMLRenderer]
+
+
+class UserPasswordAPI(generics.UpdateAPIView):
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = UserPasswordSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
-        data: List[UserExport] = []
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["user"] = self.get_object()
+        return context
 
-        for user in User.objects.filter(is_active=True):
-            data.append(
-                {
-                    "email": user.email,
-                    "groups": ",".join(
-                        list(map(lambda x: x.name, user.groups.filter(group__is_active=True)))
-                    ),
-                    "id": user.id,
-                    "username": user.username,
-                }
-            )
+    def put(self, request, *args, **kwargs):
+        return Response(
+            "Unsupported. Use PATCH alternatively", status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
 
-        output = io.StringIO()
-        output.write(yaml.dump(data, default_flow_style=False, allow_unicode=True))
+    def patch(self, request, *args, **kwargs):
+        serializer: Serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({})
 
-        return HttpResponse(output.getvalue(), content_type="application/yaml")
+
+class UserPasswordBySuperuserAPI(generics.UpdateAPIView):
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = UserPasswordBySuperuserSerializer
+    permission_classes = [IsAuthenticated & SuperuserPermission]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["user"] = self.get_object()
+        return context
+
+    def put(self, request, *args, **kwargs):
+        return Response(
+            "Unsupported. Use PATCH alternatively", status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+    def patch(self, request, *args, **kwargs):
+        serializer: Serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({})
 
 
 class PasswordResetAPI(viewsets.GenericViewSet):
@@ -208,7 +233,7 @@ class PasswordResetAPI(viewsets.GenericViewSet):
         }
         self._send_mail(
             subject_template_name="registration/password_reset_subject.txt",
-            email_template_name="registration/new_ui/password_reset_email.html",
+            email_template_name="registration/ui/password_reset_email.html",
             context=context,
             from_email=None,
             to_email=user_email,

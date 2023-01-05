@@ -18,7 +18,7 @@ function make_attr_elem(attr, hint_attr) {
             </div>`;
   }
 
-  if (attr && attr.is_readble == false) {
+  if (attr && attr.is_readable == false) {
     new_elem.append("Permission denied.");
     new_elem.addClass('table-secondary');
     return new_elem;
@@ -126,7 +126,7 @@ function reconstruct_tbody(results) {
     new_elem_entry.append(`<th id=entry_name><a href='/entry/show/${ result.entry.id }/'>${ result.entry.name } [${ result.entity.name}]</a></th>`);
 
     {% for hint_attr in hint_attrs %}
-      if(result.is_readble == false){
+      if(result.is_readable == false){
         new_elem_entry.append("<td class='table-secondary' id='{{ hint_attr.name }}'>Permission denied.</td>");
       }else{
         new_elem_entry.append(make_attr_elem(result.attrs['{{ hint_attr.name }}'], '{{ hint_attr.name }}'));

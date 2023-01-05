@@ -6,7 +6,7 @@ module.exports = {
     index: "./frontend/src/App.tsx"
   },
   output: {
-    filename: "new-ui.js",
+    filename: "ui.js",
     path: path.resolve('static/js')
   },
   resolve: {
@@ -36,10 +36,11 @@ module.exports = {
       },
       {
         test: /\.js$/,
-	enforce: "pre",
+        enforce: "pre",
         use: ["source-map-loader"],
       },
     ]
   },
+  ignoreWarnings: [/Failed to parse source map/],
   plugins: [new ForkTsCheckerWebpackPlugin()]
 };

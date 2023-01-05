@@ -175,11 +175,15 @@ const ElemReferral: FC<
 
         // Add current attr value to referrals.
         if (multiple) {
-          (attrValue as Array<EntryAttributeValueObject>).forEach((value) => {
-            if (!referrals.map((referral) => referral.id).includes(value.id)) {
-              addReferrals.push(value);
-            }
-          });
+          (attrValue as Array<EntryAttributeValueObject | null>)
+            .filter((value) => value != null)
+            .forEach((value) => {
+              if (
+                !referrals.map((referral) => referral.id).includes(value.id)
+              ) {
+                addReferrals.push(value);
+              }
+            });
         } else {
           if (attrValue) {
             if (
@@ -569,7 +573,9 @@ export const EditAttributeValue: FC<Props> = ({
                   handleChange={handleChangeAttribute}
                   handleClickDeleteListItem={handleClickDeleteListItem}
                   handleClickAddListItem={handleClickAddListItem}
-                  disabled={attrInfo.value.asArrayString?.length == 1}
+                  disabled={
+                    attrInfo.value.asArrayString?.length == 1 && info === ""
+                  }
                 />
               </ListItem>
             ))}
@@ -590,7 +596,12 @@ export const EditAttributeValue: FC<Props> = ({
                   isMandatory={attrInfo.isMandatory}
                   schemaId={attrInfo.schema.id}
                   index={n}
-                  disabled={attrInfo.value.asArrayNamedObject?.length == 1}
+                  disabled={
+                    attrInfo.value.asArrayNamedObject?.length == 1 &&
+                    Object.entries(info).filter(
+                      ([k, v]) => k === "" && v == null
+                    ).length === 1
+                  }
                   handleChange={handleChangeAttribute}
                   handleClickDeleteListItem={handleClickDeleteListItem}
                   handleClickAddListItem={handleClickAddListItem}

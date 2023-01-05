@@ -23,9 +23,24 @@ import {
   PasswordResetConfirm,
   PasswordResetConfirmFromJSON,
   PasswordResetConfirmToJSON,
+  PatchedUserPassword,
+  PatchedUserPasswordFromJSON,
+  PatchedUserPasswordToJSON,
+  PatchedUserPasswordBySuperuser,
+  PatchedUserPasswordBySuperuserFromJSON,
+  PatchedUserPasswordBySuperuserToJSON,
   UserCreate,
   UserCreateFromJSON,
   UserCreateToJSON,
+  UserExport,
+  UserExportFromJSON,
+  UserExportToJSON,
+  UserPassword,
+  UserPasswordFromJSON,
+  UserPasswordToJSON,
+  UserPasswordBySuperuser,
+  UserPasswordBySuperuserFromJSON,
+  UserPasswordBySuperuserToJSON,
   UserRetrieve,
   UserRetrieveFromJSON,
   UserRetrieveToJSON,
@@ -45,6 +60,16 @@ export interface UserApiV2DestroyRequest {
   id: number;
 }
 
+export interface UserApiV2EditPasswdPartialUpdateRequest {
+  id: number;
+  patchedUserPassword?: PatchedUserPassword;
+}
+
+export interface UserApiV2EditPasswdUpdateRequest {
+  id: number;
+  userPassword: UserPassword;
+}
+
 export interface UserApiV2ListRequest {
   ordering?: string;
   page?: number;
@@ -61,6 +86,16 @@ export interface UserApiV2PasswordResetCreateRequest {
 
 export interface UserApiV2RetrieveRequest {
   id: number;
+}
+
+export interface UserApiV2SuEditPasswdPartialUpdateRequest {
+  id: number;
+  patchedUserPasswordBySuperuser?: PatchedUserPasswordBySuperuser;
+}
+
+export interface UserApiV2SuEditPasswdUpdateRequest {
+  id: number;
+  userPasswordBySuperuser: UserPasswordBySuperuser;
 }
 
 export interface UserApiV2TokenCreateRequest {
@@ -199,9 +234,149 @@ export class UserApi extends runtime.BaseAPI {
 
   /**
    */
-  async userApiV2ExportRetrieveRaw(
+  async userApiV2EditPasswdPartialUpdateRaw(
+    requestParameters: UserApiV2EditPasswdPartialUpdateRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<void>> {
+  ): Promise<runtime.ApiResponse<UserPassword>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling userApiV2EditPasswdPartialUpdate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/{id}/edit_passwd`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PATCH",
+        headers: headerParameters,
+        query: queryParameters,
+        body: PatchedUserPasswordToJSON(requestParameters.patchedUserPassword),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      UserPasswordFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async userApiV2EditPasswdPartialUpdate(
+    requestParameters: UserApiV2EditPasswdPartialUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<UserPassword> {
+    const response = await this.userApiV2EditPasswdPartialUpdateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async userApiV2EditPasswdUpdateRaw(
+    requestParameters: UserApiV2EditPasswdUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<UserPassword>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling userApiV2EditPasswdUpdate."
+      );
+    }
+
+    if (
+      requestParameters.userPassword === null ||
+      requestParameters.userPassword === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "userPassword",
+        "Required parameter requestParameters.userPassword was null or undefined when calling userApiV2EditPasswdUpdate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/{id}/edit_passwd`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PUT",
+        headers: headerParameters,
+        query: queryParameters,
+        body: UserPasswordToJSON(requestParameters.userPassword),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      UserPasswordFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async userApiV2EditPasswdUpdate(
+    requestParameters: UserApiV2EditPasswdUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<UserPassword> {
+    const response = await this.userApiV2EditPasswdUpdateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async userApiV2ExportListRaw(
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<Array<UserExport>>> {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
@@ -230,13 +405,18 @@ export class UserApi extends runtime.BaseAPI {
       initOverrides
     );
 
-    return new runtime.VoidApiResponse(response);
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      jsonValue.map(UserExportFromJSON)
+    );
   }
 
   /**
    */
-  async userApiV2ExportRetrieve(initOverrides?: RequestInit): Promise<void> {
-    await this.userApiV2ExportRetrieveRaw(initOverrides);
+  async userApiV2ExportList(
+    initOverrides?: RequestInit
+  ): Promise<Array<UserExport>> {
+    const response = await this.userApiV2ExportListRaw(initOverrides);
+    return await response.value();
   }
 
   /**
@@ -533,6 +713,150 @@ export class UserApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<UserRetrieve> {
     const response = await this.userApiV2RetrieveRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async userApiV2SuEditPasswdPartialUpdateRaw(
+    requestParameters: UserApiV2SuEditPasswdPartialUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<UserPasswordBySuperuser>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling userApiV2SuEditPasswdPartialUpdate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/{id}/su_edit_passwd`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PATCH",
+        headers: headerParameters,
+        query: queryParameters,
+        body: PatchedUserPasswordBySuperuserToJSON(
+          requestParameters.patchedUserPasswordBySuperuser
+        ),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      UserPasswordBySuperuserFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async userApiV2SuEditPasswdPartialUpdate(
+    requestParameters: UserApiV2SuEditPasswdPartialUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<UserPasswordBySuperuser> {
+    const response = await this.userApiV2SuEditPasswdPartialUpdateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
+  /**
+   */
+  async userApiV2SuEditPasswdUpdateRaw(
+    requestParameters: UserApiV2SuEditPasswdUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<UserPasswordBySuperuser>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling userApiV2SuEditPasswdUpdate."
+      );
+    }
+
+    if (
+      requestParameters.userPasswordBySuperuser === null ||
+      requestParameters.userPasswordBySuperuser === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "userPasswordBySuperuser",
+        "Required parameter requestParameters.userPasswordBySuperuser was null or undefined when calling userApiV2SuEditPasswdUpdate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/user/api/v2/{id}/su_edit_passwd`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PUT",
+        headers: headerParameters,
+        query: queryParameters,
+        body: UserPasswordBySuperuserToJSON(
+          requestParameters.userPasswordBySuperuser
+        ),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      UserPasswordBySuperuserFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async userApiV2SuEditPasswdUpdate(
+    requestParameters: UserApiV2SuEditPasswdUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<UserPasswordBySuperuser> {
+    const response = await this.userApiV2SuEditPasswdUpdateRaw(
       requestParameters,
       initOverrides
     );

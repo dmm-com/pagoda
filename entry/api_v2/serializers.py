@@ -18,6 +18,7 @@ from airone.lib.types import AttrDefaultValue, AttrTypeValue
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity
 from entry.models import Attribute, AttributeValue, Entry
+from entry.settings import CONFIG as CONFIG_ENTRY
 from group.models import Group
 from job.models import Job
 from role.models import Role
@@ -429,9 +430,8 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                                     "name": x.referral.entry.schema.name,
                                 },
                             }
-                            if x.referral and x.referral.is_active
-                            else None
                             for x in attrv.data_array.all()
+                            if x.referral and x.referral.is_active
                         ]
                     }
 
@@ -619,12 +619,6 @@ class EntryCopySerializer(serializers.Serializer):
                 raise DuplicatedObjectExistsError(
                     "specified name(%s) already exists" % copy_entry_name
                 )
-
-
-class GetEntrySimpleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Entry
-        fields = ("id", "name")
 
 
 class EntryExportSerializer(serializers.Serializer):
@@ -924,3 +918,52 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
         job_notify_event.run()
 
         return instance
+
+
+class AdvancedSearchResultExportAttrInfoSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    keyword = serializers.CharField(
+        required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
+    )
+
+
+class AdvancedSearchResultExportSerializer(serializers.Serializer):
+    entities = serializers.ListField(child=serializers.IntegerField())
+    attrinfo = AdvancedSearchResultExportAttrInfoSerializer(many=True)
+    has_referral = serializers.BooleanField(required=False)
+    referral_name = serializers.CharField(required=False)
+    entry_name = serializers.CharField(
+        required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
+    )
+    export_style = serializers.CharField()
+
+    def validate_entities(self, entities: List[int]):
+        if Entity.objects.filter(id__in=entities).count() != len(entities):
+            raise ValidationError("any entity_id(s) refers to an invalid entity")
+        return entities
+
+    def validate_export_style(self, export_style: str):
+        if export_style != "yaml" and export_style != "csv":
+            raise ValidationError("format must be yaml or csv")
+        return export_style
+
+    def save(self, **kwargs):
+        user: User = self.context["request"].user
+
+        job_status_not_finished = [Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"]]
+        if (
+            Job.get_job_with_params(user, self.validated_data)
+            .filter(status__in=job_status_not_finished)
+            .exists()
+        ):
+            raise ValidationError("Same export processing is under execution")
+
+        # create a job to export search result and run it
+        job = Job.new_export_search_result(
+            user,
+            **{
+                "text": "search_results.%s" % self.validated_data["export_style"],
+                "params": self.validated_data,
+            },
+        )
+        job.run()

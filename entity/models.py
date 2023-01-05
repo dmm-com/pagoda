@@ -1,9 +1,10 @@
 from django.db import models
-# from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType
 from webhook.models import Webhook
+
+# from simple_history.models import HistoricalRecords
 
 
 class EntityAttr(ACLBase):

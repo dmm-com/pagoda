@@ -152,13 +152,13 @@ class ESS(Elasticsearch):
                                 "type": "integer",
                                 "index": "false",
                             },
-                            "is_readble": {
+                            "is_readable": {
                                 "type": "boolean",
                                 "index": "true",
                             },
                         },
                     },
-                    "is_readble": {
+                    "is_readable": {
                         "type": "boolean",
                         "index": "true",
                     },
@@ -296,7 +296,7 @@ def make_query_for_simple(
         "from": offset,
     }
 
-    hint_query: Dict = {"bool": {"should": []}}
+    hint_query: Dict = {"bool": {"should": [{"match": {"name": hint_string}}]}}
     hint_query["bool"]["should"].append(_make_entry_name_query(hint_string))
     hint_query["bool"]["should"].append(_make_attr_query_for_simple(hint_string))
     query["query"]["bool"]["must"].append(hint_query)
@@ -809,6 +809,7 @@ def make_search_results(
     hint_attrs: List[Dict[str, str]],
     hint_referral: Optional[str],
     limit: int,
+    offset: int = 0,
 ) -> Dict[str, str]:
     """Acquires and returns the attribute values held by each search result
 
@@ -837,6 +838,7 @@ def make_search_results(
         res (`str`, optional): Search results for Elasticsearch
         hint_attrs (list(dict[str, str])):  A list of search strings and attribute sets
         limit (int): Maximum number of search results to return
+        offset (int): The number of offset to get a part of a large amount of search results
 
     Returns:
         dict[str, str]: A set of attributes and attribute values associated with the entry
@@ -856,10 +858,7 @@ def make_search_results(
     hit_entries = Entry.objects.filter(id__in=hit_entry_ids, is_active=True)
 
     hit_infos: Dict = {}
-    for entry in hit_entries:
-        if len(hit_infos) >= limit:
-            break
-
+    for entry in hit_entries[offset : offset + limit]:
         hit_infos[entry] = [x["_source"] for x in res["hits"]["hits"] if int(x["_id"]) == entry.id][
             0
         ]
@@ -874,11 +873,15 @@ def make_search_results(
         if hint_referral is not None:
             ret_info["referrals"] = entry_info.get("referrals", [])
 
-        # Check for has permission to Entry
-        if entry_info["is_readble"] or user.has_permission(entry, ACLType.Readable):
-            ret_info["is_readble"] = True
+        # Check for has permission to Entry. But it will be omitted when user is None.
+        if (
+            entry_info["is_readable"]
+            or user is None
+            or user.has_permission(entry, ACLType.Readable)
+        ):
+            ret_info["is_readable"] = True
         else:
-            ret_info["is_readble"] = False
+            ret_info["is_readable"] = False
             results["ret_values"].append(ret_info)
             continue
 
@@ -901,12 +904,12 @@ def make_search_results(
                     ret_info["attrs"][attrinfo["name"]] = ret_attrinfo
 
             # Check for has permission to EntityAttr
-            if attrinfo["name"] not in [x["name"] for x in hint_attrs if x["is_readble"]]:
-                ret_attrinfo["is_readble"] = False
+            if attrinfo["name"] not in [x["name"] for x in hint_attrs if x["is_readable"]]:
+                ret_attrinfo["is_readable"] = False
                 continue
 
             # Check for has permission to Attribute
-            if not attrinfo["is_readble"]:
+            if not attrinfo["is_readable"]:
                 attr = entry.attrs.filter(schema__name=attrinfo["name"], is_active=True).first()
                 if not attr:
                     Logger.warning(
@@ -916,10 +919,10 @@ def make_search_results(
                     continue
 
                 if not user.has_permission(attr, ACLType.Readable):
-                    ret_attrinfo["is_readble"] = False
+                    ret_attrinfo["is_readable"] = False
                     continue
 
-            ret_attrinfo["is_readble"] = True
+            ret_attrinfo["is_readable"] = True
 
             ret_attrinfo["type"] = attrinfo["type"]
             if (

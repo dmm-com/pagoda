@@ -106,8 +106,10 @@ class AironeTestCase(TestCase):
 
         return entity
 
-    def add_entry(self, user, name, schema, values={}):
-        entry = Entry.objects.create(name=name, schema=schema, created_user=user)
+    def add_entry(self, user, name, schema, values={}, is_public=True):
+        entry = Entry.objects.create(
+            name=name, schema=schema, created_user=user, is_public=is_public
+        )
         entry.complement_attrs(user)
 
         for (attrname, value) in values.items():

@@ -255,7 +255,7 @@ user@hostname:~/airone$ source virtualenv/bin/activate
 
 ## [Experimental] Build the new UI with React
 
-`/new-ui/` serves React-based new UI. Before you try it, you need to build `main.js`:
+`/ui/` serves React-based new UI. Before you try it, you need to build `ui.js`:
 
 Install nvm command.  
 
@@ -296,6 +296,7 @@ user@hostname:~/airone$ npm run build:custom
 ```
 user@hostname:~$ cd airone
 user@hostname:~/airone$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/airone$ autoflake .
 (virtualenv) user@hostname:~/airone$ black .
 (virtualenv) user@hostname:~/airone$ isort .
 

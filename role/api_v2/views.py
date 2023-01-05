@@ -1,7 +1,8 @@
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, serializers, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from acl.models import ACLBase
 from airone.lib.drf import YAMLParser, YAMLRenderer
 from group.models import Group
 from role.api_v2.serializers import (
@@ -29,6 +30,7 @@ class RoleAPI(viewsets.ModelViewSet):
 class RoleImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     permission_classes = [IsAuthenticated]
+    serializer_class = serializers.Serializer
 
     def post(self, request):
         import_datas = request.data
@@ -93,6 +95,21 @@ class RoleImportAPI(generics.GenericAPIView):
                             status=status.HTTP_400_BAD_REQUEST,
                         )
                     getattr(role, key).add(instance)
+
+            for permission in role_data.get("permissions", []):
+                acl = ACLBase.objects.filter(id=permission["obj_id"]).first()
+                if not acl:
+                    return Response(
+                        "Invalid obj_id given: %s" % str(permission["obj_id"]),
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                if permission["permission"] == "readable":
+                    acl.readable.roles.add(role)
+                elif permission["permission"] == "writable":
+                    acl.writable.roles.add(role)
+                elif permission["permission"] == "full":
+                    acl.full.roles.add(role)
 
             role.save()
 

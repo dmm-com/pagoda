@@ -29,7 +29,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/"
+                      href="/ui/"
                     >
                       Top
                     </a>
@@ -97,7 +97,7 @@ Object {
                     class="MuiBox-root css-qbrse1"
                   >
                     <button
-                      class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root Mui-disabled  css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
                       disabled=""
                       tabindex="-1"
                       type="button"
@@ -109,7 +109,7 @@ Object {
                     class="MuiBox-root css-qbrse1"
                   >
                     <button
-                      class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -171,12 +171,12 @@ Object {
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <div
-                      class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
                     >
                       <div
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                        class="MuiSelect-select MuiSelect-outlined MuiOutlinedInput-input MuiInputBase-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                        class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
                         role="button"
                         tabindex="0"
                       >
@@ -204,7 +204,7 @@ Object {
                         class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                       >
                         <legend
-                          class="css-hdw1oc"
+                          class="css-ihdtdm"
                         >
                           <span
                             class="notranslate"
@@ -275,12 +275,12 @@ Object {
                       class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                     >
                       <div
-                        class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
+                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
                       >
                         <div
                           aria-expanded="false"
                           aria-haspopup="listbox"
-                          class="MuiSelect-select MuiSelect-outlined MuiOutlinedInput-input MuiInputBase-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                          class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
                           role="button"
                           tabindex="0"
                         >
@@ -312,7 +312,7 @@ Object {
                           class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                         >
                           <legend
-                            class="css-hdw1oc"
+                            class="css-ihdtdm"
                           >
                             <span
                               class="notranslate"
@@ -339,12 +339,12 @@ Object {
                       class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                     >
                       <div
-                        class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
+                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
                       >
                         <div
                           aria-expanded="false"
                           aria-haspopup="listbox"
-                          class="MuiSelect-select MuiSelect-outlined MuiOutlinedInput-input MuiInputBase-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                          class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
                           role="button"
                           tabindex="0"
                         >
@@ -372,7 +372,7 @@ Object {
                           class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                         >
                           <legend
-                            class="css-hdw1oc"
+                            class="css-ihdtdm"
                           >
                             <span
                               class="notranslate"
@@ -417,7 +417,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                    href="/ui/"
                   >
                     Top
                   </a>
@@ -485,7 +485,7 @@ Object {
                   class="MuiBox-root css-qbrse1"
                 >
                   <button
-                    class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root Mui-disabled  css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
                     disabled=""
                     tabindex="-1"
                     type="button"
@@ -497,7 +497,7 @@ Object {
                   class="MuiBox-root css-qbrse1"
                 >
                   <button
-                    class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
@@ -559,12 +559,12 @@ Object {
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >
                   <div
-                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
                   >
                     <div
                       aria-expanded="false"
                       aria-haspopup="listbox"
-                      class="MuiSelect-select MuiSelect-outlined MuiOutlinedInput-input MuiInputBase-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                      class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
                       role="button"
                       tabindex="0"
                     >
@@ -592,7 +592,7 @@ Object {
                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-hdw1oc"
+                        class="css-ihdtdm"
                       >
                         <span
                           class="notranslate"
@@ -663,12 +663,12 @@ Object {
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <div
-                      class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
                     >
                       <div
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                        class="MuiSelect-select MuiSelect-outlined MuiOutlinedInput-input MuiInputBase-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                        class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
                         role="button"
                         tabindex="0"
                       >
@@ -700,7 +700,7 @@ Object {
                         class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                       >
                         <legend
-                          class="css-hdw1oc"
+                          class="css-ihdtdm"
                         >
                           <span
                             class="notranslate"
@@ -727,12 +727,12 @@ Object {
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <div
-                      class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
                     >
                       <div
                         aria-expanded="false"
                         aria-haspopup="listbox"
-                        class="MuiSelect-select MuiSelect-outlined MuiOutlinedInput-input MuiInputBase-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                        class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
                         role="button"
                         tabindex="0"
                       >
@@ -760,7 +760,7 @@ Object {
                         class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                       >
                         <legend
-                          class="css-hdw1oc"
+                          class="css-ihdtdm"
                         >
                           <span
                             class="notranslate"

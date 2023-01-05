@@ -28,6 +28,10 @@ export const EntityHistoryList = {
   MAX_ROW_COUNT: 30,
 };
 
+export const AdvancedSerarchResultList = {
+  MAX_ROW_COUNT: 100,
+};
+
 export const BaseAttributeTypes = {
   object: 1 << 0,
   string: 1 << 1,
@@ -142,3 +146,5 @@ export const JobOperations = {
   ROLE_REGISTER_REFERRAL: 19,
   EXPORT_ENTRY_V2: 20,
 };
+
+export const JobRefreshIntervalMilliSec = 60 * 1000;

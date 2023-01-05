@@ -33,15 +33,10 @@ export const ACLForm: FC<Props> = ({ setSubmittable, aclInfo, setACLInfo }) => {
     if (aclInfo.defaultPermission & djangoContext.aclTypes.full.value) {
       return true;
     }
-    if (
-      Object.values(aclInfo.permissions).some(
-        (permission) =>
-          permission.current_permission & djangoContext.aclTypes.full.value
-      )
-    ) {
-      return true;
-    }
-    return false;
+    return Object.values(aclInfo.permissions).some(
+      (permission) =>
+        permission.current_permission & djangoContext.aclTypes.full.value
+    );
   };
 
   useEffect(() => {

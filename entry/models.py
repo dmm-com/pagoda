@@ -6,7 +6,6 @@ from typing import Any, Optional, Tuple
 from django.conf import settings
 from django.db import models
 from django.db.models import Prefetch, Q
-# from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
 from airone.lib import auto_complement
@@ -36,6 +35,8 @@ from role.models import Role
 from user.models import User
 
 from .settings import CONFIG
+
+# from simple_history.models import HistoricalRecords
 
 
 class AttributeValue(models.Model):
@@ -1451,20 +1452,20 @@ class Entry(ACLBase):
             attrinfo["type"] = entity_attr.type
             attrinfo["is_mandatory"] = entity_attr.is_mandatory
             attrinfo["index"] = entity_attr.index
-            attrinfo["is_readble"] = True
+            attrinfo["is_readable"] = True
             attrinfo["last_value"] = AttrDefaultValue[entity_attr.type]
 
             # check that attribute exists
             attr = entity_attr.attr_list[0] if entity_attr.attr_list else None
             if not attr:
-                attrinfo["is_readble"] = user.has_permission(entity_attr, permission)
+                attrinfo["is_readable"] = user.has_permission(entity_attr, permission)
                 ret_attrs.append(attrinfo)
                 continue
             attrinfo["id"] = attr.id
 
             # check permission of attributes
             if not user.has_permission(attr, permission):
-                attrinfo["is_readble"] = False
+                attrinfo["is_readable"] = False
                 ret_attrs.append(attrinfo)
                 continue
 
@@ -1728,10 +1729,28 @@ class Entry(ACLBase):
                 continue
 
             latest_value = attr.get_latest_value()
+            value = None
+            if latest_value:
+                if latest_value.data_type == AttrTypeValue["array_object"]:
+                    # remove elements have None value
+                    value = [x for x in latest_value.get_value() if x]
+                elif latest_value.data_type == AttrTypeValue["named_object"]:
+                    # remove elements have empty name and None value
+                    value = {n: v for n, v in latest_value.get_value().items() if len(n) > 0 or v}
+                elif latest_value.data_type == AttrTypeValue["array_named_object"]:
+                    # remove elements have empty name and None value
+                    value = [
+                        x
+                        for x in latest_value.get_value()
+                        if len(list(x.keys())[0]) > 0 or list(x.values())[0]
+                    ]
+                else:
+                    value = latest_value.get_value()
+
             attrinfo.append(
                 {
                     "name": attr.schema.name,
-                    "value": latest_value.get_value() if latest_value else None,
+                    "value": value,
                 }
             )
 
@@ -1754,7 +1773,7 @@ class Entry(ACLBase):
                 "value": "",
                 "date_value": None,
                 "referral_id": "",
-                "is_readble": True
+                "is_readable": True
                 if (not attr or attr.is_public or attr.default_permission >= ACLType.Readable.id)
                 else False,
             }
@@ -1831,7 +1850,7 @@ class Entry(ACLBase):
                 {"id": x.id, "name": x.name, "schema": {"id": x.schema.id, "name": x.schema.name}}
                 for x in self.get_referred_objects().select_related("schema")
             ],
-            "is_readble": True
+            "is_readable": True
             if (self.is_public or self.default_permission >= ACLType.Readable.id)
             else False,
         }
@@ -1995,6 +2014,7 @@ class Entry(ACLBase):
         hint_referral=None,
         is_output_all=False,
         hint_referral_entity_id=None,
+        offset=0,
     ):
         """Main method called from advanced search.
 
@@ -2020,6 +2040,8 @@ class Entry(ACLBase):
                 Use only for advanced searches.
             is_output_all (bool): Defaults to False.
                 Flag to output all attribute values.
+            offset (int): Defaults to 0.
+                The number of offset to get a part of a large amount of search results
 
         Returns:
             dict[str, any]: As a result of the search,
@@ -2033,10 +2055,10 @@ class Entry(ACLBase):
                         'Name of Attribute': {
                             'type': (int),
                             'value': (any),
-                            'is_readble': (bool),
+                            'is_readable': (bool),
                         }
                     }
-                    'is_readble': (bool),
+                    'is_readable': (bool),
                 ],
             }
         """
@@ -2061,7 +2083,7 @@ class Entry(ACLBase):
                 hint_entity_attr = entity.attrs.filter(
                     name=hint_attr["name"], is_active=True
                 ).first()
-                hint_attr["is_readble"] = (
+                hint_attr["is_readable"] = (
                     True
                     if (
                         user is None
@@ -2091,7 +2113,7 @@ class Entry(ACLBase):
                         hint_attrs.append(
                             {
                                 "name": entity_attr.name,
-                                "is_readble": True
+                                "is_readable": True
                                 if (
                                     user is None
                                     or user.has_permission(entity_attr, ACLType.Readable)
@@ -2101,7 +2123,9 @@ class Entry(ACLBase):
                         )
 
             # retrieve data from database on the basis of the result of elasticsearch
-            search_result = make_search_results(user, resp, hint_attrs, hint_referral, limit)
+            search_result = make_search_results(
+                user, resp, hint_attrs, hint_referral, limit, offset
+            )
             results["ret_count"] += search_result["ret_count"]
             results["ret_values"].extend(search_result["ret_values"])
             limit -= search_result["ret_count"]
@@ -2226,9 +2250,9 @@ class Entry(ACLBase):
                     # Elasticsearch bulk API format is add meta information and data pairs as sets.
                     # [
                     #     {"index": {"_id": 1}}
-                    #     {"name": {...}, "entity": {...}, "attr": {...}, "is_readble": {...}}
+                    #     {"name": {...}, "entity": {...}, "attr": {...}, "is_readable": {...}}
                     #     {"index": {"_id": 2}}
-                    #     {"name": {...}, "entity": {...}, "attr": {...}, "is_readble": {...}}
+                    #     {"name": {...}, "entity": {...}, "attr": {...}, "is_readable": {...}}
                     # ]
                     register_docs.append({"index": {"_id": entry.id}})
                     register_docs.append(es_doc)

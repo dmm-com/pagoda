@@ -211,6 +211,7 @@ class ElasticSearchTest(TestCase):
                             {
                                 "bool": {
                                     "should": [
+                                        {"match": {"name": "hoge|fuga&1"}},
                                         {
                                             "bool": {
                                                 "should": [
@@ -346,10 +347,10 @@ class ElasticSearchTest(TestCase):
                                     "key": "",
                                     "value": attr_value.value,
                                     "referral_id": "",
-                                    "is_readble": True,
+                                    "is_readable": True,
                                 }
                             ],
-                            "is_readble": True,
+                            "is_readable": True,
                         },
                         "sort": [entry.name],
                     }
@@ -357,7 +358,7 @@ class ElasticSearchTest(TestCase):
             }
         }
 
-        hint_attrs = [{"name": "test_attr", "keyword": "", "is_readble": True}]
+        hint_attrs = [{"name": "test_attr", "keyword": "", "is_readable": True}]
         hint_referral = ""
         results = elasticsearch.make_search_results(self._user, res, hint_attrs, hint_referral, 100)
 
@@ -375,10 +376,10 @@ class ElasticSearchTest(TestCase):
                         attr.name: {
                             "type": attr.schema.type,
                             "value": attr_value.value,
-                            "is_readble": True,
+                            "is_readable": True,
                         }
                     },
-                    "is_readble": True,
+                    "is_readable": True,
                     "referrals": [],
                 }
             ],
@@ -454,4 +455,76 @@ class ElasticSearchTest(TestCase):
                     "attr": attr.name,
                 }
             ],
+        )
+
+    def test_make_search_results_with_limit_offset(self):
+        entries = [
+            Entry.objects.create(name="entry-%d" % i, schema=self._entity, created_user=self._user)
+            for i in range(1, 16)
+        ]
+
+        res = {
+            "hits": {
+                "total": {"value": len(entries)},
+                "hits": [
+                    {
+                        "_type": "entry",
+                        "_id": entry.id,
+                        "_source": {
+                            "entity": {"id": entry.id, "name": entry.name},
+                            "name": entry.name,
+                            "attr": [],
+                            "is_readable": True,
+                        },
+                        "sort": [entry.name],
+                    }
+                    for entry in entries
+                ],
+            }
+        }
+
+        # 1 to 10
+        results = elasticsearch.make_search_results(self._user, res, [], "", limit=10, offset=0)
+        self.assertEqual(results["ret_count"], len(entries))
+        self.assertEqual(
+            sorted(results["ret_values"], key=lambda x: x["entry"]["id"]),
+            sorted(
+                [
+                    {
+                        "entity": {
+                            "id": self._entity.id,
+                            "name": self._entity.name,
+                        },
+                        "entry": {"id": entry.id, "name": entry.name},
+                        "attrs": {},
+                        "is_readable": True,
+                        "referrals": [],
+                    }
+                    for entry in entries[0:10]
+                ],
+                key=lambda x: x["entry"]["id"],
+            ),
+        )
+
+        # 11 to 15
+        results = elasticsearch.make_search_results(self._user, res, [], "", limit=10, offset=10)
+        self.assertEqual(results["ret_count"], len(entries))
+        self.assertEqual(
+            sorted(results["ret_values"], key=lambda x: x["entry"]["id"]),
+            sorted(
+                [
+                    {
+                        "entity": {
+                            "id": self._entity.id,
+                            "name": self._entity.name,
+                        },
+                        "entry": {"id": entry.id, "name": entry.name},
+                        "attrs": {},
+                        "is_readable": True,
+                        "referrals": [],
+                    }
+                    for entry in entries[10:15]
+                ],
+                key=lambda x: x["entry"]["id"],
+            ),
         )

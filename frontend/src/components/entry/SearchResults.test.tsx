@@ -10,6 +10,16 @@ import { TestWrapper } from "utils/TestWrapper";
 
 test("should render a component with essential props", function () {
   expect(() =>
-    render(<SearchResults results={[]} />, { wrapper: TestWrapper })
+    render(
+      <SearchResults
+        results={[]}
+        page={1}
+        maxPage={1}
+        handleChangePage={() => {
+          /* do nothing */
+        }}
+      />,
+      { wrapper: TestWrapper }
+    )
   ).not.toThrow();
 });

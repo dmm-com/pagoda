@@ -1,22 +1,24 @@
 from distutils.util import strtobool
 
-from django.db.models import F
+from django.db.models import Count, F
 from django.http import Http404
 from django.http.response import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import filters, generics, status, viewsets
+from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
 import custom_view
 from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.drf import ObjectNotExistsError, YAMLParser, YAMLRenderer
 from airone.lib.http import http_get
 from entity.api_v2.serializers import (
+    EntityAttrNameSerializer,
     EntityCreateSerializer,
     EntityDetailSerializer,
     EntityHistorySerializer,
@@ -204,6 +206,7 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
 
 class EntityImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
+    serializer_class = serializers.Serializer
 
     def post(self, request):
         import_datas = request.data
@@ -229,3 +232,43 @@ class EntityExportAPI(generics.RetrieveAPIView):
             "Entity": entities,
             "EntityAttr": attrs,
         }
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter("entity_ids", OpenApiTypes.STR, OpenApiParameter.QUERY),
+    ],
+)
+class EntityAttrNameAPI(generics.GenericAPIView):
+    serializer_class = EntityAttrNameSerializer
+
+    def get_queryset(self):
+        entity_ids = list(filter(None, self.request.query_params.get("entity_ids", "").split(",")))
+
+        if len(entity_ids) == 0:
+            return (
+                EntityAttr.objects.filter(is_active=True)
+                .values_list("name", flat=True)
+                .order_by("name")
+                .distinct()
+            )
+        else:
+            entities = Entity.objects.filter(id__in=entity_ids, is_active=True)
+            if len(entity_ids) != len(entities):
+                # the case invalid entity-id was specified
+                raise ValidationError("Target Entity doesn't exist")
+            else:
+                return (
+                    # filter only names appear in all specified entities
+                    EntityAttr.objects.filter(parent_entity__in=entities, is_active=True)
+                    .values("name")
+                    .annotate(count=Count("name"))
+                    .filter(count=len(entity_ids))
+                    .values_list("name", flat=True)
+                    .order_by("name")
+                )
+
+    def get(self, request):
+        queryset = self.get_queryset()
+        serializer: Serializer = self.get_serializer(queryset)
+        return Response(serializer.data)

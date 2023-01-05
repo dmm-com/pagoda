@@ -29,7 +29,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/"
+                      href="/ui/"
                     >
                       Top
                     </a>
@@ -45,7 +45,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/entities"
+                      href="/ui/entities"
                     >
                       エンティティ一覧
                     </a>
@@ -143,10 +143,10 @@ Object {
                 class="MuiBox-root css-qxh7fn"
               >
                 <div
-                  class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-3wf0vq-MuiFormControl-root-MuiTextField-root"
+                  class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1mw4b3-MuiFormControl-root-MuiTextField-root"
                 >
                   <div
-                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-8j6b76-MuiInputBase-root-MuiOutlinedInput-root"
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-4ama2z-MuiInputBase-root-MuiOutlinedInput-root"
                   >
                     <div
                       class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
@@ -170,7 +170,7 @@ Object {
                     </div>
                     <input
                       aria-invalid="false"
-                      class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
+                      class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                       id="mui-1"
                       placeholder="エントリを絞り込む"
                       type="text"
@@ -181,7 +181,7 @@ Object {
                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-hdw1oc"
+                        class="css-ihdtdm"
                       >
                         <span
                           class="notranslate"
@@ -194,8 +194,8 @@ Object {
                 </div>
               </div>
               <a
-                class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-1rn41qt-MuiButtonBase-root-MuiButton-root"
-                href="/new-ui/entities/undefined/entries/new"
+                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1rn41qt-MuiButtonBase-root-MuiButton-root"
+                href="/ui/entities/undefined/entries/new"
                 tabindex="0"
               >
                 <svg
@@ -235,7 +235,7 @@ Object {
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/undefined/entries/1/details"
+                          href="/ui/entities/undefined/entries/1/details"
                           tabindex="0"
                         >
                           <h6
@@ -296,7 +296,7 @@ Object {
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/undefined/entries/2/details"
+                          href="/ui/entities/undefined/entries/2/details"
                           tabindex="0"
                         >
                           <h6
@@ -357,7 +357,7 @@ Object {
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                          href="/new-ui/entities/undefined/entries/3/details"
+                          href="/ui/entities/undefined/entries/3/details"
                           tabindex="0"
                         >
                           <h6
@@ -493,7 +493,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                    href="/ui/"
                   >
                     Top
                   </a>
@@ -509,7 +509,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/entities"
+                    href="/ui/entities"
                   >
                     エンティティ一覧
                   </a>
@@ -607,10 +607,10 @@ Object {
               class="MuiBox-root css-qxh7fn"
             >
               <div
-                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-3wf0vq-MuiFormControl-root-MuiTextField-root"
+                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1mw4b3-MuiFormControl-root-MuiTextField-root"
               >
                 <div
-                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-8j6b76-MuiInputBase-root-MuiOutlinedInput-root"
+                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-4ama2z-MuiInputBase-root-MuiOutlinedInput-root"
                 >
                   <div
                     class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
@@ -634,7 +634,7 @@ Object {
                   </div>
                   <input
                     aria-invalid="false"
-                    class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
+                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                     id="mui-1"
                     placeholder="エントリを絞り込む"
                     type="text"
@@ -645,7 +645,7 @@ Object {
                     class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                   >
                     <legend
-                      class="css-hdw1oc"
+                      class="css-ihdtdm"
                     >
                       <span
                         class="notranslate"
@@ -658,8 +658,8 @@ Object {
               </div>
             </div>
             <a
-              class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-1rn41qt-MuiButtonBase-root-MuiButton-root"
-              href="/new-ui/entities/undefined/entries/new"
+              class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1rn41qt-MuiButtonBase-root-MuiButton-root"
+              href="/ui/entities/undefined/entries/new"
               tabindex="0"
             >
               <svg
@@ -699,7 +699,7 @@ Object {
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/undefined/entries/1/details"
+                        href="/ui/entities/undefined/entries/1/details"
                         tabindex="0"
                       >
                         <h6
@@ -760,7 +760,7 @@ Object {
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/undefined/entries/2/details"
+                        href="/ui/entities/undefined/entries/2/details"
                         tabindex="0"
                       >
                         <h6
@@ -821,7 +821,7 @@ Object {
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
-                        href="/new-ui/entities/undefined/entries/3/details"
+                        href="/ui/entities/undefined/entries/3/details"
                         tabindex="0"
                       >
                         <h6

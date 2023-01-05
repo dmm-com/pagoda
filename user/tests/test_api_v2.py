@@ -290,3 +290,119 @@ class ViewTest(AironeViewTest):
             "/user/api/v2/password_reset/confirm", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 400)
+
+    def test_patch_user_password(self):
+        user = self.guest_login()
+        old_passwd = user.username
+        new_passwd = "new-passwd"
+
+        params = {
+            "old_passwd": old_passwd,
+            "new_passwd": new_passwd,
+            "chk_passwd": new_passwd,
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/edit_passwd" % user.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        updated_user = User.objects.filter(id=user.id).first()
+        self.assertIsNotNone(updated_user)
+        self.assertTrue(updated_user.check_password(new_passwd))
+
+    def test_patch_user_password_with_invalid_params(self):
+        user = self.guest_login()
+        old_passwd = user.username
+        new_passwd = "new-passwd"
+
+        # old_passwd is wrong
+        params = {
+            "old_passwd": "invalid-old-passwd",
+            "new_passwd": new_passwd,
+            "chk_passwd": new_passwd,
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/edit_passwd" % user.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+        # new_passwd doesn't match with chk_passwd
+        params = {
+            "old_passwd": old_passwd,
+            "new_passwd": new_passwd,
+            "chk_passwd": "unmatched-passwd",
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/edit_passwd" % user.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+        # new_passwd matches with old_passwd
+        params = {
+            "old_passwd": old_passwd,
+            "new_passwd": old_passwd,
+            "chk_passwd": old_passwd,
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/edit_passwd" % user.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+        # target user doesn't match with a request user
+        other = self._create_user("other")
+        other_old_passwd = other.username
+        params = {
+            "old_passwd": other_old_passwd,
+            "new_passwd": new_passwd,
+            "chk_passwd": new_passwd,
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/edit_passwd" % other.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_patch_user_password_by_superuser(self):
+        self.admin_login()
+
+        user = self._create_user("user")
+        new_passwd = "new-passwd"
+
+        params = {
+            "new_passwd": new_passwd,
+            "chk_passwd": new_passwd,
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/su_edit_passwd" % user.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        updated_user = User.objects.filter(id=user.id).first()
+        self.assertIsNotNone(updated_user)
+        self.assertTrue(updated_user.check_password(new_passwd))
+
+    def test_patch_user_password_by_superuser_with_invalid_params(self):
+        self.admin_login()
+
+        user = self._create_user("user")
+        new_passwd = "new-passwd"
+
+        # new_passwd doesn't match with chk_passwd
+        params = {
+            "new_passwd": new_passwd,
+            "chk_passwd": "invalid-chk-passwd",
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/su_edit_passwd" % user.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+        # request user is not an admin
+        self.guest_login()
+        params = {
+            "new_passwd": new_passwd,
+            "chk_passwd": "invalid-chk-passwd",
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/su_edit_passwd" % user.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)

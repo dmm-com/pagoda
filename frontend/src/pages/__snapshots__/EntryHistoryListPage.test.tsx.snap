@@ -29,7 +29,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/"
+                      href="/ui/"
                     >
                       Top
                     </a>
@@ -45,7 +45,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/entities"
+                      href="/ui/entities"
                     >
                       エンティティ一覧
                     </a>
@@ -61,9 +61,25 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/entities/2"
+                      href="/ui/entities/2"
                     >
                       bbb
+                    </a>
+                  </li>
+                  <li
+                    aria-hidden="true"
+                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                  >
+                    /
+                  </li>
+                  <li
+                    class="MuiBreadcrumbs-li"
+                  >
+                    <a
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      href="/ui/entities/2/entries/1/details"
+                    >
+                      aaa
                     </a>
                   </li>
                   <li
@@ -281,7 +297,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                    href="/ui/"
                   >
                     Top
                   </a>
@@ -297,7 +313,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/entities"
+                    href="/ui/entities"
                   >
                     エンティティ一覧
                   </a>
@@ -313,9 +329,25 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/entities/2"
+                    href="/ui/entities/2"
                   >
                     bbb
+                  </a>
+                </li>
+                <li
+                  aria-hidden="true"
+                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                >
+                  /
+                </li>
+                <li
+                  class="MuiBreadcrumbs-li"
+                >
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/ui/entities/2/entries/1/details"
+                  >
+                    aaa
                   </a>
                 </li>
                 <li

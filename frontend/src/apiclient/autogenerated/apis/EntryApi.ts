@@ -14,6 +14,9 @@
 
 import * as runtime from "../runtime";
 import {
+  AdvancedSearchResultExport,
+  AdvancedSearchResultExportFromJSON,
+  AdvancedSearchResultExportToJSON,
   EntryBase,
   EntryBaseFromJSON,
   EntryBaseToJSON,
@@ -32,13 +35,17 @@ import {
   GetEntryAttrReferral,
   GetEntryAttrReferralFromJSON,
   GetEntryAttrReferralToJSON,
+  PaginatedEntryBaseList,
+  PaginatedEntryBaseListFromJSON,
+  PaginatedEntryBaseListToJSON,
   PaginatedEntryHistoryList,
   PaginatedEntryHistoryListFromJSON,
   PaginatedEntryHistoryListToJSON,
-  PaginatedGetEntrySimpleList,
-  PaginatedGetEntrySimpleListFromJSON,
-  PaginatedGetEntrySimpleListToJSON,
 } from "../models";
+
+export interface EntryApiV2AdvancedSearchResultExportCreateRequest {
+  advancedSearchResultExport: AdvancedSearchResultExport;
+}
 
 export interface EntryApiV2AttrReferralsListRequest {
   attrId: number;
@@ -146,6 +153,73 @@ export class EntryApi extends runtime.BaseAPI {
     initOverrides?: RequestInit
   ): Promise<void> {
     await this.entryApiV2AdvancedSearchCreateRaw(initOverrides);
+  }
+
+  /**
+   */
+  async entryApiV2AdvancedSearchResultExportCreateRaw(
+    requestParameters: EntryApiV2AdvancedSearchResultExportCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<AdvancedSearchResultExport>> {
+    if (
+      requestParameters.advancedSearchResultExport === null ||
+      requestParameters.advancedSearchResultExport === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "advancedSearchResultExport",
+        "Required parameter requestParameters.advancedSearchResultExport was null or undefined when calling entryApiV2AdvancedSearchResultExportCreate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/advanced_search_result_export/`,
+        method: "POST",
+        headers: headerParameters,
+        query: queryParameters,
+        body: AdvancedSearchResultExportToJSON(
+          requestParameters.advancedSearchResultExport
+        ),
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      AdvancedSearchResultExportFromJSON(jsonValue)
+    );
+  }
+
+  /**
+   */
+  async entryApiV2AdvancedSearchResultExportCreate(
+    requestParameters: EntryApiV2AdvancedSearchResultExportCreateRequest,
+    initOverrides?: RequestInit
+  ): Promise<AdvancedSearchResultExport> {
+    const response = await this.entryApiV2AdvancedSearchResultExportCreateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
   }
 
   /**
@@ -651,7 +725,7 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2ReferralListRaw(
     requestParameters: EntryApiV2ReferralListRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<PaginatedGetEntrySimpleList>> {
+  ): Promise<runtime.ApiResponse<PaginatedEntryBaseList>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
         "id",
@@ -703,7 +777,7 @@ export class EntryApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      PaginatedGetEntrySimpleListFromJSON(jsonValue)
+      PaginatedEntryBaseListFromJSON(jsonValue)
     );
   }
 
@@ -712,7 +786,7 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2ReferralList(
     requestParameters: EntryApiV2ReferralListRequest,
     initOverrides?: RequestInit
-  ): Promise<PaginatedGetEntrySimpleList> {
+  ): Promise<PaginatedEntryBaseList> {
     const response = await this.entryApiV2ReferralListRaw(
       requestParameters,
       initOverrides

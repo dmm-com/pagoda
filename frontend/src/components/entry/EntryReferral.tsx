@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
+import { usePage } from "../../hooks/usePage";
 import { EntryReferralList } from "../../utils/Constants";
 import { normalizeToMatch } from "../../utils/StringUtil";
 
@@ -20,16 +21,12 @@ import { entryDetailsPath } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
 
 interface Props {
-  entityId: number;
   entryId: number;
 }
 
-export const EntryReferral: FC<Props> = ({ entityId, entryId }) => {
-  const params = new URLSearchParams(location.search);
+export const EntryReferral: FC<Props> = ({ entryId }) => {
+  const [page, changePage] = usePage();
 
-  const [page, setPage] = useState<number>(
-    params.has("page") ? Number(params.get("page")) : 1
-  );
   const [keyword, setKeyword] = useState("");
   const [keywordQuery, setKeywordQuery] = useState("");
 
@@ -82,7 +79,7 @@ export const EntryReferral: FC<Props> = ({ entityId, entryId }) => {
             boundaryCount={1}
             count={maxPage}
             page={page}
-            onChange={(e, page) => setPage(page)}
+            onChange={(e, page) => changePage(page)}
             color="primary"
           />
         </Stack>
@@ -102,7 +99,7 @@ export const EntryReferral: FC<Props> = ({ entityId, entryId }) => {
           >
             <ListItemButton
               component={Link}
-              to={entryDetailsPath(entityId, entry.id)}
+              to={entryDetailsPath(entry.schema.id, entry.id)}
             >
               <ListItemText sx={{ px: "16px" }}>{entry.name}</ListItemText>
             </ListItemButton>

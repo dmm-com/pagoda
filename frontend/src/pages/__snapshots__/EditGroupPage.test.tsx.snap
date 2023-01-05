@@ -29,7 +29,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/"
+                      href="/ui/"
                     >
                       Top
                     </a>
@@ -45,7 +45,7 @@ Object {
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/new-ui/groups"
+                      href="/ui/groups"
                     >
                       グループ管理
                     </a>
@@ -111,7 +111,7 @@ Object {
                     class="MuiBox-root css-qbrse1"
                   >
                     <button
-                      class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root Mui-disabled  css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
                       disabled=""
                       tabindex="-1"
                       type="button"
@@ -123,7 +123,7 @@ Object {
                     class="MuiBox-root css-qbrse1"
                   >
                     <button
-                      class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -192,10 +192,10 @@ Object {
                       class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                     >
                       <div
-                        class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-zt92jh-MuiInputBase-root-MuiInput-root"
+                        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary css-1nsayvs-MuiInputBase-root-MuiInput-root"
                       >
                         <input
-                          class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                          class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
                           type="text"
                           value=""
                         />
@@ -218,13 +218,13 @@ Object {
                       class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                     >
                       <div
-                        class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon css-16awh2u-MuiAutocomplete-root"
+                        class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon css-1qqsdnr-MuiAutocomplete-root"
                       >
                         <div
                           class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                         >
                           <div
-                            class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
+                            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
                           >
                             <input
                               aria-autocomplete="list"
@@ -232,7 +232,7 @@ Object {
                               aria-invalid="false"
                               autocapitalize="none"
                               autocomplete="off"
-                              class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
+                              class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
                               id="mui-2"
                               role="combobox"
                               spellcheck="false"
@@ -270,7 +270,7 @@ Object {
                               class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                             >
                               <legend
-                                class="css-hdw1oc"
+                                class="css-ihdtdm"
                               >
                                 <span
                                   class="notranslate"
@@ -323,7 +323,7 @@ Object {
                         class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
                       >
                         <span
-                          class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                          class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                         >
                           <input
                             class="PrivateSwitchBase-input css-1m9pwf3"
@@ -347,7 +347,7 @@ Object {
                         </span>
                         <a
                           class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                          href="/new-ui/groups/1"
+                          href="/ui/groups/1"
                         >
                           group1
                         </a>
@@ -356,7 +356,7 @@ Object {
                         class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
                       >
                         <span
-                          class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                          class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                         >
                           <input
                             class="PrivateSwitchBase-input css-1m9pwf3"
@@ -380,7 +380,7 @@ Object {
                         </span>
                         <a
                           class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                          href="/new-ui/groups/1"
+                          href="/ui/groups/1"
                         >
                           group1
                         </a>
@@ -389,7 +389,7 @@ Object {
                         class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
                       >
                         <span
-                          class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                          class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                         >
                           <input
                             class="PrivateSwitchBase-input css-1m9pwf3"
@@ -413,7 +413,7 @@ Object {
                         </span>
                         <a
                           class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                          href="/new-ui/groups/2"
+                          href="/ui/groups/2"
                         >
                           group2
                         </a>
@@ -430,7 +430,7 @@ Object {
                         class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
                       >
                         <span
-                          class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                          class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                         >
                           <input
                             class="PrivateSwitchBase-input css-1m9pwf3"
@@ -454,7 +454,7 @@ Object {
                         </span>
                         <a
                           class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                          href="/new-ui/groups/2"
+                          href="/ui/groups/2"
                         >
                           group2
                         </a>
@@ -494,7 +494,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/"
+                    href="/ui/"
                   >
                     Top
                   </a>
@@ -510,7 +510,7 @@ Object {
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/new-ui/groups"
+                    href="/ui/groups"
                   >
                     グループ管理
                   </a>
@@ -576,7 +576,7 @@ Object {
                   class="MuiBox-root css-qbrse1"
                 >
                   <button
-                    class="MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root Mui-disabled  css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
                     disabled=""
                     tabindex="-1"
                     type="button"
@@ -588,7 +588,7 @@ Object {
                   class="MuiBox-root css-qbrse1"
                 >
                   <button
-                    class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root  css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
@@ -657,10 +657,10 @@ Object {
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <div
-                      class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary css-zt92jh-MuiInputBase-root-MuiInput-root"
+                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary css-1nsayvs-MuiInputBase-root-MuiInput-root"
                     >
                       <input
-                        class="MuiInput-input MuiInputBase-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                        class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
                         type="text"
                         value=""
                       />
@@ -683,13 +683,13 @@ Object {
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <div
-                      class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon css-16awh2u-MuiAutocomplete-root"
+                      class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon css-1qqsdnr-MuiAutocomplete-root"
                     >
                       <div
                         class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                       >
                         <div
-                          class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
+                          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
                         >
                           <input
                             aria-autocomplete="list"
@@ -697,7 +697,7 @@ Object {
                             aria-invalid="false"
                             autocapitalize="none"
                             autocomplete="off"
-                            class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
+                            class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
                             id="mui-2"
                             role="combobox"
                             spellcheck="false"
@@ -735,7 +735,7 @@ Object {
                             class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                           >
                             <legend
-                              class="css-hdw1oc"
+                              class="css-ihdtdm"
                             >
                               <span
                                 class="notranslate"
@@ -788,7 +788,7 @@ Object {
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
                     >
                       <span
-                        class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                       >
                         <input
                           class="PrivateSwitchBase-input css-1m9pwf3"
@@ -812,7 +812,7 @@ Object {
                       </span>
                       <a
                         class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                        href="/new-ui/groups/1"
+                        href="/ui/groups/1"
                       >
                         group1
                       </a>
@@ -821,7 +821,7 @@ Object {
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
                     >
                       <span
-                        class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                       >
                         <input
                           class="PrivateSwitchBase-input css-1m9pwf3"
@@ -845,7 +845,7 @@ Object {
                       </span>
                       <a
                         class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                        href="/new-ui/groups/1"
+                        href="/ui/groups/1"
                       >
                         group1
                       </a>
@@ -854,7 +854,7 @@ Object {
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
                     >
                       <span
-                        class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                       >
                         <input
                           class="PrivateSwitchBase-input css-1m9pwf3"
@@ -878,7 +878,7 @@ Object {
                       </span>
                       <a
                         class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                        href="/new-ui/groups/2"
+                        href="/ui/groups/2"
                       >
                         group2
                       </a>
@@ -895,7 +895,7 @@ Object {
                       class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
                     >
                       <span
-                        class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                       >
                         <input
                           class="PrivateSwitchBase-input css-1m9pwf3"
@@ -919,7 +919,7 @@ Object {
                       </span>
                       <a
                         class="MuiTypography-root MuiTypography-h5 css-1iun6px-MuiTypography-root"
-                        href="/new-ui/groups/2"
+                        href="/ui/groups/2"
                       >
                         group2
                       </a>

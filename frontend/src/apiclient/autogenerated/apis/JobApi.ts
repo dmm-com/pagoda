@@ -22,10 +22,22 @@ import {
   PaginatedJobSerializersListToJSON,
 } from "../models";
 
+export interface JobApiV2DestroyRequest {
+  id: number;
+}
+
 export interface JobApiV2JobsListRequest {
   createdAfter?: Date;
   limit?: number;
   offset?: number;
+}
+
+export interface JobApiV2RerunPartialUpdateRequest {
+  id: number;
+}
+
+export interface JobApiV2RerunUpdateRequest {
+  id: number;
 }
 
 export interface JobApiV2RetrieveRequest {
@@ -36,6 +48,62 @@ export interface JobApiV2RetrieveRequest {
  *
  */
 export class JobApi extends runtime.BaseAPI {
+  /**
+   */
+  async jobApiV2DestroyRaw(
+    requestParameters: JobApiV2DestroyRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling jobApiV2Destroy."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/job/api/v2/{id}/`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "DELETE",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async jobApiV2Destroy(
+    requestParameters: JobApiV2DestroyRequest,
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.jobApiV2DestroyRaw(requestParameters, initOverrides);
+  }
+
   /**
    */
   async jobApiV2JobsListRaw(
@@ -100,6 +168,118 @@ export class JobApi extends runtime.BaseAPI {
       initOverrides
     );
     return await response.value();
+  }
+
+  /**
+   */
+  async jobApiV2RerunPartialUpdateRaw(
+    requestParameters: JobApiV2RerunPartialUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling jobApiV2RerunPartialUpdate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/job/api/v2/{id}/rerun`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PATCH",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async jobApiV2RerunPartialUpdate(
+    requestParameters: JobApiV2RerunPartialUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.jobApiV2RerunPartialUpdateRaw(requestParameters, initOverrides);
+  }
+
+  /**
+   */
+  async jobApiV2RerunUpdateRaw(
+    requestParameters: JobApiV2RerunUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<void>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling jobApiV2RerunUpdate."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/job/api/v2/{id}/rerun`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "PUT",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   */
+  async jobApiV2RerunUpdate(
+    requestParameters: JobApiV2RerunUpdateRequest,
+    initOverrides?: RequestInit
+  ): Promise<void> {
+    await this.jobApiV2RerunUpdateRaw(requestParameters, initOverrides);
   }
 
   /**

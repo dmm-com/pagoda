@@ -33,8 +33,8 @@ export const RoleImportModal: FC<Props> = ({
 }) => {
   const classes = useStyles();
 
-  const handleImport = useCallback(async (formData: FormData) => {
-    await aironeApiClientV2.importRoles(formData);
+  const handleImport = useCallback(async (data: string | ArrayBuffer) => {
+    await aironeApiClientV2.importRoles(data);
   }, []);
 
   return (
@@ -53,7 +53,7 @@ export const RoleImportModal: FC<Props> = ({
           インポートするファイルを選択してください。
         </Typography>
         <Typography variant={"caption"} my="4px">
-          ※CVS形式のファイルは選択できません。
+          ※CSV形式のファイルは選択できません。
         </Typography>
         <ImportForm
           handleImport={handleImport}

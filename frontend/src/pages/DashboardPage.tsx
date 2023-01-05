@@ -6,6 +6,7 @@ import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
+import { useSimpleSearch } from "../hooks/useSimpleSearch";
 
 import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -29,6 +30,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     flexWrap: "wrap",
     gap: "32px",
   },
+  resultEntityForEntry: {
+    color: "gray",
+  },
   result: {
     color: theme.palette.primary.main,
     textDecoration: "none",
@@ -44,13 +48,13 @@ export const DashboardPage: FC = () => {
   const history = useHistory();
   const location = useLocation();
 
-  const params = new URLSearchParams(location.search);
+  const [query, submitQuery] = useSimpleSearch();
 
   const entries = useAsync(async () => {
-    if (params.get("query")) {
-      return await aironeApiClientV2.getSearchEntries(params.get("query"));
+    if (query != null) {
+      return await aironeApiClientV2.getSearchEntries(query);
     }
-  }, [location]);
+  }, [location, query]);
 
   const entities = useAsync(async () => {
     return await aironeApiClientV2.getEntities(undefined, undefined, true);
@@ -63,15 +67,6 @@ export const DashboardPage: FC = () => {
     );
   }
 
-  const handleSearchQuery = (event) => {
-    if (event.key === "Enter") {
-      history.push({
-        pathname: location.pathname,
-        search: "query=" + event.target.value,
-      });
-    }
-  };
-
   return (
     <Box>
       <AironeBreadcrumbs>
@@ -82,22 +77,29 @@ export const DashboardPage: FC = () => {
         <Box className={classes.dashboard}>
           <SearchBox
             placeholder="Search"
-            onKeyPress={handleSearchQuery}
-            defaultValue={params.get("query") ?? ""}
+            defaultValue={query}
+            onKeyPress={(e) => {
+              e.key === "Enter" && submitQuery(e.target.value);
+            }}
+            autoFocus
           />
           {entries.loading ? (
             <Loading />
           ) : entries.value ? (
             <Box className={classes.resultBox}>
               {entries.value.map((entry) => (
-                <Typography
-                  key={entry.id}
-                  className={classes.result}
-                  component={Link}
-                  to={entryDetailsPath(entry.schema.id, entry.id)}
-                >
-                  {entry.name}
-                </Typography>
+                <Box key={entry.id}>
+                  <Typography
+                    className={classes.result}
+                    component={Link}
+                    to={entryDetailsPath(entry.schema.id, entry.id)}
+                  >
+                    {entry.name}
+                  </Typography>
+                  <Typography className={classes.resultEntityForEntry}>
+                    {entry.schema.name}
+                  </Typography>
+                </Box>
               ))}
             </Box>
           ) : entities.loading ? (

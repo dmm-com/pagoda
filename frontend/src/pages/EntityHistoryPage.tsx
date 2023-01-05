@@ -1,7 +1,7 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton, Typography } from "@mui/material";
-import React, { FC, useCallback, useMemo, useState } from "react";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import React, { FC, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
@@ -9,6 +9,7 @@ import { EntityControlMenu } from "../components/entity/EntityControlMenu";
 import { EntityHistoryList } from "../components/entity/EntityHistoryList";
 import { EntryImportModal } from "../components/entry/EntryImportModal";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+import { usePage } from "../hooks/usePage";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { EntityHistoryList as ConstEntityHistoryList } from "../utils/Constants";
 
@@ -17,15 +18,10 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 
 export const EntityHistoryPage: FC = () => {
-  const history = useHistory();
-  const location = useLocation();
-
   const { entityId } = useTypedParams<{ entityId: number }>();
 
-  const params = new URLSearchParams(location.search);
-  const [page, setPage] = useState<number>(
-    params.has("page") ? Number(params.get("page")) : 1
-  );
+  const [page, changePage] = usePage();
+
   const [entityAnchorEl, setEntityAnchorEl] =
     useState<HTMLButtonElement | null>();
   const [openImportModal, setOpenImportModal] = React.useState(false);
@@ -36,15 +32,6 @@ export const EntityHistoryPage: FC = () => {
   const histories = useAsync(async () => {
     return await aironeApiClientV2.getEntityHistories(entityId, page);
   }, [entityId, page]);
-
-  const handleChangePage = useCallback((newPage: number) => {
-    setPage(newPage);
-
-    history.push({
-      pathname: location.pathname,
-      search: `?page=${newPage}`,
-    });
-  }, []);
 
   const maxPage = useMemo(() => {
     if (histories.loading) {
@@ -118,7 +105,7 @@ export const EntityHistoryPage: FC = () => {
             histories={histories.value.results}
             page={page}
             maxPage={maxPage}
-            handleChangePage={handleChangePage}
+            handleChangePage={changePage}
           />
         )}
       </Container>

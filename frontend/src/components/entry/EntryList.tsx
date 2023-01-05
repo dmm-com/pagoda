@@ -13,9 +13,11 @@ import {
   Typography,
 } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
+import { usePage } from "../../hooks/usePage";
+import { normalizeToMatch } from "../../utils/StringUtil";
 
 import { newEntryPath, entryDetailsPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -30,15 +32,30 @@ interface Props {
 }
 
 export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
-  const [keyword, setKeyword] = useState("");
-  const [page, setPage] = React.useState(1);
+  const location = useLocation();
+  const history = useHistory();
+
+  const [page, changePage] = usePage();
+
+  const params = new URLSearchParams(location.search);
+
+  const [query, setQuery] = useState<string>(
+    params.has("query") ? params.get("query") : undefined
+  );
+  const [keyword, setKeyword] = useState(query ?? "");
 
   const entries = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getEntries(entityId, true, page, keyword);
-  }, [page, keyword]);
+    return await aironeApiClientV2.getEntries(entityId, true, page, query);
+  }, [page, query]);
 
-  const handleChange = (event, value) => {
-    setPage(value);
+  const handleChangeQuery = (newQuery?: string) => {
+    changePage(1);
+    setQuery(newQuery);
+
+    history.push({
+      pathname: location.pathname,
+      search: newQuery ? `?query=${newQuery}` : "",
+    });
   };
 
   const totalPageCount = entries.loading
@@ -57,11 +74,12 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
           <SearchBox
             placeholder="エントリを絞り込む"
             value={keyword}
-            onChange={(e) => {
-              setKeyword(e.target.value);
-              /* Reset page number to prevent vanishing entities from display
-               * when user move other page */
-              setPage(1);
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyPress={(e) => {
+              e.key === "Enter" &&
+                handleChangeQuery(
+                  keyword.length > 0 ? normalizeToMatch(keyword) : undefined
+                );
             }}
           />
         </Box>
@@ -151,7 +169,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
           <Pagination
             count={totalPageCount}
             page={page}
-            onChange={handleChange}
+            onChange={(_, newPage) => changePage(newPage)}
             color="primary"
           />
         </Stack>
