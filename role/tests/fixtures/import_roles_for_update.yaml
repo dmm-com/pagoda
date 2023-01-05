@@ -1,0 +1,12 @@
+- admin_groups:
+  - group1
+  admin_users:
+  - user1
+  description: description
+  groups:
+  - group2
+  name: role1
+  users:
+  - user2
+  # it'll be replaced by test code
+  id: <role_id>

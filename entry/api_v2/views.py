@@ -9,6 +9,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
 import custom_view
 from airone.lib.acl import ACLType
@@ -23,6 +24,7 @@ from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
+    AdvancedSearchResultExportSerializer,
     EntryAttributeValueRestoreSerializer,
     EntryBaseSerializer,
     EntryCopySerializer,
@@ -128,7 +130,7 @@ class EntryAPI(viewsets.ModelViewSet):
         job_notify_event = Job.new_notify_create_entry(user, entry)
         job_notify_event.run()
 
-        return Response(status=status.HTTP_201_CREATED)
+        return Response({}, status=status.HTTP_201_CREATED)
 
     def copy(self, request, pk):
         src_entry: Entry = self.get_object()
@@ -192,6 +194,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         is_output_all = request.data.get("is_output_all", True)
         is_all_entities = request.data.get("is_all_entities", False)
         entry_limit = request.data.get("entry_limit", self.MAX_LIST_ENTRIES)
+        entry_offset = request.data.get("entry_offset", 0)
 
         hint_referral = None
         if hint_has_referral:
@@ -268,6 +271,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             hint_entry_name,
             hint_referral,
             is_output_all,
+            offset=entry_offset,
         )
 
         # convert field values to fit entry retrieve API data type, as a workaround.
@@ -312,6 +316,16 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 }
 
         return Response({"result": resp})
+
+
+class AdvancedSearchResultAPI(generics.GenericAPIView):
+    serializer_class = AdvancedSearchResultExportSerializer
+
+    def post(self, request):
+        serializer: Serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.validated_data)
 
 
 @extend_schema(

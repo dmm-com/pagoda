@@ -100,6 +100,7 @@ class UserListSerializer(UserBaseSerializer):
 
 
 class UserImportChildSerializer(serializers.ModelSerializer):
+    username = serializers.CharField()
     groups = serializers.CharField(required=True, allow_blank=True, write_only=True)
 
     class Meta:
@@ -131,6 +132,63 @@ class UserExportSerializer(serializers.ModelSerializer):
 
     def get_groups(self, obj: User) -> str:
         return ",".join(list(map(lambda x: x.name, obj.groups.filter(group__is_active=True))))
+
+
+class UserPasswordSerializer(serializers.Serializer):
+    old_passwd = serializers.CharField()
+    new_passwd = serializers.CharField()
+    chk_passwd = serializers.CharField()
+
+    def validate(self, attrs: Dict):
+        request = self.context["request"]
+        user = self.context["user"]
+
+        # Identification
+        if int(request.user.id) != int(user.id):
+            raise ValidationError("You don't have permission to access this object")
+
+        # When not have a password, don't check old password.
+        if user.password:
+            # Whether recv_data matches the old password
+            if not user.check_password(attrs["old_passwd"]):
+                raise ValidationError("old password is wrong")
+
+            # Whether the old password and the new password duplicate
+            if user.check_password(attrs["new_passwd"]):
+                raise ValidationError("old and new password are duplicated")
+
+        # Whether the new password matches the check password
+        if attrs["new_passwd"] != attrs["chk_passwd"]:
+            raise ValidationError("new and confirm password are not equal")
+
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.context["user"]
+        user.set_password(self.validated_data["new_passwd"])
+        user.save(update_fields=["password"])
+
+
+class UserPasswordBySuperuserSerializer(serializers.Serializer):
+    new_passwd = serializers.CharField()
+    chk_passwd = serializers.CharField()
+
+    def validate(self, attrs: Dict):
+        request = self.context["request"]
+
+        if not request.user.is_superuser:
+            raise ValidationError("this operation is only allowed for superusers")
+
+        # Whether the new password matches the check password
+        if attrs["new_passwd"] != attrs["chk_passwd"]:
+            raise ValidationError("new and confirm password are not equal")
+
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.context["user"]
+        user.set_password(self.validated_data["new_passwd"])
+        user.save(update_fields=["password"])
 
 
 class PasswordResetSerializer(serializers.Serializer):

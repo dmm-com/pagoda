@@ -6,6 +6,7 @@ import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { EntityImportModal } from "../components/entity/EntityImportModal";
+import { usePage } from "../hooks/usePage";
 import { EntityList as ConstEntityList } from "../utils/Constants";
 
 import { newEntityPath, topPath } from "Routes";
@@ -17,12 +18,11 @@ export const EntityPage: FC = () => {
   const location = useLocation();
   const history = useHistory();
 
+  const [page, changePage] = usePage();
+
   const [openImportModal, setOpenImportModal] = useState(false);
 
   const params = new URLSearchParams(location.search);
-  const [page, setPage] = useState<number>(
-    params.has("page") ? Number(params.get("page")) : 1
-  );
   const [query, setQuery] = useState<string>(
     params.has("query") ? params.get("query") : undefined
   );
@@ -38,17 +38,8 @@ export const EntityPage: FC = () => {
     return Math.ceil(entities.value.count / ConstEntityList.MAX_ROW_COUNT);
   }, [entities.loading, entities.value?.count]);
 
-  const handleChangePage = (newPage: number) => {
-    setPage(newPage);
-
-    history.push({
-      pathname: location.pathname,
-      search: `?page=${newPage}` + (query ? `&query=${query}` : ""),
-    });
-  };
-
   const handleChangeQuery = (newQuery?: string) => {
-    setPage(1);
+    changePage(1);
     setQuery(newQuery);
 
     history.push({
@@ -122,7 +113,7 @@ export const EntityPage: FC = () => {
             page={page}
             query={query}
             maxPage={maxPage}
-            handleChangePage={handleChangePage}
+            handleChangePage={changePage}
             handleChangeQuery={handleChangeQuery}
           />
         )}

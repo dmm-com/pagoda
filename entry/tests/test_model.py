@@ -4392,6 +4392,31 @@ class ModelTest(AironeTestCase):
         self.assertEqual(ret["ret_count"], 0)
         self.assertEqual(ret["ret_values"], [])
 
+    def test_search_entries_for_simple_with_sort(self):
+        entry = Entry.objects.create(name="[entry]", schema=self._entity, created_user=self._user)
+        entry.register_es()
+        self._entry.register_es()
+
+        ret = Entry.search_entries_for_simple("entry")
+        self.assertEqual(
+            ret,
+            {
+                "ret_count": 2,
+                "ret_values": [
+                    {
+                        "id": str(self._entry.id),
+                        "name": "entry",
+                        "schema": {"id": self._entity.id, "name": "entity"},
+                    },
+                    {
+                        "id": str(entry.id),
+                        "name": "[entry]",
+                        "schema": {"id": self._entity.id, "name": "entity"},
+                    },
+                ],
+            },
+        )
+
     def test_get_es_document(self):
         user = User.objects.create(username="hoge")
         test_group = Group.objects.create(name="test-group")
@@ -5554,3 +5579,29 @@ class ModelTest(AironeTestCase):
         attr.add_value(user, [e0])
         self.assertEqual(list(entry.get_refers_objects()), [e0])
         self.assertEqual(list(entry.get_prev_refers_objects()), [e1, e2])
+
+    def test_search_entries_without_user(self):
+        entity = self.create_entity(
+            self._user,
+            "Test Another Entity",
+            attrs=[{"name": "attr", "type": AttrTypeValue["string"]}],
+        )
+        entry = self.add_entry(
+            self._user, "Test Entry", entity, is_public=False, values={"attr": "value"}
+        )
+
+        # set permission for creating user to read
+        role = Role.objects.create(name="role")
+        entry.full.roles.add(role)
+        role.users.add(self._user)
+
+        # Check the result of Entry.search_entries() when the 1st argument of user is None,
+        # that returns all data regardless of the permission settings.
+        search_params = {
+            "hint_entity_ids": [entity.id],
+            "hint_attrs": [{"name": "attr", "keyword": ""}],
+        }
+        self.assertEqual(
+            Entry.search_entries(self._user, **search_params),
+            Entry.search_entries(None, **search_params),
+        )

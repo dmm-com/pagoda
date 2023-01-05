@@ -6,7 +6,6 @@ from typing import Any, Optional, Tuple
 from django.conf import settings
 from django.db import models
 from django.db.models import Prefetch, Q
-from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
 from airone.lib import auto_complement
@@ -36,6 +35,8 @@ from role.models import Role
 from user.models import User
 
 from .settings import CONFIG
+
+# from simple_history.models import HistoricalRecords
 
 
 class AttributeValue(models.Model):
@@ -1278,7 +1279,7 @@ class Entry(ACLBase):
     attrs = models.ManyToManyField(Attribute)
     schema = models.ForeignKey(Entity, on_delete=models.DO_NOTHING)
 
-    history = HistoricalRecords(m2m_fields=[attrs])
+    # history = HistoricalRecords(m2m_fields=[attrs])
 
     def __init__(self, *args, **kwargs):
         super(Entry, self).__init__(*args, **kwargs)
@@ -2013,6 +2014,7 @@ class Entry(ACLBase):
         hint_referral=None,
         is_output_all=False,
         hint_referral_entity_id=None,
+        offset=0,
     ):
         """Main method called from advanced search.
 
@@ -2038,6 +2040,8 @@ class Entry(ACLBase):
                 Use only for advanced searches.
             is_output_all (bool): Defaults to False.
                 Flag to output all attribute values.
+            offset (int): Defaults to 0.
+                The number of offset to get a part of a large amount of search results
 
         Returns:
             dict[str, any]: As a result of the search,
@@ -2119,7 +2123,9 @@ class Entry(ACLBase):
                         )
 
             # retrieve data from database on the basis of the result of elasticsearch
-            search_result = make_search_results(user, resp, hint_attrs, hint_referral, limit)
+            search_result = make_search_results(
+                user, resp, hint_attrs, hint_referral, limit, offset
+            )
             results["ret_count"] += search_result["ret_count"]
             results["ret_values"].extend(search_result["ret_values"])
             limit -= search_result["ret_count"]

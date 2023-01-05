@@ -7,14 +7,14 @@ from django.db import models
 from django.db.models import Q
 
 from airone.lib.types import AttrTypeValue
-from simple_history.models import HistoricalRecords
+
+# from simple_history.models import HistoricalRecords
 
 
 class Role(models.Model):
     name = models.CharField(max_length=200, unique=True)
     is_active = models.BooleanField(default=True)
     description = models.TextField(blank=True)
-    # permissions = models.ManyToManyField(HistoricalPermission, related_name="role", blank=True)
 
     users = models.ManyToManyField("user.User", related_name="role", blank=True)
     groups = models.ManyToManyField("group.Group", related_name="role", blank=True)
@@ -142,4 +142,4 @@ class Role(models.Model):
 
 class HistoricalPermission(Permission):
     roles = models.ManyToManyField(Role, related_name="permissions", blank=True)
-    history = HistoricalRecords(m2m_fields=[roles])
+    # history = HistoricalRecords(m2m_fields=[roles])

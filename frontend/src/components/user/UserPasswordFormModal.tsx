@@ -10,13 +10,10 @@ import { makeStyles } from "@mui/styles";
 import React, { FC, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 
+import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
 import { DjangoContext } from "../../utils/DjangoContext";
 
 import { loginPath, topPath, usersPath } from "Routes";
-import {
-  updateUserPassword,
-  updateUserPasswordAsSuperuser,
-} from "utils/AironeAPIClient";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   modal: {
@@ -83,9 +80,18 @@ export const UserPasswordFormModal: FC<Props> = ({
     }
 
     if (asSuperuser) {
-      await updateUserPasswordAsSuperuser(userId, newPassword, checkPassword);
+      await aironeApiClientV2.updateUserPasswordAsSuperuser(
+        userId,
+        newPassword,
+        checkPassword
+      );
     } else {
-      await updateUserPassword(userId, oldPassword, newPassword, checkPassword);
+      await aironeApiClientV2.updateUserPassword(
+        userId,
+        oldPassword,
+        newPassword,
+        checkPassword
+      );
     }
 
     // This calls event handler, which is specified by caller component

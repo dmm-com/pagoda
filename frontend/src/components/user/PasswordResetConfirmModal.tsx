@@ -2,7 +2,6 @@ import { Box, Button, Input, Modal, Theme, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
 
 import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
 
@@ -37,7 +36,6 @@ export const PasswordResetConfirmModal: FC<Props> = ({
   token,
 }) => {
   const classes = useStyles();
-  const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
 
   const [password, setPassword] = useState("");

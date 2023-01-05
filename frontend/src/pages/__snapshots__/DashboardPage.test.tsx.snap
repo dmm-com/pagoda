@@ -9,13 +9,13 @@ Object {
         class="MuiBox-root css-0"
       >
         <div
-          class="makeStyles-frame-5 MuiBox-root css-0"
+          class="makeStyles-frame-6 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-fixed-6 MuiBox-root css-0"
+            class="makeStyles-fixed-7 MuiBox-root css-0"
           >
             <div
-              class="makeStyles-breadcrumb-7 MuiBox-root css-0"
+              class="makeStyles-breadcrumb-8 MuiBox-root css-0"
             >
               <nav
                 aria-label="breadcrumb"
@@ -45,10 +45,10 @@ Object {
             class="makeStyles-dashboard-2 MuiBox-root css-0"
           >
             <div
-              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-3wf0vq-MuiFormControl-root-MuiTextField-root"
+              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1mw4b3-MuiFormControl-root-MuiTextField-root"
             >
               <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-8j6b76-MuiInputBase-root-MuiOutlinedInput-root"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-adornedStart css-4ama2z-MuiInputBase-root-MuiOutlinedInput-root"
               >
                 <div
                   class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
@@ -98,19 +98,19 @@ Object {
               class="makeStyles-resultBox-3 MuiBox-root css-0"
             >
               <a
-                class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body1 makeStyles-result-5 css-ahj2mt-MuiTypography-root"
                 href="/ui/entities/1/entries"
               >
                 aaa
               </a>
               <a
-                class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body1 makeStyles-result-5 css-ahj2mt-MuiTypography-root"
                 href="/ui/entities/2/entries"
               >
                 aaaaa
               </a>
               <a
-                class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body1 makeStyles-result-5 css-ahj2mt-MuiTypography-root"
                 href="/ui/entities/3/entries"
               >
                 bbbbb
@@ -126,13 +126,13 @@ Object {
       class="MuiBox-root css-0"
     >
       <div
-        class="makeStyles-frame-5 MuiBox-root css-0"
+        class="makeStyles-frame-6 MuiBox-root css-0"
       >
         <div
-          class="makeStyles-fixed-6 MuiBox-root css-0"
+          class="makeStyles-fixed-7 MuiBox-root css-0"
         >
           <div
-            class="makeStyles-breadcrumb-7 MuiBox-root css-0"
+            class="makeStyles-breadcrumb-8 MuiBox-root css-0"
           >
             <nav
               aria-label="breadcrumb"
@@ -162,10 +162,10 @@ Object {
           class="makeStyles-dashboard-2 MuiBox-root css-0"
         >
           <div
-            class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-3wf0vq-MuiFormControl-root-MuiTextField-root"
+            class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1mw4b3-MuiFormControl-root-MuiTextField-root"
           >
             <div
-              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-8j6b76-MuiInputBase-root-MuiOutlinedInput-root"
+              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-adornedStart css-4ama2z-MuiInputBase-root-MuiOutlinedInput-root"
             >
               <div
                 class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
@@ -215,19 +215,19 @@ Object {
             class="makeStyles-resultBox-3 MuiBox-root css-0"
           >
             <a
-              class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body1 makeStyles-result-5 css-ahj2mt-MuiTypography-root"
               href="/ui/entities/1/entries"
             >
               aaa
             </a>
             <a
-              class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body1 makeStyles-result-5 css-ahj2mt-MuiTypography-root"
               href="/ui/entities/2/entries"
             >
               aaaaa
             </a>
             <a
-              class="MuiTypography-root MuiTypography-body1 makeStyles-result-4 css-ahj2mt-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body1 makeStyles-result-5 css-ahj2mt-MuiTypography-root"
               href="/ui/entities/3/entries"
             >
               bbbbb

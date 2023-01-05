@@ -1,0 +1,14 @@
+- admin_groups:
+  - group1
+  admin_users:
+  - user1
+  description: description
+  groups:
+  - group2
+  name: role1
+  users:
+  - user2
+  permissions:
+  # it'll be replaced by test code
+  - obj_id: <test_obj_id>
+    permission: full

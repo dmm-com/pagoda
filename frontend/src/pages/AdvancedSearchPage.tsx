@@ -1,3 +1,4 @@
+import { AutocompleteInputChangeReason } from "@mui/base/AutocompleteUnstyled/useAutocomplete";
 import {
   Autocomplete,
   Box,
@@ -6,7 +7,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, SyntheticEvent, useMemo, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -17,7 +18,6 @@ import { PageHeader } from "../components/common/PageHeader";
 
 import { advancedSearchResultPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { getEntityAttrs } from "utils/AironeAPIClient";
 
 export const AdvancedSearchPage: FC = () => {
   const history = useHistory();
@@ -28,6 +28,8 @@ export const AdvancedSearchPage: FC = () => {
   const [selectedAttrs, setSelectedAttrs] = useState<Array<string>>([]);
   const [searchAllEntities, setSearchAllEntities] = useState(false);
   const [hasReferral, setHasReferral] = useState(false);
+  const [entityName, setEntityName] = useState("");
+  const [attrName, setAttrName] = useState("");
 
   const entities = useAsync(async () => {
     const entities = await aironeApiClientV2.getEntities();
@@ -36,12 +38,10 @@ export const AdvancedSearchPage: FC = () => {
 
   const attrs = useAsync(async () => {
     if (selectedEntities.length > 0 || searchAllEntities) {
-      const resp = await getEntityAttrs(
+      return await aironeApiClientV2.getEntityAttrs(
         selectedEntities.map((e) => e.id),
         searchAllEntities
       );
-      const data = await resp.json();
-      return data.result;
     }
     return [];
   }, [selectedEntities, searchAllEntities]);
@@ -68,6 +68,30 @@ export const AdvancedSearchPage: FC = () => {
 
   const handleCancel = () => {
     history.goBack();
+  };
+
+  const handleChangeInputEntityName = (
+    event: SyntheticEvent,
+    value: string,
+    reason: AutocompleteInputChangeReason
+  ) => {
+    // Not to clear input value on selecting an item
+    if (reason === "reset") {
+      return;
+    }
+    setEntityName(value);
+  };
+
+  const handleChangeInputAttrName = (
+    event: SyntheticEvent,
+    value: string,
+    reason: AutocompleteInputChangeReason
+  ) => {
+    // Not to clear input value on selecting an item
+    if (reason === "reset") {
+      return;
+    }
+    setAttrName(value);
   };
 
   return (
@@ -119,9 +143,11 @@ export const AdvancedSearchPage: FC = () => {
               options={entities.value}
               getOptionLabel={(option: EntityList) => option.name}
               value={selectedEntities}
+              inputValue={entityName}
               onChange={(_, value: Array<EntityList>) =>
                 setSelectedEntities(value)
               }
+              onInputChange={handleChangeInputEntityName}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -130,6 +156,7 @@ export const AdvancedSearchPage: FC = () => {
                 />
               )}
               multiple
+              disableCloseOnSelect
               sx={{ width: "100%", margin: "20px 0" }}
             />
           )}
@@ -157,7 +184,9 @@ export const AdvancedSearchPage: FC = () => {
               selectAllLabel="すべて選択"
               options={attrs.value}
               value={selectedAttrs}
+              inputValue={attrName}
               onChange={(_, value: Array<string>) => setSelectedAttrs(value)}
+              onInputChange={handleChangeInputAttrName}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -166,6 +195,7 @@ export const AdvancedSearchPage: FC = () => {
                 />
               )}
               multiple
+              disableCloseOnSelect
               sx={{ width: "100%", margin: "20px 0" }}
             />
           )}

@@ -40,6 +40,10 @@ import {
   PaginatedEntryBaseListToJSON,
 } from "../models";
 
+export interface EntityApiV2AttrsListRequest {
+  entityIds?: string;
+}
+
 export interface EntityApiV2CreateRequest {
   entityCreate: EntityCreate;
   isToplevel?: boolean;
@@ -92,6 +96,60 @@ export interface EntityApiV2UpdateRequest {
  *
  */
 export class EntityApi extends runtime.BaseAPI {
+  /**
+   */
+  async entityApiV2AttrsListRaw(
+    requestParameters: EntityApiV2AttrsListRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<Array<string>>> {
+    const queryParameters: any = {};
+
+    if (requestParameters.entityIds !== undefined) {
+      queryParameters["entity_ids"] = requestParameters.entityIds;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entity/api/v2/attrs`,
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse<any>(response);
+  }
+
+  /**
+   */
+  async entityApiV2AttrsList(
+    requestParameters: EntityApiV2AttrsListRequest = {},
+    initOverrides?: RequestInit
+  ): Promise<Array<string>> {
+    const response = await this.entityApiV2AttrsListRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
   /**
    */
   async entityApiV2CreateRaw(

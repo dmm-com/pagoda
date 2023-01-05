@@ -8,6 +8,50 @@
 
 ### Fixed
 
+## v3.35.0
+
+### Added
+* Added following features
+  - Added attribute 'permissions' at export role feature.
+  - Enable to receive data that has permissions attribute from import file.
+  Contributed by @syucream, @userlocalhost, @hinagawa
+* Make app title a link to top page
+  Contributed by @syucream
+* Add a link to entry details page
+  Contributed by @syucream
+* Enable to simple-search on AppBar
+  Contributed by @syucream
+* Support pagination on advanced search result
+  Contributed by @syucream
+* Autofocus at simple search box on dashboard page
+  Contributed by @syucream
+* Enable to multi-select advanced search conditions from auto-completed items
+  Contributed by @syucream
+* Show entity name on simple search result
+  Contributed by @syucream
+
+### Changed
+* Make attribute name field shorter
+  Contributed by @syucream
+* Replace with an empty element on deleting the first element on array-string and array-named-entry
+  Contributed by @syucream
+
+### Fixed
+* Fixed a bug of Entry.search_entries() when None is passed at the user parameter.
+  Contributed by @userlocalhost
+* Fixed a bug not to be able to import Role just after exporting.
+  Contributed by @hinashi, @userlocalhost
+* Fixed exact match search results were excluded in simple search
+  Contributed by @hinashi
+* Don't show prompt when just showing edit user page
+  Contributed by @syucream
+
+## v3.34.0
+
+### Changed
+* Changed refresh recent job list periodically.
+  Contributed by @syucream
+
 ## v3.33.0
 
 ### Changed
