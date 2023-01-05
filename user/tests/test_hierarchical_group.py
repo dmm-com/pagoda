@@ -39,7 +39,7 @@ class ModelTest(TestCase):
             is_public=False,
             default_permission=ACLType.Nothing.id,
         )
-        role.permissions.add(entity.full)
+        entity.full.roles.add(role)
         role.admin_groups.add(self.group0)
         self.assertTrue(self.user.has_permission(entity, ACLType.Full))
 

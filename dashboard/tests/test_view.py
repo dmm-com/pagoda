@@ -562,7 +562,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp_entry["attrs"], {})
 
         role = Role.objects.create(name="Role")
-        role.permissions.add(entry.readable)
+        entry.readable.roles.add(role)
         role.users.add(guest_user)
 
         resp = self.client.get(
@@ -595,7 +595,7 @@ class ViewTest(AironeViewTest):
         self.assertFalse(resp_attr["is_readable"])
         self.assertFalse("value" in resp_attr)
 
-        role.permissions.add(attr.readable)
+        attr.readable.roles.add(role)
         resp = self.client.get(
             reverse("dashboard:advanced_search_result"),
             {

@@ -8,10 +8,11 @@ from django.db.models import Q
 
 from airone.lib.types import AttrTypeValue
 
+# from simple_history.models import HistoricalRecords
+
 
 class Role(models.Model):
     name = models.CharField(max_length=200, unique=True)
-    permissions = models.ManyToManyField(Permission, blank=True)
     is_active = models.BooleanField(default=True)
     description = models.TextField(blank=True)
 
@@ -137,3 +138,8 @@ class Role(models.Model):
                 "parent_attr__parent_entry", flat=True
             )
         )
+
+
+class HistoricalPermission(Permission):
+    roles = models.ManyToManyField(Role, related_name="permissions", blank=True)
+    # history = HistoricalRecords(m2m_fields=[roles])

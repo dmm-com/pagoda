@@ -93,7 +93,7 @@ def set(request, recv_data):
         )
 
     # This checks that user will have permission as user specifies by this change
-    # (NOTE: this processing is completely different from above permissoin check)
+    # (NOTE: this processing is completely different from above permission check)
     if not request.user.is_permitted_to_change(
         **{
             "target_obj": acl_obj,
@@ -167,8 +167,10 @@ def _set_permission(role, acl_obj, acl_type):
     # clear unset permissions of target ACLbased object
     for _acltype in ACLType.all():
         if _acltype != acl_type and _acltype != ACLType.Nothing:
-            role.permissions.remove(getattr(acl_obj, _acltype.name))
+            permission = getattr(acl_obj, _acltype.name)
+            permission.roles.remove(role)
 
-    # set new permissoin to be specified except for 'Nothing' permission
+    # set new permission to be specified except for 'Nothing' permission
     if acl_type != ACLType.Nothing:
-        role.permissions.add(getattr(acl_obj, acl_type.name))
+        permission = getattr(acl_obj, acl_type.name)
+        permission.roles.add(role)

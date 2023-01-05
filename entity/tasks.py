@@ -75,9 +75,13 @@ def edit_entity(self, job_id):
         if entity.name != recv_data["name"]:
             history.mod_entity(entity, 'old name: "%s"' % (entity.name))
 
-        entity.name = recv_data["name"]
-        entity.note = recv_data["note"]
-        entity.save(update_fields=["name", "note"])
+        if entity.name != recv_data["name"]:
+            entity.name = recv_data["name"]
+            entity.save(update_fields=["name"])
+
+        if entity.note != recv_data["note"]:
+            entity.note = recv_data["note"]
+            entity.save(update_fields=["note"])
 
         # This describes job pamraeters of Job.update_es_docuemnt()
         jp_update_es_document = {
@@ -126,10 +130,10 @@ def edit_entity(self, job_id):
                     attr_obj.is_delete_in_chain = attr["is_delete_in_chain"]
                     attr_obj.index = int(attr["row_index"])
 
-                    # the case of an attribute that has referral entry
-                    attr_obj.referral.clear()
                     if attr_obj.type & AttrTypeValue["object"]:
-                        [attr_obj.referral.add(Entity.objects.get(id=x)) for x in attr["ref_ids"]]
+                        # the case of an attribute that has referral entry
+                        attr_obj.referral.clear()
+                        attr_obj.referral.add(*[Entity.objects.get(id=x) for x in attr["ref_ids"]])
 
                     attr_obj.save()
 

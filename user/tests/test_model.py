@@ -127,7 +127,7 @@ class ModelTest(TestCase):
             default_permission=ACLType.Nothing.id,
         )
 
-        role.permissions.add(entity.readable)
+        entity.readable.roles.add(role)
 
         self.assertTrue(user.has_permission(entity, ACLType.Readable))
         self.assertFalse(user.has_permission(entity, ACLType.Writable))
@@ -157,7 +157,7 @@ class ModelTest(TestCase):
         entity = Entity.objects.create(
             name="entity", created_user=user, is_public=False, default_permission=ACLType.Nothing.id
         )
-        role.permissions.add(entity.full)
+        entity.full.roles.add(role)
 
         # User doesn't have permission before belonging to Role
         self.assertFalse(user.has_permission(entity, ACLType.Full))

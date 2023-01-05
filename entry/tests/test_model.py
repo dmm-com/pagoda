@@ -198,7 +198,7 @@ class ModelTest(AironeTestCase):
         # checks that acl metadata is not inherited
         self.assertTrue(attr.is_public)
         self.assertEqual(attr.default_permission, ACLType.Nothing.id)
-        self.assertEqual(list(user.permissions.filter(name="writable").all()), [attrbase.writable])
+        self.assertEqual(user.permissions.get(name="writable").codename, attrbase.writable.codename)
 
     def test_inherite_attribute_permission_of_group(self):
         user = User.objects.create(username="hoge")
@@ -216,7 +216,9 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.add_attribute_from_base(attrbase, user)
 
-        self.assertEqual(list(group.permissions.filter(name="writable").all()), [attrbase.writable])
+        self.assertEqual(
+            group.permissions.get(name="writable").codename, attrbase.writable.codename
+        )
 
     def test_update_attribute_from_base(self):
         user = User.objects.create(username="hoge")
@@ -1183,7 +1185,7 @@ class ModelTest(AironeTestCase):
         self.assertIsNone(entry.clone(unknown_user))
 
         # set permission to access, then it can be cloned
-        role.permissions.add(entry.readable)
+        entry.readable.roles.add(role)
         role.users.add(unknown_user)
         self.assertIsNotNone(entry.clone(unknown_user))
 
@@ -4693,7 +4695,7 @@ class ModelTest(AironeTestCase):
         )
 
         # set permission for test Role instance
-        role.permissions.add(entity_attr.full)
+        entity_attr.full.roles.add(role)
 
         entity.attrs.add(entity_attr)
 
@@ -5590,7 +5592,7 @@ class ModelTest(AironeTestCase):
 
         # set permission for creating user to read
         role = Role.objects.create(name="role")
-        role.permissions.add(entry.full)
+        entry.full.roles.add(role)
         role.users.add(self._user)
 
         # Check the result of Entry.search_entries() when the 1st argument of user is None,

@@ -401,7 +401,7 @@ class ViewTest(AironeViewTest):
 
         # permission readble entity
         self.role.users.add(self.user)
-        self.role.permissions.add(self.entity.readable)
+        self.entity.readable.roles.add(self.role)
         resp = self.client.get("/entry/api/v2/%d/" % entry.id)
         self.assertEqual(resp.status_code, 200)
 
@@ -419,7 +419,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission readble entry
-        self.role.permissions.add(entry.readable)
+        entry.readable.roles.add(self.role)
         resp = self.client.get("/entry/api/v2/%d/" % entry.id)
         self.assertEqual(resp.status_code, 200)
 
@@ -660,7 +660,7 @@ class ViewTest(AironeViewTest):
 
         # permission readable entity
         self.role.users.add(self.user)
-        self.role.permissions.add(self.entity.readable)
+        self.entity.readable.roles.add(self.role)
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
@@ -674,7 +674,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission writable entity
-        self.role.permissions.add(self.entity.writable)
+        self.entity.writable.roles.add(self.role)
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
@@ -696,7 +696,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission readable entry
-        self.role.permissions.add(entry.readable)
+        entry.readable.roles.add(self.role)
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
@@ -710,7 +710,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission writable entry
-        self.role.permissions.add(entry.writable)
+        entry.writable.roles.add(self.role)
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
@@ -1062,7 +1062,7 @@ class ViewTest(AironeViewTest):
 
         # permission readable entity
         self.role.users.add(self.user)
-        self.role.permissions.add(self.entity.readable)
+        self.entity.readable.roles.add(self.role)
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
@@ -1074,7 +1074,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission writable entity
-        self.role.permissions.add(self.entity.writable)
+        self.entity.writable.roles.add(self.role)
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
@@ -1086,7 +1086,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission full entity
-        self.role.permissions.add(self.entity.full)
+        self.entity.full.roles.add(self.role)
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 204)
 
@@ -1106,7 +1106,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission readable entry
-        self.role.permissions.add(entry.readable)
+        entry.readable.roles.add(self.role)
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
@@ -1118,7 +1118,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission writable entry
-        self.role.permissions.add(entry.writable)
+        entry.writable.roles.add(self.role)
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
@@ -1130,7 +1130,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission full entry
-        self.role.permissions.add(entry.full)
+        entry.full.roles.add(self.role)
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 204)
 
@@ -1211,7 +1211,7 @@ class ViewTest(AironeViewTest):
 
         # permission readable entity
         self.role.users.add(self.user)
-        self.role.permissions.add(self.entity.readable)
+        self.entity.readable.roles.add(self.role)
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
@@ -1223,7 +1223,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission writable entity
-        self.role.permissions.add(self.entity.writable)
+        self.entity.writable.roles.add(self.role)
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(
             resp.json(),
@@ -1234,7 +1234,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission full entity
-        self.role.permissions.add(self.entity.full)
+        self.entity.full.roles.add(self.role)
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 201)
 
@@ -1254,7 +1254,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission readable entry
-        self.role.permissions.add(entry.readable)
+        entry.readable.roles.add(self.role)
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
@@ -1266,7 +1266,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission writable entry
-        self.role.permissions.add(entry.writable)
+        entry.writable.roles.add(self.role)
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
@@ -1278,7 +1278,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission full entry
-        self.role.permissions.add(entry.full)
+        entry.full.roles.add(self.role)
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 201)
 
@@ -1371,7 +1371,7 @@ class ViewTest(AironeViewTest):
 
         # permission readable entity
         self.role.users.add(self.user)
-        self.role.permissions.add(self.entity.readable)
+        self.entity.readable.roles.add(self.role)
         resp = self.client.post(
             "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
         )
@@ -1385,7 +1385,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission writable entity
-        self.role.permissions.add(self.entity.writable)
+        self.entity.writable.roles.add(self.role)
         resp = self.client.post(
             "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
         )
@@ -1398,7 +1398,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission full entity
-        self.role.permissions.add(self.entity.full)
+        self.entity.full.roles.add(self.role)
         resp = self.client.post(
             "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
         )
@@ -1422,7 +1422,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission readable entry
-        self.role.permissions.add(entry.readable)
+        entry.readable.roles.add(self.role)
         resp = self.client.post(
             "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
         )
@@ -1436,7 +1436,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission writable entry
-        self.role.permissions.add(entry.writable)
+        entry.writable.roles.add(self.role)
         resp = self.client.post(
             "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
         )
@@ -1450,7 +1450,7 @@ class ViewTest(AironeViewTest):
         )
 
         # permission full entry
-        self.role.permissions.add(entry.full)
+        entry.full.roles.add(self.role)
         resp = self.client.post(
             "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
         )
@@ -2684,7 +2684,7 @@ class ViewTest(AironeViewTest):
 
         # permission readble entity
         self.role.users.add(self.user)
-        self.role.permissions.add(self.entity.readable)
+        self.entity.readable.roles.add(self.role)
         fp = self.open_fixture_file("import_data_v2.yaml")
         resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
@@ -2696,7 +2696,7 @@ class ViewTest(AironeViewTest):
 
         # permission writable entity
         self.role.users.add(self.user)
-        self.role.permissions.add(self.entity.writable)
+        self.entity.writable.roles.add(self.role)
         fp = self.open_fixture_file("import_data_v2.yaml")
         resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()

@@ -78,7 +78,7 @@ class ViewTest(AironeViewTest):
         # set full-permission for exporting Role instance
         role = self._create_role("test-role")
         entity = self.create_entity(admin, "Entity")
-        role.permissions.add(entity.full)
+        entity.full.roles.add(role)
 
         resp = self.client.get("/role/api/v2/export")
         data = yaml.load(resp.content.decode("utf-8"))

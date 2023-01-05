@@ -185,7 +185,7 @@ class ViewTest(AironeViewTest):
         self.admin_login()
 
         # set ACL object in advance, there are two members in the full parameter
-        self._role.permissions.add(self._aclobj.full)
+        self._aclobj.full.roles.add(self._role)
 
         params = {
             "object_id": str(self._aclobj.id),
@@ -203,7 +203,7 @@ class ViewTest(AironeViewTest):
         self.admin_login()
 
         # set ACL object in advance, there are two members in the full parameter
-        self._role.permissions.add(self._aclobj.full)
+        self._aclobj.full.roles.add(self._role)
 
         params = {
             "object_id": str(self._aclobj.id),
@@ -355,8 +355,8 @@ class ViewTest(AironeViewTest):
 
         # create an aclobj and set full-permission to operate aclobj to the test Role
         aclobj = ACLBase.objects.create(name="obj", created_user=user)
-        self._role.permissions.add(aclobj.full)
-        another_role.permissions.add(aclobj.full)
+        aclobj.full.roles.add(self._role)
+        aclobj.full.roles.add(another_role)
 
         params = {
             "object_id": str(aclobj.id),
@@ -382,7 +382,7 @@ class ViewTest(AironeViewTest):
         self._role.admin_users.add(user)
 
         aclobj = ACLBase.objects.create(name="obj", created_user=user, is_public=False)
-        self._role.permissions.add(aclobj.full)
+        aclobj.full.roles.add(self._role)
 
         # create another role that is not irrelevant with "user"
         irrelevant_role = Role.objects.create(name="AnotherRole")

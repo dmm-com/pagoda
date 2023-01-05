@@ -36,6 +36,8 @@ from user.models import User
 
 from .settings import CONFIG
 
+# from simple_history.models import HistoricalRecords
+
 
 class AttributeValue(models.Model):
     # This is a constant that indicates target object binds multiple AttributeValue objects.
@@ -1276,6 +1278,8 @@ class Entry(ACLBase):
 
     attrs = models.ManyToManyField(Attribute)
     schema = models.ForeignKey(Entity, on_delete=models.DO_NOTHING)
+
+    # history = HistoricalRecords(m2m_fields=[attrs])
 
     def __init__(self, *args, **kwargs):
         super(Entry, self).__init__(*args, **kwargs)

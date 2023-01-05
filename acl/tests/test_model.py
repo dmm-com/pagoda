@@ -50,7 +50,7 @@ class ModelTest(TestCase):
         aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)
 
         # set correct permission
-        self.role.permissions.add(aclobj.readable)
+        aclobj.readable.roles.add(self.role)
 
         self.assertTrue(self.user.has_permission(aclobj, ACLType.Readable))
 
@@ -58,7 +58,7 @@ class ModelTest(TestCase):
         aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)
 
         # set surperior permission
-        self.role.permissions.add(aclobj.writable)
+        aclobj.writable.roles.add(self.role)
 
         self.assertTrue(self.user.has_permission(aclobj, ACLType.Readable))
 
@@ -68,7 +68,7 @@ class ModelTest(TestCase):
         aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)
 
         # set inferior permission
-        self.role.permissions.add(aclobj.readable)
+        aclobj.readable.roles.add(self.role)
 
         self.assertFalse(another_user.has_permission(aclobj, ACLType.Writable))
 
@@ -80,7 +80,7 @@ class ModelTest(TestCase):
         aclobj = ACLBase.objects.create(name="hoge", created_user=self.user, is_public=False)
 
         # set correct permission to the group that test user is belonged to
-        self.role.permissions.add(aclobj.readable)
+        aclobj.readable.roles.add(self.role)
         another_user.groups.add(group)
 
         self.assertTrue(another_user.has_permission(aclobj, ACLType.Readable))
@@ -221,7 +221,7 @@ class ModelTest(TestCase):
         # set admin member of another Role and associate it with permission of aclobj
         another_role = Role.objects.create(name="AnotherRole")
         another_role.admin_groups.add(group)
-        another_role.permissions.add(aclobj.full)
+        aclobj.full.roles.add(another_role)
 
         acl_bases = {
             "acl1": {"will_be_public": True, "default_permission": ACLType.Nothing.id},
@@ -311,7 +311,7 @@ class ModelTest(TestCase):
 
         # Unpermit to deprive full-control permission when there will be no role
         # that has full-control permission
-        another_role.permissions.remove(aclobj.full)
+        aclobj.full.roles.remove(another_role)
         self.assertFalse(
             non_admin_user.is_permitted_to_change(
                 aclobj, ACLType.Readable, **dict(acl["readable"], **acl_bases["acl4"])

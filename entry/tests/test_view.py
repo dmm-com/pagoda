@@ -3288,7 +3288,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.content, b"You don't have permission to access this object")
 
         # readable permission
-        role.permissions.add(entity.readable)
+        entity.readable.roles.add(role)
         fp = self.open_fixture_file("import_data01.yaml")
         resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
         fp.close()
@@ -3296,7 +3296,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.content, b"You don't have permission to access this object")
 
         # writable permission
-        role.permissions.add(entity.writable)
+        entity.writable.roles.add(role)
         fp = self.open_fixture_file("import_data01.yaml")
         resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
         fp.close()
@@ -3332,7 +3332,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.content, b"You don't have permission to access (Entity)")
 
         # readable permission
-        role.permissions.add(entity.readable)
+        entity.readable.roles.add(role)
         fp = self.open_fixture_file("import_data01.yaml")
         resp = self.client.post(reverse("entry:do_import", args=[entity2.id]), {"file": fp})
         fp.close()
@@ -3340,7 +3340,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.content, b"You don't have permission to access (Entity)")
 
         # writable permission
-        role.permissions.add(entity.writable)
+        entity.writable.roles.add(role)
         fp = self.open_fixture_file("import_data01.yaml")
         resp = self.client.post(reverse("entry:do_import", args=[entity2.id]), {"file": fp})
         fp.close()

@@ -105,11 +105,11 @@ class RoleImportAPI(generics.GenericAPIView):
                     )
 
                 if permission["permission"] == "readable":
-                    role.permissions.add(acl.readable)
+                    acl.readable.roles.add(role)
                 elif permission["permission"] == "writable":
-                    role.permissions.add(acl.writable)
+                    acl.writable.roles.add(role)
                 elif permission["permission"] == "full":
-                    role.permissions.add(acl.full)
+                    acl.full.roles.add(role)
 
             role.save()
 
