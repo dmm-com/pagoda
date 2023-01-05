@@ -449,8 +449,13 @@ class EntityDetailSerializer(EntityListSerializer):
 
 class EntityHistorySerializer(serializers.Serializer):
     # we need diff values, not a snapshot
-    id = serializers.IntegerField()
-    name = serializers.CharField()
+    changes = serializers.SerializerMethodField(method_name="get_entity_changes")
+
+    def get_entity_changes(self, hisotry) -> dict:
+        return {
+            "action": "create"
+        }
+
 
 
 # The format keeps compatibility with entity.views and dashboard.views

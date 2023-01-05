@@ -7,6 +7,7 @@ from django.db import models
 from django.utils.timezone import make_aware
 
 from airone.lib.acl import ACLObjType, ACLType
+from airone.lib.log import Logger
 from role.models import HistoricalPermission
 from user.models import User
 
@@ -45,6 +46,14 @@ class ACLBase(models.Model):
 
     # This fields describes the sub-class of this object
     objtype = models.IntegerField(default=0)
+
+    def show_diffing(instance, offset=0):
+        try:
+            (before_last, last) = list(reversed(instance.history.order_by("history_id")))[offset:offset+2]
+            for change in before_last.diff_against(last).changes:
+                print("{} changed from {} to {}".format(change.field, change.old, change.new))
+        except AttributeError as e:
+            Logger.warn(str(e))
 
     def save_without_historical_record(self, *args, **kwargs):
         self.skip_history_when_saving = True
