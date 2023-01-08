@@ -9,13 +9,13 @@ Object {
         class="MuiBox-root css-0"
       >
         <div
-          class="makeStyles-frame-3 MuiBox-root css-0"
+          class="MuiBox-root css-1baykhj"
         >
           <div
-            class="makeStyles-fixed-4 MuiBox-root css-0"
+            class="MuiBox-root css-t0pdf1"
           >
             <div
-              class="makeStyles-breadcrumb-5 MuiBox-root css-0"
+              class="MuiBox-root css-jqffe8"
             >
               <nav
                 aria-label="breadcrumb"
@@ -199,7 +199,7 @@ Object {
               data-testid="loading"
             >
               <div
-                class="makeStyles-loading-1 MuiBox-root css-0"
+                class="MuiBox-root css-1tq2trd"
               >
                 <span
                   class="MuiCircularProgress-root MuiCircularProgress-indeterminate MuiCircularProgress-colorPrimary css-18lrjg1-MuiCircularProgress-root"
@@ -221,7 +221,7 @@ Object {
                   </svg>
                 </span>
                 <p
-                  class="MuiTypography-root MuiTypography-body1 makeStyles-text-2 css-ahj2mt-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 css-frkdmv-MuiTypography-root"
                 >
                   Loading...
                 </p>
@@ -296,13 +296,13 @@ Object {
       class="MuiBox-root css-0"
     >
       <div
-        class="makeStyles-frame-3 MuiBox-root css-0"
+        class="MuiBox-root css-1baykhj"
       >
         <div
-          class="makeStyles-fixed-4 MuiBox-root css-0"
+          class="MuiBox-root css-t0pdf1"
         >
           <div
-            class="makeStyles-breadcrumb-5 MuiBox-root css-0"
+            class="MuiBox-root css-jqffe8"
           >
             <nav
               aria-label="breadcrumb"
@@ -486,7 +486,7 @@ Object {
             data-testid="loading"
           >
             <div
-              class="makeStyles-loading-1 MuiBox-root css-0"
+              class="MuiBox-root css-1tq2trd"
             >
               <span
                 class="MuiCircularProgress-root MuiCircularProgress-indeterminate MuiCircularProgress-colorPrimary css-18lrjg1-MuiCircularProgress-root"
@@ -508,7 +508,7 @@ Object {
                 </svg>
               </span>
               <p
-                class="MuiTypography-root MuiTypography-body1 makeStyles-text-2 css-ahj2mt-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body1 css-frkdmv-MuiTypography-root"
               >
                 Loading...
               </p>

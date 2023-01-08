@@ -1,12 +1,5 @@
-import {
-  Box,
-  Button,
-  TextField,
-  Modal,
-  Theme,
-  Typography,
-} from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { Box, Button, TextField, Modal, Typography } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -15,35 +8,40 @@ import { DjangoContext } from "../../utils/DjangoContext";
 
 import { loginPath, topPath, usersPath } from "Routes";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  modal: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  paper: {
-    backgroundColor: theme.palette.background.paper,
-    border: "1px solid #000",
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 2),
-    width: "50%",
-  },
-  passwordField: {
-    marginTop: theme.spacing(4),
-    marginBottom: theme.spacing(4),
-  },
-  passwordFieldLabel: {
-    color: "#90A4AE",
-  },
-  passwordFieldInput: {
-    width: "100%",
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
-  },
-  buttons: {
-    display: "flex",
-    justifyContent: "flex-end",
-  },
+const StyledModal = styled(Modal)(({}) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+}));
+
+const Paper = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  backgroundColor: theme.palette.background.paper,
+  border: "2px solid #000",
+  boxShadow: theme.shadows[5],
+  padding: theme.spacing(2, 3, 1),
+  width: "50%",
+}));
+
+const PasswordField = styled(Box)(({ theme }) => ({
+  marginTop: theme.spacing(4),
+  marginBottom: theme.spacing(4),
+}));
+
+const PasswordFieldLabel = styled("label")(({ theme }) => ({
+  color: "#90A4AE",
+}));
+
+const PasswordFieldInput = styled(TextField)(({ theme }) => ({
+  width: "100%",
+  marginTop: theme.spacing(2),
+  marginBottom: theme.spacing(2),
+}));
+
+const Buttons = styled(Box)(({ theme }) => ({
+  display: "flex",
+  justifyContent: "flex-end",
 }));
 
 interface Props {
@@ -59,7 +57,6 @@ export const UserPasswordFormModal: FC<Props> = ({
   onClose,
   onSubmit,
 }) => {
-  const classes = useStyles();
   const history = useHistory();
 
   const [oldPassword, setOldPassword] = useState("");
@@ -106,52 +103,49 @@ export const UserPasswordFormModal: FC<Props> = ({
   };
 
   return (
-    <Modal className={classes.modal} open={openModal} onClose={onClose}>
-      <Box className={classes.paper}>
+    <StyledModal open={openModal} onClose={onClose}>
+      <Paper>
         <Typography variant="h6">パスワード編集</Typography>
 
         {!asSuperuser && (
-          <Box className={classes.passwordField}>
+          <PasswordField>
             <Box>
-              <label className={classes.passwordFieldLabel}>
+              <PasswordFieldLabel>
                 今まで使用していたパスワードをご入力ください。
-              </label>
+              </PasswordFieldLabel>
             </Box>
-            <TextField
-              className={classes.passwordFieldInput}
+            <PasswordFieldInput
               variant={"standard"}
               type="password"
               placeholder="Old password"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
             />
-          </Box>
+          </PasswordField>
         )}
 
-        <Box className={classes.passwordField}>
+        <PasswordField>
           <Box>
-            <label className={classes.passwordFieldLabel}>
+            <PasswordFieldLabel>
               新しいパスワードをご入力ください。
-            </label>
+            </PasswordFieldLabel>
           </Box>
-          <TextField
-            className={classes.passwordFieldInput}
+          <PasswordFieldInput
             variant={"standard"}
             type="password"
             placeholder="New password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
-        </Box>
-        <Box className={classes.passwordField}>
+        </PasswordField>
+        <PasswordField>
           <Box>
-            <label className={classes.passwordFieldLabel}>
+            <PasswordFieldLabel>
               確認のためもう一度、新しいパスワードをご入力ください。
-            </label>
+            </PasswordFieldLabel>
           </Box>
-          <TextField
+          <PasswordFieldInput
             error={isUnmatch}
-            className={classes.passwordFieldInput}
             variant={"standard"}
             type="password"
             placeholder="Confirm new password"
@@ -164,9 +158,9 @@ export const UserPasswordFormModal: FC<Props> = ({
               setIsUnmatch(false);
             }}
           />
-        </Box>
+        </PasswordField>
 
-        <Box className={classes.buttons}>
+        <Buttons>
           <Button
             disabled={
               (asSuperuser && (!newPassword.length || !checkPassword.length)) ||
@@ -192,8 +186,8 @@ export const UserPasswordFormModal: FC<Props> = ({
           >
             キャンセル
           </Button>
-        </Box>
-      </Box>
-    </Modal>
+        </Buttons>
+      </Paper>
+    </StyledModal>
   );
 };

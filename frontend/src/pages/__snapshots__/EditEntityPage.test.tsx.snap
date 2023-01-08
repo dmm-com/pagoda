@@ -9,13 +9,13 @@ Object {
         class="MuiBox-root css-0"
       >
         <div
-          class="makeStyles-frame-3 MuiBox-root css-0"
+          class="MuiBox-root css-1baykhj"
         >
           <div
-            class="makeStyles-fixed-4 MuiBox-root css-0"
+            class="MuiBox-root css-t0pdf1"
           >
             <div
-              class="makeStyles-breadcrumb-5 MuiBox-root css-0"
+              class="MuiBox-root css-jqffe8"
             >
               <nav
                 aria-label="breadcrumb"
@@ -71,19 +71,19 @@ Object {
           </div>
         </div>
         <div
-          class="makeStyles-frame-6 MuiBox-root css-0"
+          class="MuiBox-root css-ms4ept"
         >
           <div
-            class="makeStyles-fixed-7 MuiBox-root css-0"
+            class="MuiBox-root css-t1gim7"
           >
             <div
-              class="makeStyles-headerTop-8 MuiBox-root css-0"
+              class="MuiBox-root css-1l6yv0h"
             >
               <div
-                class="makeStyles-titleBox-10 MuiBox-root css-0"
+                class="MuiBox-root css-cty2cs"
               >
                 <h2
-                  class="MuiTypography-root MuiTypography-h2 makeStyles-title-11 css-1l0a44s-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
                 >
                   新規エンティティの作成
                 </h2>
@@ -96,7 +96,7 @@ Object {
               />
             </div>
             <div
-              class="makeStyles-headerBottom-9 MuiBox-root css-0"
+              class="MuiBox-root css-1k68zpd"
             >
               <p
                 class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -449,7 +449,7 @@ Object {
                       class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
                     >
                       <tr
-                        class="MuiTableRow-root makeStyles-tableRow-19 css-1q1u3t4-MuiTableRow-root"
+                        class="MuiTableRow-root css-1lwfqbm-MuiTableRow-root"
                       >
                         <td
                           class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -473,7 +473,7 @@ Object {
                           class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                         >
                           <button
-                            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-18 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
                             tabindex="0"
                             type="button"
                           >
@@ -509,13 +509,13 @@ Object {
       class="MuiBox-root css-0"
     >
       <div
-        class="makeStyles-frame-3 MuiBox-root css-0"
+        class="MuiBox-root css-1baykhj"
       >
         <div
-          class="makeStyles-fixed-4 MuiBox-root css-0"
+          class="MuiBox-root css-t0pdf1"
         >
           <div
-            class="makeStyles-breadcrumb-5 MuiBox-root css-0"
+            class="MuiBox-root css-jqffe8"
           >
             <nav
               aria-label="breadcrumb"
@@ -571,19 +571,19 @@ Object {
         </div>
       </div>
       <div
-        class="makeStyles-frame-6 MuiBox-root css-0"
+        class="MuiBox-root css-ms4ept"
       >
         <div
-          class="makeStyles-fixed-7 MuiBox-root css-0"
+          class="MuiBox-root css-t1gim7"
         >
           <div
-            class="makeStyles-headerTop-8 MuiBox-root css-0"
+            class="MuiBox-root css-1l6yv0h"
           >
             <div
-              class="makeStyles-titleBox-10 MuiBox-root css-0"
+              class="MuiBox-root css-cty2cs"
             >
               <h2
-                class="MuiTypography-root MuiTypography-h2 makeStyles-title-11 css-1l0a44s-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
               >
                 新規エンティティの作成
               </h2>
@@ -596,7 +596,7 @@ Object {
             />
           </div>
           <div
-            class="makeStyles-headerBottom-9 MuiBox-root css-0"
+            class="MuiBox-root css-1k68zpd"
           >
             <p
               class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -949,7 +949,7 @@ Object {
                     class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
                   >
                     <tr
-                      class="MuiTableRow-root makeStyles-tableRow-19 css-1q1u3t4-MuiTableRow-root"
+                      class="MuiTableRow-root css-1lwfqbm-MuiTableRow-root"
                     >
                       <td
                         class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -973,7 +973,7 @@ Object {
                         class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                       >
                         <button
-                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-18 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
                           tabindex="0"
                           type="button"
                         >

@@ -9,13 +9,13 @@ Object {
         class="container-fluid MuiBox-root css-0"
       >
         <div
-          class="makeStyles-frame-1 MuiBox-root css-0"
+          class="MuiBox-root css-1baykhj"
         >
           <div
-            class="makeStyles-fixed-2 MuiBox-root css-0"
+            class="MuiBox-root css-t0pdf1"
           >
             <div
-              class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+              class="MuiBox-root css-jqffe8"
             >
               <nav
                 aria-label="breadcrumb"
@@ -149,7 +149,7 @@ Object {
               class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
             >
               <tr
-                class="MuiTableRow-root makeStyles-tableRow-8 css-1q1u3t4-MuiTableRow-root"
+                class="MuiTableRow-root css-1lwfqbm-MuiTableRow-root"
               >
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -241,7 +241,7 @@ Object {
                 </td>
               </tr>
               <tr
-                class="MuiTableRow-root makeStyles-tableRow-8 css-1q1u3t4-MuiTableRow-root"
+                class="MuiTableRow-root css-1lwfqbm-MuiTableRow-root"
               >
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -397,13 +397,13 @@ Object {
       class="container-fluid MuiBox-root css-0"
     >
       <div
-        class="makeStyles-frame-1 MuiBox-root css-0"
+        class="MuiBox-root css-1baykhj"
       >
         <div
-          class="makeStyles-fixed-2 MuiBox-root css-0"
+          class="MuiBox-root css-t0pdf1"
         >
           <div
-            class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+            class="MuiBox-root css-jqffe8"
           >
             <nav
               aria-label="breadcrumb"
@@ -537,7 +537,7 @@ Object {
             class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
           >
             <tr
-              class="MuiTableRow-root makeStyles-tableRow-8 css-1q1u3t4-MuiTableRow-root"
+              class="MuiTableRow-root css-1lwfqbm-MuiTableRow-root"
             >
               <td
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -629,7 +629,7 @@ Object {
               </td>
             </tr>
             <tr
-              class="MuiTableRow-root makeStyles-tableRow-8 css-1q1u3t4-MuiTableRow-root"
+              class="MuiTableRow-root css-1lwfqbm-MuiTableRow-root"
             >
               <td
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"

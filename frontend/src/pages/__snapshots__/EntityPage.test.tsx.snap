@@ -9,13 +9,13 @@ Object {
         class="container-fluid MuiBox-root css-0"
       >
         <div
-          class="makeStyles-frame-1 MuiBox-root css-0"
+          class="MuiBox-root css-1baykhj"
         >
           <div
-            class="makeStyles-fixed-2 MuiBox-root css-0"
+            class="MuiBox-root css-t0pdf1"
           >
             <div
-              class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+              class="MuiBox-root css-jqffe8"
             >
               <nav
                 aria-label="breadcrumb"
@@ -240,7 +240,7 @@ Object {
                     class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                   >
                     <p
-                      class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-10 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1mmhjut-MuiTypography-root"
                     />
                   </div>
                 </div>
@@ -302,7 +302,7 @@ Object {
                     class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                   >
                     <p
-                      class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-10 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1mmhjut-MuiTypography-root"
                     />
                   </div>
                 </div>
@@ -364,7 +364,7 @@ Object {
                     class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                   >
                     <p
-                      class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-10 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1mmhjut-MuiTypography-root"
                     />
                   </div>
                 </div>
@@ -438,13 +438,13 @@ Object {
       class="container-fluid MuiBox-root css-0"
     >
       <div
-        class="makeStyles-frame-1 MuiBox-root css-0"
+        class="MuiBox-root css-1baykhj"
       >
         <div
-          class="makeStyles-fixed-2 MuiBox-root css-0"
+          class="MuiBox-root css-t0pdf1"
         >
           <div
-            class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+            class="MuiBox-root css-jqffe8"
           >
             <nav
               aria-label="breadcrumb"
@@ -669,7 +669,7 @@ Object {
                   class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-10 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1mmhjut-MuiTypography-root"
                   />
                 </div>
               </div>
@@ -731,7 +731,7 @@ Object {
                   class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-10 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1mmhjut-MuiTypography-root"
                   />
                 </div>
               </div>
@@ -793,7 +793,7 @@ Object {
                   class="MuiCardContent-root css-2u8hhl-MuiCardContent-root"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 makeStyles-entityNote-10 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1mmhjut-MuiTypography-root"
                   />
                 </div>
               </div>

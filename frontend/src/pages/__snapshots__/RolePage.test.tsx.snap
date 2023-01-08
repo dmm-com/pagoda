@@ -9,13 +9,13 @@ Object {
         class="container-fluid MuiBox-root css-0"
       >
         <div
-          class="makeStyles-frame-1 MuiBox-root css-0"
+          class="MuiBox-root css-1baykhj"
         >
           <div
-            class="makeStyles-fixed-2 MuiBox-root css-0"
+            class="MuiBox-root css-t0pdf1"
           >
             <div
-              class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+              class="MuiBox-root css-jqffe8"
             >
               <nav
                 aria-label="breadcrumb"
@@ -181,7 +181,7 @@ Object {
                       class="MuiBox-root css-0"
                     >
                       <button
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-6 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
                         tabindex="0"
                         type="button"
                       >
@@ -203,7 +203,7 @@ Object {
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <a
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-6 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
                       href="/ui/roles/0"
                       tabindex="0"
                     >
@@ -233,13 +233,13 @@ Object {
       class="container-fluid MuiBox-root css-0"
     >
       <div
-        class="makeStyles-frame-1 MuiBox-root css-0"
+        class="MuiBox-root css-1baykhj"
       >
         <div
-          class="makeStyles-fixed-2 MuiBox-root css-0"
+          class="MuiBox-root css-t0pdf1"
         >
           <div
-            class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+            class="MuiBox-root css-jqffe8"
           >
             <nav
               aria-label="breadcrumb"
@@ -405,7 +405,7 @@ Object {
                     class="MuiBox-root css-0"
                   >
                     <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-6 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -427,7 +427,7 @@ Object {
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >
                   <a
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-button-6 css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
                     href="/ui/roles/0"
                     tabindex="0"
                   >

@@ -1,25 +1,24 @@
-import { Box, Modal, Theme, Typography } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { Box, Modal, Typography } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { ImportForm } from "components/common/ImportForm";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  modal: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  paper: {
-    display: "flex",
-    flexDirection: "column",
-    backgroundColor: theme.palette.background.paper,
-    border: "2px solid #000",
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 3, 1),
-    width: "50%",
-  },
+const StyledModal = styled(Modal)(({}) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+}));
+
+const Paper = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  backgroundColor: theme.palette.background.paper,
+  border: "2px solid #000",
+  boxShadow: theme.shadows[5],
+  padding: theme.spacing(2, 3, 1),
+  width: "50%",
 }));
 
 interface Props {
@@ -31,17 +30,14 @@ export const EntryImportModal: FC<Props> = ({
   openImportModal,
   closeImportModal,
 }) => {
-  const classes = useStyles();
-
   return (
-    <Modal
+    <StyledModal
       aria-labelledby="transition-modal-title"
       aria-describedby="transition-modal-description"
-      className={classes.modal}
       open={openImportModal}
       onClose={closeImportModal}
     >
-      <Box className={classes.paper}>
+      <Paper>
         <Typography variant={"h6"} my="8px">
           エントリのインポート
         </Typography>
@@ -57,7 +53,7 @@ export const EntryImportModal: FC<Props> = ({
           }
           handleCancel={closeImportModal}
         />
-      </Box>
-    </Modal>
+      </Paper>
+    </StyledModal>
   );
 };

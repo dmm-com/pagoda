@@ -9,13 +9,13 @@ Object {
         class="MuiBox-root css-1ylu0bo"
       >
         <div
-          class="makeStyles-frame-1 MuiBox-root css-0"
+          class="MuiBox-root css-1baykhj"
         >
           <div
-            class="makeStyles-fixed-2 MuiBox-root css-0"
+            class="MuiBox-root css-t0pdf1"
           >
             <div
-              class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+              class="MuiBox-root css-jqffe8"
             >
               <nav
                 aria-label="breadcrumb"
@@ -147,7 +147,7 @@ Object {
                   class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
                 >
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-8 css-1p823my-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-bhqdz7-MuiListItem-root"
                   >
                     <ul
                       class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
@@ -296,7 +296,7 @@ Object {
                     </ul>
                   </li>
                   <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-8 css-1p823my-MuiListItem-root"
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-bhqdz7-MuiListItem-root"
                   >
                     <ul
                       class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
@@ -427,13 +427,13 @@ Object {
       class="MuiBox-root css-1ylu0bo"
     >
       <div
-        class="makeStyles-frame-1 MuiBox-root css-0"
+        class="MuiBox-root css-1baykhj"
       >
         <div
-          class="makeStyles-fixed-2 MuiBox-root css-0"
+          class="MuiBox-root css-t0pdf1"
         >
           <div
-            class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+            class="MuiBox-root css-jqffe8"
           >
             <nav
               aria-label="breadcrumb"
@@ -565,7 +565,7 @@ Object {
                 class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
               >
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-8 css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-bhqdz7-MuiListItem-root"
                 >
                   <ul
                     class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
@@ -714,7 +714,7 @@ Object {
                   </ul>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding makeStyles-listItem-8 css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-bhqdz7-MuiListItem-root"
                 >
                   <ul
                     class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"

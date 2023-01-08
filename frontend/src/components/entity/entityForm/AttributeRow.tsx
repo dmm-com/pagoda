@@ -12,11 +12,14 @@ import {
   MenuItem,
   Select,
   TableCell,
-  Theme,
   TableRow,
   Typography,
+  ButtonTypeMap,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { ExtendButtonBaseTypeMap } from "@mui/material/ButtonBase/ButtonBase";
+import { IconButtonTypeMap } from "@mui/material/IconButton/IconButton";
+import { OverridableComponent } from "@mui/material/OverridableComponent";
+import { styled } from "@mui/material/styles";
 import React, { FC, useMemo } from "react";
 import { Link } from "react-router-dom";
 
@@ -29,32 +32,38 @@ import {
 import { AutoCompletedField } from "components/common/AutoCompletedField";
 import { AttributeTypes } from "utils/Constants";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
+const StyledIconButton = styled(IconButton)(({ theme }) => ({
+  margin: theme.spacing(1),
+})) as OverridableComponent<ExtendButtonBaseTypeMap<IconButtonTypeMap>>;
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  margin: theme.spacing(1),
+})) as OverridableComponent<ExtendButtonBaseTypeMap<ButtonTypeMap>>;
+
+const NormalTableRow = styled(TableRow)(({}) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: "white",
   },
-  tableRow: {
-    "&:nth-of-type(odd)": {
-      backgroundColor: "white",
-    },
-    "&:nth-of-type(even)": {
-      backgroundColor: "#607D8B0A",
-    },
+  "&:nth-of-type(even)": {
+    backgroundColor: "#607D8B0A",
   },
-  highlightedTableRow: {
-    animation: `$highlighted ease 1s 1`,
-    "&:nth-of-type(odd)": {
-      backgroundColor: "white",
-    },
-    "&:nth-of-type(even)": {
-      backgroundColor: "#607D8B0A",
-    },
-  },
+}));
+
+const HighlightedTableRow = styled(TableRow)(({}) => ({
   "@keyframes highlighted": {
-    "0%": {
+    from: {
       backgroundColor: "#6B8998",
     },
+    to: {
+      "&:nth-of-type(odd)": {
+        backgroundColor: "white",
+      },
+      "&:nth-of-type(even)": {
+        backgroundColor: "#607D8B0A",
+      },
+    },
   },
+  animation: "highlighted 2s ease infinite",
 }));
 
 interface Props {
@@ -78,8 +87,6 @@ export const AttributeRow: FC<Props> = ({
   latestChangedIndex,
   setLatestChangedIndex,
 }) => {
-  const classes = useStyles();
-
   const handleAppendAttribute = (nextTo) => {
     allAttrs.splice(nextTo + 1, 0, {
       name: "",
@@ -135,15 +142,13 @@ export const AttributeRow: FC<Props> = ({
     );
   }, [referralEntities, currentAttr?.referral]);
 
+  const StyledTableRow =
+    index != null && index === latestChangedIndex
+      ? HighlightedTableRow
+      : NormalTableRow;
+
   return (
-    <TableRow
-      className={
-        index != null && index === latestChangedIndex
-          ? classes.highlightedTableRow
-          : classes.tableRow
-      }
-      onAnimationEnd={() => setLatestChangedIndex(undefined)}
-    >
+    <StyledTableRow onAnimationEnd={() => setLatestChangedIndex(undefined)}>
       <TableCell>
         {index !== undefined && (
           <Input
@@ -226,61 +231,52 @@ export const AttributeRow: FC<Props> = ({
       <TableCell>
         {index !== undefined && (
           <Box display="flex" flexDirection="column">
-            <IconButton
+            <StyledIconButton
               disabled={index === 0}
-              className={classes.button}
               onClick={() => handleChangeOrderAttribute(index, 1)}
             >
               <ArrowUpwardIcon />
-            </IconButton>
+            </StyledIconButton>
 
-            <IconButton
+            <StyledIconButton
               disabled={index === allAttrs.length - 1}
-              className={classes.button}
               onClick={() => handleChangeOrderAttribute(index, -1)}
             >
               <ArrowDownwardIcon />
-            </IconButton>
+            </StyledIconButton>
           </Box>
         )}
       </TableCell>
 
       <TableCell>
         {index !== undefined && (
-          <IconButton
-            className={classes.button}
-            onClick={() => handleDeleteAttribute(index)}
-          >
+          <StyledIconButton onClick={() => handleDeleteAttribute(index)}>
             <DeleteOutlineIcon />
-          </IconButton>
+          </StyledIconButton>
         )}
       </TableCell>
 
       {/* This is a button to add new Attribute */}
       <TableCell>
-        <IconButton
-          className={classes.button}
-          onClick={() => handleAppendAttribute(index)}
-        >
+        <StyledIconButton onClick={() => handleAppendAttribute(index)}>
           <AddIcon />
-        </IconButton>
+        </StyledIconButton>
       </TableCell>
 
       <TableCell>
         {index !== undefined && (
-          <Button
+          <StyledButton
             variant="contained"
             color="primary"
-            className={classes.button}
             startIcon={<GroupIcon />}
             component={Link}
             to={aclPath(currentAttr.id)}
             disabled={currentAttr.id == null}
           >
             ACL
-          </Button>
+          </StyledButton>
         )}
       </TableCell>
-    </TableRow>
+    </StyledTableRow>
   );
 };

@@ -9,11 +9,12 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Theme,
   Toolbar,
   Typography,
+  TypographyTypeMap,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { OverridableComponent } from "@mui/material/OverridableComponent";
+import { styled } from "@mui/material/styles";
 import React, { FC, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useInterval } from "react-use";
@@ -48,60 +49,63 @@ import {
 import { postLogout } from "utils/AironeAPIClient";
 import { DjangoContext } from "utils/DjangoContext";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  frame: {
-    width: "100%",
-    height: "56px",
+const Frame = styled(Box)(({}) => ({
+  width: "100%",
+  height: "56px",
+}));
+
+const Fixed = styled(Box)(({ theme }) => ({
+  position: "fixed",
+  zIndex: 2,
+  width: "100%",
+  backgroundColor: theme.palette.primary.main,
+  display: "flex",
+  justifyContent: "center",
+}));
+
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  maxWidth: theme.breakpoints.values.lg,
+}));
+
+const StyledToolbar = styled(Toolbar)(({}) => ({
+  height: "56px",
+}));
+
+const TitleBox = styled(Box)(({}) => ({
+  display: "flex",
+  alignItems: "center",
+}));
+
+const Title = styled(Typography)(({}) => ({
+  color: "white",
+  textDecoration: "none",
+})) as OverridableComponent<TypographyTypeMap>;
+
+const Version = styled(Typography)(({}) => ({
+  color: "#FFFFFF8A",
+  paddingLeft: "20px",
+  maxWidth: "64px",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+}));
+
+const MenuBox = styled(Box)(({}) => ({
+  flexGrow: 1,
+  display: "flex",
+  color: "white",
+  marginLeft: "16px",
+  "& a": {
+    color: "inherit",
+    margin: "0px 4px",
   },
-  fixed: {
-    position: "fixed",
-    zIndex: 2,
-    width: "100%",
-    backgroundColor: theme.palette.primary.main,
-    display: "flex",
-    justifyContent: "center",
-  },
-  appBar: {
-    maxWidth: theme.breakpoints.values.lg,
-  },
-  toolBar: {
-    height: "56px",
-  },
-  titleBox: {
-    display: "flex",
-    alignItems: "center",
-  },
-  title: {
-    color: "white",
-    textDecoration: "none",
-  },
-  version: {
-    color: "#FFFFFF8A",
-    paddingLeft: "20px",
-    maxWidth: "64px",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-  menuBox: {
-    flexGrow: 1,
-    display: "flex",
-    color: "white",
-    marginLeft: "16px",
-    "& a": {
-      color: "inherit",
-      margin: "0px 4px",
-    },
-    "& button": {
-      color: "inherit",
-      margin: "0px 4px",
-    },
+  "& button": {
+    color: "inherit",
+    margin: "0px 4px",
   },
 }));
 
 export const Header: FC = () => {
-  const classes = useStyles();
-
   const [query, submitQuery] = useSimpleSearch();
 
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
@@ -135,29 +139,20 @@ export const Header: FC = () => {
   };
 
   return (
-    <Box className={classes.frame}>
-      <Box className={classes.fixed}>
-        <AppBar position="static" elevation={0} className={classes.appBar}>
-          <Toolbar variant="dense" className={classes.toolBar}>
-            <Box className={classes.titleBox}>
-              <Typography
-                fontSize="24px"
-                className={classes.title}
-                component={Link}
-                to={topPath()}
-              >
+    <Frame>
+      <Fixed>
+        <StyledAppBar position="static" elevation={0}>
+          <StyledToolbar variant="dense">
+            <TitleBox>
+              <Title fontSize="24px" component={Link} to={topPath()}>
                 AirOne
-              </Typography>
-              <Typography
-                fontSize="16px"
-                className={classes.version}
-                title={djangoContext.version}
-              >
+              </Title>
+              <Version fontSize="16px" title={djangoContext.version}>
                 {djangoContext.version}
-              </Typography>
-            </Box>
+              </Version>
+            </TitleBox>
 
-            <Box className={classes.menuBox}>
+            <MenuBox>
               <Button component={Link} to={entitiesPath()}>
                 エンティティ一覧
               </Button>
@@ -173,9 +168,9 @@ export const Header: FC = () => {
               <Button component={Link} to={rolesPath()}>
                 ロール管理
               </Button>
-            </Box>
+            </MenuBox>
 
-            <Box justifyContent="flex-end" className={classes.menuBox}>
+            <MenuBox justifyContent="flex-end">
               <Button href="/dashboard/">旧デザイン</Button>
               <IconButton
                 aria-controls="user-menu"
@@ -255,10 +250,10 @@ export const Header: FC = () => {
                   inputSx={{ height: "42px" }}
                 />
               </Box>
-            </Box>
-          </Toolbar>
-        </AppBar>
-      </Box>
-    </Box>
+            </MenuBox>
+          </StyledToolbar>
+        </StyledAppBar>
+      </Fixed>
+    </Frame>
   );
 };

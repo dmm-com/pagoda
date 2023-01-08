@@ -9,10 +9,9 @@ import {
   IconButton,
   Pagination,
   Stack,
-  Theme,
   Typography,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -23,20 +22,12 @@ import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { normalizeToMatch } from "utils/StringUtil";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-  entityName: {
-    margin: theme.spacing(1),
-  },
-  entityNote: {
-    color: theme.palette.text.secondary,
-    display: "-webkit-box",
-    overflow: "hidden",
-    "-webkit-box-orient": "vertical",
-    "-webkit-line-clamp": 2,
-  },
+const EntityNote = styled(Typography)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  display: "-webkit-box",
+  overflow: "hidden",
+  webkitBoxOrient: "vertical",
+  webkitLineClamp: 2,
 }));
 
 interface Props {
@@ -56,8 +47,6 @@ export const EntityList: FC<Props> = ({
   handleChangePage,
   handleChangeQuery,
 }) => {
-  const classes = useStyles();
-
   const [keyword, setKeyword] = useState(query ?? "");
   const [entityAnchorEls, setEntityAnchorEls] = useState<{
     [key: number]: HTMLButtonElement;
@@ -68,7 +57,7 @@ export const EntityList: FC<Props> = ({
     <Box>
       {/* This box shows search box and create button */}
       <Box display="flex" justifyContent="space-between" mb={8}>
-        <Box className={classes.search} width={500}>
+        <Box width={500}>
           <SearchBox
             placeholder="エンティティ名で絞り込む"
             value={keyword}
@@ -151,9 +140,7 @@ export const EntityList: FC<Props> = ({
                   lineHeight: 2,
                 }}
               >
-                <Typography className={classes.entityNote}>
-                  {entity.note}
-                </Typography>
+                <EntityNote>{entity.note}</EntityNote>
               </CardContent>
             </Card>
           </Grid>

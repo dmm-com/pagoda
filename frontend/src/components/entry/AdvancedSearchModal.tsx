@@ -5,26 +5,26 @@ import {
   Checkbox,
   TextField,
   Typography,
-  Theme,
   Button,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { styled } from "@mui/material/styles";
 import React, { Dispatch, FC, useState, SetStateAction } from "react";
 import { useHistory } from "react-router-dom";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  modal: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  paper: {
-    backgroundColor: theme.palette.background.paper,
-    border: "1px solid #000",
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 2),
-    width: "50%",
-  },
+const StyledModal = styled(Modal)(({}) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+}));
+
+const Paper = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  backgroundColor: theme.palette.background.paper,
+  border: "2px solid #000",
+  boxShadow: theme.shadows[5],
+  padding: theme.spacing(2, 3, 1),
+  width: "50%",
 }));
 
 interface Props {
@@ -40,7 +40,6 @@ export const AdvancedSearchModal: FC<Props> = ({
   attrNames,
   initialAttrNames,
 }) => {
-  const classes = useStyles();
   const history = useHistory();
   const params = new URLSearchParams(location.search);
 
@@ -91,14 +90,13 @@ export const AdvancedSearchModal: FC<Props> = ({
   };
 
   return (
-    <Modal
+    <StyledModal
       aria-labelledby="transition-modal-title"
       aria-describedby="transition-modal-description"
-      className={classes.modal}
       open={openModal}
       onClose={() => setOpenModal(false)}
     >
-      <Box className={classes.paper}>
+      <Paper>
         <Typography color="primary">検索属性の再設定</Typography>
 
         <Autocomplete
@@ -142,7 +140,7 @@ export const AdvancedSearchModal: FC<Props> = ({
             キャンセル
           </Button>
         </Box>
-      </Box>
-    </Modal>
+      </Paper>
+    </StyledModal>
   );
 };

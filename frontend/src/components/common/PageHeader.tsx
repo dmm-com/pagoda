@@ -1,44 +1,47 @@
-import { Box, Divider, Typography, Theme } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { Box, Divider, Typography } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC, ReactElement } from "react";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  frame: {
-    width: "100%",
-    height: "284px",
-  },
-  fixed: {
-    position: "fixed",
-    zIndex: 2,
-    width: "100%",
-    backgroundColor: "white",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  headerTop: {
-    width: theme.breakpoints.values.lg,
-    height: "88px",
-    marginTop: "124px",
-    display: "flex",
-  },
-  headerBottom: {
-    width: theme.breakpoints.values.lg,
-    height: "40px",
-    display: "flex",
-    alignItems: "flex-end",
-  },
-  titleBox: {
-    display: "flex",
-    alignItems: "flex-end",
-    margin: "8px 24px",
-  },
-  title: {
-    height: "72px",
-    maxWidth: "700px",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
+const Frame = styled(Box)(({}) => ({
+  width: "100%",
+  height: "284px",
+}));
+
+const Fixed = styled(Box)(({}) => ({
+  position: "fixed",
+  zIndex: 2,
+  width: "100%",
+  backgroundColor: "white",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+}));
+
+const HeaderTop = styled(Box)(({ theme }) => ({
+  width: theme.breakpoints.values.lg,
+  height: "88px",
+  marginTop: "124px",
+  display: "flex",
+}));
+
+const HeaderBottom = styled(Box)(({ theme }) => ({
+  width: theme.breakpoints.values.lg,
+  height: "40px",
+  display: "flex",
+  alignItems: "flex-end",
+}));
+
+const TitleBox = styled(Box)(({}) => ({
+  display: "flex",
+  alignItems: "flex-end",
+  margin: "8px 24px",
+}));
+
+const Title = styled(Typography)(({}) => ({
+  height: "72px",
+  maxWidth: "700px",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
 }));
 
 interface Props {
@@ -56,32 +59,30 @@ export const PageHeader: FC<Props> = ({
   componentControl,
   componentSubmits,
 }) => {
-  const classes = useStyles();
-
   return (
-    <Box className={classes.frame}>
-      <Box className={classes.fixed}>
-        <Box className={classes.headerTop}>
-          <Box className={classes.titleBox}>
-            <Typography variant="h2" mr="64px" className={classes.title}>
+    <Frame>
+      <Fixed>
+        <HeaderTop>
+          <TitleBox>
+            <Title variant="h2" mr="64px">
               {title}
-            </Typography>
+            </Title>
             <Typography variant="h4" fontWeight="300">
               {subTitle}
             </Typography>
-          </Box>
+          </TitleBox>
           <Box ml="auto" mr="24px">
             {componentControl}
           </Box>
-        </Box>
-        <Box className={classes.headerBottom}>
+        </HeaderTop>
+        <HeaderBottom>
           <Typography>{description}</Typography>
           <Box ml="auto" mr="24px">
             {componentSubmits}
           </Box>
-        </Box>
+        </HeaderBottom>
         <Divider flexItem sx={{ mt: "32px", borderColor: "black" }} />
-      </Box>
-    </Box>
+      </Fixed>
+    </Frame>
   );
 };

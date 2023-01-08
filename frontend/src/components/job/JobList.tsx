@@ -7,10 +7,9 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Theme,
   Typography,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -21,20 +20,12 @@ import { formatDate } from "../../utils/DateUtil";
 import { jobOperationLabel } from "../../utils/JobUtil";
 import { Confirmable } from "../common/Confirmable";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
+const StyledTableRow = styled(TableRow)(({}) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: "white",
   },
-  entityName: {
-    margin: theme.spacing(1),
-  },
-  tableRow: {
-    "&:nth-of-type(odd)": {
-      backgroundColor: "white",
-    },
-    "&:nth-of-type(even)": {
-      backgroundColor: "#607D8B0A",
-    },
+  "&:nth-of-type(even)": {
+    backgroundColor: "#607D8B0A",
   },
 }));
 
@@ -43,7 +34,6 @@ interface Props {
 }
 
 export const JobList: FC<Props> = ({ jobs }) => {
-  const classes = useStyles();
   const history = useHistory();
 
   const handleRerun = async (jobId: number) => {
@@ -70,7 +60,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
       </TableHead>
       <TableBody>
         {jobs.map((job) => (
-          <TableRow key={job.id} className={classes.tableRow}>
+          <StyledTableRow key={job.id}>
             <TableCell>
               <Typography>{job.target?.name ?? ""}</Typography>
             </TableCell>
@@ -244,7 +234,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
                 <Typography>{job.text}</Typography>
               )}
             </TableCell>
-          </TableRow>
+          </StyledTableRow>
         ))}
       </TableBody>
     </Table>

@@ -1,26 +1,24 @@
-import { Box, Button, Input, Modal, Theme, Typography } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { Box, Button, Input, Modal, Typography } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
 
 import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  modal: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  paper: {
-    display: "flex",
-    flexDirection: "column",
-    backgroundColor: theme.palette.background.paper,
-    border: "2px solid #000",
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 3, 1),
-    width: "50%",
-  },
+const StyledModal = styled(Modal)(({}) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+}));
+
+const Paper = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  backgroundColor: theme.palette.background.paper,
+  border: "2px solid #000",
+  boxShadow: theme.shadows[5],
+  padding: theme.spacing(2, 3, 1),
+  width: "50%",
 }));
 
 interface Props {
@@ -36,8 +34,6 @@ export const PasswordResetConfirmModal: FC<Props> = ({
   uidb64,
   token,
 }) => {
-  const classes = useStyles();
-  const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
 
   const [password, setPassword] = useState("");
@@ -63,13 +59,12 @@ export const PasswordResetConfirmModal: FC<Props> = ({
   };
 
   return (
-    <Modal
+    <StyledModal
       aria-labelledby="transition-modal-title"
       aria-describedby="transition-modal-description"
-      className={classes.modal}
       open={openModal}
     >
-      <Box className={classes.paper}>
+      <Paper>
         <Typography variant={"h6"} my="8px">
           パスワードリセット
         </Typography>
@@ -109,7 +104,7 @@ export const PasswordResetConfirmModal: FC<Props> = ({
             </Button>
           </Box>
         </Box>
-      </Box>
-    </Modal>
+      </Paper>
+    </StyledModal>
   );
 };
