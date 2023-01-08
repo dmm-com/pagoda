@@ -184,7 +184,8 @@ class ACLAPITest(AironeViewTest):
         role.admin_users.add(user)
 
         acl = ACLBase.objects.create(name="test", created_user=user)
-        role.permissions.add(acl.full)
+        # set role to full permission object
+        acl.full.roles.add(role)
 
         resp = self.client.put(
             "/acl/api/v2/acls/%s" % acl.id,
@@ -220,7 +221,7 @@ class ACLAPITest(AironeViewTest):
         roles = [Role.objects.create(name="role-%d" % i) for i in range(2)]
         for role in roles:
             role.admin_users.add(user)
-            role.permissions.add(acl.full)
+            acl.full.roles.add(role)
 
         resp = self.client.put(
             "/acl/api/v2/acls/%s" % acl.id,

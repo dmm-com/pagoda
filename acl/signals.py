@@ -1,4 +1,3 @@
-from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -6,6 +5,7 @@ from django.dispatch import receiver
 from airone.lib.acl import ACLType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
+from role.models import HistoricalPermission
 
 from .models import ACLBase
 
@@ -14,7 +14,7 @@ def create_permission(instance):
     content_type = ContentType.objects.get_for_model(instance)
     for acltype in ACLType.availables():
         codename = "%s.%s" % (instance.id, acltype.id)
-        Permission(name=acltype.name, codename=codename, content_type=content_type).save()
+        HistoricalPermission(name=acltype.name, codename=codename, content_type=content_type).save()
 
 
 @receiver(post_save, sender=ACLBase)

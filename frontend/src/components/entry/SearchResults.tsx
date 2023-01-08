@@ -53,7 +53,7 @@ interface Props {
   handleChangePage: (page: number) => void;
   defaultEntryFilter?: string;
   defaultReferralFilter?: string;
-  defaultAttrsFilter?: any;
+  defaultAttrsFilter?: { [key: string]: string };
 }
 
 export const SearchResults: FC<Props> = ({
@@ -68,16 +68,16 @@ export const SearchResults: FC<Props> = ({
   const location = useLocation();
   const history = useHistory();
 
-  const [entryFilter, entryFilterDispatcher] = useReducer((_, event) => {
-    return event.target.value;
-  }, defaultEntryFilter ?? "");
-  const [referralFilter, referralFilterDispatcher] = useReducer((_, event) => {
-    return event.target.value;
-  }, defaultReferralFilter ?? "");
+  const [entryFilter, entryFilterDispatcher] = useReducer(
+    (_, event) => event.target.value,
+    defaultEntryFilter ?? ""
+  );
+  const [referralFilter, referralFilterDispatcher] = useReducer(
+    (_, event) => event.target.value,
+    defaultReferralFilter ?? ""
+  );
   const [attrsFilter, attrsFilterDispatcher] = useReducer(
-    (state, { event, name }) => {
-      return { ...state, [name]: event.target.value };
-    },
+    (state, { event, name }) => ({ ...state, [name]: event.target.value }),
     defaultAttrsFilter ?? []
   );
 
@@ -91,9 +91,10 @@ export const SearchResults: FC<Props> = ({
       params.set(
         "attrinfo",
         JSON.stringify(
-          Object.keys(attrsFilter).map((key) => {
-            return { name: key, keyword: attrsFilter[key] };
-          })
+          Object.keys(attrsFilter).map((key) => ({
+            name: key,
+            keyword: attrsFilter[key],
+          }))
         )
       );
 

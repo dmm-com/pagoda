@@ -64,7 +64,7 @@ export const EditUserPage: FC = () => {
 
   useEffect(() => {
     if (!user.loading && user.value !== undefined && userInfo.id == 0) {
-      setUserInfo(user.value);
+      _setUserInfo(user.value);
     }
   }, [user]);
 

@@ -191,7 +191,7 @@ export const EntryDetailsPage: FC<Props> = ({
             borderColor: "#0000008A",
           }}
         >
-          <EntryReferral entityId={entityId} entryId={entryId} />
+          <EntryReferral entryId={entryId} />
         </Grid>
         <Grid item xs={4}>
           {[

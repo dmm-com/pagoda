@@ -105,6 +105,12 @@ const MenuBox = styled(Box)(({}) => ({
   },
 }));
 
+const SearchBoxWrapper = styled(Box)(({}) => ({
+  display: "flex",
+  alignItems: "center",
+  width: "240px",
+}));
+
 export const Header: FC = () => {
   const [query, submitQuery] = useSimpleSearch();
 
@@ -147,7 +153,7 @@ export const Header: FC = () => {
               <Title fontSize="24px" component={Link} to={topPath()}>
                 AirOne
               </Title>
-              <Version fontSize="16px" title={djangoContext.version}>
+              <Version fontSize="12px" title={djangoContext.version}>
                 {djangoContext.version}
               </Version>
             </TitleBox>
@@ -240,7 +246,7 @@ export const Header: FC = () => {
                   </Typography>
                 </MenuItem>
               </Menu>
-              <Box display="flex" alignItems="center">
+              <SearchBoxWrapper>
                 <SearchBox
                   placeholder="Search"
                   defaultValue={query}
@@ -249,7 +255,7 @@ export const Header: FC = () => {
                   }}
                   inputSx={{ height: "42px" }}
                 />
-              </Box>
+              </SearchBoxWrapper>
             </MenuBox>
           </StyledToolbar>
         </StyledAppBar>

@@ -63,11 +63,10 @@ export const EntityList: FC<Props> = ({
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onKeyPress={(e) => {
-              if (e.key === "Enter") {
+              e.key === "Enter" &&
                 handleChangeQuery(
                   keyword.length > 0 ? normalizeToMatch(keyword) : undefined
                 );
-              }
             }}
           />
         </Box>

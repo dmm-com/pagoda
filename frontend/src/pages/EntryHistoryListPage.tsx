@@ -1,7 +1,7 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton, Typography } from "@mui/material";
-import React, { FC, useCallback, useMemo, useState } from "react";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import React, { FC, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { entitiesPath, entityPath, entryDetailsPath, topPath } from "../Routes";
@@ -10,16 +10,15 @@ import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
 import { EntryControlMenu } from "../components/entry/EntryControlMenu";
 import { EntryHistoryList } from "../components/entry/EntryHistoryList";
+import { usePage } from "../hooks/usePage";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { EntryHistoryList as ConstEntryHistoryList } from "../utils/Constants";
 
 export const EntryHistoryListPage: FC = () => {
   const { entryId } = useTypedParams<{ entryId: number }>();
 
-  const history = useHistory();
-  const location = useLocation();
+  const [page, changePage] = usePage();
 
-  const [page, setPage] = useState(1);
   const [entryAnchorEl, setEntryAnchorEl] =
     useState<HTMLButtonElement | null>();
 
@@ -31,15 +30,6 @@ export const EntryHistoryListPage: FC = () => {
   const histories = useAsync(async () => {
     return await aironeApiClientV2.getEntryHistories(entryId, page);
   }, [entryId, page]);
-
-  const handleChangePage = useCallback((newPage: number) => {
-    setPage(newPage);
-
-    history.push({
-      pathname: location.pathname,
-      search: `?page=${newPage}`,
-    });
-  }, []);
 
   const maxPage = useMemo(() => {
     if (histories.loading) {
@@ -129,7 +119,7 @@ export const EntryHistoryListPage: FC = () => {
               entryId={entryId}
               page={page}
               maxPage={maxPage}
-              handleChangePage={handleChangePage}
+              handleChangePage={changePage}
             />
           )}
         </Box>

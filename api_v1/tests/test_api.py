@@ -491,7 +491,7 @@ class APITest(AironeViewTest):
 
         # Set permisson to create new entry
         role = Role.objects.create(name="Role")
-        role.permissions.add(entity.writable)
+        entity.writable.roles.add(role)
         role.users.add(guest)
 
         # checks that we can create an entry but attr2 doesn't set because
@@ -980,7 +980,7 @@ class APITest(AironeViewTest):
         # would not be inherited from EntityAttr to Attribute. To confirm that the bug is corrected,
         # this create multiple users ('_u1' and '_u2').
         role = Role.objects.create(name="Role")
-        role.permissions.add(entity_attr.full)
+        entity_attr.full.roles.add(role)
         for user in users.values():
             role.users.add(user)
 

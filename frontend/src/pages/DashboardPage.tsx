@@ -41,6 +41,10 @@ const Result = styled(Typography)(({ theme }) => ({
   textOverflow: "ellipsis",
 })) as OverridableComponent<TypographyTypeMap>;
 
+const ResultEntityForEntry = styled(Typography)(({ theme }) => ({
+  color: "gray",
+}));
+
 export const DashboardPage: FC = () => {
   const history = useHistory();
   const location = useLocation();
@@ -78,19 +82,24 @@ export const DashboardPage: FC = () => {
             onKeyPress={(e) => {
               e.key === "Enter" && submitQuery(e.target.value);
             }}
+            autoFocus
           />
           {entries.loading ? (
             <Loading />
           ) : entries.value ? (
             <ResultBox>
               {entries.value.map((entry) => (
-                <Result
-                  key={entry.id}
-                  component={Link}
-                  to={entryDetailsPath(entry.schema.id, entry.id)}
-                >
-                  {entry.name}
-                </Result>
+                <Box key={entry.id}>
+                  <Result
+                    component={Link}
+                    to={entryDetailsPath(entry.schema.id, entry.id)}
+                  >
+                    {entry.name}
+                  </Result>
+                  <ResultEntityForEntry>
+                    {entry.schema.name}
+                  </ResultEntityForEntry>
+                </Box>
               ))}
             </ResultBox>
           ) : entities.loading ? (

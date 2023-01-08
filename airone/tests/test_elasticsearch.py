@@ -211,6 +211,7 @@ class ElasticSearchTest(TestCase):
                             {
                                 "bool": {
                                     "should": [
+                                        {"match": {"name": "hoge|fuga&1"}},
                                         {
                                             "bool": {
                                                 "should": [

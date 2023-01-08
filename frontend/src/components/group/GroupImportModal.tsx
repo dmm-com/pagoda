@@ -30,8 +30,8 @@ export const GroupImportModal: FC<Props> = ({
   openImportModal,
   closeImportModal,
 }) => {
-  const handleImport = useCallback(async (formData: FormData) => {
-    await aironeApiClientV2.importGroups(formData);
+  const handleImport = useCallback(async (data: string | ArrayBuffer) => {
+    await aironeApiClientV2.importGroups(data);
   }, []);
 
   return (

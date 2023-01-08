@@ -3,7 +3,7 @@ import React, { ReactElement, FC, SyntheticEvent, useState } from "react";
 
 interface Props {
   componentGenerator: (handleOpen: () => void) => ReactElement;
-  dialogTitle: any;
+  dialogTitle: string;
   onClickYes: (e: SyntheticEvent) => void;
 }
 

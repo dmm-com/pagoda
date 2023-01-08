@@ -7,6 +7,7 @@ from django.db import models
 from django.utils.timezone import make_aware
 
 from airone.lib.acl import ACLObjType, ACLType
+from role.models import HistoricalPermission
 from user.models import User
 
 
@@ -45,13 +46,21 @@ class ACLBase(models.Model):
     # This fields describes the sub-class of this object
     objtype = models.IntegerField(default=0)
 
+    def save_without_historical_record(self, *args, **kwargs):
+        self.skip_history_when_saving = True
+        try:
+            ret = self.save(*args, **kwargs)
+        finally:
+            del self.skip_history_when_saving
+        return ret
+
     def set_status(self, val):
         self.status |= val
-        self.save(update_fields=["status"])
+        self.save_without_historical_record(update_fields=["status"])
 
     def del_status(self, val):
         self.status &= ~val
-        self.save(update_fields=["status"])
+        self.save_without_historical_record(update_fields=["status"])
 
     def get_status(self, val):
         return self.status & val
@@ -94,7 +103,7 @@ class ACLBase(models.Model):
         return self._get_permission(ACLType.Full.id)
 
     def _get_permission(self, acltype):
-        return Permission.objects.get(codename="%s.%s" % (self.id, acltype))
+        return HistoricalPermission.objects.get(codename="%s.%s" % (self.id, acltype))
 
     def get_subclass_object(self):
         # Use importlib to prevent circular import
