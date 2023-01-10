@@ -528,3 +528,8 @@ class ElasticSearchTest(TestCase):
                 key=lambda x: x["entry"]["id"],
             ),
         )
+
+        # Specify -1 for limit
+        results = elasticsearch.make_search_results(self._user, res, [], "", limit=-1, offset=0)
+        self.assertEqual(results["ret_count"], len(entries))
+        self.assertEqual(results["ret_values"], [])
