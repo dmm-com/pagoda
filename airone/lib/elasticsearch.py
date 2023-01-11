@@ -858,7 +858,7 @@ def make_search_results(
     hit_entries = Entry.objects.filter(id__in=hit_entry_ids, is_active=True)
 
     hit_infos: Dict = {}
-    for entry in hit_entries[offset : offset + limit]:
+    for entry in hit_entries[offset : max(0, offset + limit)]:
         hit_infos[entry] = [x["_source"] for x in res["hits"]["hits"] if int(x["_id"]) == entry.id][
             0
         ]
