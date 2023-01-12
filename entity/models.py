@@ -1,10 +1,9 @@
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType
 from webhook.models import Webhook
-
-from simple_history.models import HistoricalRecords
 
 
 class EntityAttr(ACLBase):
@@ -46,6 +45,14 @@ class EntityAttr(ACLBase):
 
         # This means that all specified parameters are same with current object's ones.
         return False
+
+    def referral_clear(self):
+        # In order not to leave a historical record
+        self.skip_history_when_saving = True
+        try:
+            self.referral.clear()
+        finally:
+            del self.skip_history_when_saving
 
 
 class Entity(ACLBase):

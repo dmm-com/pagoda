@@ -104,6 +104,7 @@ def edit_entity(self, job_id):
 
         # update processing for each attrs
         deleted_attr_ids = []
+        adding_attrs = []
         for attr in recv_data["attrs"]:
             if "deleted" in attr:
                 # In case of deleting attribute which has been already existed
@@ -146,7 +147,7 @@ def edit_entity(self, job_id):
 
                     if attr_obj.type & AttrTypeValue["object"]:
                         # the case of an attribute that has referral entry
-                        attr_obj.referral.clear()
+                        attr_obj.referral_clear()
                         attr_obj.referral.add(*[Entity.objects.get(id=x) for x in attr["ref_ids"]])
 
                     attr_obj.save()
@@ -168,10 +169,13 @@ def edit_entity(self, job_id):
                     [attr_obj.referral.add(Entity.objects.get(id=x)) for x in attr["ref_ids"]]
 
                 # add a new attribute on the existed Entries
-                entity.attrs.add(attr_obj)
+                adding_attrs.append(attr_obj)
 
                 # register History to register adding EntityAttr
                 history.add_attr(attr_obj)
+
+        if adding_attrs:
+            entity.attrs.add(*adding_attrs)
 
         Job.new_update_documents(entity, "", jp_update_es_document).run()
 

@@ -497,6 +497,13 @@ class ViewTest(AironeViewTest):
                     "is_mandatory": True,
                     "row_index": "2",
                 },
+                {
+                    "name": "baz",
+                    "type": str(AttrTypeStr),
+                    "is_delete_in_chain": False,
+                    "is_mandatory": True,
+                    "row_index": "3",
+                },
             ],
         }
         resp = self.client.post(
@@ -507,15 +514,15 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Entity.objects.get(id=entity.id).name, "foo")
         self.assertEqual(Entity.objects.get(id=entity.id).note, "bar")
-        self.assertEqual(Entity.objects.get(id=entity.id).attrs.count(), 2)
+        self.assertEqual(Entity.objects.get(id=entity.id).attrs.count(), 3)
         self.assertEqual(Entity.objects.get(id=entity.id).attrs.get(id=attr.id).name, "foo")
-        self.assertEqual(Entity.objects.get(id=entity.id).attrs.last().name, "bar")
+        self.assertEqual(Entity.objects.get(id=entity.id).attrs.last().name, "baz")
         self.assertTrue(Entity.objects.get(id=entity.id).status & Entity.STATUS_TOP_LEVEL)
 
         # tests for operation history is registered correctly
-        self.assertEqual(History.objects.count(), 5)
+        self.assertEqual(History.objects.count(), 6)
         self.assertEqual(History.objects.filter(operation=History.MOD_ENTITY).count(), 2)
-        self.assertEqual(History.objects.filter(operation=History.ADD_ATTR).count(), 1)
+        self.assertEqual(History.objects.filter(operation=History.ADD_ATTR).count(), 2)
         self.assertEqual(History.objects.filter(operation=History.MOD_ATTR).count(), 2)
 
         # tests for historical records
@@ -530,7 +537,7 @@ class ViewTest(AironeViewTest):
             [
                 {"entity": entity.id, "entityattr": x.id}
                 for x in entity.attrs.filter(is_active=True)
-                if x.name != "bar"
+                if x.name not in ["bar", "baz"]
             ],
         )
         self.assertEqual(

@@ -241,7 +241,7 @@ class EntitySerializer(serializers.ModelSerializer):
 
             # set referrals if necessary
             if entity_attr.type & AttrTypeValue["object"]:
-                entity_attr.referral.clear()
+                entity_attr.referral_clear()
                 [entity_attr.referral.add(x) for x in attr_referrals]
 
             # make association with Entity and EntityAttrs
