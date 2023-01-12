@@ -8,10 +8,9 @@ import {
   Grid,
   IconButton,
   Stack,
-  Theme,
   Typography,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { Element, scroller } from "react-scroll";
@@ -33,13 +32,11 @@ import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
 
-const useStyles = makeStyles<Theme>(() => ({
-  title: {
-    height: "72px",
-    maxWidth: "700px",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
+const Title = styled(Typography)(({}) => ({
+  height: "72px",
+  maxWidth: "700px",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
 }));
 
 interface Props {
@@ -57,8 +54,6 @@ export const EntryDetailsPage: FC<Props> = ({
   additionalContents = [],
   sideContent = <Box />,
 }) => {
-  const classes = useStyles();
-
   const { entityId, entryId } =
     useTypedParams<{ entityId: number; entryId: number }>();
   const history = useHistory();
@@ -122,9 +117,9 @@ export const EntryDetailsPage: FC<Props> = ({
             alignItems="center"
           >
             {!entry.loading && (
-              <Typography variant="h2" align="center" className={classes.title}>
+              <Title variant="h2" align="center">
                 {entry.value.name}
-              </Typography>
+              </Title>
             )}
             <Typography variant="h4" align="center">
               エントリ詳細

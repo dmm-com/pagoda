@@ -1,6 +1,6 @@
-import { Box, Typography } from "@mui/material";
-import { Theme } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { Box, Typography, TypographyTypeMap } from "@mui/material";
+import { OverridableComponent } from "@mui/material/OverridableComponent";
+import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -13,38 +13,39 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    display: "flex",
-    width: "100%",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  dashboard: {
-    width: theme.breakpoints.values.lg,
-    marginTop: "256px",
-  },
-  resultBox: {
-    marginTop: "80px",
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "32px",
-  },
-  resultEntityForEntry: {
-    color: "gray",
-  },
-  result: {
-    color: theme.palette.primary.main,
-    textDecoration: "none",
-    flexGrow: 1,
-    maxWidth: theme.breakpoints.values.lg,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
+const Container = styled(Box)(({}) => ({
+  display: "flex",
+  width: "100%",
+  flexDirection: "column",
+  alignItems: "center",
+}));
+
+const Dashboard = styled(Box)(({ theme }) => ({
+  width: theme.breakpoints.values.lg,
+  marginTop: "256px",
+}));
+
+const ResultBox = styled(Box)(({}) => ({
+  marginTop: "80px",
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "32px",
+}));
+
+const Result = styled(Typography)(({ theme }) => ({
+  color: theme.palette.primary.main,
+  textDecoration: "none",
+  flexGrow: 1,
+  maxWidth: theme.breakpoints.values.lg,
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+})) as OverridableComponent<TypographyTypeMap>;
+
+const ResultEntityForEntry = styled(Typography)(({ theme }) => ({
+  color: "gray",
 }));
 
 export const DashboardPage: FC = () => {
-  const classes = useStyles();
   const history = useHistory();
   const location = useLocation();
 
@@ -73,8 +74,8 @@ export const DashboardPage: FC = () => {
         <Typography color="textPrimary">Top</Typography>
       </AironeBreadcrumbs>
 
-      <Box className={classes.container}>
-        <Box className={classes.dashboard}>
+      <Container>
+        <Dashboard>
           <SearchBox
             placeholder="Search"
             defaultValue={query}
@@ -86,40 +87,38 @@ export const DashboardPage: FC = () => {
           {entries.loading ? (
             <Loading />
           ) : entries.value ? (
-            <Box className={classes.resultBox}>
+            <ResultBox>
               {entries.value.map((entry) => (
                 <Box key={entry.id}>
-                  <Typography
-                    className={classes.result}
+                  <Result
                     component={Link}
                     to={entryDetailsPath(entry.schema.id, entry.id)}
                   >
                     {entry.name}
-                  </Typography>
-                  <Typography className={classes.resultEntityForEntry}>
+                  </Result>
+                  <ResultEntityForEntry>
                     {entry.schema.name}
-                  </Typography>
+                  </ResultEntityForEntry>
                 </Box>
               ))}
-            </Box>
+            </ResultBox>
           ) : entities.loading ? (
             <Loading />
           ) : (
-            <Box className={classes.resultBox}>
+            <ResultBox>
               {entities.value.results.map((entity) => (
-                <Typography
+                <Result
                   key={entity.id}
-                  className={classes.result}
                   component={Link}
                   to={entityEntriesPath(entity.id)}
                 >
                   {entity.name}
-                </Typography>
+                </Result>
               ))}
-            </Box>
+            </ResultBox>
           )}
-        </Box>
-      </Box>
+        </Dashboard>
+      </Container>
     </Box>
   );
 };

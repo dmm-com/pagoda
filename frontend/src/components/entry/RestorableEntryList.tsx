@@ -17,11 +17,9 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Theme,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { makeStyles } from "@mui/styles";
 import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -42,22 +40,20 @@ interface Props {
   initialKeyword?: string | null;
 }
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  modal: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: "5% 0",
-  },
-  paper: {
-    backgroundColor: theme.palette.background.paper,
-    border: "1px solid #000",
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 2),
-    width: "50%",
-    maxHeight: "100%",
-    overflowY: "scroll",
-  },
+const StyledModal = styled(Modal)(({}) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+}));
+
+const PaperBox = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  backgroundColor: theme.palette.background.paper,
+  border: "2px solid #000",
+  boxShadow: theme.shadows[5],
+  padding: theme.spacing(2, 3, 1),
+  width: "50%",
 }));
 
 const StyledTableRow = styled(TableRow)(() => ({
@@ -73,8 +69,6 @@ export const RestorableEntryList: FC<Props> = ({
   entityId,
   initialKeyword,
 }) => {
-  const classes = useStyles();
-
   const history = useHistory();
 
   const [page, changePage] = usePage();
@@ -187,14 +181,13 @@ export const RestorableEntryList: FC<Props> = ({
           />
         </Stack>
       </Box>
-      <Modal
+      <StyledModal
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"
-        className={classes.modal}
         open={openModal}
         onClose={() => setOpenModal(false)}
       >
-        <Box className={classes.paper}>
+        <PaperBox>
           {!entryDetail.loading && entryDetail.value != null && (
             <>
               <Typography color="primary" my={2}>
@@ -281,8 +274,8 @@ export const RestorableEntryList: FC<Props> = ({
               </Box>
             </>
           )}
-        </Box>
-      </Modal>
+        </PaperBox>
+      </StyledModal>
     </Box>
   );
 };

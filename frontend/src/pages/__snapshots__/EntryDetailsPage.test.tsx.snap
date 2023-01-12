@@ -9,13 +9,13 @@ Object {
         class="MuiBox-root css-1ylu0bo"
       >
         <div
-          class="makeStyles-frame-2 MuiBox-root css-0"
+          class="MuiBox-root css-1baykhj"
         >
           <div
-            class="makeStyles-fixed-3 MuiBox-root css-0"
+            class="MuiBox-root css-t0pdf1"
           >
             <div
-              class="makeStyles-breadcrumb-4 MuiBox-root css-0"
+              class="MuiBox-root css-jqffe8"
             >
               <nav
                 aria-label="breadcrumb"
@@ -129,7 +129,7 @@ Object {
               class="MuiBox-root css-1xanpi5"
             >
               <h2
-                class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter makeStyles-title-1 css-icizyq-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter css-168jr9t-MuiTypography-root"
               >
                 aaa
               </h2>
@@ -242,7 +242,7 @@ Object {
                     <input
                       aria-invalid="false"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                      id="mui-1"
+                      id=":r0:"
                       placeholder="エントリを絞り込む"
                       type="text"
                       value=""
@@ -357,9 +357,6 @@ Object {
                         aaa
                       </span>
                     </div>
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </a>
                 </li>
               </ul>
@@ -428,13 +425,13 @@ Object {
       class="MuiBox-root css-1ylu0bo"
     >
       <div
-        class="makeStyles-frame-2 MuiBox-root css-0"
+        class="MuiBox-root css-1baykhj"
       >
         <div
-          class="makeStyles-fixed-3 MuiBox-root css-0"
+          class="MuiBox-root css-t0pdf1"
         >
           <div
-            class="makeStyles-breadcrumb-4 MuiBox-root css-0"
+            class="MuiBox-root css-jqffe8"
           >
             <nav
               aria-label="breadcrumb"
@@ -548,7 +545,7 @@ Object {
             class="MuiBox-root css-1xanpi5"
           >
             <h2
-              class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter makeStyles-title-1 css-icizyq-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-h2 MuiTypography-alignCenter css-168jr9t-MuiTypography-root"
             >
               aaa
             </h2>
@@ -661,7 +658,7 @@ Object {
                   <input
                     aria-invalid="false"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                    id="mui-1"
+                    id=":r0:"
                     placeholder="エントリを絞り込む"
                     type="text"
                     value=""
@@ -776,9 +773,6 @@ Object {
                       aaa
                     </span>
                   </div>
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
                 </a>
               </li>
             </ul>

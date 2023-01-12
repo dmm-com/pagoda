@@ -9,13 +9,13 @@ Object {
         class="MuiBox-root css-0"
       >
         <div
-          class="makeStyles-frame-3 MuiBox-root css-0"
+          class="MuiBox-root css-1baykhj"
         >
           <div
-            class="makeStyles-fixed-4 MuiBox-root css-0"
+            class="MuiBox-root css-t0pdf1"
           >
             <div
-              class="makeStyles-breadcrumb-5 MuiBox-root css-0"
+              class="MuiBox-root css-jqffe8"
             >
               <nav
                 aria-label="breadcrumb"
@@ -133,19 +133,19 @@ Object {
           </div>
         </div>
         <div
-          class="makeStyles-frame-6 MuiBox-root css-0"
+          class="MuiBox-root css-ms4ept"
         >
           <div
-            class="makeStyles-fixed-7 MuiBox-root css-0"
+            class="MuiBox-root css-t1gim7"
           >
             <div
-              class="makeStyles-headerTop-8 MuiBox-root css-0"
+              class="MuiBox-root css-1l6yv0h"
             >
               <div
-                class="makeStyles-titleBox-10 MuiBox-root css-0"
+                class="MuiBox-root css-cty2cs"
               >
                 <h2
-                  class="MuiTypography-root MuiTypography-h2 makeStyles-title-11 css-1l0a44s-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
                 >
                   aaa
                 </h2>
@@ -177,15 +177,12 @@ Object {
                         d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
                       />
                     </svg>
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </button>
                 </div>
               </div>
             </div>
             <div
-              class="makeStyles-headerBottom-9 MuiBox-root css-0"
+              class="MuiBox-root css-1k68zpd"
             >
               <p
                 class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -200,14 +197,12 @@ Object {
                     class="MuiBox-root css-qbrse1"
                   >
                     <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                      tabindex="0"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                      disabled=""
+                      tabindex="-1"
                       type="button"
                     >
                       保存
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
                     </button>
                   </div>
                   <div
@@ -219,9 +214,6 @@ Object {
                       type="button"
                     >
                       キャンセル
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
                     </button>
                   </div>
                 </div>
@@ -234,137 +226,7 @@ Object {
         </div>
         <div
           class="MuiBox-root css-0"
-        >
-          <div
-            class="MuiContainer-root MuiContainer-maxWidthLg css-1xj0tee-MuiContainer-root"
-          >
-            <div
-              class="MuiBox-root css-zeb0dz"
-            >
-              <div
-                class="MuiBox-root css-1ynyhby"
-              >
-                <a
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium css-1j6pvl9-MuiButtonBase-root-MuiButton-root"
-                  href="#name"
-                  tabindex="0"
-                >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-nnsfc0-MuiTypography-root"
-                  >
-                    エントリ名
-                  </p>
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1e59vt9-MuiSvgIcon-root"
-                    data-testid="ArrowDropDownIcon"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="m7 10 5 5 5-5z"
-                    />
-                  </svg>
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
-                </a>
-              </div>
-            </div>
-            <table
-              class="MuiTable-root css-rqglhn-MuiTable-root"
-            >
-              <thead
-                class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
-              >
-                <tr
-                  class="MuiTableRow-root MuiTableRow-head css-sabv7l-MuiTableRow-root"
-                >
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1n3qs91-MuiTableCell-root"
-                    scope="col"
-                  >
-                    項目
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1si6mlk-MuiTableCell-root"
-                    scope="col"
-                  >
-                    内容
-                  </th>
-                </tr>
-              </thead>
-              <tbody
-                class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-              >
-                <tr
-                  class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
-                >
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  >
-                    <div
-                      class="MuiBox-root css-70qvj9"
-                    >
-                      <a
-                        class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-10j0koh-MuiTypography-root-MuiLink-root"
-                        id="name"
-                      />
-                      <p
-                        class="MuiTypography-root MuiTypography-body1 css-1oc1ahk-MuiTypography-root"
-                      >
-                        エントリ名
-                      </p>
-                      <p
-                        class="MuiTypography-root MuiTypography-body1 css-14u9v9j-MuiTypography-root"
-                      >
-                        必須
-                      </p>
-                    </div>
-                  </td>
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  >
-                    <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth css-sje21u-MuiInputBase-root-MuiInput-root"
-                    >
-                      <input
-                        aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                        type="text"
-                        value="aaa"
-                      />
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <div
-              class="MuiBox-root css-4k7i6c"
-            >
-              <button
-                class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-primary MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-primary css-1suf56w-MuiButtonBase-root-MuiFab-root"
-                tabindex="0"
-                type="button"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                  data-testid="KeyboardArrowUpRoundedIcon"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M8.12 14.71 12 10.83l3.88 3.88c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L12.7 8.71a.9959.9959 0 0 0-1.41 0L6.7 13.3c-.39.39-.39 1.02 0 1.41.39.38 1.03.39 1.42 0z"
-                  />
-                </svg>
-                <span
-                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
-        </div>
+        />
       </div>
     </div>
   </body>,
@@ -373,13 +235,13 @@ Object {
       class="MuiBox-root css-0"
     >
       <div
-        class="makeStyles-frame-3 MuiBox-root css-0"
+        class="MuiBox-root css-1baykhj"
       >
         <div
-          class="makeStyles-fixed-4 MuiBox-root css-0"
+          class="MuiBox-root css-t0pdf1"
         >
           <div
-            class="makeStyles-breadcrumb-5 MuiBox-root css-0"
+            class="MuiBox-root css-jqffe8"
           >
             <nav
               aria-label="breadcrumb"
@@ -497,19 +359,19 @@ Object {
         </div>
       </div>
       <div
-        class="makeStyles-frame-6 MuiBox-root css-0"
+        class="MuiBox-root css-ms4ept"
       >
         <div
-          class="makeStyles-fixed-7 MuiBox-root css-0"
+          class="MuiBox-root css-t1gim7"
         >
           <div
-            class="makeStyles-headerTop-8 MuiBox-root css-0"
+            class="MuiBox-root css-1l6yv0h"
           >
             <div
-              class="makeStyles-titleBox-10 MuiBox-root css-0"
+              class="MuiBox-root css-cty2cs"
             >
               <h2
-                class="MuiTypography-root MuiTypography-h2 makeStyles-title-11 css-1l0a44s-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
               >
                 aaa
               </h2>
@@ -541,15 +403,12 @@ Object {
                       d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
                     />
                   </svg>
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
                 </button>
               </div>
             </div>
           </div>
           <div
-            class="makeStyles-headerBottom-9 MuiBox-root css-0"
+            class="MuiBox-root css-1k68zpd"
           >
             <p
               class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -564,14 +423,12 @@ Object {
                   class="MuiBox-root css-qbrse1"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                    tabindex="0"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                    disabled=""
+                    tabindex="-1"
                     type="button"
                   >
                     保存
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </button>
                 </div>
                 <div
@@ -583,9 +440,6 @@ Object {
                     type="button"
                   >
                     キャンセル
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </button>
                 </div>
               </div>
@@ -598,137 +452,7 @@ Object {
       </div>
       <div
         class="MuiBox-root css-0"
-      >
-        <div
-          class="MuiContainer-root MuiContainer-maxWidthLg css-1xj0tee-MuiContainer-root"
-        >
-          <div
-            class="MuiBox-root css-zeb0dz"
-          >
-            <div
-              class="MuiBox-root css-1ynyhby"
-            >
-              <a
-                class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium css-1j6pvl9-MuiButtonBase-root-MuiButton-root"
-                href="#name"
-                tabindex="0"
-              >
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-nnsfc0-MuiTypography-root"
-                >
-                  エントリ名
-                </p>
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1e59vt9-MuiSvgIcon-root"
-                  data-testid="ArrowDropDownIcon"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="m7 10 5 5 5-5z"
-                  />
-                </svg>
-                <span
-                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                />
-              </a>
-            </div>
-          </div>
-          <table
-            class="MuiTable-root css-rqglhn-MuiTable-root"
-          >
-            <thead
-              class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
-            >
-              <tr
-                class="MuiTableRow-root MuiTableRow-head css-sabv7l-MuiTableRow-root"
-              >
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1n3qs91-MuiTableCell-root"
-                  scope="col"
-                >
-                  項目
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1si6mlk-MuiTableCell-root"
-                  scope="col"
-                >
-                  内容
-                </th>
-              </tr>
-            </thead>
-            <tbody
-              class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-            >
-              <tr
-                class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
-              >
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                >
-                  <div
-                    class="MuiBox-root css-70qvj9"
-                  >
-                    <a
-                      class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-10j0koh-MuiTypography-root-MuiLink-root"
-                      id="name"
-                    />
-                    <p
-                      class="MuiTypography-root MuiTypography-body1 css-1oc1ahk-MuiTypography-root"
-                    >
-                      エントリ名
-                    </p>
-                    <p
-                      class="MuiTypography-root MuiTypography-body1 css-14u9v9j-MuiTypography-root"
-                    >
-                      必須
-                    </p>
-                  </div>
-                </td>
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                >
-                  <div
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth css-sje21u-MuiInputBase-root-MuiInput-root"
-                  >
-                    <input
-                      aria-invalid="false"
-                      class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                      type="text"
-                      value="aaa"
-                    />
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div
-            class="MuiBox-root css-4k7i6c"
-          >
-            <button
-              class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-primary MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-primary css-1suf56w-MuiButtonBase-root-MuiFab-root"
-              tabindex="0"
-              type="button"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                data-testid="KeyboardArrowUpRoundedIcon"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M8.12 14.71 12 10.83l3.88 3.88c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L12.7 8.71a.9959.9959 0 0 0-1.41 0L6.7 13.3c-.39.39-.39 1.02 0 1.41.39.38 1.03.39 1.42 0z"
-                />
-              </svg>
-              <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
-            </button>
-          </div>
-        </div>
-      </div>
+      />
     </div>
   </div>,
   "debug": [Function],

@@ -8,10 +8,12 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Theme,
   Typography,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { ExtendButtonBaseTypeMap } from "@mui/material/ButtonBase/ButtonBase";
+import { IconButtonTypeMap } from "@mui/material/IconButton/IconButton";
+import { OverridableComponent } from "@mui/material/OverridableComponent";
+import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC } from "react";
 import { Link, useHistory } from "react-router-dom";
@@ -23,14 +25,11 @@ import { Loading } from "../common/Loading";
 
 import { rolePath, rolesPath, topPath } from "Routes";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  button: {
-    margin: theme.spacing(1),
-  },
-}));
+const StyledIconButton = styled(IconButton)(({ theme }) => ({
+  margin: theme.spacing(1),
+})) as OverridableComponent<ExtendButtonBaseTypeMap<IconButtonTypeMap>>;
 
 export const RoleList: FC = ({}) => {
-  const classes = useStyles();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -131,25 +130,18 @@ export const RoleList: FC = ({}) => {
                 <TableCell>
                   <Confirmable
                     componentGenerator={(handleOpen) => (
-                      <IconButton
-                        className={classes.button}
-                        onClick={handleOpen}
-                      >
+                      <StyledIconButton onClick={handleOpen}>
                         <DeleteOutlineIcon />
-                      </IconButton>
+                      </StyledIconButton>
                     )}
                     dialogTitle="本当に削除しますか？"
                     onClickYes={() => handleDelete(role.id)}
                   />
                 </TableCell>
                 <TableCell>
-                  <IconButton
-                    className={classes.button}
-                    component={Link}
-                    to={rolePath(role.id)}
-                  >
+                  <StyledIconButton component={Link} to={rolePath(role.id)}>
                     <EditOutlinedIcon />
-                  </IconButton>
+                  </StyledIconButton>
                 </TableCell>
               </TableRow>
             ))}

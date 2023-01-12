@@ -4,10 +4,9 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Theme,
   Typography,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useError } from "react-use";
@@ -19,21 +18,21 @@ import { toError } from "./utils/ResponseUtil";
 
 import { topPath } from "Routes";
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  errorDescription: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
-  },
-  errorDetails: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  },
-  buttons: {
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(2),
-    display: "flex",
-    justifyContent: "flex-end",
-  },
+const ErrorDescription = styled(Box)(({ theme }) => ({
+  marginTop: theme.spacing(2),
+  marginBottom: theme.spacing(2),
+}));
+
+const ErrorDetails = styled(Box)(({ theme }) => ({
+  marginTop: theme.spacing(1),
+  marginBottom: theme.spacing(1),
+}));
+
+const Buttons = styled(Box)(({ theme }) => ({
+  marginTop: theme.spacing(2),
+  marginBottom: theme.spacing(2),
+  display: "flex",
+  justifyContent: "flex-end",
 }));
 
 interface GenericErrorProps {
@@ -45,7 +44,6 @@ interface Props {
 }
 
 const GenericError: FC<GenericErrorProps> = ({ children }) => {
-  const classes = useStyles();
   const [open, setOpen] = useState(true);
 
   const handleClickGoToTop = () => {
@@ -56,18 +54,18 @@ const GenericError: FC<GenericErrorProps> = ({ children }) => {
     <Dialog open={open} onClose={() => setOpen(false)}>
       <DialogTitle>エラーが発生しました</DialogTitle>
       <DialogContent>
-        <Box className={classes.errorDescription}>
+        <ErrorDescription>
           <Typography>
             不明なエラーが発生しました。トップページに戻って操作し直してください
           </Typography>
           <Typography>
             エラーが繰り返し発生する場合は管理者にお問い合わせください
           </Typography>
-        </Box>
-        <Box className={classes.errorDetails}>
+        </ErrorDescription>
+        <ErrorDetails>
           <Typography variant="body2">エラー詳細: {children}</Typography>
-        </Box>
-        <Box className={classes.buttons}>
+        </ErrorDetails>
+        <Buttons>
           <Button
             variant="outlined"
             color="secondary"
@@ -75,7 +73,7 @@ const GenericError: FC<GenericErrorProps> = ({ children }) => {
           >
             トップページに戻る
           </Button>
-        </Box>
+        </Buttons>
       </DialogContent>
     </Dialog>
   );

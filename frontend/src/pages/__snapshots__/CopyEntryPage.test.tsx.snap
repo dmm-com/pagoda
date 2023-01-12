@@ -9,13 +9,13 @@ Object {
         class="MuiBox-root css-0"
       >
         <div
-          class="makeStyles-frame-3 MuiBox-root css-0"
+          class="MuiBox-root css-1baykhj"
         >
           <div
-            class="makeStyles-fixed-4 MuiBox-root css-0"
+            class="MuiBox-root css-t0pdf1"
           >
             <div
-              class="makeStyles-breadcrumb-5 MuiBox-root css-0"
+              class="MuiBox-root css-jqffe8"
             >
               <nav
                 aria-label="breadcrumb"
@@ -133,19 +133,19 @@ Object {
           </div>
         </div>
         <div
-          class="makeStyles-frame-6 MuiBox-root css-0"
+          class="MuiBox-root css-ms4ept"
         >
           <div
-            class="makeStyles-fixed-7 MuiBox-root css-0"
+            class="MuiBox-root css-t1gim7"
           >
             <div
-              class="makeStyles-headerTop-8 MuiBox-root css-0"
+              class="MuiBox-root css-1l6yv0h"
             >
               <div
-                class="makeStyles-titleBox-10 MuiBox-root css-0"
+                class="MuiBox-root css-cty2cs"
               >
                 <h2
-                  class="MuiTypography-root MuiTypography-h2 makeStyles-title-11 css-1l0a44s-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
                 >
                   aaa
                 </h2>
@@ -177,15 +177,12 @@ Object {
                         d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
                       />
                     </svg>
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </button>
                 </div>
               </div>
             </div>
             <div
-              class="makeStyles-headerBottom-9 MuiBox-root css-0"
+              class="MuiBox-root css-1k68zpd"
             >
               <p
                 class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -219,9 +216,6 @@ Object {
                       type="button"
                     >
                       キャンセル
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
                     </button>
                   </div>
                 </div>
@@ -247,7 +241,7 @@ Object {
                 <textarea
                   aria-invalid="false"
                   class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputMultiline css-1sqnrkk-MuiInputBase-input-MuiOutlinedInput-input"
-                  id="mui-1"
+                  id=":r0:"
                   placeholder="コピーするエントリ名"
                   style="height: 0px; overflow: hidden;"
                 />
@@ -275,7 +269,7 @@ Object {
               </div>
             </div>
             <div
-              class="makeStyles-sampleBox-12 MuiBox-root css-k008qs"
+              class="MuiBox-root css-1xioh3b"
             >
               <h6
                 class="MuiTypography-root MuiTypography-h6 css-41zwy8-MuiTypography-root"
@@ -293,8 +287,8 @@ Object {
                 <label
                   class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
                   data-shrink="true"
-                  for="mui-2"
-                  id="mui-2-label"
+                  for=":r1:"
+                  id=":r1:-label"
                 >
                   コピーするエントリ名
                 </label>
@@ -305,7 +299,7 @@ Object {
                     aria-invalid="false"
                     class="MuiInputBase-input MuiOutlinedInput-input Mui-disabled MuiInputBase-inputMultiline css-1sqnrkk-MuiInputBase-input-MuiOutlinedInput-input"
                     disabled=""
-                    id="mui-2"
+                    id=":r1:"
                     style="height: 0px; overflow: hidden;"
                   >
                     vm0001
@@ -347,13 +341,13 @@ vm0006
       class="MuiBox-root css-0"
     >
       <div
-        class="makeStyles-frame-3 MuiBox-root css-0"
+        class="MuiBox-root css-1baykhj"
       >
         <div
-          class="makeStyles-fixed-4 MuiBox-root css-0"
+          class="MuiBox-root css-t0pdf1"
         >
           <div
-            class="makeStyles-breadcrumb-5 MuiBox-root css-0"
+            class="MuiBox-root css-jqffe8"
           >
             <nav
               aria-label="breadcrumb"
@@ -471,19 +465,19 @@ vm0006
         </div>
       </div>
       <div
-        class="makeStyles-frame-6 MuiBox-root css-0"
+        class="MuiBox-root css-ms4ept"
       >
         <div
-          class="makeStyles-fixed-7 MuiBox-root css-0"
+          class="MuiBox-root css-t1gim7"
         >
           <div
-            class="makeStyles-headerTop-8 MuiBox-root css-0"
+            class="MuiBox-root css-1l6yv0h"
           >
             <div
-              class="makeStyles-titleBox-10 MuiBox-root css-0"
+              class="MuiBox-root css-cty2cs"
             >
               <h2
-                class="MuiTypography-root MuiTypography-h2 makeStyles-title-11 css-1l0a44s-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
               >
                 aaa
               </h2>
@@ -515,15 +509,12 @@ vm0006
                       d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
                     />
                   </svg>
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
                 </button>
               </div>
             </div>
           </div>
           <div
-            class="makeStyles-headerBottom-9 MuiBox-root css-0"
+            class="MuiBox-root css-1k68zpd"
           >
             <p
               class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -557,9 +548,6 @@ vm0006
                     type="button"
                   >
                     キャンセル
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </button>
                 </div>
               </div>
@@ -585,7 +573,7 @@ vm0006
               <textarea
                 aria-invalid="false"
                 class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputMultiline css-1sqnrkk-MuiInputBase-input-MuiOutlinedInput-input"
-                id="mui-1"
+                id=":r0:"
                 placeholder="コピーするエントリ名"
                 style="height: 0px; overflow: hidden;"
               />
@@ -613,7 +601,7 @@ vm0006
             </div>
           </div>
           <div
-            class="makeStyles-sampleBox-12 MuiBox-root css-k008qs"
+            class="MuiBox-root css-1xioh3b"
           >
             <h6
               class="MuiTypography-root MuiTypography-h6 css-41zwy8-MuiTypography-root"
@@ -631,8 +619,8 @@ vm0006
               <label
                 class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
                 data-shrink="true"
-                for="mui-2"
-                id="mui-2-label"
+                for=":r1:"
+                id=":r1:-label"
               >
                 コピーするエントリ名
               </label>
@@ -643,7 +631,7 @@ vm0006
                   aria-invalid="false"
                   class="MuiInputBase-input MuiOutlinedInput-input Mui-disabled MuiInputBase-inputMultiline css-1sqnrkk-MuiInputBase-input-MuiOutlinedInput-input"
                   disabled=""
-                  id="mui-2"
+                  id=":r1:"
                   style="height: 0px; overflow: hidden;"
                 >
                   vm0001

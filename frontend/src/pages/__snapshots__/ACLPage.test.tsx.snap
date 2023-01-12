@@ -9,13 +9,13 @@ Object {
         class="container-fluid MuiBox-root css-0"
       >
         <div
-          class="makeStyles-frame-1 MuiBox-root css-0"
+          class="MuiBox-root css-1baykhj"
         >
           <div
-            class="makeStyles-fixed-2 MuiBox-root css-0"
+            class="MuiBox-root css-t0pdf1"
           >
             <div
-              class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+              class="MuiBox-root css-jqffe8"
             >
               <nav
                 aria-label="breadcrumb"
@@ -55,19 +55,19 @@ Object {
           </div>
         </div>
         <div
-          class="makeStyles-frame-4 MuiBox-root css-0"
+          class="MuiBox-root css-ms4ept"
         >
           <div
-            class="makeStyles-fixed-5 MuiBox-root css-0"
+            class="MuiBox-root css-t1gim7"
           >
             <div
-              class="makeStyles-headerTop-6 MuiBox-root css-0"
+              class="MuiBox-root css-1l6yv0h"
             >
               <div
-                class="makeStyles-titleBox-8 MuiBox-root css-0"
+                class="MuiBox-root css-cty2cs"
               >
                 <h2
-                  class="MuiTypography-root MuiTypography-h2 makeStyles-title-9 css-1l0a44s-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
                 >
                   acl1
                 </h2>
@@ -82,7 +82,7 @@ Object {
               />
             </div>
             <div
-              class="makeStyles-headerBottom-7 MuiBox-root css-0"
+              class="MuiBox-root css-1k68zpd"
             >
               <p
                 class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -284,70 +284,6 @@ Object {
                           role="button"
                           tabindex="0"
                         >
-                          <span
-                            class="notranslate"
-                          >
-                            ​
-                          </span>
-                        </div>
-                        <input
-                          aria-hidden="true"
-                          class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
-                          tabindex="-1"
-                          value="1"
-                        />
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconOutlined css-hfutr2-MuiSvgIcon-root-MuiSelect-icon"
-                          data-testid="ArrowDropDownIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M7 10l5 5 5-5z"
-                          />
-                        </svg>
-                        <fieldset
-                          aria-hidden="true"
-                          class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
-                        >
-                          <legend
-                            class="css-ihdtdm"
-                          >
-                            <span
-                              class="notranslate"
-                            >
-                              ​
-                            </span>
-                          </legend>
-                        </fieldset>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr
-                    class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
-                  >
-                    <td
-                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                    >
-                      member1
-                    </td>
-                    <td
-                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                    />
-                    <td
-                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                    >
-                      <div
-                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
-                      >
-                        <div
-                          aria-expanded="false"
-                          aria-haspopup="listbox"
-                          class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
-                          role="button"
-                          tabindex="0"
-                        >
                           権限なし
                         </div>
                         <input
@@ -397,13 +333,13 @@ Object {
       class="container-fluid MuiBox-root css-0"
     >
       <div
-        class="makeStyles-frame-1 MuiBox-root css-0"
+        class="MuiBox-root css-1baykhj"
       >
         <div
-          class="makeStyles-fixed-2 MuiBox-root css-0"
+          class="MuiBox-root css-t0pdf1"
         >
           <div
-            class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+            class="MuiBox-root css-jqffe8"
           >
             <nav
               aria-label="breadcrumb"
@@ -443,19 +379,19 @@ Object {
         </div>
       </div>
       <div
-        class="makeStyles-frame-4 MuiBox-root css-0"
+        class="MuiBox-root css-ms4ept"
       >
         <div
-          class="makeStyles-fixed-5 MuiBox-root css-0"
+          class="MuiBox-root css-t1gim7"
         >
           <div
-            class="makeStyles-headerTop-6 MuiBox-root css-0"
+            class="MuiBox-root css-1l6yv0h"
           >
             <div
-              class="makeStyles-titleBox-8 MuiBox-root css-0"
+              class="MuiBox-root css-cty2cs"
             >
               <h2
-                class="MuiTypography-root MuiTypography-h2 makeStyles-title-9 css-1l0a44s-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
               >
                 acl1
               </h2>
@@ -470,7 +406,7 @@ Object {
             />
           </div>
           <div
-            class="makeStyles-headerBottom-7 MuiBox-root css-0"
+            class="MuiBox-root css-1k68zpd"
           >
             <p
               class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -655,70 +591,6 @@ Object {
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     全員
-                  </td>
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  >
-                    <div
-                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
-                    >
-                      <div
-                        aria-expanded="false"
-                        aria-haspopup="listbox"
-                        class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
-                        role="button"
-                        tabindex="0"
-                      >
-                        <span
-                          class="notranslate"
-                        >
-                          ​
-                        </span>
-                      </div>
-                      <input
-                        aria-hidden="true"
-                        class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
-                        tabindex="-1"
-                        value="1"
-                      />
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconOutlined css-hfutr2-MuiSvgIcon-root-MuiSelect-icon"
-                        data-testid="ArrowDropDownIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M7 10l5 5 5-5z"
-                        />
-                      </svg>
-                      <fieldset
-                        aria-hidden="true"
-                        class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
-                      >
-                        <legend
-                          class="css-ihdtdm"
-                        >
-                          <span
-                            class="notranslate"
-                          >
-                            ​
-                          </span>
-                        </legend>
-                      </fieldset>
-                    </div>
-                  </td>
-                </tr>
-                <tr
-                  class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
-                >
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  >
-                    member1
                   </td>
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"

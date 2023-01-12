@@ -9,13 +9,13 @@ Object {
         class="container-fluid MuiBox-root css-0"
       >
         <div
-          class="makeStyles-frame-1 MuiBox-root css-0"
+          class="MuiBox-root css-1baykhj"
         >
           <div
-            class="makeStyles-fixed-2 MuiBox-root css-0"
+            class="MuiBox-root css-t0pdf1"
           >
             <div
-              class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+              class="MuiBox-root css-jqffe8"
             >
               <nav
                 aria-label="breadcrumb"
@@ -55,19 +55,19 @@ Object {
           </div>
         </div>
         <div
-          class="makeStyles-frame-4 MuiBox-root css-0"
+          class="MuiBox-root css-ms4ept"
         >
           <div
-            class="makeStyles-fixed-5 MuiBox-root css-0"
+            class="MuiBox-root css-t1gim7"
           >
             <div
-              class="makeStyles-headerTop-6 MuiBox-root css-0"
+              class="MuiBox-root css-1l6yv0h"
             >
               <div
-                class="makeStyles-titleBox-8 MuiBox-root css-0"
+                class="MuiBox-root css-cty2cs"
               >
                 <h2
-                  class="MuiTypography-root MuiTypography-h2 makeStyles-title-9 css-1l0a44s-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
                 >
                   検索結果
                 </h2>
@@ -82,7 +82,7 @@ Object {
               />
             </div>
             <div
-              class="makeStyles-headerBottom-7 MuiBox-root css-0"
+              class="MuiBox-root css-1k68zpd"
             >
               <p
                 class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -210,7 +210,7 @@ Object {
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                            id="mui-1"
+                            id=":r0:"
                             style="padding: 8px 0px 8px 4px;"
                             type="text"
                             value=""
@@ -297,9 +297,6 @@ Object {
                         type="button"
                       >
                         1
-                        <span
-                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                        />
                       </button>
                     </li>
                     <li>
@@ -337,13 +334,13 @@ Object {
       class="container-fluid MuiBox-root css-0"
     >
       <div
-        class="makeStyles-frame-1 MuiBox-root css-0"
+        class="MuiBox-root css-1baykhj"
       >
         <div
-          class="makeStyles-fixed-2 MuiBox-root css-0"
+          class="MuiBox-root css-t0pdf1"
         >
           <div
-            class="makeStyles-breadcrumb-3 MuiBox-root css-0"
+            class="MuiBox-root css-jqffe8"
           >
             <nav
               aria-label="breadcrumb"
@@ -383,19 +380,19 @@ Object {
         </div>
       </div>
       <div
-        class="makeStyles-frame-4 MuiBox-root css-0"
+        class="MuiBox-root css-ms4ept"
       >
         <div
-          class="makeStyles-fixed-5 MuiBox-root css-0"
+          class="MuiBox-root css-t1gim7"
         >
           <div
-            class="makeStyles-headerTop-6 MuiBox-root css-0"
+            class="MuiBox-root css-1l6yv0h"
           >
             <div
-              class="makeStyles-titleBox-8 MuiBox-root css-0"
+              class="MuiBox-root css-cty2cs"
             >
               <h2
-                class="MuiTypography-root MuiTypography-h2 makeStyles-title-9 css-1l0a44s-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
               >
                 検索結果
               </h2>
@@ -410,7 +407,7 @@ Object {
             />
           </div>
           <div
-            class="makeStyles-headerBottom-7 MuiBox-root css-0"
+            class="MuiBox-root css-1k68zpd"
           >
             <p
               class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -538,7 +535,7 @@ Object {
                         <input
                           aria-invalid="false"
                           class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                          id="mui-1"
+                          id=":r0:"
                           style="padding: 8px 0px 8px 4px;"
                           type="text"
                           value=""
@@ -625,9 +622,6 @@ Object {
                       type="button"
                     >
                       1
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
                     </button>
                   </li>
                   <li>

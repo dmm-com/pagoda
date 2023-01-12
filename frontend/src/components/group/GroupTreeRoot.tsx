@@ -5,10 +5,9 @@ import {
   IconButton,
   List,
   ListItem,
-  Theme,
   Typography,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
@@ -18,14 +17,12 @@ import { DjangoContext } from "../../utils/DjangoContext";
 
 import { GroupTreeItem } from "./GroupTreeItem";
 
-const useStyles = makeStyles<Theme>(() => ({
-  listItem: {
-    "&:nth-of-type(odd)": {
-      backgroundColor: "white",
-    },
-    "&:nth-of-type(even)": {
-      backgroundColor: "#607D8B0A",
-    },
+const StyledListItem = styled(ListItem)(({}) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: "white",
+  },
+  "&:nth-of-type(even)": {
+    backgroundColor: "#607D8B0A",
   },
 }));
 
@@ -44,14 +41,13 @@ export const GroupTreeRoot: FC<Props> = ({
   handleSelectGroupId,
   setGroupAnchorEls,
 }) => {
-  const classes = useStyles();
   const isSuperuser = DjangoContext.getInstance().user.isSuperuser;
 
   return (
     <Box>
       <List>
         {groupTrees.map((groupTree) => (
-          <ListItem key={groupTree.id} className={classes.listItem}>
+          <StyledListItem key={groupTree.id}>
             <List sx={{ width: "100%" }}>
               <ListItem sx={{ width: "100%" }}>
                 <Checkbox
@@ -92,7 +88,7 @@ export const GroupTreeRoot: FC<Props> = ({
                 />
               )}
             </List>
-          </ListItem>
+          </StyledListItem>
         ))}
       </List>
     </Box>

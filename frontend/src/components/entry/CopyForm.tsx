@@ -1,5 +1,5 @@
-import { Box, Container, TextField, Theme, Typography } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { Box, Container, TextField, Typography } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
 interface Props {
@@ -7,20 +7,16 @@ interface Props {
   setEntries: (entries: string) => void;
 }
 
-const useStyles = makeStyles<Theme>(() => ({
-  sampleBox: {
-    width: "100%",
-    margin: "80px 0",
-    backgroundColor: "#607D8B0A",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
+const SampleBox = styled(Box)(({ theme }) => ({
+  width: "100%",
+  margin: "80px 0",
+  backgroundColor: "#607D8B0A",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
 }));
 
 export const CopyForm: FC<Props> = ({ entries, setEntries }) => {
-  const classes = useStyles();
-
   return (
     <Container>
       <TextField
@@ -32,7 +28,7 @@ export const CopyForm: FC<Props> = ({ entries, setEntries }) => {
         value={entries}
         onChange={(e) => setEntries(e.target.value)}
       />
-      <Box display="flex" className={classes.sampleBox}>
+      <SampleBox display="flex">
         <Typography variant="h6" mt="24px" color="primary">
           SAMPLE
         </Typography>
@@ -51,7 +47,7 @@ vm0004
 vm0005
 vm0006"
         />
-      </Box>
+      </SampleBox>
     </Container>
   );
 };
