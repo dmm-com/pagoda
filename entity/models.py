@@ -59,7 +59,7 @@ class Entity(ACLBase):
     # This indicates informatoin where to send request for notification
     webhooks = models.ManyToManyField(Webhook, default=[], related_name="registered_entity")
 
-    history = HistoricalRecords(m2m_fields=[attrs])
+    history = HistoricalRecords(m2m_fields=[attrs], excluded_fields=["status"])
 
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)

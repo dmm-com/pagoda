@@ -60,7 +60,7 @@ class ACLBase(models.Model):
             (before_last, last) = list(reversed(instance.history.order_by("history_id")))[
                 offset : offset + 2
             ]
-            for change in before_last.diff_against(last).changes:
+            for change in before_last.diff_against(last, excluded_fields=["status"]).changes:
                 ret.append(HistoricalDifference(change.field, change.old, change.new))
 
         except AttributeError as e:

@@ -517,29 +517,36 @@ class ViewTest(AironeViewTest):
 
         # tests for historical records
         self.assertEqual(entity.history.count(), history_count_before_submitting + 3)
+        self.assertEqual([h.history_user for h in entity.history.all()[0:3]], [user, user, user])
+
         # NOTE: check EntityAttr is added from HistoricalRecord
+        diff = entity.get_diff(offset=0)[0]
+        self.assertEqual(diff.field, "attrs")
         self.assertEqual(
-            entity.get_diff(),
-            "attrs changed from {} to {}".format(
-                str(
-                    [
-                        {"entity": entity.id, "entity_attr": x.id}
-                        for x in entity.attrs.filter(is_active=True)
-                    ]
-                ),
-                str(
-                    [
-                        {"entity": entity.id, "entity_attr": x.id}
-                        for x in entity.attrs.filter(is_active=True)
-                        if x.name != "bar"
-                    ]
-                ),
-            ),
+            diff.prev,
+            [
+                {"entity": entity.id, "entityattr": x.id}
+                for x in entity.attrs.filter(is_active=True)
+                if x.name != "bar"
+            ],
+        )
+        self.assertEqual(
+            diff.next,
+            [
+                {"entity": entity.id, "entityattr": x.id}
+                for x in entity.attrs.filter(is_active=True)
+            ],
         )
         # NOTE: check entity note is change from HistoricalRecord
-        # TBD
+        diff = entity.get_diff(offset=1)[0]
+        self.assertEqual(diff.field, "note")
+        self.assertEqual(diff.prev, "fuga")
+        self.assertEqual(diff.next, "bar")
         # NOTE: check entity name is change from HistoricalRecord
-        # TBD
+        diff = entity.get_diff(offset=2)[0]
+        self.assertEqual(diff.field, "name")
+        self.assertEqual(diff.prev, "hoge")
+        self.assertEqual(diff.next, "foo")
 
     @mock.patch("entry.tasks.update_es_documents.delay", mock.Mock(side_effect=update_es_documents))
     @mock.patch("entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity))
