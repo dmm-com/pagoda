@@ -17,6 +17,10 @@ def create_entity(self, job_id):
 
         user = User.objects.filter(id=job.user.id).first()
         entity = Entity.objects.filter(id=job.target.id, is_active=True).first()
+
+        # for history record
+        entity._history_user = user
+
         if not entity or not user:
             # Abort when specified entity doesn't exist
             job.update(Job.STATUS["CANCELED"])
@@ -63,6 +67,10 @@ def edit_entity(self, job_id):
 
         user = User.objects.filter(id=job.user.id).first()
         entity = Entity.objects.filter(id=job.target.id, is_active=True).first()
+
+        # for history record
+        entity._history_user = user
+
         if not entity or not user:
             # Abort when specified entity doesn't exist
             job.update(Job.STATUS["CANCELED"])
@@ -81,7 +89,7 @@ def edit_entity(self, job_id):
 
         if entity.note != recv_data["note"]:
             entity.note = recv_data["note"]
-            entity.save_with_historical_record(user, update_fields=["note"])
+            entity.save(update_fields=["note"])
 
         # This describes job pamraeters of Job.update_es_docuemnt()
         jp_update_es_document = {
@@ -197,6 +205,10 @@ def delete_entity(self, job_id):
 
         user = User.objects.filter(id=job.user.id).first()
         entity = Entity.objects.filter(id=job.target.id, is_active=False).first()
+
+        # for history record
+        entity._history_user = user
+
         if not entity or not user:
             # Abort when specified entity doesn't exist
             job.update(Job.STATUS["CANCELED"])

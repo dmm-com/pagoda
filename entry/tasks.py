@@ -128,10 +128,19 @@ def _do_import_entries(job: Job):
 
         entry: Entry = Entry.objects.filter(name=entry_data["name"], schema=entity).first()
         if not entry:
-            entry = Entry.objects.create(name=entry_data["name"], schema=entity, created_user=user)
+            entry = Entry(name=entry_data["name"], schema=entity, created_user=user)
+
+            # for history record
+            entry._history_user = user
+
+            entry.save()
 
             # create job to notify create event to the WebHook URL
             job_notify = Job.new_notify_create_entry(user, entry)
+
+        else:
+            # for history record
+            entry._history_user = user
 
         if not user.has_permission(entry, ACLType.Writable):
             continue
@@ -237,6 +246,10 @@ def create_entry_attrs(self, job_id):
 
         user = User.objects.filter(id=job.user.id).first()
         entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
+
+        # for history record
+        entry._history_user = user
+
         if not entry or not user:
             # Abort when specified entry doesn't exist
             job.update(Job.STATUS["CANCELED"])
@@ -313,6 +326,9 @@ def edit_entry_attrs(self, job_id):
         user = User.objects.get(id=job.user.id)
         entry = Entry.objects.get(id=job.target.id)
 
+        # for history record
+        entry._history_user = user
+
         recv_data = json.loads(job.params)
 
         for info in recv_data["attrs"]:
@@ -362,11 +378,14 @@ def delete_entry(self, job_id):
         job.update(Job.STATUS["PROCESSING"])
 
         entry = Entry.objects.get(id=job.target.id)
+
+        # for history record
+        entry._history_user = job.user
+
         entry.delete()
 
-        user = User.objects.get(id=job.user.id)
         if custom_view.is_custom("after_delete_entry", entry.schema.name):
-            custom_view.call_custom("after_delete_entry", entry.schema.name, user, entry)
+            custom_view.call_custom("after_delete_entry", entry.schema.name, job.user, entry)
 
         # update job status and save it
         job.update(Job.STATUS["DONE"])
@@ -380,6 +399,10 @@ def restore_entry(self, job_id):
         job.update(Job.STATUS["PROCESSING"])
 
         entry = Entry.objects.get(id=job.target.id)
+
+        # for history record
+        entry._history_user = job.user
+
         entry.restore()
 
         # remove status flag which is set before calling this
@@ -405,7 +428,6 @@ def copy_entry(self, job_id):
         # update job status
         job.update(Job.STATUS["PROCESSING"])
 
-        user = User.objects.get(id=job.user.id)
         src_entry = Entry.objects.get(id=job.target.id)
 
         params = json.loads(job.params)
@@ -421,7 +443,7 @@ def copy_entry(self, job_id):
             job.save(update_fields=["text"])
 
             params["new_name"] = new_name
-            job_do_copy_entry = Job.new_do_copy(user, src_entry, new_name, params)
+            job_do_copy_entry = Job.new_do_copy(job.user, src_entry, new_name, params)
             job_do_copy_entry.run(will_delay=False)
 
         # update job status and save it
@@ -439,20 +461,19 @@ def do_copy_entry(self, job_id):
         # update job status
         job.update(Job.STATUS["PROCESSING"])
 
-        user = User.objects.get(id=job.user.id)
         src_entry = Entry.objects.get(id=job.target.id)
 
         params = json.loads(job.params)
         dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params["new_name"]).first()
         if not dest_entry:
-            dest_entry = src_entry.clone(user, name=params["new_name"])
+            dest_entry = src_entry.clone(job.user, name=params["new_name"])
             dest_entry.register_es()
 
         if custom_view.is_custom("after_copy_entry", src_entry.schema.name):
             custom_view.call_custom(
                 "after_copy_entry",
                 src_entry.schema.name,
-                user,
+                job.user,
                 src_entry,
                 dest_entry,
                 params["post_data"],
@@ -462,7 +483,7 @@ def do_copy_entry(self, job_id):
         job.update(Job.STATUS["DONE"], "original entry: %s" % src_entry.name, dest_entry)
 
         # create and run event notification job
-        job_notify_event = Job.new_notify_create_entry(user, dest_entry)
+        job_notify_event = Job.new_notify_create_entry(job.user, dest_entry)
         job_notify_event.run()
 
 

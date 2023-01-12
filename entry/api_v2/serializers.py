@@ -244,7 +244,12 @@ class EntryCreateSerializer(EntryBaseSerializer):
             )
 
         attrs_data = validated_data.pop("attrs", [])
-        entry: Entry = Entry.objects.create(**validated_data, status=Entry.STATUS_CREATING)
+        entry: Entry = Entry(**validated_data, status=Entry.STATUS_CREATING)
+
+        # for history record
+        entry._history_user = user
+
+        entry.save()
 
         for entity_attr in entry.schema.attrs.filter(is_active=True):
             attr: Attribute = entry.add_attribute_from_base(entity_attr, user)
@@ -297,6 +302,9 @@ class EntryUpdateSerializer(EntryBaseSerializer):
     def update(self, entry: Entry, validated_data: EntryUpdateData):
         entry.set_status(Entry.STATUS_EDITING)
         user: User = self.context["request"].user
+
+        # for history record
+        entry._history_user = user
 
         entity_name = entry.schema.name
         if custom_view.is_custom("before_update_entry_v2", entity_name):

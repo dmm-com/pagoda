@@ -6,6 +6,7 @@ from typing import Any, Optional, Tuple
 from django.conf import settings
 from django.db import models
 from django.db.models import Prefetch, Q
+from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
 from airone.lib import auto_complement
@@ -35,8 +36,6 @@ from role.models import Role
 from user.models import User
 
 from .settings import CONFIG
-
-from simple_history.models import HistoricalRecords
 
 
 class AttributeValue(models.Model):
@@ -1686,7 +1685,12 @@ class Entry(ACLBase):
             "status": status,
         }
         params.update(extra_params)
-        cloned_entry = Entry.objects.create(**params)
+        cloned_entry = Entry(**params)
+
+        # for history record
+        cloned_entry._history_user = user
+
+        cloned_entry.save()
 
         for attr in self.attrs.filter(is_active=True):
             cloned_attr = attr.clone(user, parent_entry=cloned_entry)
