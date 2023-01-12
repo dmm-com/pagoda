@@ -466,6 +466,14 @@ class ViewTest(AironeViewTest):
         )
         entity.attrs.add(attr)
 
+        # Before submitting request, this save historical count for test
+        history_count_before_submitting = entity.history.count()
+
+        # This request do followiings.
+        # - changes entity name from "hoge" to "foo"
+        # - changes note from "fuga" to "bar"
+        # - changes attribute name from "puyo" to "foo"
+        # - adds new attribute "bar"
         params = {
             "name": "foo",
             "note": "bar",
@@ -506,6 +514,32 @@ class ViewTest(AironeViewTest):
         self.assertEqual(History.objects.filter(operation=History.MOD_ENTITY).count(), 2)
         self.assertEqual(History.objects.filter(operation=History.ADD_ATTR).count(), 1)
         self.assertEqual(History.objects.filter(operation=History.MOD_ATTR).count(), 2)
+
+        # tests for historical records
+        self.assertEqual(entity.history.count(), history_count_before_submitting + 3)
+        # NOTE: check EntityAttr is added from HistoricalRecord
+        self.assertEqual(
+            entity.get_diff(),
+            "attrs changed from {} to {}".format(
+                str(
+                    [
+                        {"entity": entity.id, "entity_attr": x.id}
+                        for x in entity.attrs.filter(is_active=True)
+                    ]
+                ),
+                str(
+                    [
+                        {"entity": entity.id, "entity_attr": x.id}
+                        for x in entity.attrs.filter(is_active=True)
+                        if x.name != "bar"
+                    ]
+                ),
+            ),
+        )
+        # NOTE: check entity note is change from HistoricalRecord
+        # TBD
+        # NOTE: check entity name is change from HistoricalRecord
+        # TBD
 
     @mock.patch("entry.tasks.update_es_documents.delay", mock.Mock(side_effect=update_es_documents))
     @mock.patch("entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity))

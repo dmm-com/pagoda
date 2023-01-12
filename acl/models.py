@@ -31,6 +31,13 @@ Permission.__le__ = lambda self, comp: _get_acltype(self) <= _get_acltype(comp)
 Permission.__ge__ = lambda self, comp: _get_acltype(self) >= _get_acltype(comp)
 
 
+class HistoricalDifference(object):
+    def __init__(self, field_val, prev_val, next_val):
+        self.field = field_val
+        self.prev = prev_val
+        self.next = next_val
+
+
 class ACLBase(models.Model):
     name = models.CharField(max_length=200)
     is_public = models.BooleanField(default=True)
@@ -47,15 +54,23 @@ class ACLBase(models.Model):
     # This fields describes the sub-class of this object
     objtype = models.IntegerField(default=0)
 
-    def show_diffing(instance, offset=0):
+    def get_diff(instance, offset=0):
+        ret = []
         try:
             (before_last, last) = list(reversed(instance.history.order_by("history_id")))[
                 offset : offset + 2
             ]
             for change in before_last.diff_against(last).changes:
-                print("{} changed from {} to {}".format(change.field, change.old, change.new))
+                ret.append(HistoricalDifference(change.field, change.old, change.new))
+
         except AttributeError as e:
             Logger.warn(str(e))
+
+        return ret
+
+    def show_diff(self, offset=0):
+        for diff in self.get_diff(offset):
+            print("{} changed from {} to {}".format(diff.field, diff.prev, diff.next))
 
     def save_without_historical_record(self, *args, **kwargs):
         self.skip_history_when_saving = True
