@@ -72,13 +72,21 @@ class ACLBase(models.Model):
         for diff in self.get_diff(offset):
             print("{} changed from {} to {}".format(diff.field, diff.prev, diff.next))
 
+    def save_without_historical_record(self, *args, **kwargs):
+        self.skip_history_when_saving = True
+        try:
+            ret = self.save(*args, **kwargs)
+        finally:
+            del self.skip_history_when_saving
+        return ret
+
     def set_status(self, val):
         self.status |= val
-        self.save(update_fields=["status"])
+        self.save_without_historical_record(update_fields=["status"])
 
     def del_status(self, val):
         self.status &= ~val
-        self.save(update_fields=["status"])
+        self.save_without_historical_record(update_fields=["status"])
 
     def get_status(self, val):
         return self.status & val

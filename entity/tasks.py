@@ -31,6 +31,7 @@ def create_entity(self, job_id):
         # register history to modify Entity
         history = user.seth_entity_add(entity)
 
+        adding_attrs = []
         for attr in recv_data["attrs"]:
             attr_base = EntityAttr.objects.create(
                 name=attr["name"],
@@ -45,10 +46,15 @@ def create_entity(self, job_id):
             if int(attr["type"]) & AttrTypeValue["object"]:
                 [attr_base.referral.add(Entity.objects.get(id=x)) for x in attr["ref_ids"]]
 
-            entity.attrs.add(attr_base)
+            # This is neccesary to summarize adding attribute history to one time
+            adding_attrs.append(attr_base)
 
             # register history to modify Entity
             history.add_attr(attr_base)
+
+        if adding_attrs:
+            # save history for adding attributes if it's necessary
+            entity.attrs.add(*adding_attrs)
 
         # clear flag to specify this entity has been completed to create
         entity.del_status(Entity.STATUS_CREATING)

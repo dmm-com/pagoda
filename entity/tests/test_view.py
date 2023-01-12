@@ -177,6 +177,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(History.objects.filter(operation=History.ADD_ENTITY).count(), 1)
         self.assertEqual(History.objects.filter(operation=History.ADD_ATTR).count(), 6)
 
+        # tests for historical-record
+        self.assertEqual(entity.history.count(), 2)
+
     def test_create_post_without_name_param(self):
         self.admin_login()
 
