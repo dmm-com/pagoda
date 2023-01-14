@@ -142,6 +142,10 @@ jobs:
           command: |
             npm run lint
       - run:
+          name: build
+          command: |
+            npm run build:development
+      - run:
           name: test
           command: |
             npm run test:ci
