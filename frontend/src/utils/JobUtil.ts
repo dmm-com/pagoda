@@ -52,7 +52,7 @@ export const jobOperationLabel = (jobOperation: number): string => {
 
 export const jobTargetLabel = (job: JobSerializers): string => {
   return `[${jobStatusLabel(job.status)}/${jobOperationLabel(job.operation)}] ${
-    job.target.name
+    job.target?.name ?? ""
   }`;
 };
 
