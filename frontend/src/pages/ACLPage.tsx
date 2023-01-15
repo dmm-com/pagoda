@@ -74,7 +74,7 @@ export const ACLPage: FC = () => {
 
   /* initialize permissions and isPublic variables from acl parameter */
   useEffect(() => {
-    if (!acl.loading) {
+    if (!acl.loading && acl.value != null) {
       _setACLInfo({
         isPublic: acl.value.isPublic,
         defaultPermission: acl.value.defaultPermission,
@@ -100,9 +100,9 @@ export const ACLPage: FC = () => {
           acl.value.objtype & djangoContext.aclObjectType.entity && (
             <Box sx={{ display: "flex" }}>
               <Typography component={Link} to={entityEntriesPath(acl.value.id)}>
-                {acl.value.name}
+                {acl.value?.name}
               </Typography>
-              {!acl.value.isPublic && <LockIcon />}
+              {acl.value?.isPublic === false && <LockIcon />}
             </Box>
           )}
 
@@ -113,9 +113,9 @@ export const ACLPage: FC = () => {
               component={Link}
               to={entityEntriesPath(acl.value.parent.id)}
             >
-              {acl.value.parent.name}
+              {acl.value?.parent?.name}
             </Typography>
-            {!acl.value.parent.isPublic && <LockIcon />}
+            {acl.value?.parent?.isPublic === false && <LockIcon />}
           </Box>
         )}
         {!acl.loading && acl.value.objtype & djangoContext.aclObjectType.entry && (
@@ -124,9 +124,9 @@ export const ACLPage: FC = () => {
               component={Link}
               to={entryDetailsPath(acl.value.parent.id, acl.value.id)}
             >
-              {acl.value.name}
+              {acl.value?.name}
             </Typography>
-            {!acl.value.isPublic && <LockIcon />}
+            {acl.value?.isPublic === false && <LockIcon />}
           </Box>
         )}
 
@@ -138,16 +138,16 @@ export const ACLPage: FC = () => {
                 component={Link}
                 to={entityEntriesPath(acl.value.parent.id)}
               >
-                {acl.value.parent.name}
+                {acl.value?.parent?.name}
               </Typography>
-              {!acl.value.parent.isPublic && <LockIcon />}
+              {acl.value?.parent?.isPublic === false && <LockIcon />}
             </Box>
           )}
         {!acl.loading &&
           acl.value.objtype & djangoContext.aclObjectType.entityAttr && (
             <Box sx={{ display: "flex" }}>
-              <Typography color="textPrimary">{acl.value.name}</Typography>
-              {!acl.value.isPublic && <LockIcon />}
+              <Typography color="textPrimary">{acl.value?.name}</Typography>
+              {acl.value?.isPublic === false && <LockIcon />}
             </Box>
           )}
 
@@ -157,7 +157,7 @@ export const ACLPage: FC = () => {
       </AironeBreadcrumbs>
 
       <PageHeader
-        title={acl.value?.name}
+        title={acl.value?.name ?? ""}
         subTitle="ACL設定"
         componentSubmits={
           <Box display="flex" justifyContent="center">

@@ -26,7 +26,7 @@ import { Loading } from "components/common/Loading";
 
 export const GroupPage: FC = () => {
   const [keyword, setKeyword] = useState("");
-  const [selectedGroupId, setSelectedGroupId] = useState<number>();
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [openImportModal, setOpenImportModal] = useState(false);
   const [groupAnchorEls, setGroupAnchorEls] = useState<{
     groupId: number;
@@ -43,8 +43,8 @@ export const GroupPage: FC = () => {
     if (selectedGroupId != null) {
       const group = await aironeApiClientV2.getGroup(selectedGroupId);
       return group.members.map((member) => ({
-        id: member["id"],
-        username: member["username"],
+        id: member.id,
+        username: member.username,
       }));
     } else {
       return [];
@@ -66,7 +66,7 @@ export const GroupPage: FC = () => {
     await aironeApiClientV2.exportGroups("group.yaml");
   }, []);
 
-  const isSuperuser = DjangoContext.getInstance().user.isSuperuser;
+  const isSuperuser = DjangoContext.getInstance()?.user?.isSuperuser ?? false;
 
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">
@@ -137,7 +137,7 @@ export const GroupPage: FC = () => {
               </Typography>
               <Divider sx={{ mt: "16px" }} />
               <GroupTreeRoot
-                groupTrees={groupTrees.value}
+                groupTrees={groupTrees.value ?? []}
                 selectedGroupId={selectedGroupId}
                 handleSelectGroupId={handleSelectGroupId}
                 setGroupAnchorEls={setGroupAnchorEls}

@@ -2,7 +2,7 @@ class User {
   id: number;
   isSuperuser: boolean;
 
-  constructor(user) {
+  constructor(user: any) {
     this.id = user.id;
     this.isSuperuser = user.isSuperuser;
   }
@@ -30,7 +30,7 @@ export class DjangoContext {
 
   private static _instance: DjangoContext | undefined;
 
-  constructor(context) {
+  constructor(context: any) {
     this.loginNext = context.next;
     this.title = context.title;
     this.subTitle = context.subtitle;

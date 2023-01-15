@@ -116,7 +116,7 @@ export const Header: FC = () => {
 
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
   const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();
-  const [latestCheckDate, setLatestCheckDate] = useState<Date>(
+  const [latestCheckDate, setLatestCheckDate] = useState<Date | null>(
     getLatestCheckDate()
   );
   const [recentJobs, setRecentJobs] = useState<Array<JobSerializers>>([]);
@@ -128,9 +128,9 @@ export const Header: FC = () => {
   }, JobRefreshIntervalMilliSec);
 
   const uncheckedJobsCount = useMemo(() => {
-    return (
-      recentJobs.filter((job) => job.createdAt > latestCheckDate)?.length ?? 0
-    );
+    return latestCheckDate != null
+      ? recentJobs.filter((job) => job.createdAt > latestCheckDate).length ?? 0
+      : recentJobs.length;
   }, [latestCheckDate, recentJobs]);
 
   const handleLogout = () => {
@@ -153,8 +153,8 @@ export const Header: FC = () => {
               <Title fontSize="24px" component={Link} to={topPath()}>
                 AirOne
               </Title>
-              <Version fontSize="12px" title={djangoContext.version}>
-                {djangoContext.version}
+              <Version fontSize="12px" title={djangoContext?.version}>
+                {djangoContext?.version}
               </Version>
             </TitleBox>
 
@@ -194,7 +194,9 @@ export const Header: FC = () => {
                 disableScrollLock
               >
                 <MenuItem>
-                  <Link to={userPath(djangoContext.user.id)}>ユーザ設定</Link>
+                  <Link to={userPath(djangoContext?.user?.id ?? 0)}>
+                    ユーザ設定
+                  </Link>
                 </MenuItem>
                 <MenuItem>
                   <Link to="#" onClick={() => handleLogout()}>

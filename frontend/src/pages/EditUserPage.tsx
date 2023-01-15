@@ -19,7 +19,7 @@ import { UserPasswordFormModal } from "components/user/UserPasswordFormModal";
 import { DjangoContext } from "utils/DjangoContext";
 
 export interface AironeUserProps extends UserRetrieve {
-  password?: string;
+  password: string;
 }
 
 export const EditUserPage: FC = () => {
@@ -64,7 +64,10 @@ export const EditUserPage: FC = () => {
 
   useEffect(() => {
     if (!user.loading && user.value !== undefined && userInfo.id == 0) {
-      _setUserInfo(user.value);
+      _setUserInfo({
+        ...user.value,
+        password: "",
+      });
     }
   }, [user]);
 
@@ -82,8 +85,8 @@ export const EditUserPage: FC = () => {
       aironeApiClientV2
         .createUser(
           userInfo.username,
-          userInfo.email,
           userInfo.password,
+          userInfo.email,
           userInfo.isSuperuser
         )
         .then(() => {

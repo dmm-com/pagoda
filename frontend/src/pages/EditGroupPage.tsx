@@ -49,6 +49,7 @@ export const EditGroupPage: FC = () => {
 
   const handleSubmit = async () => {
     if (!submittable) return;
+    if (group == null) return;
 
     if (groupId == null) {
       try {
@@ -89,7 +90,7 @@ export const EditGroupPage: FC = () => {
     history.goBack();
   };
 
-  if (!DjangoContext.getInstance().user.isSuperuser) {
+  if (DjangoContext.getInstance()?.user?.isSuperuser !== true) {
     throw new ForbiddenError("only admin can edit a group");
   }
 

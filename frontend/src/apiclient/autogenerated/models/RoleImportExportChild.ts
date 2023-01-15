@@ -61,6 +61,12 @@ export interface RoleImportExportChild {
    * @memberof RoleImportExportChild
    */
   adminGroups: Array<string>;
+  /**
+   *
+   * @type {Array<{ [key: string]: any; }>}
+   * @memberof RoleImportExportChild
+   */
+  permissions?: Array<{ [key: string]: any }>;
 }
 
 export function RoleImportExportChildFromJSON(
@@ -84,6 +90,7 @@ export function RoleImportExportChildFromJSONTyped(
     groups: json["groups"],
     adminUsers: json["admin_users"],
     adminGroups: json["admin_groups"],
+    permissions: !exists(json, "permissions") ? undefined : json["permissions"],
   };
 }
 
@@ -103,5 +110,6 @@ export function RoleImportExportChildToJSON(
     groups: value.groups,
     admin_users: value.adminUsers,
     admin_groups: value.adminGroups,
+    permissions: value.permissions,
   };
 }

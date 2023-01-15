@@ -1,7 +1,7 @@
 export class ForbiddenError extends Error {
   static errorName = "ForbiddenError";
 
-  constructor(message) {
+  constructor(message?: string) {
     super(message);
     this.name = ForbiddenError.errorName;
   }
@@ -9,7 +9,7 @@ export class ForbiddenError extends Error {
 export class NotFoundError extends Error {
   static errorName = "NotFoundError";
 
-  constructor(message) {
+  constructor(message?: string) {
     super(message);
     this.name = NotFoundError.errorName;
   }
@@ -18,7 +18,7 @@ export class NotFoundError extends Error {
 export class UnknownError extends Error {
   static errorName = "UnknownError";
 
-  constructor(message) {
+  constructor(message?: string) {
     super(message);
     this.name = UnknownError.errorName;
   }

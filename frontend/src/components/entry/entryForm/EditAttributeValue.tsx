@@ -157,7 +157,7 @@ const ElemReferral: FC<
 
   useEffect(() => {
     (async () => {
-      if (Number(attrType) & Number(djangoContext.attrTypeValue.object)) {
+      if (Number(attrType) & Number(djangoContext?.attrTypeValue.object)) {
         // FIXME Implement and use API V2
         // TODO call it reactively to avoid loading API???
         const attrReferrals = await aironeApiClientV2.getEntryAttrReferrals(
@@ -196,7 +196,9 @@ const ElemReferral: FC<
           }
         }
         setReferrals(referrals.concat(addReferrals));
-      } else if (Number(attrType) & Number(djangoContext.attrTypeValue.group)) {
+      } else if (
+        Number(attrType) & Number(djangoContext?.attrTypeValue.group)
+      ) {
         const groups = await aironeApiClientV2.getGroups();
         const addReferrals = [];
 
@@ -208,7 +210,7 @@ const ElemReferral: FC<
         });
 
         setReferrals(referrals.concat(addReferrals));
-      } else if (Number(attrType) & Number(djangoContext.attrTypeValue.role)) {
+      } else if (Number(attrType) & Number(djangoContext?.attrTypeValue.role)) {
         const roles = await aironeApiClientV2.getRoles();
         const addReferrals = [];
 
@@ -227,7 +229,7 @@ const ElemReferral: FC<
   return (
     <Box>
       <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
-        {Number(attrType) & Number(djangoContext.attrTypeValue.object)
+        {Number(attrType) & Number(djangoContext?.attrTypeValue.object)
           ? "エントリを選択"
           : "グループを選択"}
       </Typography>
@@ -429,7 +431,7 @@ export const EditAttributeValue: FC<Props> = ({
   const djangoContext = DjangoContext.getInstance();
 
   switch (attrInfo.type) {
-    case djangoContext.attrTypeValue.string:
+    case djangoContext?.attrTypeValue.string:
       return (
         <ElemString
           attrName={attrName}
@@ -440,7 +442,7 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
-    case djangoContext.attrTypeValue.text:
+    case djangoContext?.attrTypeValue.text:
       return (
         <ElemString
           attrName={attrName}
@@ -452,7 +454,7 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
-    case djangoContext.attrTypeValue.date:
+    case djangoContext?.attrTypeValue.date:
       return (
         <ElemDate
           attrName={attrName}
@@ -464,7 +466,7 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
-    case djangoContext.attrTypeValue.boolean:
+    case djangoContext?.attrTypeValue.boolean:
       return (
         <ElemBool
           attrName={attrName}
@@ -475,7 +477,7 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
-    case djangoContext.attrTypeValue.object:
+    case djangoContext?.attrTypeValue.object:
       return (
         <ElemReferral
           attrName={attrName}
@@ -487,7 +489,7 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
-    case djangoContext.attrTypeValue.group:
+    case djangoContext?.attrTypeValue.group:
       return (
         <ElemReferral
           attrName={attrName}
@@ -498,7 +500,7 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
-    case djangoContext.attrTypeValue.role:
+    case djangoContext?.attrTypeValue.role:
       return (
         <ElemReferral
           attrName={attrName}
@@ -509,7 +511,7 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
-    case djangoContext.attrTypeValue.named_object:
+    case djangoContext?.attrTypeValue.named_object:
       return (
         <ElemNamedObject
           attrName={attrName}
@@ -521,7 +523,7 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
-    case djangoContext.attrTypeValue.array_object:
+    case djangoContext?.attrTypeValue.array_object:
       return (
         <ElemReferral
           multiple={true}
@@ -534,7 +536,7 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
-    case djangoContext.attrTypeValue.array_group:
+    case djangoContext?.attrTypeValue.array_group:
       return (
         <ElemReferral
           multiple={true}
@@ -546,7 +548,7 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
-    case djangoContext.attrTypeValue.array_role:
+    case djangoContext?.attrTypeValue.array_role:
       return (
         <ElemReferral
           multiple={true}
@@ -558,7 +560,7 @@ export const EditAttributeValue: FC<Props> = ({
         />
       );
 
-    case djangoContext.attrTypeValue.array_string:
+    case djangoContext?.attrTypeValue.array_string:
       return (
         <Box>
           <List>
@@ -583,7 +585,7 @@ export const EditAttributeValue: FC<Props> = ({
         </Box>
       );
 
-    case djangoContext.attrTypeValue.array_named_object:
+    case djangoContext?.attrTypeValue.array_named_object:
       return (
         <Box>
           <List>
@@ -612,7 +614,7 @@ export const EditAttributeValue: FC<Props> = ({
         </Box>
       );
 
-    case djangoContext.attrTypeValue.array_named_object_boolean:
+    case djangoContext?.attrTypeValue.array_named_object_boolean:
       return (
         <Box>
           <List>
@@ -641,7 +643,7 @@ export const EditAttributeValue: FC<Props> = ({
                           onChange={(e) =>
                             handleChangeAttribute(
                               attrName,
-                              djangoContext.attrTypeValue.array_named_object,
+                              djangoContext?.attrTypeValue.array_named_object,
                               {
                                 index: n,
                                 key: e.target.value,
@@ -676,7 +678,7 @@ export const EditAttributeValue: FC<Props> = ({
                       schemaId={attrInfo.schema.id}
                       attrName={attrName}
                       attrValue={info[key]?.id ? info[key] : undefined}
-                      attrType={djangoContext.attrTypeValue.array_named_object}
+                      attrType={djangoContext?.attrTypeValue.array_named_object}
                       isMandatory={attrInfo.isMandatory && !key}
                       index={n}
                       disabled={attrInfo.value.asArrayNamedObject?.length == 1}

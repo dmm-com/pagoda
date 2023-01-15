@@ -58,8 +58,9 @@ export const EntryDetailsPage: FC<Props> = ({
     useTypedParams<{ entityId: number; entryId: number }>();
   const history = useHistory();
 
-  const [entryAnchorEl, setEntryAnchorEl] =
-    useState<HTMLButtonElement | null>();
+  const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
+    null
+  );
 
   const entry = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getEntry(entryId);
@@ -67,14 +68,14 @@ export const EntryDetailsPage: FC<Props> = ({
 
   useEffect(() => {
     // When user specifies invalid entityId, redirect to the page that is correct entityId
-    if (!entry.loading && entry.value.schema.id != entityId) {
-      history.replace(entryDetailsPath(entry.value.schema.id, entryId));
+    if (!entry.loading && entry.value?.schema?.id != entityId) {
+      history.replace(entryDetailsPath(entry.value?.schema?.id ?? 0, entryId));
     }
 
     // If it'd been deleted, show restore-entry page instead
-    if (!entry.loading && !entry.value.isActive) {
+    if (!entry.loading && entry.value?.isActive === false) {
       history.replace(
-        restoreEntryPath(entry.value.schema.id, entry.value.name)
+        restoreEntryPath(entry.value?.schema?.id ?? "", entry.value?.name ?? "")
       );
     }
   }, [entry.loading]);
@@ -92,17 +93,17 @@ export const EntryDetailsPage: FC<Props> = ({
           <Box sx={{ display: "flex" }}>
             <Typography
               component={Link}
-              to={entityEntriesPath(entry.value.schema.id)}
+              to={entityEntriesPath(entry.value?.schema?.id ?? 0)}
             >
-              {entry.value.schema.name}
+              {entry.value?.schema?.name}
             </Typography>
-            {!entry.value.schema.isPublic && <LockIcon />}
+            {entry.value?.schema?.isPublic === false && <LockIcon />}
           </Box>
         )}
         {!entry.loading && (
           <Box sx={{ display: "flex" }}>
-            <Typography color="textPrimary">{entry.value.name}</Typography>
-            {!entry.value.isPublic && <LockIcon />}
+            <Typography color="textPrimary">{entry.value?.name}</Typography>
+            {entry.value?.isPublic === false && <LockIcon />}
           </Box>
         )}
       </AironeBreadcrumbs>
@@ -118,7 +119,7 @@ export const EntryDetailsPage: FC<Props> = ({
           >
             {!entry.loading && (
               <Title variant="h2" align="center">
-                {entry.value.name}
+                {entry.value?.name}
               </Title>
             )}
             <Typography variant="h4" align="center">
@@ -202,9 +203,11 @@ export const EntryDetailsPage: FC<Props> = ({
                 <Loading />
               ) : (
                 <EntryAttributes
-                  attributes={entry.value.attrs.filter(
-                    (attr) => !excludeAttrs.includes(attr.schema.name)
-                  )}
+                  attributes={
+                    entry.value?.attrs.filter(
+                      (attr) => !excludeAttrs.includes(attr.schema.name)
+                    ) ?? []
+                  }
                 />
               ),
             },

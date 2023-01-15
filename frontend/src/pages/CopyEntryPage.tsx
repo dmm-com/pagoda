@@ -26,8 +26,9 @@ export const CopyEntryPage: FC = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { entityId, entryId } =
     useTypedParams<{ entityId: number; entryId: number }>();
-  const [entryAnchorEl, setEntryAnchorEl] =
-    useState<HTMLButtonElement | null>();
+  const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
+    null
+  );
   // newline delimited string value, not string[]
   const [entries, _setEntries] = useState<string>("");
   const [submitted, setSubmitted] = useState<boolean>(false);
@@ -81,28 +82,28 @@ export const CopyEntryPage: FC = () => {
             component={Link}
             to={entityEntriesPath(entry.value.schema.id)}
           >
-            {entry.value.schema.name}
+            {entry.value?.schema?.name}
           </Typography>
-          {!entry.value.schema.isPublic && <LockIcon />}
+          {entry.value?.schema?.isPublic === false && <LockIcon />}
         </Box>
         <Box sx={{ display: "flex" }}>
           <Typography
             component={Link}
             to={entryDetailsPath(entry.value.schema.id, entry.value.id)}
           >
-            {entry.value.name}
+            {entry.value?.name}
           </Typography>
-          {!entry.value.isPublic && <LockIcon />}
+          {entry.value?.isPublic === false && <LockIcon />}
         </Box>
         <Typography>コピー</Typography>
       </AironeBreadcrumbs>
 
       <PageHeader
-        title={entry.value.name}
+        title={entry.value?.name ?? ""}
         subTitle="エントリのコピーを作成"
         description={
           "入力した各行ごとに " +
-          entry.value.name.substring(0, 50) +
+          entry.value?.name.substring(0, 50) +
           " と同じ属性を持つ別のエントリを作成"
         }
         componentSubmits={

@@ -57,34 +57,34 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
     valueInfo: any
   ) => {
     switch (attrType) {
-      case djangoContext.attrTypeValue.date:
-      case djangoContext.attrTypeValue.string:
-      case djangoContext.attrTypeValue.text:
+      case djangoContext?.attrTypeValue.date:
+      case djangoContext?.attrTypeValue.string:
+      case djangoContext?.attrTypeValue.text:
         entryInfo.attrs[attrName].value.asString = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
-      case djangoContext.attrTypeValue.boolean:
+      case djangoContext?.attrTypeValue.boolean:
         entryInfo.attrs[attrName].value.asBoolean = valueInfo.checked;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
-      case djangoContext.attrTypeValue.object:
+      case djangoContext?.attrTypeValue.object:
         entryInfo.attrs[attrName].value.asObject = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
-      case djangoContext.attrTypeValue.group:
+      case djangoContext?.attrTypeValue.group:
         entryInfo.attrs[attrName].value.asGroup = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
-      case djangoContext.attrTypeValue.role:
+      case djangoContext?.attrTypeValue.role:
         entryInfo.attrs[attrName].value.asRole = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
-      case djangoContext.attrTypeValue.named_object:
+      case djangoContext?.attrTypeValue.named_object:
         if (valueInfo?.key !== undefined) {
           entryInfo.attrs[attrName].value.asNamedObject = {
             [valueInfo.key]:
@@ -102,7 +102,7 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         changeAttributes({ ...entryInfo.attrs });
         break;
 
-      case djangoContext.attrTypeValue.array_string:
+      case djangoContext?.attrTypeValue.array_string:
         if (entryInfo.attrs[attrName].value?.asArrayString == null) {
           entryInfo.attrs[attrName].value.asArrayString = [];
         }
@@ -111,22 +111,22 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         changeAttributes({ ...entryInfo.attrs });
         break;
 
-      case djangoContext.attrTypeValue.array_object:
+      case djangoContext?.attrTypeValue.array_object:
         entryInfo.attrs[attrName].value.asArrayObject = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
-      case djangoContext.attrTypeValue.array_group:
+      case djangoContext?.attrTypeValue.array_group:
         entryInfo.attrs[attrName].value.asArrayGroup = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
-      case djangoContext.attrTypeValue.array_role:
+      case djangoContext?.attrTypeValue.array_role:
         entryInfo.attrs[attrName].value.asArrayRole = valueInfo.value;
         changeAttributes({ ...entryInfo.attrs });
         break;
 
-      case djangoContext.attrTypeValue.array_named_object:
+      case djangoContext?.attrTypeValue.array_named_object:
         if (
           entryInfo.attrs[attrName].value.asArrayNamedObject.length <=
           valueInfo.index
@@ -167,7 +167,7 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
         changeAttributes({ ...entryInfo.attrs });
         break;
 
-      case djangoContext.attrTypeValue.array_named_object_boolean:
+      case djangoContext?.attrTypeValue.array_named_object_boolean:
         (
           entryInfo.attrs[attrName].value
             .asArrayNamedObject as asArrayNamedObjectBoolean[]
@@ -195,10 +195,10 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
     index: number
   ) => {
     switch (attrType) {
-      case djangoContext.attrTypeValue.array_string:
+      case djangoContext?.attrTypeValue.array_string:
         entryInfo.attrs[attrName].value.asArrayString.splice(index + 1, 0, "");
         break;
-      case djangoContext.attrTypeValue.array_named_object:
+      case djangoContext?.attrTypeValue.array_named_object:
         entryInfo.attrs[attrName].value.asArrayNamedObject.splice(
           index + 1,
           0,
@@ -218,7 +218,7 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
   ) => {
     if (index !== undefined) {
       switch (attrType) {
-        case djangoContext.attrTypeValue.array_string:
+        case djangoContext?.attrTypeValue.array_string:
           entryInfo.attrs[attrName].value.asArrayString.splice(index, 1);
           // auto-fill an empty element
           if (entryInfo.attrs[attrName].value.asArrayString.length === 0) {
@@ -229,7 +229,7 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
             );
           }
           break;
-        case djangoContext.attrTypeValue.array_named_object:
+        case djangoContext?.attrTypeValue.array_named_object:
           entryInfo.attrs[attrName].value.asArrayNamedObject.splice(index, 1);
           // auto-fill an empty element
           if (entryInfo.attrs[attrName].value.asArrayNamedObject.length === 0) {

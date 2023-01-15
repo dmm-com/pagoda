@@ -28,7 +28,7 @@ const StyledListItem = styled(ListItem)(({}) => ({
 
 interface Props {
   groupTrees: GroupTree[];
-  selectedGroupId?: number;
+  selectedGroupId: number | null;
   handleSelectGroupId: (groupId: number | null) => void;
   setGroupAnchorEls?: (
     els: { groupId: number; el: HTMLButtonElement } | null
@@ -41,7 +41,7 @@ export const GroupTreeRoot: FC<Props> = ({
   handleSelectGroupId,
   setGroupAnchorEls,
 }) => {
-  const isSuperuser = DjangoContext.getInstance().user.isSuperuser;
+  const isSuperuser = DjangoContext.getInstance()?.user?.isSuperuser ?? false;
 
   return (
     <Box>

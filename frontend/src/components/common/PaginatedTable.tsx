@@ -6,7 +6,7 @@ import {
   TableHead,
   TablePagination,
 } from "@mui/material";
-import React, { ReactElement, useState } from "react";
+import React, { ChangeEvent, ReactElement, useState } from "react";
 
 interface Props<T> {
   rows: T[];
@@ -30,7 +30,9 @@ export const PaginatedTable = <T,>({
     rowsPerPageOptions[0] ?? 0
   );
 
-  const handleRowsPerPageChange = (event) => {
+  const handleRowsPerPageChange = (
+    event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };

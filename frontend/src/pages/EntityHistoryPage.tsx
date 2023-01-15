@@ -23,7 +23,7 @@ export const EntityHistoryPage: FC = () => {
   const [page, changePage] = usePage();
 
   const [entityAnchorEl, setEntityAnchorEl] =
-    useState<HTMLButtonElement | null>();
+    useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = React.useState(false);
 
   const entity = useAsyncWithThrow(async () => {
@@ -38,7 +38,7 @@ export const EntityHistoryPage: FC = () => {
       return 0;
     }
     return Math.ceil(
-      histories.value.count / ConstEntityHistoryList.MAX_ROW_COUNT
+      histories.value?.count ?? 0 / ConstEntityHistoryList.MAX_ROW_COUNT
     );
   }, [histories.loading, histories.value?.count]);
 
@@ -74,7 +74,7 @@ export const EntityHistoryPage: FC = () => {
                   whiteSpace: "nowrap",
                 }}
               >
-                {entity.value.name}
+                {entity.value?.name}
               </Typography>
             )}
             <Typography variant="h4" align="center">
@@ -102,7 +102,7 @@ export const EntityHistoryPage: FC = () => {
           <Loading />
         ) : (
           <EntityHistoryList
-            histories={histories.value.results}
+            histories={histories.value?.results ?? []}
             page={page}
             maxPage={maxPage}
             handleChangePage={changePage}

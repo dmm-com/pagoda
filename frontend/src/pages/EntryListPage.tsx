@@ -22,7 +22,7 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
   const { entityId } = useTypedParams<{ entityId: number }>();
 
   const [entityAnchorEl, setEntityAnchorEl] =
-    useState<HTMLButtonElement | null>();
+    useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = React.useState(false);
 
   const entity = useAsyncWithThrow(async () => {
@@ -40,9 +40,9 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
         </Typography>
         <Box sx={{ display: "flex" }}>
           <Typography color="textPrimary">
-            {entity.loading ? "" : entity.value.name}
+            {entity.loading ? "" : entity.value?.name}
           </Typography>
-          {!entity.loading && !entity.value.isPublic && <LockIcon />}
+          {!entity.loading && entity.value?.isPublic === false && <LockIcon />}
         </Box>
       </AironeBreadcrumbs>
 
@@ -66,7 +66,7 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
                   whiteSpace: "nowrap",
                 }}
               >
-                {entity.value.name}
+                {entity.value?.name}
               </Typography>
             )}
             <Typography variant="h4" align="center">

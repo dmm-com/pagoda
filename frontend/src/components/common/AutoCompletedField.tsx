@@ -160,7 +160,7 @@ const Listbox = styled("ul")(
 
 interface Props<T> {
   options: T[];
-  getOptionLabel: (option: T) => string;
+  getOptionLabel: (option: T | string) => string;
   defaultValue?: NonNullable<T> | T[];
   handleChangeSelectedValue: (value: NonNullable<T> | T[]) => void;
   multiple?: boolean;
@@ -194,7 +194,7 @@ export const AutoCompletedField = <T,>({
 
   useEffect(() => {
     if (
-      (multiple && value[0] instanceof String) ||
+      (multiple && Array.isArray(value) && value[0] instanceof String) ||
       (!multiple && value instanceof String)
     ) {
       throw Error(`unsupported value: ${value}`);

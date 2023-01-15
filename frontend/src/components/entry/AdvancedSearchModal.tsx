@@ -50,7 +50,7 @@ export const AdvancedSearchModal: FC<Props> = ({
 
   const handleUpdatePageURL = () => {
     const params = new URLSearchParams(location.search);
-    const attrinfo = JSON.parse(params.get("attrinfo"));
+    const attrinfo = JSON.parse(params.get("attrinfo") ?? "{}");
 
     // chnage has_referral flag if it's necessary
     if (hasReferral) {
@@ -64,7 +64,7 @@ export const AdvancedSearchModal: FC<Props> = ({
       "attrinfo",
       JSON.stringify(
         selectedAttrNames.map((attrname) => {
-          const currAttrInfo = attrinfo.filter((x) => x.name == attrname);
+          const currAttrInfo = attrinfo.filter((x: any) => x.name == attrname);
 
           if (currAttrInfo.length > 0) {
             return {

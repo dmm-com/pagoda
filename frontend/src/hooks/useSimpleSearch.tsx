@@ -3,7 +3,7 @@ import { useHistory, useLocation } from "react-router-dom";
 
 import { topPath } from "../Routes";
 
-type Query = string | null;
+type Query = string | undefined;
 
 export const useSimpleSearch = (): [Query, (query: Query) => void] => {
   const location = useLocation();
@@ -11,14 +11,14 @@ export const useSimpleSearch = (): [Query, (query: Query) => void] => {
 
   const query = useMemo(() => {
     const params = new URLSearchParams(location.search);
-    return params.get("simple_search_query");
+    return params.get("simple_search_query") ?? undefined;
   }, [location.search]);
 
   const submitQuery = useCallback(
-    (query: string) => {
+    (query: Query) => {
       history.push({
         pathname: topPath(),
-        search: `simple_search_query=${query}`,
+        search: query != null ? `simple_search_query=${query}` : undefined,
       });
     },
     [history]

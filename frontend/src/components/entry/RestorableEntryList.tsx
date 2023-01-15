@@ -95,7 +95,7 @@ export const RestorableEntryList: FC<Props> = ({
 
   const totalPageCount = entries.loading
     ? 0
-    : Math.ceil(entries.value.count / ConstEntryList.MAX_ROW_COUNT);
+    : Math.ceil(entries.value?.count ?? 0 / ConstEntryList.MAX_ROW_COUNT);
 
   return (
     <Box>
@@ -120,7 +120,7 @@ export const RestorableEntryList: FC<Props> = ({
         <Loading />
       ) : (
         <Grid container spacing={2}>
-          {entries.value.results.map((entry) => {
+          {entries.value?.results?.map((entry) => {
             return (
               <Grid item xs={4} key={entry.id}>
                 <Card sx={{ height: "100%" }}>
@@ -219,7 +219,7 @@ export const RestorableEntryList: FC<Props> = ({
                           wordBreak: "break-word",
                         }}
                       >
-                        {entryDetail.value.deletedUser.username}
+                        {entryDetail.value?.deletedUser?.username}
                       </TableCell>
                     </StyledTableRow>
                     <StyledTableRow>

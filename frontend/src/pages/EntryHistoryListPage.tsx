@@ -19,8 +19,9 @@ export const EntryHistoryListPage: FC = () => {
 
   const [page, changePage] = usePage();
 
-  const [entryAnchorEl, setEntryAnchorEl] =
-    useState<HTMLButtonElement | null>();
+  const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
+    null
+  );
 
   const entry = useAsync(async () => {
     return entryId != undefined
@@ -36,7 +37,7 @@ export const EntryHistoryListPage: FC = () => {
       return 0;
     }
     return Math.ceil(
-      histories.value.count / ConstEntryHistoryList.MAX_ROW_COUNT
+      histories.value?.count ?? 0 / ConstEntryHistoryList.MAX_ROW_COUNT
     );
   }, [histories.loading, histories.value?.count]);
 
@@ -50,20 +51,26 @@ export const EntryHistoryListPage: FC = () => {
           エンティティ一覧
         </Typography>
         {!entry.loading && (
-          <Typography component={Link} to={entityPath(entry.value.schema.id)}>
-            {entry.value.schema.name}
+          <Typography
+            component={Link}
+            to={entityPath(entry.value?.schema?.id ?? 0)}
+          >
+            {entry.value?.schema?.name}
           </Typography>
         )}
         {!entry.loading && (
           <Typography
             component={Link}
-            to={entryDetailsPath(entry.value.schema.id, entry.value.id)}
+            to={entryDetailsPath(
+              entry.value?.schema?.id ?? 0,
+              entry.value?.id ?? 0
+            )}
           >
-            {entry.value.name}
+            {entry.value?.name}
           </Typography>
         )}
         {!entry.loading && (
-          <Typography color="textPrimary">{`${entry.value.name} 変更履歴`}</Typography>
+          <Typography color="textPrimary">{`${entry.value?.name} 変更履歴`}</Typography>
         )}
       </AironeBreadcrumbs>
 
@@ -87,7 +94,7 @@ export const EntryHistoryListPage: FC = () => {
                   whiteSpace: "nowrap",
                 }}
               >
-                {entry.value.name}
+                {entry.value?.name}
               </Typography>
             )}
             <Typography variant="h4" align="center">
@@ -103,7 +110,7 @@ export const EntryHistoryListPage: FC = () => {
               <AppsIcon />
             </IconButton>
             <EntryControlMenu
-              entityId={entry.value?.schema?.id}
+              entityId={entry.value?.schema?.id ?? 0}
               entryId={entryId}
               anchorElem={entryAnchorEl}
               handleClose={() => setEntryAnchorEl(null)}
@@ -115,7 +122,7 @@ export const EntryHistoryListPage: FC = () => {
             <Loading />
           ) : (
             <EntryHistoryList
-              histories={histories.value.results}
+              histories={histories.value?.results ?? []}
               entryId={entryId}
               page={page}
               maxPage={maxPage}

@@ -97,7 +97,7 @@ export const DashboardPage: FC = () => {
                     {entry.name}
                   </Result>
                   <ResultEntityForEntry>
-                    {entry.schema.name}
+                    {entry.schema?.name}
                   </ResultEntityForEntry>
                 </Box>
               ))}
@@ -106,7 +106,7 @@ export const DashboardPage: FC = () => {
             <Loading />
           ) : (
             <ResultBox>
-              {entities.value.results.map((entity) => (
+              {entities.value?.results?.map((entity) => (
                 <Result
                   key={entity.id}
                   component={Link}

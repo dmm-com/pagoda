@@ -365,10 +365,19 @@ Object {
                   </li>
                   <li>
                     <button
+                      aria-label="Go to page 2"
+                      class="MuiButtonBase-root MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary MuiPaginationItem-page css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                      tabindex="0"
+                      type="button"
+                    >
+                      2
+                    </button>
+                  </li>
+                  <li>
+                    <button
                       aria-label="Go to next page"
-                      class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
-                      disabled=""
-                      tabindex="-1"
+                      class="MuiButtonBase-root MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                      tabindex="0"
                       type="button"
                     >
                       <svg
@@ -753,10 +762,19 @@ Object {
                 </li>
                 <li>
                   <button
+                    aria-label="Go to page 2"
+                    class="MuiButtonBase-root MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary MuiPaginationItem-page css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                    tabindex="0"
+                    type="button"
+                  >
+                    2
+                  </button>
+                </li>
+                <li>
+                  <button
                     aria-label="Go to next page"
-                    class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
-                    disabled=""
-                    tabindex="-1"
+                    class="MuiButtonBase-root MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                    tabindex="0"
                     type="button"
                   >
                     <svg
