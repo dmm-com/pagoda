@@ -1,5 +1,6 @@
 import { Box, Button, TextField, Modal, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { useSnackbar } from "notistack";
 import React, { FC, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 
@@ -57,6 +58,7 @@ export const UserPasswordFormModal: FC<Props> = ({
   onClose,
   onSubmit,
 }) => {
+  const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
 
   const [oldPassword, setOldPassword] = useState("");
@@ -72,33 +74,42 @@ export const UserPasswordFormModal: FC<Props> = ({
     if (newPassword != checkPassword) {
       // abort to submit password
       setIsUnmatch(true);
-
       return;
     }
 
-    if (asSuperuser) {
-      await aironeApiClientV2.updateUserPasswordAsSuperuser(
-        userId,
-        newPassword,
-        checkPassword
-      );
-    } else {
-      await aironeApiClientV2.updateUserPassword(
-        userId,
-        oldPassword,
-        newPassword,
-        checkPassword
-      );
-    }
+    try {
+      if (asSuperuser) {
+        await aironeApiClientV2.updateUserPasswordAsSuperuser(
+          userId,
+          newPassword,
+          checkPassword
+        );
+      } else {
+        await aironeApiClientV2.updateUserPassword(
+          userId,
+          oldPassword,
+          newPassword,
+          checkPassword
+        );
+      }
 
-    // This calls event handler, which is specified by caller component
-    onSubmit();
+      // This calls event handler, which is specified by caller component
+      onSubmit();
 
-    if (DjangoContext.getInstance().user.id == userId) {
-      history.replace(loginPath());
-    } else {
-      history.replace(topPath());
-      history.replace(usersPath());
+      if (DjangoContext.getInstance().user.id == userId) {
+        history.replace(loginPath());
+      } else {
+        history.replace(topPath());
+        history.replace(usersPath());
+      }
+    } catch (e) {
+      enqueueSnackbar(
+        "パスワードリセットに失敗しました。入力項目を見直してください",
+        {
+          variant: "error",
+        }
+      );
+      // TODO show error causes
     }
   };
 

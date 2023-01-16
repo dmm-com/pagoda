@@ -167,7 +167,11 @@ export const EditUserPage: FC = () => {
         componentSubmits={
           <Box display="flex" justifyContent="center">
             <Box mx="4px">
-              <Button variant="outlined" onClick={handleOpenModal}>
+              <Button
+                variant="outlined"
+                disabled={isCreateMode}
+                onClick={handleOpenModal}
+              >
                 パスワードの再設定
               </Button>
               <UserPasswordFormModal
@@ -185,6 +189,7 @@ export const EditUserPage: FC = () => {
                   <Button
                     variant="outlined"
                     color="primary"
+                    disabled={isCreateMode}
                     onClick={handleOpen}
                   >
                     Access Token をリフレッシュ

@@ -147,7 +147,7 @@ const ElemAccessToken: FC<Props> = ({ userInfo }) => {
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         <InputBox>
-          <Input
+          <TextField
             disabled={true}
             sx={{ width: "100%" }}
             placeholder="更新ボタンを押してトークンをリフレッシュさせてください"
@@ -193,6 +193,7 @@ const ElemEmailAddress: FC<Props> = ({ userInfo, setUserInfo }) => {
 };
 
 const ElemUserName: FC<Props> = ({ userInfo, setUserInfo }) => {
+  const error = userInfo.username === "";
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
@@ -200,11 +201,13 @@ const ElemUserName: FC<Props> = ({ userInfo, setUserInfo }) => {
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         <InputBox>
-          <Input
+          <TextField
             type="text"
             placeholder="ユーザ名を入力してください"
             sx={{ width: "100%" }}
             value={userInfo.username}
+            error={error}
+            helperText={error ? "ユーザ名は必須です" : null}
             onChange={(e) => {
               setUserInfo({ ...userInfo, username: e.target.value });
             }}
@@ -216,6 +219,7 @@ const ElemUserName: FC<Props> = ({ userInfo, setUserInfo }) => {
 };
 
 const ElemUserPassword: FC<Props> = ({ userInfo, setUserInfo }) => {
+  const error = (userInfo.password ?? "") === "";
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
@@ -223,11 +227,13 @@ const ElemUserPassword: FC<Props> = ({ userInfo, setUserInfo }) => {
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         <InputBox>
-          <Input
+          <TextField
             type="password"
             placeholder="パスワードを入力してください"
             sx={{ width: "100%" }}
             value={userInfo.password}
+            error={error}
+            helperText={error ? "パスワードは必須です" : null}
             onChange={(e) => {
               setUserInfo({ ...userInfo, password: e.target.value });
             }}
