@@ -1541,8 +1541,11 @@ class ViewTest(AironeViewTest):
         ]
         for (index, test_params) in enumerate(TEST_PARAMS_SET):
             entry = Entry.objects.create(
-                name="test-entry-%d" % index, schema=entity, created_user=user,
-                is_public=False, default_permission=test_params["permission"]
+                name="test-entry-%d" % index,
+                schema=entity,
+                created_user=user,
+                is_public=False,
+                default_permission=test_params["permission"],
             )
             resp = self.client.post(
                 reverse("entry:do_delete", args=[entry.id]),
@@ -2958,7 +2961,9 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         entity = Entity.objects.create(name="test-entity", created_user=user)
-        entry = Entry.objects.create(name="test-entry", created_user=user, schema=entity, is_public=False)
+        entry = Entry.objects.create(
+            name="test-entry", created_user=user, schema=entity, is_public=False
+        )
         entry.complement_attrs(user)
 
         TEST_PARAMS_SET = [
@@ -2968,7 +2973,7 @@ class ViewTest(AironeViewTest):
             {"set_permission": ACLType.Full.id, "expected_response_code": 200},
         ]
         for test_params in TEST_PARAMS_SET:
-            entry.default_permission = test_params['set_permission']
+            entry.default_permission = test_params["set_permission"]
             entry.save()
 
             resp = self.client.post(
@@ -2979,10 +2984,9 @@ class ViewTest(AironeViewTest):
             self.assertEqual(resp.status_code, test_params["expected_response_code"])
 
             # remove copied Entry which might be created not to other loop
-            copied_entry = Entry.objects.filter(name='copy-test-entry', is_active=True).last()
+            copied_entry = Entry.objects.filter(name="copy-test-entry", is_active=True).last()
             if copied_entry is not None:
                 copied_entry.delete()
-
 
     @patch("entry.tasks.copy_entry.delay", Mock(side_effect=tasks.copy_entry))
     def test_post_copy_with_valid_entry(self):
