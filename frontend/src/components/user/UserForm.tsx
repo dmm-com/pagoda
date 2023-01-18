@@ -37,7 +37,7 @@ const StyledTableRow = styled(TableRow)(() => ({
   },
 }));
 
-const InputBox: FC = ({ children }) => {
+const InputBox: FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <Box
       component="form"

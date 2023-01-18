@@ -4,6 +4,7 @@ import React, { FC, SyntheticEvent, useRef } from "react";
 interface Props {
   intervalSec: number;
   onClick: (e: SyntheticEvent) => void;
+  children: React.ReactNode;
 }
 
 /**
