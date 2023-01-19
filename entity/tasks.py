@@ -146,10 +146,11 @@ def edit_entity(self, job_id):
                     attr_obj.is_delete_in_chain = attr["is_delete_in_chain"]
                     attr_obj.index = int(attr["row_index"])
 
-
                     attr_obj.save()
 
-                if (attr_obj.type & AttrTypeValue["object"]) and (attr_obj.is_referral_updated([int(x) for x in attr["ref_ids"]])):
+                if (attr_obj.type & AttrTypeValue["object"]) and (
+                    attr_obj.is_referral_updated([int(x) for x in attr["ref_ids"]])
+                ):
                     # the case of an attribute that has referral entry
                     attr_obj.referral_clear()
                     attr_obj.referral.add(*[Entity.objects.get(id=x) for x in attr["ref_ids"]])

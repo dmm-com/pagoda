@@ -539,8 +539,10 @@ class ViewTest(AironeViewTest):
         # * "foo" is updated so it's HistoricalRecord's count must be plus 1 from previous value
         # * "bar" is created so it's HistoricalRecord's count must be 1
         # * "baz" is created so it's HistoricalRecord's count must be 1
-        self.assertEqual(entity.attrs.get(name="foo").history.count(),
-                         self._test_data["attr_history_count"]["before"] + 1)
+        self.assertEqual(
+            entity.attrs.get(name="foo").history.count(),
+            self._test_data["attr_history_count"]["before"] + 1,
+        )
         self.assertEqual(entity.attrs.get(name="bar").history.count(), 1)
         self.assertEqual(entity.attrs.get(name="baz").history.count(), 1)
 
@@ -693,9 +695,9 @@ class ViewTest(AironeViewTest):
 
         # Save count of HistoricalRecord for EntityAttr before sending request
         self._test_data["attr_history_count"] = {
-            "before": attr.history.count(),
+            "before": attrbase.history.count(),
         }
-        self.assertEqual(attr.history.count(), 1)
+        self.assertEqual(attrbase.history.count(), 1)
 
         # This requests changes all parameters related with EntityAttr
         params = {
@@ -744,8 +746,10 @@ class ViewTest(AironeViewTest):
         # checks for HistoricalRecord for EntityAttr,
         # it's value must be increased by 2, that are for adding referral Entity
         # and changing it's parameters
-        self.assertEqual(entity.attrs.get(name="baz").history.count(),
-                         self._test_data["attr_history_count"]["before"] + 2)
+        self.assertEqual(
+            entity.attrs.get(name="baz").history.count(),
+            self._test_data["attr_history_count"]["before"] + 2,
+        )
 
     def test_post_edit_to_array_referral_attribute(self):
         user = self.admin_login()
@@ -923,6 +927,12 @@ class ViewTest(AironeViewTest):
             },
         )
 
+        # Save count of HistoricalRecord for EntityAttr before sending request
+        attr = entity.attrs.get(name="ref")
+        self._test_data["attr_history_count"] = {
+            "before": attr.history.count(),
+        }
+
         permission_count = Permission.objects.count()
         params = {
             "name": "new-Entity",
@@ -938,7 +948,7 @@ class ViewTest(AironeViewTest):
                     "row_index": "1",
                 },
                 {
-                    "name": "bar",
+                    "name": attr.name,
                     "type": str(AttrTypeValue["string"]),
                     "id": entity.attrs.last().id,
                     "is_delete_in_chain": True,
@@ -974,6 +984,10 @@ class ViewTest(AironeViewTest):
         self.assertEqual(res["ret_count"], 1)
         self.assertEqual(res["ret_values"][0]["entry"]["id"], ref_entry.id)
         self.assertEqual(res["ret_values"][0]["referrals"], [])
+
+        # checks for HistoricalRecord for EntityAttr,
+        # it's value must be increased by 1, that are for delete attribute
+        self.assertEqual(attr.history.count(), self._test_data["attr_history_count"]["before"] + 1)
 
     def test_export_data(self):
         user = self.admin_login()
