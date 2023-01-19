@@ -35,7 +35,9 @@ const BreadcrumbsBox = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const AironeBreadcrumbs: FC = ({ children }) => {
+export const AironeBreadcrumbs: FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   return (
     <Frame>
       <Fixed>

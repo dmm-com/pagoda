@@ -13,7 +13,9 @@ const StyledSnackbarProvider = styled(SnackbarProvider)(({ theme }) => ({
   },
 }));
 
-export const AironeSnackbarProvider: FC = ({ children }) => {
+export const AironeSnackbarProvider: FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   return (
     <StyledSnackbarProvider
       maxSnack={3}

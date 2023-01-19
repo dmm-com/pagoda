@@ -90,7 +90,7 @@ const ErrorFallback: FC<Props> = ({ error }) => {
   }
 };
 
-const ErrorBridge: FC = ({ children }) => {
+const ErrorBridge: FC<{ children: React.ReactNode }> = ({ children }) => {
   const dispatchError = useError();
 
   const handleUnhandledRejection = useCallback(
@@ -119,7 +119,9 @@ const ErrorBridge: FC = ({ children }) => {
   return <>{children}</>;
 };
 
-export const ErrorHandler: FC = ({ children }) => {
+export const ErrorHandler: FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <ErrorBridge>{children}</ErrorBridge>
