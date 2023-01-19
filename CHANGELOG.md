@@ -7,6 +7,8 @@
 ### Changed
 
 ### Fixed
+* Fixed wrong ACL criterion for copy and delete processing.
+  Contributed by @userlocalhost
 
 ## v3.36.0
 
