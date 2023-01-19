@@ -1172,10 +1172,10 @@ class ViewTest(AironeViewTest):
         self.assertFalse(attr.is_active, 1)
 
         # check HistoricalRecord's count after deleting Entity
-        self.assertEqual(entity1.history.count(),
-                         self._test_data["before_history_count"]["entity"] + 1)
-        self.assertEqual(attr.history.count(),
-                         self._test_data["before_history_count"]["attr"] + 1)
+        self.assertEqual(
+            entity1.history.count(), self._test_data["before_history_count"]["entity"] + 1
+        )
+        self.assertEqual(attr.history.count(), self._test_data["before_history_count"]["attr"] + 1)
 
     def test_post_delete_without_permission(self):
         self.guest_login()

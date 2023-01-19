@@ -113,11 +113,14 @@ def set(request, recv_data):
             "Inadmissible setting. By this change you will never change this ACL", status=400
         )
 
-    acl_obj.is_public = bool(recv_data.get("is_public", False))
-    acl_obj.default_permission = int(recv_data["default_permission"])
+    if acl_obj.is_acl_updated(
+        bool(recv_data.get("is_public", False)), int(recv_data["default_permission"])
+    ):
+        acl_obj.is_public = bool(recv_data.get("is_public", False))
+        acl_obj.default_permission = int(recv_data["default_permission"])
 
-    # update the Public/Private flag parameter
-    acl_obj.save()
+        # update the Public/Private flag parameter
+        acl_obj.save()
 
     for acl_data in [x for x in recv_data["acl"] if x["value"]]:
         role = Role.objects.get(id=acl_data["role_id"])
@@ -168,9 +171,13 @@ def _set_permission(role, acl_obj, acl_type):
     for _acltype in ACLType.all():
         if _acltype != acl_type and _acltype != ACLType.Nothing:
             permission = getattr(acl_obj, _acltype.name)
-            permission.roles.remove(role)
+            # Delete only if the target role exists in the permission
+            if permission.roles.filter(id=role.id):
+                permission.roles.remove(role)
 
     # set new permission to be specified except for 'Nothing' permission
     if acl_type != ACLType.Nothing:
         permission = getattr(acl_obj, acl_type.name)
-        permission.roles.add(role)
+        # Add only if the target role doesn't exist in the permission
+        if not permission.roles.filter(id=role.id):
+            permission.roles.add(role)

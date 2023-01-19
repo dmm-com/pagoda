@@ -116,6 +116,12 @@ class ACLBase(models.Model):
         self.is_public = aclobj.is_public
         self.default_permission = aclobj.default_permission
 
+    def is_acl_updated(self, is_public, default_permission):
+        # checks each parameters that are different between current object parameters
+        if self.is_public != is_public or self.default_permission != default_permission:
+
+            return True
+
     @property
     def readable(self):
         return self._get_permission(ACLType.Readable.id)

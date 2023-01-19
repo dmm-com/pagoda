@@ -19,6 +19,8 @@ class ViewTest(AironeViewTest):
         # create test Role instance which is used in this test
         self._role = Role.objects.create(name="TestRole", description="Hoge")
 
+        self._test_data = {}
+
     # override 'admin_login' method to create initial ACLBase objects
     def admin_login(self):
         user = super(ViewTest, self).admin_login()
@@ -354,9 +356,17 @@ class ViewTest(AironeViewTest):
         another_role.admin_users.add(user)
 
         # create an aclobj and set full-permission to operate aclobj to the test Role
-        aclobj = ACLBase.objects.create(name="obj", created_user=user)
+        aclobj = Entity.objects.create(name="obj", created_user=user)
         aclobj.full.roles.add(self._role)
         aclobj.full.roles.add(another_role)
+
+        # Save count of HistoricalRecord for acl_obj before sending request
+        self._test_data["history_count"] = {
+            "aclobj": aclobj.history.count(),
+            "aclobj.full": aclobj.full.history.count(),
+        }
+        self.assertEqual(aclobj.history.count(), 1)
+        self.assertEqual(aclobj.full.history.count(), 3)
 
         params = {
             "object_id": str(aclobj.id),
@@ -372,6 +382,11 @@ class ViewTest(AironeViewTest):
         }
         resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual(aclobj.history.count(), self._test_data["history_count"]["aclobj"] + 1)
+        self.assertEqual(
+            aclobj.full.history.count(), self._test_data["history_count"]["aclobj.full"] + 1
+        )
 
     def test_set_acl_of_uneditable_role(self):
         """This test try to change ACL of Role that logined-user isn't belonged to
@@ -406,3 +421,46 @@ class ViewTest(AironeViewTest):
         # check Role, which user belongs to administrative members, can set ACL
         self.assertTrue(self._role.is_permitted(aclobj, ACLType.Full))
         self.assertFalse(irrelevant_role.is_permitted(aclobj, ACLType.Full))
+
+    def test_set_acl_with_no_change(self):
+        user = self.admin_login()
+        self._role.admin_users.add(user)
+
+        aclobj = Entity.objects.create(name="obj", created_user=user)
+        aclobj.full.roles.add(self._role)
+
+        # Save count of HistoricalRecord for acl_obj before sending request
+        self._test_data["history_count"] = {
+            "aclobj": aclobj.history.count(),
+            "aclobj.readable": aclobj.readable.history.count(),
+            "aclobj.writable": aclobj.writable.history.count(),
+            "aclobj.full": aclobj.full.history.count(),
+        }
+        self.assertEqual(aclobj.history.count(), 1)
+        self.assertEqual(aclobj.readable.history.count(), 1)
+        self.assertEqual(aclobj.writable.history.count(), 1)
+        self.assertEqual(aclobj.full.history.count(), 2)
+
+        # try to set ACL that includes irrelevant role configuration
+        params = {
+            "object_id": str(aclobj.id),
+            "object_type": str(aclobj.objtype),
+            "acl": [
+                {"role_id": str(self._role.id), "value": str(ACLType.Full.id)},
+            ],
+            "default_permission": str(aclobj.default_permission),
+            "is_public": str(aclobj.is_public),
+        }
+        resp = self.client.post(reverse("acl:set"), json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertEqual(aclobj.history.count(), self._test_data["history_count"]["aclobj"])
+        self.assertEqual(
+            aclobj.readable.history.count(), self._test_data["history_count"]["aclobj.readable"]
+        )
+        self.assertEqual(
+            aclobj.writable.history.count(), self._test_data["history_count"]["aclobj.writable"]
+        )
+        self.assertEqual(
+            aclobj.full.history.count(), self._test_data["history_count"]["aclobj.full"]
+        )
