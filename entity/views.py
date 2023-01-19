@@ -369,7 +369,7 @@ def do_delete(request, entity_id, recv_data):
 
     # set deleted flag in advance because deleting processing takes long time
     entity.is_active = False
-    entity.save(update_fields=["is_active"])
+    entity.save_without_historical_record(update_fields=["is_active"])
 
     # Create a new job to delete entry and run it
     job = Job.new_delete_entity(request.user, entity)

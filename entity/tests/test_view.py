@@ -1130,8 +1130,6 @@ class ViewTest(AironeViewTest):
         user1 = self.admin_login()
 
         entity1 = Entity.objects.create(name="entity1", created_user=user1)
-        entity1.save()
-
         attr = EntityAttr.objects.create(
             name="attr-test",
             created_user=user1,
@@ -1142,6 +1140,14 @@ class ViewTest(AironeViewTest):
         entity1.attrs.add(attr)
 
         entity_count = Entity.objects.all().count()
+
+        # Save count of HistoricalRecord for EntityAttr before sending request
+        self._test_data["before_history_count"] = {
+            "entity": entity1.history.count(),
+            "attr": attr.history.count(),
+        }
+        self.assertEqual(self._test_data["before_history_count"]["entity"], 2)
+        self.assertEqual(self._test_data["before_history_count"]["attr"], 1)
 
         params = {}
         resp = self.client.post(
@@ -1157,10 +1163,19 @@ class ViewTest(AironeViewTest):
             "Entity should not be deleted from database",
         )
 
-        entity1 = Entity.objects.get(name__icontains="entity1_deleted_")
+        # check Entity and EntityAttr attributes after deleting Entity
+        entity1.refresh_from_db()
+        self.assertIn("entity1_deleted_", entity1.name)
         self.assertFalse(entity1.is_active)
-        for attr in entity1.attrs.all():
-            self.assertFalse(attr.is_active)
+
+        attr.refresh_from_db()
+        self.assertFalse(attr.is_active, 1)
+
+        # check HistoricalRecord's count after deleting Entity
+        self.assertEqual(entity1.history.count(),
+                         self._test_data["before_history_count"]["entity"] + 1)
+        self.assertEqual(attr.history.count(),
+                         self._test_data["before_history_count"]["attr"] + 1)
 
     def test_post_delete_without_permission(self):
         self.guest_login()
