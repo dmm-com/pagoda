@@ -7,9 +7,15 @@
 ### Changed
 
 ### Fixed
-
 * Fixed wrong ACL criterion for copy and delete processing.
   Contributed by @userlocalhost
+
+## v3.36.0
+
+### Changed
+* Changed model for Permission to be able to track history of each of them
+  when Role permissions were changed
+  Contributed by @syucream, @userlocalhost, @hinashi
 
 ## v3.35.0
 
@@ -17,7 +23,7 @@
 * Added following features
   - Added attribute 'permissions' at export role feature.
   - Enable to receive data that has permissions attribute from import file.
-  Contributed by @syucream, @userlocalhost, @hinagawa
+  Contributed by @syucream, @userlocalhost, @hinashi
 * Make app title a link to top page
   Contributed by @syucream
 * Add a link to entry details page
