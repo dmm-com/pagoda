@@ -196,12 +196,11 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
         entity = Entity.objects.get(id=self.kwargs.get("entity_id"))
         if not entity:
             raise Http404
-        attrs = entity.attrs.all()
+        entity_histories = entity.history.all()
 
-        entity_histories = History.objects.filter(target_obj=entity, is_detail=False)
-        entity_attr_histories = History.objects.filter(target_obj__in=attrs, is_detail=True)
+        return entity_histories
 
-        return entity_histories.union(entity_attr_histories).order_by("-time")
+    # get diffings
 
 
 class EntityImportAPI(generics.GenericAPIView):

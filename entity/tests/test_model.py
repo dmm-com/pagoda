@@ -280,7 +280,6 @@ class ModelTest(TestCase):
         # initialize params which is same with the EntityAttr `attr`
         params = {
             "name": attr.name,
-            "refs": [entity.id],
             "index": attr.index,
             "is_mandatory": attr.is_mandatory,
             "is_delete_in_chain": attr.is_delete_in_chain,
@@ -288,6 +287,7 @@ class ModelTest(TestCase):
 
         # check not to change any parameter
         self.assertFalse(attr.is_updated(**params))
+        self.assertFalse(attr.is_referral_updated([entity.id]))
 
         # check to change name parameter
         changed_params = copy(params)
@@ -295,9 +295,7 @@ class ModelTest(TestCase):
         self.assertTrue(attr.is_updated(**changed_params))
 
         # check to change referrals parameter
-        changed_params = copy(params)
-        changed_params["refs"] = [entity_ref]
-        self.assertTrue(attr.is_updated(**changed_params))
+        self.assertTrue(attr.is_referral_updated([entity_ref]))
 
         # check to change index parameter
         changed_params = copy(params)

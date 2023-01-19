@@ -177,3 +177,6 @@ static_root
 # React
 node_modules
 static/js/ui.js*
+
+# local django configuration
+airone/settings.py

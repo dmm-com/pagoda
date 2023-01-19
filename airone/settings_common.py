@@ -62,7 +62,7 @@ class Common(Configuration):
         "drf_spectacular",
         "django_filters",
         "social_django",
-        # "simple_history",
+        "simple_history",
         # "debug_toolbar",
     ]
 
@@ -78,7 +78,7 @@ class Common(Configuration):
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "social_django.middleware.SocialAuthExceptionMiddleware",
         "airone.lib.db.AirOneReplicationMiddleware",
-        # "simple_history.middleware.HistoryRequestMiddleware",
+        "simple_history.middleware.HistoryRequestMiddleware",
         # "debug_toolbar.middleware.DebugToolbarMiddleware",
     ]
 

@@ -17,6 +17,10 @@ def create_entity(self, job_id):
 
         user = User.objects.filter(id=job.user.id).first()
         entity = Entity.objects.filter(id=job.target.id, is_active=True).first()
+
+        # for history record
+        entity._history_user = user
+
         if not entity or not user:
             # Abort when specified entity doesn't exist
             job.update(Job.STATUS["CANCELED"])
@@ -27,6 +31,7 @@ def create_entity(self, job_id):
         # register history to modify Entity
         history = user.seth_entity_add(entity)
 
+        adding_attrs = []
         for attr in recv_data["attrs"]:
             attr_base = EntityAttr.objects.create(
                 name=attr["name"],
@@ -41,10 +46,15 @@ def create_entity(self, job_id):
             if int(attr["type"]) & AttrTypeValue["object"]:
                 [attr_base.referral.add(Entity.objects.get(id=x)) for x in attr["ref_ids"]]
 
-            entity.attrs.add(attr_base)
+            # This is neccesary to summarize adding attribute history to one time
+            adding_attrs.append(attr_base)
 
             # register history to modify Entity
             history.add_attr(attr_base)
+
+        if adding_attrs:
+            # save history for adding attributes if it's necessary
+            entity.attrs.add(*adding_attrs)
 
         # clear flag to specify this entity has been completed to create
         entity.del_status(Entity.STATUS_CREATING)
@@ -63,6 +73,10 @@ def edit_entity(self, job_id):
 
         user = User.objects.filter(id=job.user.id).first()
         entity = Entity.objects.filter(id=job.target.id, is_active=True).first()
+
+        # for history record
+        entity._history_user = user
+
         if not entity or not user:
             # Abort when specified entity doesn't exist
             job.update(Job.STATUS["CANCELED"])
@@ -90,6 +104,7 @@ def edit_entity(self, job_id):
 
         # update processing for each attrs
         deleted_attr_ids = []
+        adding_attrs = []
         for attr in recv_data["attrs"]:
             if "deleted" in attr:
                 # In case of deleting attribute which has been already existed
@@ -117,9 +132,10 @@ def edit_entity(self, job_id):
                     else:
                         history.mod_attr(attr_obj, "unset mandatory flag")
 
+                # EntityAttr.is_referral_updated() is separated from EntityAttr.is_updated()
+                # to reduce unnecessary creation of HistoricalRecord.
                 params = {
                     "name": attr["name"],
-                    "refs": [int(x) for x in attr["ref_ids"]],
                     "index": attr["row_index"],
                     "is_mandatory": attr["is_mandatory"],
                     "is_delete_in_chain": attr["is_delete_in_chain"],
@@ -130,12 +146,14 @@ def edit_entity(self, job_id):
                     attr_obj.is_delete_in_chain = attr["is_delete_in_chain"]
                     attr_obj.index = int(attr["row_index"])
 
-                    if attr_obj.type & AttrTypeValue["object"]:
-                        # the case of an attribute that has referral entry
-                        attr_obj.referral.clear()
-                        attr_obj.referral.add(*[Entity.objects.get(id=x) for x in attr["ref_ids"]])
-
                     attr_obj.save()
+
+                if (attr_obj.type & AttrTypeValue["object"]) and (
+                    attr_obj.is_referral_updated([int(x) for x in attr["ref_ids"]])
+                ):
+                    # the case of an attribute that has referral entry
+                    attr_obj.referral_clear()
+                    attr_obj.referral.add(*[Entity.objects.get(id=x) for x in attr["ref_ids"]])
 
             else:
                 # In case of creating new attribute
@@ -154,10 +172,13 @@ def edit_entity(self, job_id):
                     [attr_obj.referral.add(Entity.objects.get(id=x)) for x in attr["ref_ids"]]
 
                 # add a new attribute on the existed Entries
-                entity.attrs.add(attr_obj)
+                adding_attrs.append(attr_obj)
 
                 # register History to register adding EntityAttr
                 history.add_attr(attr_obj)
+
+        if adding_attrs:
+            entity.attrs.add(*adding_attrs)
 
         Job.new_update_documents(entity, "", jp_update_es_document).run()
 
@@ -197,6 +218,10 @@ def delete_entity(self, job_id):
 
         user = User.objects.filter(id=job.user.id).first()
         entity = Entity.objects.filter(id=job.target.id, is_active=False).first()
+
+        # for history record
+        entity._history_user = user
+
         if not entity or not user:
             # Abort when specified entity doesn't exist
             job.update(Job.STATUS["CANCELED"])

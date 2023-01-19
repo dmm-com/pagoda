@@ -37,6 +37,9 @@ class ViewTest(AironeViewTest):
     def setUp(self):
         super(ViewTest, self).setUp()
 
+        # clear data which is used in individual tests
+        self._test_data = {}
+
     # override 'admin_login' method to create initial Entity/EntityAttr objects
     def admin_login(self):
         user = super(ViewTest, self).admin_login()
@@ -284,6 +287,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.count(), 1)
         self.assertEqual(entry.attrs.last(), Attribute.objects.last())
         self.assertEqual(entry.attrs.last().values.count(), 1)
+
+        # tests for historical-record
+        self.assertEqual(entry.history.count(), 1)
 
         attrvalue = AttributeValue.objects.last()
         self.assertEqual(entry.attrs.last().values.last(), attrvalue)
@@ -736,6 +742,12 @@ class ViewTest(AironeViewTest):
         for attr in entry.attrs.all():
             attr.add_value(user, "hoge")
 
+        # Save count of HistoricalRecord for Entry before sending request
+        self._test_data["entry_history_count"] = {
+            "before": entry.history.count(),
+        }
+        self.assertEqual(entry.history.count(), 1)
+
         params = {
             "entry_name": "hoge",
             "attrs": [
@@ -768,6 +780,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Attribute.objects.get(name="foo").values.last().value, "hoge")
         self.assertEqual(Attribute.objects.get(name="bar").values.last().value, "fuga")
         self.assertEqual(Entry.objects.get(id=entry.id).name, "hoge")
+
+        # tests for historical records for Entry,
+        self.assertEqual(
+            entry.history.count(), self._test_data["entry_history_count"]["before"] + 1
+        )
 
         # checks to set corrected status-flag
         foo_value_first = Attribute.objects.get(name="foo").values.first()
@@ -1461,6 +1478,12 @@ class ViewTest(AironeViewTest):
 
         entry_count = Entry.objects.count()
 
+        # Save count of HistoricalRecord for EntityAttr before sending request
+        self._test_data["entry_history_count"] = {
+            "before": entry.history.count(),
+        }
+        self.assertEqual(entry.history.count(), 1)
+
         resp = self.client.post(
             reverse("entry:do_delete", args=[entry.id]),
             json.dumps({}),
@@ -1469,6 +1492,12 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Entry.objects.count(), entry_count)
+
+        # tests for historical records for Entry
+        self.assertEqual(
+            entry.history.count(),
+            self._test_data["entry_history_count"]["before"] + 1,
+        )
 
         # checks created jobs and its params are as expected
         jobs = Job.objects.filter(user=user, target=entry)

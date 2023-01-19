@@ -241,7 +241,7 @@ class EntitySerializer(serializers.ModelSerializer):
 
             # set referrals if necessary
             if entity_attr.type & AttrTypeValue["object"]:
-                entity_attr.referral.clear()
+                entity_attr.referral_clear()
                 [entity_attr.referral.add(x) for x in attr_referrals]
 
             # make association with Entity and EntityAttrs
@@ -447,17 +447,41 @@ class EntityDetailSerializer(EntityListSerializer):
         return attrinfo
 
 
-class EntityHistorySerializer(serializers.ModelSerializer):
-    username = serializers.SerializerMethodField()
-    target_obj = serializers.CharField(source="target_obj.name")
+class EntityHistorySerializer(serializers.Serializer):
+    # we need diff values, not a snapshot
+    user = serializers.SerializerMethodField()
+    time = serializers.SerializerMethodField()
+    changes = serializers.SerializerMethodField(method_name="get_entity_changes")
 
-    class Meta:
-        model = History
-        fields = ["operation", "time", "username", "text", "target_obj", "is_detail"]
-        read_only_fields = ["operation", "time", "username", "text", "target_obj", "is_detail"]
+    def get_user(self, history):
+        if not history.history_user:
+            return {}
 
-    def get_username(self, obj: History) -> str:
-        return obj.user.username
+        return {
+            "id": history.history_user.id,
+            "username": history.history_user.username,
+        }
+
+    def get_time(self, history):
+        return history.history_date
+
+    def get_entity_changes(self, history):
+        if history.prev_record:
+            delta = history.diff_against(history.prev_record)
+            return [
+                {
+                    "action": "update",
+                    "target": change.field,
+                    "old": change.old,
+                    "new": change.new,
+                }
+                for change in delta.changes
+            ]
+        else:
+            return [
+                {"action": "create", "target": field, "old": "", "new": getattr(history, field)}
+                for field in ["name", "note"]
+            ]
 
 
 # The format keeps compatibility with entity.views and dashboard.views
