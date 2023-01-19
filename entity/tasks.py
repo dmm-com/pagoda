@@ -132,9 +132,10 @@ def edit_entity(self, job_id):
                     else:
                         history.mod_attr(attr_obj, "unset mandatory flag")
 
+                # EntityAttr.is_referral_updated() is separated from EntityAttr.is_updated()
+                # to reduce unnecessary creation of HistoricalRecord.
                 params = {
                     "name": attr["name"],
-                    "refs": [int(x) for x in attr["ref_ids"]],
                     "index": attr["row_index"],
                     "is_mandatory": attr["is_mandatory"],
                     "is_delete_in_chain": attr["is_delete_in_chain"],
@@ -145,12 +146,13 @@ def edit_entity(self, job_id):
                     attr_obj.is_delete_in_chain = attr["is_delete_in_chain"]
                     attr_obj.index = int(attr["row_index"])
 
-                    if attr_obj.type & AttrTypeValue["object"]:
-                        # the case of an attribute that has referral entry
-                        attr_obj.referral_clear()
-                        attr_obj.referral.add(*[Entity.objects.get(id=x) for x in attr["ref_ids"]])
 
                     attr_obj.save()
+
+                if (attr_obj.type & AttrTypeValue["object"]) and (attr_obj.is_referral_updated([int(x) for x in attr["ref_ids"]])):
+                    # the case of an attribute that has referral entry
+                    attr_obj.referral_clear()
+                    attr_obj.referral.add(*[Entity.objects.get(id=x) for x in attr["ref_ids"]])
 
             else:
                 # In case of creating new attribute

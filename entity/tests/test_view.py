@@ -472,6 +472,12 @@ class ViewTest(AironeViewTest):
         # Before submitting request, this save historical count for test
         history_count_before_submitting = entity.history.count()
 
+        # Save count of HistoricalRecord for EntityAttr before sending request
+        self._test_data["attr_history_count"] = {
+            "before": attr.history.count(),
+        }
+        self.assertEqual(attr.history.count(), 1)
+
         # This request do followiings.
         # - changes entity name from "hoge" to "foo"
         # - changes note from "fuga" to "bar"
@@ -525,9 +531,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(History.objects.filter(operation=History.ADD_ATTR).count(), 2)
         self.assertEqual(History.objects.filter(operation=History.MOD_ATTR).count(), 2)
 
-        # tests for historical records
+        # tests for historical records for Entity
         self.assertEqual(entity.history.count(), history_count_before_submitting + 3)
         self.assertEqual([h.history_user for h in entity.history.all()[0:3]], [user, user, user])
+
+        # tests for historical records for EntityAttr,
+        # * "foo" is updated so it's HistoricalRecord's count must be plus 1 from previous value
+        # * "bar" is created so it's HistoricalRecord's count must be 1
+        # * "baz" is created so it's HistoricalRecord's count must be 1
+        self.assertEqual(entity.attrs.get(name="foo").history.count(),
+                         self._test_data["attr_history_count"]["before"] + 1)
+        self.assertEqual(entity.attrs.get(name="bar").history.count(), 1)
+        self.assertEqual(entity.attrs.get(name="baz").history.count(), 1)
 
         # NOTE: check EntityAttr is added from HistoricalRecord
         diff = entity.get_diff(offset=0)[0]
@@ -676,6 +691,13 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         attr = entry.add_attribute_from_base(attrbase, user)
 
+        # Save count of HistoricalRecord for EntityAttr before sending request
+        self._test_data["attr_history_count"] = {
+            "before": attr.history.count(),
+        }
+        self.assertEqual(attr.history.count(), 1)
+
+        # This requests changes all parameters related with EntityAttr
         params = {
             "name": "foo",
             "note": "bar",
@@ -718,6 +740,12 @@ class ViewTest(AironeViewTest):
             [x.id for x in Attribute.objects.get(id=attr.id).schema.referral.all()],
             [entity.id],
         )
+
+        # checks for HistoricalRecord for EntityAttr,
+        # it's value must be increased by 2, that are for adding referral Entity
+        # and changing it's parameters
+        self.assertEqual(entity.attrs.get(name="baz").history.count(),
+                         self._test_data["attr_history_count"]["before"] + 2)
 
     def test_post_edit_to_array_referral_attribute(self):
         user = self.admin_login()
