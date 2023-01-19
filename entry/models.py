@@ -1278,7 +1278,7 @@ class Entry(ACLBase):
     attrs = models.ManyToManyField(Attribute)
     schema = models.ForeignKey(Entity, on_delete=models.DO_NOTHING)
 
-    history = HistoricalRecords(m2m_fields=[attrs])
+    history = HistoricalRecords()
 
     def __init__(self, *args, **kwargs):
         super(Entry, self).__init__(*args, **kwargs)
