@@ -3,7 +3,7 @@
     "baseUrl": "./frontend/src",
     "allowJs": true,
     "target": "es5",
-    "strict": true,
+    "strict": false,
     "jsx": "react",
     "lib": ["dom", "dom.iterable", "es2019"],
     "esModuleInterop": true
