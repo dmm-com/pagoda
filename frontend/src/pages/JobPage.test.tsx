@@ -28,7 +28,10 @@ test("should match snapshot", async () => {
       createdAt: new Date("2022-01-01T09:00:00.000000+09:00"),
       text: "note",
       target: {
+        id: 1,
         name: "target1",
+        schemaId: null,
+        schemaName: null,
       },
     },
     {
@@ -39,7 +42,10 @@ test("should match snapshot", async () => {
       createdAt: new Date("2022-01-01T09:00:00.000000+09:00"),
       text: "note",
       target: {
+        id: 2,
         name: "target2",
+        schemaId: null,
+        schemaName: null,
       },
     },
   ];

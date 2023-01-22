@@ -14,11 +14,11 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  JobSerializersTarget,
-  JobSerializersTargetFromJSON,
-  JobSerializersTargetFromJSONTyped,
-  JobSerializersTargetToJSON,
-} from "./JobSerializersTarget";
+  JobTarget,
+  JobTargetFromJSON,
+  JobTargetFromJSONTyped,
+  JobTargetToJSON,
+} from "./JobTarget";
 
 /**
  *
@@ -58,10 +58,10 @@ export interface JobSerializers {
   readonly createdAt: Date;
   /**
    *
-   * @type {JobSerializersTarget}
+   * @type {JobTarget}
    * @memberof JobSerializers
    */
-  target: JobSerializersTarget | null;
+  readonly target: JobTarget | null;
   /**
    *
    * @type {number}
@@ -87,7 +87,7 @@ export function JobSerializersFromJSONTyped(
     status: !exists(json, "status") ? undefined : json["status"],
     operation: !exists(json, "operation") ? undefined : json["operation"],
     createdAt: new Date(json["created_at"]),
-    target: JobSerializersTargetFromJSON(json["target"]),
+    target: JobTargetFromJSON(json["target"]),
     passedTime: json["passed_time"],
   };
 }
@@ -103,6 +103,5 @@ export function JobSerializersToJSON(value?: JobSerializers | null): any {
     text: value.text,
     status: value.status,
     operation: value.operation,
-    target: JobSerializersTargetToJSON(value.target),
   };
 }

@@ -38,7 +38,7 @@ export * from "./GroupExport";
 export * from "./GroupMembers";
 export * from "./GroupTree";
 export * from "./JobSerializers";
-export * from "./JobSerializersTarget";
+export * from "./JobTarget";
 export * from "./PaginatedEntityHistoryList";
 export * from "./PaginatedEntityListList";
 export * from "./PaginatedEntryBaseList";
