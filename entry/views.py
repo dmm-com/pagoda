@@ -125,7 +125,9 @@ def index(request, entity_id):
             schema=entity, is_active=True, name__iregex=name_pattern
         )
     else:
-        entries = Entry.objects.order_by(get_sort_order(sort_order)).filter(schema=entity, is_active=True)
+        entries = Entry.objects.order_by(get_sort_order(sort_order)).filter(
+            schema=entity, is_active=True
+        )
 
     p = Paginator(entries, CONFIG.MAX_LIST_ENTRIES)
     try:

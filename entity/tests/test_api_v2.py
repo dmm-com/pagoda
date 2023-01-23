@@ -2,7 +2,6 @@ import datetime
 import json
 import logging
 from unittest import mock
-from pytz import timezone
 
 import yaml
 from django.urls import reverse
@@ -2601,11 +2600,19 @@ class ViewTest(AironeViewTest):
         self.assertTrue(all([x["is_active"] for x in resp_results]))
         self.assertTrue(all([x["deleted_time"] is None for x in resp_results]))
         self.assertTrue(all([x["deleted_user"] is None for x in resp_results]))
-        self.assertTrue(all([x["schema"] == {
-            "id": self.entity.id,
-            "name": "test-entity",
-            "is_public": self.entity.is_public,
-        } for x in resp_results]))
+        self.assertTrue(
+            all(
+                [
+                    x["schema"]
+                    == {
+                        "id": self.entity.id,
+                        "name": "test-entity",
+                        "is_public": self.entity.is_public,
+                    }
+                    for x in resp_results
+                ]
+            )
+        )
 
         # check result with ordering parameter
         resp = self.client.get("/entity/api/v2/%d/entries/?ordering=-updated_time" % self.entity.id)

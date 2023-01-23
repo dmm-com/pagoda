@@ -152,7 +152,15 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Entry
-        fields = ["id", "name", "schema", "is_active", "deleted_user", "deleted_time", "updated_time"]
+        fields = [
+            "id",
+            "name",
+            "schema",
+            "is_active",
+            "deleted_user",
+            "deleted_time",
+            "updated_time",
+        ]
         extra_kwargs = {
             "id": {"read_only": True},
             "name": {"read_only": True},

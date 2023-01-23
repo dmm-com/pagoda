@@ -8,9 +8,9 @@ CONFIG = Settings(
         "TEMPLATE_CONFIG": {
             "MAX_LABEL_STRING": 45,
             "SORT_ORDER": {
-                "name": 'name',
+                "name": "name",
                 "name_reverse": "name_reverse",
-                "time": 'time',
+                "time": "time",
                 "time_reverse": "time_reverse",
             },
         },

@@ -94,28 +94,36 @@ class ViewTest(AironeViewTest):
         for num in range(1, 4):
             Entry.objects.create(name="e%d" % num, schema=self._entity, created_user=user)
 
-        # create Entry e0 with a different time for checking sort-order 
+        # create Entry e0 with a different time for checking sort-order
         Entry.objects.create(name="e0", schema=self._entity, created_user=user)
 
         TEST_PARAMS = [
-            {"sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["name"],
-             "expected_order": ["e0", "e1", "e2", "e3"]},
-            {"sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["name_reverse"],
-             "expected_order": ["e3", "e2", "e1", "e0"]},
-            {"sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["time"],
-             "expected_order": ["e1", "e2", "e3", "e0"]},
-            {"sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["time_reverse"],
-             "expected_order": ["e0", "e3", "e2", "e1"]},
+            {
+                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["name"],
+                "expected_order": ["e0", "e1", "e2", "e3"],
+            },
+            {
+                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["name_reverse"],
+                "expected_order": ["e3", "e2", "e1", "e0"],
+            },
+            {
+                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["time"],
+                "expected_order": ["e1", "e2", "e3", "e0"],
+            },
+            {
+                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["time_reverse"],
+                "expected_order": ["e0", "e3", "e2", "e1"],
+            },
         ]
         for param in TEST_PARAMS:
-            resp = self.client.get(reverse("entry:index", args=[self._entity.id]),
-                                   {"sort_order": param["sort_order"]})
+            resp = self.client.get(
+                reverse("entry:index", args=[self._entity.id]), {"sort_order": param["sort_order"]}
+            )
             self.assertEqual(resp.status_code, 200)
 
             # check listed Entries is sorted by created time order
             self.assertEqual(resp.context["sort_order"], param["sort_order"])
-            self.assertEqual([x.name for x in resp.context["page_obj"]],
-                             param["expected_order"])
+            self.assertEqual([x.name for x in resp.context["page_obj"]], param["expected_order"])
 
     def test_get_permitted_entries(self):
         self.guest_login()
