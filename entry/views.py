@@ -110,7 +110,7 @@ def index(request, entity_id):
         return error
 
     page = request.GET.get("page", 1)
-    keyword = request.GET.get("keyword", None)
+    keyword = request.GET.get("keyword", "")
     sort_order = request.GET.get("sort_order", CONFIG.DEFAULT_LIST_SORT_ORDER)
 
     if custom_view.is_custom("list_entry_without_context", entity.name):
@@ -141,8 +141,6 @@ def index(request, entity_id):
         "page_obj": page_obj,
         "sort_order": sort_order,
     }
-
-    print("[onix/Entry.list(90)] sort_order: %s" % str(context["sort_order"]))
 
     if custom_view.is_custom("list_entry", entity.name):
         # list custom view
