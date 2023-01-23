@@ -24,6 +24,7 @@ from airone.lib.http import (
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity
 from entry.models import Attribute, AttributeValue, Entry
+from entry.utils import get_sort_order
 from group.models import Group
 from job.models import Job
 from role.models import Role
@@ -110,6 +111,7 @@ def index(request, entity_id):
 
     page = request.GET.get("page", 1)
     keyword = request.GET.get("keyword", None)
+    sort_order = request.GET.get("sort_order", CONFIG.DEFAULT_LIST_SORT_ORDER)
 
     if custom_view.is_custom("list_entry_without_context", entity.name):
         # show custom view without context
@@ -119,11 +121,11 @@ def index(request, entity_id):
 
     if keyword:
         name_pattern = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS_ENTRY_LIST, keyword)
-        entries = Entry.objects.order_by("name").filter(
+        entries = Entry.objects.order_by(get_sort_order(sort_order)).filter(
             schema=entity, is_active=True, name__iregex=name_pattern
         )
     else:
-        entries = Entry.objects.order_by("name").filter(schema=entity, is_active=True)
+        entries = Entry.objects.order_by(get_sort_order(sort_order)).filter(schema=entity, is_active=True)
 
     p = Paginator(entries, CONFIG.MAX_LIST_ENTRIES)
     try:
@@ -137,7 +139,10 @@ def index(request, entity_id):
         "entity": entity,
         "keyword": keyword,
         "page_obj": page_obj,
+        "sort_order": sort_order,
     }
+
+    print("[onix/Entry.list(90)] sort_order: %s" % str(context["sort_order"]))
 
     if custom_view.is_custom("list_entry", entity.name):
         # list custom view
@@ -521,7 +526,7 @@ def do_import_data(request, entity_id, context):
 
 @http_post([])  # check only that request is POST, id will be given by url
 def do_delete(request, entry_id, recv_data):
-    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Full)
     if error:
         return error
 
@@ -600,7 +605,7 @@ def copy(request, entry_id):
     ]
 )
 def do_copy(request, entry_id, recv_data):
-    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Full)
     if error:
         return error
 

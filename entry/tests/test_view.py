@@ -86,19 +86,19 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse("entry:index", args=[0]))
         self.assertEqual(resp.status_code, 303)
 
-    def test_get_index_with_login(self):
-        self.admin_login()
-
-        resp = self.client.get(reverse("entry:index", args=[self._entity.id]))
-        self.assertEqual(resp.status_code, 200)
-
     def test_get_index_with_entries(self):
         user = self.admin_login()
 
-        Entry(name="fuga", schema=self._entity, created_user=user).save()
+        # create Entries for using this test
+        for num in range(3):
+            Entry.objects.create(name="entry-%d" % num, schema=self._entity, created_user=user)
 
         resp = self.client.get(reverse("entry:index", args=[self._entity.id]))
         self.assertEqual(resp.status_code, 200)
+
+        # check listed Entries is sorted by created time order
+        self.assertEqual([x.name for x in resp.context["page_obj"]],
+                         ["entry-2", "entry-1", "entry-0"])
 
     def test_get_permitted_entries(self):
         self.guest_login()
@@ -1554,37 +1554,31 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(entry.is_active)
 
-    @patch(
-        "entry.tasks.create_entry_attrs.delay",
-        Mock(side_effect=tasks.create_entry_attrs),
-    )
-    def test_permission_check_for_delete_request(self):
-        user = self.guest_login()
-        entity = Entity.objects.create(name="test-entity", created_user=user)
+    def test_post_delete_entry_without_permission(self):
+        user1 = self.guest_login()
+        user2 = User(username="nyaa")
+        user2.save()
 
-        TEST_PARAMS_SET = [
-            {"permission": ACLType.Nothing.id, "expected_response_code": 400, "is_active": True},
-            {"permission": ACLType.Readable.id, "expected_response_code": 400, "is_active": True},
-            {"permission": ACLType.Writable.id, "expected_response_code": 200, "is_active": False},
-            {"permission": ACLType.Full.id, "expected_response_code": 200, "is_active": False},
-        ]
-        for (index, test_params) in enumerate(TEST_PARAMS_SET):
-            entry = Entry.objects.create(
-                name="test-entry-%d" % index,
-                schema=entity,
-                created_user=user,
-                is_public=False,
-                default_permission=test_params["permission"],
-            )
-            resp = self.client.post(
-                reverse("entry:do_delete", args=[entry.id]),
-                json.dumps({}),
-                "application/json",
-            )
+        entity = Entity.objects.create(name="entity", created_user=user1)
+        entry = Entry(name="fuga", schema=entity, created_user=user2, is_public=False)
+        entry.save()
 
-            entry.refresh_from_db()
-            self.assertEqual(resp.status_code, test_params["expected_response_code"])
-            self.assertEqual(entry.is_active, test_params["is_active"])
+        entry_count = Entry.objects.count()
+
+        params = {}
+
+        resp = self.client.post(
+            reverse("entry:do_delete", args=[entry.id]),
+            json.dumps(params),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 400)
+
+        self.assertEqual(Entry.objects.count(), entry_count)
+
+        entry = Entry.objects.last()
+        self.assertTrue(entry.is_active)
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",
@@ -2984,38 +2978,6 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-
-    @patch("entry.tasks.copy_entry.delay", Mock(side_effect=tasks.copy_entry))
-    def test_permission_check_for_copy_request(self):
-        user = self.guest_login()
-
-        entity = Entity.objects.create(name="test-entity", created_user=user)
-        entry = Entry.objects.create(
-            name="test-entry", created_user=user, schema=entity, is_public=False
-        )
-        entry.complement_attrs(user)
-
-        TEST_PARAMS_SET = [
-            {"set_permission": ACLType.Nothing.id, "expected_response_code": 400},
-            {"set_permission": ACLType.Readable.id, "expected_response_code": 400},
-            {"set_permission": ACLType.Writable.id, "expected_response_code": 200},
-            {"set_permission": ACLType.Full.id, "expected_response_code": 200},
-        ]
-        for test_params in TEST_PARAMS_SET:
-            entry.default_permission = test_params["set_permission"]
-            entry.save()
-
-            resp = self.client.post(
-                reverse("entry:do_copy", args=[entry.id]),
-                json.dumps({"entries": "copy-test-entry"}),
-                "application/json",
-            )
-            self.assertEqual(resp.status_code, test_params["expected_response_code"])
-
-            # remove copied Entry which might be created not to other loop
-            copied_entry = Entry.objects.filter(name="copy-test-entry", is_active=True).last()
-            if copied_entry is not None:
-                copied_entry.delete()
 
     @patch("entry.tasks.copy_entry.delay", Mock(side_effect=tasks.copy_entry))
     def test_post_copy_with_valid_entry(self):

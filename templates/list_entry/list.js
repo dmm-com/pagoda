@@ -21,6 +21,17 @@ var complete_processing = function(data) {
 }
 
 $(document).ready(function() {
+  // set check-mark for list-item of sort-order
+  //elem_order_item = $(`#list_sort_order .${urlParams.get("sort_order")}`);
+  elem_order_item = $("#list_sort_order .{{ sort_order }}");
+  if (elem_order_item) {
+    $("#lite_sort_order .dropdown-item").removeClass("dropdown-item-checked");
+    elem_order_item.addClass("dropdown-item-checked");
+  }
+
+  // This ajax getting Entry processing is no-longer used,
+  // and also won't be used any more.
+  /*
   var sending_request = false;
   $('.del-item').on('click', confirm_delete_table_item);
   $("#narrow_down_entries").on('keyup', function(e) {
@@ -45,6 +56,7 @@ $(document).ready(function() {
       $('#entry_count').text('エントリ数：...データ取得中...');
     }
   });
+  */
 
   // event handler to export Entries of specified Entity
   $('.export_entry_with_yaml').on('click', send_export_request_yaml);

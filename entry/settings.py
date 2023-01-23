@@ -7,7 +7,14 @@ CONFIG = Settings(
         "MAX_SEARCH_ENTRIES": 20,
         "TEMPLATE_CONFIG": {
             "MAX_LABEL_STRING": 45,
+            "SORT_ORDER": {
+                "name": 'name',
+                "name_reverse": "name_reverse",
+                "time": 'time',
+                "time_reverse": "time_reverse",
+            },
         },
+        "DEFAULT_LIST_SORT_ORDER": "time_reverse",
         "MAX_HISTORY_COUNT": 10,
         "MAX_QUERY_SIZE": 249,  # '.*' + '[aA]'*249 + '.*' = 1000
         "MAX_QUERY_COUNT": 1000,
