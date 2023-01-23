@@ -35,7 +35,7 @@ export * from "./GetEntryAttrReferral";
 export * from "./Group";
 export * from "./GroupCreateUpdate";
 export * from "./GroupExport";
-export * from "./GroupMembers";
+export * from "./GroupMember";
 export * from "./GroupTree";
 export * from "./JobSerializers";
 export * from "./JobSerializersTarget";

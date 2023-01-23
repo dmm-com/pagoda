@@ -1,5 +1,5 @@
 // https://github.com/dmm-com/airone/wiki/(Blueprint)-AirOne-API-Error-code-mapping
-const aironeAPIErrors = {
+const aironeAPIErrors: Record<string, string> = {
   "AE-220000": "入力データが既存のデータと重複しています",
   "AE-122000": "入力データが大きすぎます",
 };

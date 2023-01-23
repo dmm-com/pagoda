@@ -112,7 +112,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
   const djangoContext = DjangoContext.getInstance();
 
   switch (attrInfo.type) {
-    case djangoContext.attrTypeValue.object:
+    case djangoContext?.attrTypeValue.object:
       return (
         <List>
           <ListItem>
@@ -121,9 +121,9 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         </List>
       );
 
-    case djangoContext.attrTypeValue.string:
-    case djangoContext.attrTypeValue.text:
-    case djangoContext.attrTypeValue.date:
+    case djangoContext?.attrTypeValue.string:
+    case djangoContext?.attrTypeValue.text:
+    case djangoContext?.attrTypeValue.date:
       return (
         <List>
           <ListItem>
@@ -132,7 +132,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         </List>
       );
 
-    case djangoContext.attrTypeValue.boolean:
+    case djangoContext?.attrTypeValue.boolean:
       return (
         <List>
           <ListItem>
@@ -141,7 +141,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         </List>
       );
 
-    case djangoContext.attrTypeValue.named_object:
+    case djangoContext?.attrTypeValue.named_object:
       return (
         <List>
           <ListItem>
@@ -150,7 +150,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         </List>
       );
 
-    case djangoContext.attrTypeValue.group:
+    case djangoContext?.attrTypeValue.group:
       return (
         <List>
           <ListItem>
@@ -159,7 +159,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         </List>
       );
 
-    case djangoContext.attrTypeValue.role:
+    case djangoContext?.attrTypeValue.role:
       return (
         <List>
           <ListItem>
@@ -168,10 +168,10 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         </List>
       );
 
-    case djangoContext.attrTypeValue.array_object:
+    case djangoContext?.attrTypeValue.array_object:
       return (
         <List>
-          {attrInfo.value.asArrayObject.map((info, n) => (
+          {attrInfo.value?.asArrayObject?.map((info, n) => (
             <ListItem key={n}>
               <ElemObject attrValue={info} />
             </ListItem>
@@ -179,10 +179,10 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         </List>
       );
 
-    case djangoContext.attrTypeValue.array_string:
+    case djangoContext?.attrTypeValue.array_string:
       return (
         <List>
-          {attrInfo.value.asArrayString.map((info, n) => (
+          {attrInfo.value?.asArrayString?.map((info, n) => (
             <ListItem key={n}>
               <ElemString attrValue={info} />
             </ListItem>
@@ -190,10 +190,10 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         </List>
       );
 
-    case djangoContext.attrTypeValue.array_named_object:
+    case djangoContext?.attrTypeValue.array_named_object:
       return (
         <List>
-          {attrInfo.value.asArrayNamedObject.map((info, n) => (
+          {attrInfo.value?.asArrayNamedObject?.map((info, n) => (
             <ListItem key={n}>
               <ElemNamedObject attrValue={info} />
             </ListItem>
@@ -201,10 +201,10 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         </List>
       );
 
-    case djangoContext.attrTypeValue.array_group:
+    case djangoContext?.attrTypeValue.array_group:
       return (
         <List>
-          {attrInfo.value.asArrayGroup.map((info, n) => (
+          {attrInfo.value?.asArrayGroup?.map((info, n) => (
             <ListItem key={n}>
               <ElemGroup attrValue={info} />
             </ListItem>
@@ -212,10 +212,10 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         </List>
       );
 
-    case djangoContext.attrTypeValue.array_role:
+    case djangoContext?.attrTypeValue.array_role:
       return (
         <List>
-          {attrInfo.value.asArrayRole.map((info, n) => (
+          {attrInfo.value?.asArrayRole?.map((info, n) => (
             <ListItem key={n}>
               <ElemRole attrValue={info} />
             </ListItem>

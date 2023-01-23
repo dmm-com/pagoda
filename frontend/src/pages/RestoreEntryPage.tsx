@@ -21,7 +21,7 @@ export const RestoreEntryPage: FC = () => {
   const keyword = params.get("keyword");
 
   const [entityAnchorEl, setEntityAnchorEl] =
-    useState<HTMLButtonElement | null>();
+    useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = React.useState(false);
 
   const entity = useAsync(async () => {
@@ -41,7 +41,10 @@ export const RestoreEntryPage: FC = () => {
         <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
-        <Typography component={Link} to={entityEntriesPath(entity.value?.id)}>
+        <Typography
+          component={Link}
+          to={entityEntriesPath(entity.value?.id ?? 0)}
+        >
           {entity.value?.name} エントリ一覧
         </Typography>
         <Typography>{entity.value?.name} 削除エントリの復旧</Typography>
@@ -57,7 +60,7 @@ export const RestoreEntryPage: FC = () => {
           <Box flexGrow="1">
             {!entity.loading && (
               <Typography variant="h2" align="center">
-                {entity.value.name}
+                {entity.value?.name}
               </Typography>
             )}
             <Typography variant="h4" align="center">

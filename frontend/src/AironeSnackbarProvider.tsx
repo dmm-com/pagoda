@@ -1,4 +1,4 @@
-import ErrorOutlineIcon from "@mui/material/internal/svg-icons/ErrorOutline";
+import ErrorOutlinedIcon from "@mui/icons-material/ErrorOutlined";
 import SuccessOutlinedIcon from "@mui/material/internal/svg-icons/SuccessOutlined";
 import { styled } from "@mui/material/styles";
 import { SnackbarProvider } from "notistack";
@@ -21,7 +21,7 @@ export const AironeSnackbarProvider: FC<{ children: React.ReactNode }> = ({
       maxSnack={3}
       iconVariant={{
         success: <SuccessOutlinedIcon sx={{ fontSize: "20px", mr: "8px" }} />,
-        error: <ErrorOutlineIcon sx={{ fontSize: "20px", mr: "8px" }} />,
+        error: <ErrorOutlinedIcon sx={{ fontSize: "20px", mr: "8px" }} />,
       }}
     >
       {children}

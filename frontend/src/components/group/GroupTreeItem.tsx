@@ -12,7 +12,7 @@ const CHILDREN_INDENT_WIDTH = 16;
 interface Props {
   depth: number;
   groupTrees: GroupTree[];
-  selectedGroupId: number;
+  selectedGroupId: number | null;
   handleSelectGroupId: (groupId: number | null) => void;
   setGroupAnchorEls?: (
     els: { groupId: number; el: HTMLButtonElement } | null
@@ -26,7 +26,7 @@ export const GroupTreeItem: FC<Props> = ({
   handleSelectGroupId,
   setGroupAnchorEls,
 }) => {
-  const isSuperuser = DjangoContext.getInstance().user.isSuperuser;
+  const isSuperuser = DjangoContext.getInstance()?.user?.isSuperuser ?? false;
 
   return (
     <>

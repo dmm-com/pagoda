@@ -47,7 +47,7 @@ export const ToEntryFormAttributes = (
   return Object.fromEntries(
     origin.map((attr) => {
       switch (attr.type) {
-        case djangoContext.attrTypeValue.group:
+        case djangoContext?.attrTypeValue.group:
           return [
             attr.schema.name,
             {
@@ -65,7 +65,7 @@ export const ToEntryFormAttributes = (
             },
           ];
 
-        case djangoContext.attrTypeValue.object:
+        case djangoContext?.attrTypeValue.object:
           return [
             attr.schema.name,
             {
@@ -83,7 +83,7 @@ export const ToEntryFormAttributes = (
             },
           ];
 
-        case djangoContext.attrTypeValue.named_object:
+        case djangoContext?.attrTypeValue.named_object:
           const name = Object.keys(attr.value.asNamedObject)[0];
           const value = attr.value.asNamedObject[name];
           return [
@@ -106,7 +106,7 @@ export const ToEntryFormAttributes = (
             },
           ];
 
-        case djangoContext.attrTypeValue.array_group:
+        case djangoContext?.attrTypeValue.array_group:
           return [
             attr.schema.name,
             {
@@ -124,7 +124,7 @@ export const ToEntryFormAttributes = (
             },
           ];
 
-        case djangoContext.attrTypeValue.array_object:
+        case djangoContext?.attrTypeValue.array_object:
           return [
             attr.schema.name,
             {
@@ -142,7 +142,7 @@ export const ToEntryFormAttributes = (
             },
           ];
 
-        case djangoContext.attrTypeValue.array_named_object:
+        case djangoContext?.attrTypeValue.array_named_object:
           return [
             attr.schema.name,
             {
@@ -166,7 +166,7 @@ export const ToEntryFormAttributes = (
             },
           ];
 
-        case djangoContext.attrTypeValue.boolean:
+        case djangoContext?.attrTypeValue.boolean:
           return [
             attr.schema.name,
             {
@@ -177,7 +177,7 @@ export const ToEntryFormAttributes = (
             },
           ];
 
-        case djangoContext.attrTypeValue.array_string:
+        case djangoContext?.attrTypeValue.array_string:
           return [
             attr.schema.name,
             {
@@ -188,8 +188,8 @@ export const ToEntryFormAttributes = (
             },
           ];
 
-        case djangoContext.attrTypeValue.string:
-        case djangoContext.attrTypeValue.text:
+        case djangoContext?.attrTypeValue.string:
+        case djangoContext?.attrTypeValue.text:
           return [
             attr.schema.name,
             {

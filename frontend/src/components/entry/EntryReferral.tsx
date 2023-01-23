@@ -39,12 +39,12 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
   }, [entryId, page, keywordQuery]);
 
   const [matchedEntries, count, maxPage] = useMemo(() => {
-    if (!referredEntries.loading) {
+    if (!referredEntries.loading && referredEntries.value != null) {
       return [
         referredEntries.value.results,
         referredEntries.value.count,
         Math.ceil(
-          referredEntries.value.count / EntryReferralList.MAX_ROW_COUNT
+          referredEntries.value.count ?? 0 / EntryReferralList.MAX_ROW_COUNT
         ),
       ];
     }
@@ -85,7 +85,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
         </Stack>
       </Box>
       <List sx={{ py: "8px" }}>
-        {matchedEntries.map((entry) => (
+        {matchedEntries?.map((entry) => (
           <ListItem
             key={entry.id}
             divider={true}

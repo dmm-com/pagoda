@@ -23,9 +23,7 @@ export const EntityPage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);
 
   const params = new URLSearchParams(location.search);
-  const [query, setQuery] = useState<string>(
-    params.has("query") ? params.get("query") : undefined
-  );
+  const [query, setQuery] = useState<string>(params.get("query") ?? "");
 
   const entities = useAsync(async () => {
     return await aironeApiClientV2.getEntities(page, query);
@@ -35,12 +33,14 @@ export const EntityPage: FC = () => {
     if (entities.loading) {
       return 0;
     }
-    return Math.ceil(entities.value.count / ConstEntityList.MAX_ROW_COUNT);
+    return Math.ceil(
+      entities.value?.count ?? 0 / ConstEntityList.MAX_ROW_COUNT
+    );
   }, [entities.loading, entities.value?.count]);
 
   const handleChangeQuery = (newQuery?: string) => {
     changePage(1);
-    setQuery(newQuery);
+    setQuery(newQuery ?? "");
 
     history.push({
       pathname: location.pathname,
@@ -109,7 +109,7 @@ export const EntityPage: FC = () => {
           <Loading />
         ) : (
           <EntityList
-            entities={entities.value.results}
+            entities={entities.value?.results ?? []}
             page={page}
             query={query}
             maxPage={maxPage}

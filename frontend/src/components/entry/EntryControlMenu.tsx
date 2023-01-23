@@ -39,7 +39,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
   const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
 
-  const handleDelete = async (event, entryId) => {
+  const handleDelete = async (entryId: number) => {
     try {
       await aironeApiClientV2.destroyEntry(entryId);
       enqueueSnackbar("エントリの削除が完了しました", {
@@ -96,7 +96,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
             </MenuItem>
           )}
           dialogTitle="本当に削除しますか？"
-          onClickYes={(e) => handleDelete(e, entryId)}
+          onClickYes={() => handleDelete(entryId)}
         />
       </Box>
     </Menu>

@@ -58,7 +58,7 @@ export type GroupTree = Pick<_GroupTree, "id" | "name"> & {
 // Get CSRF Token from Cookie set by Django
 // see https://docs.djangoproject.com/en/3.2/ref/csrf/
 function getCsrfToken(): string {
-  return Cookies.get("csrftoken");
+  return Cookies.get("csrftoken") ?? "";
 }
 
 /**
@@ -91,9 +91,9 @@ class AironeApiClientV2 {
 
   async createUser(
     username: string,
-    email: string,
     password: string,
-    isSuperuser: boolean
+    email?: string,
+    isSuperuser?: boolean
   ): Promise<UserCreate> {
     return await this.user.userApiV2Create(
       {
@@ -137,8 +137,8 @@ class AironeApiClientV2 {
   async updateUser(
     userId: number,
     username: string,
-    email: string,
-    isSuperuser: boolean
+    email?: string,
+    isSuperuser?: boolean
   ): Promise<UserUpdate> {
     return await this.user.userApiV2Update(
       {
@@ -177,10 +177,10 @@ class AironeApiClientV2 {
           objtype: objectType,
           acl: acl,
           // readonly
-          parent: undefined,
-          acltypes: undefined,
-          members: undefined,
-          roles: undefined,
+          parent: null,
+          acltypes: [],
+          members: [],
+          roles: [],
         },
       },
       {
@@ -228,7 +228,7 @@ class AironeApiClientV2 {
     return await this.entity.entityApiV2Create(
       {
         entityCreate: {
-          id: undefined,
+          id: -1,
           name: name,
           note: note,
           isToplevel: isToplevel,
@@ -257,7 +257,7 @@ class AironeApiClientV2 {
       {
         id: id,
         entityUpdate: {
-          id: undefined,
+          id: id,
           name: name,
           note: note,
           isToplevel: isToplevel,
@@ -347,7 +347,7 @@ class AironeApiClientV2 {
     attrs: Attribute[]
   ): Promise<EntryCreate> {
     return await this.entity.entityApiV2EntriesCreate(
-      { entityId, entryCreate: { id: undefined, name, attrs } },
+      { entityId, entryCreate: { id: -1, name, attrs } },
       {
         headers: {
           "Content-Type": "application/json;charset=utf-8",
@@ -363,7 +363,7 @@ class AironeApiClientV2 {
     attrs: Attribute[]
   ): Promise<EntryUpdate> {
     return await this.entry.entryApiV2Update(
-      { id, entryUpdate: { id: undefined, name, attrs } },
+      { id, entryUpdate: { id: id, name, attrs } },
       {
         headers: {
           "Content-Type": "application/json;charset=utf-8",
@@ -807,7 +807,7 @@ class AironeApiClientV2 {
       limit: JobList.MAX_ROW_COUNT,
       createdAfter: createdAfter,
     });
-    return resp.results;
+    return resp.results ?? [];
   }
 
   async rerunJob(id: number): Promise<void> {

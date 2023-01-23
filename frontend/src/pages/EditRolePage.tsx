@@ -50,6 +50,7 @@ export const EditRolePage: FC = () => {
 
   const handleSubmit = async () => {
     if (!submittable) return;
+    if (role == null) return;
 
     const roleCreateUpdate: RoleCreateUpdate = {
       ...role,

@@ -1,5 +1,6 @@
 from typing import Dict, List, TypedDict
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from group.models import Group
@@ -12,6 +13,11 @@ class GroupMemberType(TypedDict):
     username: str
 
 
+class GroupMemberSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    username = serializers.CharField()
+
+
 class GroupSerializer(serializers.ModelSerializer):
     members = serializers.SerializerMethodField(method_name="get_members")
 
@@ -19,6 +25,7 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ["id", "name", "parent_group", "members"]
 
+    @extend_schema_field(GroupMemberSerializer(many=True))
     def get_members(self, obj: Group) -> List[GroupMemberType]:
         users = User.objects.filter(groups__name=obj.name, is_active=True).order_by("username")
         return [

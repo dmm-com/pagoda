@@ -28,8 +28,8 @@ export const LoginPage: FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isAlert, setIsAlert] = useState(false);
   const [openPasswordResetModal, setOpenPasswordResetModal] = useState(false);
-  const [uidb64, setUidb64] = useState<string>();
-  const [token, setToken] = useState<string>();
+  const [uidb64, setUidb64] = useState<string>("");
+  const [token, setToken] = useState<string>("");
   const [openPasswordResetConfirmModal, setOpenPasswordResetConfirmModal] =
     useState(false);
 
@@ -67,7 +67,7 @@ export const LoginPage: FC = () => {
     const data = new FormData(event.currentTarget);
     postLogin(data).then((resp) => {
       if (resp.type === "opaqueredirect") {
-        window.location.href = djangoContext.loginNext;
+        window.location.href = djangoContext?.loginNext ?? "";
       } else {
         setIsAlert(true);
       }
@@ -106,7 +106,7 @@ export const LoginPage: FC = () => {
         bgcolor="white"
       >
         <Typography variant="h1" fontWeight={400}>
-          {djangoContext.title}
+          {djangoContext?.title}
         </Typography>
         <Typography variant="subtitle2" mt={2}>
           仮想マシンや各機材を検索することができる情報管理システム。
@@ -161,7 +161,7 @@ export const LoginPage: FC = () => {
             id="next"
             name="next"
             type="hidden"
-            value={djangoContext.loginNext}
+            value={djangoContext?.loginNext}
           />
           <Box display="flex" flexDirection="column" width="100%" my="8px">
             <Link color="secondary" sx={{ cursor: "pointer" }}>

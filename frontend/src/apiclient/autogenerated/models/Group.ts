@@ -14,11 +14,11 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  GroupMembers,
-  GroupMembersFromJSON,
-  GroupMembersFromJSONTyped,
-  GroupMembersToJSON,
-} from "./GroupMembers";
+  GroupMember,
+  GroupMemberFromJSON,
+  GroupMemberFromJSONTyped,
+  GroupMemberToJSON,
+} from "./GroupMember";
 
 /**
  *
@@ -46,10 +46,10 @@ export interface Group {
   parentGroup?: number | null;
   /**
    *
-   * @type {Array<GroupMembers>}
+   * @type {Array<GroupMember>}
    * @memberof Group
    */
-  readonly members: Array<GroupMembers>;
+  readonly members: Array<GroupMember>;
 }
 
 export function GroupFromJSON(json: any): Group {
@@ -69,7 +69,7 @@ export function GroupFromJSONTyped(
     parentGroup: !exists(json, "parent_group")
       ? undefined
       : json["parent_group"],
-    members: (json["members"] as Array<any>).map(GroupMembersFromJSON),
+    members: (json["members"] as Array<any>).map(GroupMemberFromJSON),
   };
 }
 

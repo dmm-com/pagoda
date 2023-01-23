@@ -61,7 +61,7 @@ export const AutocompleteWithAllSelector = <
   }>({ query: "", results: options as Array<T | SelectorOption> });
 
   const allSelected = useMemo(() => {
-    return options.length === value.length;
+    return options.length === value?.length;
   }, [options, value]);
 
   const filter = useMemo(() => {

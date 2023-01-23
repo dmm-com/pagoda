@@ -1,6 +1,6 @@
 import { Box, Button, Input, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC, useState } from "react";
+import React, { ChangeEvent, FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 interface Props {
@@ -14,8 +14,8 @@ export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const { enqueueSnackbar } = useSnackbar();
 
-  const onChange = (event) => {
-    setFile(event.target.files[0]);
+  const onChange = (event: ChangeEvent<HTMLInputElement>) => {
+    event.target.files && setFile(event.target.files[0]);
   };
 
   const onClick = async () => {
@@ -24,6 +24,10 @@ export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
       fileReader.readAsText(file);
 
       fileReader.onload = async () => {
+        if (fileReader.result == null) {
+          return;
+        }
+
         try {
           await handleImport(fileReader.result);
           history.go(0);

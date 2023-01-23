@@ -39,9 +39,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
 
   const params = new URLSearchParams(location.search);
 
-  const [query, setQuery] = useState<string>(
-    params.has("query") ? params.get("query") : undefined
-  );
+  const [query, setQuery] = useState<string>(params.get("query") ?? "");
   const [keyword, setKeyword] = useState(query ?? "");
 
   const entries = useAsyncWithThrow(async () => {
@@ -50,7 +48,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
 
   const handleChangeQuery = (newQuery?: string) => {
     changePage(1);
-    setQuery(newQuery);
+    setQuery(newQuery ?? "");
 
     history.push({
       pathname: location.pathname,
@@ -60,7 +58,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
 
   const totalPageCount = entries.loading
     ? 0
-    : Math.ceil(entries.value.count / ConstEntryList.MAX_ROW_COUNT);
+    : Math.ceil(entries.value?.count ?? 0 / ConstEntryList.MAX_ROW_COUNT);
 
   const [entryAnchorEls, setEntryAnchorEls] = useState<{
     [key: number]: HTMLButtonElement;
@@ -101,7 +99,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
         <Loading />
       ) : (
         <Grid container spacing={2}>
-          {entries.value.results.map((entry) => {
+          {entries.value?.results?.map((entry) => {
             return (
               <Grid item xs={4} key={entry.id}>
                 <Card sx={{ height: "100%" }}>
