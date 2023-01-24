@@ -1582,31 +1582,37 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(entry.is_active)
 
-    def test_post_delete_entry_without_permission(self):
-        user1 = self.guest_login()
-        user2 = User(username="nyaa")
-        user2.save()
+    @patch(
+        "entry.tasks.create_entry_attrs.delay",
+        Mock(side_effect=tasks.create_entry_attrs),
+    )
+    def test_permission_check_for_delete_request(self):
+        user = self.guest_login()
+        entity = Entity.objects.create(name="test-entity", created_user=user)
 
-        entity = Entity.objects.create(name="entity", created_user=user1)
-        entry = Entry(name="fuga", schema=entity, created_user=user2, is_public=False)
-        entry.save()
+        TEST_PARAMS_SET = [
+            {"permission": ACLType.Nothing.id, "expected_response_code": 400, "is_active": True},
+            {"permission": ACLType.Readable.id, "expected_response_code": 400, "is_active": True},
+            {"permission": ACLType.Writable.id, "expected_response_code": 200, "is_active": False},
+            {"permission": ACLType.Full.id, "expected_response_code": 200, "is_active": False},
+        ]
+        for (index, test_params) in enumerate(TEST_PARAMS_SET):
+            entry = Entry.objects.create(
+                name="test-entry-%d" % index,
+                schema=entity,
+                created_user=user,
+                is_public=False,
+                default_permission=test_params["permission"],
+            )
+            resp = self.client.post(
+                reverse("entry:do_delete", args=[entry.id]),
+                json.dumps({}),
+                "application/json",
+            )
 
-        entry_count = Entry.objects.count()
-
-        params = {}
-
-        resp = self.client.post(
-            reverse("entry:do_delete", args=[entry.id]),
-            json.dumps(params),
-            "application/json",
-        )
-
-        self.assertEqual(resp.status_code, 400)
-
-        self.assertEqual(Entry.objects.count(), entry_count)
-
-        entry = Entry.objects.last()
-        self.assertTrue(entry.is_active)
+            entry.refresh_from_db()
+            self.assertEqual(resp.status_code, test_params["expected_response_code"])
+            self.assertEqual(entry.is_active, test_params["is_active"])
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",
@@ -3006,6 +3012,38 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
+
+    @patch("entry.tasks.copy_entry.delay", Mock(side_effect=tasks.copy_entry))
+    def test_permission_check_for_copy_request(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="test-entity", created_user=user)
+        entry = Entry.objects.create(
+            name="test-entry", created_user=user, schema=entity, is_public=False
+        )
+        entry.complement_attrs(user)
+
+        TEST_PARAMS_SET = [
+            {"set_permission": ACLType.Nothing.id, "expected_response_code": 400},
+            {"set_permission": ACLType.Readable.id, "expected_response_code": 400},
+            {"set_permission": ACLType.Writable.id, "expected_response_code": 200},
+            {"set_permission": ACLType.Full.id, "expected_response_code": 200},
+        ]
+        for test_params in TEST_PARAMS_SET:
+            entry.default_permission = test_params["set_permission"]
+            entry.save()
+
+            resp = self.client.post(
+                reverse("entry:do_copy", args=[entry.id]),
+                json.dumps({"entries": "copy-test-entry"}),
+                "application/json",
+            )
+            self.assertEqual(resp.status_code, test_params["expected_response_code"])
+
+            # remove copied Entry which might be created not to other loop
+            copied_entry = Entry.objects.filter(name="copy-test-entry", is_active=True).last()
+            if copied_entry is not None:
+                copied_entry.delete()
 
     @patch("entry.tasks.copy_entry.delay", Mock(side_effect=tasks.copy_entry))
     def test_post_copy_with_valid_entry(self):

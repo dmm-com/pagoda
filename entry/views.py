@@ -526,7 +526,7 @@ def do_import_data(request, entity_id, context):
 
 @http_post([])  # check only that request is POST, id will be given by url
 def do_delete(request, entry_id, recv_data):
-    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Full)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error:
         return error
 
@@ -605,7 +605,7 @@ def copy(request, entry_id):
     ]
 )
 def do_copy(request, entry_id, recv_data):
-    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Full)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error:
         return error
 
