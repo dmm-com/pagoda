@@ -11,4 +11,4 @@ def get_sort_order(sort_order_request):
     elif sort_order_request == CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["time_reverse"]:
         return "-updated_time"
     else:
-        return CONFIG.DEFAULT_LIST_SORT_ORDER
+        return get_sort_order(CONFIG.DEFAULT_LIST_SORT_ORDER)

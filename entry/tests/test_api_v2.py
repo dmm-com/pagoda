@@ -2,8 +2,10 @@ import datetime
 import errno
 import json
 from datetime import date
+from django.conf import settings
 from unittest import mock
 from unittest.mock import Mock, patch
+from pytz import timezone
 
 import yaml
 from django.urls import reverse
@@ -30,6 +32,9 @@ from group.models import Group
 from job.models import Job, JobOperation
 from role.models import Role
 from user.models import User
+
+
+TZ_INFO = timezone(settings.TIME_ZONE)
 
 
 class ViewTest(AironeViewTest):
@@ -1818,6 +1823,7 @@ class ViewTest(AironeViewTest):
                 "is_active": True,
                 "deleted_user": None,
                 "deleted_time": None,
+                "updated_time": entry.updated_time.astimezone(TZ_INFO).isoformat(),
             },
         )
 

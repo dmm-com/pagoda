@@ -4,8 +4,10 @@ import logging
 from unittest import mock
 
 import yaml
+from django.conf import settings
 from django.urls import reverse
 from rest_framework.exceptions import ValidationError
+from pytz import timezone
 
 from acl.models import ACLBase
 from airone.lib import types as atype
@@ -19,6 +21,9 @@ from group.models import Group
 from role.models import Role
 from user.models import History, User
 from webhook.models import Webhook
+
+
+TZ_INFO = timezone(settings.TIME_ZONE)
 
 
 class ViewTest(AironeViewTest):
@@ -2613,6 +2618,10 @@ class ViewTest(AironeViewTest):
                 ]
             )
         )
+        for info in resp_results:
+            entry = [e for e in entries if e.id == info["id"]][0]
+            self.assertEqual(info["updated_time"],
+                             entry.updated_time.astimezone(TZ_INFO).isoformat())
 
         # check result with ordering parameter
         resp = self.client.get("/entity/api/v2/%d/entries/?ordering=-updated_time" % self.entity.id)
