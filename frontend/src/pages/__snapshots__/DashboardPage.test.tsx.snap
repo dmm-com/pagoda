@@ -39,127 +39,7 @@ Object {
           </div>
         </div>
         <div
-          class="MuiBox-root css-b0vf4l"
-        >
-          <div
-            class="MuiBox-root css-k6kfpb"
-          >
-            <div
-              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1mw4b3-MuiFormControl-root-MuiTextField-root"
-            >
-              <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-adornedStart css-4ama2z-MuiInputBase-root-MuiOutlinedInput-root"
-              >
-                <div
-                  class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
-                >
-                  <span
-                    class="notranslate"
-                  >
-                    ​
-                  </span>
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                    data-testid="SearchIcon"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                    />
-                  </svg>
-                </div>
-                <input
-                  aria-invalid="false"
-                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                  id=":r0:"
-                  placeholder="Search"
-                  type="text"
-                  value=""
-                />
-                <fieldset
-                  aria-hidden="true"
-                  class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
-                >
-                  <legend
-                    class="css-ihdtdm"
-                  >
-                    <span
-                      class="notranslate"
-                    >
-                      ​
-                    </span>
-                  </legend>
-                </fieldset>
-              </div>
-            </div>
-            <div
-              class="MuiBox-root css-1acvt31"
-            >
-              <a
-                class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
-                href="/ui/entities/1/entries"
-              >
-                aaa
-              </a>
-              <a
-                class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
-                href="/ui/entities/2/entries"
-              >
-                aaaaa
-              </a>
-              <a
-                class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
-                href="/ui/entities/3/entries"
-              >
-                bbbbb
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </body>,
-  "container": <div>
-    <div
-      class="MuiBox-root css-0"
-    >
-      <div
-        class="MuiBox-root css-1baykhj"
-      >
-        <div
-          class="MuiBox-root css-t0pdf1"
-        >
-          <div
-            class="MuiBox-root css-jqffe8"
-          >
-            <nav
-              aria-label="breadcrumb"
-              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
-            >
-              <ol
-                class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
-              >
-                <li
-                  class="MuiBreadcrumbs-li"
-                >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
-                  >
-                    Top
-                  </p>
-                </li>
-              </ol>
-            </nav>
-          </div>
-        </div>
-      </div>
-      <div
-        class="MuiBox-root css-b0vf4l"
-      >
-        <div
-          class="MuiBox-root css-k6kfpb"
+          class="MuiContainer-root MuiContainer-maxWidthLg css-1br4z8z-MuiContainer-root"
         >
           <div
             class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1mw4b3-MuiFormControl-root-MuiTextField-root"
@@ -212,7 +92,7 @@ Object {
             </div>
           </div>
           <div
-            class="MuiBox-root css-1acvt31"
+            class="MuiBox-root css-i48sxq"
           >
             <a
               class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
@@ -233,6 +113,118 @@ Object {
               bbbbb
             </a>
           </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="MuiBox-root css-0"
+    >
+      <div
+        class="MuiBox-root css-1baykhj"
+      >
+        <div
+          class="MuiBox-root css-t0pdf1"
+        >
+          <div
+            class="MuiBox-root css-jqffe8"
+          >
+            <nav
+              aria-label="breadcrumb"
+              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+            >
+              <ol
+                class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+              >
+                <li
+                  class="MuiBreadcrumbs-li"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                  >
+                    Top
+                  </p>
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+      <div
+        class="MuiContainer-root MuiContainer-maxWidthLg css-1br4z8z-MuiContainer-root"
+      >
+        <div
+          class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1mw4b3-MuiFormControl-root-MuiTextField-root"
+        >
+          <div
+            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-adornedStart css-4ama2z-MuiInputBase-root-MuiOutlinedInput-root"
+          >
+            <div
+              class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
+            >
+              <span
+                class="notranslate"
+              >
+                ​
+              </span>
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                data-testid="SearchIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                />
+              </svg>
+            </div>
+            <input
+              aria-invalid="false"
+              class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
+              id=":r0:"
+              placeholder="Search"
+              type="text"
+              value=""
+            />
+            <fieldset
+              aria-hidden="true"
+              class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+            >
+              <legend
+                class="css-ihdtdm"
+              >
+                <span
+                  class="notranslate"
+                >
+                  ​
+                </span>
+              </legend>
+            </fieldset>
+          </div>
+        </div>
+        <div
+          class="MuiBox-root css-i48sxq"
+        >
+          <a
+            class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+            href="/ui/entities/1/entries"
+          >
+            aaa
+          </a>
+          <a
+            class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+            href="/ui/entities/2/entries"
+          >
+            aaaaa
+          </a>
+          <a
+            class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+            href="/ui/entities/3/entries"
+          >
+            bbbbb
+          </a>
         </div>
       </div>
     </div>
