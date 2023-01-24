@@ -3,6 +3,8 @@
 ## In development
 
 ### Added
+* Added processing to be able to configure sort-order at list Entry page.
+  Contributed by @userlocalhost
 
 ### Changed
 
