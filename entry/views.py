@@ -24,6 +24,7 @@ from airone.lib.http import (
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity
 from entry.models import Attribute, AttributeValue, Entry
+from entry.utils import get_sort_order
 from group.models import Group
 from job.models import Job
 from role.models import Role
@@ -109,7 +110,8 @@ def index(request, entity_id):
         return error
 
     page = request.GET.get("page", 1)
-    keyword = request.GET.get("keyword", None)
+    keyword = request.GET.get("keyword", "")
+    sort_order = request.GET.get("sort_order", CONFIG.DEFAULT_LIST_SORT_ORDER)
 
     if custom_view.is_custom("list_entry_without_context", entity.name):
         # show custom view without context
@@ -119,11 +121,13 @@ def index(request, entity_id):
 
     if keyword:
         name_pattern = prepend_escape_character(CONFIG.ESCAPE_CHARACTERS_ENTRY_LIST, keyword)
-        entries = Entry.objects.order_by("name").filter(
+        entries = Entry.objects.order_by(get_sort_order(sort_order)).filter(
             schema=entity, is_active=True, name__iregex=name_pattern
         )
     else:
-        entries = Entry.objects.order_by("name").filter(schema=entity, is_active=True)
+        entries = Entry.objects.order_by(get_sort_order(sort_order)).filter(
+            schema=entity, is_active=True
+        )
 
     p = Paginator(entries, CONFIG.MAX_LIST_ENTRIES)
     try:
@@ -137,6 +141,7 @@ def index(request, entity_id):
         "entity": entity,
         "keyword": keyword,
         "page_obj": page_obj,
+        "sort_order": sort_order,
     }
 
     if custom_view.is_custom("list_entry", entity.name):

@@ -16,6 +16,7 @@ from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from entry.settings import CONFIG
+from entry.utils import get_sort_order
 from group.models import Group
 from role.models import Role
 
@@ -161,7 +162,8 @@ def get_entries(request, entity_ids):
     ]:
         query = Q(Q(schema__id=entity_id, is_active=is_active), query_name_regex)
 
-        total_entries += Entry.objects.order_by("-updated_time").filter(query)
+        sort_order = get_sort_order(request.GET.get("sort_order", ""))
+        total_entries += Entry.objects.order_by(sort_order).filter(query)
         if len(total_entries) > CONFIG.MAX_LIST_ENTRIES:
             break
 
