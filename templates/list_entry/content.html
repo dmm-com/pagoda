@@ -7,11 +7,25 @@
     <form method='get'>
       <input name="keyword" type='text' value="{{ keyword | default:"" }}" placeholder='絞り込む'/>
       <input name="page" type="hidden" value="1" />
+      <input name="sort_order" type="hidden" value="{{ sort_order }}" />
     </form>
     <table class="table table-bordered">
       <thead>
         <tr>
-          <th>エントリ名</th>
+          <th>
+            <div class="dropdown" id='list_sort_order'>
+              エントリ名
+              <img src="/static/images/allow_down.png"
+                   id="showOrderMenu"
+                   data-toggle="dropdown"/>
+              <div class="dropdown-menu" aria-labelledby="showOrderMenu">
+                <a class="dropdown-item {{config.entry.SORT_ORDER.name}}" href="/entry/{{ entity.id }}/?sort_order={{ config.entry.SORT_ORDER.name }}">エントリ名</a>
+                <a class="dropdown-item {{ config.entry.SORT_ORDER.name_reverse }}" href="/entry/{{ entity.id }}/?sort_order={{ config.entry.SORT_ORDER.name_reverse }}">エントリ名(逆順)</a>
+                <a class="dropdown-item {{ config.entry.SORT_ORDER.time }}" href="/entry/{{ entity.id }}/?sort_order={{ config.entry.SORT_ORDER.time }}">作成日時</a>
+                <a class="dropdown-item {{ config.entry.SORT_ORDER.time_reverse }}" href="/entry/{{ entity.id }}/?sort_order={{ config.entry.SORT_ORDER.time_reverse }}">作成日時(逆順)</a>
+              </div>
+            </div>
+          </th>
           <th></th>
         </tr>
       </thead>
@@ -35,3 +49,14 @@
     </table>
   </div>
 </div>
+
+{% block head %}
+<style type="text/css"><!--
+.dropdown-item-checked::before {
+  position: absolute;
+  left: .4rem;
+  content: '✓';
+  font-weight: 600;
+}
+--></style>
+{% endblock %}

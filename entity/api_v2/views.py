@@ -167,7 +167,7 @@ class EntityEntryAPI(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated & EntityPermission]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     filterset_fields = ["is_active"]
-    ordering_fields = ["name"]
+    ordering_fields = ["name", "updated_time"]
     search_fields = ["name"]
 
     def get_serializer_class(self):

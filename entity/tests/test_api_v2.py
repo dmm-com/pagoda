@@ -4,7 +4,9 @@ import logging
 from unittest import mock
 
 import yaml
+from django.conf import settings
 from django.urls import reverse
+from pytz import timezone
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase
@@ -19,6 +21,8 @@ from group.models import Group
 from role.models import Role
 from user.models import History, User
 from webhook.models import Webhook
+
+TZ_INFO = timezone(settings.TIME_ZONE)
 
 
 class ViewTest(AironeViewTest):
@@ -2594,35 +2598,35 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get("/entity/api/v2/%d/entries/" % self.entity.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(
-            resp.json()["results"],
-            [
-                {
-                    "id": entries[0].id,
-                    "name": "e-0",
-                    "schema": {
+
+        resp_results = resp.json()["results"]
+        self.assertEqual([x["name"] for x in resp_results], ["e-0", "e-1"])
+        self.assertTrue(all([x["is_active"] for x in resp_results]))
+        self.assertTrue(all([x["deleted_time"] is None for x in resp_results]))
+        self.assertTrue(all([x["deleted_user"] is None for x in resp_results]))
+        self.assertTrue(
+            all(
+                [
+                    x["schema"]
+                    == {
                         "id": self.entity.id,
                         "name": "test-entity",
                         "is_public": self.entity.is_public,
-                    },
-                    "is_active": True,
-                    "deleted_time": None,
-                    "deleted_user": None,
-                },
-                {
-                    "id": entries[1].id,
-                    "name": "e-1",
-                    "schema": {
-                        "id": self.entity.id,
-                        "name": "test-entity",
-                        "is_public": self.entity.is_public,
-                    },
-                    "is_active": True,
-                    "deleted_time": None,
-                    "deleted_user": None,
-                },
-            ],
+                    }
+                    for x in resp_results
+                ]
+            )
         )
+        for info in resp_results:
+            entry = [e for e in entries if e.id == info["id"]][0]
+            self.assertEqual(
+                info["updated_time"], entry.updated_time.astimezone(TZ_INFO).isoformat()
+            )
+
+        # check result with ordering parameter
+        resp = self.client.get("/entity/api/v2/%d/entries/?ordering=-updated_time" % self.entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual([x["name"] for x in resp.json()["results"]], ["e-1", "e-0"])
 
     def test_list_entry_with_param_is_active(self):
         entries = []
