@@ -2,12 +2,12 @@ import { Box, Divider, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, ReactElement } from "react";
 
-const Frame = styled(Box)(({}) => ({
+const Frame = styled(Box)({
   width: "100%",
-  height: "284px",
-}));
+  height: "80px",
+});
 
-const Fixed = styled(Box)(({}) => ({
+const Fixed = styled(Box)({
   position: "fixed",
   zIndex: 2,
   width: "100%",
@@ -15,73 +15,52 @@ const Fixed = styled(Box)(({}) => ({
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-}));
+});
 
-const HeaderTop = styled(Box)(({ theme }) => ({
+const Header = styled(Box)(({ theme }) => ({
   width: theme.breakpoints.values.lg,
-  height: "88px",
-  marginTop: "124px",
   display: "flex",
+  alignItems: "baseline",
+  marginBottom: "16px",
 }));
 
-const HeaderBottom = styled(Box)(({ theme }) => ({
-  width: theme.breakpoints.values.lg,
-  height: "40px",
-  display: "flex",
-  alignItems: "flex-end",
-}));
-
-const TitleBox = styled(Box)(({}) => ({
-  display: "flex",
-  alignItems: "flex-end",
-  margin: "8px 24px",
-}));
-
-const Title = styled(Typography)(({}) => ({
-  height: "72px",
+const Title = styled(Typography)({
+  margin: "0 24px",
   maxWidth: "700px",
   overflow: "hidden",
   textOverflow: "ellipsis",
-}));
+  fontWeight: "bold",
+});
+
+const ChildrenBox = styled(Box)({
+  marginLeft: "auto",
+  marginRight: "24px",
+});
+
+const StyledDivider = styled(Divider)({
+  marginBottom: "24px",
+});
 
 interface Props {
   title: string;
-  subTitle?: string;
   description?: string;
-  componentSubmits: ReactElement<any>;
-  componentControl?: ReactElement<any>;
+  children?: React.ReactNode;
 }
 
 export const PageHeader: FC<Props> = ({
   title,
-  subTitle,
   description,
-  componentControl,
-  componentSubmits,
+  children,
 }) => {
   return (
     <Frame>
       <Fixed>
-        <HeaderTop>
-          <TitleBox>
-            <Title variant="h2" mr="64px">
-              {title}
-            </Title>
-            <Typography variant="h4" fontWeight="300">
-              {subTitle}
-            </Typography>
-          </TitleBox>
-          <Box ml="auto" mr="24px">
-            {componentControl}
-          </Box>
-        </HeaderTop>
-        <HeaderBottom>
-          <Typography>{description}</Typography>
-          <Box ml="auto" mr="24px">
-            {componentSubmits}
-          </Box>
-        </HeaderBottom>
-        <Divider flexItem sx={{ mt: "32px", borderColor: "black" }} />
+        <Header>
+          <Title variant="h6">{title}</Title>
+          <Typography variant="subtitle1">{description}</Typography>
+          <ChildrenBox>{children}</ChildrenBox>
+        </Header>
+        <StyledDivider flexItem />
       </Fixed>
     </Frame>
   );
