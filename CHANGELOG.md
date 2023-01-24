@@ -7,6 +7,8 @@
   Contributed by @userlocalhost
 
 ### Changed
+* Changed margins on all pages.
+  Contributed by @hinashi
 
 ### Fixed
 * Fixed wrong ACL criterion for copy and delete processing.
