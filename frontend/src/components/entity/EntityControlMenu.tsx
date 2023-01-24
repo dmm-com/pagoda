@@ -19,6 +19,7 @@ import {
   entitiesPath,
   restoreEntryPath,
   topPath,
+  entityEntriesPath,
 } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Confirmable } from "components/common/Confirmable";
@@ -77,13 +78,27 @@ export const EntityControlMenu: FC<Props> = ({
       open={Boolean(anchorElem)}
       onClose={() => handleClose(entityId)}
       anchorEl={anchorElem}
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "right",
+      }}
+      transformOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
       disableScrollLock
     >
+      <MenuItem component={Link} to={entityEntriesPath(entityId)}>
+        <Typography>エントリ一覧</Typography>
+      </MenuItem>
       <MenuItem component={Link} to={entityPath(entityId)}>
         <Typography>編集</Typography>
       </MenuItem>
       <MenuItem component={Link} to={aclPath(entityId)}>
         <Typography>ACL 設定</Typography>
+      </MenuItem>
+      <MenuItem component={Link} to={entityHistoryPath(entityId)}>
+        <Typography>変更履歴</Typography>
       </MenuItem>
       <RateLimitedClickable
         intervalSec={5}
@@ -103,9 +118,6 @@ export const EntityControlMenu: FC<Props> = ({
       </RateLimitedClickable>
       <MenuItem onClick={() => setOpenImportModal(true)}>
         <Typography>インポート</Typography>
-      </MenuItem>
-      <MenuItem component={Link} to={entityHistoryPath(entityId)}>
-        <Typography>変更履歴</Typography>
       </MenuItem>
       <MenuItem component={Link} to={restoreEntryPath(entityId)}>
         <Typography>削除エントリの復旧</Typography>

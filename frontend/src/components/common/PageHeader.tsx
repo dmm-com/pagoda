@@ -1,6 +1,6 @@
 import { Box, Divider, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, ReactElement } from "react";
+import React, { FC } from "react";
 
 const Frame = styled(Box)({
   width: "100%",
@@ -37,21 +37,13 @@ const ChildrenBox = styled(Box)({
   marginRight: "24px",
 });
 
-const StyledDivider = styled(Divider)({
-  marginBottom: "24px",
-});
-
 interface Props {
   title: string;
   description?: string;
   children?: React.ReactNode;
 }
 
-export const PageHeader: FC<Props> = ({
-  title,
-  description,
-  children,
-}) => {
+export const PageHeader: FC<Props> = ({ title, description, children }) => {
   return (
     <Frame>
       <Fixed>
@@ -60,7 +52,7 @@ export const PageHeader: FC<Props> = ({
           <Typography variant="subtitle1">{description}</Typography>
           <ChildrenBox>{children}</ChildrenBox>
         </Header>
-        <StyledDivider flexItem />
+        <Divider flexItem />
       </Fixed>
     </Frame>
   );

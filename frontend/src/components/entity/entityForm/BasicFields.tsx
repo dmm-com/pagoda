@@ -20,8 +20,8 @@ interface Props {
 
 export const BasicFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
   return (
-    <Box>
-      <Box my="32px">
+    <Box mb="80px">
+      <Box my="16px">
         <Typography variant="h4" align="center">
           基本情報
         </Typography>

@@ -11,6 +11,7 @@ import { useTypedParams } from "../hooks/useTypedParams";
 import { entitiesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { PageHeader } from "components/common/PageHeader";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { EntryList } from "components/entry/EntryList";
 
@@ -46,51 +47,25 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
         </Box>
       </AironeBreadcrumbs>
 
-      <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
-        {/* NOTE: This Box component that has CSS tuning should be custom component */}
-        <Box
-          display="flex"
-          sx={{ borderBottom: 1, borderColor: "gray", mb: "64px", pb: "64px" }}
-        >
-          <Box width="50px" />
-          <Box flexGrow="1">
-            {!entity.loading && (
-              <Typography
-                variant="h2"
-                align="center"
-                sx={{
-                  margin: "auto",
-                  maxWidth: "md",
-                  textOverflow: "ellipsis",
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {entity.value?.name}
-              </Typography>
-            )}
-            <Typography variant="h4" align="center">
-              エントリ一覧
-            </Typography>
-          </Box>
-          <Box width="50px">
-            <IconButton
-              onClick={(e) => {
-                setEntityAnchorEl(e.currentTarget);
-              }}
-            >
-              <AppsIcon />
-            </IconButton>
-            <EntityControlMenu
-              entityId={entityId}
-              anchorElem={entityAnchorEl}
-              handleClose={() => setEntityAnchorEl(null)}
-              setOpenImportModal={setOpenImportModal}
-            />
-          </Box>
+      <PageHeader title={entity.value?.name} description="エントリ一覧">
+        <Box width="50px">
+          <IconButton
+            onClick={(e) => {
+              setEntityAnchorEl(e.currentTarget);
+            }}
+          >
+            <AppsIcon />
+          </IconButton>
+          <EntityControlMenu
+            entityId={entityId}
+            anchorElem={entityAnchorEl}
+            handleClose={() => setEntityAnchorEl(null)}
+            setOpenImportModal={setOpenImportModal}
+          />
         </Box>
+      </PageHeader>
 
-        {/* This describes all Entries in the rest of this page*/}
+      <Container>
         <EntryList entityId={entityId} canCreateEntry={canCreateEntry} />
       </Container>
       <EntryImportModal

@@ -256,7 +256,7 @@ export const EntryForm: FC<Props> = ({ entryInfo, setEntryInfo }) => {
 
   return (
     <Container sx={{ mb: "100px" }}>
-      <Box my="40px" display="flex" flexWrap="wrap">
+      <Box mb="20px" display="flex" flexWrap="wrap">
         <Box m="8px">
           <Button
             href="#name"

@@ -1,6 +1,5 @@
-import AppsIcon from "@mui/icons-material/Apps";
 import LockIcon from "@mui/icons-material/Lock";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
 import { Link, Prompt } from "react-router-dom";
@@ -29,7 +28,7 @@ import {
 } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { EntryControlMenu } from "components/entry/EntryControlMenu";
+import { SubmitButton } from "components/common/SubmitButton";
 import { EntryForm } from "components/entry/EntryForm";
 
 interface Props {
@@ -44,9 +43,6 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
-    null
-  );
   const [entryInfo, _setEntryInfo] = useState<EditableEntry>();
   const [submittable, setSubmittable] = useState<boolean>(false); // FIXME
   const [submitted, setSubmitted] = useState<boolean>(false);
@@ -421,50 +417,19 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
 
       <PageHeader
         title={entry?.value != null ? entry.value.name : "新規エントリの作成"}
-        subTitle={entry?.value != null ? "エントリ編集" : undefined}
-        componentSubmits={
-          <Box display="flex" justifyContent="center">
-            <Box mx="4px">
-              <Button
-                variant="contained"
-                color="secondary"
-                disabled={!submittable}
-                onClick={handleSubmit}
-              >
-                保存
-              </Button>
-            </Box>
-            <Box mx="4px">
-              <Button variant="outlined" color="primary" onClick={handleCancel}>
-                キャンセル
-              </Button>
-            </Box>
-          </Box>
-        }
-        componentControl={
-          <Box>
-            <IconButton
-              onClick={(e) => {
-                setEntryAnchorEl(e.currentTarget);
-              }}
-            >
-              <AppsIcon />
-            </IconButton>
-            <EntryControlMenu
-              entityId={entityId}
-              entryId={entryId}
-              anchorElem={entryAnchorEl}
-              handleClose={() => setEntryAnchorEl(null)}
-            />
-          </Box>
-        }
-      />
+        description={entry?.value != null ? "エントリ編集" : undefined}
+      >
+        <SubmitButton
+          name="保存"
+          disabled={!submittable}
+          handleSubmit={handleSubmit}
+          handleCancel={handleCancel}
+        />
+      </PageHeader>
 
-      <Box>
-        {entryInfo && (
-          <EntryForm entryInfo={entryInfo} setEntryInfo={setEntryInfo} />
-        )}
-      </Box>
+      {entryInfo && (
+        <EntryForm entryInfo={entryInfo} setEntryInfo={setEntryInfo} />
+      )}
 
       <Prompt
         when={edited && !submitted}

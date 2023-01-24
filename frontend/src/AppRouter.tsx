@@ -46,7 +46,7 @@ import { EditEntryPage } from "pages/EditEntryPage";
 import { EditGroupPage } from "pages/EditGroupPage";
 import { EditUserPage } from "pages/EditUserPage";
 import { EntityHistoryPage } from "pages/EntityHistoryPage";
-import { EntityPage } from "pages/EntityPage";
+import { EntityPage } from "pages/EntityListPage";
 import { EntryHistoryListPage } from "pages/EntryHistoryListPage";
 import { EntryListPage } from "pages/EntryListPage";
 import { GroupPage } from "pages/GroupPage";

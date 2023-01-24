@@ -24,6 +24,7 @@ const StyledListItem = styled(ListItem)(({}) => ({
   "&:nth-of-type(even)": {
     backgroundColor: "#607D8B0A",
   },
+  padding: 0,
 }));
 
 interface Props {
@@ -57,8 +58,6 @@ export const GroupTreeRoot: FC<Props> = ({
                   }
                 />
                 <Typography
-                  variant="h5"
-                  my="8px"
                   component={Link}
                   to={isSuperuser ? groupPath(groupTree.id) : "#"}
                 >

@@ -58,7 +58,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
 
   const totalPageCount = entries.loading
     ? 0
-    : Math.ceil(entries.value?.count ?? 0 / ConstEntryList.MAX_ROW_COUNT);
+    : Math.ceil(entries.value?.count / ConstEntryList.MAX_ROW_COUNT);
 
   const [entryAnchorEls, setEntryAnchorEls] = useState<{
     [key: number]: HTMLButtonElement;
@@ -67,7 +67,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
   return (
     <Box>
       {/* This box shows search box and create button */}
-      <Box display="flex" justifyContent="space-between" mb={8}>
+      <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width={500}>
           <SearchBox
             placeholder="エントリを絞り込む"

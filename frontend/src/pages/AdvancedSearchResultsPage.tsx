@@ -103,62 +103,68 @@ export const AdvancedSearchResultsPage: FC = () => {
 
       <PageHeader
         title="検索結果"
-        subTitle={`${results.value?.ret_count ?? 0} 件`}
-        componentSubmits={
-          <Box display="flex" justifyContent="center">
+        description={`${results.value?.ret_count ?? 0} 件`}
+      >
+        <Box display="flex" justifyContent="center">
+          <Button
+            variant="contained"
+            color="info"
+            startIcon={<SettingsIcon />}
+            disabled={entityAttrs.loading}
+            onClick={() => {
+              setOpenModal(true);
+            }}
+          >
+            属性の再設定
+          </Button>
+          <RateLimitedClickable
+            intervalSec={5}
+            onClick={() => handleExport("yaml")}
+          >
             <Button
-              variant="outlined"
-              startIcon={<SettingsIcon />}
-              disabled={entityAttrs.loading}
-              onClick={() => {
-                setOpenModal(true);
-              }}
+              sx={{ marginLeft: "40px" }}
+              variant="contained"
+              color="info"
             >
-              属性の再設定
+              YAML 出力
             </Button>
-            <RateLimitedClickable
-              intervalSec={5}
-              onClick={() => handleExport("yaml")}
+          </RateLimitedClickable>
+          <RateLimitedClickable
+            intervalSec={5}
+            onClick={() => handleExport("csv")}
+          >
+            <Button
+              sx={{ marginLeft: "16px" }}
+              variant="contained"
+              color="info"
             >
-              <Button sx={{ marginLeft: "40px" }} variant="outlined">
-                YAML 出力
-              </Button>
-            </RateLimitedClickable>
-            <RateLimitedClickable
-              intervalSec={5}
-              onClick={() => handleExport("csv")}
-            >
-              <Button sx={{ marginLeft: "16px" }} variant="outlined">
-                CSV 出力
-              </Button>
-            </RateLimitedClickable>
-          </Box>
-        }
-      />
+              CSV 出力
+            </Button>
+          </RateLimitedClickable>
+        </Box>
+      </PageHeader>
 
-      <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
-        {!results.loading ? (
-          <SearchResults
-            results={results.value.ret_values}
-            page={page}
-            maxPage={maxPage}
-            handleChangePage={changePage}
-            defaultEntryFilter={entryName}
-            defaultReferralFilter={referralName}
-            defaultAttrsFilter={Object.fromEntries(
-              attrInfo.map((i) => [i["name"], i["keyword"] || ""])
-            )}
-          />
-        ) : (
-          <Loading />
-        )}
-        <AdvancedSearchModal
-          openModal={openModal}
-          setOpenModal={setOpenModal}
-          attrNames={entityAttrs.loading ? [] : entityAttrs.value}
-          initialAttrNames={attrInfo.map((e) => e.name)}
+      {!results.loading ? (
+        <SearchResults
+          results={results.value.ret_values}
+          page={page}
+          maxPage={maxPage}
+          handleChangePage={changePage}
+          defaultEntryFilter={entryName}
+          defaultReferralFilter={referralName}
+          defaultAttrsFilter={Object.fromEntries(
+            attrInfo.map((i) => [i["name"], i["keyword"] || ""])
+          )}
         />
-      </Box>
+      ) : (
+        <Loading />
+      )}
+      <AdvancedSearchModal
+        openModal={openModal}
+        setOpenModal={setOpenModal}
+        attrNames={entityAttrs.loading ? [] : entityAttrs.value}
+        initialAttrNames={attrInfo.map((e) => e.name)}
+      />
     </Box>
   );
 };

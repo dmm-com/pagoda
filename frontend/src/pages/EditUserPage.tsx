@@ -1,4 +1,4 @@
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, Container } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { Link, Prompt } from "react-router-dom";
@@ -165,56 +165,58 @@ export const EditUserPage: FC = () => {
         <Typography color="textPrimary">ユーザ情報の設定</Typography>
       </AironeBreadcrumbs>
       <PageHeader
-        title={"ユーザ情報の設定"}
-        subTitle={""}
-        componentSubmits={
-          <Box display="flex" justifyContent="center">
-            <Box mx="4px">
-              <Button
-                variant="outlined"
-                disabled={isCreateMode}
-                onClick={handleOpenModal}
-              >
-                パスワードの再設定
-              </Button>
-              <UserPasswordFormModal
-                userId={userInfo.id}
-                openModal={openModal}
-                onClose={handleCloseModal}
-                onSubmit={() => {
-                  setSubmitted(true);
-                }}
-              />
-            </Box>
-            <Box mx="4px">
-              <Confirmable
-                componentGenerator={(handleOpen) => (
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    disabled={isCreateMode}
-                    onClick={handleOpen}
-                  >
-                    Access Token をリフレッシュ
-                  </Button>
-                )}
-                dialogTitle="AccessTokenを更新してもよろしいですか？"
-                onClickYes={() => handleRefreshToken()}
-              />
-            </Box>
+        title={userInfo.id != 0 ? userInfo.username : "新規ユーザの作成"}
+        description={userInfo.id != 0 ? "ユーザ編集" : undefined}
+      >
+        <Box display="flex" justifyContent="center">
+          <Box mx="4px">
+            <Button
+              variant="contained"
+              color="info"
+              disabled={isCreateMode}
+              onClick={handleOpenModal}
+            >
+              パスワードの再設定
+            </Button>
+            <UserPasswordFormModal
+              userId={userInfo.id}
+              openModal={openModal}
+              onClose={handleCloseModal}
+              onSubmit={() => {
+                setSubmitted(true);
+              }}
+            />
           </Box>
-        }
-      />
+          <Box mx="4px">
+            <Confirmable
+              componentGenerator={(handleOpen) => (
+                <Button
+                  variant="contained"
+                  color="info"
+                  disabled={isCreateMode}
+                  onClick={handleOpen}
+                >
+                  Access Token をリフレッシュ
+                </Button>
+              )}
+              dialogTitle="AccessTokenを更新してもよろしいですか？"
+              onClickYes={() => handleRefreshToken()}
+            />
+          </Box>
+        </Box>
+      </PageHeader>
 
       {user.loading ? (
         <Loading />
       ) : (
-        <UserForm
-          userInfo={userInfo}
-          setUserInfo={setUserInfo}
-          handleSubmit={handleSubmit}
-          handleCancel={handleCancel}
-        />
+        <Container>
+          <UserForm
+            userInfo={userInfo}
+            setUserInfo={setUserInfo}
+            handleSubmit={handleSubmit}
+            handleCancel={handleCancel}
+          />
+        </Container>
       )}
 
       <Prompt

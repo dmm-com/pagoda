@@ -34,11 +34,7 @@ export const SubmitButton: FC<Props> = ({
       >
         {name}
       </StyledButton>
-      <StyledButton
-        variant="contained"
-        color="info"
-        onClick={handleCancel}
-      >
+      <StyledButton variant="contained" color="info" onClick={handleCancel}>
         キャンセル
       </StyledButton>
     </StyledBox>

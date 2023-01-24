@@ -9,7 +9,7 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
-import { EntityPage } from "pages/EntityPage";
+import { EntityPage } from "pages/EntityListPage";
 import { TestWrapper } from "utils/TestWrapper";
 
 afterEach(() => {

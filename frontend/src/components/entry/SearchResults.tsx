@@ -23,7 +23,11 @@ import { useHistory, useLocation, Link } from "react-router-dom";
 import { entryDetailsPath } from "Routes";
 import { AttributeValue } from "components/entry/AttributeValue";
 
-const StyledTableRow = styled(TableRow)(() => ({
+const StyledBox = styled(Box)({
+  margin: "24px",
+});
+
+const StyledTableRow = styled(TableRow)({
   "&:nth-of-type(odd)": {
     backgroundColor: "#F9FAFA",
   },
@@ -33,7 +37,7 @@ const StyledTableRow = styled(TableRow)(() => ({
   "&:last-child td, &:last-child th": {
     border: 0,
   },
-}));
+});
 
 interface Props {
   results: {
@@ -108,7 +112,7 @@ export const SearchResults: FC<Props> = ({
   };
 
   return (
-    <Box>
+    <StyledBox>
       <TableContainer component={Paper} sx={{ overflowX: "inherit" }}>
         <Table>
           <TableHead>
@@ -281,6 +285,6 @@ export const SearchResults: FC<Props> = ({
           />
         </Stack>
       </Box>
-    </Box>
+    </StyledBox>
   );
 };

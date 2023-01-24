@@ -100,7 +100,7 @@ export const RestorableEntryList: FC<Props> = ({
   return (
     <Box>
       {/* This box shows search box and create button */}
-      <Box display="flex" justifyContent="space-between" mb={8}>
+      <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width={500}>
           <SearchBox
             placeholder="エントリを絞り込む"

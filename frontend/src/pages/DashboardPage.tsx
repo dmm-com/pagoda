@@ -1,4 +1,4 @@
-import { Box, Typography, TypographyTypeMap } from "@mui/material";
+import { Box, Container, Typography, TypographyTypeMap } from "@mui/material";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
@@ -13,24 +13,16 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 
-const Container = styled(Box)(({}) => ({
-  display: "flex",
-  width: "100%",
-  flexDirection: "column",
-  alignItems: "center",
-}));
+const StyledContainer = styled(Container)({
+  marginTop: "16px",
+});
 
-const Dashboard = styled(Box)(({ theme }) => ({
-  width: theme.breakpoints.values.lg,
-  marginTop: "256px",
-}));
-
-const ResultBox = styled(Box)(({}) => ({
-  marginTop: "80px",
+const ResultBox = styled(Box)({
+  marginTop: "40px",
   display: "flex",
   flexWrap: "wrap",
   gap: "32px",
-}));
+});
 
 const Result = styled(Typography)(({ theme }) => ({
   color: theme.palette.primary.main,
@@ -74,51 +66,49 @@ export const DashboardPage: FC = () => {
         <Typography color="textPrimary">Top</Typography>
       </AironeBreadcrumbs>
 
-      <Container>
-        <Dashboard>
-          <SearchBox
-            placeholder="Search"
-            defaultValue={query}
-            onKeyPress={(e) => {
-              e.key === "Enter" && submitQuery(e.target.value);
-            }}
-            autoFocus
-          />
-          {entries.loading ? (
-            <Loading />
-          ) : entries.value ? (
-            <ResultBox>
-              {entries.value.map((entry) => (
-                <Box key={entry.id}>
-                  <Result
-                    component={Link}
-                    to={entryDetailsPath(entry.schema.id, entry.id)}
-                  >
-                    {entry.name}
-                  </Result>
-                  <ResultEntityForEntry>
-                    {entry.schema?.name}
-                  </ResultEntityForEntry>
-                </Box>
-              ))}
-            </ResultBox>
-          ) : entities.loading ? (
-            <Loading />
-          ) : (
-            <ResultBox>
-              {entities.value?.results?.map((entity) => (
+      <StyledContainer>
+        <SearchBox
+          placeholder="Search"
+          defaultValue={query}
+          onKeyPress={(e) => {
+            e.key === "Enter" && submitQuery(e.target.value);
+          }}
+          autoFocus
+        />
+        {entries.loading ? (
+          <Loading />
+        ) : entries.value ? (
+          <ResultBox>
+            {entries.value.map((entry) => (
+              <Box key={entry.id}>
                 <Result
-                  key={entity.id}
                   component={Link}
-                  to={entityEntriesPath(entity.id)}
+                  to={entryDetailsPath(entry.schema.id, entry.id)}
                 >
-                  {entity.name}
+                  {entry.name}
                 </Result>
-              ))}
-            </ResultBox>
-          )}
-        </Dashboard>
-      </Container>
+                <ResultEntityForEntry>
+                  {entry.schema?.name}
+                </ResultEntityForEntry>
+              </Box>
+            ))}
+          </ResultBox>
+        ) : entities.loading ? (
+          <Loading />
+        ) : (
+          <ResultBox>
+            {entities.value?.results?.map((entity) => (
+              <Result
+                key={entity.id}
+                component={Link}
+                to={entityEntriesPath(entity.id)}
+              >
+                {entity.name}
+              </Result>
+            ))}
+          </ResultBox>
+        )}
+      </StyledContainer>
     </Box>
   );
 };

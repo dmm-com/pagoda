@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
 import { Link, Prompt, useHistory } from "react-router-dom";
@@ -11,13 +11,23 @@ import { useTypedParams } from "../hooks/useTypedParams";
 import { topPath, rolesPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { SubmitButton } from "components/common/SubmitButton";
 
 export const EditRolePage: FC = () => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { roleId } = useTypedParams<{ roleId?: number }>();
 
-  const [role, _setRole] = useState<Role>();
+  const [role, _setRole] = useState<Role>({
+    id: 0,
+    isActive: true,
+    name: "",
+    description: "",
+    users: [],
+    groups: [],
+    adminUsers: [],
+    adminGroups: [],
+  });
   const [submittable, setSubmittable] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);
@@ -28,17 +38,6 @@ export const EditRolePage: FC = () => {
         roleId != null ? await aironeApiClientV2.getRole(roleId) : null;
       if (_role != null) {
         _setRole(_role);
-      } else {
-        _setRole({
-          id: 0,
-          isActive: true,
-          name: "",
-          description: "",
-          users: [],
-          groups: [],
-          adminUsers: [],
-          adminGroups: [],
-        });
       }
     })();
   }, [roleId]);
@@ -106,39 +105,24 @@ export const EditRolePage: FC = () => {
       </AironeBreadcrumbs>
 
       <PageHeader
-        title="ロール編集"
-        componentSubmits={
-          <Box display="flex" justifyContent="center">
-            <Box mx="4px">
-              <Button
-                variant="contained"
-                color="secondary"
-                disabled={!submittable}
-                onClick={handleSubmit}
-              >
-                保存
-              </Button>
-            </Box>
-            <Box mx="4px">
-              <Button variant="outlined" color="primary" onClick={handleCancel}>
-                キャンセル
-              </Button>
-            </Box>
-          </Box>
-        }
-      />
+        title={role.id != 0 ? role.name : "新規ロールの作成"}
+        description={role.id != 0 ? "ロール編集" : undefined}
+      >
+        <SubmitButton
+          name="保存"
+          disabled={!submittable}
+          handleSubmit={handleSubmit}
+          handleCancel={handleCancel}
+        />
+      </PageHeader>
 
-      {role != null && (
-        <Box
-          sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}
-        >
-          <RoleForm
-            role={role}
-            setRole={setRole}
-            setSubmittable={setSubmittable}
-          />
-        </Box>
-      )}
+      <Container>
+        <RoleForm
+          role={role}
+          setRole={setRole}
+          setSubmittable={setSubmittable}
+        />
+      </Container>
 
       <Prompt
         when={edited && !submitted}

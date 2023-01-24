@@ -1,14 +1,14 @@
-import EastOutlinedIcon from "@mui/icons-material/EastOutlined";
+import AddIcon from "@mui/icons-material/Add";
 import {
   Box,
   Button,
   Container,
   Divider,
-  Grid,
   List,
   ListItem,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -23,6 +23,18 @@ import { newGroupPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
+import { PageHeader } from "components/common/PageHeader";
+
+const StyledBox = styled(Box)({
+  position: "absolute",
+  right: "16px",
+  top: "200px",
+});
+
+const StyledContainer = styled(Container)({
+  borderRight: "1px solid",
+  borderColor: "rgba(0, 0, 0, 0.12)",
+});
 
 export const GroupPage: FC = () => {
   const [keyword, setKeyword] = useState("");
@@ -77,106 +89,82 @@ export const GroupPage: FC = () => {
         <Typography color="textPrimary">グループ管理</Typography>
       </AironeBreadcrumbs>
 
-      <Container sx={{ marginTop: "111px" }}>
-        <Box display="flex" justifyContent="space-between" sx={{ pb: "64px" }}>
-          <Typography variant="h2">グループ管理</Typography>
-          <Box display="flex" alignItems="flex-end">
-            <Box display="flex" alignItems="center">
-              <Box mx="8px">
-                <Button
-                  variant="contained"
-                  color="info"
-                  sx={{ margin: "0 4px" }}
-                  onClick={handleExport}
-                >
-                  エクスポート
-                </Button>
-                <Button
-                  variant="contained"
-                  color="info"
-                  sx={{ margin: "0 4px" }}
-                  onClick={() => setOpenImportModal(true)}
-                >
-                  インポート
-                </Button>
-                <GroupImportModal
-                  openImportModal={openImportModal}
-                  closeImportModal={() => setOpenImportModal(false)}
-                />
-              </Box>
-              <Button
-                variant="contained"
-                color="secondary"
-                disabled={!isSuperuser}
-                component={Link}
-                to={newGroupPath()}
-                sx={{ height: "48px", borderRadius: "24px" }}
-              >
-                <EastOutlinedIcon /> 新規グループを作成
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      </Container>
-
-      <Grid
-        container
-        flexGrow="1"
-        columns={6}
-        display="flex"
-        sx={{ borderTop: 1, borderColor: "#0000008A" }}
-      >
-        <Grid item xs={1} />
-        <Grid item xs={4} sx={{ p: "16px" }}>
-          {groupTrees.loading ? (
-            <Loading />
-          ) : (
-            <Box>
-              <Typography mt="16px">
-                選択したいグループにチェックマークを入れてください。
-              </Typography>
-              <Divider sx={{ mt: "16px" }} />
-              <GroupTreeRoot
-                groupTrees={groupTrees.value ?? []}
-                selectedGroupId={selectedGroupId}
-                handleSelectGroupId={handleSelectGroupId}
-                setGroupAnchorEls={setGroupAnchorEls}
-              />
-              {groupAnchorEls != null && (
-                <GroupControlMenu
-                  groupId={groupAnchorEls.groupId}
-                  anchorElem={groupAnchorEls.el}
-                  handleClose={() => setGroupAnchorEls(null)}
-                />
-              )}
-            </Box>
-          )}
-        </Grid>
-        <Grid
-          item
-          xs={1}
-          sx={{ borderLeft: 1, borderColor: "#0000008A", p: "16px" }}
+      <PageHeader title="グループ管理">
+        <Button
+          variant="contained"
+          color="info"
+          sx={{ margin: "0 4px" }}
+          onClick={handleExport}
         >
-          <Typography my="8px">
-            属するユーザ(計 {usersInGroup.value?.length ?? 0})
+          エクスポート
+        </Button>
+        <Button
+          variant="contained"
+          color="info"
+          sx={{ margin: "0 4px" }}
+          onClick={() => setOpenImportModal(true)}
+        >
+          インポート
+        </Button>
+        <GroupImportModal
+          openImportModal={openImportModal}
+          closeImportModal={() => setOpenImportModal(false)}
+        />
+        <Button
+          variant="contained"
+          color="secondary"
+          disabled={!isSuperuser}
+          component={Link}
+          to={newGroupPath()}
+          sx={{ height: "48px", borderRadius: "24px", ml: "16px" }}
+        >
+          <AddIcon /> 新規グループを作成
+        </Button>
+      </PageHeader>
+
+      {groupTrees.loading ? (
+        <Loading />
+      ) : (
+        <StyledContainer>
+          <Typography>
+            選択したいグループにチェックマークを入れてください。
           </Typography>
-          <SearchBox
-            placeholder="ユーザを絞り込む"
-            value={keyword}
-            onChange={(e) => {
-              setKeyword(e.target.value);
-            }}
+          <Divider sx={{ mt: "16px" }} />
+          <GroupTreeRoot
+            groupTrees={groupTrees.value ?? []}
+            selectedGroupId={selectedGroupId}
+            handleSelectGroupId={handleSelectGroupId}
+            setGroupAnchorEls={setGroupAnchorEls}
           />
-          <List>
-            {filteredUsersInGroup.map((user, index) => (
-              <Box key={user.id}>
-                {index !== 0 && <Divider />}
-                <ListItem>{user.username}</ListItem>
-              </Box>
-            ))}
-          </List>
-        </Grid>
-      </Grid>
+          {groupAnchorEls != null && (
+            <GroupControlMenu
+              groupId={groupAnchorEls.groupId}
+              anchorElem={groupAnchorEls.el}
+              handleClose={() => setGroupAnchorEls(null)}
+            />
+          )}
+        </StyledContainer>
+      )}
+      <StyledBox>
+        <Typography>
+          属するユーザ(計 {usersInGroup.value?.length ?? 0})
+        </Typography>
+        <SearchBox
+          placeholder="ユーザを絞り込む"
+          value={keyword}
+          onChange={(e) => {
+            setKeyword(e.target.value);
+          }}
+        />
+        <List>
+          {filteredUsersInGroup.map((user, index) => (
+            <Box key={user.id}>
+              {index !== 0 && <Divider />}
+              <ListItem>{user.username}</ListItem>
+            </Box>
+          ))}
+        </List>
+      </StyledBox>
     </Box>
   );
 };

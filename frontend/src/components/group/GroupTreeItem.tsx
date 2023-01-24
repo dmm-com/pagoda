@@ -45,8 +45,6 @@ export const GroupTreeItem: FC<Props> = ({
               }
             />
             <Typography
-              variant="h5"
-              my="8px"
               component={Link}
               to={isSuperuser ? groupPath(groupTree.id) : "#"}
             >

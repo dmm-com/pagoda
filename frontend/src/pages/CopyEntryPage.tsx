@@ -1,11 +1,9 @@
-import AppsIcon from "@mui/icons-material/Apps";
 import LockIcon from "@mui/icons-material/Lock";
-import { Box, IconButton, Typography, Button } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 import { Link, Prompt, useHistory } from "react-router-dom";
 
-import { EntryControlMenu } from "../components/entry/EntryControlMenu";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
@@ -19,6 +17,7 @@ import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
+import { SubmitButton } from "components/common/SubmitButton";
 import { CopyForm } from "components/entry/CopyForm";
 
 export const CopyEntryPage: FC = () => {
@@ -26,9 +25,7 @@ export const CopyEntryPage: FC = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { entityId, entryId } =
     useTypedParams<{ entityId: number; entryId: number }>();
-  const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
-    null
-  );
+
   // newline delimited string value, not string[]
   const [entries, _setEntries] = useState<string>("");
   const [submitted, setSubmitted] = useState<boolean>(false);
@@ -100,53 +97,24 @@ export const CopyEntryPage: FC = () => {
 
       <PageHeader
         title={entry.value?.name ?? ""}
-        subTitle="エントリのコピーを作成"
-        description={
-          "入力した各行ごとに " +
-          entry.value?.name.substring(0, 50) +
-          " と同じ属性を持つ別のエントリを作成"
-        }
-        componentSubmits={
-          <Box display="flex" justifyContent="center">
-            <Box mx="4px">
-              <Button
-                variant="contained"
-                color="secondary"
-                disabled={!entries}
-                onClick={handleCopy}
-              >
-                コピーを作成
-              </Button>
-            </Box>
-            <Box mx="4px">
-              <Button variant="outlined" color="primary" onClick={handleCancel}>
-                キャンセル
-              </Button>
-            </Box>
-          </Box>
-        }
-        componentControl={
-          <Box>
-            <IconButton
-              onClick={(e) => {
-                setEntryAnchorEl(e.currentTarget);
-              }}
-            >
-              <AppsIcon />
-            </IconButton>
-            <EntryControlMenu
-              entityId={entityId}
-              entryId={entryId}
-              anchorElem={entryAnchorEl}
-              handleClose={() => setEntryAnchorEl(null)}
-            />
-          </Box>
-        }
-      />
+        description="エントリのコピーを作成"
+      >
+        <SubmitButton
+          name="コピーを作成"
+          disabled={!entries}
+          handleSubmit={handleCopy}
+          handleCancel={handleCancel}
+        />
+      </PageHeader>
 
-      <Box>
+      <Container>
+        <Typography>
+          {"入力した各行ごとに " +
+            entry.value?.name.substring(0, 50) +
+            " と同じ属性を持つ別のエントリを作成"}
+        </Typography>
         <CopyForm entries={entries} setEntries={setEntries} />
-      </Box>
+      </Container>
 
       <Prompt
         when={edited && !submitted}

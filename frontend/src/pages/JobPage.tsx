@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Container,
-  Divider,
   Pagination,
   Stack,
   Typography,
@@ -19,6 +18,7 @@ import { JobList as ConstJobList } from "../utils/Constants";
 import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
+import { PageHeader } from "components/common/PageHeader";
 import { JobList } from "components/job/JobList";
 
 export const JobPage: FC = () => {
@@ -46,50 +46,33 @@ export const JobPage: FC = () => {
         <Typography color="textPrimary">ジョブ一覧</Typography>
       </AironeBreadcrumbs>
 
-      <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
-        <Box mb="64px">
-          <Typography variant="h2" align="center">
-            ジョブ一覧
-          </Typography>
-        </Box>
-      </Container>
+      <PageHeader title="ジョブ一覧">
+        <Button
+          variant="outlined"
+          color="success"
+          onClick={() => toggleRefresh()}
+        >
+          <ReplayIcon /> ジョブ一覧を更新
+        </Button>
+      </PageHeader>
 
-      <Divider />
-
-      <Box
-        sx={{
-          marginTop: "111px",
-          paddingLeft: "10%",
-          paddingRight: "10%",
-          marginBottom: "10%",
-        }}
-      >
-        <Box my="12px" display="flex" justifyContent="flex-end">
-          <Button
-            variant="outlined"
-            color="success"
-            onClick={() => toggleRefresh()}
-          >
-            <ReplayIcon /> ジョブ一覧を更新
-          </Button>
-        </Box>
-
-        {jobs.loading ? (
-          <Loading />
-        ) : (
+      {jobs.loading ? (
+        <Loading />
+      ) : (
+        <Container>
           <JobList jobs={jobs.value?.results ?? []} />
-        )}
-        <Box display="flex" justifyContent="center" my="30px">
-          <Stack spacing={2}>
-            <Pagination
-              count={maxPage}
-              page={page}
-              onChange={(e, page) => changePage(page)}
-              color="primary"
-            />
-          </Stack>
-        </Box>
-      </Box>
+          <Box display="flex" justifyContent="center" my="30px">
+            <Stack spacing={2}>
+              <Pagination
+                count={maxPage}
+                page={page}
+                onChange={(e, page) => changePage(page)}
+                color="primary"
+              />
+            </Stack>
+          </Box>
+        </Container>
+      )}
     </Box>
   );
 };
