@@ -13,7 +13,7 @@ import { useAsync, useToggle } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { usePage } from "../hooks/usePage";
-import { JobList as ConstJobList } from "../utils/Constants";
+import { JobList as ConstJobList } from "../services/Constants";
 
 import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";

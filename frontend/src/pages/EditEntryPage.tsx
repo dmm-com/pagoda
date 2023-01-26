@@ -10,8 +10,8 @@ import { Loading } from "../components/common/Loading";
 import { PageHeader } from "../components/common/PageHeader";
 import { EditableEntry } from "../components/entry/entryForm/EditableEntry";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { ExtractAPIErrorMessage } from "../utils/AironeAPIErrorUtil";
-import { DjangoContext } from "../utils/DjangoContext";
+import { ExtractAPIErrorMessage } from "../services/AironeAPIErrorUtil";
+import { DjangoContext } from "../services/DjangoContext";
 
 import {
   entitiesPath,
@@ -58,8 +58,6 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       ? await aironeApiClientV2.getEntry(entryId)
       : undefined;
   });
-
-  const djangoContext = DjangoContext.getInstance();
 
   useEffect(() => {
     if (!entry.loading && entry.value !== undefined) {

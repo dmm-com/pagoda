@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import React, { FC, useEffect } from "react";
 
-import { DjangoContext } from "utils/DjangoContext";
+import { DjangoContext } from "services/DjangoContext";
 
 interface Props {
   aclInfo: {

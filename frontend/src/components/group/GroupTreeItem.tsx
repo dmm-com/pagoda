@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 import { groupPath } from "../../Routes";
 import { GroupTree } from "../../apiclient/AironeApiClientV2";
-import { DjangoContext } from "../../utils/DjangoContext";
+import { DjangoContext } from "../../services/DjangoContext";
 
 const CHILDREN_INDENT_WIDTH = 16;
 

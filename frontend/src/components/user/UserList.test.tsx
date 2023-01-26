@@ -6,7 +6,7 @@ import { render } from "@testing-library/react";
 import React from "react";
 
 import { UserList } from "components/user/UserList";
-import { TestWrapper } from "utils/TestWrapper";
+import { TestWrapper } from "services/TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();

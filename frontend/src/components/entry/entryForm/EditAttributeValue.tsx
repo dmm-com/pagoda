@@ -24,7 +24,7 @@ import {
 import { EditableEntryAttrs } from "./EditableEntry";
 
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
-import { DjangoContext } from "utils/DjangoContext";
+import { DjangoContext } from "services/DjangoContext";
 
 interface CommonProps {
   attrName: string;
@@ -62,40 +62,40 @@ const ElemString: FC<
   multiline,
   disabled,
 }) => {
-  return (
-    <Box display="flex" width="100%">
-      <Input
-        type="text"
-        value={attrValue}
-        onChange={(e) =>
-          handleChange(attrName, attrType, {
-            index: index,
-            value: e.target.value,
-          })
-        }
-        fullWidth
-        multiline={multiline}
-        error={isMandatory && attrValue === ""}
-      />
-      {index !== undefined && (
-        <>
-          <IconButton
-            disabled={disabled}
-            sx={{ mx: "20px" }}
-            onClick={() => handleClickDeleteListItem(attrName, attrType, index)}
-          >
-            <DeleteOutlineIcon />
-          </IconButton>
-          <IconButton
-            onClick={() => handleClickAddListItem(attrName, attrType, index)}
-          >
-            <AddIcon />
-          </IconButton>
-        </>
-      )}
-    </Box>
-  );
-};
+    return (
+      <Box display="flex" width="100%">
+        <Input
+          type="text"
+          value={attrValue}
+          onChange={(e) =>
+            handleChange(attrName, attrType, {
+              index: index,
+              value: e.target.value,
+            })
+          }
+          fullWidth
+          multiline={multiline}
+          error={isMandatory && attrValue === ""}
+        />
+        {index !== undefined && (
+          <>
+            <IconButton
+              disabled={disabled}
+              sx={{ mx: "20px" }}
+              onClick={() => handleClickDeleteListItem(attrName, attrType, index)}
+            >
+              <DeleteOutlineIcon />
+            </IconButton>
+            <IconButton
+              onClick={() => handleClickAddListItem(attrName, attrType, index)}
+            >
+              <AddIcon />
+            </IconButton>
+          </>
+        )}
+      </Box>
+    );
+  };
 
 const ElemBool: FC<CommonProps & { attrValue: boolean }> = ({
   attrName,
@@ -120,10 +120,10 @@ const ElemReferral: FC<
   CommonProps & {
     multiple?: boolean;
     attrValue:
-      | EntryAttributeValueObject
-      | Array<EntryAttributeValueObject>
-      | EntityAttributeType
-      | Array<EntityAttributeType>;
+    | EntryAttributeValueObject
+    | Array<EntryAttributeValueObject>
+    | EntityAttributeType
+    | Array<EntityAttributeType>;
     schemaId?: number;
     disabled?: boolean;
     handleClickDeleteListItem?: (
@@ -150,158 +150,158 @@ const ElemReferral: FC<
   handleClickDeleteListItem,
   handleClickAddListItem,
 }) => {
-  const [keyword, setKeyword] = useState("");
-  const [referrals, setReferrals] = useState([]);
+    const [keyword, setKeyword] = useState("");
+    const [referrals, setReferrals] = useState([]);
 
-  const djangoContext = DjangoContext.getInstance();
+    const djangoContext = DjangoContext.getInstance();
 
-  useEffect(() => {
-    (async () => {
-      if (Number(attrType) & Number(djangoContext?.attrTypeValue.object)) {
-        // FIXME Implement and use API V2
-        // TODO call it reactively to avoid loading API???
-        const attrReferrals = await aironeApiClientV2.getEntryAttrReferrals(
-          schemaId,
-          keyword
-        );
-        const addReferrals = [];
+    useEffect(() => {
+      (async () => {
+        if (Number(attrType) & Number(djangoContext?.attrTypeValue.object)) {
+          // FIXME Implement and use API V2
+          // TODO call it reactively to avoid loading API???
+          const attrReferrals = await aironeApiClientV2.getEntryAttrReferrals(
+            schemaId,
+            keyword
+          );
+          const addReferrals = [];
 
-        // Filter duplicate referrals.
-        attrReferrals.forEach((result) => {
-          if (!referrals.map((referral) => referral.id).includes(result.id)) {
-            addReferrals.push(result);
-          }
-        });
+          // Filter duplicate referrals.
+          attrReferrals.forEach((result) => {
+            if (!referrals.map((referral) => referral.id).includes(result.id)) {
+              addReferrals.push(result);
+            }
+          });
 
-        // Add current attr value to referrals.
-        if (multiple) {
-          (attrValue as Array<EntryAttributeValueObject | null>)
-            .filter((value) => value != null)
-            .forEach((value) => {
+          // Add current attr value to referrals.
+          if (multiple) {
+            (attrValue as Array<EntryAttributeValueObject | null>)
+              .filter((value) => value != null)
+              .forEach((value) => {
+                if (
+                  !referrals.map((referral) => referral.id).includes(value.id)
+                ) {
+                  addReferrals.push(value);
+                }
+              });
+          } else {
+            if (attrValue) {
               if (
-                !referrals.map((referral) => referral.id).includes(value.id)
+                !referrals
+                  .map((referral) => referral.id)
+                  .includes((attrValue as EntryAttributeValueObject).id)
               ) {
-                addReferrals.push(value);
+                addReferrals.push(attrValue);
               }
-            });
-        } else {
-          if (attrValue) {
-            if (
-              !referrals
-                .map((referral) => referral.id)
-                .includes((attrValue as EntryAttributeValueObject).id)
-            ) {
-              addReferrals.push(attrValue);
             }
           }
+          setReferrals(referrals.concat(addReferrals));
+        } else if (
+          Number(attrType) & Number(djangoContext?.attrTypeValue.group)
+        ) {
+          const groups = await aironeApiClientV2.getGroups();
+          const addReferrals = [];
+
+          // Filter duplicate referrals.
+          groups.forEach((result) => {
+            if (!referrals.map((referral) => referral.id).includes(result.id)) {
+              addReferrals.push(result);
+            }
+          });
+
+          setReferrals(referrals.concat(addReferrals));
+        } else if (Number(attrType) & Number(djangoContext?.attrTypeValue.role)) {
+          const roles = await aironeApiClientV2.getRoles();
+          const addReferrals = [];
+
+          // Filter duplicate referrals.
+          roles.forEach((result) => {
+            if (!referrals.map((referral) => referral.id).includes(result.id)) {
+              addReferrals.push(result);
+            }
+          });
+
+          setReferrals(referrals.concat(addReferrals));
         }
-        setReferrals(referrals.concat(addReferrals));
-      } else if (
-        Number(attrType) & Number(djangoContext?.attrTypeValue.group)
-      ) {
-        const groups = await aironeApiClientV2.getGroups();
-        const addReferrals = [];
+      })();
+    }, [keyword]);
 
-        // Filter duplicate referrals.
-        groups.forEach((result) => {
-          if (!referrals.map((referral) => referral.id).includes(result.id)) {
-            addReferrals.push(result);
-          }
-        });
-
-        setReferrals(referrals.concat(addReferrals));
-      } else if (Number(attrType) & Number(djangoContext?.attrTypeValue.role)) {
-        const roles = await aironeApiClientV2.getRoles();
-        const addReferrals = [];
-
-        // Filter duplicate referrals.
-        roles.forEach((result) => {
-          if (!referrals.map((referral) => referral.id).includes(result.id)) {
-            addReferrals.push(result);
-          }
-        });
-
-        setReferrals(referrals.concat(addReferrals));
-      }
-    })();
-  }, [keyword]);
-
-  return (
-    <Box>
-      <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
-        {Number(attrType) & Number(djangoContext?.attrTypeValue.object)
-          ? "エントリを選択"
-          : "グループを選択"}
-      </Typography>
-      <Box display="flex" alignItems="center">
-        <Autocomplete
-          sx={{ width: "280px" }}
-          multiple={multiple}
-          options={referrals}
-          getOptionLabel={(option) => option?.name}
-          isOptionEqualToValue={(option, value) => option.id === value?.id}
-          value={attrValue ?? null}
-          onChange={(e, value) => {
-            handleChange(attrName, attrType, {
-              index: index,
-              value: value,
-            });
-          }}
-          onInputChange={(e, value) => {
-            // To run only if the user changes
-            if (e) {
-              setKeyword(value);
-            }
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              error={
-                isMandatory &&
-                (multiple
-                  ? (
+    return (
+      <Box>
+        <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
+          {Number(attrType) & Number(djangoContext?.attrTypeValue.object)
+            ? "エントリを選択"
+            : "グループを選択"}
+        </Typography>
+        <Box display="flex" alignItems="center">
+          <Autocomplete
+            sx={{ width: "280px" }}
+            multiple={multiple}
+            options={referrals}
+            getOptionLabel={(option) => option?.name}
+            isOptionEqualToValue={(option, value) => option.id === value?.id}
+            value={attrValue ?? null}
+            onChange={(e, value) => {
+              handleChange(attrName, attrType, {
+                index: index,
+                value: value,
+              });
+            }}
+            onInputChange={(e, value) => {
+              // To run only if the user changes
+              if (e) {
+                setKeyword(value);
+              }
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                error={
+                  isMandatory &&
+                  (multiple
+                    ? (
                       attrValue as
-                        | Array<EntryAttributeValueObject>
-                        | Array<EntityAttributeType>
+                      | Array<EntryAttributeValueObject>
+                      | Array<EntityAttributeType>
                     )?.length === 0
-                  : !attrValue)
-              }
-              size="small"
-              placeholder={
-                multiple &&
-                (
-                  attrValue as
-                    | Array<EntryAttributeValueObject>
-                    | Array<EntityAttributeType>
-                ).length
-                  ? ""
-                  : "-NOT SET-"
-              }
-            />
+                    : !attrValue)
+                }
+                size="small"
+                placeholder={
+                  multiple &&
+                    (
+                      attrValue as
+                      | Array<EntryAttributeValueObject>
+                      | Array<EntityAttributeType>
+                    ).length
+                    ? ""
+                    : "-NOT SET-"
+                }
+              />
+            )}
+          />
+          {index !== undefined && (
+            <>
+              <IconButton
+                disabled={disabled}
+                sx={{ mx: "20px" }}
+                onClick={() =>
+                  handleClickDeleteListItem(attrName, attrType, index)
+                }
+              >
+                <DeleteOutlineIcon />
+              </IconButton>
+              <IconButton
+                onClick={() => handleClickAddListItem(attrName, attrType, index)}
+              >
+                <AddIcon />
+              </IconButton>
+            </>
           )}
-        />
-        {index !== undefined && (
-          <>
-            <IconButton
-              disabled={disabled}
-              sx={{ mx: "20px" }}
-              onClick={() =>
-                handleClickDeleteListItem(attrName, attrType, index)
-              }
-            >
-              <DeleteOutlineIcon />
-            </IconButton>
-            <IconButton
-              onClick={() => handleClickAddListItem(attrName, attrType, index)}
-            >
-              <AddIcon />
-            </IconButton>
-          </>
-        )}
+        </Box>
       </Box>
-    </Box>
-  );
-};
+    );
+  };
 
 const ElemNamedObject: FC<
   CommonProps & {
@@ -331,43 +331,43 @@ const ElemNamedObject: FC<
   handleClickDeleteListItem,
   handleClickAddListItem,
 }) => {
-  const key = attrValue ? Object.keys(attrValue)[0] : "";
-  return (
-    <Box display="flex" alignItems="flex-end">
-      <Box display="flex" flexDirection="column">
-        <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
-          name
-        </Typography>
-        <Box width="280px" mr="32px">
-          <TextField
-            variant="standard"
-            value={key}
-            onChange={(e) =>
-              handleChange(attrName, attrType, {
-                index: index,
-                key: e.target.value,
-                ...attrValue[key],
-              })
-            }
-            error={isMandatory && !key && !attrValue[key]}
-          />
+    const key = attrValue ? Object.keys(attrValue)[0] : "";
+    return (
+      <Box display="flex" alignItems="flex-end">
+        <Box display="flex" flexDirection="column">
+          <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
+            name
+          </Typography>
+          <Box width="280px" mr="32px">
+            <TextField
+              variant="standard"
+              value={key}
+              onChange={(e) =>
+                handleChange(attrName, attrType, {
+                  index: index,
+                  key: e.target.value,
+                  ...attrValue[key],
+                })
+              }
+              error={isMandatory && !key && !attrValue[key]}
+            />
+          </Box>
         </Box>
+        <ElemReferral
+          schemaId={schemaId}
+          attrName={attrName}
+          attrValue={attrValue ? attrValue[key] : undefined}
+          attrType={attrType}
+          isMandatory={isMandatory && !key}
+          index={index}
+          disabled={disabled}
+          handleChange={handleChange}
+          handleClickDeleteListItem={handleClickDeleteListItem}
+          handleClickAddListItem={handleClickAddListItem}
+        />
       </Box>
-      <ElemReferral
-        schemaId={schemaId}
-        attrName={attrName}
-        attrValue={attrValue ? attrValue[key] : undefined}
-        attrType={attrType}
-        isMandatory={isMandatory && !key}
-        index={index}
-        disabled={disabled}
-        handleChange={handleChange}
-        handleClickDeleteListItem={handleClickDeleteListItem}
-        handleClickAddListItem={handleClickAddListItem}
-      />
-    </Box>
-  );
-};
+    );
+  };
 
 const ElemDate: FC<
   CommonProps & {
@@ -384,9 +384,8 @@ const ElemDate: FC<
         onChange={(date: Date) => {
           let settingDateValue = "";
           if (date !== null) {
-            settingDateValue = `${date.getFullYear()}-${
-              date.getMonth() + 1
-            }-${date.getDate()}`;
+            settingDateValue = `${date.getFullYear()}-${date.getMonth() + 1
+              }-${date.getDate()}`;
           }
 
           handleChange(attrName, attrType, {

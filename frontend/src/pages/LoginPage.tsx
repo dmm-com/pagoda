@@ -18,8 +18,8 @@ import { useHistory } from "react-router-dom";
 import { PasswordResetConfirmModal } from "../components/user/PasswordResetConfirmModal";
 import { PasswordResetModal } from "../components/user/PasswordResetModal";
 
-import { postLogin } from "utils/AironeAPIClient";
-import { DjangoContext } from "utils/DjangoContext";
+import { postLogin } from "services/AironeAPIClient";
+import { DjangoContext } from "services/DjangoContext";
 
 export const LoginPage: FC = () => {
   const djangoContext = DjangoContext.getInstance();

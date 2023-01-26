@@ -10,7 +10,7 @@ import {
 import React from "react";
 
 import { EntityPage } from "pages/EntityListPage";
-import { TestWrapper } from "utils/TestWrapper";
+import { TestWrapper } from "services/TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();

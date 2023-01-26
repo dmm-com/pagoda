@@ -25,7 +25,7 @@ import { useHistory } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { usePage } from "../../hooks/usePage";
-import { formatDate } from "../../utils/DateUtil";
+import { formatDate } from "../../services/DateUtil";
 import { Confirmable } from "../common/Confirmable";
 
 import { EntryAttributes } from "./EntryAttributes";
@@ -33,14 +33,14 @@ import { EntryAttributes } from "./EntryAttributes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
-import { EntryList as ConstEntryList } from "utils/Constants";
+import { EntryList as ConstEntryList } from "services/Constants";
 
 interface Props {
   entityId: number;
   initialKeyword?: string | null;
 }
 
-const StyledModal = styled(Modal)(({}) => ({
+const StyledModal = styled(Modal)(({ }) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",

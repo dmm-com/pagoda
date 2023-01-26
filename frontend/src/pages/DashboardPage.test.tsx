@@ -11,7 +11,7 @@ import React from "react";
 
 import { DashboardPage } from "./DashboardPage";
 
-import { TestWrapper } from "utils/TestWrapper";
+import { TestWrapper } from "services/TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();

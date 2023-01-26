@@ -19,7 +19,7 @@ import { ACLForm } from "components/common/ACLForm";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { SubmitButton } from "components/common/SubmitButton";
-import { DjangoContext } from "utils/DjangoContext";
+import { DjangoContext } from "services/DjangoContext";
 
 export const ACLPage: FC = () => {
   const djangoContext = DjangoContext.getInstance();

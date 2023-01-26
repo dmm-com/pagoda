@@ -6,7 +6,7 @@ import { render } from "@testing-library/react";
 import React from "react";
 
 import { UserForm } from "components/user/UserForm";
-import { TestWrapper } from "utils/TestWrapper";
+import { TestWrapper } from "services/TestWrapper";
 
 test("should render a component with essential props", function () {
   Object.defineProperty(window, "django_context", {
@@ -43,8 +43,8 @@ test("should render a component with essential props", function () {
       <UserForm
         userInfo={userInfo}
         setUserInfo={setUserInfo}
-        handleSubmit={() => {}}
-        handleCancel={() => {}}
+        handleSubmit={() => { }}
+        handleCancel={() => { }}
       />,
       {
         wrapper: TestWrapper,

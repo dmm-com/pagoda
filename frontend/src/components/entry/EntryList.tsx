@@ -17,14 +17,14 @@ import { Link, useHistory, useLocation } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { usePage } from "../../hooks/usePage";
-import { normalizeToMatch } from "../../utils/StringUtil";
+import { normalizeToMatch } from "../../services/StringUtil";
 
 import { newEntryPath, entryDetailsPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
-import { EntryList as ConstEntryList } from "utils/Constants";
+import { EntryList as ConstEntryList } from "services/Constants";
 
 interface Props {
   entityId: number;

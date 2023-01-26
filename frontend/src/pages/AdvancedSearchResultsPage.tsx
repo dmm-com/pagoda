@@ -9,7 +9,7 @@ import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { PageHeader } from "../components/common/PageHeader";
 import { RateLimitedClickable } from "../components/common/RateLimitedClickable";
 import { usePage } from "../hooks/usePage";
-import { AdvancedSerarchResultList } from "../utils/Constants";
+import { AdvancedSerarchResultList } from "../services/Constants";
 
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";

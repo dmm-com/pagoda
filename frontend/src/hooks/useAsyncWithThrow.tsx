@@ -5,25 +5,25 @@ import {
   PromiseType,
 } from "react-use/lib/misc/types";
 
-import { toError } from "../utils/ResponseUtil";
+import { toError } from "../services/ResponseUtil";
 
 export declare type AsyncState<T> =
   | {
-      loading: boolean;
-      value?: undefined;
-    }
+    loading: boolean;
+    value?: undefined;
+  }
   | {
-      loading: true;
-      value?: T;
-    }
+    loading: true;
+    value?: T;
+  }
   | {
-      loading: false;
-      value?: undefined;
-    }
+    loading: false;
+    value?: undefined;
+  }
   | {
-      loading: false;
-      value: T;
-    };
+    loading: false;
+    value: T;
+  };
 
 // A thin wrapper of useAsync() in react-use, but it will throw an error
 export const useAsyncWithThrow = <T extends FunctionReturningPromise>(

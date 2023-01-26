@@ -7,7 +7,7 @@ import {
   EditableEntry,
   EditableEntryAttrs,
 } from "../../components/entry/entryForm/EditableEntry";
-import { DjangoContext } from "../../utils/DjangoContext";
+import { DjangoContext } from "../DjangoContext";
 
 const djangoContext = DjangoContext.getInstance();
 
