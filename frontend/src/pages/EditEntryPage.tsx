@@ -67,7 +67,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       !entity.loading &&
       entity.value !== undefined
     ) {
-      _setEntryInfo(initializeEntryInfo(entity));
+      _setEntryInfo(initializeEntryInfo(entity.value));
     }
   }, [entity, entry]);
 
