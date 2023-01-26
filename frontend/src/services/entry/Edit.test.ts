@@ -2,7 +2,10 @@
  * @jest-environment jsdom
  */
 
-import { initializeEntryInfo } from "./Edit";
+import {
+  initializeEntryInfo,
+  isSubmittable,
+} from "./Edit";
 import { DjangoContext } from "services/DjangoContext";
 
 Object.defineProperty(window, "django_context", {
@@ -69,3 +72,19 @@ test("initializeEntryInfo should return expect value", () => {
     },
   })
 })
+
+test("isSubmittable() returns false when entryInfo is null", () => {
+  expect(isSubmittable(null)).toStrictEqual(false);
+});
+
+test("isSubmittable() returns true when entryInfo is changed", () => {
+  // TBD
+});
+
+test("isSubmittable() returns true when entryInfo is not changed", () => {
+  // TBD
+});
+
+test("convertAttrsFormatCtoS() returns expected value", () => {
+  // TBD
+});
