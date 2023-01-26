@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { Link, Prompt, useHistory } from "react-router-dom";
@@ -12,6 +12,7 @@ import { ForbiddenError } from "../utils/Exceptions";
 import { groupsPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { SubmitButton } from "components/common/SubmitButton";
 import { GroupForm } from "components/group/GroupForm";
 
 export const EditGroupPage: FC = () => {
@@ -19,7 +20,11 @@ export const EditGroupPage: FC = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { groupId } = useTypedParams<{ groupId?: number }>();
 
-  const [group, _setGroup] = useState<Group>();
+  const [group, _setGroup] = useState<Group>({
+    id: 0,
+    name: "",
+    members: [],
+  });
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);
 
@@ -28,12 +33,6 @@ export const EditGroupPage: FC = () => {
       if (groupId != null) {
         const _group = await aironeApiClientV2.getGroup(groupId);
         _setGroup(_group);
-      } else {
-        _setGroup({
-          id: 0,
-          name: "",
-          members: [],
-        });
       }
     })();
   }, [groupId]);
@@ -107,31 +106,20 @@ export const EditGroupPage: FC = () => {
       </AironeBreadcrumbs>
 
       <PageHeader
-        title="グループ編集"
-        componentSubmits={
-          <Box display="flex" justifyContent="center">
-            <Box mx="4px">
-              <Button
-                variant="contained"
-                color="secondary"
-                disabled={!submittable}
-                onClick={handleSubmit}
-              >
-                保存
-              </Button>
-            </Box>
-            <Box mx="4px">
-              <Button variant="outlined" color="primary" onClick={handleCancel}>
-                キャンセル
-              </Button>
-            </Box>
-          </Box>
-        }
-      />
+        title={group.id != 0 ? group.name : "新規グループの作成"}
+        description={group.id != 0 ? "グループ編集" : undefined}
+      >
+        <SubmitButton
+          name="保存"
+          disabled={!submittable}
+          handleSubmit={handleSubmit}
+          handleCancel={handleCancel}
+        />
+      </PageHeader>
 
-      <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
-        {group != null && <GroupForm group={group} setGroup={setGroup} />}
-      </Box>
+      <Container>
+        <GroupForm group={group} setGroup={setGroup} />
+      </Container>
 
       <Prompt
         when={edited && !submitted}

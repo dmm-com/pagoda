@@ -4,11 +4,13 @@ import {
   Box,
   Button,
   Checkbox,
+  Container,
   TextField,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC, SyntheticEvent, useMemo, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
@@ -19,9 +21,23 @@ import { PageHeader } from "../components/common/PageHeader";
 import { advancedSearchResultPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 
-export const AdvancedSearchPage: FC = () => {
-  const history = useHistory();
+const StyledFlexBox = styled(Box)({
+  display: "flex",
+  justifyContent: "center",
+});
 
+const StyledFlexColumnBox = styled(Box)({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  marginBottom: "48px",
+});
+
+const StyledTypography = styled(Typography)({
+  marginBottom: "16px",
+});
+
+export const AdvancedSearchPage: FC = () => {
   const [selectedEntities, setSelectedEntities] = useState<Array<EntityList>>(
     []
   );
@@ -66,10 +82,6 @@ export const AdvancedSearchPage: FC = () => {
     return params;
   }, [selectedEntities, searchAllEntities, selectedAttrs, hasReferral]);
 
-  const handleCancel = () => {
-    history.goBack();
-  };
-
   const handleChangeInputEntityName = (
     event: SyntheticEvent,
     value: string,
@@ -103,40 +115,25 @@ export const AdvancedSearchPage: FC = () => {
         <Typography color="textPrimary">高度な検索</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader
-        title="高度な検索"
-        componentSubmits={
-          <Box display="flex" justifyContent="center">
-            <Box mx="4px">
-              <Button
-                variant="contained"
-                color="secondary"
-                component={Link}
-                to={`${advancedSearchResultPath()}?${searchParams}`}
-                disabled={selectedEntities.length === 0 && !searchAllEntities}
-              >
-                検索
-              </Button>
-            </Box>
-            <Box mx="4px">
-              <Button variant="outlined" color="primary" onClick={handleCancel}>
-                キャンセル
-              </Button>
-            </Box>
-          </Box>
-        }
-      />
+      <PageHeader title="高度な検索">
+        <StyledFlexBox>
+          <Button
+            variant="contained"
+            color="secondary"
+            component={Link}
+            to={`${advancedSearchResultPath()}?${searchParams}`}
+            disabled={selectedEntities.length === 0 && !searchAllEntities}
+          >
+            検索
+          </Button>
+        </StyledFlexBox>
+      </PageHeader>
 
-      <Box sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}>
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          my="128px"
-        >
-          <Typography variant="h4" my="20px">
+      <Container>
+        <StyledFlexColumnBox>
+          <StyledTypography variant="h4">
             検索対象のエンティティ
-          </Typography>
+          </StyledTypography>
 
           {!entities.loading && (
             <Autocomplete
@@ -157,7 +154,7 @@ export const AdvancedSearchPage: FC = () => {
               )}
               multiple
               disableCloseOnSelect
-              sx={{ width: "100%", margin: "20px 0" }}
+              fullWidth
             />
           )}
           <Box>
@@ -167,17 +164,10 @@ export const AdvancedSearchPage: FC = () => {
               onChange={(e) => setSearchAllEntities(e.target.checked)}
             ></Checkbox>
           </Box>
-        </Box>
+        </StyledFlexColumnBox>
 
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          my="128px"
-        >
-          <Typography variant="h4" my="20px">
-            属性
-          </Typography>
+        <StyledFlexColumnBox>
+          <StyledTypography variant="h4">属性</StyledTypography>
 
           {!attrs.loading && (
             <AutocompleteWithAllSelector
@@ -196,7 +186,7 @@ export const AdvancedSearchPage: FC = () => {
               )}
               multiple
               disableCloseOnSelect
-              sx={{ width: "100%", margin: "20px 0" }}
+              fullWidth
             />
           )}
           <Box>
@@ -206,8 +196,8 @@ export const AdvancedSearchPage: FC = () => {
               onChange={(e) => setHasReferral(e.target.checked)}
             ></Checkbox>
           </Box>
-        </Box>
-      </Box>
+        </StyledFlexColumnBox>
+      </Container>
     </Box>
   );
 };

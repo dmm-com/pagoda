@@ -2,7 +2,6 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import {
   Box,
   Button,
-  Container,
   IconButton,
   Input,
   InputAdornment,
@@ -279,7 +278,7 @@ export const UserForm: FC<UserFormProps> = ({
   handleCancel,
 }) => {
   return (
-    <Container maxWidth="lg" sx={{ pt: "50px", pb: "50px" }}>
+    <Box>
       <Box display="flex" justifyContent="flex-end" pb="24px">
         <Box mx="4px">
           <Button variant="contained" color="secondary" onClick={handleSubmit}>
@@ -331,6 +330,6 @@ export const UserForm: FC<UserFormProps> = ({
           </TableBody>
         </Table>
       </TableContainer>
-    </Container>
+    </Box>
   );
 };

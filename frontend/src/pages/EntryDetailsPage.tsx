@@ -1,15 +1,7 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import LockIcon from "@mui/icons-material/Lock";
-import {
-  Box,
-  Chip,
-  Container,
-  Grid,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Chip, Grid, IconButton, Stack, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
@@ -28,16 +20,16 @@ import {
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
+import { PageHeader } from "components/common/PageHeader";
 import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
 
-const Title = styled(Typography)(({}) => ({
-  height: "72px",
-  maxWidth: "700px",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-}));
+const StyledBox = styled(Box)({
+  display: "flex",
+  alignItems: "center",
+  gap: "20px",
+});
 
 interface Props {
   excludeAttrs?: string[];
@@ -108,24 +100,39 @@ export const EntryDetailsPage: FC<Props> = ({
         )}
       </AironeBreadcrumbs>
 
-      <Container maxWidth="lg" sx={{ pt: "112px" }}>
-        <Box display="flex">
-          <Box width="50px" />
-          <Box
-            flexGrow="1"
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-          >
-            {!entry.loading && (
-              <Title variant="h2" align="center">
-                {entry.value?.name}
-              </Title>
-            )}
-            <Typography variant="h4" align="center">
-              エントリ詳細
-            </Typography>
-          </Box>
+      <PageHeader title={entry.value?.name} description="エントリ詳細">
+        <StyledBox>
+          <Stack direction="row" spacing={1}>
+            {[
+              {
+                name: "attr_list",
+                label: "項目一覧",
+              },
+              ...additionalContents,
+            ].map((content) => {
+              return (
+                <Chip
+                  key={content.name}
+                  icon={<ArrowDropDownIcon />}
+                  label={content.label}
+                  clickable={true}
+                  variant="outlined"
+                  onClick={() =>
+                    scroller.scrollTo(content.name, { smooth: true })
+                  }
+                  sx={{
+                    flexDirection: "row-reverse",
+                    "& span": {
+                      pr: "0px",
+                    },
+                    "& svg": {
+                      pr: "8px",
+                    },
+                  }}
+                />
+              );
+            })}
+          </Stack>
           <Box width="50px">
             <IconButton
               onClick={(e) => {
@@ -141,55 +148,16 @@ export const EntryDetailsPage: FC<Props> = ({
               handleClose={() => setEntryAnchorEl(null)}
             />
           </Box>
-        </Box>
-      </Container>
-      <Stack
-        direction="row"
-        spacing={1}
-        sx={{ justifyContent: "center", pt: "16px", pb: "64px" }}
-      >
-        {[
-          {
-            name: "attr_list",
-            label: "項目一覧",
-          },
-          ...additionalContents,
-        ].map((content) => {
-          return (
-            <Chip
-              key={content.name}
-              icon={<ArrowDropDownIcon />}
-              label={content.label}
-              clickable={true}
-              variant="outlined"
-              onClick={() => scroller.scrollTo(content.name, { smooth: true })}
-              sx={{
-                flexDirection: "row-reverse",
-                "& span": {
-                  pr: "0px",
-                },
-                "& svg": {
-                  pr: "8px",
-                },
-              }}
-            />
-          );
-        })}
-      </Stack>
+        </StyledBox>
+      </PageHeader>
 
-      <Grid
-        container
-        flexGrow="1"
-        columns={6}
-        sx={{ borderTop: 1, borderColor: "#0000008A" }}
-      >
+      <Grid container flexGrow="1" columns={6}>
         <Grid
           item
           xs={1}
           sx={{
-            py: "64px",
             borderRight: 1,
-            borderColor: "#0000008A",
+            borderColor: "rgba(0, 0, 0, 0.12)",
           }}
         >
           <EntryReferral entryId={entryId} />
@@ -214,9 +182,9 @@ export const EntryDetailsPage: FC<Props> = ({
             ...additionalContents,
           ].map((content) => {
             return (
-              <Box key={content.name} p="16px">
+              <Box key={content.name} px="16px" pb="64px">
                 <Element name={content.name} />
-                <Typography p="32px" fontSize="32px" align="center">
+                <Typography pb="16px" fontSize="32px" align="center">
                   {content.label}
                 </Typography>
                 {content.content}
@@ -228,9 +196,8 @@ export const EntryDetailsPage: FC<Props> = ({
           item
           xs={1}
           sx={{
-            py: "64px",
             borderLeft: 1,
-            borderColor: "#0000008A",
+            borderColor: "rgba(0, 0, 0, 0.12)",
           }}
         >
           {sideContent}

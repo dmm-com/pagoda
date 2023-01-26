@@ -42,7 +42,7 @@ models/GetEntryAttrReferral.ts
 models/Group.ts
 models/GroupCreateUpdate.ts
 models/GroupExport.ts
-models/GroupMembers.ts
+models/GroupMember.ts
 models/GroupTree.ts
 models/JobSerializers.ts
 models/JobTarget.ts

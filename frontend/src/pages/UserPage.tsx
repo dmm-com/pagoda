@@ -1,12 +1,21 @@
-import { Box, Container, Typography } from "@mui/material";
-import React, { FC } from "react";
+import { Box, Button, Container, Typography } from "@mui/material";
+import React, { FC, useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { topPath } from "Routes";
+import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { PageHeader } from "components/common/PageHeader";
+import { UserImportModal } from "components/user/UserImportModal";
 import { UserList } from "components/user/UserList";
 
 export const UserPage: FC = () => {
+  const [openImportModal, setOpenImportModal] = useState(false);
+
+  const handleExport = useCallback(async () => {
+    await aironeApiClientV2.exportUsers("user.yaml");
+  }, []);
+
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
@@ -16,18 +25,32 @@ export const UserPage: FC = () => {
         <Typography color="textPrimary">ユーザ管理</Typography>
       </AironeBreadcrumbs>
 
-      <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
-        <Box
-          sx={{ borderBottom: 1, borderColor: "gray", mb: "64px", pb: "64px" }}
-        >
-          <Typography variant="h2" align="center">
-            ユーザ管理
-          </Typography>
-          <Typography variant="h4" align="center">
-            ユーザ一覧
-          </Typography>
+      <PageHeader title="ユーザ管理">
+        <Box display="flex" alignItems="center">
+          <Button
+            variant="contained"
+            color="info"
+            sx={{ margin: "0 4px" }}
+            onClick={handleExport}
+          >
+            エクスポート
+          </Button>
+          <Button
+            variant="contained"
+            color="info"
+            sx={{ margin: "0 4px" }}
+            onClick={() => setOpenImportModal(true)}
+          >
+            インポート
+          </Button>
+          <UserImportModal
+            openImportModal={openImportModal}
+            closeImportModal={() => setOpenImportModal(false)}
+          />
         </Box>
+      </PageHeader>
 
+      <Container>
         <UserList />
       </Container>
     </Box>

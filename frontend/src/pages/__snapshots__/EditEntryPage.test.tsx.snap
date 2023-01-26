@@ -133,100 +133,53 @@ Object {
           </div>
         </div>
         <div
-          class="MuiBox-root css-ms4ept"
+          class="MuiBox-root css-1wo2fgg"
         >
           <div
             class="MuiBox-root css-t1gim7"
           >
             <div
-              class="MuiBox-root css-1l6yv0h"
+              class="MuiBox-root css-1pj6r2l"
             >
-              <div
-                class="MuiBox-root css-cty2cs"
+              <h6
+                class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
               >
-                <h2
-                  class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
-                >
-                  aaa
-                </h2>
-                <h4
-                  class="MuiTypography-root MuiTypography-h4 css-1yvpk5c-MuiTypography-root"
-                >
-                  エントリ編集
-                </h4>
-              </div>
+                aaa
+              </h6>
+              <h6
+                class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
+              >
+                エントリ編集
+              </h6>
               <div
-                class="MuiBox-root css-6z9yl"
+                class="MuiBox-root css-1b3gh38"
               >
                 <div
-                  class="MuiBox-root css-0"
+                  class="MuiBox-root css-1wcjc1k"
                 >
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-jjpace-MuiButtonBase-root-MuiButton-root"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
+                  >
+                    保存
+                  </button>
+                  <button
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium css-ljnmqm-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                      data-testid="AppsIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
-                      />
-                    </svg>
+                    キャンセル
                   </button>
                 </div>
               </div>
             </div>
-            <div
-              class="MuiBox-root css-1k68zpd"
-            >
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-              />
-              <div
-                class="MuiBox-root css-6z9yl"
-              >
-                <div
-                  class="MuiBox-root css-1l4w6pd"
-                >
-                  <div
-                    class="MuiBox-root css-qbrse1"
-                  >
-                    <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                      disabled=""
-                      tabindex="-1"
-                      type="button"
-                    >
-                      保存
-                    </button>
-                  </div>
-                  <div
-                    class="MuiBox-root css-qbrse1"
-                  >
-                    <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
-                      tabindex="0"
-                      type="button"
-                    >
-                      キャンセル
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
             <hr
-              class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-ez40jo-MuiDivider-root"
+              class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-yk10cl-MuiDivider-root"
             />
           </div>
         </div>
-        <div
-          class="MuiBox-root css-0"
-        />
       </div>
     </div>
   </body>,
@@ -359,100 +312,53 @@ Object {
         </div>
       </div>
       <div
-        class="MuiBox-root css-ms4ept"
+        class="MuiBox-root css-1wo2fgg"
       >
         <div
           class="MuiBox-root css-t1gim7"
         >
           <div
-            class="MuiBox-root css-1l6yv0h"
+            class="MuiBox-root css-1pj6r2l"
           >
-            <div
-              class="MuiBox-root css-cty2cs"
+            <h6
+              class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
             >
-              <h2
-                class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
-              >
-                aaa
-              </h2>
-              <h4
-                class="MuiTypography-root MuiTypography-h4 css-1yvpk5c-MuiTypography-root"
-              >
-                エントリ編集
-              </h4>
-            </div>
+              aaa
+            </h6>
+            <h6
+              class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
+            >
+              エントリ編集
+            </h6>
             <div
-              class="MuiBox-root css-6z9yl"
+              class="MuiBox-root css-1b3gh38"
             >
               <div
-                class="MuiBox-root css-0"
+                class="MuiBox-root css-1wcjc1k"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-jjpace-MuiButtonBase-root-MuiButton-root"
+                  disabled=""
+                  tabindex="-1"
+                  type="button"
+                >
+                  保存
+                </button>
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium css-ljnmqm-MuiButtonBase-root-MuiButton-root"
                   tabindex="0"
                   type="button"
                 >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                    data-testid="AppsIcon"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
-                    />
-                  </svg>
+                  キャンセル
                 </button>
               </div>
             </div>
           </div>
-          <div
-            class="MuiBox-root css-1k68zpd"
-          >
-            <p
-              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-            />
-            <div
-              class="MuiBox-root css-6z9yl"
-            >
-              <div
-                class="MuiBox-root css-1l4w6pd"
-              >
-                <div
-                  class="MuiBox-root css-qbrse1"
-                >
-                  <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                    disabled=""
-                    tabindex="-1"
-                    type="button"
-                  >
-                    保存
-                  </button>
-                </div>
-                <div
-                  class="MuiBox-root css-qbrse1"
-                >
-                  <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
-                    tabindex="0"
-                    type="button"
-                  >
-                    キャンセル
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
           <hr
-            class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-ez40jo-MuiDivider-root"
+            class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-yk10cl-MuiDivider-root"
           />
         </div>
       </div>
-      <div
-        class="MuiBox-root css-0"
-      />
     </div>
   </div>,
   "debug": [Function],

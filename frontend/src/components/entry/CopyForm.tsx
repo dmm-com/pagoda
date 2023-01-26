@@ -1,28 +1,27 @@
-import { Box, Container, TextField, Typography } from "@mui/material";
+import { Box, TextField, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
-interface Props {
-  entries: string;
-  setEntries: (entries: string) => void;
-}
-
-const SampleBox = styled(Box)(({ theme }) => ({
+const SampleBox = styled(Box)({
   width: "100%",
   margin: "80px 0",
   backgroundColor: "#607D8B0A",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-}));
+});
+
+interface Props {
+  entries: string;
+  setEntries: (entries: string) => void;
+}
 
 export const CopyForm: FC<Props> = ({ entries, setEntries }) => {
   return (
-    <Container>
+    <Box>
       <TextField
-        sx={{ mt: "64px" }}
         fullWidth
-        minRows={2}
+        minRows={6}
         placeholder="コピーするエントリ名"
         multiline
         value={entries}
@@ -33,7 +32,7 @@ export const CopyForm: FC<Props> = ({ entries, setEntries }) => {
           SAMPLE
         </Typography>
         <Typography color="primary">
-          (Vm0001、vm0002、…vm006の6エントリを作成する場合）
+          (Vm0001、vm0002、…vm006の6エントリを作成する場合)
         </Typography>
         <TextField
           sx={{ my: "16px", width: "95%" }}
@@ -48,6 +47,6 @@ vm0005
 vm0006"
         />
       </SampleBox>
-    </Container>
+    </Box>
   );
 };

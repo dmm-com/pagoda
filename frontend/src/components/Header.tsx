@@ -255,7 +255,7 @@ export const Header: FC = () => {
                   onKeyPress={(e) => {
                     e.key === "Enter" && submitQuery(e.target.value);
                   }}
-                  inputSx={{ height: "42px" }}
+                  inputSx={{ height: "42px", "& input": { py: "9px" } }}
                 />
               </SearchBoxWrapper>
             </MenuBox>

@@ -18,10 +18,7 @@ export const NotFoundErrorPage: FC = () => {
     >
       <Box display="flex" my="52px">
         <Typography variant="h1" color="#B0BEC5" fontWeight="bold">
-          404
-        </Typography>
-        <Typography variant="h1" color="#B0BEC5" fontWeight="bold">
-          　|ω·`)
+          404 |ω·`)
         </Typography>
       </Box>
       <Typography color="#455A64">

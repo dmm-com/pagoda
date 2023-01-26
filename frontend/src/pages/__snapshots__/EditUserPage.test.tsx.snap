@@ -71,38 +71,24 @@ Object {
           </div>
         </div>
         <div
-          class="MuiBox-root css-ms4ept"
+          class="MuiBox-root css-1wo2fgg"
         >
           <div
             class="MuiBox-root css-t1gim7"
           >
             <div
-              class="MuiBox-root css-1l6yv0h"
+              class="MuiBox-root css-1pj6r2l"
             >
-              <div
-                class="MuiBox-root css-cty2cs"
+              <h6
+                class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
               >
-                <h2
-                  class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
-                >
-                  ユーザ情報の設定
-                </h2>
-                <h4
-                  class="MuiTypography-root MuiTypography-h4 css-1yvpk5c-MuiTypography-root"
-                />
-              </div>
-              <div
-                class="MuiBox-root css-6z9yl"
-              />
-            </div>
-            <div
-              class="MuiBox-root css-1k68zpd"
-            >
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                新規ユーザの作成
+              </h6>
+              <h6
+                class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
               />
               <div
-                class="MuiBox-root css-6z9yl"
+                class="MuiBox-root css-1b3gh38"
               >
                 <div
                   class="MuiBox-root css-1l4w6pd"
@@ -111,7 +97,7 @@ Object {
                     class="MuiBox-root css-qbrse1"
                   >
                     <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium Mui-disabled MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium css-kjirbw-MuiButtonBase-root-MuiButton-root"
                       disabled=""
                       tabindex="-1"
                       type="button"
@@ -126,7 +112,7 @@ Object {
                       class="MuiBox-root css-0"
                     >
                       <button
-                        class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium Mui-disabled MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium css-kjirbw-MuiButtonBase-root-MuiButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -139,12 +125,380 @@ Object {
               </div>
             </div>
             <hr
-              class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-ez40jo-MuiDivider-root"
+              class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-yk10cl-MuiDivider-root"
             />
           </div>
         </div>
         <div
-          class="MuiContainer-root MuiContainer-maxWidthLg css-zjwzah-MuiContainer-root"
+          class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
+        >
+          <div
+            class="MuiBox-root css-0"
+          >
+            <div
+              class="MuiBox-root css-196rgkg"
+            >
+              <div
+                class="MuiBox-root css-qbrse1"
+              >
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                  tabindex="0"
+                  type="button"
+                >
+                  保存
+                </button>
+              </div>
+              <div
+                class="MuiBox-root css-qbrse1"
+              >
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+                  tabindex="0"
+                  type="button"
+                >
+                  キャンセル
+                </button>
+              </div>
+            </div>
+            <div
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiTableContainer-root css-11xur9t-MuiPaper-root-MuiTableContainer-root"
+            >
+              <table
+                class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
+              >
+                <thead
+                  class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+                >
+                  <tr
+                    class="MuiTableRow-root MuiTableRow-head css-sabv7l-MuiTableRow-root"
+                  >
+                    <th
+                      class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                      scope="col"
+                    >
+                      項目
+                    </th>
+                    <th
+                      class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
+                      scope="col"
+                    >
+                      内容
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+                >
+                  <tr
+                    class="MuiTableRow-root css-1w2cmz5-MuiTableRow-root"
+                  >
+                    <td
+                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-gu5clz-MuiTableCell-root"
+                    >
+                      名前
+                    </td>
+                    <td
+                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-z9lhjr-MuiTableCell-root"
+                    >
+                      <form
+                        class="MuiBox-root css-nlbhye"
+                      >
+                        <div
+                          class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
+                        >
+                          <div
+                            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-error MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                          >
+                            <input
+                              aria-describedby=":r1:-helper-text"
+                              aria-invalid="true"
+                              class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
+                              id=":r1:"
+                              placeholder="ユーザ名を入力してください"
+                              type="text"
+                              value=""
+                            />
+                            <fieldset
+                              aria-hidden="true"
+                              class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                            >
+                              <legend
+                                class="css-ihdtdm"
+                              >
+                                <span
+                                  class="notranslate"
+                                >
+                                  ​
+                                </span>
+                              </legend>
+                            </fieldset>
+                          </div>
+                          <p
+                            class="MuiFormHelperText-root Mui-error MuiFormHelperText-sizeMedium MuiFormHelperText-contained css-1wc848c-MuiFormHelperText-root"
+                            id=":r1:-helper-text"
+                          >
+                            ユーザ名は必須です
+                          </p>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                  <tr
+                    class="MuiTableRow-root css-1w2cmz5-MuiTableRow-root"
+                  >
+                    <td
+                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-gu5clz-MuiTableCell-root"
+                    >
+                      メールアドレス
+                    </td>
+                    <td
+                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-z9lhjr-MuiTableCell-root"
+                    >
+                      <form
+                        class="MuiBox-root css-nlbhye"
+                      >
+                        <div
+                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary css-10h6tns-MuiInputBase-root-MuiInput-root"
+                        >
+                          <input
+                            class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                            placeholder="メールアドレスを入力してください"
+                            type="email"
+                            value=""
+                          />
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                  <tr
+                    class="MuiTableRow-root css-1w2cmz5-MuiTableRow-root"
+                  >
+                    <td
+                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-gu5clz-MuiTableCell-root"
+                    >
+                      管理者権限
+                    </td>
+                    <td
+                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-z9lhjr-MuiTableCell-root"
+                    >
+                      <span
+                        aria-disabled="true"
+                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-disabled PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-disabled MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                        tabindex="-1"
+                      >
+                        <input
+                          class="PrivateSwitchBase-input css-1m9pwf3"
+                          data-indeterminate="false"
+                          disabled=""
+                          type="checkbox"
+                        />
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="CheckBoxOutlineBlankIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                          />
+                        </svg>
+                      </span>
+                    </td>
+                  </tr>
+                  <tr
+                    class="MuiTableRow-root css-1w2cmz5-MuiTableRow-root"
+                  >
+                    <td
+                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-gu5clz-MuiTableCell-root"
+                    >
+                      パスワード
+                    </td>
+                    <td
+                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-z9lhjr-MuiTableCell-root"
+                    >
+                      <form
+                        class="MuiBox-root css-nlbhye"
+                      >
+                        <div
+                          class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
+                        >
+                          <div
+                            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-error MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                          >
+                            <input
+                              aria-describedby=":r2:-helper-text"
+                              aria-invalid="true"
+                              class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
+                              id=":r2:"
+                              placeholder="パスワードを入力してください"
+                              type="password"
+                              value=""
+                            />
+                            <fieldset
+                              aria-hidden="true"
+                              class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                            >
+                              <legend
+                                class="css-ihdtdm"
+                              >
+                                <span
+                                  class="notranslate"
+                                >
+                                  ​
+                                </span>
+                              </legend>
+                            </fieldset>
+                          </div>
+                          <p
+                            class="MuiFormHelperText-root Mui-error MuiFormHelperText-sizeMedium MuiFormHelperText-contained css-1wc848c-MuiFormHelperText-root"
+                            id=":r2:-helper-text"
+                          >
+                            パスワードは必須です
+                          </p>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="MuiBox-root css-0"
+    >
+      <div
+        class="MuiBox-root css-1baykhj"
+      >
+        <div
+          class="MuiBox-root css-t0pdf1"
+        >
+          <div
+            class="MuiBox-root css-jqffe8"
+          >
+            <nav
+              aria-label="breadcrumb"
+              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+            >
+              <ol
+                class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+              >
+                <li
+                  class="MuiBreadcrumbs-li"
+                >
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/ui/"
+                  >
+                    Top
+                  </a>
+                </li>
+                <li
+                  aria-hidden="true"
+                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                >
+                  /
+                </li>
+                <li
+                  class="MuiBreadcrumbs-li"
+                >
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/ui/users"
+                  >
+                    ユーザ管理
+                  </a>
+                </li>
+                <li
+                  aria-hidden="true"
+                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                >
+                  /
+                </li>
+                <li
+                  class="MuiBreadcrumbs-li"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                  >
+                    ユーザ情報の設定
+                  </p>
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+      </div>
+      <div
+        class="MuiBox-root css-1wo2fgg"
+      >
+        <div
+          class="MuiBox-root css-t1gim7"
+        >
+          <div
+            class="MuiBox-root css-1pj6r2l"
+          >
+            <h6
+              class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
+            >
+              新規ユーザの作成
+            </h6>
+            <h6
+              class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
+            />
+            <div
+              class="MuiBox-root css-1b3gh38"
+            >
+              <div
+                class="MuiBox-root css-1l4w6pd"
+              >
+                <div
+                  class="MuiBox-root css-qbrse1"
+                >
+                  <button
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium css-kjirbw-MuiButtonBase-root-MuiButton-root"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
+                  >
+                    パスワードの再設定
+                  </button>
+                </div>
+                <div
+                  class="MuiBox-root css-qbrse1"
+                >
+                  <div
+                    class="MuiBox-root css-0"
+                  >
+                    <button
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium css-kjirbw-MuiButtonBase-root-MuiButton-root"
+                      disabled=""
+                      tabindex="-1"
+                      type="button"
+                    >
+                      Access Token をリフレッシュ
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr
+            class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-yk10cl-MuiDivider-root"
+          />
+        </div>
+      </div>
+      <div
+        class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
+      >
+        <div
+          class="MuiBox-root css-0"
         >
           <div
             class="MuiBox-root css-196rgkg"
@@ -375,380 +729,6 @@ Object {
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-    </div>
-  </body>,
-  "container": <div>
-    <div
-      class="MuiBox-root css-0"
-    >
-      <div
-        class="MuiBox-root css-1baykhj"
-      >
-        <div
-          class="MuiBox-root css-t0pdf1"
-        >
-          <div
-            class="MuiBox-root css-jqffe8"
-          >
-            <nav
-              aria-label="breadcrumb"
-              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
-            >
-              <ol
-                class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
-              >
-                <li
-                  class="MuiBreadcrumbs-li"
-                >
-                  <a
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/ui/"
-                  >
-                    Top
-                  </a>
-                </li>
-                <li
-                  aria-hidden="true"
-                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-                >
-                  /
-                </li>
-                <li
-                  class="MuiBreadcrumbs-li"
-                >
-                  <a
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/ui/users"
-                  >
-                    ユーザ管理
-                  </a>
-                </li>
-                <li
-                  aria-hidden="true"
-                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-                >
-                  /
-                </li>
-                <li
-                  class="MuiBreadcrumbs-li"
-                >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
-                  >
-                    ユーザ情報の設定
-                  </p>
-                </li>
-              </ol>
-            </nav>
-          </div>
-        </div>
-      </div>
-      <div
-        class="MuiBox-root css-ms4ept"
-      >
-        <div
-          class="MuiBox-root css-t1gim7"
-        >
-          <div
-            class="MuiBox-root css-1l6yv0h"
-          >
-            <div
-              class="MuiBox-root css-cty2cs"
-            >
-              <h2
-                class="MuiTypography-root MuiTypography-h2 css-1qd2kzx-MuiTypography-root"
-              >
-                ユーザ情報の設定
-              </h2>
-              <h4
-                class="MuiTypography-root MuiTypography-h4 css-1yvpk5c-MuiTypography-root"
-              />
-            </div>
-            <div
-              class="MuiBox-root css-6z9yl"
-            />
-          </div>
-          <div
-            class="MuiBox-root css-1k68zpd"
-          >
-            <p
-              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-            />
-            <div
-              class="MuiBox-root css-6z9yl"
-            >
-              <div
-                class="MuiBox-root css-1l4w6pd"
-              >
-                <div
-                  class="MuiBox-root css-qbrse1"
-                >
-                  <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium Mui-disabled MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
-                    disabled=""
-                    tabindex="-1"
-                    type="button"
-                  >
-                    パスワードの再設定
-                  </button>
-                </div>
-                <div
-                  class="MuiBox-root css-qbrse1"
-                >
-                  <div
-                    class="MuiBox-root css-0"
-                  >
-                    <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium Mui-disabled MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
-                      disabled=""
-                      tabindex="-1"
-                      type="button"
-                    >
-                      Access Token をリフレッシュ
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <hr
-            class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-ez40jo-MuiDivider-root"
-          />
-        </div>
-      </div>
-      <div
-        class="MuiContainer-root MuiContainer-maxWidthLg css-zjwzah-MuiContainer-root"
-      >
-        <div
-          class="MuiBox-root css-196rgkg"
-        >
-          <div
-            class="MuiBox-root css-qbrse1"
-          >
-            <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-              tabindex="0"
-              type="button"
-            >
-              保存
-            </button>
-          </div>
-          <div
-            class="MuiBox-root css-qbrse1"
-          >
-            <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
-              tabindex="0"
-              type="button"
-            >
-              キャンセル
-            </button>
-          </div>
-        </div>
-        <div
-          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiTableContainer-root css-11xur9t-MuiPaper-root-MuiTableContainer-root"
-        >
-          <table
-            class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
-          >
-            <thead
-              class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
-            >
-              <tr
-                class="MuiTableRow-root MuiTableRow-head css-sabv7l-MuiTableRow-root"
-              >
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                  scope="col"
-                >
-                  項目
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
-                  scope="col"
-                >
-                  内容
-                </th>
-              </tr>
-            </thead>
-            <tbody
-              class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-            >
-              <tr
-                class="MuiTableRow-root css-1w2cmz5-MuiTableRow-root"
-              >
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-gu5clz-MuiTableCell-root"
-                >
-                  名前
-                </td>
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-z9lhjr-MuiTableCell-root"
-                >
-                  <form
-                    class="MuiBox-root css-nlbhye"
-                  >
-                    <div
-                      class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
-                    >
-                      <div
-                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-error MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
-                      >
-                        <input
-                          aria-describedby=":r1:-helper-text"
-                          aria-invalid="true"
-                          class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
-                          id=":r1:"
-                          placeholder="ユーザ名を入力してください"
-                          type="text"
-                          value=""
-                        />
-                        <fieldset
-                          aria-hidden="true"
-                          class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
-                        >
-                          <legend
-                            class="css-ihdtdm"
-                          >
-                            <span
-                              class="notranslate"
-                            >
-                              ​
-                            </span>
-                          </legend>
-                        </fieldset>
-                      </div>
-                      <p
-                        class="MuiFormHelperText-root Mui-error MuiFormHelperText-sizeMedium MuiFormHelperText-contained css-1wc848c-MuiFormHelperText-root"
-                        id=":r1:-helper-text"
-                      >
-                        ユーザ名は必須です
-                      </p>
-                    </div>
-                  </form>
-                </td>
-              </tr>
-              <tr
-                class="MuiTableRow-root css-1w2cmz5-MuiTableRow-root"
-              >
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-gu5clz-MuiTableCell-root"
-                >
-                  メールアドレス
-                </td>
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-z9lhjr-MuiTableCell-root"
-                >
-                  <form
-                    class="MuiBox-root css-nlbhye"
-                  >
-                    <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary css-10h6tns-MuiInputBase-root-MuiInput-root"
-                    >
-                      <input
-                        class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                        placeholder="メールアドレスを入力してください"
-                        type="email"
-                        value=""
-                      />
-                    </div>
-                  </form>
-                </td>
-              </tr>
-              <tr
-                class="MuiTableRow-root css-1w2cmz5-MuiTableRow-root"
-              >
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-gu5clz-MuiTableCell-root"
-                >
-                  管理者権限
-                </td>
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-z9lhjr-MuiTableCell-root"
-                >
-                  <span
-                    aria-disabled="true"
-                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-disabled PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-disabled MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
-                    tabindex="-1"
-                  >
-                    <input
-                      class="PrivateSwitchBase-input css-1m9pwf3"
-                      data-indeterminate="false"
-                      disabled=""
-                      type="checkbox"
-                    />
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                      data-testid="CheckBoxOutlineBlankIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                      />
-                    </svg>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class="MuiTableRow-root css-1w2cmz5-MuiTableRow-root"
-              >
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-gu5clz-MuiTableCell-root"
-                >
-                  パスワード
-                </td>
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-z9lhjr-MuiTableCell-root"
-                >
-                  <form
-                    class="MuiBox-root css-nlbhye"
-                  >
-                    <div
-                      class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
-                    >
-                      <div
-                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-error MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
-                      >
-                        <input
-                          aria-describedby=":r2:-helper-text"
-                          aria-invalid="true"
-                          class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
-                          id=":r2:"
-                          placeholder="パスワードを入力してください"
-                          type="password"
-                          value=""
-                        />
-                        <fieldset
-                          aria-hidden="true"
-                          class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
-                        >
-                          <legend
-                            class="css-ihdtdm"
-                          >
-                            <span
-                              class="notranslate"
-                            >
-                              ​
-                            </span>
-                          </legend>
-                        </fieldset>
-                      </div>
-                      <p
-                        class="MuiFormHelperText-root Mui-error MuiFormHelperText-sizeMedium MuiFormHelperText-contained css-1wc848c-MuiFormHelperText-root"
-                        id=":r2:-helper-text"
-                      >
-                        パスワードは必須です
-                      </p>
-                    </div>
-                  </form>
-                </td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </div>

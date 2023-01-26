@@ -106,8 +106,8 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
   };
 
   return (
-    <Box>
-      <Box my="32px">
+    <Box mb="80px">
+      <Box my="16px">
         <Typography variant="h4" align="center">
           Webhook
         </Typography>

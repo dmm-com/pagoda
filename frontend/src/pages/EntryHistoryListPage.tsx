@@ -4,7 +4,12 @@ import React, { FC, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { entitiesPath, entityPath, entryDetailsPath, topPath } from "../Routes";
+import {
+  entitiesPath,
+  entityEntriesPath,
+  entryDetailsPath,
+  topPath,
+} from "../Routes";
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
@@ -13,6 +18,8 @@ import { EntryHistoryList } from "../components/entry/EntryHistoryList";
 import { usePage } from "../hooks/usePage";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { EntryHistoryList as ConstEntryHistoryList } from "../utils/Constants";
+
+import { PageHeader } from "components/common/PageHeader";
 
 export const EntryHistoryListPage: FC = () => {
   const { entryId } = useTypedParams<{ entryId: number }>();
@@ -53,7 +60,7 @@ export const EntryHistoryListPage: FC = () => {
         {!entry.loading && (
           <Typography
             component={Link}
-            to={entityPath(entry.value?.schema?.id ?? 0)}
+            to={entityEntriesPath(entry.value?.schema?.id ?? 0)}
           >
             {entry.value?.schema?.name}
           </Typography>
@@ -69,68 +76,40 @@ export const EntryHistoryListPage: FC = () => {
             {entry.value?.name}
           </Typography>
         )}
-        {!entry.loading && (
-          <Typography color="textPrimary">{`${entry.value?.name} 変更履歴`}</Typography>
-        )}
+        <Typography color="textPrimary">変更履歴</Typography>
       </AironeBreadcrumbs>
 
-      <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
-        {/* NOTE: This Box component that has CSS tuning should be custom component */}
-        <Box
-          display="flex"
-          sx={{ borderBottom: 1, borderColor: "gray", mb: "64px", pb: "64px" }}
-        >
-          <Box width="50px" />
-          <Box flexGrow="1">
-            {!entry.loading && (
-              <Typography
-                variant="h2"
-                align="center"
-                sx={{
-                  margin: "auto",
-                  maxWidth: "md",
-                  textOverflow: "ellipsis",
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {entry.value?.name}
-              </Typography>
-            )}
-            <Typography variant="h4" align="center">
-              変更履歴
-            </Typography>
-          </Box>
-          <Box width="50px">
-            <IconButton
-              onClick={(e) => {
-                setEntryAnchorEl(e.currentTarget);
-              }}
-            >
-              <AppsIcon />
-            </IconButton>
-            <EntryControlMenu
-              entityId={entry.value?.schema?.id ?? 0}
-              entryId={entryId}
-              anchorElem={entryAnchorEl}
-              handleClose={() => setEntryAnchorEl(null)}
-            />
-          </Box>
+      <PageHeader title={entry.value?.name} description="変更履歴">
+        <Box width="50px">
+          <IconButton
+            onClick={(e) => {
+              setEntryAnchorEl(e.currentTarget);
+            }}
+          >
+            <AppsIcon />
+          </IconButton>
+          <EntryControlMenu
+            entityId={entry.value?.schema?.id ?? 0}
+            entryId={entryId}
+            anchorElem={entryAnchorEl}
+            handleClose={() => setEntryAnchorEl(null)}
+          />
         </Box>
-        <Box>
-          {histories.loading ? (
-            <Loading />
-          ) : (
-            <EntryHistoryList
-              histories={histories.value?.results ?? []}
-              entryId={entryId}
-              page={page}
-              maxPage={maxPage}
-              handleChangePage={changePage}
-            />
-          )}
-        </Box>
-      </Container>
+      </PageHeader>
+
+      {histories.loading ? (
+        <Loading />
+      ) : (
+        <Container>
+          <EntryHistoryList
+            histories={histories.value?.results ?? []}
+            entryId={entryId}
+            page={page}
+            maxPage={maxPage}
+            handleChangePage={changePage}
+          />
+        </Container>
+      )}
     </Box>
   );
 };

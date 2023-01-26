@@ -68,6 +68,12 @@ export interface EntryBase {
    * @memberof EntryBase
    */
   deletedTime?: Date | null;
+  /**
+   *
+   * @type {Date}
+   * @memberof EntryBase
+   */
+  readonly updatedTime: Date;
 }
 
 export function EntryBaseFromJSON(json: any): EntryBase {
@@ -92,6 +98,7 @@ export function EntryBaseFromJSONTyped(
       : json["deleted_time"] === null
       ? null
       : new Date(json["deleted_time"]),
+    updatedTime: new Date(json["updated_time"]),
   };
 }
 

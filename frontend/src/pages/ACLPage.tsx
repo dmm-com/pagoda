@@ -1,5 +1,5 @@
 import LockIcon from "@mui/icons-material/Lock";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
 import { Link, Prompt, useHistory } from "react-router-dom";
@@ -8,11 +8,17 @@ import { useAsync } from "react-use";
 import { PageHeader } from "../components/common/PageHeader";
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import { topPath, entityEntriesPath, entryDetailsPath } from "Routes";
+import {
+  topPath,
+  entityEntriesPath,
+  entryDetailsPath,
+  entitiesPath,
+} from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { ACLForm } from "components/common/ACLForm";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
+import { SubmitButton } from "components/common/SubmitButton";
 import { DjangoContext } from "utils/DjangoContext";
 
 export const ACLPage: FC = () => {
@@ -94,6 +100,9 @@ export const ACLPage: FC = () => {
         <Typography component={Link} to={topPath()}>
           Top
         </Typography>
+        <Typography component={Link} to={entitiesPath()}>
+          エンティティ一覧
+        </Typography>
 
         {/* This is a statement for Entity */}
         {!acl.loading &&
@@ -156,42 +165,25 @@ export const ACLPage: FC = () => {
         <Typography color="textPrimary">ACL</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader
-        title={acl.value?.name ?? ""}
-        subTitle="ACL設定"
-        componentSubmits={
-          <Box display="flex" justifyContent="center">
-            <Box mx="4px">
-              <Button
-                variant="contained"
-                color="secondary"
-                disabled={!submittable}
-                onClick={handleSubmit}
-              >
-                保存
-              </Button>
-            </Box>
-            <Box mx="4px">
-              <Button variant="outlined" color="primary" onClick={handleCancel}>
-                キャンセル
-              </Button>
-            </Box>
-          </Box>
-        }
-      />
+      <PageHeader title={acl.value?.name ?? ""} description="ACL設定">
+        <SubmitButton
+          name="保存"
+          disabled={!submittable}
+          handleSubmit={handleSubmit}
+          handleCancel={handleCancel}
+        />
+      </PageHeader>
 
       {acl.loading ? (
         <Loading />
       ) : (
-        <Box
-          sx={{ marginTop: "111px", paddingLeft: "10%", paddingRight: "10%" }}
-        >
+        <Container>
           <ACLForm
             aclInfo={aclInfo}
             setACLInfo={setACLInfo}
             setSubmittable={setSubmittable}
           />
-        </Box>
+        </Container>
       )}
 
       <Prompt

@@ -13,6 +13,7 @@ import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
+import { PageHeader } from "components/common/PageHeader";
 
 export const RestoreEntryPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
@@ -45,49 +46,34 @@ export const RestoreEntryPage: FC = () => {
           component={Link}
           to={entityEntriesPath(entity.value?.id ?? 0)}
         >
-          {entity.value?.name} エントリ一覧
+          {entity.value?.name}
         </Typography>
-        <Typography>{entity.value?.name} 削除エントリの復旧</Typography>
+        <Typography>削除エントリの復旧</Typography>
       </AironeBreadcrumbs>
 
-      <Container maxWidth="lg" sx={{ marginTop: "111px" }}>
-        {/* NOTE: This Box component that has CSS tuning should be custom component */}
-        <Box
-          display="flex"
-          sx={{ borderBottom: 1, borderColor: "gray", mb: "64px", pb: "64px" }}
-        >
-          <Box width="50px" />
-          <Box flexGrow="1">
-            {!entity.loading && (
-              <Typography variant="h2" align="center">
-                {entity.value?.name}
-              </Typography>
-            )}
-            <Typography variant="h4" align="center">
-              削除エントリの復旧
-            </Typography>
-          </Box>
-          <Box width="50px">
-            <IconButton
-              onClick={(e) => {
-                setEntityAnchorEl(e.currentTarget);
-              }}
-            >
-              <AppsIcon />
-            </IconButton>
-            <EntityControlMenu
-              entityId={entityId}
-              anchorElem={entityAnchorEl}
-              handleClose={() => setEntityAnchorEl(null)}
-              setOpenImportModal={setOpenImportModal}
-            />
-            <EntryImportModal
-              openImportModal={openImportModal}
-              closeImportModal={() => setOpenImportModal(false)}
-            />
-          </Box>
+      <PageHeader title={entity.value?.name} description="削除エントリの復旧">
+        <Box width="50px">
+          <IconButton
+            onClick={(e) => {
+              setEntityAnchorEl(e.currentTarget);
+            }}
+          >
+            <AppsIcon />
+          </IconButton>
+          <EntityControlMenu
+            entityId={entityId}
+            anchorElem={entityAnchorEl}
+            handleClose={() => setEntityAnchorEl(null)}
+            setOpenImportModal={setOpenImportModal}
+          />
+          <EntryImportModal
+            openImportModal={openImportModal}
+            closeImportModal={() => setOpenImportModal(false)}
+          />
         </Box>
+      </PageHeader>
 
+      <Container>
         <RestorableEntryList entityId={entityId} initialKeyword={keyword} />
       </Container>
     </Box>

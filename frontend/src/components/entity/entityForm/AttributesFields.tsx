@@ -27,8 +27,8 @@ export const AttributesFields: FC<Props> = ({
   const [latestChangedIndex, setLatestChangedIndex] = useState<number>();
 
   return (
-    <Box>
-      <Box my="32px">
+    <Box mb="80px">
+      <Box my="16px">
         <Typography variant="h4" align="center">
           属性情報
         </Typography>
