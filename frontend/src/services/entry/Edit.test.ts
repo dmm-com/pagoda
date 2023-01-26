@@ -1,9 +1,21 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import { initializeEntryInfo } from "./Edit";
 import { DjangoContext } from "services/DjangoContext";
 
+Object.defineProperty(window, "django_context", {
+  value: {
+    user: {
+      isSuperuser: true,
+    },
+  },
+  writable: false,
+});
+const djangoContext = DjangoContext.getInstance();
+
 test("initializeEntryInfo should return expect value", () => {
-  global.window = Object.create({})
-  //const djangoContext = DjangoContext.getInstance();
   const entity = {
     id: 1,
     name: "TestEntity",
@@ -14,17 +26,46 @@ test("initializeEntryInfo should return expect value", () => {
       id: 2,
       index: 0,
       name: "attr",
-      type: 1,
+      type: djangoContext.attrTypeValue.string,
       isMandatory: true,
       isDeleteInChain: true,
     }],
     webhooks: [],
     isPublic: true,
   }
-  expect(initializeEntryInfo(entity)).toBe({
-    name: "",
-    attrs: [
-
-    ]
+  expect(initializeEntryInfo(entity)).toStrictEqual({
+    "name": "",
+    "attrs": {
+      "attr": {
+        "id": 2,
+        "isMandatory": true,
+        "schema":  {
+          "id": 2,
+          "name": "attr",
+        },
+        "type": 2,
+        "value":  {
+          "asArrayGroup":  [],
+          "asArrayNamedObject":  [
+             {
+              "": null,
+            },
+          ],
+          "asArrayObject":  [],
+          "asArrayRole":  [],
+          "asArrayString":  [
+            "",
+          ],
+          "asBoolean": false,
+          "asGroup": null,
+          "asNamedObject":  {
+            "": null,
+          },
+          "asObject": null,
+          "asRole": null,
+          "asString": "",
+        },
+      },
+    },
   })
 })
