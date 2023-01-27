@@ -14,7 +14,7 @@ CONFIG = Settings(
                 "time_reverse": "time_reverse",
             },
         },
-        "DEFAULT_LIST_SORT_ORDER": "time_reverse",
+        "DEFAULT_LIST_SORT_ORDER": "name",
         "MAX_HISTORY_COUNT": 10,
         "MAX_QUERY_SIZE": 249,  # '.*' + '[aA]'*249 + '.*' = 1000
         "MAX_QUERY_COUNT": 1000,
