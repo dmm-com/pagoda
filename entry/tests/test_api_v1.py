@@ -59,6 +59,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp.json()["results"]), 1)
         self.assertTrue(resp.json()["results"][0]["name"], "e-0")
 
+    def test_get_entries_with_special_characters(self):
+        admin = self.admin_login()
+
         """
         Check for cases with special characters
         """
@@ -95,6 +98,9 @@ class ViewTest(AironeViewTest):
             " " "&",
             "|",
         ]
+
+        # create Entity & Entries for this test
+        entity = Entity.objects.create(name="Entity", created_user=admin)
         test_suites = []
         for i, add_char in enumerate(add_chars):
             entry_name = "test%s%s" % (i, add_char)
@@ -110,13 +116,8 @@ class ViewTest(AironeViewTest):
                 "/entry/api/v1/get_entries/%s/" % entity.id,
                 {"keyword": test_suite["search_word"]},
             )
-            ret_cnt = (
-                test_suite["ret_cnt"]
-                if test_suite["search_word"] != "-"
-                else CONFIG.MAX_LIST_ENTRIES
-            )
             self.assertEqual(resp.status_code, 200)
-            self.assertEqual(len(resp.json()["results"]), ret_cnt)
+            self.assertEqual(len(resp.json()["results"]), test_suite["ret_cnt"])
             self.assertEqual(resp.json()["results"][0]["name"], test_suite["ret_entry_name"])
 
     def test_get_entries_with_multiple_ids(self):
