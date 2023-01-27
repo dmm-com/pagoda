@@ -31,9 +31,9 @@ $(document).ready(function() {
 
   // This ajax getting Entry processing is no-longer used,
   // and also won't be used any more.
+  $('.del-item').on('click', confirm_delete_table_item);
   /*
   var sending_request = false;
-  $('.del-item').on('click', confirm_delete_table_item);
   $("#narrow_down_entries").on('keyup', function(e) {
     if(! (e.keyCode != 13 || sending_request)) {
       sending_request = true;
