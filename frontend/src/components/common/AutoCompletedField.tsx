@@ -160,7 +160,7 @@ const Listbox = styled("ul")(
 
 interface Props<T> {
   options: T[];
-  getOptionLabel: (option: T | string) => string;
+  getOptionLabel: (option: string | T[] | NonNullable<T>) => string;
   defaultValue?: NonNullable<T> | T[];
   handleChangeSelectedValue: (value: NonNullable<T> | T[]) => void;
   multiple?: boolean;
