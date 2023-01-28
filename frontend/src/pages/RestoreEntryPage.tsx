@@ -29,7 +29,7 @@ export const RestoreEntryPage: FC = () => {
     return await aironeApiClientV2.getEntity(entityId);
   });
 
-  if (entity.loading) {
+  if (entity.loading || entity.value == null) {
     return <Loading />;
   }
 
@@ -42,16 +42,13 @@ export const RestoreEntryPage: FC = () => {
         <Typography component={Link} to={entitiesPath()}>
           エンティティ一覧
         </Typography>
-        <Typography
-          component={Link}
-          to={entityEntriesPath(entity.value?.id ?? 0)}
-        >
-          {entity.value?.name}
+        <Typography component={Link} to={entityEntriesPath(entity.value.id)}>
+          {entity.value.name}
         </Typography>
         <Typography>削除エントリの復旧</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title={entity.value?.name} description="削除エントリの復旧">
+      <PageHeader title={entity.value.name} description="削除エントリの復旧">
         <Box width="50px">
           <IconButton
             onClick={(e) => {

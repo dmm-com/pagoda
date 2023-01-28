@@ -34,7 +34,9 @@ export const EntityPage: FC = () => {
       return 0;
     }
     console.log(entities.value?.count);
-    return Math.ceil(entities.value?.count / ConstEntityList.MAX_ROW_COUNT);
+    return Math.ceil(
+      entities.value?.count ?? 0 / ConstEntityList.MAX_ROW_COUNT
+    );
   }, [entities.loading, entities.value?.count]);
 
   const handleChangeQuery = (newQuery?: string) => {

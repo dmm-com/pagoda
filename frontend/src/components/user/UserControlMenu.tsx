@@ -43,7 +43,7 @@ export const UserControlMenu: FC<UserControlProps> = ({
     setOpenModal(false);
   };
 
-  const handleDelete = async (event, user) => {
+  const handleDelete = async (user: UserList) => {
     try {
       await aironeApiClientV2.destroyUser(user.id);
       enqueueSnackbar(`ユーザ(${user.username})の削除が完了しました`, {
@@ -88,7 +88,7 @@ export const UserControlMenu: FC<UserControlProps> = ({
             </MenuItem>
           )}
           dialogTitle={`本当に削除しますか？(${user.username})`}
-          onClickYes={(e) => handleDelete(e, user)}
+          onClickYes={(e) => handleDelete(user)}
         />
         <UserPasswordFormModal
           userId={user.id}

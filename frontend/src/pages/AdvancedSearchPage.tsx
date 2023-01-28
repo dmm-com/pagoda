@@ -137,7 +137,7 @@ export const AdvancedSearchPage: FC = () => {
 
           {!entities.loading && (
             <Autocomplete
-              options={entities.value}
+              options={entities.value ?? []}
               getOptionLabel={(option: EntityList) => option.name}
               value={selectedEntities}
               inputValue={entityName}
@@ -162,7 +162,7 @@ export const AdvancedSearchPage: FC = () => {
             <Checkbox
               checked={searchAllEntities}
               onChange={(e) => setSearchAllEntities(e.target.checked)}
-            ></Checkbox>
+            />
           </Box>
         </StyledFlexColumnBox>
 
@@ -172,7 +172,7 @@ export const AdvancedSearchPage: FC = () => {
           {!attrs.loading && (
             <AutocompleteWithAllSelector
               selectAllLabel="すべて選択"
-              options={attrs.value}
+              options={attrs.value ?? []}
               value={selectedAttrs}
               inputValue={attrName}
               onChange={(_, value: Array<string>) => setSelectedAttrs(value)}
@@ -194,7 +194,7 @@ export const AdvancedSearchPage: FC = () => {
             <Checkbox
               checked={hasReferral}
               onChange={(e) => setHasReferral(e.target.checked)}
-            ></Checkbox>
+            />
           </Box>
         </StyledFlexColumnBox>
       </Container>
