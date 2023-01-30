@@ -56,7 +56,7 @@ export const DashboardPage: FC = () => {
   // If there is only one search result, move to entry details page.
   if (!entries.loading && entries.value?.length === 1) {
     history.push(
-      entryDetailsPath(entries.value[0].schema.id, entries.value[0].id)
+      entryDetailsPath(entries.value[0].schema?.id ?? 0, entries.value[0].id)
     );
   }
 
@@ -83,7 +83,7 @@ export const DashboardPage: FC = () => {
               <Box key={entry.id}>
                 <Result
                   component={Link}
-                  to={entryDetailsPath(entry.schema.id, entry.id)}
+                  to={entryDetailsPath(entry.schema?.id ?? 0, entry.id)}
                 >
                   {entry.name}
                 </Result>

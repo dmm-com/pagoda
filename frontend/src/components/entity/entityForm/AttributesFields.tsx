@@ -49,13 +49,13 @@ export const AttributesFields: FC<Props> = ({
         </TableHead>
         <TableBody>
           <>
-            {entityInfo.attrs.map((attr, index) => (
+            {entityInfo.attrs?.map((attr, index) => (
               <Fragment key={index}>
                 {attr.isDeleted !== true && (
                   <AttributeRow
                     index={index}
                     currentAttr={attr}
-                    allAttrs={entityInfo.attrs}
+                    allAttrs={entityInfo.attrs ?? []}
                     referralEntities={referralEntities}
                     entityInfo={entityInfo}
                     setEntityInfo={setEntityInfo}
@@ -65,7 +65,7 @@ export const AttributesFields: FC<Props> = ({
                 )}
               </Fragment>
             ))}
-            {entityInfo.attrs.filter((attr) => !attr.isDeleted).length ===
+            {entityInfo.attrs?.filter((attr) => !attr.isDeleted).length ===
               0 && (
               <AttributeRow
                 allAttrs={entityInfo.attrs}

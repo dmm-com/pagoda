@@ -51,8 +51,8 @@ export const EntityList: FC<Props> = ({
 }) => {
   const [keyword, setKeyword] = useState(query ?? "");
   const [entityAnchorEls, setEntityAnchorEls] = useState<{
-    [key: number]: HTMLButtonElement;
-  } | null>({});
+    [key: number]: HTMLButtonElement | null;
+  }>({});
   const [openImportModal, setOpenImportModal] = React.useState(false);
 
   return (
@@ -67,7 +67,7 @@ export const EntityList: FC<Props> = ({
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  keyword.length > 0 ? normalizeToMatch(keyword) : undefined
+                  keyword.length > 0 ? normalizeToMatch(keyword) : ""
                 );
             }}
           />

@@ -100,7 +100,7 @@ export const EntryDetailsPage: FC<Props> = ({
         )}
       </AironeBreadcrumbs>
 
-      <PageHeader title={entry.value?.name} description="エントリ詳細">
+      <PageHeader title={entry.value?.name ?? ""} description="エントリ詳細">
         <StyledBox>
           <Stack direction="row" spacing={1}>
             {[

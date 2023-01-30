@@ -87,7 +87,7 @@ export const AttributeRow: FC<Props> = ({
   latestChangedIndex,
   setLatestChangedIndex,
 }) => {
-  const handleAppendAttribute = (nextTo) => {
+  const handleAppendAttribute = (nextTo: number) => {
     allAttrs.splice(nextTo + 1, 0, {
       name: "",
       type: AttributeTypes.string.type,
@@ -153,13 +153,13 @@ export const AttributeRow: FC<Props> = ({
         {index !== undefined && (
           <Input
             type="text"
-            value={currentAttr.name}
+            value={currentAttr?.name}
             placeholder="属性名"
             sx={{ width: "100%" }}
             onChange={(e) =>
               handleChangeAttributeValue(index, "name", e.target.value)
             }
-            error={currentAttr.name === ""}
+            error={currentAttr?.name === ""}
           />
         )}
       </TableCell>
@@ -170,8 +170,8 @@ export const AttributeRow: FC<Props> = ({
             <Box minWidth={100} marginX={1}>
               <Select
                 fullWidth={true}
-                value={currentAttr.type}
-                disabled={currentAttr.id != null}
+                value={currentAttr?.type}
+                disabled={currentAttr?.id != null}
                 onChange={(e) =>
                   handleChangeAttributeValue(index, "type", e.target.value)
                 }
@@ -179,7 +179,7 @@ export const AttributeRow: FC<Props> = ({
                 {attributeTypeMenuItems}
               </Select>
             </Box>
-            {(currentAttr.type & AttributeTypes.object.type) > 0 && (
+            {((currentAttr?.type ?? 0) & AttributeTypes.object.type) > 0 && (
               <Box minWidth={100} marginX={1}>
                 <Typography>エンティティを選択</Typography>
 
@@ -205,7 +205,7 @@ export const AttributeRow: FC<Props> = ({
       <TableCell>
         {index !== undefined && (
           <Checkbox
-            checked={currentAttr.isMandatory}
+            checked={currentAttr?.isMandatory}
             onChange={(e) =>
               handleChangeAttributeValue(index, "isMandatory", e.target.checked)
             }
@@ -216,7 +216,7 @@ export const AttributeRow: FC<Props> = ({
       <TableCell>
         {index !== undefined && (
           <Checkbox
-            checked={currentAttr.isDeleteInChain}
+            checked={currentAttr?.isDeleteInChain}
             onChange={(e) =>
               handleChangeAttributeValue(
                 index,
@@ -258,9 +258,11 @@ export const AttributeRow: FC<Props> = ({
 
       {/* This is a button to add new Attribute */}
       <TableCell>
-        <StyledIconButton onClick={() => handleAppendAttribute(index)}>
-          <AddIcon />
-        </StyledIconButton>
+        {index !== undefined && (
+          <StyledIconButton onClick={() => handleAppendAttribute(index)}>
+            <AddIcon />
+          </StyledIconButton>
+        )}
       </TableCell>
 
       <TableCell>
@@ -270,8 +272,8 @@ export const AttributeRow: FC<Props> = ({
             color="primary"
             startIcon={<GroupIcon />}
             component={Link}
-            to={aclPath(currentAttr.id)}
-            disabled={currentAttr.id == null}
+            to={aclPath(currentAttr?.id ?? 0)}
+            disabled={currentAttr?.id == null}
           >
             ACL
           </StyledButton>

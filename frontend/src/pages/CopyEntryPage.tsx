@@ -62,7 +62,9 @@ export const CopyEntryPage: FC = () => {
   };
 
   const handleCancel = () => {
-    history.replace(entryDetailsPath(entry.value.schema.id, entry.value.id));
+    history.replace(
+      entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0)
+    );
   };
 
   return (
@@ -77,7 +79,7 @@ export const CopyEntryPage: FC = () => {
         <Box sx={{ display: "flex" }}>
           <Typography
             component={Link}
-            to={entityEntriesPath(entry.value.schema.id)}
+            to={entityEntriesPath(entry.value?.schema?.id ?? 0)}
           >
             {entry.value?.schema?.name}
           </Typography>
@@ -86,7 +88,10 @@ export const CopyEntryPage: FC = () => {
         <Box sx={{ display: "flex" }}>
           <Typography
             component={Link}
-            to={entryDetailsPath(entry.value.schema.id, entry.value.id)}
+            to={entryDetailsPath(
+              entry.value?.schema?.id ?? 0,
+              entry.value?.id ?? 0
+            )}
           >
             {entry.value?.name}
           </Typography>
