@@ -66,7 +66,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
           onKeyPress={(e) => {
             if (e.key === "Enter") {
               setKeywordQuery(
-                keyword.length > 0 ? normalizeToMatch(keyword) : undefined
+                keyword.length > 0 ? normalizeToMatch(keyword) : ""
               );
             }
           }}
@@ -99,7 +99,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
           >
             <ListItemButton
               component={Link}
-              to={entryDetailsPath(entry.schema.id, entry.id)}
+              to={entryDetailsPath(entry.schema?.id ?? 0, entry.id)}
             >
               <ListItemText sx={{ px: "16px" }}>{entry.name}</ListItemText>
             </ListItemButton>

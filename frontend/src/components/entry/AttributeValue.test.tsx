@@ -106,7 +106,7 @@ attributes.forEach((attribute) => {
       <AttributeValue
         attrInfo={{
           value: attribute.value as EntryAttributeValue,
-          type: djangoContext.attrTypeValue[attribute.type],
+          type: djangoContext?.attrTypeValue[attribute.type],
         }}
       />
     );
@@ -125,7 +125,7 @@ arrayAttributes.forEach((arrayAttributes) => {
       <AttributeValue
         attrInfo={{
           value: arrayAttributes.value as EntryAttributeValue,
-          type: djangoContext.attrTypeValue[arrayAttributes.type],
+          type: djangoContext?.attrTypeValue[arrayAttributes.type],
         }}
       />
     );

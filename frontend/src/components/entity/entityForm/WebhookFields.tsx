@@ -46,8 +46,8 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
     setEntityInfo({ ...entityInfo });
   };
 
-  const handleAppendWebhook = (nextTo) => {
-    entityInfo.webhooks.splice(nextTo + 1, 0, {
+  const handleAppendWebhook = (nextTo: number) => {
+    entityInfo.webhooks?.splice(nextTo + 1, 0, {
       id: undefined,
       url: "",
       label: "",
@@ -87,13 +87,13 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
   };
 
   const [openModalIndex, setOpenModalIndex] = React.useState(-1);
-  const handleOpenModal = (webhookIndex) => {
+  const handleOpenModal = (webhookIndex: number) => {
     setOpenModalIndex(webhookIndex);
   };
   const handleCloseModal = () => setOpenModalIndex(-1);
 
-  const handleAppendWebhookAdditionalHeader = (nextTo) => {
-    entityInfo.webhooks[openModalIndex]?.headers.splice(nextTo + 1, 0, {
+  const handleAppendWebhookAdditionalHeader = (nextTo: number) => {
+    entityInfo.webhooks?.[openModalIndex]?.headers?.splice(nextTo + 1, 0, {
       headerKey: "",
       headerValue: "",
     });
@@ -101,7 +101,7 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
   };
 
   const handleDeleteWebhookAdditionalHeader = (index: number) => {
-    entityInfo.webhooks[openModalIndex]?.headers.splice(index, 1);
+    entityInfo.webhooks?.[openModalIndex]?.headers?.splice(index, 1);
     setEntityInfo({ ...entityInfo });
   };
 
@@ -125,7 +125,7 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {entityInfo.webhooks.map((webhook, index) => (
+          {entityInfo.webhooks?.map((webhook, index) => (
             <TableRow key={index}>
               {/* TODO show isAvailable ??? */}
               {/* TODO update webhook */}
@@ -184,7 +184,7 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
               )}
             </TableRow>
           ))}
-          {entityInfo.webhooks.filter((webhook) => !webhook.isDeleted)
+          {entityInfo.webhooks?.filter((webhook) => !webhook.isDeleted)
             .length === 0 && (
             <TableRow>
               <TableCell></TableCell>
@@ -215,7 +215,7 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
           </Typography>
           <Table className="table">
             <TableBody>
-              {entityInfo.webhooks[openModalIndex]?.headers.length === 0 && (
+              {entityInfo.webhooks?.[openModalIndex]?.headers?.length === 0 && (
                 <TableRow>
                   <TableCell sx={{ p: "4px 8px 0px 0px", borderBottom: "0px" }}>
                     <TextField
@@ -249,7 +249,7 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
                   </TableCell>
                 </TableRow>
               )}
-              {entityInfo.webhooks[openModalIndex]?.headers.map(
+              {entityInfo.webhooks?.[openModalIndex]?.headers?.map(
                 (header, index) => (
                   <TableRow key={index}>
                     <TableCell

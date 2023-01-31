@@ -140,18 +140,18 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                         if (role.groups.some((u) => u.id == option.id)) {
                           return (
                             <Chip
+                              {...getTagProps({ index })}
                               key={option.id}
                               label={option.name}
                               color="error"
-                              {...getTagProps({ index })}
                             />
                           );
                         } else {
                           return (
                             <Chip
+                              {...getTagProps({ index })}
                               key={option.id}
                               label={option.name}
-                              {...getTagProps({ index })}
                             />
                           );
                         }
@@ -182,18 +182,18 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                         if (role.adminGroups.some((u) => u.id == option.id)) {
                           return (
                             <Chip
+                              {...getTagProps({ index })}
                               key={option.id}
                               label={option.name}
                               color="error"
-                              {...getTagProps({ index })}
                             />
                           );
                         } else {
                           return (
                             <Chip
+                              {...getTagProps({ index })}
                               key={option.id}
                               label={option.name}
-                              {...getTagProps({ index })}
                             />
                           );
                         }
@@ -245,18 +245,18 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                         if (role.users.some((u) => u.id == option.id)) {
                           return (
                             <Chip
+                              {...getTagProps({ index })}
                               key={option.id}
                               label={option.username}
                               color="error"
-                              {...getTagProps({ index })}
                             />
                           );
                         } else {
                           return (
                             <Chip
+                              {...getTagProps({ index })}
                               key={option.id}
                               label={option.username}
-                              {...getTagProps({ index })}
                             />
                           );
                         }
@@ -289,18 +289,18 @@ export const RoleForm: FC<Props> = ({ role, setRole, setSubmittable }) => {
                         if (role.adminUsers.some((u) => u.id == option.id)) {
                           return (
                             <Chip
+                              {...getTagProps({ index })}
                               key={option.id}
                               label={option.username}
                               color="error"
-                              {...getTagProps({ index })}
                             />
                           );
                         } else {
                           return (
                             <Chip
+                              {...getTagProps({ index })}
                               key={option.id}
                               label={option.username}
-                              {...getTagProps({ index })}
                             />
                           );
                         }

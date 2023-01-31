@@ -42,7 +42,7 @@ export const EntityControlMenu: FC<Props> = ({
   const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
 
-  const handleDelete = async (event, entityId: number) => {
+  const handleDelete = async (entityId: number) => {
     await aironeApiClientV2
       .deleteEntity(entityId)
       .then(() => {
@@ -132,7 +132,7 @@ export const EntityControlMenu: FC<Props> = ({
           </MenuItem>
         )}
         dialogTitle="本当に削除しますか？"
-        onClickYes={(e) => handleDelete(e, entityId)}
+        onClickYes={() => handleDelete(entityId)}
       />
     </Menu>
   );

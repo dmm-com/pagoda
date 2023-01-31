@@ -32,19 +32,21 @@ export const EntityForm: FC<Props> = ({
       return false;
     }
     if (
-      entityInfo.attrs.filter((a) => !a.isDeleted).some((a) => a.name === "")
+      entityInfo.attrs?.filter((a) => !a.isDeleted).some((a) => a.name === "")
     ) {
       return false;
     }
 
     const dc = DjangoContext.getInstance();
-    return !entityInfo.attrs
-      .filter((a) => !a.isDeleted)
-      .some(
-        (a) =>
-          (Number(a.type) & Number(dc.attrTypeValue.object)) > 0 &&
-          a.referral.length === 0
-      );
+    return (
+      !entityInfo.attrs
+        ?.filter((a) => !a.isDeleted)
+        .some(
+          (a) =>
+            (Number(a.type) & Number(dc?.attrTypeValue.object)) > 0 &&
+            a.referral?.length === 0
+        ) ?? true
+    );
   };
 
   useEffect(() => {
@@ -60,7 +62,7 @@ export const EntityForm: FC<Props> = ({
       <AttributesFields
         entityInfo={entityInfo}
         setEntityInfo={setEntityInfo}
-        referralEntities={referralEntities}
+        referralEntities={referralEntities ?? []}
       />
     </StyledBox>
   );

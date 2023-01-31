@@ -79,7 +79,7 @@ export const EntryHistoryListPage: FC = () => {
         <Typography color="textPrimary">変更履歴</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title={entry.value?.name} description="変更履歴">
+      <PageHeader title={entry.value?.name ?? ""} description="変更履歴">
         <Box width="50px">
           <IconButton
             onClick={(e) => {

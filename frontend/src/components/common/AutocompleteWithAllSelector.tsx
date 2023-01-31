@@ -10,7 +10,7 @@ import {
   FilterOptionsState,
 } from "@mui/material";
 import { AutocompleteProps } from "@mui/material/Autocomplete/Autocomplete";
-import React, { SyntheticEvent, useMemo, useRef } from "react";
+import React, { HTMLAttributes, SyntheticEvent, useMemo, useRef } from "react";
 
 type SelectorOption = "select-all" | "remove-all";
 
@@ -75,6 +75,8 @@ export const AutocompleteWithAllSelector = <
     >,
     reason: AutocompleteChangeReason
   ): void => {
+    if (onChange == null) return;
+
     if (value.find((v) => v === "select-all") != null) {
       const newValueBase = value.filter((v) => v !== "select-all");
       const newElements = filterOptionResult.current.results.filter(
@@ -88,7 +90,10 @@ export const AutocompleteWithAllSelector = <
     }
   };
 
-  const optionRenderer = (props, option: T | SelectorOption) => {
+  const optionRenderer = (
+    props: HTMLAttributes<HTMLLIElement>,
+    option: T | SelectorOption
+  ) => {
     switch (option) {
       case "select-all":
       case "remove-all":
@@ -106,7 +111,7 @@ export const AutocompleteWithAllSelector = <
   const filterOptions = (
     options: Array<T | SelectorOption>,
     params: FilterOptionsState<T | SelectorOption>
-  ) => {
+  ): (T | SelectorOption)[] => {
     const filtered = filter(options, params);
 
     if (filterOptionResult.current.query !== params.inputValue) {
@@ -116,9 +121,11 @@ export const AutocompleteWithAllSelector = <
       };
     }
 
-    const allSelector = (() => {
+    const allSelector: SelectorOption[] = (() => {
       if (options.length > 0) {
-        return allSelected ? ["remove-all"] : ["select-all"];
+        return (
+          allSelected ? ["remove-all"] : ["select-all"]
+        ) as SelectorOption[];
       } else {
         return [];
       }
