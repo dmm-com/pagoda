@@ -104,7 +104,7 @@ export const AutocompleteWithAllSelector = <
           </li>
         );
       default:
-        return <li {...props}>{option}</li>;
+        return <li {...props}>{option as string}</li>;
     }
   };
 
