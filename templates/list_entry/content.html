@@ -21,8 +21,10 @@
               <div class="dropdown-menu" aria-labelledby="showOrderMenu">
                 <a class="dropdown-item {{config.entry.SORT_ORDER.name}}" href="/entry/{{ entity.id }}/?sort_order={{ config.entry.SORT_ORDER.name }}">エントリ名</a>
                 <a class="dropdown-item {{ config.entry.SORT_ORDER.name_reverse }}" href="/entry/{{ entity.id }}/?sort_order={{ config.entry.SORT_ORDER.name_reverse }}">エントリ名(逆順)</a>
-                <a class="dropdown-item {{ config.entry.SORT_ORDER.time }}" href="/entry/{{ entity.id }}/?sort_order={{ config.entry.SORT_ORDER.time }}">更新日時</a>
-                <a class="dropdown-item {{ config.entry.SORT_ORDER.time_reverse }}" href="/entry/{{ entity.id }}/?sort_order={{ config.entry.SORT_ORDER.time_reverse }}">更新日時(逆順)</a>
+                <a class="dropdown-item {{ config.entry.SORT_ORDER.updated_time }}" href="/entry/{{ entity.id }}/?sort_order={{ config.entry.SORT_ORDER.updated_time }}">更新日時</a>
+                <a class="dropdown-item {{ config.entry.SORT_ORDER.updated_time_reverse }}" href="/entry/{{ entity.id }}/?sort_order={{ config.entry.SORT_ORDER.updated_time_reverse }}">更新日時(逆順)</a>
+                <a class="dropdown-item {{ config.entry.SORT_ORDER.created_time }}" href="/entry/{{ entity.id }}/?sort_order={{ config.entry.SORT_ORDER.created_time }}">作成日時</a>
+                <a class="dropdown-item {{ config.entry.SORT_ORDER.created_time_reverse }}" href="/entry/{{ entity.id }}/?sort_order={{ config.entry.SORT_ORDER.created_time_reverse }}">作成日時(逆順)</a>
               </div>
             </div>
           </th>

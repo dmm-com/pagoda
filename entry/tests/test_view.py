@@ -315,6 +315,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.count(), 1)
         self.assertEqual(entry.attrs.last(), Attribute.objects.last())
         self.assertEqual(entry.attrs.last().values.count(), 1)
+        self.assertIsNotNone(entry.created_time)
 
         # tests for historical-record
         self.assertEqual(entry.history.count(), 1)
@@ -767,6 +768,12 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="fuga", schema=entity, created_user=user)
         entry.complement_attrs(user)
 
+        # save time parameters to check that
+        # - entry.created_time won't be changed
+        # - entry.updated_time would be changed
+        init_created_time = entry.created_time
+        init_updated_time = entry.updated_time
+
         for attr in entry.attrs.all():
             attr.add_value(user, "hoge")
 
@@ -807,7 +814,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Attribute.objects.get(name="bar").values.count(), 2)
         self.assertEqual(Attribute.objects.get(name="foo").values.last().value, "hoge")
         self.assertEqual(Attribute.objects.get(name="bar").values.last().value, "fuga")
-        self.assertEqual(Entry.objects.get(id=entry.id).name, "hoge")
+
+        entry.refresh_from_db()
+        self.assertEqual(entry.name, "hoge")
+        self.assertEqual(entry.created_time, init_created_time)
+        self.assertNotEqual(entry.updated_time, init_updated_time)
 
         # tests for historical records for Entry,
         self.assertEqual(
