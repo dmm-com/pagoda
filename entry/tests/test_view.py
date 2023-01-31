@@ -91,28 +91,46 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         # create Entries (e1, e2 and e3) for using this test
-        for num in range(1, 4):
-            Entry.objects.create(name="e%d" % num, schema=self._entity, created_user=user)
+        entries = [
+            Entry.objects.create(name="e%d" % n, schema=self._entity, created_user=user)
+            for n in range(1, 4)
+        ]
 
         # create Entry e0 with a different time for checking sort-order
         Entry.objects.create(name="e0", schema=self._entity, created_user=user)
 
+        # update Entry e1 after creating Entry e0
+        resp = self.client.post(
+            reverse("entry:do_edit", args=[entries[0].id]),
+            json.dumps({"entry_name": "e1-changed", "attrs": []}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
         TEST_PARAMS = [
             {
                 "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["name"],
-                "expected_order": ["e0", "e1", "e2", "e3"],
+                "expected_order": ["e0", "e1-changed", "e2", "e3"],
             },
             {
                 "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["name_reverse"],
-                "expected_order": ["e3", "e2", "e1", "e0"],
+                "expected_order": ["e3", "e2", "e1-changed", "e0"],
             },
             {
-                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["time"],
-                "expected_order": ["e1", "e2", "e3", "e0"],
+                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["updated_time"],
+                "expected_order": ["e2", "e3", "e0", "e1-changed"],
             },
             {
-                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["time_reverse"],
-                "expected_order": ["e0", "e3", "e2", "e1"],
+                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["updated_time_reverse"],
+                "expected_order": ["e1-changed", "e0", "e3", "e2"],
+            },
+            {
+                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["created_time"],
+                "expected_order": ["e1-changed", "e2", "e3", "e0"],
+            },
+            {
+                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["created_time_reverse"],
+                "expected_order": ["e0", "e3", "e2", "e1-changed"],
             },
         ]
         for param in TEST_PARAMS:
