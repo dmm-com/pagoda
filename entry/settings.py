@@ -10,8 +10,10 @@ CONFIG = Settings(
             "SORT_ORDER": {
                 "name": "name",
                 "name_reverse": "name_reverse",
-                "time": "time",
-                "time_reverse": "time_reverse",
+                "updated_time": "updated_time",
+                "updated_time_reverse": "updated_time_reverse",
+                "created_time": "created_time",
+                "created_time_reverse": "created_time_reverse",
             },
         },
         "DEFAULT_LIST_SORT_ORDER": "name",

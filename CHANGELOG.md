@@ -3,6 +3,8 @@
 ## In development
 
 ### Added
+* Added feature to be able to sort Entries by created time order at list page
+  Contributed by @userlocalhost
 
 ### Changed
 

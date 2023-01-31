@@ -91,28 +91,46 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         # create Entries (e1, e2 and e3) for using this test
-        for num in range(1, 4):
-            Entry.objects.create(name="e%d" % num, schema=self._entity, created_user=user)
+        entries = [
+            Entry.objects.create(name="e%d" % n, schema=self._entity, created_user=user)
+            for n in range(1, 4)
+        ]
 
         # create Entry e0 with a different time for checking sort-order
         Entry.objects.create(name="e0", schema=self._entity, created_user=user)
 
+        # update Entry e1 after creating Entry e0
+        resp = self.client.post(
+            reverse("entry:do_edit", args=[entries[0].id]),
+            json.dumps({"entry_name": "e1-changed", "attrs": []}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
         TEST_PARAMS = [
             {
                 "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["name"],
-                "expected_order": ["e0", "e1", "e2", "e3"],
+                "expected_order": ["e0", "e1-changed", "e2", "e3"],
             },
             {
                 "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["name_reverse"],
-                "expected_order": ["e3", "e2", "e1", "e0"],
+                "expected_order": ["e3", "e2", "e1-changed", "e0"],
             },
             {
-                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["time"],
-                "expected_order": ["e1", "e2", "e3", "e0"],
+                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["updated_time"],
+                "expected_order": ["e2", "e3", "e0", "e1-changed"],
             },
             {
-                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["time_reverse"],
-                "expected_order": ["e0", "e3", "e2", "e1"],
+                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["updated_time_reverse"],
+                "expected_order": ["e1-changed", "e0", "e3", "e2"],
+            },
+            {
+                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["created_time"],
+                "expected_order": ["e1-changed", "e2", "e3", "e0"],
+            },
+            {
+                "sort_order": ENTRY_CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["created_time_reverse"],
+                "expected_order": ["e0", "e3", "e2", "e1-changed"],
             },
         ]
         for param in TEST_PARAMS:
@@ -315,6 +333,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.attrs.count(), 1)
         self.assertEqual(entry.attrs.last(), Attribute.objects.last())
         self.assertEqual(entry.attrs.last().values.count(), 1)
+        self.assertIsNotNone(entry.created_time)
 
         # tests for historical-record
         self.assertEqual(entry.history.count(), 1)
@@ -767,6 +786,12 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="fuga", schema=entity, created_user=user)
         entry.complement_attrs(user)
 
+        # save time parameters to check that
+        # - entry.created_time won't be changed
+        # - entry.updated_time would be changed
+        init_created_time = entry.created_time
+        init_updated_time = entry.updated_time
+
         for attr in entry.attrs.all():
             attr.add_value(user, "hoge")
 
@@ -807,7 +832,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Attribute.objects.get(name="bar").values.count(), 2)
         self.assertEqual(Attribute.objects.get(name="foo").values.last().value, "hoge")
         self.assertEqual(Attribute.objects.get(name="bar").values.last().value, "fuga")
-        self.assertEqual(Entry.objects.get(id=entry.id).name, "hoge")
+
+        entry.refresh_from_db()
+        self.assertEqual(entry.name, "hoge")
+        self.assertEqual(entry.created_time, init_created_time)
+        self.assertNotEqual(entry.updated_time, init_updated_time)
 
         # tests for historical records for Entry,
         self.assertEqual(
