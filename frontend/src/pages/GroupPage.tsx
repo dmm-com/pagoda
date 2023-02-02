@@ -17,7 +17,7 @@ import { SearchBox } from "../components/common/SearchBox";
 import { GroupControlMenu } from "../components/group/GroupControlMenu";
 import { GroupImportModal } from "../components/group/GroupImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
-import { DjangoContext } from "../utils/DjangoContext";
+import { DjangoContext } from "../services/DjangoContext";
 
 import { newGroupPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";

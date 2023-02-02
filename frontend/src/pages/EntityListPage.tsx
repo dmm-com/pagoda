@@ -6,7 +6,7 @@ import { useAsync } from "react-use";
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { EntityImportModal } from "../components/entity/EntityImportModal";
 import { usePage } from "../hooks/usePage";
-import { EntityList as ConstEntityList } from "../utils/Constants";
+import { EntityList as ConstEntityList } from "../services/Constants";
 
 import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";

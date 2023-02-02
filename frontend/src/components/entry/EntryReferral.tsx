@@ -14,8 +14,8 @@ import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
 import { usePage } from "../../hooks/usePage";
-import { EntryReferralList } from "../../utils/Constants";
-import { normalizeToMatch } from "../../utils/StringUtil";
+import { EntryReferralList } from "../../services/Constants";
+import { normalizeToMatch } from "../../services/StringUtil";
 
 import { entryDetailsPath } from "Routes";
 import { SearchBox } from "components/common/SearchBox";

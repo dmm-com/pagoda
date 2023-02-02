@@ -5,7 +5,7 @@ import React, { FC, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
-import { DjangoContext } from "../../utils/DjangoContext";
+import { DjangoContext } from "../../services/DjangoContext";
 
 import { loginPath, topPath, usersPath } from "Routes";
 

@@ -24,7 +24,7 @@ import {
 import { EditableEntryAttrs } from "./EditableEntry";
 
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
-import { DjangoContext } from "utils/DjangoContext";
+import { DjangoContext } from "services/DjangoContext";
 
 interface CommonProps {
   attrName: string;

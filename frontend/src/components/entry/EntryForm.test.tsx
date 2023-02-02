@@ -6,7 +6,7 @@ import { render } from "@testing-library/react";
 import React from "react";
 
 import { EntryForm } from "components/entry/EntryForm";
-import { TestWrapper } from "utils/TestWrapper";
+import { TestWrapper } from "services/TestWrapper";
 
 test("should render a component with essential props", function () {
   const entryInfo = { name: "test entry", attrs: {} };

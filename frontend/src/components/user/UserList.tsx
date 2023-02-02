@@ -18,14 +18,14 @@ import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
 import { usePage } from "../../hooks/usePage";
-import { normalizeToMatch } from "../../utils/StringUtil";
+import { normalizeToMatch } from "../../services/StringUtil";
 import { Loading } from "../common/Loading";
 import { SearchBox } from "../common/SearchBox";
 
 import { UserControlMenu } from "./UserControlMenu";
 
 import { newUserPath, userPath } from "Routes";
-import { UserList as ConstUserList } from "utils/Constants";
+import { UserList as ConstUserList } from "services/Constants";
 
 export const UserList: FC = ({}) => {
   const location = useLocation();

@@ -20,7 +20,7 @@ import React, { FC } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 
 import { AironeUserProps } from "pages/EditUserPage";
-import { DjangoContext } from "utils/DjangoContext";
+import { DjangoContext } from "services/DjangoContext";
 
 interface Props {
   userInfo: AironeUserProps;

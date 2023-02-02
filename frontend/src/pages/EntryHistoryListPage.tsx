@@ -17,7 +17,7 @@ import { EntryControlMenu } from "../components/entry/EntryControlMenu";
 import { EntryHistoryList } from "../components/entry/EntryHistoryList";
 import { usePage } from "../hooks/usePage";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { EntryHistoryList as ConstEntryHistoryList } from "../utils/Constants";
+import { EntryHistoryList as ConstEntryHistoryList } from "../services/Constants";
 
 import { PageHeader } from "components/common/PageHeader";
 

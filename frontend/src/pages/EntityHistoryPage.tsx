@@ -12,7 +12,7 @@ import { EntryImportModal } from "../components/entry/EntryImportModal";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { usePage } from "../hooks/usePage";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { EntityHistoryList as ConstEntityHistoryList } from "../utils/Constants";
+import { EntityHistoryList as ConstEntityHistoryList } from "../services/Constants";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";

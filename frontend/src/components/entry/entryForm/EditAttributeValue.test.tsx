@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import React from "react";
 
-import { DjangoContext } from "../../../utils/DjangoContext";
+import { DjangoContext } from "../../../services/DjangoContext";
 
 import { EditAttributeValue } from "./EditAttributeValue";
 import { EditableEntryAttrValue } from "./EditableEntry";

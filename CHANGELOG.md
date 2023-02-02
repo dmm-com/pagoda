@@ -7,6 +7,10 @@
   Contributed by @userlocalhost
 
 ### Changed
+* The first prototype of decoupling frontend implementation from
+  presentation to service layer that only has JavaScript processing
+  for increasing maintenancability.
+  Contributed by @hinashi, @syucream, @userlocalhost
 
 ### Fixed
 
