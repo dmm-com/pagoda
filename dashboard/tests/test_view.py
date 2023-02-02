@@ -1367,7 +1367,7 @@ class ViewTest(AironeViewTest):
         updated_entry = entry_another_ref.get_referred_objects().first()
         self.assertEqual(updated_entry.name, resp_data["Entity-1"][0]["name"])
 
-        for (attr_name, value_info) in new_attr_values.items():
+        for attr_name, value_info in new_attr_values.items():
             attrv = updated_entry.attrs.get(name=attr_name).get_latest_value()
 
             if attr_name == "str":

@@ -24,7 +24,7 @@ def _csv_export(job, values, recv_data, has_referral):
     else:
         writer.writerow(["Name"] + ["Entity"] + [x["name"] for x in recv_data["attrinfo"]])
 
-    for (index, entry_info) in enumerate(values):
+    for index, entry_info in enumerate(values):
         line_data = [entry_info["entry"]["name"]]
 
         # Abort processing when job is canceled
@@ -60,7 +60,6 @@ def _csv_export(job, values, recv_data, has_referral):
                 or vtype == AttrTypeValue["boolean"]
                 or vtype == AttrTypeValue["date"]
             ):
-
                 line_data.append(str(vval))
 
             elif (
@@ -68,16 +67,13 @@ def _csv_export(job, values, recv_data, has_referral):
                 or vtype == AttrTypeValue["group"]
                 or vtype == AttrTypeValue["role"]
             ):
-
                 line_data.append(str(vval["name"]))
 
             elif vtype == AttrTypeValue["named_object"]:
-
                 [(k, v)] = vval.items()
                 line_data.append("%s: %s" % (k, v["name"]))
 
             elif vtype == AttrTypeValue["array_string"]:
-
                 line_data.append("\n".join(natsorted(vval)))
 
             elif (
@@ -85,11 +81,9 @@ def _csv_export(job, values, recv_data, has_referral):
                 or vtype == AttrTypeValue["array_group"]
                 or vtype == AttrTypeValue["array_role"]
             ):
-
                 line_data.append("\n".join(natsorted([x["name"] for x in vval])))
 
             elif vtype == AttrTypeValue["array_named_object"]:
-
                 items = []
                 for vset in vval:
                     [(k, v)] = vset.items()
@@ -130,7 +124,7 @@ def _yaml_export(job, values, recv_data, has_referral):
             return value
 
     resp_data = {}
-    for (index, entry_info) in enumerate(values):
+    for index, entry_info in enumerate(values):
         data = {
             "name": entry_info["entry"]["name"],
             "attrs": {},
