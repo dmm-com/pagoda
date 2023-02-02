@@ -94,7 +94,7 @@ export function isSubmittable(entryInfo: EditableEntry): boolean {
       [
         // TODO support role-like types
         attr[1].type === djangoContext?.attrTypeValue.boolean,
-        attr[1].value.asString !== "",
+        attr[1].value.asString?.length,
         attr[1].value.asObject,
         attr[1].value.asGroup,
         Object.keys(attr[1].value.asNamedObject ?? {})[0] &&

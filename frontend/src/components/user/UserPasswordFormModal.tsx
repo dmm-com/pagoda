@@ -9,7 +9,7 @@ import { DjangoContext } from "../../services/DjangoContext";
 
 import { loginPath, topPath, usersPath } from "Routes";
 
-const StyledModal = styled(Modal)(({ }) => ({
+const StyledModal = styled(Modal)(({}) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",

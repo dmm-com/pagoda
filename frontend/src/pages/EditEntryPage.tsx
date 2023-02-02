@@ -11,7 +11,6 @@ import { PageHeader } from "../components/common/PageHeader";
 import { EditableEntry } from "../components/entry/entryForm/EditableEntry";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { ExtractAPIErrorMessage } from "../services/AironeAPIErrorUtil";
-import { DjangoContext } from "../services/DjangoContext";
 
 import {
   entitiesPath,

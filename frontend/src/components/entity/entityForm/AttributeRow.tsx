@@ -40,7 +40,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
   margin: theme.spacing(1),
 })) as OverridableComponent<ExtendButtonBaseTypeMap<ButtonTypeMap>>;
 
-const NormalTableRow = styled(TableRow)(({ }) => ({
+const NormalTableRow = styled(TableRow)(({}) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: "white",
   },
@@ -49,7 +49,7 @@ const NormalTableRow = styled(TableRow)(({ }) => ({
   },
 }));
 
-const HighlightedTableRow = styled(TableRow)(({ }) => ({
+const HighlightedTableRow = styled(TableRow)(({}) => ({
   "@keyframes highlighted": {
     from: {
       backgroundColor: "#6B8998",

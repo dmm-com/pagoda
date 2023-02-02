@@ -40,7 +40,7 @@ interface Props {
   initialKeyword?: string | null;
 }
 
-const StyledModal = styled(Modal)(({ }) => ({
+const StyledModal = styled(Modal)(({}) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",

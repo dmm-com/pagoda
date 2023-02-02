@@ -49,7 +49,7 @@ import {
 import { postLogout } from "services/AironeAPIClient";
 import { DjangoContext } from "services/DjangoContext";
 
-const Frame = styled(Box)(({ }) => ({
+const Frame = styled(Box)(({}) => ({
   width: "100%",
   height: "56px",
 }));
@@ -67,21 +67,21 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
   maxWidth: theme.breakpoints.values.lg,
 }));
 
-const StyledToolbar = styled(Toolbar)(({ }) => ({
+const StyledToolbar = styled(Toolbar)(({}) => ({
   height: "56px",
 }));
 
-const TitleBox = styled(Box)(({ }) => ({
+const TitleBox = styled(Box)(({}) => ({
   display: "flex",
   alignItems: "center",
 }));
 
-const Title = styled(Typography)(({ }) => ({
+const Title = styled(Typography)(({}) => ({
   color: "white",
   textDecoration: "none",
 })) as OverridableComponent<TypographyTypeMap>;
 
-const Version = styled(Typography)(({ }) => ({
+const Version = styled(Typography)(({}) => ({
   color: "#FFFFFF8A",
   paddingLeft: "20px",
   maxWidth: "64px",
@@ -90,7 +90,7 @@ const Version = styled(Typography)(({ }) => ({
   whiteSpace: "nowrap",
 }));
 
-const MenuBox = styled(Box)(({ }) => ({
+const MenuBox = styled(Box)(({}) => ({
   flexGrow: 1,
   display: "flex",
   color: "white",
@@ -105,7 +105,7 @@ const MenuBox = styled(Box)(({ }) => ({
   },
 }));
 
-const SearchBoxWrapper = styled(Box)(({ }) => ({
+const SearchBoxWrapper = styled(Box)(({}) => ({
   display: "flex",
   alignItems: "center",
   width: "240px",
@@ -227,7 +227,7 @@ export const Header: FC = () => {
                     <MenuItem key={job.id}>
                       {(job.operation == JobOperations.EXPORT_ENTRY ||
                         job.operation == JobOperations.EXPORT_SEARCH_RESULT) &&
-                        job.status == JobStatuses.DONE ? (
+                      job.status == JobStatuses.DONE ? (
                         <a href={`/job/download/${job.id}`}>
                           {jobTargetLabel(job)}
                         </a>

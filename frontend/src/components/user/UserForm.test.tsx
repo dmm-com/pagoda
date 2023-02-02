@@ -43,8 +43,8 @@ test("should render a component with essential props", function () {
       <UserForm
         userInfo={userInfo}
         setUserInfo={setUserInfo}
-        handleSubmit={() => { }}
-        handleCancel={() => { }}
+        handleSubmit={() => {}}
+        handleCancel={() => {}}
       />,
       {
         wrapper: TestWrapper,

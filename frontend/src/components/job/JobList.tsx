@@ -21,7 +21,7 @@ import { formatDate } from "../../services/DateUtil";
 import { jobOperationLabel } from "../../services/JobUtil";
 import { Confirmable } from "../common/Confirmable";
 
-const StyledTableRow = styled(TableRow)(({ }) => ({
+const StyledTableRow = styled(TableRow)(({}) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: "white",
   },
@@ -221,35 +221,35 @@ export const JobList: FC<Props> = ({ jobs }) => {
                     JobStatuses.PROCESSING,
                     JobStatuses.CANCELED,
                   ].includes(job.status) && (
-                      <Button
-                        variant="contained"
-                        color="error"
-                        sx={{ my: "4px" }}
-                        onClick={() => handleRerun(job.id)}
-                      >
-                        再実行
-                      </Button>
-                    )}
+                    <Button
+                      variant="contained"
+                      color="error"
+                      sx={{ my: "4px" }}
+                      onClick={() => handleRerun(job.id)}
+                    >
+                      再実行
+                    </Button>
+                  )}
                   {![
                     JobStatuses.DONE,
                     JobStatuses.ERROR,
                     JobStatuses.CANCELED,
                   ].includes(job.status) && (
-                      <Confirmable
-                        componentGenerator={(handleOpen) => (
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            sx={{ my: "4px" }}
-                            onClick={handleOpen}
-                          >
-                            キャンセル
-                          </Button>
-                        )}
-                        dialogTitle="本当にキャンセルしますか？"
-                        onClickYes={() => handleCancel(job.id)}
-                      />
-                    )}
+                    <Confirmable
+                      componentGenerator={(handleOpen) => (
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          sx={{ my: "4px" }}
+                          onClick={handleOpen}
+                        >
+                          キャンセル
+                        </Button>
+                      )}
+                      dialogTitle="本当にキャンセルしますか？"
+                      onClickYes={() => handleCancel(job.id)}
+                    />
+                  )}
                 </Box>
               </Box>
             </TableCell>
@@ -266,7 +266,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
               {(job.operation == JobOperations.EXPORT_ENTRY ||
                 job.operation == JobOperations.EXPORT_SEARCH_RESULT ||
                 job.operation == JobOperations.EXPORT_ENTRY_V2) &&
-                job.status == JobStatuses.DONE ? (
+              job.status == JobStatuses.DONE ? (
                 <MuiLink href={`/job/download/${job.id}`}>Download</MuiLink>
               ) : (
                 <Typography>{job.text}</Typography>

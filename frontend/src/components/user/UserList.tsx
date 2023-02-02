@@ -27,7 +27,7 @@ import { UserControlMenu } from "./UserControlMenu";
 import { newUserPath, userPath } from "Routes";
 import { UserList as ConstUserList } from "services/Constants";
 
-export const UserList: FC = ({ }) => {
+export const UserList: FC = ({}) => {
   const location = useLocation();
   const history = useHistory();
 

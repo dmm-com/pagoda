@@ -17,7 +17,7 @@ import { DjangoContext } from "../../services/DjangoContext";
 
 import { GroupTreeItem } from "./GroupTreeItem";
 
-const StyledListItem = styled(ListItem)(({ }) => ({
+const StyledListItem = styled(ListItem)(({}) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: "white",
   },

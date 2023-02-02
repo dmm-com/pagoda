@@ -2,6 +2,15 @@
  * @jest-environment jsdom
  */
 
+Object.defineProperty(window, "django_context", {
+  value: {
+    user: {
+      isSuperuser: true,
+    },
+  },
+  writable: false,
+});
+
 import {
   EditableEntry,
   EditableEntryAttrs,
@@ -12,14 +21,6 @@ import { initializeEntryInfo, isSubmittable } from "./Edit";
 
 import { DjangoContext } from "services/DjangoContext";
 
-Object.defineProperty(window, "django_context", {
-  value: {
-    user: {
-      isSuperuser: true,
-    },
-  },
-  writable: false,
-});
 const djangoContext = DjangoContext.getInstance();
 
 test("initializeEntryInfo should return expect value", () => {
@@ -127,7 +128,7 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
       type: djangoContext?.attrTypeValue.named_object,
       value: {
         asNamedObject: {
-          name1: {
+          hoge: {
             id: 1,
             name: "test_object",
             schema: {
@@ -218,10 +219,135 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
   });
 });
 
-test("isSubmittable() returns true when entryInfo is not changed", () => {
-  // TBD
-});
+test("isSubmittable() returns false when entryInfo is wrong value", () => {
+  const cases: Array<{ type: number; value: EditableEntryAttrValue }> = [
+    // string
+    {
+      type: djangoContext?.attrTypeValue.string,
+      value: {
+        asString: "",
+      },
+    },
+    // object
+    {
+      type: djangoContext?.attrTypeValue.object,
+      value: {},
+    },
+    // group
+    {
+      type: djangoContext?.attrTypeValue.group,
+      value: {},
+    },
+    // named_object
+    {
+      type: djangoContext?.attrTypeValue.named_object,
+      value: {
+        asNamedObject: {
+          "": {
+            id: 1,
+            name: "test_object",
+            schema: {
+              id: 1,
+              name: "test_schema",
+            },
+            _boolean: false,
+          },
+        },
+      },
+    },
+    // TODO case object is none
+    /*
+    {
+      type: djangoContext?.attrTypeValue.named_object,
+      value: {
+        asNamedObject: {
+          name1: {}
+        },
+      },
+    },
+    */
+    // array_string
+    {
+      type: djangoContext?.attrTypeValue.array_string,
+      value: {
+        asArrayString: [],
+      },
+    },
+    // array_object
+    {
+      type: djangoContext?.attrTypeValue.array_object,
+      value: {
+        asArrayObject: [],
+      },
+    },
+    // array_group
+    {
+      type: djangoContext?.attrTypeValue.array_group,
+      value: {
+        asArrayGroup: [],
+      },
+    },
+    // named_object
+    {
+      type: djangoContext?.attrTypeValue.array_named_object,
+      value: {
+        asArrayNamedObject: [],
+      },
+    },
+    {
+      type: djangoContext?.attrTypeValue.array_named_object,
+      value: {
+        asArrayNamedObject: [
+          {
+            "": {
+              id: 1,
+              name: "test_object",
+              schema: {
+                id: 1,
+                name: "test_schema",
+              },
+              _boolean: false,
+            },
+          },
+        ],
+      },
+    },
+    // TODO case object is none
+    /*
+    {
+      type: djangoContext?.attrTypeValue.array_named_object,
+      value: {
+        asArrayNamedObject: [
+          {
+            name1: {}
+          },
+        ],
+      },
+    },
+    */
 
+    // TODO role
+    // TODO array_role
+  ];
+
+  cases.forEach((c) => {
+    const attrs: Record<string, EditableEntryAttrs> = {
+      key: {
+        id: 1,
+        type: c.type,
+        isMandatory: true,
+        schema: {
+          id: 1,
+          name: "test_schema",
+        },
+        value: c.value,
+      },
+    };
+    const entryInfo: EditableEntry = { name: "test_entry", attrs: attrs };
+    console.log("entryInfo", entryInfo);
+    expect(isSubmittable(entryInfo)).toStrictEqual(false);
+  });
+});
 test("convertAttrsFormatCtoS() returns expected value", () => {
   // TBD
 });
