@@ -14,12 +14,11 @@ import {
 } from "@mui/material";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
+import { postLogin } from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 import { PasswordResetConfirmModal } from "../components/user/PasswordResetConfirmModal";
 import { PasswordResetModal } from "../components/user/PasswordResetModal";
-
-import { postLogin } from "utils/AironeAPIClient";
-import { DjangoContext } from "utils/DjangoContext";
 
 export const LoginPage: FC = () => {
   const djangoContext = DjangoContext.getInstance();
@@ -109,7 +108,7 @@ export const LoginPage: FC = () => {
           {djangoContext?.title}
         </Typography>
         <Typography variant="subtitle2" mt={2}>
-          仮想マシンや各機材を検索することができる情報管理システム。
+          {djangoContext?.subTitle}
         </Typography>
         <Box width={500} height={50} mt={2}>
           {isAlert ? (
@@ -164,7 +163,11 @@ export const LoginPage: FC = () => {
             value={djangoContext?.loginNext}
           />
           <Box display="flex" flexDirection="column" width="100%" my="8px">
-            <Link color="secondary" sx={{ cursor: "pointer" }}>
+            <Link
+              color="secondary"
+              sx={{ cursor: "pointer" }}
+              href={djangoContext?.noteLink}
+            >
               <InfoIcon
                 sx={{
                   fontSize: "14px",
@@ -172,7 +175,7 @@ export const LoginPage: FC = () => {
                 }}
               />
               <Typography fontSize="16px" ml={1} display="inline">
-                ユーザネーム、パスワードが分からない
+                {djangoContext?.noteDesc}
               </Typography>
             </Link>
             <Link

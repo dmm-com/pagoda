@@ -18,9 +18,7 @@ Object {
           </h1>
           <h6
             class="MuiTypography-root MuiTypography-subtitle2 css-jpb38c-MuiTypography-root"
-          >
-            仮想マシンや各機材を検索することができる情報管理システム。
-          </h6>
+          />
           <div
             class="MuiBox-root css-4ubqiz"
           />
@@ -153,9 +151,7 @@ Object {
                 </svg>
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-11fipy7-MuiTypography-root"
-                >
-                  ユーザネーム、パスワードが分からない
-                </p>
+                />
               </a>
               <a
                 class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1cep7cv-MuiTypography-root-MuiLink-root"
@@ -207,9 +203,7 @@ Object {
         </h1>
         <h6
           class="MuiTypography-root MuiTypography-subtitle2 css-jpb38c-MuiTypography-root"
-        >
-          仮想マシンや各機材を検索することができる情報管理システム。
-        </h6>
+        />
         <div
           class="MuiBox-root css-4ubqiz"
         />
@@ -342,9 +336,7 @@ Object {
               </svg>
               <p
                 class="MuiTypography-root MuiTypography-body1 css-11fipy7-MuiTypography-root"
-              >
-                ユーザネーム、パスワードが分からない
-              </p>
+              />
             </a>
             <a
               class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1cep7cv-MuiTypography-root-MuiLink-root"
