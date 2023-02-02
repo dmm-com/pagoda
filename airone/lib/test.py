@@ -24,7 +24,6 @@ from .elasticsearch import ESS
     }
 )
 class AironeTestCase(TestCase):
-
     ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY = [
         {"name": "val", "type": AttrTypeValue["string"]},
         {"name": "vals", "type": AttrTypeValue["array_string"]},
@@ -112,7 +111,7 @@ class AironeTestCase(TestCase):
         )
         entry.complement_attrs(user)
 
-        for (attrname, value) in values.items():
+        for attrname, value in values.items():
             attr = entry.attrs.get(schema__name=attrname)
             attr.add_value(user, value)
 

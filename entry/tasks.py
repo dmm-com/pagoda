@@ -113,7 +113,7 @@ def _do_import_entries(job: Job):
     total_count = len(import_data)
 
     # create or update entry
-    for (index, entry_data) in enumerate(import_data):
+    for index, entry_data in enumerate(import_data):
         job_notify: Optional[Job] = None
         job.text = "Now importing... (progress: [%5d/%5d] for %s)" % (
             index + 1,
@@ -432,7 +432,7 @@ def copy_entry(self, job_id):
 
         params = json.loads(job.params)
         total_count = len(params["new_name_list"])
-        for (index, new_name) in enumerate(params["new_name_list"]):
+        for index, new_name in enumerate(params["new_name_list"]):
             # abort processing when job is canceled
             if job.is_canceled():
                 job.text = "Copy completed [%5d/%5d]" % (index, total_count)

@@ -83,7 +83,7 @@ class APITest(AironeViewTest):
         }
 
         # register all attributes which are declared as test_attrs
-        for (name, info) in self.test_attrs.items():
+        for name, info in self.test_attrs.items():
             attr = EntityAttr.objects.create(
                 name=name,
                 type=info["type"],
@@ -101,7 +101,7 @@ class APITest(AironeViewTest):
         entry = Entry.objects.create(name="entry", schema=self.entity, created_user=self.user)
         entry.complement_attrs(self.user)
 
-        for (name, info) in self.test_attrs.items():
+        for name, info in self.test_attrs.items():
             # set values for each attributes
             attr = entry.attrs.get(schema__name=name)
             for value in info["set_values"]:
@@ -150,7 +150,7 @@ class APITest(AironeViewTest):
         entry = Entry.objects.create(name="entry", schema=self.entity, created_user=self.user)
         entry.complement_attrs(self.user)
 
-        for (name, info) in self.test_attrs.items():
+        for name, info in self.test_attrs.items():
             resp = self.client.get(
                 "/api/v1/entry/update_history",
                 {

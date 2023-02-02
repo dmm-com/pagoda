@@ -8,7 +8,7 @@ def exclude_customview_hook(endpoints):
     necessary to generage custom-view's OpenAPI schema.
     """
     result = []
-    for (path, path_regex, method, callback) in endpoints:
+    for path, path_regex, method, callback in endpoints:
         if "/custom/" not in path:
             result.append((path, path_regex, method, callback))
     return result
@@ -19,7 +19,7 @@ def filter_apiv2_hook(endpoints):
     AirOne API(v2). So it's not necessary to generate API(v1)'s OpenAPI schema.
     """
     result = []
-    for (path, path_regex, method, callback) in endpoints:
+    for path, path_regex, method, callback in endpoints:
         if "/api/v2/" in path:
             result.append((path, path_regex, method, callback))
     return result

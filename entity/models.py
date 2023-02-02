@@ -39,7 +39,6 @@ class EntityAttr(ACLBase):
             or self.is_delete_in_chain != is_delete_in_chain
             or self.index != int(index)
         ):
-
             return True
 
     def is_referral_updated(self, refs):
