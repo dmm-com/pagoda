@@ -26,7 +26,6 @@ class LibAutoComplementTest(AironeTestCase):
         self.complement_user.save()
 
     def tearDown(self):
-
         # settings initialization
         settings.AIRONE["AUTO_COMPLEMENT_USER"] = self.org_auto_complement_user
 

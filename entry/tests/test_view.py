@@ -1625,7 +1625,7 @@ class ViewTest(AironeViewTest):
             {"permission": ACLType.Writable.id, "expected_response_code": 200, "is_active": False},
             {"permission": ACLType.Full.id, "expected_response_code": 200, "is_active": False},
         ]
-        for (index, test_params) in enumerate(TEST_PARAMS_SET):
+        for index, test_params in enumerate(TEST_PARAMS_SET):
             entry = Entry.objects.create(
                 name="test-entry-%d" % index,
                 schema=entity,
@@ -4028,7 +4028,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 200)
-        for (name, info) in attr_info.items():
+        for name, info in attr_info.items():
             self.assertEqual(
                 entry.attrs.get(schema=info["schema"]).get_latest_value().get_value(),
                 info["expect_blank_value"],
@@ -4079,7 +4079,7 @@ class ViewTest(AironeViewTest):
                 )
             )
 
-        for (i, value) in enumerate(["", "0", 0, "9999", None]):
+        for i, value in enumerate(["", "0", 0, "9999", None]):
             entry_name = "entry-%d" % i
             params = {
                 "entry_name": entry_name,
@@ -4106,7 +4106,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(resp.status_code, 200)
             entry = Entry.objects.get(name=entry_name, schema=entity)
 
-            for (name, info) in attr_info.items():
+            for name, info in attr_info.items():
                 info["checker"](entry.attrs.get(schema__name=name).get_latest_value())
 
     @patch(
@@ -4191,7 +4191,7 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         ref_entity = Entity.objects.create(name="ref", created_user=user)
-        for (index, attr_type) in enumerate(
+        for index, attr_type in enumerate(
             [
                 AttrTypeValue["object"],
                 AttrTypeValue["named_object"],
@@ -4199,7 +4199,6 @@ class ViewTest(AironeViewTest):
                 AttrTypeValue["array_named_object"],
             ]
         ):
-
             # create Entity and Entry which test to create
             entity = Entity.objects.create(name="E%d" % index, created_user=user)
             attr = EntityAttr.objects.create(
