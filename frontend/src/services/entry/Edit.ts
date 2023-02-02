@@ -86,7 +86,7 @@ export function initializeEntryInfo(entity: EntityDetail) {
 }
 
 export function isSubmittable(entryInfo: EditableEntry): boolean {
-  if (entryInfo.name == null) return false;
+  if (entryInfo?.name == null) return false;
 
   return Object.entries(entryInfo?.attrs ?? {})
     .filter(([{}, attrValue]) => attrValue.isMandatory)
