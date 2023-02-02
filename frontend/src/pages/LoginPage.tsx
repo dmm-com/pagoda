@@ -14,11 +14,12 @@ import {
 } from "@mui/material";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { postLogin } from "utils/AironeAPIClient";
-import { DjangoContext } from "utils/DjangoContext";
 
 import { PasswordResetConfirmModal } from "../components/user/PasswordResetConfirmModal";
 import { PasswordResetModal } from "../components/user/PasswordResetModal";
+
+import { postLogin } from "utils/AironeAPIClient";
+import { DjangoContext } from "utils/DjangoContext";
 
 export const LoginPage: FC = () => {
   const djangoContext = DjangoContext.getInstance();
