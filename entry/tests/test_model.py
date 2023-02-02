@@ -121,7 +121,6 @@ class ModelTest(AironeTestCase):
         return entity
 
     def tearDown(self):
-
         # settings initialization
         settings.AIRONE["AUTO_COMPLEMENT_USER"] = self._org_auto_complement_user
 
@@ -1107,7 +1106,7 @@ class ModelTest(AironeTestCase):
         self.assertNotEqual(cloned_entry.attrs.last(), attr_string)
 
         # checks parent_entry in the cloned Attribute object is updated
-        for (original_attr, cloned_attr) in [
+        for original_attr, cloned_attr in [
             (
                 attr_string,
                 cloned_entry.attrs.get(schema__name="string", is_active=True),
@@ -1117,7 +1116,6 @@ class ModelTest(AironeTestCase):
                 cloned_entry.attrs.get(schema__name="arrobj", is_active=True),
             ),
         ]:
-
             self.assertEqual(original_attr.parent_entry, entry)
             self.assertEqual(cloned_attr.parent_entry, cloned_entry)
 
@@ -2044,7 +2042,7 @@ class ModelTest(AironeTestCase):
 
             entry = Entry.objects.get(id=v["entry"]["id"])
 
-            for (attrname, attrinfo) in v["attrs"].items():
+            for attrname, attrinfo in v["attrs"].items():
                 attr = entry.attrs.get(schema__name=attrname)
                 attrv = attr.get_latest_value()
 
@@ -2301,7 +2299,7 @@ class ModelTest(AironeTestCase):
         }
 
         entity_ids = []
-        for (name, attrinfos) in entity_info.items():
+        for name, attrinfos in entity_info.items():
             entity = Entity.objects.create(name=name, created_user=user)
             entity_ids.append(entity.id)
 
@@ -2409,7 +2407,7 @@ class ModelTest(AironeTestCase):
                 "expected_value": [{"hoge": {"name": "", "id": ""}}],
             },
         }
-        for (attr_name, info) in ref_info.items():
+        for attr_name, info in ref_info.items():
             entity_attr = EntityAttr.objects.create(
                 name=attr_name,
                 type=info["type"],
@@ -2422,7 +2420,7 @@ class ModelTest(AironeTestCase):
         # Initialize an entry that refers 'ref' entry which will be deleted later
         entry = Entry.objects.create(name="ent", schema=entity, created_user=self._user)
         entry.complement_attrs(self._user)
-        for (attr_name, info) in ref_info.items():
+        for attr_name, info in ref_info.items():
             attr = entry.attrs.get(name=attr_name)
             attr.add_value(self._user, info["value"])
 
@@ -2441,7 +2439,7 @@ class ModelTest(AironeTestCase):
             self.assertEqual(ret["ret_count"], 1)
             self.assertEqual(len(ret["ret_values"][0]["attrs"]), 1)
 
-            for (_name, _info) in ret["ret_values"][0]["attrs"].items():
+            for _name, _info in ret["ret_values"][0]["attrs"].items():
                 self.assertTrue(_name in ref_info)
                 self.assertEqual(_info["value"], ref_info[_name]["expected_value"])
 
@@ -2602,7 +2600,7 @@ class ModelTest(AironeTestCase):
                 set(k for k in attr_info.keys()),
             )
 
-            for (k, v) in attr_info.items():
+            for k, v in attr_info.items():
                 value = [x for x in res["_source"]["attr"] if x["name"] == k]
 
                 self.assertTrue(all([x["type"] == v["type"] for x in value]))
@@ -2891,7 +2889,7 @@ class ModelTest(AironeTestCase):
         }
 
         for entity in entities:
-            for (name, attrinfo) in entry_info.items():
+            for name, attrinfo in entry_info.items():
                 entry = Entry.objects.create(name=name, schema=entity, created_user=user)
                 entry.complement_attrs(user)
 
@@ -3022,7 +3020,7 @@ class ModelTest(AironeTestCase):
         entity_info = {"entity1": ["foo", "bar"], "entity2": ["bar", "hoge"]}
 
         entities = []
-        for (entity_name, attrnames) in entity_info.items():
+        for entity_name, attrnames in entity_info.items():
             entity = Entity.objects.create(name=entity_name, created_user=user)
             entities.append(entity.id)
 
@@ -4051,7 +4049,6 @@ class ModelTest(AironeTestCase):
             entry.complement_attrs(user)
 
             for attr_name, info in x.items():
-
                 attr = entry.attrs.get(name=attr_name)
                 attr.add_value(user, info["value"])
 

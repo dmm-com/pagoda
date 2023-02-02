@@ -107,7 +107,7 @@ class AttributeValue(models.Model):
         cloned_value.pk = None
 
         # set extra configure
-        for (k, v) in extra_params.items():
+        for k, v in extra_params.items():
             setattr(cloned_value, k, v)
 
         # update basic parameters to new one
@@ -1091,7 +1091,6 @@ class Attribute(ACLBase):
 
         attrv = self.get_latest_value()
         if self.is_array():
-
             if self.schema.type & AttrTypeValue["named"]:
                 if referral is None:
                     return
@@ -1141,7 +1140,6 @@ class Attribute(ACLBase):
         """
         attrv = self.get_latest_value()
         if self.is_array():
-
             updated_data = None
             if self.schema.type & AttrTypeValue["named"]:
                 if value or referral:
@@ -1393,7 +1391,6 @@ class Entry(ACLBase):
         for attr_id in set(
             self.schema.attrs.filter(is_active=True).values_list("id", flat=True)
         ) - set(self.attrs.filter(is_active=True).values_list("schema", flat=True)):
-
             entity_attr = self.schema.attrs.get(id=attr_id)
             if not user.has_permission(entity_attr, ACLType.Readable):
                 continue
@@ -1626,7 +1623,6 @@ class Entry(ACLBase):
 
         # also delete each attributes
         for attr in self.attrs.filter(is_active=True):
-
             # delete Attribute object
             attr.delete()
 
@@ -1653,7 +1649,6 @@ class Entry(ACLBase):
 
         # also restore each attributes
         for attr in self.attrs.filter(is_active=False):
-
             # restore Attribute object
             attr.restore()
 
@@ -1763,6 +1758,7 @@ class Entry(ACLBase):
     # NOTE: Type-Write
     def get_es_document(self, es=None, entity_attrs=None):
         """This processing registers entry information to Elasticsearch"""
+
         # This innner method truncates value in taking multi-byte in account
         def truncate(value):
             while len(value.encode("utf-8")) > ESS.MAX_TERM_SIZE:
@@ -1976,7 +1972,7 @@ class Entry(ACLBase):
             parent_attr__in=self.attrs.all(), parent_attrv__isnull=True
         ).order_by("-created_time")[index:]
 
-        for (i, attrv) in enumerate(all_attrv):
+        for i, attrv in enumerate(all_attrv):
             if len(ret_values) >= count:
                 break
 
@@ -1987,7 +1983,6 @@ class Entry(ACLBase):
                 and user.has_permission(attr, ACLType.Readable)
                 and user.has_permission(attr.schema, ACLType.Readable)
             ):
-
                 # try to get next attrv
                 next_attrv = None
                 for _attrv in all_attrv[(i + 1) :]:

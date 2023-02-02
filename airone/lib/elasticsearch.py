@@ -411,7 +411,6 @@ def _make_entry_name_query(entry_name: str) -> Dict[str, str]:
 
     # Split and process keywords with 'or'
     for keyword_divided_or in entry_name.split(CONFIG.OR_SEARCH_CHARACTER):
-
         entry_name_and_query: Dict = {"bool": {"must": []}}
 
         # Keyword divided by 'or' is processed by dividing by 'and'
@@ -435,7 +434,6 @@ def _make_referral_query(referral_name: str) -> Dict[str, str]:
 
     # Split and process keywords with 'or'
     for keyword_divided_or in referral_name.split(CONFIG.OR_SEARCH_CHARACTER):
-
         referral_and_query: Dict = {
             "bool": {
                 "must": [],
@@ -543,7 +541,6 @@ def _parse_or_search(hint: Dict[str, str], attr_query: Dict[str, str]) -> Dict[s
 
     # Split and process keywords with 'or'
     for keyword_divided_or in hint["keyword"].split(CONFIG.OR_SEARCH_CHARACTER):
-
         _parse_and_search(hint, keyword_divided_or, attr_query, duplicate_keys)
 
     return attr_query
@@ -645,7 +642,6 @@ def _build_queries_along_keywords(
         # Split keyword by 'or'
         for keyword_divided_or in hint["keyword"].split(CONFIG.OR_SEARCH_CHARACTER):
             if CONFIG.AND_SEARCH_CHARACTER in keyword_divided_or:
-
                 # If 'AND' is included in the keyword divided by 'OR', add it to 'filter'
                 for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
                     if keyword_divided_or not in and_query:
@@ -659,7 +655,6 @@ def _build_queries_along_keywords(
                 and_query[keyword_divided_or] = attr_query[keyword_divided_or + "_" + hint["name"]]
 
             if CONFIG.OR_SEARCH_CHARACTER in hint["keyword"]:
-
                 # If the keyword contains 'or', concatenate with 'should'
                 if not or_query:
                     or_query = {"bool": {"should": []}}
@@ -719,7 +714,7 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
         date_cond = {
             "range": {"attr.date_value": {"format": "yyyy-MM-dd"}},
         }
-        for (range_check, date_obj) in date_results:
+        for range_check, date_obj in date_results:
             timestr = date_obj.strftime("%Y-%m-%d")
             if range_check == "<":
                 # search of before date user specified
@@ -863,7 +858,7 @@ def make_search_results(
             0
         ]
 
-    for (entry, entry_info) in sorted(hit_infos.items(), key=lambda x: x[0].name):
+    for entry, entry_info in sorted(hit_infos.items(), key=lambda x: x[0].name):
         ret_info: Dict[str, Any] = {
             "entity": {"id": entry.schema.id, "name": entry.schema.name},
             "entry": {"id": entry.id, "name": entry.name},
@@ -993,7 +988,6 @@ def make_search_results_for_simple(res: Dict[str, Any]) -> Dict[str, str]:
     }
 
     for resp_entry in res["hits"]["hits"]:
-
         ret_value = {
             "id": resp_entry["_id"],
             "name": resp_entry["_source"]["name"],
@@ -1015,7 +1009,6 @@ def is_date_check(value: str) -> Optional[Tuple[str, datetime]]:
             date_format = "%%Y%(del)s%%m%(del)s%%d" % {"del": delimiter}
 
             if re.match(r"^[<>]?[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter}, value):
-
                 if value[0] in ["<", ">"]:
                     return (
                         value[0],
