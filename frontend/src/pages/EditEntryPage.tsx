@@ -47,6 +47,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
   const [submittable, setSubmittable] = useState<boolean>(false); // FIXME
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);
+  const [isAnchorLink, setIsAnchorLink] = useState<boolean>(false);
 
   const entity = useAsync(async () => {
     return entityId != undefined
@@ -428,11 +429,15 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       </PageHeader>
 
       {entryInfo && (
-        <EntryForm entryInfo={entryInfo} setEntryInfo={setEntryInfo} />
+        <EntryForm
+          entryInfo={entryInfo}
+          setEntryInfo={setEntryInfo}
+          setIsAnchorLink={setIsAnchorLink}
+        />
       )}
 
       <Prompt
-        when={edited && !submitted}
+        when={edited && !submitted && !isAnchorLink}
         message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
       />
     </Box>

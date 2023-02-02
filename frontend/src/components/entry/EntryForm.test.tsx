@@ -13,10 +13,20 @@ test("should render a component with essential props", function () {
   const setEntryInfo = () => {
     /* do nothing */
   };
+  const setIsAnchorLink = () => {
+    /* do nothing */
+  };
 
   expect(() =>
-    render(<EntryForm entryInfo={entryInfo} setEntryInfo={setEntryInfo} />, {
-      wrapper: TestWrapper,
-    })
+    render(
+      <EntryForm
+        entryInfo={entryInfo}
+        setEntryInfo={setEntryInfo}
+        setIsAnchorLink={setIsAnchorLink}
+      />,
+      {
+        wrapper: TestWrapper,
+      }
+    )
   ).not.toThrow();
 });
