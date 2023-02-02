@@ -106,7 +106,6 @@ export const EditEntityPage: FC = () => {
           webhooks
         );
         setSubmitted(true);
-        history.replace(entitiesPath());
       } else {
         await aironeApiClientV2.updateEntity(
           entityId,
@@ -117,7 +116,6 @@ export const EditEntityPage: FC = () => {
           webhooks
         );
         setSubmitted(true);
-        history.replace(entityEntriesPath(entityId));
       }
     } catch (e) {
       if (e instanceof Response) {
@@ -143,6 +141,15 @@ export const EditEntityPage: FC = () => {
       });
     }
   }, [entity.loading, entity.value]);
+
+  // NOTE: This should be fixed in near future.
+  // This unpeaceful impelmentation guarantees moving page after changing state "submitted"
+  // by handleSubmit() processing to prevent showing wrong Prompt message.
+  useEffect(() => {
+    if (submitted) {
+      history.replace(entityEntriesPath(entityId));
+    }
+  }, [submitted]);
 
   if (entity.loading || referralEntities.loading) {
     return <Loading />;
