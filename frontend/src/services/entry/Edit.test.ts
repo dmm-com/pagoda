@@ -17,7 +17,11 @@ import {
   EditableEntryAttrValue,
 } from "../../components/entry/entryForm/EditableEntry";
 
-import { initializeEntryInfo, isSubmittable, convertAttrsFormatCtoS } from "./Edit";
+import {
+  initializeEntryInfo,
+  isSubmittable,
+  convertAttrsFormatCtoS,
+} from "./Edit";
 
 import { DjangoContext } from "services/DjangoContext";
 
@@ -349,7 +353,10 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
   });
 });
 test("convertAttrsFormatCtoS() returns expected value", () => {
-  const cases: Array<{ client_data: { type: number; value: EditableEntryAttrValue }, expected_data: any}> = [
+  const cases: Array<{
+    client_data: { type: number; value: EditableEntryAttrValue };
+    expected_data: any;
+  }> = [
     // boolean
     {
       client_data: {
@@ -368,7 +375,7 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
           asString: "value",
         },
       },
-      expected_data: "value" ,
+      expected_data: "value",
     },
     // object
     {
@@ -489,10 +496,12 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
           ],
         },
       },
-      expected_data: [{
-        id: 2,
-        name: "name1",
-      }],
+      expected_data: [
+        {
+          id: 2,
+          name: "name1",
+        },
+      ],
     },
     // role
     {
@@ -539,9 +548,11 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
     };
     const sending_data = convertAttrsFormatCtoS(attrs);
 
-    expect(sending_data).toStrictEqual([{
-      id: 1,
-      value: c.expected_data,
-    }])
+    expect(sending_data).toStrictEqual([
+      {
+        id: 1,
+        value: c.expected_data,
+      },
+    ]);
   });
 });
