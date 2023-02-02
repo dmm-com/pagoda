@@ -17,7 +17,7 @@ import {
   EditableEntryAttrValue,
 } from "../../components/entry/entryForm/EditableEntry";
 
-import { initializeEntryInfo, isSubmittable } from "./Edit";
+import { initializeEntryInfo, isSubmittable, convertAttrsFormatCtoS } from "./Edit";
 
 import { DjangoContext } from "services/DjangoContext";
 
@@ -176,7 +176,7 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
         ],
       },
     },
-    // named_object
+    // array_named_object
     {
       type: djangoContext?.attrTypeValue.array_named_object,
       value: {
@@ -349,5 +349,199 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
   });
 });
 test("convertAttrsFormatCtoS() returns expected value", () => {
-  // TBD
+  const cases: Array<{ client_data: { type: number; value: EditableEntryAttrValue }, expected_data: any}> = [
+    // boolean
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.boolean,
+        value: {
+          asBoolean: true,
+        },
+      },
+      expected_data: true,
+    },
+    // string
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.string,
+        value: {
+          asString: "value",
+        },
+      },
+      expected_data: "value" ,
+    },
+    // object
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.object,
+        value: {
+          asObject: {
+            id: 3,
+            name: "test_object",
+            schema: {
+              id: 2,
+              name: "test_schema",
+            },
+            _boolean: false,
+          },
+        },
+      },
+      expected_data: 3,
+    },
+    // group
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.group,
+        value: {
+          asGroup: {
+            id: 2,
+            name: "test_object",
+          },
+        },
+      },
+      expected_data: 2,
+    },
+    // named_object
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.named_object,
+        value: {
+          asNamedObject: {
+            hoge: {
+              id: 2,
+              name: "test_object",
+              schema: {
+                id: 3,
+                name: "test_schema",
+              },
+              _boolean: false,
+            },
+          },
+        },
+      },
+      expected_data: {
+        id: 2,
+        name: "hoge",
+      },
+    },
+    // array_string
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.array_string,
+        value: {
+          asArrayString: ["value"],
+        },
+      },
+      expected_data: ["value"],
+    },
+    // array_object
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.array_object,
+        value: {
+          asArrayObject: [
+            {
+              id: 2,
+              name: "test_object",
+              schema: {
+                id: 3,
+                name: "test_schema",
+              },
+              _boolean: false,
+            },
+          ],
+        },
+      },
+      expected_data: [2],
+    },
+    // array_group
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.array_group,
+        value: {
+          asArrayGroup: [
+            {
+              id: 2,
+              name: "test_object",
+            },
+          ],
+        },
+      },
+      expected_data: [2],
+    },
+    // array_named_object
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.array_named_object,
+        value: {
+          asArrayNamedObject: [
+            {
+              name1: {
+                id: 2,
+                name: "test_object",
+                schema: {
+                  id: 3,
+                  name: "test_schema",
+                },
+                _boolean: false,
+              },
+            },
+          ],
+        },
+      },
+      expected_data: [{
+        id: 2,
+        name: "name1",
+      }],
+    },
+    // role
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.role,
+        value: {
+          asRole: {
+            id: 2,
+            name: "test_role",
+          },
+        },
+      },
+      expected_data: 2,
+    },
+    // array_role
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.array_role,
+        value: {
+          asArrayRole: [
+            {
+              id: 2,
+              name: "test_role",
+            },
+          ],
+        },
+      },
+      expected_data: [2],
+    },
+  ];
+
+  cases.forEach((c) => {
+    const attrs: Record<string, EditableEntryAttrs> = {
+      key: {
+        id: 1,
+        type: c.client_data.type,
+        isMandatory: true,
+        schema: {
+          id: 1,
+          name: "test_schema",
+        },
+        value: c.client_data.value,
+      },
+    };
+    const sending_data = convertAttrsFormatCtoS(attrs);
+
+    expect(sending_data).toStrictEqual([{
+      id: 1,
+      value: c.expected_data,
+    }])
+  });
 });
