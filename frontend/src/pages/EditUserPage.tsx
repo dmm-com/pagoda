@@ -48,7 +48,7 @@ export const EditUserPage: FC = () => {
       expire: "",
       created: "",
     },
-    authenticateType: djangoContext.userAuthenticateType.local,
+    authenticateType: djangoContext?.userAuthenticateType.local,
   });
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);

@@ -2215,7 +2215,7 @@ class ViewTest(AironeViewTest):
         # initialize instances to be used in this test case
         groups = [Group.objects.create(name=x) for x in ["g-foo", "g-bar", "g-baz"]]
         entity = Entity.objects.create(name="Entity", created_user=user)
-        for (name, type_index) in [("grp", "group"), ("arr_group", "array_group")]:
+        for name, type_index in [("grp", "group"), ("arr_group", "array_group")]:
             entity.attrs.add(
                 EntityAttr.objects.create(
                     **{
@@ -3548,7 +3548,7 @@ class ViewTest(AironeViewTest):
         updated_entry = entry_another_ref.get_referred_objects().first()
         self.assertEqual(updated_entry.name, resp_data["Entity-1"][0]["name"])
 
-        for (attr_name, value_info) in new_attr_values.items():
+        for attr_name, value_info in new_attr_values.items():
             attrv = updated_entry.attrs.get(name=attr_name).get_latest_value()
 
             if attr_name == "str":

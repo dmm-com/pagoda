@@ -262,7 +262,7 @@ export const RestorableEntryList: FC<Props> = ({
                     </Button>
                   )}
                   dialogTitle="本当に復旧しますか？"
-                  onClickYes={() => handleRestore(entryDetail.value.id)}
+                  onClickYes={() => handleRestore(entryDetail.value?.id ?? 0)}
                 />
                 <Button
                   variant="outlined"

@@ -524,7 +524,7 @@ class EntryHistoryAPI(generics.ListAPIView):
     def _get_objects(self, all_attrv, user: User):
         ret_values: List[Dict[str, Any]] = []
 
-        for (i, attrv) in enumerate(all_attrv):
+        for i, attrv in enumerate(all_attrv):
             if len(ret_values) >= CONFIG.MAX_HISTORY_COUNT:
                 break
 
@@ -535,7 +535,6 @@ class EntryHistoryAPI(generics.ListAPIView):
                 and user.has_permission(attr, ACLType.Readable)
                 and user.has_permission(attr.schema, ACLType.Readable)
             ):
-
                 # try to get next attrv
                 next_attrv = None
                 for _attrv in all_attrv[(i + 1) :]:

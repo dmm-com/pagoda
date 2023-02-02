@@ -47,7 +47,7 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
         </Box>
       </AironeBreadcrumbs>
 
-      <PageHeader title={entity.value?.name} description="エントリ一覧">
+      <PageHeader title={entity.value?.name ?? ""} description="エントリ一覧">
         <Box width="50px">
           <IconButton
             onClick={(e) => {

@@ -3,12 +3,30 @@
 ## In development
 
 ### Added
+* Added feature to be able to sort Entries by created time order at list page
+  Contributed by @userlocalhost
+
+### Changed
+
+### Fixed
+
+## v3.38.0
+
+### Added
 * Added processing to be able to configure sort-order at list Entry page.
   Contributed by @userlocalhost
+* Show entity link/name on job list
+  Contributed by @syucream
 
 ### Changed
 * Changed margins on all pages.
   Contributed by @hinashi
+
+## v3.37.0
+
+### Added
+* Added django-simple-history library
+  Contributed by @syucream, @userlocalhost, @hinashi
 
 ### Fixed
 * Fixed wrong ACL criterion for copy and delete processing.

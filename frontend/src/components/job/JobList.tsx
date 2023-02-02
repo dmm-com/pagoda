@@ -220,7 +220,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
                     JobStatuses.DONE,
                     JobStatuses.PROCESSING,
                     JobStatuses.CANCELED,
-                  ].includes(job.status) && (
+                  ].includes(job.status ?? 0) && (
                     <Button
                       variant="contained"
                       color="error"
@@ -234,7 +234,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
                     JobStatuses.DONE,
                     JobStatuses.ERROR,
                     JobStatuses.CANCELED,
-                  ].includes(job.status) && (
+                  ].includes(job.status ?? 0) && (
                     <Confirmable
                       componentGenerator={(handleOpen) => (
                         <Button

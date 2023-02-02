@@ -9,7 +9,7 @@ from user.models import User
 
 
 def set_role_members(role, recv_data):
-    for (model, member, key) in [
+    for model, member, key in [
         (User, "users", "users"),
         (Group, "groups", "groups"),
         (User, "admin_users", "admin_users"),
@@ -155,13 +155,12 @@ def edit(request, role_id):
     # update users/groups context to set what users and groups are registered on role
     context["name"] = role.name
     context["description"] = role.description
-    for (key, nameattr, model) in [
+    for key, nameattr, model in [
         ("user_info", "username", role.users),
         ("group_info", "name", role.groups),
         ("admin_user_info", "username", role.admin_users),
         ("admin_group_info", "name", role.admin_groups),
     ]:
-
         for instance in model.filter(is_active=True):
             context[key][instance.id].update(
                 {

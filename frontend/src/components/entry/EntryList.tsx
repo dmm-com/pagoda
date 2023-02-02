@@ -58,11 +58,11 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
 
   const totalPageCount = entries.loading
     ? 0
-    : Math.ceil(entries.value?.count / ConstEntryList.MAX_ROW_COUNT);
+    : Math.ceil(entries.value?.count ?? 0 / ConstEntryList.MAX_ROW_COUNT);
 
   const [entryAnchorEls, setEntryAnchorEls] = useState<{
-    [key: number]: HTMLButtonElement;
-  } | null>({});
+    [key: number]: HTMLButtonElement | null;
+  }>({});
 
   return (
     <Box>

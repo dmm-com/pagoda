@@ -36,13 +36,11 @@ export const UserList: FC = ({}) => {
   const [keyword, setKeyword] = useState("");
 
   const params = new URLSearchParams(location.search);
-  const [query, setQuery] = useState<string>(
-    params.has("query") ? params.get("query") : undefined
-  );
+  const [query, setQuery] = useState<string>(params.get("query") ?? "");
 
   const [userAnchorEls, setUserAnchorEls] = useState<{
-    [key: number]: HTMLButtonElement;
-  } | null>({});
+    [key: number]: HTMLButtonElement | null;
+  }>({});
 
   const users = useAsync(async () => {
     return await aironeApiClientV2.getUsers(page, query);
@@ -53,7 +51,7 @@ export const UserList: FC = ({}) => {
 
   const handleChangeQuery = (newQuery?: string) => {
     changePage(1);
-    setQuery(newQuery);
+    setQuery(newQuery ?? "");
 
     history.push({
       pathname: location.pathname,
@@ -64,7 +62,7 @@ export const UserList: FC = ({}) => {
   const totalPageCount = useMemo(() => {
     return users.loading
       ? 0
-      : Math.ceil(users.value.count / ConstUserList.MAX_ROW_COUNT);
+      : Math.ceil(users.value?.count ?? 0 / ConstUserList.MAX_ROW_COUNT);
   }, [users.loading, users.value]);
 
   return (
@@ -99,7 +97,7 @@ export const UserList: FC = ({}) => {
         <Loading />
       ) : (
         <Grid container spacing={2}>
-          {users.value.results.map((user) => {
+          {users.value?.results?.map((user) => {
             return (
               <Grid item xs={4} key={user.id}>
                 <Card sx={{ height: "100%" }}>

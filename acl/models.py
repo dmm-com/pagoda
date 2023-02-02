@@ -45,6 +45,7 @@ class ACLBase(models.Model):
     is_active = models.BooleanField(default=True)
     status = models.IntegerField(default=0)
     default_permission = models.IntegerField(default=ACLType.Nothing().id)
+    created_time = models.DateTimeField(auto_now_add=True)
     updated_time = models.DateTimeField(auto_now=True)
     deleted_user = models.ForeignKey(
         User, null=True, on_delete=models.DO_NOTHING, related_name="deleted_user"
@@ -53,6 +54,16 @@ class ACLBase(models.Model):
 
     # This fields describes the sub-class of this object
     objtype = models.IntegerField(default=0)
+
+    def save(self, update_fields=None, *args, **kwargs):
+        """This forcely adds updated_time to update_fields parameter when it's not specified
+        on its parameter.
+        """
+        new_update_fields = update_fields
+        if isinstance(update_fields, list) and "updated_time" not in update_fields:
+            new_update_fields = update_fields + ["updated_time"]
+
+        return super(ACLBase, self).save(update_fields=new_update_fields, *args, **kwargs)
 
     def get_diff(instance, offset=0):
         ret = []
@@ -119,7 +130,6 @@ class ACLBase(models.Model):
     def is_acl_updated(self, is_public, default_permission):
         # checks each parameters that are different between current object parameters
         if self.is_public != is_public or self.default_permission != default_permission:
-
             return True
 
     @property

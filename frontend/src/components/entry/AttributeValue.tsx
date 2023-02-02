@@ -113,6 +113,10 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
 
   switch (attrInfo.type) {
     case djangoContext?.attrTypeValue.object:
+      if (attrInfo.value.asObject == null)
+        throw new Error(
+          "invalid attribute value, caused by a server side bug maybe"
+        );
       return (
         <List>
           <ListItem>
@@ -124,6 +128,10 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
     case djangoContext?.attrTypeValue.string:
     case djangoContext?.attrTypeValue.text:
     case djangoContext?.attrTypeValue.date:
+      if (attrInfo.value.asString == null)
+        throw new Error(
+          "invalid attribute value, caused by a server side bug maybe"
+        );
       return (
         <List>
           <ListItem>
@@ -133,6 +141,10 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       );
 
     case djangoContext?.attrTypeValue.boolean:
+      if (attrInfo.value.asBoolean == null)
+        throw new Error(
+          "invalid attribute value, caused by a server side bug maybe"
+        );
       return (
         <List>
           <ListItem>
@@ -142,6 +154,10 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       );
 
     case djangoContext?.attrTypeValue.named_object:
+      if (attrInfo.value.asNamedObject == null)
+        throw new Error(
+          "invalid attribute value, caused by a server side bug maybe"
+        );
       return (
         <List>
           <ListItem>
@@ -151,6 +167,10 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       );
 
     case djangoContext?.attrTypeValue.group:
+      if (attrInfo.value.asGroup == null)
+        throw new Error(
+          "invalid attribute value, caused by a server side bug maybe"
+        );
       return (
         <List>
           <ListItem>
@@ -160,6 +180,10 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       );
 
     case djangoContext?.attrTypeValue.role:
+      if (attrInfo.value.asRole == null)
+        throw new Error(
+          "invalid attribute value, caused by a server side bug maybe"
+        );
       return (
         <List>
           <ListItem>
@@ -222,5 +246,8 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
           ))}
         </List>
       );
+
+    default:
+      throw new Error(`unkwnon attribute type: ${attrInfo.type}`);
   }
 };

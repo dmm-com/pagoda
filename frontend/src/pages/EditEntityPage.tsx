@@ -61,41 +61,47 @@ export const EditEntityPage: FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (entityInfo.name == null) {
+      throw new Error("entity name is not set");
+    }
+
     const createMode = entityId === undefined;
     // Adjusted attributes for the API
-    const attrs = entityInfo.attrs
-      .filter((attr) => !(attr.id == null && attr.isDeleted))
-      .map((attr, index) => {
-        return {
-          id: attr.id,
-          name: attr.name,
-          type: attr.type,
-          index: index,
-          isMandatory: attr.isMandatory,
-          isDeleteInChain: attr.isDeleteInChain,
-          isSummarized: attr.isSummarized,
-          referral: attr.referral,
-          isDeleted: attr.isDeleted,
-        };
-      });
-    const webhooks = entityInfo.webhooks.map((webhook): Webhook => {
-      return {
-        id: webhook.id,
-        url: webhook.url,
-        label: webhook.label,
-        isEnabled: webhook.isEnabled,
-        isVerified: undefined,
-        headers: webhook.headers,
-        isDeleted: webhook.isDeleted,
-      };
-    });
+    const attrs =
+      entityInfo.attrs
+        ?.filter((attr) => !(attr.id == null && attr.isDeleted))
+        .map((attr, index) => {
+          return {
+            id: attr.id,
+            name: attr.name,
+            type: attr.type,
+            index: index,
+            isMandatory: attr.isMandatory,
+            isDeleteInChain: attr.isDeleteInChain,
+            isSummarized: attr.isSummarized,
+            referral: attr.referral,
+            isDeleted: attr.isDeleted,
+          };
+        }) ?? [];
+    const webhooks =
+      entityInfo.webhooks?.map(
+        (webhook): Webhook => ({
+          id: webhook.id ?? 0,
+          url: webhook.url,
+          label: webhook.label,
+          isEnabled: webhook.isEnabled,
+          isVerified: false,
+          headers: webhook.headers,
+          isDeleted: webhook.isDeleted,
+        })
+      ) ?? [];
 
     try {
       if (createMode) {
         await aironeApiClientV2.createEntity(
           entityInfo.name,
-          entityInfo.note,
-          entityInfo.isToplevel,
+          entityInfo.note ?? "",
+          entityInfo.isToplevel ?? false,
           attrs,
           webhooks
         );
@@ -105,8 +111,8 @@ export const EditEntityPage: FC = () => {
         await aironeApiClientV2.updateEntity(
           entityId,
           entityInfo.name,
-          entityInfo.note,
-          entityInfo.isToplevel,
+          entityInfo.note ?? "",
+          entityInfo.isToplevel ?? false,
           attrs,
           webhooks
         );
@@ -130,9 +136,10 @@ export const EditEntityPage: FC = () => {
       _setEntityInfo({
         ...entity.value,
         attrs:
-          entity.value.attrs.map((attr) => {
-            return { ...attr, referral: attr.referral.map((r) => r.id) };
-          }) ?? [],
+          entity.value.attrs.map((attr) => ({
+            ...attr,
+            referral: attr.referral?.map((r) => r.id),
+          })) ?? [],
       });
     }
   }, [entity.loading, entity.value]);

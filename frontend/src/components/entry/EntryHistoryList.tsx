@@ -9,7 +9,6 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Typography,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useCallback } from "react";
@@ -75,24 +74,24 @@ export const EntryHistoryList: FC<Props> = ({
             <TableRow>
               <TableCell>{history.name}</TableCell>
               <TableCell>
-                {history.prev != null ? (
+                {history.prev != null && history.prev.value != null && (
                   <AttributeValue
                     attrInfo={{
                       type: history.prev.type,
                       value: history.prev.value,
                     }}
                   />
-                ) : (
-                  <Typography />
                 )}
               </TableCell>
               <TableCell>
-                <AttributeValue
-                  attrInfo={{
-                    type: history.curr.type,
-                    value: history.curr.value,
-                  }}
-                />
+                {history.curr.value != null && (
+                  <AttributeValue
+                    attrInfo={{
+                      type: history.curr.type,
+                      value: history.curr.value,
+                    }}
+                  />
+                )}
               </TableCell>
               <TableCell>{formatDate(history.curr.createdTime)}</TableCell>
               <TableCell>{history.curr.createdUser}</TableCell>

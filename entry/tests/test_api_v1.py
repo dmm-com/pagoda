@@ -59,6 +59,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(resp.json()["results"]), 1)
         self.assertTrue(resp.json()["results"][0]["name"], "e-0")
 
+    def test_get_entries_with_special_characters(self):
+        admin = self.admin_login()
+
         """
         Check for cases with special characters
         """
@@ -95,6 +98,9 @@ class ViewTest(AironeViewTest):
             " " "&",
             "|",
         ]
+
+        # create Entity & Entries for this test
+        entity = Entity.objects.create(name="Entity", created_user=admin)
         test_suites = []
         for i, add_char in enumerate(add_chars):
             entry_name = "test%s%s" % (i, add_char)
@@ -110,13 +116,8 @@ class ViewTest(AironeViewTest):
                 "/entry/api/v1/get_entries/%s/" % entity.id,
                 {"keyword": test_suite["search_word"]},
             )
-            ret_cnt = (
-                test_suite["ret_cnt"]
-                if test_suite["search_word"] != "-"
-                else CONFIG.MAX_LIST_ENTRIES
-            )
             self.assertEqual(resp.status_code, 200)
-            self.assertEqual(len(resp.json()["results"]), ret_cnt)
+            self.assertEqual(len(resp.json()["results"]), test_suite["ret_cnt"])
             self.assertEqual(resp.json()["results"][0]["name"], test_suite["ret_entry_name"])
 
     def test_get_entries_with_multiple_ids(self):
@@ -256,7 +257,7 @@ class ViewTest(AironeViewTest):
         # initialize instances to be used in this test case
         groups = [Group.objects.create(name=x) for x in ["g-foo", "g-bar", "g-baz"]]
         entity = Entity.objects.create(name="Entity", created_user=user)
-        for (name, type_index) in [("grp", "group"), ("arr_group", "array_group")]:
+        for name, type_index in [("grp", "group"), ("arr_group", "array_group")]:
             entity.attrs.add(
                 EntityAttr.objects.create(
                     **{
@@ -669,7 +670,7 @@ class ViewTest(AironeViewTest):
             self.assertTrue(all([x["attr_id"] == attr.id for x in attr_value_history]))
 
             # check order of former value and previous value
-            for (index, history_value) in enumerate(attr_value_history):
+            for index, history_value in enumerate(attr_value_history):
                 if (
                     attr.schema.type & AttrTypeValue["array"]
                     and not history_value["curr"]["value"]
