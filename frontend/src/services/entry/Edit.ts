@@ -86,12 +86,13 @@ export function initializeEntryInfo(entity: EntityDetail) {
 }
 
 export function isSubmittable(entryInfo: EditableEntry): boolean {
-  if (entryInfo?.name == null) return false;
+  if (entryInfo.name == null) return false;
 
   return Object.entries(entryInfo?.attrs ?? {})
     .filter(([{}, attrValue]) => attrValue.isMandatory)
     .map((attr) =>
       [
+        // TODO support role-like types
         attr[1].type === djangoContext?.attrTypeValue.boolean,
         attr[1].value.asString !== "",
         attr[1].value.asObject,
