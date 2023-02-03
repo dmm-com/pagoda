@@ -35,7 +35,7 @@ const ElemString: FC<{ attrValue: string }> = ({ attrValue }) => {
 };
 
 const ElemObject: FC<{
-  attrValue: EntryAttributeValueObject;
+  attrValue: EntryAttributeValueObject | undefined;
 }> = ({ attrValue }) => {
   return attrValue ? (
     <Box
@@ -51,7 +51,7 @@ const ElemObject: FC<{
 
 const ElemNamedObject: FC<{
   attrValue: {
-    [key: string]: EntryAttributeValueObject;
+    [key: string]: EntryAttributeValueObject | null;
   };
 }> = ({ attrValue }) => {
   const key = Object.keys(attrValue)[0];
@@ -77,7 +77,7 @@ const ElemNamedObject: FC<{
   );
 };
 
-const ElemGroup: FC<{ attrValue: EntryAttributeValueGroup }> = ({
+const ElemGroup: FC<{ attrValue: EntryAttributeValueGroup | undefined }> = ({
   attrValue,
 }) => {
   return attrValue ? (
@@ -89,7 +89,7 @@ const ElemGroup: FC<{ attrValue: EntryAttributeValueGroup }> = ({
   );
 };
 
-const ElemRole: FC<{ attrValue: EntryAttributeValueRole }> = ({
+const ElemRole: FC<{ attrValue: EntryAttributeValueRole | undefined }> = ({
   attrValue,
 }) => {
   return attrValue ? (
@@ -113,10 +113,12 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
 
   switch (attrInfo.type) {
     case djangoContext?.attrTypeValue.object:
+      /*
       if (attrInfo.value.asObject == null)
         throw new Error(
           "invalid attribute value, caused by a server side bug maybe"
         );
+      */
       return (
         <List>
           <ListItem>
@@ -167,10 +169,12 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       );
 
     case djangoContext?.attrTypeValue.group:
+      /*
       if (attrInfo.value.asGroup == null)
         throw new Error(
           "invalid attribute value, caused by a server side bug maybe"
         );
+      */
       return (
         <List>
           <ListItem>
@@ -180,10 +184,12 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       );
 
     case djangoContext?.attrTypeValue.role:
+      /*
       if (attrInfo.value.asRole == null)
         throw new Error(
           "invalid attribute value, caused by a server side bug maybe"
         );
+      */
       return (
         <List>
           <ListItem>
