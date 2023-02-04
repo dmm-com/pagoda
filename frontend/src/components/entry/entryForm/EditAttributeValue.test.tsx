@@ -110,7 +110,7 @@ attributes.forEach((attribute) => {
     const djangoContext = DjangoContext.getInstance();
     const attrName = "hoge";
     const attrValue = attribute.value;
-    const attrType = djangoContext.attrTypeValue[attribute.type];
+    const attrType = djangoContext?.attrTypeValue[attribute.type];
     const wrapper = shallow(
       <EditAttributeValue
         attrName={attrName}
@@ -144,7 +144,7 @@ arrayAttributes.forEach((arrayAttribute) => {
     const djangoContext = DjangoContext.getInstance();
     const attrName = "hoge";
     const attrValue = arrayAttribute.value;
-    const attrType = djangoContext.attrTypeValue[arrayAttribute.type];
+    const attrType = djangoContext?.attrTypeValue[arrayAttribute.type];
     const wrapper = shallow(
       <EditAttributeValue
         attrName={attrName}

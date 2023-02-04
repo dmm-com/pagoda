@@ -62,11 +62,11 @@ const ElemNamedObject: FC<{
         <Box
           component={Link}
           to={entryDetailsPath(
-            attrValue[key].schema?.id ?? 0,
-            attrValue[key].id
+            attrValue[key]?.schema?.id ?? 0,
+            attrValue[key]?.id ?? 0
           )}
         >
-          {attrValue[key].name}
+          {attrValue[key]?.name}
         </Box>
       ) : (
         <Box />
@@ -122,7 +122,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       return (
         <List>
           <ListItem>
-            <ElemObject attrValue={attrInfo.value.asObject} />
+            <ElemObject attrValue={attrInfo.value.asObject ?? undefined} />
           </ListItem>
         </List>
       );
@@ -178,7 +178,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       return (
         <List>
           <ListItem>
-            <ElemGroup attrValue={attrInfo.value.asGroup} />
+            <ElemGroup attrValue={attrInfo.value.asGroup ?? undefined} />
           </ListItem>
         </List>
       );
@@ -193,7 +193,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       return (
         <List>
           <ListItem>
-            <ElemRole attrValue={attrInfo.value.asRole} />
+            <ElemRole attrValue={attrInfo.value.asRole ?? undefined} />
           </ListItem>
         </List>
       );

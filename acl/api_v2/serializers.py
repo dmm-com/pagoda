@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional, TypedDict
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
@@ -17,6 +18,23 @@ class ACLParentType(TypedDict):
     id: int
     name: str
     is_public: bool
+
+
+class ACLRoleSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+    current_permission = serializers.IntegerField()
+
+    class ACLRoleType(TypedDict):
+        id: int
+        name: str
+        description: str
+        current_permission: int
+
+
+class ACLRoleListSerializer(serializers.ListSerializer):
+    child = ACLRoleSerializer()
 
 
 class ACLSerializer(serializers.ModelSerializer):
@@ -95,7 +113,8 @@ class ACLSerializer(serializers.ModelSerializer):
             for x in Group.objects.filter(is_active=True)
         ]
 
-    def get_roles(self, obj: ACLBase) -> List[Dict[str, Any]]:
+    @extend_schema_field(ACLRoleListSerializer)
+    def get_roles(self, obj: ACLBase) -> List[ACLRoleSerializer.ACLRoleType]:
         user = self.context["request"].user
 
         return [

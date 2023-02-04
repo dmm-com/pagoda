@@ -44,7 +44,7 @@ export const BaseAttributeTypes = {
   named: 1 << 11,
 };
 
-export const AttributeTypes = {
+export const AttributeTypes: Record<string, { name: string; type: number }> = {
   object: {
     name: "entry",
     type: BaseAttributeTypes.object,

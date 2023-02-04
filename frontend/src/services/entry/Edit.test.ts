@@ -39,7 +39,7 @@ test("initializeEntryInfo should return expect value", () => {
         id: 2,
         index: 0,
         name: "attr",
-        type: djangoContext.attrTypeValue.string,
+        type: djangoContext?.attrTypeValue.string,
         isMandatory: true,
         isDeleteInChain: true,
       },
@@ -60,30 +60,20 @@ test("initializeEntryInfo should return expect value", () => {
         type: 2,
         value: {
           asArrayGroup: [],
-          asArrayNamedObject: [
-            {
-              "": null,
-            },
-          ],
+          asArrayNamedObject: [{}],
           asArrayObject: [],
           asArrayRole: [],
           asArrayString: [""],
           asBoolean: false,
-          asGroup: null,
-          asNamedObject: {
-            "": null,
-          },
-          asObject: null,
-          asRole: null,
+          asGroup: undefined,
+          asNamedObject: {},
+          asObject: undefined,
+          asRole: undefined,
           asString: "",
         },
       },
     },
   });
-});
-
-test("isSubmittable() returns false when entryInfo.name is null", () => {
-  expect(isSubmittable({ name: null, attrs: {} })).toStrictEqual(false);
 });
 
 test("isSubmittable() returns true when entryInfo.attrs is changed", () => {

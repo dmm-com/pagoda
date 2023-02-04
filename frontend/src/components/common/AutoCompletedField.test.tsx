@@ -18,6 +18,7 @@ test("should render a component with essential props", function () {
         handleChangeSelectedValue={() => {
           /* nothing */
         }}
+        multiple={false}
       />,
       { wrapper: TestWrapper }
     )

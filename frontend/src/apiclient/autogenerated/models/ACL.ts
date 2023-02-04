@@ -19,6 +19,12 @@ import {
   ACLParentFromJSONTyped,
   ACLParentToJSON,
 } from "./ACLParent";
+import {
+  ACLRole,
+  ACLRoleFromJSON,
+  ACLRoleFromJSONTyped,
+  ACLRoleToJSON,
+} from "./ACLRole";
 
 /**
  *
@@ -76,10 +82,10 @@ export interface ACL {
   acl: Array<any>;
   /**
    *
-   * @type {Array<{ [key: string]: any; }>}
+   * @type {Array<ACLRole>}
    * @memberof ACL
    */
-  readonly roles: Array<{ [key: string]: any }>;
+  readonly roles: Array<ACLRole>;
   /**
    *
    * @type {ACLParent}
@@ -107,7 +113,7 @@ export function ACLFromJSONTyped(json: any, ignoreDiscriminator: boolean): ACL {
     acltypes: json["acltypes"],
     members: json["members"],
     acl: json["acl"],
-    roles: json["roles"],
+    roles: (json["roles"] as Array<any>).map(ACLRoleFromJSON),
     parent: ACLParentFromJSON(json["parent"]),
   };
 }

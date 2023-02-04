@@ -1,7 +1,7 @@
 import LockIcon from "@mui/icons-material/Lock";
 import { Box, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC, useEffect, useState } from "react";
+import React, { Dispatch, FC, useEffect, useState } from "react";
 import { Link, Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -61,7 +61,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
 
   useEffect(() => {
     if (!entry.loading && entry.value !== undefined) {
-      _setEntryInfo(formalizeEntryInfo(entry, excludeAttrs));
+      _setEntryInfo(formalizeEntryInfo(entry.value, excludeAttrs));
     } else if (
       !entry.loading &&
       !entity.loading &&
@@ -72,16 +72,21 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
   }, [entity, entry]);
 
   useEffect(() => {
-    setSubmittable(isSubmittable(entryInfo));
+    setSubmittable(entryInfo != null && isSubmittable(entryInfo));
   }, [entryInfo]);
 
-  const setEntryInfo = (entryInfo: EditableEntry) => {
+  const setEntryInfo: Dispatch<EditableEntry> = (entryInfo: EditableEntry) => {
     setEdited(true);
     _setEntryInfo(entryInfo);
   };
 
   const handleSubmit = async () => {
-    const updatedAttr = convertAttrsFormatCtoS(entryInfo?.attrs);
+    const updatedAttr = convertAttrsFormatCtoS(entryInfo?.attrs ?? {});
+
+    // TODO something better to notify validation errors
+    if (entryInfo?.name == null) {
+      throw new Error("name is required");
+    }
 
     if (entryId == undefined) {
       try {

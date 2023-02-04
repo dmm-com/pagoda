@@ -9,6 +9,7 @@ apis/index.ts
 index.ts
 models/ACL.ts
 models/ACLParent.ts
+models/ACLRole.ts
 models/AdvancedSearchResultExport.ts
 models/AdvancedSearchResultExportAttrInfo.ts
 models/Attribute.ts
