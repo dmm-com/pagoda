@@ -10,6 +10,7 @@ import { Loading } from "../components/common/Loading";
 import { PageHeader } from "../components/common/PageHeader";
 import { RoleForm } from "../components/role/RoleForm";
 import { useTypedParams } from "../hooks/useTypedParams";
+import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
 
 import { topPath, rolesPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -21,12 +22,12 @@ export const EditRolePage: FC = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { roleId } = useTypedParams<{ roleId?: number }>();
 
-  // FIXME validation
   // TODO try to validate values with zod
   const {
-    formState: { isDirty, isSubmitted, isSubmitting },
+    formState: { isDirty, isSubmitting, isSubmitSuccessful },
     handleSubmit,
     reset,
+    setError,
     setValue,
     getValues,
     control,
@@ -40,6 +41,10 @@ export const EditRolePage: FC = () => {
     !role.loading && role.value != null && reset(role.value);
   }, [role.value]);
 
+  useEffect(() => {
+    isSubmitSuccessful && history.push(rolesPath());
+  }, [isSubmitSuccessful]);
+
   const handleSubmitOnValid = useCallback(
     async (role: Role) => {
       const roleCreateUpdate: RoleCreateUpdate = {
@@ -50,27 +55,35 @@ export const EditRolePage: FC = () => {
         adminGroups: role.adminGroups.map((group) => group.id),
       };
 
-      if (roleId == null) {
-        try {
+      const willCreate = roleId == null;
+      const operationName = willCreate ? "作成" : "更新";
+
+      try {
+        if (willCreate) {
           await aironeApiClientV2.createRole(roleCreateUpdate);
-          enqueueSnackbar("ロールの作成に成功しました", {
-            variant: "success",
-          });
-          history.push(rolesPath());
-        } catch (e) {
-          enqueueSnackbar(`ロールの作成に失敗しました。`, {
-            variant: "error",
-          });
-        }
-      } else {
-        try {
+        } else {
           await aironeApiClientV2.updateRole(roleId, roleCreateUpdate);
-          enqueueSnackbar("ロールの更新に成功しました", {
-            variant: "success",
-          });
-          history.push(rolesPath());
-        } catch (e) {
-          enqueueSnackbar(`ロールの更新に失敗しました。`, {
+        }
+        enqueueSnackbar(`ロールの${operationName}に成功しました`, {
+          variant: "success",
+        });
+      } catch (e) {
+        if (e instanceof Response) {
+          await ExtractAPIException<Role>(
+            e,
+            (message) => {
+              enqueueSnackbar(
+                `ロールの${operationName}に失敗しました。詳細: "${message}"`,
+                {
+                  variant: "error",
+                }
+              );
+            },
+            (name, message) =>
+              setError(name, { type: "custom", message: message })
+          );
+        } else {
+          enqueueSnackbar(`ロールの${operationName}に失敗しました。`, {
             variant: "error",
           });
         }
@@ -105,7 +118,7 @@ export const EditRolePage: FC = () => {
       >
         <SubmitButton
           name="保存"
-          disabled={isSubmitting || isSubmitted} // FIXME check validation state
+          disabled={isSubmitting || isSubmitSuccessful} // FIXME check validation state
           handleSubmit={handleSubmit(handleSubmitOnValid)}
           handleCancel={handleCancel}
         />
@@ -116,7 +129,7 @@ export const EditRolePage: FC = () => {
       </Container>
 
       <Prompt
-        when={isDirty && !isSubmitting && !isSubmitted}
+        when={isDirty && !isSubmitSuccessful}
         message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
       />
     </Box>

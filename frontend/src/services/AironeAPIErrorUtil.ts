@@ -1,4 +1,10 @@
 // https://github.com/dmm-com/airone/wiki/(Blueprint)-AirOne-API-Error-code-mapping
+import {
+  AironeApiError,
+  AironeApiFieldsError,
+  ErrorDetail,
+} from "../apiclient/AironeApiError";
+
 const aironeAPIErrors: Record<string, string> = {
   "AE-220000": "入力データが既存のデータと重複しています",
   "AE-122000": "入力データが大きすぎます",
@@ -31,4 +37,31 @@ export const ExtractAPIErrorMessage = (json: any): string => {
   }
 
   return reasons;
+};
+
+// Extract error response with predefined data type, then report them appropriately
+// TODO check type-seafety more in runtime! currently unsafe
+export const ExtractAPIException = async <T>(
+  resp: Response,
+  nonFieldReporter: (message: string) => void,
+  fieldReporter: (name: keyof T, message: string) => void
+) => {
+  if (resp.ok) {
+    return;
+  }
+
+  const json = await resp.json();
+  const typed = json as AironeApiError<T>;
+
+  if (typed.non_field_errors != null) {
+    const fullMessage = typed.non_field_errors.map((e) => e.message).join(", ");
+    nonFieldReporter(fullMessage);
+  }
+
+  Object.keys(typed as AironeApiFieldsError<T>).forEach((fieldName: string) => {
+    const details: Array<ErrorDetail> = typed[fieldName];
+    const message = details.map((d) => d.message).join(", ");
+
+    fieldReporter(fieldName as keyof T, message);
+  });
 };

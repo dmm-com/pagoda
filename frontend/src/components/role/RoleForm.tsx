@@ -2,7 +2,6 @@ import {
   Autocomplete,
   Box,
   Chip,
-  Input,
   Table,
   TableBody,
   TableCell,
@@ -67,8 +66,16 @@ export const RoleForm: FC<Props> = ({ control, setValue, getValues }) => {
                   name="name"
                   control={control}
                   defaultValue=""
-                  render={({ field }) => (
-                    <Input {...field} sx={{ width: "100%" }} />
+                  rules={{ required: true }}
+                  render={({ field, fieldState: { error } }) => (
+                    <TextField
+                      {...field}
+                      variant="standard"
+                      required
+                      error={error != null}
+                      helperText={error?.message}
+                      sx={{ width: "100%" }}
+                    />
                   )}
                 />
               </TableCell>
@@ -81,7 +88,11 @@ export const RoleForm: FC<Props> = ({ control, setValue, getValues }) => {
                   control={control}
                   defaultValue=""
                   render={({ field }) => (
-                    <Input {...field} sx={{ width: "100%" }} />
+                    <TextField
+                      variant="standard"
+                      {...field}
+                      sx={{ width: "100%" }}
+                    />
                   )}
                 />
               </TableCell>
@@ -137,6 +148,7 @@ export const RoleForm: FC<Props> = ({ control, setValue, getValues }) => {
                               {(getValues("groups") as RoleGroup[]).some(
                                 (u) => u.id == option.id
                               ) ? (
+                                /* TODO these chip's hack showing errors can be replaced with validation logic maybe... */
                                 <Chip
                                   label={option.name}
                                   color="error"
