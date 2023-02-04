@@ -5,7 +5,7 @@ import {
   PromiseType,
 } from "react-use/lib/misc/types";
 
-import { toError } from "../utils/ResponseUtil";
+import { toError } from "../services/ResponseUtil";
 
 export declare type AsyncState<T> =
   | {

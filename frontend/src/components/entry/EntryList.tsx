@@ -17,14 +17,14 @@ import { Link, useHistory, useLocation } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { usePage } from "../../hooks/usePage";
-import { normalizeToMatch } from "../../utils/StringUtil";
+import { normalizeToMatch } from "../../services/StringUtil";
 
 import { newEntryPath, entryDetailsPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
-import { EntryList as ConstEntryList } from "utils/Constants";
+import { EntryList as ConstEntryList } from "services/Constants";
 
 interface Props {
   entityId: number;
@@ -58,11 +58,11 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
 
   const totalPageCount = entries.loading
     ? 0
-    : Math.ceil(entries.value?.count / ConstEntryList.MAX_ROW_COUNT);
+    : Math.ceil(entries.value?.count ?? 0 / ConstEntryList.MAX_ROW_COUNT);
 
   const [entryAnchorEls, setEntryAnchorEls] = useState<{
-    [key: number]: HTMLButtonElement;
-  } | null>({});
+    [key: number]: HTMLButtonElement | null;
+  }>({});
 
   return (
     <Box>

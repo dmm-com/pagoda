@@ -20,7 +20,7 @@ import React, { FC } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 
 import { AironeUserProps } from "pages/EditUserPage";
-import { DjangoContext } from "utils/DjangoContext";
+import { DjangoContext } from "services/DjangoContext";
 
 interface Props {
   userInfo: AironeUserProps;
@@ -63,7 +63,8 @@ const ElemAuthenticationMethod: FC<Props> = ({ userInfo }) => {
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         <InputBox>
-          {userInfo.authenticateType == djangoContext.userAuthenticateType.local
+          {userInfo.authenticateType ==
+          djangoContext?.userAuthenticateType.local
             ? "ローカル認証"
             : "LDAP 認証"}
         </InputBox>
@@ -98,12 +99,13 @@ const ElemAccessTokenConfiguration: FC<Props> = ({ userInfo, setUserInfo }) => {
                     ...userInfo,
                     token: {
                       ...userInfo.token,
-                      // lifetime: Number(e.target.value.replace(/[^0-9]/g, "")),
-                      lifetime: e.target.value ? Number(e.target.value) : null,
+                      lifetime: e.target.value
+                        ? Number(e.target.value)
+                        : undefined,
                     },
                   });
                 }}
-                value={userInfo.token.lifetime}
+                value={userInfo.token?.lifetime}
               />
             </Box>
 
@@ -113,8 +115,7 @@ const ElemAccessTokenConfiguration: FC<Props> = ({ userInfo, setUserInfo }) => {
                 label="作成日"
                 id="outlined-start-adornment"
                 variant="standard"
-                //value="2022/09/15 11:29:30"
-                value={userInfo.token.created}
+                value={userInfo.token?.created}
                 InputProps={{ disableUnderline: true }}
               />
 
@@ -124,9 +125,10 @@ const ElemAccessTokenConfiguration: FC<Props> = ({ userInfo, setUserInfo }) => {
                 id="outlined-start-adornment"
                 variant="standard"
                 value={
-                  userInfo.token.created === userInfo.token.expire
+                  userInfo.token?.created != null &&
+                  userInfo.token.created === userInfo.token?.expire
                     ? "無期限"
-                    : userInfo.token.expire
+                    : userInfo.token?.expire
                 }
                 InputProps={{ disableUnderline: true }}
               />
@@ -154,7 +156,7 @@ const ElemAccessToken: FC<Props> = ({ userInfo }) => {
             value={userInfo.token?.value}
           />
           <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
-            <CopyToClipboard text={userInfo.token?.value}>
+            <CopyToClipboard text={userInfo.token?.value ?? ""}>
               <ContentCopyIcon />
             </CopyToClipboard>
           </IconButton>
@@ -253,7 +255,7 @@ const ElemIsSuperuser: FC<Props> = ({ userInfo, setUserInfo }) => {
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         <Checkbox
-          disabled={!djangoContext.user.isSuperuser}
+          disabled={!(djangoContext?.user?.isSuperuser ?? false)}
           checked={userInfo.isSuperuser ?? false}
           onChange={(e) => {
             setUserInfo({ ...userInfo, isSuperuser: e.target.checked });

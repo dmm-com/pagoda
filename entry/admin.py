@@ -86,7 +86,6 @@ class AttrValueResource(AironeModelResource):
                     and instance.get_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
                 )
             ):
-
                 # clear is_latest flag of old attrs and set it to new one.
                 instance.is_latest = True
                 attr.values.add(instance)
@@ -96,7 +95,6 @@ class AttrValueResource(AironeModelResource):
             elif attr.schema.type & AttrTypeValue["array"] and not instance.get_status(
                 AttributeValue.STATUS_DATA_ARRAY_PARENT
             ):
-
                 # For a leaf AttributeValue, 'is_latest' flag will not be set.
                 # Instaed, these objects have
                 # parent_attrv parameter to identify parent AttributeValue.
@@ -115,14 +113,12 @@ class AttrValueResource(AironeModelResource):
             for x in results
             if x["data"]["status"] & AttributeValue.STATUS_DATA_ARRAY_PARENT
         ]:
-
             attr_value = AttributeValue.objects.get(id=data["id"])
             for child_id in [int(x) for x in data["data_arr"].split(",")]:
                 if (
                     AttributeValue.objects.filter(id=child_id).exists()
                     and not attr_value.data_array.filter(id=child_id).exists()
                 ):
-
                     # append related AttributeValue if it's not existed
                     attr_value.data_array.add(AttributeValue.objects.get(id=child_id))
 

@@ -88,7 +88,7 @@ class APITest(AironeViewTest):
         # confirms that all resp data would be expected one
         self.assertEqual(sorted(ret_data.keys()), ["is_created", "result", "updated_attrs"])
         self.assertEqual(sorted(ret_data["updated_attrs"].keys()), sorted(params["attrs"].keys()))
-        for (key, value) in params["attrs"].items():
+        for key, value in params["attrs"].items():
             self.assertEqual(ret_data["updated_attrs"][key], value)
 
         self.assertTrue(ret_data["is_created"])
@@ -619,7 +619,7 @@ class APITest(AironeViewTest):
                 "group": {"type": AttrTypeValue["group"], "value": test_groups[0]},
                 "groups": {"type": AttrTypeValue["array_group"], "value": test_groups},
             }
-            for (name, info) in attr_info.items():
+            for name, info in attr_info.items():
                 attr = EntityAttr.objects.create(
                     name=name,
                     type=info["type"],
@@ -635,7 +635,7 @@ class APITest(AironeViewTest):
                 entry = Entry.objects.create(name="entry-%d" % i, schema=entity, created_user=user)
                 entry.complement_attrs(user)
 
-                for (name, info) in attr_info.items():
+                for name, info in attr_info.items():
                     if "value" in info:
                         attr = entry.attrs.get(schema__name=name)
                         attr.add_value(user, info["value"])

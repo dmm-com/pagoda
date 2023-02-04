@@ -14,7 +14,7 @@ import { showEntryHistoryPath } from "../Routes";
 
 import { EntryHistoryListPage } from "./EntryHistoryListPage";
 
-import { TestWrapper } from "utils/TestWrapper";
+import { TestWrapper } from "services/TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();

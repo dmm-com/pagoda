@@ -26,12 +26,12 @@ import {
   JobOperations,
   JobRefreshIntervalMilliSec,
   JobStatuses,
-} from "../utils/Constants";
+} from "../services/Constants";
 import {
   getLatestCheckDate,
   jobTargetLabel,
   updateLatestCheckDate,
-} from "../utils/JobUtil";
+} from "../services/JobUtil";
 
 import { SearchBox } from "./common/SearchBox";
 
@@ -46,8 +46,8 @@ import {
   rolesPath,
   topPath,
 } from "Routes";
-import { postLogout } from "utils/AironeAPIClient";
-import { DjangoContext } from "utils/DjangoContext";
+import { postLogout } from "services/AironeAPIClient";
+import { DjangoContext } from "services/DjangoContext";
 
 const Frame = styled(Box)(({}) => ({
   width: "100%",

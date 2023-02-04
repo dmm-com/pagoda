@@ -5,7 +5,7 @@ import React, { FC, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
-import { DjangoContext } from "../../utils/DjangoContext";
+import { DjangoContext } from "../../services/DjangoContext";
 
 import { loginPath, topPath, usersPath } from "Routes";
 
@@ -67,7 +67,7 @@ export const UserPasswordFormModal: FC<Props> = ({
   const [isUnmatch, setIsUnmatch] = useState(false);
 
   const asSuperuser = useMemo(() => {
-    return DjangoContext.getInstance().user.isSuperuser;
+    return DjangoContext.getInstance()?.user?.isSuperuser ?? false;
   }, []);
 
   const handleSubmit = async () => {
@@ -96,7 +96,7 @@ export const UserPasswordFormModal: FC<Props> = ({
       // This calls event handler, which is specified by caller component
       onSubmit();
 
-      if (DjangoContext.getInstance().user.id == userId) {
+      if (DjangoContext.getInstance()?.user?.id == userId) {
         history.replace(loginPath());
       } else {
         history.replace(topPath());

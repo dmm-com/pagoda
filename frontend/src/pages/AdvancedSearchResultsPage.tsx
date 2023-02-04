@@ -9,7 +9,7 @@ import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { PageHeader } from "../components/common/PageHeader";
 import { RateLimitedClickable } from "../components/common/RateLimitedClickable";
 import { usePage } from "../hooks/usePage";
-import { AdvancedSerarchResultList } from "../utils/Constants";
+import { AdvancedSerarchResultList } from "../services/Constants";
 
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -28,16 +28,12 @@ export const AdvancedSearchResultsPage: FC = () => {
   const searchAllEntities = params.has("is_all_entities")
     ? params.get("is_all_entities") === "true"
     : false;
-  const entryName = params.has("entry_name") ? params.get("entry_name") : "";
+  const entryName = params.get("entry_name") ?? "";
   const hasReferral = params.has("has_referral")
     ? params.get("has_referral") === "true"
     : false;
-  const referralName = params.has("referral_name")
-    ? params.get("referral_name")
-    : "";
-  const attrInfo = params.has("attrinfo")
-    ? JSON.parse(params.get("attrinfo"))
-    : [];
+  const referralName = params.get("referral_name") ?? "";
+  const attrInfo = JSON.parse(params.get("attrinfo") ?? "[]");
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -153,7 +149,7 @@ export const AdvancedSearchResultsPage: FC = () => {
           defaultEntryFilter={entryName}
           defaultReferralFilter={referralName}
           defaultAttrsFilter={Object.fromEntries(
-            attrInfo.map((i) => [i["name"], i["keyword"] || ""])
+            attrInfo.map((i: any) => [i["name"], i["keyword"] || ""])
           )}
         />
       ) : (
@@ -162,8 +158,12 @@ export const AdvancedSearchResultsPage: FC = () => {
       <AdvancedSearchModal
         openModal={openModal}
         setOpenModal={setOpenModal}
-        attrNames={entityAttrs.loading ? [] : entityAttrs.value}
-        initialAttrNames={attrInfo.map((e) => e.name)}
+        attrNames={
+          !entityAttrs.loading && entityAttrs.value != null
+            ? entityAttrs.value
+            : []
+        }
+        initialAttrNames={attrInfo.map((e: any) => e.name)}
       />
     </Box>
   );

@@ -108,8 +108,8 @@ export const GroupForm: FC<Props> = ({ group, setGroup }) => {
         <Loading />
       ) : (
         <GroupTreeRoot
-          groupTrees={groupTrees.value}
-          selectedGroupId={group.parentGroup}
+          groupTrees={groupTrees.value ?? []}
+          selectedGroupId={group.parentGroup ?? null}
           handleSelectGroupId={(groupId: number | null) =>
             setGroup({
               ...group,

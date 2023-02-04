@@ -12,7 +12,7 @@ import { EntryImportModal } from "../components/entry/EntryImportModal";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { usePage } from "../hooks/usePage";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { EntityHistoryList as ConstEntityHistoryList } from "../utils/Constants";
+import { EntityHistoryList as ConstEntityHistoryList } from "../services/Constants";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -67,7 +67,7 @@ export const EntityHistoryPage: FC = () => {
         <Typography color="textPrimary">変更履歴</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title={entity.value?.name} description="変更履歴">
+      <PageHeader title={entity.value?.name ?? ""} description="変更履歴">
         <Box width="50px">
           <IconButton
             onClick={(e) => {

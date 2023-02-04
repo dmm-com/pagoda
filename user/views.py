@@ -117,7 +117,6 @@ def do_edit(request, user_id, recv_data):
 
     # The case token_lifetime prameter is specified to update
     if "token_lifetime" in recv_data:
-
         # Validate specified token_lifetime
         if (
             not re.match(r"^[0-9]+$", recv_data["token_lifetime"])
@@ -130,7 +129,6 @@ def do_edit(request, user_id, recv_data):
 
     # Other parameters could be updated by only admin user
     if access_user.is_superuser:
-
         # validate duplication of username
         if (
             target_user.username != recv_data["name"]

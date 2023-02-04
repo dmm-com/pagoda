@@ -2,7 +2,6 @@ from user.models import User
 
 
 def create_user(details, user=None, *args, **kwargs):
-
     # When first time login, UserSocialAuth model's object is created.
     # If UserSocialAuth exists, user already exists.
     if user:

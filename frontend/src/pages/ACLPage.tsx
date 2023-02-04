@@ -19,7 +19,7 @@ import { ACLForm } from "components/common/ACLForm";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { SubmitButton } from "components/common/SubmitButton";
-import { DjangoContext } from "utils/DjangoContext";
+import { DjangoContext } from "services/DjangoContext";
 
 export const ACLPage: FC = () => {
   const djangoContext = DjangoContext.getInstance();
@@ -52,12 +52,13 @@ export const ACLPage: FC = () => {
   const handleSubmit = async () => {
     // TODO better name?
     if (!acl.loading) {
-      const aclSettings = acl.value.roles.map((role) => {
-        return {
-          member_id: role.id,
-          value: aclInfo.permissions[role.id]?.current_permission,
-        };
-      });
+      const aclSettings =
+        acl.value?.roles.map((role) => {
+          return {
+            member_id: role.id,
+            value: aclInfo.permissions[role.id]?.current_permission,
+          };
+        }) ?? [];
 
       await aironeApiClientV2.updateAcl(
         objectId,
@@ -82,7 +83,7 @@ export const ACLPage: FC = () => {
   useEffect(() => {
     if (!acl.loading && acl.value != null) {
       _setACLInfo({
-        isPublic: acl.value.isPublic,
+        isPublic: acl.value.isPublic ?? false,
         defaultPermission: acl.value.defaultPermission,
         permissions: acl.value.roles.reduce((obj, role) => {
           return {
@@ -104,64 +105,72 @@ export const ACLPage: FC = () => {
           エンティティ一覧
         </Typography>
 
-        {/* This is a statement for Entity */}
-        {!acl.loading &&
-          acl.value.objtype & djangoContext.aclObjectType.entity && (
-            <Box sx={{ display: "flex" }}>
-              <Typography component={Link} to={entityEntriesPath(acl.value.id)}>
-                {acl.value?.name}
-              </Typography>
-              {acl.value?.isPublic === false && <LockIcon />}
-            </Box>
-          )}
+        {!acl.loading && acl.value != null && (
+          <>
+            {/* This is a statement for Entity */}
+            {(acl.value.objtype ?? 0) &
+              (djangoContext?.aclObjectType.entity ?? 0) && (
+              <Box sx={{ display: "flex" }}>
+                <Typography
+                  component={Link}
+                  to={entityEntriesPath(acl.value.id)}
+                >
+                  {acl.value?.name}
+                </Typography>
+                {acl.value?.isPublic === false && <LockIcon />}
+              </Box>
+            )}
 
-        {/* This is a statement for Entry */}
-        {!acl.loading && acl.value.objtype & djangoContext.aclObjectType.entry && (
-          <Box sx={{ display: "flex" }}>
-            <Typography
-              component={Link}
-              to={entityEntriesPath(acl.value.parent.id)}
-            >
-              {acl.value?.parent?.name}
-            </Typography>
-            {acl.value?.parent?.isPublic === false && <LockIcon />}
-          </Box>
+            {/* This is a statement for Entry */}
+            {(acl.value.objtype ?? 0) &
+              (djangoContext?.aclObjectType.entry ?? 0) && (
+              <Box sx={{ display: "flex" }}>
+                <Typography
+                  component={Link}
+                  to={entityEntriesPath(acl.value.parent?.id ?? 0)}
+                >
+                  {acl.value?.parent?.name}
+                </Typography>
+                {acl.value?.parent?.isPublic === false && <LockIcon />}
+              </Box>
+            )}
+            {(acl.value.objtype ?? 0) &
+              (djangoContext?.aclObjectType.entry ?? 0) && (
+              <Box sx={{ display: "flex" }}>
+                <Typography
+                  component={Link}
+                  to={entryDetailsPath(acl.value.parent?.id ?? 0, acl.value.id)}
+                >
+                  {acl.value?.name}
+                </Typography>
+                {acl.value?.isPublic === false && <LockIcon />}
+              </Box>
+            )}
+
+            {/* This is a statement for EntityAttr */}
+            {(acl.value.objtype ?? 0) &
+              (djangoContext?.aclObjectType.entityAttr ?? 0) && (
+              <Box sx={{ display: "flex" }}>
+                <Typography
+                  component={Link}
+                  to={entityEntriesPath(acl.value.parent?.id ?? 0)}
+                >
+                  {acl.value?.parent?.name}
+                </Typography>
+                {acl.value?.parent?.isPublic === false && <LockIcon />}
+              </Box>
+            )}
+            {(acl.value.objtype ?? 0) &
+              (djangoContext?.aclObjectType.entityAttr ?? 0) && (
+              <Box sx={{ display: "flex" }}>
+                <Typography color="textPrimary">{acl.value?.name}</Typography>
+                {acl.value?.isPublic === false && <LockIcon />}
+              </Box>
+            )}
+
+            {/* This is a statement for EntryAttr */}
+          </>
         )}
-        {!acl.loading && acl.value.objtype & djangoContext.aclObjectType.entry && (
-          <Box sx={{ display: "flex" }}>
-            <Typography
-              component={Link}
-              to={entryDetailsPath(acl.value.parent.id, acl.value.id)}
-            >
-              {acl.value?.name}
-            </Typography>
-            {acl.value?.isPublic === false && <LockIcon />}
-          </Box>
-        )}
-
-        {/* This is a statement for EntityAttr */}
-        {!acl.loading &&
-          acl.value.objtype & djangoContext.aclObjectType.entityAttr && (
-            <Box sx={{ display: "flex" }}>
-              <Typography
-                component={Link}
-                to={entityEntriesPath(acl.value.parent.id)}
-              >
-                {acl.value?.parent?.name}
-              </Typography>
-              {acl.value?.parent?.isPublic === false && <LockIcon />}
-            </Box>
-          )}
-        {!acl.loading &&
-          acl.value.objtype & djangoContext.aclObjectType.entityAttr && (
-            <Box sx={{ display: "flex" }}>
-              <Typography color="textPrimary">{acl.value?.name}</Typography>
-              {acl.value?.isPublic === false && <LockIcon />}
-            </Box>
-          )}
-
-        {/* This is a statement for EntryAttr */}
-
         <Typography color="textPrimary">ACL</Typography>
       </AironeBreadcrumbs>
 

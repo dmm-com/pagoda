@@ -16,7 +16,7 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { UserForm } from "components/user/UserForm";
 import { UserPasswordFormModal } from "components/user/UserPasswordFormModal";
-import { DjangoContext } from "utils/DjangoContext";
+import { DjangoContext } from "services/DjangoContext";
 
 export interface AironeUserProps extends UserRetrieve {
   password: string;
@@ -48,7 +48,7 @@ export const EditUserPage: FC = () => {
       expire: "",
       created: "",
     },
-    authenticateType: djangoContext.userAuthenticateType.local,
+    authenticateType: djangoContext?.userAuthenticateType.local,
   });
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);

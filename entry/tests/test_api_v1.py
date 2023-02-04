@@ -257,7 +257,7 @@ class ViewTest(AironeViewTest):
         # initialize instances to be used in this test case
         groups = [Group.objects.create(name=x) for x in ["g-foo", "g-bar", "g-baz"]]
         entity = Entity.objects.create(name="Entity", created_user=user)
-        for (name, type_index) in [("grp", "group"), ("arr_group", "array_group")]:
+        for name, type_index in [("grp", "group"), ("arr_group", "array_group")]:
             entity.attrs.add(
                 EntityAttr.objects.create(
                     **{
@@ -670,7 +670,7 @@ class ViewTest(AironeViewTest):
             self.assertTrue(all([x["attr_id"] == attr.id for x in attr_value_history]))
 
             # check order of former value and previous value
-            for (index, history_value) in enumerate(attr_value_history):
+            for index, history_value in enumerate(attr_value_history):
                 if (
                     attr.schema.type & AttrTypeValue["array"]
                     and not history_value["curr"]["value"]

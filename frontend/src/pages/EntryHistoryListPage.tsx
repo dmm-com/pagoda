@@ -17,7 +17,7 @@ import { EntryControlMenu } from "../components/entry/EntryControlMenu";
 import { EntryHistoryList } from "../components/entry/EntryHistoryList";
 import { usePage } from "../hooks/usePage";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { EntryHistoryList as ConstEntryHistoryList } from "../utils/Constants";
+import { EntryHistoryList as ConstEntryHistoryList } from "../services/Constants";
 
 import { PageHeader } from "components/common/PageHeader";
 
@@ -79,7 +79,7 @@ export const EntryHistoryListPage: FC = () => {
         <Typography color="textPrimary">変更履歴</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title={entry.value?.name} description="変更履歴">
+      <PageHeader title={entry.value?.name ?? ""} description="変更履歴">
         <Box width="50px">
           <IconButton
             onClick={(e) => {

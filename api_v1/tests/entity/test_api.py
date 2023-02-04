@@ -12,7 +12,7 @@ class APITest(AironeViewTest):
             "test_entity1": ["foo", "bar", "fuga"],
             "test_entity2": ["bar", "hoge", "fuga"],
         }
-        for (entity_name, attrnames) in entity_info.items():
+        for entity_name, attrnames in entity_info.items():
             entity = Entity.objects.create(name=entity_name, created_user=user)
 
             for attrname in attrnames:

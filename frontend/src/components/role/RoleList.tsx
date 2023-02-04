@@ -73,7 +73,7 @@ export const RoleList: FC = ({}) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {roles.value.map((role) => (
+            {roles.value?.map((role) => (
               <TableRow key={role.id}>
                 <TableCell>{role.name}</TableCell>
                 <TableCell>{role.description}</TableCell>

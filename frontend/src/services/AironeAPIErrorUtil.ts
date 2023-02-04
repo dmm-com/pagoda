@@ -10,3 +10,25 @@ export const GetReasonFromCode = (code: string): string => {
     `フロントエンドシステムエラー(エラーコード ${code})。 AirOne 開発者にお問合せください`
   );
 };
+
+export const ExtractAPIErrorMessage = (json: any): string => {
+  let reasons = "";
+
+  if (json["name"]) {
+    reasons = json["name"]
+      .map((errorInfo: any) =>
+        GetReasonFromCode(errorInfo["airone_error_code"])
+      )
+      .join();
+  }
+
+  if (json["non_field_errors"]) {
+    reasons = json["non_field_errors"]
+      .map((errorInfo: any) =>
+        GetReasonFromCode(errorInfo["airone_error_code"])
+      )
+      .join();
+  }
+
+  return reasons;
+};

@@ -11,15 +11,17 @@ import {
 } from "@mui/material";
 import React, { FC, useEffect } from "react";
 
-import { DjangoContext } from "utils/DjangoContext";
+import { DjangoContext } from "services/DjangoContext";
+
+interface AclInfo {
+  isPublic: boolean;
+  defaultPermission: number;
+  permissions: object;
+}
 
 interface Props {
-  aclInfo: {
-    isPublic: boolean;
-    defaultPermission: number;
-    permissions: object;
-  };
-  setACLInfo: (aclInfo: object) => void;
+  aclInfo: AclInfo;
+  setACLInfo: (aclInfo: AclInfo) => void;
   setSubmittable: (isSubmittable: boolean) => void;
 }
 
@@ -30,12 +32,13 @@ export const ACLForm: FC<Props> = ({ setSubmittable, aclInfo, setACLInfo }) => {
     if (aclInfo.isPublic) {
       return true;
     }
-    if (aclInfo.defaultPermission & djangoContext.aclTypes.full.value) {
+    if (aclInfo.defaultPermission & (djangoContext?.aclTypes.full.value ?? 0)) {
       return true;
     }
     return Object.values(aclInfo.permissions).some(
       (permission) =>
-        permission.current_permission & djangoContext.aclTypes.full.value
+        permission.current_permission &
+        (djangoContext?.aclTypes.full.value ?? 0)
     );
   };
 
@@ -95,7 +98,7 @@ export const ACLForm: FC<Props> = ({ setSubmittable, aclInfo, setACLInfo }) => {
               <TableBody>
                 <TableRow>
                   <TableCell>全員</TableCell>
-                  <TableCell></TableCell>
+                  <TableCell />
                   <TableCell>
                     <Select
                       fullWidth={true}
@@ -107,14 +110,16 @@ export const ACLForm: FC<Props> = ({ setSubmittable, aclInfo, setACLInfo }) => {
                         })
                       }
                     >
-                      {Object.keys(djangoContext.aclTypes).map((key, index) => (
-                        <MenuItem
-                          key={index}
-                          value={djangoContext.aclTypes[key].value}
-                        >
-                          {djangoContext.aclTypes[key].name}
-                        </MenuItem>
-                      ))}
+                      {Object.keys(djangoContext?.aclTypes ?? {}).map(
+                        (key, index) => (
+                          <MenuItem
+                            key={index}
+                            value={djangoContext?.aclTypes[key].value}
+                          >
+                            {djangoContext?.aclTypes[key].name}
+                          </MenuItem>
+                        )
+                      )}
                     </Select>
                   </TableCell>
                 </TableRow>
@@ -142,13 +147,13 @@ export const ACLForm: FC<Props> = ({ setSubmittable, aclInfo, setACLInfo }) => {
                         }
                       >
                         <MenuItem value={0}>(未設定)</MenuItem>
-                        {Object.keys(djangoContext.aclTypes).map(
+                        {Object.keys(djangoContext?.aclTypes ?? {}).map(
                           (key, index) => (
                             <MenuItem
                               key={index}
-                              value={djangoContext.aclTypes[key].value}
+                              value={djangoContext?.aclTypes[key].value}
                             >
-                              {djangoContext.aclTypes[key].name}
+                              {djangoContext?.aclTypes[key].name}
                             </MenuItem>
                           )
                         )}

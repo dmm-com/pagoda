@@ -49,7 +49,7 @@ import {
   EntryHistoryList,
   EntryReferralList,
   JobList,
-} from "utils/Constants";
+} from "services/Constants";
 
 export type GroupTree = Pick<_GroupTree, "id" | "name"> & {
   children: Array<GroupTree>;

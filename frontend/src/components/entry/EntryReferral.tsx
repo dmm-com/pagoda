@@ -14,8 +14,8 @@ import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
 import { usePage } from "../../hooks/usePage";
-import { EntryReferralList } from "../../utils/Constants";
-import { normalizeToMatch } from "../../utils/StringUtil";
+import { EntryReferralList } from "../../services/Constants";
+import { normalizeToMatch } from "../../services/StringUtil";
 
 import { entryDetailsPath } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
@@ -66,7 +66,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
           onKeyPress={(e) => {
             if (e.key === "Enter") {
               setKeywordQuery(
-                keyword.length > 0 ? normalizeToMatch(keyword) : undefined
+                keyword.length > 0 ? normalizeToMatch(keyword) : ""
               );
             }
           }}
@@ -99,7 +99,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
           >
             <ListItemButton
               component={Link}
-              to={entryDetailsPath(entry.schema.id, entry.id)}
+              to={entryDetailsPath(entry.schema?.id ?? 0, entry.id)}
             >
               <ListItemText sx={{ px: "16px" }}>{entry.name}</ListItemText>
             </ListItemButton>
