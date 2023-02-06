@@ -100,7 +100,7 @@ class Role(models.Model):
         for entry in self.get_referred_entries():
             entry.register_es()
 
-    def get_current_permission(self, aclbase):
+    def get_current_permission(self, aclbase) -> int:
         permissions = [x for x in self.permissions.all() if x.get_objid() == aclbase.id]
         if permissions:
             return permissions[0].get_aclid()

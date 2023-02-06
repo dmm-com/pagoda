@@ -73,8 +73,8 @@ interface Props {
   referralEntities: Entity[];
   entityInfo: EntityUpdate;
   setEntityInfo: (entityInfo: EntityUpdate) => void;
-  latestChangedIndex?: number;
-  setLatestChangedIndex: (latestChangedIndex: number) => void;
+  latestChangedIndex: number | null;
+  setLatestChangedIndex: (latestChangedIndex: number | null) => void;
 }
 
 export const AttributeRow: FC<Props> = ({
@@ -132,6 +132,8 @@ export const AttributeRow: FC<Props> = ({
     key: string,
     value: any
   ) => {
+    // FIXME type error
+    // @ts-ignore
     allAttrs[index][key] = value;
     setEntityInfo({ ...entityInfo, attrs: [...allAttrs] });
   };
@@ -148,7 +150,7 @@ export const AttributeRow: FC<Props> = ({
       : NormalTableRow;
 
   return (
-    <StyledTableRow onAnimationEnd={() => setLatestChangedIndex(undefined)}>
+    <StyledTableRow onAnimationEnd={() => setLatestChangedIndex(null)}>
       <TableCell>
         {index !== undefined && (
           <Input

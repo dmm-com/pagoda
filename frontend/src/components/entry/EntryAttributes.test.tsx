@@ -9,8 +9,7 @@ import { EntryAttributes } from "components/entry/EntryAttributes";
 import { TestWrapper } from "services/TestWrapper";
 
 test("should render a component with essential props", function () {
-  const attrs = [];
   expect(() =>
-    render(<EntryAttributes attributes={attrs} />, { wrapper: TestWrapper })
+    render(<EntryAttributes attributes={[]} />, { wrapper: TestWrapper })
   ).not.toThrow();
 });

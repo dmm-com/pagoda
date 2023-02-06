@@ -79,18 +79,24 @@ const ElemString: FC<
       />
       {index !== undefined && (
         <>
-          <IconButton
-            disabled={disabled}
-            sx={{ mx: "20px" }}
-            onClick={() => handleClickDeleteListItem(attrName, attrType, index)}
-          >
-            <DeleteOutlineIcon />
-          </IconButton>
-          <IconButton
-            onClick={() => handleClickAddListItem(attrName, attrType, index)}
-          >
-            <AddIcon />
-          </IconButton>
+          {handleClickDeleteListItem != null && (
+            <IconButton
+              disabled={disabled}
+              sx={{ mx: "20px" }}
+              onClick={() =>
+                handleClickDeleteListItem(attrName, attrType, index)
+              }
+            >
+              <DeleteOutlineIcon />
+            </IconButton>
+          )}
+          {handleClickAddListItem != null && (
+            <IconButton
+              onClick={() => handleClickAddListItem(attrName, attrType, index)}
+            >
+              <AddIcon />
+            </IconButton>
+          )}
         </>
       )}
     </Box>
@@ -119,12 +125,8 @@ const ElemBool: FC<CommonProps & { attrValue: boolean }> = ({
 const ElemReferral: FC<
   CommonProps & {
     multiple?: boolean;
-    attrValue:
-      | EntryAttributeValueObject
-      | Array<EntryAttributeValueObject>
-      | EntityAttributeType
-      | Array<EntityAttributeType>;
-    schemaId?: number;
+    attrValue: { id: number; name: string } | { id: number; name: string }[];
+    schemaId: number;
     disabled?: boolean;
     handleClickDeleteListItem?: (
       attrName: string,
@@ -151,20 +153,21 @@ const ElemReferral: FC<
   handleClickAddListItem,
 }) => {
   const [keyword, setKeyword] = useState("");
-  const [referrals, setReferrals] = useState([]);
+  const [referrals, setReferrals] = useState<{ id: number; name: string }[]>(
+    []
+  );
 
   const djangoContext = DjangoContext.getInstance();
 
   useEffect(() => {
     (async () => {
       if (Number(attrType) & Number(djangoContext?.attrTypeValue.object)) {
-        // FIXME Implement and use API V2
         // TODO call it reactively to avoid loading API???
         const attrReferrals = await aironeApiClientV2.getEntryAttrReferrals(
           schemaId,
           keyword
         );
-        const addReferrals = [];
+        const addReferrals: { id: number; name: string }[] = [];
 
         // Filter duplicate referrals.
         attrReferrals.forEach((result) => {
@@ -175,15 +178,16 @@ const ElemReferral: FC<
 
         // Add current attr value to referrals.
         if (multiple) {
-          (attrValue as Array<EntryAttributeValueObject | null>)
-            .filter((value) => value != null)
-            .forEach((value) => {
+          (attrValue as Array<EntryAttributeValueObject | null>).forEach(
+            (value) => {
               if (
+                value != null &&
                 !referrals.map((referral) => referral.id).includes(value.id)
               ) {
                 addReferrals.push(value);
               }
-            });
+            }
+          );
         } else {
           if (attrValue) {
             if (
@@ -191,7 +195,7 @@ const ElemReferral: FC<
                 .map((referral) => referral.id)
                 .includes((attrValue as EntryAttributeValueObject).id)
             ) {
-              addReferrals.push(attrValue);
+              addReferrals.push(attrValue as EntryAttributeValueObject);
             }
           }
         }
@@ -200,7 +204,7 @@ const ElemReferral: FC<
         Number(attrType) & Number(djangoContext?.attrTypeValue.group)
       ) {
         const groups = await aironeApiClientV2.getGroups();
-        const addReferrals = [];
+        const addReferrals: { id: number; name: string }[] = [];
 
         // Filter duplicate referrals.
         groups.forEach((result) => {
@@ -212,7 +216,7 @@ const ElemReferral: FC<
         setReferrals(referrals.concat(addReferrals));
       } else if (Number(attrType) & Number(djangoContext?.attrTypeValue.role)) {
         const roles = await aironeApiClientV2.getRoles();
-        const addReferrals = [];
+        const addReferrals: { id: number; name: string }[] = [];
 
         // Filter duplicate referrals.
         roles.forEach((result) => {
@@ -238,9 +242,12 @@ const ElemReferral: FC<
           sx={{ width: "280px" }}
           multiple={multiple}
           options={referrals}
-          getOptionLabel={(option) => option?.name}
-          isOptionEqualToValue={(option, value) => option.id === value?.id}
-          value={attrValue ?? null}
+          getOptionLabel={(option: { id: number; name: string }) => option.name}
+          isOptionEqualToValue={(
+            option: { id: number; name: string },
+            value: { id: number; name: string }
+          ) => option.id === value.id}
+          value={attrValue}
           onChange={(e, value) => {
             handleChange(attrName, attrType, {
               index: index,
@@ -282,20 +289,26 @@ const ElemReferral: FC<
         />
         {index !== undefined && (
           <>
-            <IconButton
-              disabled={disabled}
-              sx={{ mx: "20px" }}
-              onClick={() =>
-                handleClickDeleteListItem(attrName, attrType, index)
-              }
-            >
-              <DeleteOutlineIcon />
-            </IconButton>
-            <IconButton
-              onClick={() => handleClickAddListItem(attrName, attrType, index)}
-            >
-              <AddIcon />
-            </IconButton>
+            {handleClickDeleteListItem != null && (
+              <IconButton
+                disabled={disabled}
+                sx={{ mx: "20px" }}
+                onClick={() =>
+                  handleClickDeleteListItem(attrName, attrType, index)
+                }
+              >
+                <DeleteOutlineIcon />
+              </IconButton>
+            )}
+            {handleClickAddListItem != null && (
+              <IconButton
+                onClick={() =>
+                  handleClickAddListItem(attrName, attrType, index)
+                }
+              >
+                <AddIcon />
+              </IconButton>
+            )}
           </>
         )}
       </Box>
@@ -346,10 +359,10 @@ const ElemNamedObject: FC<
               handleChange(attrName, attrType, {
                 index: index,
                 key: e.target.value,
-                ...attrValue[key],
+                ...(attrValue?.[key] ?? {}),
               })
             }
-            error={isMandatory && !key && !attrValue[key]}
+            error={isMandatory && !key && attrValue != null && !attrValue[key]}
           />
         </Box>
       </Box>
@@ -381,7 +394,7 @@ const ElemDate: FC<
         label="月日を選択"
         inputFormat="yyyy/MM/dd"
         value={attrValue ? attrValue : null}
-        onChange={(date: Date) => {
+        onChange={(date: Date | null) => {
           let settingDateValue = "";
           if (date !== null) {
             settingDateValue = `${date.getFullYear()}-${
@@ -496,6 +509,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrValue={attrInfo.value.asGroup}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
+          schemaId={attrInfo.schema.id}
           handleChange={handleChangeAttribute}
         />
       );
@@ -507,6 +521,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrValue={attrInfo.value.asRole}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
+          schemaId={attrInfo.schema.id}
           handleChange={handleChangeAttribute}
         />
       );
@@ -544,6 +559,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrValue={attrInfo.value.asArrayGroup}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
+          schemaId={attrInfo.schema.id}
           handleChange={handleChangeAttribute}
         />
       );
@@ -556,6 +572,7 @@ export const EditAttributeValue: FC<Props> = ({
           attrValue={attrInfo.value.asArrayRole}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
+          schemaId={attrInfo.schema.id}
           handleChange={handleChangeAttribute}
         />
       );

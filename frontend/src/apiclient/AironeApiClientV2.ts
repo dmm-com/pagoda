@@ -161,10 +161,10 @@ class AironeApiClientV2 {
   async updateAcl(
     id: number,
     name: string,
-    objectType: number,
     isPublic: boolean,
-    defaultPermission: number,
-    acl: any[]
+    acl: any[],
+    objectType?: number,
+    defaultPermission?: number
   ): Promise<void> {
     await this.acl.aclApiV2AclsUpdate(
       {

@@ -42,6 +42,7 @@ interface Props {
 
 export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
   const handleChangeWebhook = (index: number, key: string, value: any) => {
+    // @ts-ignore
     entityInfo.webhooks[index][key] = value;
     setEntityInfo({ ...entityInfo });
   };
@@ -64,8 +65,12 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
     headerIndex: number,
     value: any
   ) => {
-    entityInfo.webhooks[openModalIndex].headers[headerIndex].headerKey = value;
-    setEntityInfo({ ...entityInfo });
+    const header =
+      entityInfo.webhooks?.[openModalIndex]?.headers?.[headerIndex];
+    if (header != null) {
+      header.headerKey = value;
+      setEntityInfo({ ...entityInfo });
+    }
   };
 
   const handleWebhookHeaderValue = (
@@ -73,17 +78,22 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
     headerIndex: number,
     value: any
   ) => {
-    entityInfo.webhooks[openModalIndex].headers[headerIndex].headerValue =
-      value;
-    setEntityInfo({ ...entityInfo });
+    const header =
+      entityInfo.webhooks?.[openModalIndex]?.headers?.[headerIndex];
+    if (header != null) {
+      header.headerValue = value;
+      setEntityInfo({ ...entityInfo });
+    }
   };
 
   const handleDeleteWebhook = (index: number) => {
-    entityInfo.webhooks[index] = {
-      ...entityInfo.webhooks[index],
-      isDeleted: true,
-    };
-    setEntityInfo({ ...entityInfo });
+    if (entityInfo.webhooks?.[index] != null) {
+      entityInfo.webhooks[index] = {
+        ...entityInfo.webhooks[index],
+        isDeleted: true,
+      };
+      setEntityInfo({ ...entityInfo });
+    }
   };
 
   const [openModalIndex, setOpenModalIndex] = React.useState(-1);

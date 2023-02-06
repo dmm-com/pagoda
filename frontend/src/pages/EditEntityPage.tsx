@@ -102,6 +102,7 @@ export const EditEntityPage: FC = () => {
           entityInfo.name,
           entityInfo.note ?? "",
           entityInfo.isToplevel ?? false,
+          // @ts-ignore
           attrs,
           webhooks
         );

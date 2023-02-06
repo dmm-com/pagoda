@@ -2,6 +2,7 @@ import {
   useAutocomplete,
   AutocompleteGetTagProps,
 } from "@mui/base/AutocompleteUnstyled";
+import { AutocompleteValue } from "@mui/base/AutocompleteUnstyled/useAutocomplete";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import { styled } from "@mui/material/styles";
@@ -158,21 +159,23 @@ const Listbox = styled("ul")(
 `
 );
 
-interface Props<T> {
-  options: T[];
-  getOptionLabel: (option: string | T[] | NonNullable<T>) => string;
-  defaultValue?: NonNullable<T> | T[];
-  handleChangeSelectedValue: (value: NonNullable<T> | T[]) => void;
-  multiple?: boolean;
+interface Props<T, Multiple extends boolean | undefined> {
+  options: ReadonlyArray<T>;
+  getOptionLabel: (option: T) => string;
+  defaultValue?: AutocompleteValue<T, Multiple, undefined, undefined>;
+  handleChangeSelectedValue: (
+    value: AutocompleteValue<T, Multiple, undefined, undefined>
+  ) => void;
+  multiple: Multiple;
 }
 
-export const AutoCompletedField = <T,>({
+export const AutoCompletedField = <T, Multiple extends boolean | undefined>({
   options,
   getOptionLabel,
   defaultValue,
   handleChangeSelectedValue,
-  multiple = false,
-}: Props<T>) => {
+  multiple,
+}: Props<T, Multiple>) => {
   const {
     getRootProps,
     getInputProps,
@@ -183,7 +186,7 @@ export const AutoCompletedField = <T,>({
     value,
     focused,
     setAnchorEl,
-  } = useAutocomplete({
+  } = useAutocomplete<T, Multiple>({
     multiple: multiple,
     options: options,
     defaultValue: defaultValue,
@@ -206,9 +209,9 @@ export const AutoCompletedField = <T,>({
     }
 
     if (multiple && Array.isArray(value)) {
-      handleChangeSelectedValue(value as T[]);
+      handleChangeSelectedValue(value);
     } else if (!multiple && value != null && !Array.isArray(value)) {
-      handleChangeSelectedValue(value as NonNullable<T>);
+      handleChangeSelectedValue(value);
     }
   }, [value]);
 
@@ -244,7 +247,7 @@ export const AutoCompletedField = <T,>({
       </div>
       {groupedOptions.length > 0 ? (
         <Listbox {...getListboxProps()}>
-          {groupedOptions.map((option, index) => (
+          {(groupedOptions as T[]).map((option, index) => (
             <li {...getOptionProps({ option, index })}>
               <span>{getOptionLabel(option)}</span>
               <CheckIcon fontSize="small" />

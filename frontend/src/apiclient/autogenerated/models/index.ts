@@ -2,6 +2,7 @@
 /* eslint-disable */
 export * from "./ACL";
 export * from "./ACLParent";
+export * from "./ACLRole";
 export * from "./AdvancedSearchResultExport";
 export * from "./AdvancedSearchResultExportAttrInfo";
 export * from "./Attribute";

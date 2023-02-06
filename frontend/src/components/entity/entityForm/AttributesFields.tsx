@@ -24,7 +24,9 @@ export const AttributesFields: FC<Props> = ({
   setEntityInfo,
   referralEntities,
 }) => {
-  const [latestChangedIndex, setLatestChangedIndex] = useState<number>();
+  const [latestChangedIndex, setLatestChangedIndex] = useState<number | null>(
+    null
+  );
 
   return (
     <Box mb="80px">

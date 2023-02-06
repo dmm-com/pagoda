@@ -58,13 +58,7 @@ Object {
                   </li>
                   <li
                     class="MuiBreadcrumbs-li"
-                  >
-                    0
-                    0
-                    0
-                    0
-                    0
-                  </li>
+                  />
                   <li
                     aria-hidden="true"
                     class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
@@ -391,13 +385,7 @@ Object {
                 </li>
                 <li
                   class="MuiBreadcrumbs-li"
-                >
-                  0
-                  0
-                  0
-                  0
-                  0
-                </li>
+                />
                 <li
                   aria-hidden="true"
                   class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
