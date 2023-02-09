@@ -11,7 +11,151 @@ import {
 } from "components/entry/entryForm/EditableEntry";
 import { DjangoContext } from "services/DjangoContext";
 
+interface asArrayNamedObjectBoolean {
+  [key: string]: EntryAttributeValueObject & {
+    boolean: boolean;
+  };
+}
+
 const djangoContext = DjangoContext.getInstance();
+
+export function updateEntryInfoValueFromValueInfo(
+  entryInfo: EditableEntry,
+  attrName: string,
+  attrType: number,
+  valueInfo: any
+) {
+  switch (attrType) {
+    case djangoContext?.attrTypeValue.date:
+    case djangoContext?.attrTypeValue.string:
+    case djangoContext?.attrTypeValue.text:
+      entryInfo.attrs[attrName].value.asString = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.boolean:
+      entryInfo.attrs[attrName].value.asBoolean = valueInfo.checked;
+      break;
+
+    case djangoContext?.attrTypeValue.object:
+      entryInfo.attrs[attrName].value.asObject = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.group:
+      entryInfo.attrs[attrName].value.asGroup = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.role:
+      entryInfo.attrs[attrName].value.asRole = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.named_object:
+      if (valueInfo?.key !== undefined) {
+        entryInfo.attrs[attrName].value.asNamedObject = {
+          [valueInfo.key]:
+            Object.values(
+              entryInfo.attrs[attrName].value.asNamedObject ?? {}
+            )[0] ?? null,
+        };
+      } else {
+        entryInfo.attrs[attrName].value.asNamedObject = {
+          [Object.keys(
+            entryInfo.attrs[attrName].value.asNamedObject ?? {}
+          )[0] ?? ""]: valueInfo.value,
+        };
+      }
+      break;
+
+    case djangoContext?.attrTypeValue.array_string:
+      if (entryInfo.attrs[attrName].value?.asArrayString == null) {
+        entryInfo.attrs[attrName].value.asArrayString = [];
+      }
+      // @ts-ignore
+      entryInfo.attrs[attrName].value.asArrayString[valueInfo.index] =
+        valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.array_object:
+      entryInfo.attrs[attrName].value.asArrayObject = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.array_group:
+      entryInfo.attrs[attrName].value.asArrayGroup = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.array_role:
+      entryInfo.attrs[attrName].value.asArrayRole = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.array_named_object:
+      if (
+        entryInfo.attrs[attrName].value.asArrayNamedObject?.length ??
+        0 <= valueInfo.index
+      ) {
+        entryInfo.attrs[attrName].value.asArrayNamedObject?.push({
+          // @ts-ignore
+          "": null,
+        });
+        break;
+      }
+
+      if (valueInfo?.key !== undefined) {
+        // @ts-ignore
+        entryInfo.attrs[attrName].value.asArrayNamedObject[valueInfo.index] =
+          {
+            [valueInfo.key]:
+              Object.values(
+                entryInfo.attrs[attrName].value.asArrayNamedObject?.[
+                  valueInfo.index
+                ] ?? {}
+              )[0] ?? null,
+          };
+      } else {
+        const INPUT_NAME = Object.keys(
+          entryInfo.attrs[attrName].value.asArrayNamedObject?.[
+            valueInfo.index
+          ] ?? {}
+        )[0] ?? "";
+
+        const REFER_ENTRY = Object.values(
+          entryInfo.attrs[attrName].value.asArrayNamedObject?.[
+            valueInfo.index
+          ] ?? {}
+        )[0];
+
+        // @ts-ignore
+        entryInfo.attrs[attrName].value.asArrayNamedObject[valueInfo.index] =
+          {
+            [INPUT_NAME]: {
+              ...REFER_ENTRY,
+              id: valueInfo.value.id,
+              name: valueInfo.value.name,
+            },
+          };
+      }
+      break;
+
+      case djangoContext?.attrTypeValue.array_named_object_boolean:
+        (
+          entryInfo.attrs[attrName].value
+            .asArrayNamedObject as asArrayNamedObjectBoolean[]
+        )[valueInfo.index] = {
+          [Object.keys(
+            entryInfo.attrs[attrName].value.asArrayNamedObject?.[
+              valueInfo.index
+            ] ?? {}
+          )[0] ?? ""]: {
+            ...Object.values(
+              entryInfo.attrs[attrName].value.asArrayNamedObject?.[
+                valueInfo.index
+              ] ?? {}
+            )[0],
+            boolean: valueInfo.checked,
+          },
+        };
+
+      break;
+  }
+}
 
 // Convert Entry information from server-side value to presentation format.
 // (NOTE) It might be needed to be refactored because if server returns proper format with frontend, this is not necessary.

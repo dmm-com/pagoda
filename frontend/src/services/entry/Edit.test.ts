@@ -690,3 +690,9 @@ test("convertAttrsFormatCtoS() returns expected value when nothing value", () =>
     ]);
   });
 });
+
+test("updateEntryInfoValueFromValueInfo() updates entryInfo correctly", () => {
+});
+
+test("updateEntryInfoValueFromValueInfo() updates entryInfo especially for ArrayNamedValue", () => {
+});
