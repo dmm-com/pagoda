@@ -8,6 +8,7 @@ import {
 import {
   EditableEntry,
   EditableEntryAttrs,
+  EditableEntryAttrValue,
 } from "components/entry/entryForm/EditableEntry";
 import { DjangoContext } from "services/DjangoContext";
 
@@ -20,8 +21,7 @@ interface asArrayNamedObjectBoolean {
 const djangoContext = DjangoContext.getInstance();
 
 export function updateEntryInfoValueFromValueInfo(
-  entryInfo: EditableEntry,
-  attrName: string,
+  attrValue: EditableEntryAttrValue,
   attrType: number,
   valueInfo: any
 ): void {
@@ -29,69 +29,63 @@ export function updateEntryInfoValueFromValueInfo(
     case djangoContext?.attrTypeValue.date:
     case djangoContext?.attrTypeValue.string:
     case djangoContext?.attrTypeValue.text:
-      entryInfo.attrs[attrName].value.asString = valueInfo.value;
+      attrValue.asString = valueInfo.value;
       break;
 
     case djangoContext?.attrTypeValue.boolean:
-      entryInfo.attrs[attrName].value.asBoolean = valueInfo.checked;
+      attrValue.asBoolean = valueInfo.checked;
       break;
 
     case djangoContext?.attrTypeValue.object:
-      entryInfo.attrs[attrName].value.asObject = valueInfo.value;
+      attrValue.asObject = valueInfo.value;
       break;
 
     case djangoContext?.attrTypeValue.group:
-      entryInfo.attrs[attrName].value.asGroup = valueInfo.value;
+      attrValue.asGroup = valueInfo.value;
       break;
 
     case djangoContext?.attrTypeValue.role:
-      entryInfo.attrs[attrName].value.asRole = valueInfo.value;
+      attrValue.asRole = valueInfo.value;
       break;
 
     case djangoContext?.attrTypeValue.named_object:
       if (valueInfo?.key !== undefined) {
-        entryInfo.attrs[attrName].value.asNamedObject = {
+        attrValue.asNamedObject = {
           [valueInfo.key]:
-            Object.values(
-              entryInfo.attrs[attrName].value.asNamedObject ?? {}
-            )[0] ?? null,
+            Object.values(attrValue.asNamedObject ?? {})[0] ?? null,
         };
       } else {
-        entryInfo.attrs[attrName].value.asNamedObject = {
-          [Object.keys(
-            entryInfo.attrs[attrName].value.asNamedObject ?? {}
-          )[0] ?? ""]: valueInfo.value,
+        attrValue.asNamedObject = {
+          [Object.keys(attrValue.asNamedObject ?? {})[0] ?? ""]:
+            valueInfo.value,
         };
       }
       break;
 
     case djangoContext?.attrTypeValue.array_string:
-      if (entryInfo.attrs[attrName].value?.asArrayString == null) {
-        entryInfo.attrs[attrName].value.asArrayString = [];
+      if (attrValue?.asArrayString == null) {
+        attrValue.asArrayString = [];
       }
       // @ts-ignore
-      entryInfo.attrs[attrName].value.asArrayString[valueInfo.index] =
-        valueInfo.value;
+      attrValue.asArrayString[valueInfo.index] = valueInfo.value;
       break;
 
     case djangoContext?.attrTypeValue.array_object:
-      entryInfo.attrs[attrName].value.asArrayObject = valueInfo.value;
+      attrValue.asArrayObject = valueInfo.value;
       break;
 
     case djangoContext?.attrTypeValue.array_group:
-      entryInfo.attrs[attrName].value.asArrayGroup = valueInfo.value;
+      attrValue.asArrayGroup = valueInfo.value;
       break;
 
     case djangoContext?.attrTypeValue.array_role:
-      entryInfo.attrs[attrName].value.asArrayRole = valueInfo.value;
+      attrValue.asArrayRole = valueInfo.value;
       break;
 
     case djangoContext?.attrTypeValue.array_named_object:
-      if (
-        entryInfo.attrs[attrName].value.asArrayNamedObject?.length ??
-        0 <= valueInfo.index
-      ) {
-        entryInfo.attrs[attrName].value.asArrayNamedObject?.push({
+      console.log("valueInfo", valueInfo);
+      if ((attrValue.asArrayNamedObject?.length ?? 0) <= valueInfo.index) {
+        attrValue.asArrayNamedObject?.push({
           // @ts-ignore
           "": null,
         });
@@ -100,30 +94,24 @@ export function updateEntryInfoValueFromValueInfo(
 
       if (valueInfo?.key !== undefined) {
         // @ts-ignore
-        entryInfo.attrs[attrName].value.asArrayNamedObject[valueInfo.index] = {
+        attrValue.asArrayNamedObject[valueInfo.index] = {
           [valueInfo.key]:
             Object.values(
-              entryInfo.attrs[attrName].value.asArrayNamedObject?.[
-                valueInfo.index
-              ] ?? {}
+              attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
             )[0] ?? null,
         };
       } else {
         const INPUT_NAME =
           Object.keys(
-            entryInfo.attrs[attrName].value.asArrayNamedObject?.[
-              valueInfo.index
-            ] ?? {}
+            attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
           )[0] ?? "";
 
         const REFER_ENTRY = Object.values(
-          entryInfo.attrs[attrName].value.asArrayNamedObject?.[
-            valueInfo.index
-          ] ?? {}
+          attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
         )[0];
 
         // @ts-ignore
-        entryInfo.attrs[attrName].value.asArrayNamedObject[valueInfo.index] = {
+        attrValue.asArrayNamedObject[valueInfo.index] = {
           [INPUT_NAME]: {
             ...REFER_ENTRY,
             id: valueInfo.value.id,
@@ -134,19 +122,14 @@ export function updateEntryInfoValueFromValueInfo(
       break;
 
     case djangoContext?.attrTypeValue.array_named_object_boolean:
-      (
-        entryInfo.attrs[attrName].value
-          .asArrayNamedObject as asArrayNamedObjectBoolean[]
-      )[valueInfo.index] = {
+      (attrValue.asArrayNamedObject as asArrayNamedObjectBoolean[])[
+        valueInfo.index
+      ] = {
         [Object.keys(
-          entryInfo.attrs[attrName].value.asArrayNamedObject?.[
-            valueInfo.index
-          ] ?? {}
+          attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
         )[0] ?? ""]: {
           ...Object.values(
-            entryInfo.attrs[attrName].value.asArrayNamedObject?.[
-              valueInfo.index
-            ] ?? {}
+            attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
           )[0],
           boolean: valueInfo.checked,
         },

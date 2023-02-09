@@ -56,7 +56,11 @@ export const EntryForm: FC<Props> = ({
     attrType: number,
     valueInfo: any
   ) => {
-    updateEntryInfoValueFromValueInfo(entryInfo, attrName, attrType, valueInfo);
+    updateEntryInfoValueFromValueInfo(
+      entryInfo.attrs[attrName].value,
+      attrType,
+      valueInfo
+    );
 
     // Update entryInfo.attrs value depends on the changing values
     changeAttributes({ ...entryInfo.attrs });

@@ -693,41 +693,58 @@ test("convertAttrsFormatCtoS() returns expected value when nothing value", () =>
 });
 
 test("updateEntryInfoValueFromValueInfo() updates entryInfo correctly", () => {
-  const entryInfo: EditableEntry = {
-    name: "test-entry",
-    attrs: {
-      array_named_object: {
-        id: 1,
-        type: djangoContext?.attrTypeValue.array_named_object,
-        isMandatory: false,
-        schema: {
-          id: 1,
-          name: "array_named_object",
-        },
-        value: {
-          asArrayNamedObject: [],
+  const cases: Array<{
+    client_data: {
+      attrValue: EditableEntryAttrValue;
+      attrType: number;
+      valueInfo: any;
+    };
+    expected_data: EditableEntryAttrValue;
+  }> = [
+    {
+      client_data: {
+        attrValue: { asArrayNamedObject: [{}] },
+        attrType: djangoContext?.attrTypeValue.array_named_object,
+        valueInfo: {
+          index: 0,
+          key: "a",
         },
       },
+      expected_data: {
+        asArrayNamedObject: [{ a: null }],
+      },
     },
-  };
-  const attrName = "array_named_object";
-  const attrType = djangoContext?.attrTypeValue.array_named_object;
-  const valueInfo = {
-    index: 0,
-    key: "",
-    value: {
-      id: 1,
-      name: "test",
+    {
+      client_data: {
+        attrValue: { asArrayNamedObject: [{}] },
+        attrType: djangoContext?.attrTypeValue.array_named_object,
+        valueInfo: {
+          index: 0,
+          value: {
+            id: 2,
+            name: "test_object",
+            schema: {
+              id: 1,
+              name: "test_schema",
+            },
+            _boolean: false,
+          },
+        },
+      },
+      expected_data: {
+        asArrayNamedObject: [{ "": { id: 2, name: "test_object" } }] as any,
+      },
     },
-  };
+  ];
 
-  console.log("before", entryInfo.attrs.array_named_object.value);
-  updateEntryInfoValueFromValueInfo(entryInfo, attrName, attrType, valueInfo);
-  console.log("after", entryInfo.attrs.array_named_object.value);
-  updateEntryInfoValueFromValueInfo(entryInfo, attrName, attrType, valueInfo);
-  console.log("after2", entryInfo.attrs.array_named_object.value);
-
-  // expect(sending_data).toStrictEqual();
+  cases.forEach((c) => {
+    updateEntryInfoValueFromValueInfo(
+      c.client_data.attrValue,
+      c.client_data.attrType,
+      c.client_data.valueInfo
+    );
+    expect(c.client_data.attrValue).toStrictEqual(c.expected_data);
+  });
 });
 
 test("updateEntryInfoValueFromValueInfo() updates entryInfo especially for ArrayNamedValue", () => {});
