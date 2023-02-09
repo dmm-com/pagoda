@@ -440,7 +440,25 @@ Object {
                   />
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
+                  >
+                    <button
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
+                      tabindex="0"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="AddIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                        />
+                      </svg>
+                    </button>
+                  </td>
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   />
@@ -888,7 +906,25 @@ Object {
                 />
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
+                >
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      data-testid="AddIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                      />
+                    </svg>
+                  </button>
+                </td>
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 />

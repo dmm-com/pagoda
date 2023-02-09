@@ -339,7 +339,6 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
       },
     };
     const entryInfo: EditableEntry = { name: "test_entry", attrs: attrs };
-    console.log("entryInfo", entryInfo);
     expect(isSubmittable(entryInfo)).toStrictEqual(false);
   });
 });
@@ -723,13 +722,8 @@ test("updateEntryInfoValueFromValueInfo() updates entryInfo correctly", () => {
           value: {
             id: 2,
             name: "test_object",
-            schema: {
-              id: 1,
-              name: "test_schema",
-            },
-            _boolean: false,
           },
-        },
+        } as any,
       },
       expected_data: {
         asArrayNamedObject: [{ "": { id: 2, name: "test_object" } }] as any,

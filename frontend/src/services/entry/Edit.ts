@@ -83,7 +83,6 @@ export function updateEntryInfoValueFromValueInfo(
       break;
 
     case djangoContext?.attrTypeValue.array_named_object:
-      console.log("valueInfo", valueInfo);
       if ((attrValue.asArrayNamedObject?.length ?? 0) <= valueInfo.index) {
         attrValue.asArrayNamedObject?.push({
           // @ts-ignore
@@ -106,18 +105,11 @@ export function updateEntryInfoValueFromValueInfo(
             attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
           )[0] ?? "";
 
-        const REFER_ENTRY = Object.values(
-          attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
-        )[0];
-
         // @ts-ignore
+        // This update refer Entry information. This also act to erase it when user delete it.
         attrValue.asArrayNamedObject[valueInfo.index] = {
-          [INPUT_NAME]: {
-            ...REFER_ENTRY,
-            id: valueInfo.value.id,
-            name: valueInfo.value.name,
-          },
-        };
+          [INPUT_NAME]: valueInfo.value,
+        } as any;
       }
       break;
 
