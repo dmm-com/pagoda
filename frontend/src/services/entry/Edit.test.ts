@@ -546,3 +546,147 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
     ]);
   });
 });
+
+test("convertAttrsFormatCtoS() returns expected value when nothing value", () => {
+  const cases: Array<{
+    client_data: { type: number; value: EditableEntryAttrValue };
+    expected_data: any;
+  }> = [
+    // boolean
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.boolean,
+        value: {
+          asBoolean: false,
+        },
+      },
+      expected_data: false,
+    },
+    // string
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.string,
+        value: {
+          asString: "",
+        },
+      },
+      expected_data: "",
+    },
+    // object
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.object,
+        value: {
+          asObject: undefined,
+        },
+      },
+      expected_data: null,
+    },
+    // group
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.group,
+        value: {
+          asGroup: undefined,
+        },
+      },
+      expected_data: null,
+    },
+    // named_object
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.named_object,
+        value: {
+          asNamedObject: {},
+        },
+      },
+      expected_data: {
+        id: null,
+        name: "",
+      },
+    },
+    // array_string
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.array_string,
+        value: {
+          asArrayString: [],
+        },
+      },
+      expected_data: [],
+    },
+    // array_object
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.array_object,
+        value: {
+          asArrayObject: [],
+        },
+      },
+      expected_data: [],
+    },
+    // array_group
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.array_group,
+        value: {
+          asArrayGroup: [],
+        },
+      },
+      expected_data: [],
+    },
+    // array_named_object
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.array_named_object,
+        value: {
+          asArrayNamedObject: [],
+        },
+      },
+      expected_data: [],
+    },
+    // role
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.role,
+        value: {
+          asRole: undefined,
+        },
+      },
+      expected_data: null,
+    },
+    // array_role
+    {
+      client_data: {
+        type: djangoContext?.attrTypeValue.array_role,
+        value: {
+          asArrayRole: [],
+        },
+      },
+      expected_data: [],
+    },
+  ];
+
+  cases.forEach((c) => {
+    const attrs: Record<string, EditableEntryAttrs> = {
+      key: {
+        id: 1,
+        type: c.client_data.type,
+        isMandatory: true,
+        schema: {
+          id: 1,
+          name: "test_schema",
+        },
+        value: c.client_data.value,
+      },
+    };
+    const sending_data = convertAttrsFormatCtoS(attrs);
+
+    expect(sending_data).toStrictEqual([
+      {
+        id: 1,
+        value: c.expected_data,
+      },
+    ]);
+  });
+});

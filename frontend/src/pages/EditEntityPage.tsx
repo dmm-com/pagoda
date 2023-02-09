@@ -148,7 +148,7 @@ export const EditEntityPage: FC = () => {
   // by handleSubmit() processing to prevent showing wrong Prompt message.
   useEffect(() => {
     if (submitted) {
-      if (createMode) {
+      if (entityId === undefined) {
         history.replace(entitiesPath());
       } else {
         history.replace(entityEntriesPath(entityId));
