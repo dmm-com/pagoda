@@ -95,7 +95,7 @@ export const RestorableEntryList: FC<Props> = ({
 
   const totalPageCount = entries.loading
     ? 0
-    : Math.ceil(entries.value?.count ?? 0 / ConstEntryList.MAX_ROW_COUNT);
+    : Math.ceil((entries.value?.count ?? 0) / ConstEntryList.MAX_ROW_COUNT);
 
   return (
     <Box>
