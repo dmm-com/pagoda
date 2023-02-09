@@ -24,7 +24,7 @@ export function updateEntryInfoValueFromValueInfo(
   attrName: string,
   attrType: number,
   valueInfo: any
-) {
+): void {
   switch (attrType) {
     case djangoContext?.attrTypeValue.date:
     case djangoContext?.attrTypeValue.string:
@@ -100,21 +100,21 @@ export function updateEntryInfoValueFromValueInfo(
 
       if (valueInfo?.key !== undefined) {
         // @ts-ignore
-        entryInfo.attrs[attrName].value.asArrayNamedObject[valueInfo.index] =
-          {
-            [valueInfo.key]:
-              Object.values(
-                entryInfo.attrs[attrName].value.asArrayNamedObject?.[
-                  valueInfo.index
-                ] ?? {}
-              )[0] ?? null,
-          };
+        entryInfo.attrs[attrName].value.asArrayNamedObject[valueInfo.index] = {
+          [valueInfo.key]:
+            Object.values(
+              entryInfo.attrs[attrName].value.asArrayNamedObject?.[
+                valueInfo.index
+              ] ?? {}
+            )[0] ?? null,
+        };
       } else {
-        const INPUT_NAME = Object.keys(
-          entryInfo.attrs[attrName].value.asArrayNamedObject?.[
-            valueInfo.index
-          ] ?? {}
-        )[0] ?? "";
+        const INPUT_NAME =
+          Object.keys(
+            entryInfo.attrs[attrName].value.asArrayNamedObject?.[
+              valueInfo.index
+            ] ?? {}
+          )[0] ?? "";
 
         const REFER_ENTRY = Object.values(
           entryInfo.attrs[attrName].value.asArrayNamedObject?.[
@@ -123,35 +123,34 @@ export function updateEntryInfoValueFromValueInfo(
         )[0];
 
         // @ts-ignore
-        entryInfo.attrs[attrName].value.asArrayNamedObject[valueInfo.index] =
-          {
-            [INPUT_NAME]: {
-              ...REFER_ENTRY,
-              id: valueInfo.value.id,
-              name: valueInfo.value.name,
-            },
-          };
+        entryInfo.attrs[attrName].value.asArrayNamedObject[valueInfo.index] = {
+          [INPUT_NAME]: {
+            ...REFER_ENTRY,
+            id: valueInfo.value.id,
+            name: valueInfo.value.name,
+          },
+        };
       }
       break;
 
-      case djangoContext?.attrTypeValue.array_named_object_boolean:
-        (
-          entryInfo.attrs[attrName].value
-            .asArrayNamedObject as asArrayNamedObjectBoolean[]
-        )[valueInfo.index] = {
-          [Object.keys(
+    case djangoContext?.attrTypeValue.array_named_object_boolean:
+      (
+        entryInfo.attrs[attrName].value
+          .asArrayNamedObject as asArrayNamedObjectBoolean[]
+      )[valueInfo.index] = {
+        [Object.keys(
+          entryInfo.attrs[attrName].value.asArrayNamedObject?.[
+            valueInfo.index
+          ] ?? {}
+        )[0] ?? ""]: {
+          ...Object.values(
             entryInfo.attrs[attrName].value.asArrayNamedObject?.[
               valueInfo.index
             ] ?? {}
-          )[0] ?? ""]: {
-            ...Object.values(
-              entryInfo.attrs[attrName].value.asArrayNamedObject?.[
-                valueInfo.index
-              ] ?? {}
-            )[0],
-            boolean: valueInfo.checked,
-          },
-        };
+          )[0],
+          boolean: valueInfo.checked,
+        },
+      };
 
       break;
   }

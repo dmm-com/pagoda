@@ -21,6 +21,7 @@ import {
   initializeEntryInfo,
   isSubmittable,
   convertAttrsFormatCtoS,
+  updateEntryInfoValueFromValueInfo,
 } from "./Edit";
 
 import { DjangoContext } from "services/DjangoContext";
@@ -692,7 +693,41 @@ test("convertAttrsFormatCtoS() returns expected value when nothing value", () =>
 });
 
 test("updateEntryInfoValueFromValueInfo() updates entryInfo correctly", () => {
+  const entryInfo: EditableEntry = {
+    name: "test-entry",
+    attrs: {
+      array_named_object: {
+        id: 1,
+        type: djangoContext?.attrTypeValue.array_named_object,
+        isMandatory: false,
+        schema: {
+          id: 1,
+          name: "array_named_object",
+        },
+        value: {
+          asArrayNamedObject: [],
+        },
+      },
+    },
+  };
+  const attrName = "array_named_object";
+  const attrType = djangoContext?.attrTypeValue.array_named_object;
+  const valueInfo = {
+    index: 0,
+    key: "",
+    value: {
+      id: 1,
+      name: "test",
+    },
+  };
+
+  console.log("before", entryInfo.attrs.array_named_object.value);
+  updateEntryInfoValueFromValueInfo(entryInfo, attrName, attrType, valueInfo);
+  console.log("after", entryInfo.attrs.array_named_object.value);
+  updateEntryInfoValueFromValueInfo(entryInfo, attrName, attrType, valueInfo);
+  console.log("after2", entryInfo.attrs.array_named_object.value);
+
+  // expect(sending_data).toStrictEqual();
 });
 
-test("updateEntryInfoValueFromValueInfo() updates entryInfo especially for ArrayNamedValue", () => {
-});
+test("updateEntryInfoValueFromValueInfo() updates entryInfo especially for ArrayNamedValue", () => {});
