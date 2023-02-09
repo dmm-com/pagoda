@@ -8,10 +8,128 @@ import {
 import {
   EditableEntry,
   EditableEntryAttrs,
+  EditableEntryAttrValue,
 } from "components/entry/entryForm/EditableEntry";
 import { DjangoContext } from "services/DjangoContext";
 
+interface asArrayNamedObjectBoolean {
+  [key: string]: EntryAttributeValueObject & {
+    boolean: boolean;
+  };
+}
+
 const djangoContext = DjangoContext.getInstance();
+
+export function updateEntryInfoValueFromValueInfo(
+  attrValue: EditableEntryAttrValue,
+  attrType: number,
+  valueInfo: any
+): void {
+  switch (attrType) {
+    case djangoContext?.attrTypeValue.date:
+    case djangoContext?.attrTypeValue.string:
+    case djangoContext?.attrTypeValue.text:
+      attrValue.asString = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.boolean:
+      attrValue.asBoolean = valueInfo.checked;
+      break;
+
+    case djangoContext?.attrTypeValue.object:
+      attrValue.asObject = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.group:
+      attrValue.asGroup = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.role:
+      attrValue.asRole = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.named_object:
+      if (valueInfo?.key !== undefined) {
+        attrValue.asNamedObject = {
+          [valueInfo.key]:
+            Object.values(attrValue.asNamedObject ?? {})[0] ?? null,
+        };
+      } else {
+        attrValue.asNamedObject = {
+          [Object.keys(attrValue.asNamedObject ?? {})[0] ?? ""]:
+            valueInfo.value,
+        };
+      }
+      break;
+
+    case djangoContext?.attrTypeValue.array_string:
+      if (attrValue?.asArrayString == null) {
+        attrValue.asArrayString = [];
+      }
+      // @ts-ignore
+      attrValue.asArrayString[valueInfo.index] = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.array_object:
+      attrValue.asArrayObject = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.array_group:
+      attrValue.asArrayGroup = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.array_role:
+      attrValue.asArrayRole = valueInfo.value;
+      break;
+
+    case djangoContext?.attrTypeValue.array_named_object:
+      if ((attrValue.asArrayNamedObject?.length ?? 0) <= valueInfo.index) {
+        attrValue.asArrayNamedObject?.push({
+          // @ts-ignore
+          "": null,
+        });
+        break;
+      }
+
+      if (valueInfo?.key !== undefined) {
+        // @ts-ignore
+        attrValue.asArrayNamedObject[valueInfo.index] = {
+          [valueInfo.key]:
+            Object.values(
+              attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
+            )[0] ?? null,
+        };
+      } else {
+        const INPUT_NAME =
+          Object.keys(
+            attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
+          )[0] ?? "";
+
+        // @ts-ignore
+        // This update refer Entry information. This also act to erase it when user delete it.
+        attrValue.asArrayNamedObject[valueInfo.index] = {
+          [INPUT_NAME]: valueInfo.value,
+        } as any;
+      }
+      break;
+
+    case djangoContext?.attrTypeValue.array_named_object_boolean:
+      (attrValue.asArrayNamedObject as asArrayNamedObjectBoolean[])[
+        valueInfo.index
+      ] = {
+        [Object.keys(
+          attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
+        )[0] ?? ""]: {
+          ...Object.values(
+            attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
+          )[0],
+          boolean: valueInfo.checked,
+        },
+      };
+
+      break;
+  }
+}
 
 // Convert Entry information from server-side value to presentation format.
 // (NOTE) It might be needed to be refactored because if server returns proper format with frontend, this is not necessary.
@@ -106,11 +224,13 @@ export function isSubmittable(entryInfo: EditableEntry): boolean {
         attr[1].value.asString?.length,
         attr[1].value.asObject,
         attr[1].value.asGroup,
+        attr[1].value.asRole,
         Object.keys(attr[1].value.asNamedObject ?? {})[0] &&
           Object.values(attr[1].value.asNamedObject ?? {})[0],
         attr[1].value.asArrayString?.filter((v) => v).length,
         attr[1].value.asArrayObject?.filter((v) => v).length,
         attr[1].value.asArrayGroup?.filter((v) => v).length,
+        attr[1].value.asArrayRole?.filter((v) => v).length,
         attr[1].value.asArrayNamedObject?.filter(
           (v) => Object.keys(v)[0] && Object.values(v)[0]
         ).length,
@@ -141,27 +261,28 @@ export function convertAttrsFormatCtoS(
       case djangoContext?.attrTypeValue.object:
         return {
           id: attrValue.schema.id,
-          value: attrValue.value.asObject?.id ?? "",
+          value: attrValue.value.asObject?.id ?? null,
         };
 
       case djangoContext?.attrTypeValue.group:
         return {
           id: attrValue.schema.id,
-          value: attrValue.value.asGroup?.id ?? "",
+          value: attrValue.value.asGroup?.id ?? null,
         };
 
       case djangoContext?.attrTypeValue.role:
         return {
           id: attrValue.schema.id,
-          value: attrValue.value.asRole?.id ?? "",
+          value: attrValue.value.asRole?.id ?? null,
         };
 
       case djangoContext?.attrTypeValue.named_object:
         return {
           id: attrValue.schema.id,
           value: {
-            id: Object.values(attrValue.value.asNamedObject ?? {})[0]?.id ?? "",
-            name: Object.keys(attrValue.value.asNamedObject ?? {})[0],
+            id:
+              Object.values(attrValue.value.asNamedObject ?? {})[0]?.id ?? null,
+            name: Object.keys(attrValue.value.asNamedObject ?? {})[0] ?? "",
           },
         };
 
@@ -194,8 +315,8 @@ export function convertAttrsFormatCtoS(
           id: attrValue.schema.id,
           value: attrValue.value.asArrayNamedObject?.map((x) => {
             return {
-              id: Object.values(x)[0]?.id ?? "",
-              name: Object.keys(x)[0],
+              id: Object.values(x)[0]?.id ?? null,
+              name: Object.keys(x)[0] ?? "",
             };
           }),
         };
@@ -214,8 +335,8 @@ export function convertAttrsFormatCtoS(
             }[]
           )?.map((x) => {
             return {
-              id: Object.values(x)[0]?.id ?? "",
-              name: Object.keys(x)[0],
+              id: Object.values(x)[0]?.id ?? null,
+              name: Object.keys(x)[0] ?? "",
               boolean: Object.values(x)[0]?.boolean ?? false,
             };
           }),

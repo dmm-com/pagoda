@@ -99,7 +99,6 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
         enqueueSnackbar("エントリの作成が完了しました", {
           variant: "success",
         });
-        history.push(entityEntriesPath(entityId));
       } catch (e) {
         if (e instanceof Response) {
           if (!e.ok) {
@@ -125,7 +124,6 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
         enqueueSnackbar("エントリの更新が完了しました", {
           variant: "success",
         });
-        history.push(entryDetailsPath(entityId, entryId));
       } catch (e) {
         if (e instanceof Response) {
           if (!e.ok) {
@@ -142,6 +140,24 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       }
     }
   };
+
+  // NOTE: This should be fixed in near future.
+  // This unpeaceful impelmentation guarantees moving page after changing state "submitted"
+  // by handleSubmit() processing to prevent showing wrong Prompt message.
+  useEffect(() => {
+    if (submitted) {
+      if (entryId == undefined) {
+        // The difference of history.push() and history.replace() is
+        // - push() : record moving page at browser history stack
+        // - replace() : doesn't record moving page at browser history stack
+        //   (NOTE: The replace() is reasonable when user push "back" button of browser,
+        //          then editing form won't be revealed.
+        history.replace(entityEntriesPath(entityId));
+      } else {
+        history.replace(entryDetailsPath(entityId, entryId));
+      }
+    }
+  }, [submitted]);
 
   const handleCancel = () => {
     if (entryId != null) {

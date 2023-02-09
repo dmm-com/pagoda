@@ -148,7 +148,11 @@ export const EditEntityPage: FC = () => {
   // by handleSubmit() processing to prevent showing wrong Prompt message.
   useEffect(() => {
     if (submitted) {
-      history.replace(entityEntriesPath(entityId));
+      if (entityId === undefined) {
+        history.replace(entitiesPath());
+      } else {
+        history.replace(entityEntriesPath(entityId));
+      }
     }
   }, [submitted]);
 
