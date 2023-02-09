@@ -34,7 +34,7 @@ export const JobPage: FC = () => {
     if (jobs.loading) {
       return 0;
     }
-    return Math.ceil(jobs.value?.count ?? 0 / ConstJobList.MAX_ROW_COUNT);
+    return Math.ceil((jobs.value?.count ?? 0) / ConstJobList.MAX_ROW_COUNT);
   }, [jobs.loading, jobs.value?.count]);
 
   return (
