@@ -1,4 +1,5 @@
 import ErrorOutlinedIcon from "@mui/icons-material/ErrorOutlined";
+// @ts-ignore
 import SuccessOutlinedIcon from "@mui/material/internal/svg-icons/SuccessOutlined";
 import { styled } from "@mui/material/styles";
 import { SnackbarProvider } from "notistack";

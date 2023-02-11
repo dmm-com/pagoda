@@ -84,8 +84,8 @@ export const ToEntryFormAttributes = (
           ];
 
         case djangoContext?.attrTypeValue.named_object:
-          const name = Object.keys(attr.value.asNamedObject)[0];
-          const value = attr.value.asNamedObject[name];
+          const name = Object.keys(attr.value.asNamedObject ?? {})[0];
+          const value = attr.value.asNamedObject?.[name];
           return [
             attr.schema.name,
             {
@@ -96,8 +96,8 @@ export const ToEntryFormAttributes = (
                 asNamedObject: {
                   [name]: [
                     {
-                      id: value.id,
-                      name: value.name,
+                      id: value?.id ?? 0,
+                      name: value?.name ?? "",
                       checked: true,
                     },
                   ],
@@ -114,7 +114,7 @@ export const ToEntryFormAttributes = (
               type: attr.type,
               schema: attr.schema,
               value: {
-                asArrayGroup: attr.value.asArrayGroup.map((val) => [
+                asArrayGroup: attr.value.asArrayGroup?.map((val) => [
                   {
                     ...val,
                     checked: true,
@@ -132,7 +132,7 @@ export const ToEntryFormAttributes = (
               type: attr.type,
               schema: attr.schema,
               value: {
-                asArrayObject: attr.value.asArrayObject.map((val) => [
+                asArrayObject: attr.value.asArrayObject?.map((val) => [
                   {
                     ...val,
                     checked: true,
@@ -150,18 +150,20 @@ export const ToEntryFormAttributes = (
               type: attr.type,
               schema: attr.schema,
               value: {
-                asArrayNamedObject: attr.value.asArrayNamedObject.map((val) => {
-                  const name = Object.keys(val)[0];
-                  const value = val[name];
-                  return {
-                    [name]: [
-                      {
-                        ...value,
-                        checked: true,
-                      },
-                    ],
-                  };
-                }),
+                asArrayNamedObject: attr.value.asArrayNamedObject?.map(
+                  (val) => {
+                    const name = Object.keys(val)[0];
+                    const value = val[name];
+                    return {
+                      [name]: [
+                        {
+                          ...value,
+                          checked: true,
+                        },
+                      ],
+                    };
+                  }
+                ),
               },
             },
           ];
