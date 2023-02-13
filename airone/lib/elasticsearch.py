@@ -26,7 +26,9 @@ class ESS(Elasticsearch):
         if ("timeout" not in kwargs) and (settings.ES_CONFIG["TIMEOUT"] is not None):
             kwargs["timeout"] = settings.ES_CONFIG["TIMEOUT"]
 
-        super(ESS, self).__init__(settings.ES_CONFIG["NODES"], *args, **kwargs)
+        http_auth = (settings.ES_CONFIG["USER"], settings.ES_CONFIG["PASSWORD"])
+
+        super(ESS, self).__init__(settings.ES_CONFIG["NODES"], http_auth=http_auth, *args, **kwargs)
 
     def bulk(self, *args, **kwargs):
         return super(ESS, self).bulk(index=self._index, *args, **kwargs)
