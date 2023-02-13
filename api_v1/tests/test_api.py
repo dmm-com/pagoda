@@ -5,7 +5,9 @@ from unittest import mock
 
 import pytz
 from django.conf import settings
+from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
 
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
@@ -861,6 +863,45 @@ class APITest(AironeViewTest):
         # checks specified entry would be deleted
         entry11.refresh_from_db()
         self.assertFalse(entry11.is_active)
+
+    @mock.patch(
+        "entry.tasks.notify_delete_entry.delay",
+        mock.Mock(side_effect=tasks.notify_delete_entry),
+    )
+    @mock.patch("entry.tasks.delete_entry.delay", mock.Mock(side_effect=tasks.delete_entry))
+    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("custom_view.call_custom")
+    def test_delete_entry_with_customview(self, mock_call_custom):
+        admin = self.admin_login()
+        self.entity = Entity.objects.create(name="Entity", created_user=admin)
+        self.entry = Entry.objects.create(name="Entry", schema=self.entity, created_user=admin)
+        param = {"entity": "Entity", "entry": "Entry"}
+
+        # case not delete
+        def side_effect(handler_name, entity_name, user, entry):
+            self.assertEqual(handler_name, "delete_entry_api")
+            self.assertEqual(entity_name, self.entity.name)
+            self.assertEqual(user, admin)
+            self.assertEqual(entry, self.entry)
+            return Response("Cannot delete entry", status=status.HTTP_400_BAD_REQUEST)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.delete("/api/v1/entry", json.dumps(param), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"Cannot delete entry"')
+        self.entry.refresh_from_db()
+        self.assertTrue(self.entry.is_active)
+
+        # case delete
+        def side_effect(handler_name, entity_name, user, entry):
+            pass
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.delete("/api/v1/entry", json.dumps(param), "application/json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {"id": self.entry.id})
+        self.entry.refresh_from_db()
+        self.assertFalse(self.entry.is_active)
 
     @mock.patch("api_v1.auth.datetime")
     def test_expiring_token_lifetime(self, dt_mock):

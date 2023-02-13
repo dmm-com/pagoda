@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+import custom_view
 from airone.lib.acl import ACLType
 from entity.models import Entity
 from entry.models import Entry
@@ -211,6 +212,17 @@ class EntryAPI(APIView):
             entity, ACLType.Readable
         ):
             return Response("Permission denied to operate", status=status.HTTP_400_BAD_REQUEST)
+
+        if custom_view.is_custom("delete_entry_api", entry.schema.name):
+            # do_delete custom view
+            resp = custom_view.call_custom(
+                "delete_entry_api", entry.schema.name, request.user, entry
+            )
+
+            # If custom_view returns available response this returns it to user,
+            # or continues default processing.
+            if resp:
+                return resp
 
         # Delete the specified entry then return its id, if is active
         if entry.is_active:
