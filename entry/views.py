@@ -665,7 +665,7 @@ def do_copy(request, entry_id, recv_data):
 
 @http_get
 def restore(request, entity_id):
-    entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Full)
+    entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
     if error:
         return error
 
@@ -705,7 +705,7 @@ def restore(request, entity_id):
 
 @http_post([])
 def do_restore(request, entry_id, recv_data):
-    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Full)
+    entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error:
         return error
 
