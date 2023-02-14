@@ -4428,6 +4428,8 @@ class ViewTest(AironeViewTest):
     def test_restore_entry(self, mock_task):
         # initialize entries to test
         user = self.guest_login()
+        role: Role = Role.objects.create(name="Role")
+        role.users.add(user)
         entity = Entity.objects.create(name="entity", created_user=user)
         entity.attrs.add(
             EntityAttr.objects.create(
@@ -4466,6 +4468,33 @@ class ViewTest(AironeViewTest):
         self.assertTrue(entry.name.find("_deleted_") > 0)
         self.assertFalse(any([x.is_active for x in entry.attrs.all()]))
 
+        # nothing permisson
+        entry.is_public = False
+        entry.save()
+        resp = self.client.post(
+            reverse("entry:do_restore", args=[entry.id]),
+            json.dumps({}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"You don't have permission to access this object")
+        entry.refresh_from_db()
+        self.assertFalse(entry.is_active)
+
+        # readable permission
+        entry.readable.roles.add(role)
+        resp = self.client.post(
+            reverse("entry:do_restore", args=[entry.id]),
+            json.dumps({}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b"You don't have permission to access this object")
+        entry.refresh_from_db()
+        self.assertFalse(entry.is_active)
+
+        # writable permission
+        entry.writable.roles.add(role)
         resp = self.client.post(
             reverse("entry:do_restore", args=[entry.id]),
             json.dumps({}),

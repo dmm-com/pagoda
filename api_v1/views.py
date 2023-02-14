@@ -77,10 +77,20 @@ class EntryAPI(APIView):
                 )
 
             entry = Entry.objects.get(id=sel.validated_data["id"])
+            if not request.user.has_permission(entry, ACLType.Writable):
+                return Response(
+                    {"result": "Permission denied to update entry"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             will_notify_update_entry = _update_entry_name(entry)
 
         elif Entry.objects.filter(**entry_condition).exists():
             entry = Entry.objects.get(**entry_condition)
+            if not request.user.has_permission(entry, ACLType.Writable):
+                return Response(
+                    {"result": "Permission denied to update entry"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             will_notify_update_entry = _update_entry_name(entry)
 
         else:
@@ -207,9 +217,7 @@ class EntryAPI(APIView):
             )
 
         # permission check
-        if not request.user.has_permission(entry, ACLType.Full) or not request.user.has_permission(
-            entity, ACLType.Readable
-        ):
+        if not request.user.has_permission(entry, ACLType.Writable):
             return Response("Permission denied to operate", status=status.HTTP_400_BAD_REQUEST)
 
         # Delete the specified entry then return its id, if is active

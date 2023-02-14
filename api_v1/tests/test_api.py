@@ -480,20 +480,27 @@ class APITest(AironeViewTest):
         guest = self.guest_login()
 
         # checks that we can't create a new entry because of lack of permission
+        role = Role.objects.create(name="Role")
+        role.users.add(guest)
         params = {
             "name": "entry",
             "entity": entity.name,
             "attrs": {"attr1": "hoge", "attr2": "fuga"},
         }
+
+        # permission nothing
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.json()["result"], "Permission denied to create(or update) entry")
 
-        # Set permisson to create new entry
-        role = Role.objects.create(name="Role")
-        entity.writable.roles.add(role)
-        role.users.add(guest)
+        # permission readable
+        entity.readable.roles.add(role)
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()["result"], "Permission denied to create(or update) entry")
 
+        # permission writable
+        entity.writable.roles.add(role)
         # checks that we can create an entry but attr2 doesn't set because
         # guest doesn't have permission of writable for attr2
         params = {
@@ -507,6 +514,36 @@ class APITest(AironeViewTest):
         entry = Entry.objects.get(name="entry", schema=entity)
         self.assertEqual(entry.attrs.count(), 1)
         self.assertEqual(entry.attrs.last().name, "attr1")
+
+        # checks that we can't update entry because of lack of permission
+        entry = Entry.objects.create(
+            name="test_entry", schema=entity, created_user=admin, is_public=False
+        )
+        entry.complement_attrs(admin)
+        params = {
+            "id": entry.id,
+            "name": "test_entry",
+            "entity": entity.name,
+            "attrs": {"attr1": "hoge", "attr2": "fuga"},
+        }
+
+        # permission nothing
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()["result"], "Permission denied to update entry")
+
+        # permission readable
+        entry.readable.roles.add(role)
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()["result"], "Permission denied to update entry")
+
+        # permission writable
+        entry.writable.roles.add(role)
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+        attr: Attribute = entry.attrs.get(schema__name="attr1")
+        self.assertEqual(attr.get_latest_value().get_value(), "hoge")
 
     def test_update_entry(self):
         admin = self.admin_login()

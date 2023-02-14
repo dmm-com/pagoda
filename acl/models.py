@@ -144,7 +144,7 @@ class ACLBase(models.Model):
     def full(self):
         return self._get_permission(ACLType.Full.id)
 
-    def _get_permission(self, acltype):
+    def _get_permission(self, acltype) -> HistoricalPermission:
         return HistoricalPermission.objects.get(codename="%s.%s" % (self.id, acltype))
 
     def get_subclass_object(self):
