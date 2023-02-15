@@ -1,5 +1,3 @@
-from django.conf import settings
-
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
@@ -7,6 +5,7 @@ from entity.models import Entity, EntityAttr
 
 class APITest(AironeViewTest):
     def setUp(self):
+        super(APITest, self).setUp()
         user = self.admin_login()
         entity_info = {
             "test_entity1": ["foo", "bar", "fuga"],
@@ -24,11 +23,6 @@ class APITest(AironeViewTest):
                         parent_entity=entity,
                     )
                 )
-
-        # swap original configuration not to make a negative influence on other tests
-        settings.MIDDLEWARE = [
-            x for x in settings.MIDDLEWARE if x != "airone.lib.log.LoggingRequestMiddleware"
-        ]
 
     def test_get_entity_attrs_with_invalid_entity_id(self):
         resp = self.client.get("/api/v1/entity/attrs/9999")
