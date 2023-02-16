@@ -24,13 +24,13 @@ export interface Attribute {
    * @type {number}
    * @memberof Attribute
    */
-  id: number;
+  readonly id: number;
   /**
    *
-   * @type {any}
+   * @type {string}
    * @memberof Attribute
    */
-  value: any | null;
+  name: string;
 }
 
 export function AttributeFromJSON(json: any): Attribute {
@@ -46,7 +46,7 @@ export function AttributeFromJSONTyped(
   }
   return {
     id: json["id"],
-    value: json["value"],
+    name: json["name"],
   };
 }
 
@@ -58,7 +58,6 @@ export function AttributeToJSON(value?: Attribute | null): any {
     return null;
   }
   return {
-    id: value.id,
-    value: value.value,
+    name: value.name,
   };
 }

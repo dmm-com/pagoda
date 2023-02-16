@@ -257,6 +257,18 @@ class AttributeValue(models.Model):
         else:
             return self.value
 
+    def get_next_value(self) -> Optional["AttributeValue"]:
+        attrv = AttributeValue.objects.filter(
+            parent_attr=self.parent_attr, parent_attrv__isnull=True
+        )
+        return attrv.filter(created_time__gt=self.created_time).order_by("created_time").first()
+
+    def get_preview_value(self) -> Optional["AttributeValue"]:
+        attrv = AttributeValue.objects.filter(
+            parent_attr=self.parent_attr, parent_attrv__isnull=True
+        )
+        return attrv.filter(created_time__lt=self.created_time).order_by("created_time").last()
+
     @classmethod
     def search(kls, query):
         results = []

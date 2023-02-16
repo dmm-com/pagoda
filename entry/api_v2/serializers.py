@@ -214,7 +214,7 @@ class AttributeValueField(serializers.Field):
         return data
 
 
-class AttributeSerializer(serializers.Serializer):
+class AttributeDataSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     value = AttributeValueField(allow_null=True)
 
@@ -222,7 +222,7 @@ class AttributeSerializer(serializers.Serializer):
 class EntryCreateData(TypedDict, total=False):
     name: str
     schema: Entity
-    attrs: List[AttributeSerializer]
+    attrs: List[AttributeDataSerializer]
     created_user: User
 
 
@@ -231,7 +231,7 @@ class EntryCreateSerializer(EntryBaseSerializer):
     schema = serializers.PrimaryKeyRelatedField(
         queryset=Entity.objects.all(), write_only=True, required=True
     )
-    attrs = serializers.ListField(child=AttributeSerializer(), write_only=True, required=False)
+    attrs = serializers.ListField(child=AttributeDataSerializer(), write_only=True, required=False)
     created_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -290,11 +290,11 @@ class EntryCreateSerializer(EntryBaseSerializer):
 
 class EntryUpdateData(TypedDict, total=False):
     name: str
-    attrs: List[AttributeSerializer]
+    attrs: List[AttributeDataSerializer]
 
 
 class EntryUpdateSerializer(EntryBaseSerializer):
-    attrs = serializers.ListField(child=AttributeSerializer(), write_only=True, required=False)
+    attrs = serializers.ListField(child=AttributeDataSerializer(), write_only=True, required=False)
 
     class Meta:
         model = Entry
@@ -748,22 +748,35 @@ class GetEntryAttrReferralSerializer(serializers.ModelSerializer):
         fields = ("id", "name")
 
 
-# FIXME ???
+class AttributeSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="schema.name")
 
-# FIXME ???
+    class Meta:
+        model = Attribute
+        fields = ("id", "name")
 
 
 class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
     type = serializers.IntegerField(source="data_type")
-    value = serializers.SerializerMethodField()
     created_user = serializers.CharField(source="created_user.username")
+    curr_value = serializers.SerializerMethodField()
+    prev_value = serializers.SerializerMethodField()
+    parent_attr = AttributeSerializer()
 
     class Meta:
         model = AttributeValue
-        fields = ("id", "type", "value", "created_time", "is_latest", "created_user")
+        fields = (
+            "id",
+            "type",
+            "created_time",
+            "is_latest",
+            "created_user",
+            "curr_value",
+            "prev_value",
+            "parent_attr",
+        )
 
-    @extend_schema_field(EntryAttributeValueSerializer())
-    def get_value(self, obj: AttributeValue) -> EntryAttributeValue:
+    def _get_value(self, obj: AttributeValue) -> EntryAttributeValue:
         if obj.data_type == AttrTypeValue["array_string"]:
             return {"as_array_string": [x.value for x in obj.data_array.all()]}
 
@@ -895,13 +908,16 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
 
         return {}
 
+    @extend_schema_field(EntryAttributeValueSerializer())
+    def get_curr_value(self, obj: AttributeValue) -> EntryAttributeValue:
+        return self._get_value(obj)
 
-class EntryHistorySerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    name = serializers.CharField()
-    type = serializers.IntegerField()
-    curr = EntryHistoryAttributeValueSerializer()
-    prev = EntryHistoryAttributeValueSerializer(allow_null=True)
+    @extend_schema_field(EntryAttributeValueSerializer())
+    def get_prev_value(self, obj: AttributeValue) -> Optional[EntryAttributeValue]:
+        prev_value = obj.get_preview_value()
+        if prev_value:
+            return self._get_value(prev_value)
+        return None
 
 
 class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):

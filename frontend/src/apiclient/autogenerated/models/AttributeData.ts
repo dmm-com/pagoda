@@ -16,34 +16,41 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface EntityAttrName
+ * @interface AttributeData
  */
-export interface EntityAttrName {
+export interface AttributeData {
   /**
    *
-   * @type {string}
-   * @memberof EntityAttrName
+   * @type {number}
+   * @memberof AttributeData
    */
-  name: string;
+  id: number;
+  /**
+   *
+   * @type {any}
+   * @memberof AttributeData
+   */
+  value: any | null;
 }
 
-export function EntityAttrNameFromJSON(json: any): EntityAttrName {
-  return EntityAttrNameFromJSONTyped(json, false);
+export function AttributeDataFromJSON(json: any): AttributeData {
+  return AttributeDataFromJSONTyped(json, false);
 }
 
-export function EntityAttrNameFromJSONTyped(
+export function AttributeDataFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): EntityAttrName {
+): AttributeData {
   if (json === undefined || json === null) {
     return json;
   }
   return {
-    name: json["name"],
+    id: json["id"],
+    value: json["value"],
   };
 }
 
-export function EntityAttrNameToJSON(value?: EntityAttrName | null): any {
+export function AttributeDataToJSON(value?: AttributeData | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -51,6 +58,7 @@ export function EntityAttrNameToJSON(value?: EntityAttrName | null): any {
     return null;
   }
   return {
-    name: value.name,
+    id: value.id,
+    value: value.value,
   };
 }

@@ -14,11 +14,11 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  Attribute,
-  AttributeFromJSON,
-  AttributeFromJSONTyped,
-  AttributeToJSON,
-} from "./Attribute";
+  AttributeData,
+  AttributeDataFromJSON,
+  AttributeDataFromJSONTyped,
+  AttributeDataToJSON,
+} from "./AttributeData";
 
 /**
  *
@@ -40,10 +40,10 @@ export interface EntryUpdate {
   name?: string;
   /**
    *
-   * @type {Array<Attribute>}
+   * @type {Array<AttributeData>}
    * @memberof EntryUpdate
    */
-  attrs?: Array<Attribute>;
+  attrs?: Array<AttributeData>;
 }
 
 export function EntryUpdateFromJSON(json: any): EntryUpdate {
@@ -62,7 +62,7 @@ export function EntryUpdateFromJSONTyped(
     name: !exists(json, "name") ? undefined : json["name"],
     attrs: !exists(json, "attrs")
       ? undefined
-      : (json["attrs"] as Array<any>).map(AttributeFromJSON),
+      : (json["attrs"] as Array<any>).map(AttributeDataFromJSON),
   };
 }
 
@@ -78,6 +78,6 @@ export function EntryUpdateToJSON(value?: EntryUpdate | null): any {
     attrs:
       value.attrs === undefined
         ? undefined
-        : (value.attrs as Array<any>).map(AttributeToJSON),
+        : (value.attrs as Array<any>).map(AttributeDataToJSON),
   };
 }
