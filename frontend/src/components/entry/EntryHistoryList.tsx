@@ -10,6 +10,7 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useCallback } from "react";
 import { useHistory } from "react-router-dom";
@@ -21,6 +22,14 @@ import { formatDate } from "../../services/DateUtil";
 import { Confirmable } from "../common/Confirmable";
 
 import { AttributeValue } from "./AttributeValue";
+
+const HeaderTableRow = styled(TableRow)(({}) => ({
+  backgroundColor: "#455A64",
+}));
+
+const HeaderTableCell = styled(TableCell)(({}) => ({
+  color: "#FFFFFF",
+}));
 
 interface Props {
   histories: Array<EntryHistory>;
@@ -59,14 +68,14 @@ export const EntryHistoryList: FC<Props> = ({
     <Box>
       <Table>
         <TableHead>
-          <TableRow sx={{ backgroundColor: "#455A64" }}>
-            <TableCell sx={{ color: "#FFFFFF" }}>項目</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>変更前</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>変更後</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>実行日時</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>実行者</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>復旧</TableCell>
-          </TableRow>
+          <HeaderTableRow>
+            <HeaderTableCell>項目</HeaderTableCell>
+            <HeaderTableCell>変更前</HeaderTableCell>
+            <HeaderTableCell>変更後</HeaderTableCell>
+            <HeaderTableCell>実行日時</HeaderTableCell>
+            <HeaderTableCell>実行者</HeaderTableCell>
+            <HeaderTableCell>復旧</HeaderTableCell>
+          </HeaderTableRow>
         </TableHead>
 
         <TableBody>

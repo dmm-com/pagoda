@@ -8,6 +8,7 @@ import {
   Stack,
   Pagination,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -19,6 +20,19 @@ import { normalizeToMatch } from "../../services/StringUtil";
 
 import { entryDetailsPath } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
+
+const ReferralCount = styled(Typography)(({}) => ({
+  fontSize: "16px",
+  fontWeight: "Medium",
+  pb: "16px",
+}));
+
+const StyledListItem = styled(ListItem)(({}) => ({
+  "&:first-of-type": {
+    borderTop: "1px solid",
+    borderTopColor: "divider",
+  },
+}));
 
 interface Props {
   entryId: number;
@@ -54,9 +68,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
   return (
     <Box>
       <Box px="16px">
-        <Typography sx={{ fontSize: "16px", fontWeight: "Medium", pb: "16px" }}>
-          関連づけられたエントリ(計{count})
-        </Typography>
+        <ReferralCount>関連づけられたエントリ(計{count})</ReferralCount>
         <SearchBox
           placeholder="エントリを絞り込む"
           value={keyword}
@@ -86,24 +98,14 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
       </Box>
       <List sx={{ py: "8px" }}>
         {matchedEntries?.map((entry) => (
-          <ListItem
-            key={entry.id}
-            divider={true}
-            disablePadding
-            sx={{
-              "&:first-of-type": {
-                borderTop: "1px solid",
-                borderTopColor: "divider",
-              },
-            }}
-          >
+          <StyledListItem key={entry.id} divider={true} disablePadding>
             <ListItemButton
               component={Link}
               to={entryDetailsPath(entry.schema?.id ?? 0, entry.id)}
             >
               <ListItemText sx={{ px: "16px" }}>{entry.name}</ListItemText>
             </ListItemButton>
-          </ListItem>
+          </StyledListItem>
         ))}
       </List>
     </Box>

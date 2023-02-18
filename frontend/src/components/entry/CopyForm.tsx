@@ -11,6 +11,11 @@ const SampleBox = styled(Box)({
   alignItems: "center",
 });
 
+const SampleTextField = styled(TextField)({
+  my: "16px",
+  width: "95%",
+});
+
 interface Props {
   entries: string;
   setEntries: (entries: string) => void;
@@ -34,8 +39,7 @@ export const CopyForm: FC<Props> = ({ entries, setEntries }) => {
         <Typography color="primary">
           (Vm0001、vm0002、…vm006の6エントリを作成する場合)
         </Typography>
-        <TextField
-          sx={{ my: "16px", width: "95%" }}
+        <SampleTextField
           multiline
           disabled
           label="コピーするエントリ名"
