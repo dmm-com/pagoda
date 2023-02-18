@@ -188,6 +188,12 @@ This includes the configuration to proxy HTTP request to AirOne and cache static
 
 ## Initialize AirOne configuratoin
 
+You should create user and attach role in Elasticsearch.
+```
+bin/elasticsearch-users useradd airone
+bin/elasticsearch-users roles airone --add superuser
+```
+
 You should cerate database and user for airone in MySQL.
 ```
 user@hostname:~$ mysql -u root -h 127.0.0.1

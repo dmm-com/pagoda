@@ -234,6 +234,8 @@ class Common(Configuration):
 
     ES_CONFIG = {
         "NODES": ["localhost:9200"],
+        "USER": "airone",
+        "PASSWORD": "password",
         "INDEX": "airone",
         "MAXIMUM_RESULTS_NUM": 500000,
         "MAXIMUM_NESTED_OBJECT_NUM": 999999,

@@ -36,7 +36,7 @@ interface CommonProps {
 
 const ElemString: FC<
   CommonProps & {
-    attrValue: string;
+    attrValue?: string;
     handleClickDeleteListItem?: (
       attrName: string,
       attrType: number,
@@ -103,7 +103,7 @@ const ElemString: FC<
   );
 };
 
-const ElemBool: FC<CommonProps & { attrValue: boolean }> = ({
+const ElemBool: FC<CommonProps & { attrValue?: boolean }> = ({
   attrName,
   attrValue,
   attrType,
@@ -369,6 +369,7 @@ const ElemNamedObject: FC<
       <ElemReferral
         schemaId={schemaId}
         attrName={attrName}
+        // @ts-ignore
         attrValue={attrValue ? attrValue[key] : undefined}
         attrType={attrType}
         isMandatory={isMandatory && !key}
@@ -384,8 +385,12 @@ const ElemNamedObject: FC<
 
 const ElemDate: FC<
   CommonProps & {
-    attrValue: string;
-    handleClickDeleteListItem: (attrName: string, index?: number) => void;
+    attrValue?: string;
+    handleClickDeleteListItem: (
+      attrName: string,
+      attrType: number,
+      index?: number
+    ) => void;
   }
 > = ({ attrName, attrValue, attrType, isMandatory, handleChange }) => {
   return (
@@ -393,7 +398,7 @@ const ElemDate: FC<
       <DesktopDatePicker
         label="月日を選択"
         inputFormat="yyyy/MM/dd"
-        value={attrValue ? attrValue : null}
+        value={attrValue}
         onChange={(date: Date | null) => {
           let settingDateValue = "";
           if (date !== null) {
@@ -494,6 +499,7 @@ export const EditAttributeValue: FC<Props> = ({
       return (
         <ElemReferral
           attrName={attrName}
+          // @ts-ignore
           attrValue={attrInfo.value.asObject}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
@@ -506,6 +512,7 @@ export const EditAttributeValue: FC<Props> = ({
       return (
         <ElemReferral
           attrName={attrName}
+          // @ts-ignore
           attrValue={attrInfo.value.asGroup}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
@@ -518,6 +525,7 @@ export const EditAttributeValue: FC<Props> = ({
       return (
         <ElemReferral
           attrName={attrName}
+          // @ts-ignore
           attrValue={attrInfo.value.asRole}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
@@ -543,7 +551,7 @@ export const EditAttributeValue: FC<Props> = ({
         <ElemReferral
           multiple={true}
           attrName={attrName}
-          attrValue={attrInfo.value.asArrayObject}
+          attrValue={attrInfo.value.asArrayObject ?? []}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
           schemaId={attrInfo.schema.id}
@@ -556,7 +564,7 @@ export const EditAttributeValue: FC<Props> = ({
         <ElemReferral
           multiple={true}
           attrName={attrName}
-          attrValue={attrInfo.value.asArrayGroup}
+          attrValue={attrInfo.value.asArrayGroup ?? []}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
           schemaId={attrInfo.schema.id}
@@ -569,7 +577,7 @@ export const EditAttributeValue: FC<Props> = ({
         <ElemReferral
           multiple={true}
           attrName={attrName}
-          attrValue={attrInfo.value.asArrayRole}
+          attrValue={attrInfo.value.asArrayRole ?? []}
           attrType={attrInfo.type}
           isMandatory={attrInfo.isMandatory}
           schemaId={attrInfo.schema.id}
@@ -698,6 +706,7 @@ export const EditAttributeValue: FC<Props> = ({
                     <ElemReferral
                       schemaId={attrInfo.schema.id}
                       attrName={attrName}
+                      // @ts-ignore
                       attrValue={info[key]?.id ? info[key] : undefined}
                       attrType={djangoContext?.attrTypeValue.array_named_object}
                       isMandatory={attrInfo.isMandatory && !key}
@@ -714,5 +723,8 @@ export const EditAttributeValue: FC<Props> = ({
           </List>
         </Box>
       );
+
+    default:
+      throw new Error(`Unknown attribute type: ${attrInfo.type}`);
   }
 };

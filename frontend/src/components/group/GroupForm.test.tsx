@@ -66,7 +66,7 @@ test("should render a component with essential props", function () {
   /* eslint-enable */
 
   expect(() =>
-    render(<GroupForm group={group} setGroup={setGroup} />, {
+    render(<GroupForm group={group} setGroup={setGroup} groupId={1} />, {
       wrapper: TestWrapper,
     })
   ).not.toThrow();

@@ -14,6 +14,8 @@ import {
 import React, { FC, useState } from "react";
 import { useAsync } from "react-use";
 
+import { filterAncestorsAndOthers } from "../../services/group/Edit";
+
 import { GroupTreeRoot } from "./GroupTreeRoot";
 
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -23,9 +25,10 @@ import { Loading } from "components/common/Loading";
 interface Props {
   group: Group;
   setGroup: (group: Group) => void;
+  groupId?: number;
 }
 
-export const GroupForm: FC<Props> = ({ group, setGroup }) => {
+export const GroupForm: FC<Props> = ({ group, setGroup, groupId }) => {
   const [userKeyword, setUserKeyword] = useState("");
 
   const users = useAsync(async () => {
@@ -36,9 +39,13 @@ export const GroupForm: FC<Props> = ({ group, setGroup }) => {
   }, [userKeyword]);
 
   const groupTrees = useAsync(async () => {
-    return await aironeApiClientV2.getGroupTrees();
+    const _groupTrees = await aironeApiClientV2.getGroupTrees();
+    return groupId != null
+      ? filterAncestorsAndOthers(_groupTrees, groupId)
+      : _groupTrees;
   });
 
+  console.log(groupTrees);
   return (
     <Box>
       <Table className="table table-bordered">

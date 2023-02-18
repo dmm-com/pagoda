@@ -59,7 +59,7 @@ export const ExtractAPIException = async <T>(
   }
 
   Object.keys(typed as AironeApiFieldsError<T>).forEach((fieldName: string) => {
-    const details: Array<ErrorDetail> = typed[fieldName];
+    const details = (typed as Record<string, Array<ErrorDetail>>)[fieldName];
     const message = details.map((d) => d.message).join(", ");
 
     fieldReporter(fieldName as keyof T, message);

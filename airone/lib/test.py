@@ -17,6 +17,8 @@ from .elasticsearch import ESS
 @override_settings(
     ES_CONFIG={
         "NODES": settings.ES_CONFIG["NODES"],
+        "USER": settings.ES_CONFIG["USER"],
+        "PASSWORD": settings.ES_CONFIG["PASSWORD"],
         "INDEX": "test-airone",
         "MAXIMUM_RESULTS_NUM": 10000,
         "MAXIMUM_NESTED_OBJECT_NUM": 999999,

@@ -260,7 +260,7 @@ export const AttributeRow: FC<Props> = ({
 
       {/* This is a button to add new Attribute */}
       <TableCell>
-        <StyledIconButton onClick={() => handleAppendAttribute(index)}>
+        <StyledIconButton onClick={() => handleAppendAttribute(index ?? 0)}>
           <AddIcon />
         </StyledIconButton>
       </TableCell>

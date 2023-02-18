@@ -118,7 +118,11 @@ export const EditGroupPage: FC = () => {
       </PageHeader>
 
       <Container>
-        <GroupForm group={group} setGroup={setGroup} />
+        <GroupForm
+          group={group}
+          setGroup={setGroup}
+          groupId={Number(groupId)}
+        />
       </Container>
 
       <Prompt

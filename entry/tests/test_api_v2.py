@@ -1080,18 +1080,6 @@ class ViewTest(AironeViewTest):
         # permission writable entity
         self.entity.writable.roles.add(self.role)
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
-        self.assertEqual(resp.status_code, 403)
-        self.assertEqual(
-            resp.json(),
-            {
-                "code": "AE-210000",
-                "message": "You do not have permission to perform this action.",
-            },
-        )
-
-        # permission full entity
-        self.entity.full.roles.add(self.role)
-        resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 204)
 
         entry.restore()
@@ -1123,18 +1111,6 @@ class ViewTest(AironeViewTest):
 
         # permission writable entry
         entry.writable.roles.add(self.role)
-        resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
-        self.assertEqual(resp.status_code, 403)
-        self.assertEqual(
-            resp.json(),
-            {
-                "code": "AE-210000",
-                "message": "You do not have permission to perform this action.",
-            },
-        )
-
-        # permission full entry
-        entry.full.roles.add(self.role)
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 204)
 
@@ -1229,17 +1205,6 @@ class ViewTest(AironeViewTest):
         # permission writable entity
         self.entity.writable.roles.add(self.role)
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
-        self.assertEqual(
-            resp.json(),
-            {
-                "code": "AE-210000",
-                "message": "You do not have permission to perform this action.",
-            },
-        )
-
-        # permission full entity
-        self.entity.full.roles.add(self.role)
-        resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 201)
 
         entry.delete()
@@ -1271,18 +1236,6 @@ class ViewTest(AironeViewTest):
 
         # permission writable entry
         entry.writable.roles.add(self.role)
-        resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
-        self.assertEqual(resp.status_code, 403)
-        self.assertEqual(
-            resp.json(),
-            {
-                "code": "AE-210000",
-                "message": "You do not have permission to perform this action.",
-            },
-        )
-
-        # permission full entry
-        entry.full.roles.add(self.role)
         resp = self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
         self.assertEqual(resp.status_code, 201)
 
@@ -1393,19 +1346,6 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(
-            resp.json(),
-            {
-                "code": "AE-210000",
-                "message": "You do not have permission to perform this action.",
-            },
-        )
-
-        # permission full entity
-        self.entity.full.roles.add(self.role)
-        resp = self.client.post(
-            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
-        )
         self.assertEqual(resp.status_code, 200)
 
         params = {"copy_entry_names": ["copy2"]}
@@ -1441,20 +1381,6 @@ class ViewTest(AironeViewTest):
 
         # permission writable entry
         entry.writable.roles.add(self.role)
-        resp = self.client.post(
-            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
-        )
-        self.assertEqual(resp.status_code, 403)
-        self.assertEqual(
-            resp.json(),
-            {
-                "code": "AE-210000",
-                "message": "You do not have permission to perform this action.",
-            },
-        )
-
-        # permission full entry
-        entry.full.roles.add(self.role)
         resp = self.client.post(
             "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
         )

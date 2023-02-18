@@ -50,9 +50,9 @@ class EntryPermission(BasePermission):
         permisson = {
             "retrieve": ACLType.Readable,
             "update": ACLType.Writable,
-            "destroy": ACLType.Full,
-            "restore": ACLType.Full,
-            "copy": ACLType.Full,
+            "destroy": ACLType.Writable,
+            "restore": ACLType.Writable,
+            "copy": ACLType.Writable,
         }
 
         if not user.has_permission(obj, permisson.get(view.action)):

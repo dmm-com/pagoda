@@ -48,7 +48,7 @@ const StyledTableRow = styled(TableRow)({
 
 interface Props {
   results: {
-    attrs: Map<string, { type: number; value: EntryAttributeValue }>;
+    attrs: { [key: string]: { type: number; value: EntryAttributeValue } };
     entry: {
       id: number;
       name: string;
@@ -270,7 +270,7 @@ export const SearchResults: FC<Props> = ({
                 {Object.keys(attrsFilter).map((attrName) => (
                   <TableCell sx={{ minWidth: "300px" }} key={attrName}>
                     {(() => {
-                      const info = result.attrs.get(attrName);
+                      const info = result.attrs[attrName];
                       if (info != null) {
                         return <AttributeValue attrInfo={info} />;
                       }

@@ -5,7 +5,9 @@ from unittest import mock
 
 import pytz
 from django.conf import settings
+from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
 
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
@@ -480,20 +482,27 @@ class APITest(AironeViewTest):
         guest = self.guest_login()
 
         # checks that we can't create a new entry because of lack of permission
+        role = Role.objects.create(name="Role")
+        role.users.add(guest)
         params = {
             "name": "entry",
             "entity": entity.name,
             "attrs": {"attr1": "hoge", "attr2": "fuga"},
         }
+
+        # permission nothing
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.json()["result"], "Permission denied to create(or update) entry")
 
-        # Set permisson to create new entry
-        role = Role.objects.create(name="Role")
-        entity.writable.roles.add(role)
-        role.users.add(guest)
+        # permission readable
+        entity.readable.roles.add(role)
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()["result"], "Permission denied to create(or update) entry")
 
+        # permission writable
+        entity.writable.roles.add(role)
         # checks that we can create an entry but attr2 doesn't set because
         # guest doesn't have permission of writable for attr2
         params = {
@@ -507,6 +516,36 @@ class APITest(AironeViewTest):
         entry = Entry.objects.get(name="entry", schema=entity)
         self.assertEqual(entry.attrs.count(), 1)
         self.assertEqual(entry.attrs.last().name, "attr1")
+
+        # checks that we can't update entry because of lack of permission
+        entry = Entry.objects.create(
+            name="test_entry", schema=entity, created_user=admin, is_public=False
+        )
+        entry.complement_attrs(admin)
+        params = {
+            "id": entry.id,
+            "name": "test_entry",
+            "entity": entity.name,
+            "attrs": {"attr1": "hoge", "attr2": "fuga"},
+        }
+
+        # permission nothing
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()["result"], "Permission denied to update entry")
+
+        # permission readable
+        entry.readable.roles.add(role)
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()["result"], "Permission denied to update entry")
+
+        # permission writable
+        entry.writable.roles.add(role)
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+        attr: Attribute = entry.attrs.get(schema__name="attr1")
+        self.assertEqual(attr.get_latest_value().get_value(), "hoge")
 
     def test_update_entry(self):
         admin = self.admin_login()
@@ -861,6 +900,45 @@ class APITest(AironeViewTest):
         # checks specified entry would be deleted
         entry11.refresh_from_db()
         self.assertFalse(entry11.is_active)
+
+    @mock.patch(
+        "entry.tasks.notify_delete_entry.delay",
+        mock.Mock(side_effect=tasks.notify_delete_entry),
+    )
+    @mock.patch("entry.tasks.delete_entry.delay", mock.Mock(side_effect=tasks.delete_entry))
+    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("custom_view.call_custom")
+    def test_delete_entry_with_customview(self, mock_call_custom):
+        admin = self.admin_login()
+        self.entity = Entity.objects.create(name="Entity", created_user=admin)
+        self.entry = Entry.objects.create(name="Entry", schema=self.entity, created_user=admin)
+        param = {"entity": "Entity", "entry": "Entry"}
+
+        # case not delete
+        def side_effect(handler_name, entity_name, user, entry):
+            self.assertEqual(handler_name, "delete_entry_api")
+            self.assertEqual(entity_name, self.entity.name)
+            self.assertEqual(user, admin)
+            self.assertEqual(entry, self.entry)
+            return Response("Cannot delete entry", status=status.HTTP_400_BAD_REQUEST)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.delete("/api/v1/entry", json.dumps(param), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"Cannot delete entry"')
+        self.entry.refresh_from_db()
+        self.assertTrue(self.entry.is_active)
+
+        # case delete
+        def side_effect(handler_name, entity_name, user, entry):
+            pass
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.delete("/api/v1/entry", json.dumps(param), "application/json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {"id": self.entry.id})
+        self.entry.refresh_from_db()
+        self.assertFalse(self.entry.is_active)
 
     @mock.patch("api_v1.auth.datetime")
     def test_expiring_token_lifetime(self, dt_mock):

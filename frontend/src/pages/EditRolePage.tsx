@@ -34,7 +34,7 @@ export const EditRolePage: FC = () => {
   } = useForm<Role>();
 
   const role = useAsync(async () => {
-    return await aironeApiClientV2.getRole(roleId);
+    return roleId != null ? await aironeApiClientV2.getRole(roleId) : undefined;
   }, [roleId]);
 
   useEffect(() => {
