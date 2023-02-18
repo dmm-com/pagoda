@@ -183,7 +183,10 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                           ))
                         }
                         onChange={(_e, value: RoleGroup[]) =>
-                          setValue("adminGroups", value, { shouldDirty: true })
+                          setValue("adminGroups", value, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          })
                         }
                         multiple
                       />
@@ -247,7 +250,10 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                           ))
                         }
                         onChange={(_e, value: RoleGroup[]) =>
-                          setValue("groups", value, { shouldDirty: true })
+                          setValue("groups", value, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          })
                         }
                         multiple
                       />
@@ -329,7 +335,10 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                           ))
                         }
                         onChange={(_e, value: RoleUser[]) =>
-                          setValue("adminUsers", value, { shouldDirty: true })
+                          setValue("adminUsers", value, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          })
                         }
                         onInputChange={(_e, value: string) =>
                           setAdminUserKeyword(value)
@@ -397,7 +406,10 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                           ))
                         }
                         onChange={(_e, value: RoleUser[]) =>
-                          setValue("users", value, { shouldDirty: true })
+                          setValue("users", value, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          })
                         }
                         onInputChange={(_e, value: string) =>
                           setUserKeyword(value)

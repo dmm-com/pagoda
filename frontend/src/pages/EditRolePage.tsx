@@ -33,6 +33,7 @@ export const EditRolePage: FC = () => {
     control,
   } = useForm<Schema>({
     resolver: zodResolver(schema),
+    mode: "onBlur",
   });
 
   const role = useAsync(async () => {
@@ -120,7 +121,7 @@ export const EditRolePage: FC = () => {
       >
         <SubmitButton
           name="保存"
-          disabled={isSubmitting || isSubmitSuccessful} // FIXME check validation state
+          disabled={!isValid || isSubmitting || isSubmitSuccessful}
           handleSubmit={handleSubmit(handleSubmitOnValid)}
           handleCancel={handleCancel}
         />
