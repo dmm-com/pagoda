@@ -12,6 +12,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 
@@ -25,6 +26,26 @@ import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryList as ConstEntryList } from "services/Constants";
+
+const StyledCard = styled(Card)(({}) => ({
+  height: "100%",
+}));
+
+const StyledCardHeader = styled(CardHeader)(({}) => ({
+  p: "0px",
+  mt: "24px",
+  mx: "16px",
+  mb: "16px",
+  ".MuiCardHeader-content": {
+    width: "80%",
+  },
+}));
+
+const EntryName = styled(Typography)(({}) => ({
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+}));
 
 interface Props {
   entityId: number;
@@ -102,32 +123,14 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
           {entries.value?.results?.map((entry) => {
             return (
               <Grid item xs={4} key={entry.id}>
-                <Card sx={{ height: "100%" }}>
-                  <CardHeader
-                    sx={{
-                      p: "0px",
-                      mt: "24px",
-                      mx: "16px",
-                      mb: "16px",
-                      ".MuiCardHeader-content": {
-                        width: "80%",
-                      },
-                    }}
+                <StyledCard>
+                  <StyledCardHeader
                     title={
                       <CardActionArea
                         component={Link}
                         to={entryDetailsPath(entityId, entry.id)}
                       >
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            textOverflow: "ellipsis",
-                            overflow: "hidden",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {entry.name}
-                        </Typography>
+                        <EntryName variant="h6">{entry.name}</EntryName>
                       </CardActionArea>
                     }
                     action={
@@ -156,7 +159,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
                       </>
                     }
                   />
-                </Card>
+                </StyledCard>
               </Grid>
             );
           })}

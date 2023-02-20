@@ -35,6 +35,28 @@ import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { EntryList as ConstEntryList } from "services/Constants";
 
+const StyledCard = styled(Card)(({}) => ({
+  height: "100%",
+}));
+
+const StyledCardHeader = styled(CardHeader)(({}) => ({
+  p: "0px",
+  mt: "24px",
+  mx: "16px",
+  mb: "16px",
+}));
+
+const EntryName = styled(Typography)(({}) => ({
+  width: "300px",
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+}));
+
+const HeaderTableCell = styled(TableCell)(({ theme }) => ({
+  color: theme.palette.primary.contrastText,
+}));
+
 interface Props {
   entityId: number;
   initialKeyword?: string | null;
@@ -63,6 +85,16 @@ const StyledTableRow = styled(TableRow)(() => ({
   "&:last-child td, &:last-child th": {
     border: 0,
   },
+}));
+
+const ItemNameTableCell = styled(TableCell)(() => ({
+  width: "400px",
+  wordBreak: "break-word",
+}));
+
+const ItemValueTableCell = styled(TableCell)(() => ({
+  width: "750px",
+  wordBreak: "break-word",
 }));
 
 export const RestorableEntryList: FC<Props> = ({
@@ -123,14 +155,8 @@ export const RestorableEntryList: FC<Props> = ({
           {entries.value?.results?.map((entry) => {
             return (
               <Grid item xs={4} key={entry.id}>
-                <Card sx={{ height: "100%" }}>
-                  <CardHeader
-                    sx={{
-                      p: "0px",
-                      mt: "24px",
-                      mx: "16px",
-                      mb: "16px",
-                    }}
+                <StyledCard>
+                  <StyledCardHeader
                     title={
                       <CardActionArea
                         onClick={() => {
@@ -138,17 +164,9 @@ export const RestorableEntryList: FC<Props> = ({
                           setOpenModal(true);
                         }}
                       >
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            width: "300px",
-                            textOverflow: "ellipsis",
-                            overflow: "hidden",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
+                        <EntryName variant="h6">
                           {entry.name.replace(/_deleted_.*/, "")}
-                        </Typography>
+                        </EntryName>
                       </CardActionArea>
                     }
                     action={
@@ -165,7 +183,7 @@ export const RestorableEntryList: FC<Props> = ({
                       </>
                     }
                   />
-                </Card>
+                </StyledCard>
               </Grid>
             );
           })}
@@ -197,48 +215,24 @@ export const RestorableEntryList: FC<Props> = ({
                 <Table>
                   <TableHead sx={{ backgroundColor: "primary.dark" }}>
                     <TableRow>
-                      <TableCell sx={{ color: "primary.contrastText" }}>
-                        項目
-                      </TableCell>
-                      <TableCell sx={{ color: "primary.contrastText" }}>
-                        内容
-                      </TableCell>
+                      <HeaderTableCell>項目</HeaderTableCell>
+                      <HeaderTableCell>内容</HeaderTableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     <StyledTableRow>
-                      <TableCell
-                        sx={{ width: "400px", wordBreak: "break-word" }}
-                      >
-                        Deleted by
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          width: "750px",
-                          p: "0px",
-                          wordBreak: "break-word",
-                        }}
-                      >
+                      <ItemNameTableCell>Deleted by</ItemNameTableCell>
+                      <ItemValueTableCell>
                         {entryDetail.value?.deletedUser?.username}
-                      </TableCell>
+                      </ItemValueTableCell>
                     </StyledTableRow>
                     <StyledTableRow>
-                      <TableCell
-                        sx={{ width: "400px", wordBreak: "break-word" }}
-                      >
-                        Deleted at
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          width: "750px",
-                          p: "0px",
-                          wordBreak: "break-word",
-                        }}
-                      >
+                      <ItemNameTableCell>Deleted at</ItemNameTableCell>
+                      <ItemValueTableCell>
                         {entryDetail.value?.deletedTime != null
                           ? formatDate(entryDetail.value.deletedTime)
                           : null}
-                      </TableCell>
+                      </ItemValueTableCell>
                     </StyledTableRow>
                   </TableBody>
                 </Table>

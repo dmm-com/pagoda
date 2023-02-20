@@ -27,6 +27,14 @@ const StyledModal = styled(Modal)(({}) => ({
   justifyContent: "center",
 }));
 
+const HeaderTableRow = styled(TableRow)(({}) => ({
+  backgroundColor: "#455A64",
+}));
+
+const HeaderTableCell = styled(TableCell)(({}) => ({
+  color: "#FFFFFF",
+}));
+
 const Paper = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   border: "2px solid #000",
@@ -125,14 +133,14 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
 
       <Table className="table table-bordered">
         <TableHead>
-          <TableRow sx={{ backgroundColor: "#455A64" }}>
-            <TableCell sx={{ color: "#FFFFFF" }}>URL</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>ラベル</TableCell>
-            <TableCell />
-            <TableCell sx={{ color: "#FFFFFF" }}>URL有効化</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>削除</TableCell>
-            <TableCell sx={{ color: "#FFFFFF" }}>追加</TableCell>
-          </TableRow>
+          <HeaderTableRow>
+            <HeaderTableCell>URL</HeaderTableCell>
+            <HeaderTableCell>ラベル</HeaderTableCell>
+            <HeaderTableCell />
+            <HeaderTableCell>URL有効化</HeaderTableCell>
+            <HeaderTableCell>削除</HeaderTableCell>
+            <HeaderTableCell>追加</HeaderTableCell>
+          </HeaderTableRow>
         </TableHead>
         <TableBody>
           {entityInfo.webhooks?.map((webhook, index) => (
@@ -197,11 +205,11 @@ export const WebhookFields: FC<Props> = ({ entityInfo, setEntityInfo }) => {
           {entityInfo.webhooks?.filter((webhook) => !webhook.isDeleted)
             .length === 0 && (
             <TableRow>
-              <TableCell></TableCell>
-              <TableCell></TableCell>
-              <TableCell></TableCell>
-              <TableCell></TableCell>
-              <TableCell></TableCell>
+              <TableCell />
+              <TableCell />
+              <TableCell />
+              <TableCell />
+              <TableCell />
               <TableCell>
                 <IconButton onClick={() => handleAppendWebhook(0)}>
                   <AddIcon />

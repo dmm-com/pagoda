@@ -1,6 +1,14 @@
 import SearchIcon from "@mui/icons-material/Search";
 import { InputAdornment, SxProps, TextField, Theme } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
+
+const StyledTextField = styled(TextField)({
+  background: "#F4F4F4",
+  "& fieldset": {
+    borderColor: "white",
+  },
+});
 
 interface Props {
   placeholder: string;
@@ -22,7 +30,7 @@ export const SearchBox: FC<Props> = ({
   autoFocus,
 }) => {
   return (
-    <TextField
+    <StyledTextField
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
@@ -35,12 +43,6 @@ export const SearchBox: FC<Props> = ({
         },
       }}
       placeholder={placeholder}
-      sx={{
-        background: "#F4F4F4",
-        "& fieldset": {
-          borderColor: "white",
-        },
-      }}
       fullWidth={true}
       defaultValue={defaultValue}
       value={value}

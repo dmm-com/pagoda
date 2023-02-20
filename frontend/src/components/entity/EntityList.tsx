@@ -32,6 +32,34 @@ const EntityNote = styled(Typography)(({ theme }) => ({
   webkitLineClamp: 2,
 }));
 
+const EntityName = styled(Typography)(({}) => ({
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+}));
+
+const StyledCard = styled(Card)(({}) => ({
+  height: "100%",
+}));
+
+const StyledCardHeader = styled(CardHeader)(({}) => ({
+  p: "0px",
+  mt: "24px",
+  mx: "16px",
+  mb: "16px",
+  ".MuiCardHeader-content": {
+    width: "80%",
+  },
+}));
+
+const StyledCardContent = styled(CardContent)(({}) => ({
+  p: "0px",
+  mt: "0px",
+  mx: "16px",
+  mb: "0px",
+  lineHeight: 2,
+}));
+
 interface Props {
   entities: EntityListInterface[];
   page: number;
@@ -87,32 +115,14 @@ export const EntityList: FC<Props> = ({
       <Grid container spacing={2}>
         {entities.map((entity) => (
           <Grid item xs={4} key={entity.id}>
-            <Card sx={{ height: "100%" }}>
-              <CardHeader
-                sx={{
-                  p: "0px",
-                  mt: "24px",
-                  mx: "16px",
-                  mb: "16px",
-                  ".MuiCardHeader-content": {
-                    width: "80%",
-                  },
-                }}
+            <StyledCard>
+              <StyledCardHeader
                 title={
                   <CardActionArea
                     component={Link}
                     to={entityEntriesPath(entity.id)}
                   >
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        textOverflow: "ellipsis",
-                        overflow: "hidden",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {entity.name}
-                    </Typography>
+                    <EntityName variant="h6">{entity.name}</EntityName>
                   </CardActionArea>
                 }
                 action={
@@ -141,18 +151,10 @@ export const EntityList: FC<Props> = ({
                   </>
                 }
               />
-              <CardContent
-                sx={{
-                  p: "0px",
-                  mt: "0px",
-                  mx: "16px",
-                  mb: "0px",
-                  lineHeight: 2,
-                }}
-              >
+              <StyledCardContent>
                 <EntityNote>{entity.note}</EntityNote>
-              </CardContent>
-            </Card>
+              </StyledCardContent>
+            </StyledCard>
           </Grid>
         ))}
       </Grid>

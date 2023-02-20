@@ -14,6 +14,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { Dispatch, FC, SetStateAction, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -22,6 +23,29 @@ import { EditableEntry, EditableEntryAttrs } from "./entryForm/EditableEntry";
 import { EditAttributeValue } from "components/entry/entryForm/EditAttributeValue";
 import { DjangoContext } from "services/DjangoContext";
 import { updateEntryInfoValueFromValueInfo } from "services/entry/Edit";
+
+const AnchorLinkButton = styled(Button)(({}) => ({
+  border: "0.5px solid gray",
+  borderRadius: 16,
+  textTransform: "none",
+}));
+
+const HeaderTableRow = styled(TableRow)(({}) => ({
+  backgroundColor: "#455A64",
+}));
+
+const HeaderTableCell = styled(TableCell)(({}) => ({
+  color: "#FFFFFF",
+  width: "384px",
+}));
+
+const RequiredLabel = styled(Typography)(({}) => ({
+  border: "0.5px solid gray",
+  borderRadius: 16,
+  color: "white",
+  backgroundColor: "gray",
+  padding: "0 8px",
+}));
 
 interface Props {
   entryInfo: EditableEntry;
@@ -143,47 +167,31 @@ export const EntryForm: FC<Props> = ({
     <Container sx={{ mb: "100px" }}>
       <Box mb="20px" display="flex" flexWrap="wrap">
         <Box m="8px">
-          <Button
-            href="#name"
-            sx={{
-              border: "0.5px solid gray",
-              borderRadius: 16,
-              textTransform: "none",
-            }}
-          >
+          <AnchorLinkButton href="#name">
             <Typography sx={{ color: "black" }}>エントリ名</Typography>
             <ArrowDropDownIcon sx={{ color: "black", padding: "0 4px" }} />
-          </Button>
+          </AnchorLinkButton>
         </Box>
         {Object.keys(entryInfo.attrs).map((attributeName) => (
           <Box key={attributeName} m="8px">
-            <Button
+            <AnchorLinkButton
               href={`#attrs-${attributeName}`}
-              sx={{
-                border: "0.5px solid gray",
-                borderRadius: 16,
-                textTransform: "none",
-              }}
               onClick={() => setIsAnchorLink(true)}
             >
               <Typography sx={{ color: "black", padding: "0 4px" }}>
                 {attributeName}
               </Typography>
               <ArrowDropDownIcon sx={{ color: "black" }} />
-            </Button>
+            </AnchorLinkButton>
           </Box>
         ))}
       </Box>
       <Table>
         <TableHead>
-          <TableRow sx={{ backgroundColor: "#455A64" }}>
-            <TableCell sx={{ color: "#FFFFFF", width: "384px" }}>
-              項目
-            </TableCell>
-            <TableCell sx={{ color: "#FFFFFF", width: "768px" }}>
-              内容
-            </TableCell>
-          </TableRow>
+          <HeaderTableRow>
+            <HeaderTableCell>項目</HeaderTableCell>
+            <HeaderTableCell>内容</HeaderTableCell>
+          </HeaderTableRow>
         </TableHead>
         <TableBody>
           <TableRow>
@@ -195,17 +203,7 @@ export const EntryForm: FC<Props> = ({
                   sx={{ marginTop: "-500px", paddingTop: "500px" }}
                 />
                 <Typography flexGrow={1}>エントリ名</Typography>
-                <Typography
-                  sx={{
-                    border: "0.5px solid gray",
-                    borderRadius: 16,
-                    color: "white",
-                    backgroundColor: "gray",
-                    padding: "0 8px",
-                  }}
-                >
-                  必須
-                </Typography>
+                <RequiredLabel>必須</RequiredLabel>
               </Box>
             </TableCell>
             <TableCell>
@@ -229,17 +227,7 @@ export const EntryForm: FC<Props> = ({
                   />
                   <Typography flexGrow={1}>{attributeName}</Typography>
                   {entryInfo.attrs[attributeName]?.isMandatory && (
-                    <Typography
-                      sx={{
-                        border: "0.5px solid gray",
-                        borderRadius: 16,
-                        color: "white",
-                        backgroundColor: "gray",
-                        padding: "0 8px",
-                      }}
-                    >
-                      必須
-                    </Typography>
+                    <RequiredLabel>必須</RequiredLabel>
                   )}
                 </Box>
               </TableCell>

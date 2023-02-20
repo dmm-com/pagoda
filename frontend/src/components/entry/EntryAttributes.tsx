@@ -27,29 +27,39 @@ const StyledTableRow = styled(TableRow)(() => ({
   },
 }));
 
+const HeaderTableCell = styled(TableCell)(({ theme }) => ({
+  color: theme.palette.primary.contrastText,
+}));
+
+const AttrNameTableCell = styled(TableCell)(() => ({
+  width: "200px",
+  wordBreak: "break-word",
+}));
+
+const AttrValueTableCell = styled(TableCell)(() => ({
+  width: "950px",
+  wordBreak: "break-word",
+}));
+
 export const EntryAttributes: FC<Props> = ({ attributes }) => {
   return (
     <TableContainer component={Paper}>
       <Table>
         <TableHead sx={{ backgroundColor: "primary.dark" }}>
           <TableRow>
-            <TableCell sx={{ color: "primary.contrastText" }}>項目</TableCell>
-            <TableCell sx={{ color: "primary.contrastText" }}>内容</TableCell>
+            <HeaderTableCell>項目</HeaderTableCell>
+            <HeaderTableCell>内容</HeaderTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {attributes.map((attr) => (
             <StyledTableRow key={attr.schema.name}>
-              <TableCell sx={{ width: "200px", wordBreak: "break-word" }}>
-                {attr.schema.name}
-              </TableCell>
-              <TableCell
-                sx={{ width: "950px", p: "0px", wordBreak: "break-word" }}
-              >
+              <AttrNameTableCell>{attr.schema.name}</AttrNameTableCell>
+              <AttrValueTableCell sx={{ p: "0px" }}>
                 <AttributeValue
                   attrInfo={{ type: attr.type, value: attr.value }}
                 />
-              </TableCell>
+              </AttrValueTableCell>
             </StyledTableRow>
           ))}
         </TableBody>
