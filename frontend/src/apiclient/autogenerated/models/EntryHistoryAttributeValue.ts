@@ -14,6 +14,12 @@
 
 import { exists, mapValues } from "../runtime";
 import {
+  Attribute,
+  AttributeFromJSON,
+  AttributeFromJSONTyped,
+  AttributeToJSON,
+} from "./Attribute";
+import {
   EntryAttributeValue,
   EntryAttributeValueFromJSON,
   EntryAttributeValueFromJSONTyped,
@@ -40,12 +46,6 @@ export interface EntryHistoryAttributeValue {
   type: number;
   /**
    *
-   * @type {EntryAttributeValue}
-   * @memberof EntryHistoryAttributeValue
-   */
-  readonly value: EntryAttributeValue | null;
-  /**
-   *
    * @type {Date}
    * @memberof EntryHistoryAttributeValue
    */
@@ -62,6 +62,24 @@ export interface EntryHistoryAttributeValue {
    * @memberof EntryHistoryAttributeValue
    */
   createdUser: string;
+  /**
+   *
+   * @type {EntryAttributeValue}
+   * @memberof EntryHistoryAttributeValue
+   */
+  readonly currValue: EntryAttributeValue | null;
+  /**
+   *
+   * @type {EntryAttributeValue}
+   * @memberof EntryHistoryAttributeValue
+   */
+  readonly prevValue: EntryAttributeValue | null;
+  /**
+   *
+   * @type {Attribute}
+   * @memberof EntryHistoryAttributeValue
+   */
+  parentAttr: Attribute;
 }
 
 export function EntryHistoryAttributeValueFromJSON(
@@ -80,10 +98,12 @@ export function EntryHistoryAttributeValueFromJSONTyped(
   return {
     id: json["id"],
     type: json["type"],
-    value: EntryAttributeValueFromJSON(json["value"]),
     createdTime: new Date(json["created_time"]),
     isLatest: !exists(json, "is_latest") ? undefined : json["is_latest"],
     createdUser: json["created_user"],
+    currValue: EntryAttributeValueFromJSON(json["curr_value"]),
+    prevValue: EntryAttributeValueFromJSON(json["prev_value"]),
+    parentAttr: AttributeFromJSON(json["parent_attr"]),
   };
 }
 
@@ -100,5 +120,6 @@ export function EntryHistoryAttributeValueToJSON(
     type: value.type,
     is_latest: value.isLatest,
     created_user: value.createdUser,
+    parent_attr: AttributeToJSON(value.parentAttr),
   };
 }

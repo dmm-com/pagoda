@@ -39,7 +39,11 @@ urlpatterns = [
     ),
     path(
         "<int:pk>/histories/",
-        views.EntryHistoryAPI.as_view(),
+        views.EntryAPI.as_view(
+            {
+                "get": "histories",
+            }
+        ),
     ),
     path(
         "search/",

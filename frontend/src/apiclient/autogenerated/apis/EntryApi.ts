@@ -38,9 +38,9 @@ import {
   PaginatedEntryBaseList,
   PaginatedEntryBaseListFromJSON,
   PaginatedEntryBaseListToJSON,
-  PaginatedEntryHistoryList,
-  PaginatedEntryHistoryListFromJSON,
-  PaginatedEntryHistoryListToJSON,
+  PaginatedEntryHistoryAttributeValueList,
+  PaginatedEntryHistoryAttributeValueListFromJSON,
+  PaginatedEntryHistoryAttributeValueListToJSON,
 } from "../models";
 
 export interface EntryApiV2AdvancedSearchResultExportCreateRequest {
@@ -613,7 +613,7 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2HistoriesListRaw(
     requestParameters: EntryApiV2HistoriesListRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<PaginatedEntryHistoryList>> {
+  ): Promise<runtime.ApiResponse<PaginatedEntryHistoryAttributeValueList>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
         "id",
@@ -661,7 +661,7 @@ export class EntryApi extends runtime.BaseAPI {
     );
 
     return new runtime.JSONApiResponse(response, (jsonValue) =>
-      PaginatedEntryHistoryListFromJSON(jsonValue)
+      PaginatedEntryHistoryAttributeValueListFromJSON(jsonValue)
     );
   }
 
@@ -670,7 +670,7 @@ export class EntryApi extends runtime.BaseAPI {
   async entryApiV2HistoriesList(
     requestParameters: EntryApiV2HistoriesListRequest,
     initOverrides?: RequestInit
-  ): Promise<PaginatedEntryHistoryList> {
+  ): Promise<PaginatedEntryHistoryAttributeValueList> {
     const response = await this.entryApiV2HistoriesListRaw(
       requestParameters,
       initOverrides
