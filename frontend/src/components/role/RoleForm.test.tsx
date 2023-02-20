@@ -35,12 +35,10 @@ test("should render a component with essential props", function () {
   /* eslint-enable */
 
   const Wrapper: FC = () => {
-    const { setValue, getValues, control } = useForm<Role>({
+    const { setValue, control } = useForm<Role>({
       defaultValues: role,
     });
-    return (
-      <RoleForm control={control} setValue={setValue} getValues={getValues} />
-    );
+    return <RoleForm control={control} setValue={setValue} />;
   };
 
   expect(() =>
