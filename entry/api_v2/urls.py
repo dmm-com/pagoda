@@ -41,7 +41,7 @@ urlpatterns = [
         "<int:pk>/histories/",
         views.EntryAPI.as_view(
             {
-                "get": "histories",
+                "get": "list",
             }
         ),
     ),
