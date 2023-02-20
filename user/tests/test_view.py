@@ -2,24 +2,19 @@ import json
 from datetime import timedelta
 from unittest.mock import Mock, patch
 
-from django.conf import settings
-from django.test import Client, TestCase
 from django.urls import reverse
 
+from airone.lib.test import AironeViewTest
 from user.forms import UsernameBasedPasswordResetForm
 from user.models import User
 from user.views import PasswordReset
 
 
-class ViewTest(TestCase):
+class ViewTest(AironeViewTest):
     def setUp(self):
-        self._client = Client()
+        super(ViewTest, self).setUp()
         self.guest = self._create_user("guest", "guest@example.com")
         self.admin = self._create_user("admin", "admin@example.com", True)
-
-        settings.MIDDLEWARE = [
-            x for x in settings.MIDDLEWARE if x != "airone.lib.log.LoggingRequestMiddleware"
-        ]
 
     def _create_user(
         self,

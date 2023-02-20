@@ -46,6 +46,7 @@ class AirOneHTTPTest(unittest.TestCase):
 
 class ViewTest(AironeViewTest):
     def setUp(self):
+        super(ViewTest, self).setUp()
         self.user = self.guest_login()
 
         self.entity = self.create_entity(self.user, "Entity", [{"name": "attr"}])

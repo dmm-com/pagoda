@@ -34,15 +34,13 @@ class ModelTest(AironeTestCase):
         self._attr: Attribute = self.make_attr("attr")
         self._attr.save()
 
-        self._org_auto_complement_user = settings.AIRONE["AUTO_COMPLEMENT_USER"]
-
         # make auto complement user
         self._complement_user: User = User(
-            username=self._org_auto_complement_user,
+            username=settings.AIRONE["AUTO_COMPLEMENT_USER"],
             email="hoge@example.com",
             is_superuser=True,
         )
-        self._complement_user.set_password(self._org_auto_complement_user)
+        self._complement_user.set_password(settings.AIRONE["AUTO_COMPLEMENT_USER"])
         self._complement_user.save()
 
     def _get_attrinfo_template(self, ref=None, group=None, role=None):
@@ -119,10 +117,6 @@ class ModelTest(AironeTestCase):
             entity.attrs.add(attr)
 
         return entity
-
-    def tearDown(self):
-        # settings initialization
-        settings.AIRONE["AUTO_COMPLEMENT_USER"] = self._org_auto_complement_user
 
     def make_attr(self, name, attrtype=AttrTypeStr, user=None, entity=None, entry=None):
         entity_attr = EntityAttr.objects.create(
@@ -430,7 +424,7 @@ class ModelTest(AironeTestCase):
 
     def test_attr_helper_of_attribute_with_array_named_ref(self):
         # If 'AUTO_COMPLEMENT_USER' in settings is unmatch
-        settings.AIRONE["AUTO_COMPLEMENT_USER"] = self._org_auto_complement_user + "1"
+        settings.AIRONE["AUTO_COMPLEMENT_USER"] = settings.AIRONE["AUTO_COMPLEMENT_USER"] + "1"
 
         ref_entity = Entity.objects.create(name="referred_entity", created_user=self._user)
         ref_entry = Entry.objects.create(
