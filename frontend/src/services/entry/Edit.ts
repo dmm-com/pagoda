@@ -1,5 +1,5 @@
 import {
-  Attribute,
+  AttributeData,
   EntityDetail,
   EntryAttributeType,
   EntryAttributeValueObject,
@@ -241,7 +241,7 @@ export function isSubmittable(entryInfo: EditableEntry): boolean {
 
 export function convertAttrsFormatCtoS(
   attrs: Record<string, EditableEntryAttrs>
-): Attribute[] {
+): AttributeData[] {
   return Object.entries(attrs ?? {}).map(([{}, attrValue]) => {
     switch (attrValue.type) {
       case djangoContext?.attrTypeValue.string:

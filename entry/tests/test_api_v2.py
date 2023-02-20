@@ -6,9 +6,7 @@ from unittest import mock
 from unittest.mock import Mock, patch
 
 import yaml
-from django.conf import settings
 from django.urls import reverse
-from pytz import timezone
 from rest_framework.exceptions import ValidationError
 
 from airone.lib.test import AironeViewTest
@@ -32,8 +30,6 @@ from group.models import Group
 from job.models import Job, JobOperation
 from role.models import Role
 from user.models import User
-
-TZ_INFO = timezone(settings.TIME_ZONE)
 
 
 class ViewTest(AironeViewTest):
@@ -1748,7 +1744,7 @@ class ViewTest(AironeViewTest):
                 "is_active": True,
                 "deleted_user": None,
                 "deleted_time": None,
-                "updated_time": entry.updated_time.astimezone(TZ_INFO).isoformat(),
+                "updated_time": entry.updated_time.astimezone(self.TZ_INFO).isoformat(),
             },
         )
 
@@ -3723,4 +3719,188 @@ class ViewTest(AironeViewTest):
         yaml_contents = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
         self.assertEqual(
             yaml_contents["test-entity"][0]["attrs"], {x["column"]: x["yaml"] for x in results}
+        )
+
+    def test_entry_history(self):
+        values = {
+            "val": {"value": "hoge", "result": {"as_string": "hoge"}},
+            "vals": {"value": ["foo", "bar"], "result": {"as_array_string": ["foo", "bar"]}},
+            "ref": {
+                "value": self.ref_entry.id,
+                "result": {
+                    "as_object": {
+                        "id": self.ref_entry.id,
+                        "name": self.ref_entry.name,
+                        "schema": {
+                            "id": self.ref_entry.schema.id,
+                            "name": self.ref_entry.schema.name,
+                        },
+                    },
+                },
+            },
+            "refs": {
+                "value": [self.ref_entry.id],
+                "result": {
+                    "as_array_object": [
+                        {
+                            "id": self.ref_entry.id,
+                            "name": self.ref_entry.name,
+                            "schema": {
+                                "id": self.ref_entry.schema.id,
+                                "name": self.ref_entry.schema.name,
+                            },
+                        }
+                    ]
+                },
+            },
+            "name": {
+                "value": {"name": "hoge", "id": self.ref_entry.id},
+                "result": {
+                    "as_named_object": {
+                        "hoge": {
+                            "id": self.ref_entry.id,
+                            "name": self.ref_entry.name,
+                            "schema": {
+                                "id": self.ref_entry.schema.id,
+                                "name": self.ref_entry.schema.name,
+                            },
+                        },
+                    },
+                },
+            },
+            "names": {
+                "value": [{"name": "foo", "id": self.ref_entry.id}],
+                "result": {
+                    "as_array_named_object": [
+                        {
+                            "foo": {
+                                "id": self.ref_entry.id,
+                                "name": self.ref_entry.name,
+                                "schema": {
+                                    "id": self.ref_entry.schema.id,
+                                    "name": self.ref_entry.schema.name,
+                                },
+                            },
+                        },
+                    ]
+                },
+            },
+            "group": {
+                "value": self.group.id,
+                "result": {
+                    "as_group": {
+                        "id": self.group.id,
+                        "name": self.group.name,
+                    },
+                },
+            },
+            "groups": {
+                "value": [self.group.id],
+                "result": {
+                    "as_array_group": [
+                        {
+                            "id": self.group.id,
+                            "name": self.group.name,
+                        }
+                    ]
+                },
+            },
+            "role": {
+                "value": self.role.id,
+                "result": {
+                    "as_role": {
+                        "id": self.role.id,
+                        "name": self.role.name,
+                    },
+                },
+            },
+            "roles": {
+                "value": [self.role.id],
+                "result": {
+                    "as_array_role": [
+                        {
+                            "id": self.role.id,
+                            "name": self.role.name,
+                        }
+                    ]
+                },
+            },
+            "text": {"value": "fuga", "result": {"as_string": "fuga"}},
+            "bool": {"value": False, "result": {"as_boolean": False}},
+            "date": {"value": "2018-12-31", "result": {"as_string": "2018-12-31"}},
+        }
+        entry = self.add_entry(
+            self.user, "Entry", self.entity, values={x: values[x]["value"] for x in values.keys()}
+        )
+        resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 18)
+
+        for name in values.keys():
+            attr: Attribute = entry.attrs.get(schema__name=name)
+            attrv: AttributeValue = attr.get_latest_value()
+            self.assertEqual(
+                next(filter(lambda x: x["id"] == attrv.id, resp.json()["results"]))["curr_value"],
+                values[name]["result"],
+            )
+
+        # check order by created_time
+        attr = entry.attrs.get(schema__name="vals")
+        attr.add_value(self.user, ["hoge", "fuga"])
+
+        resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 19)
+        self.assertEqual(resp.json()["results"][0]["parent_attr"]["name"], "vals")
+        self.assertEqual(
+            resp.json()["results"][0]["curr_value"]["as_array_string"], ["hoge", "fuga"]
+        )
+        self.assertEqual(resp.json()["results"][0]["prev_value"]["as_array_string"], ["foo", "bar"])
+
+    def test_entry_history_without_permission(self):
+        entry = self.add_entry(self.user, "Entry", self.entity, {}, False)
+
+        # permission nothing entry
+        resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
+        )
+
+        # permission readble entry
+        self.role.users.add(self.user)
+        entry.readable.roles.add(self.role)
+        resp = self.client.get("/entry/api/v2/%d/histories/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+
+        # permission nothing entity attr
+        entity_attr: EntityAttr = self.entity.attrs.get(name="val")
+        entity_attr.is_public = False
+        entity_attr.save()
+        resp = self.client.get("/entry/api/v2/%d/histories/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(
+            any(
+                [
+                    x["parent_attr"]["name"] == "val"
+                    for x in [result for result in resp.json()["results"]]
+                ]
+            )
+        )
+
+        # permission nothing entity attr
+        entity_attr.readable.roles.add(self.role)
+        resp = self.client.get("/entry/api/v2/%d/histories/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(
+            any(
+                [
+                    x["parent_attr"]["name"] == "val"
+                    for x in [result for result in resp.json()["results"]]
+                ]
+            )
         )

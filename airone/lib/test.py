@@ -4,6 +4,7 @@ import sys
 
 from django.conf import settings
 from django.test import Client, TestCase, override_settings
+from pytz import timezone
 
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
@@ -14,17 +15,6 @@ from webhook.models import Webhook
 from .elasticsearch import ESS
 
 
-@override_settings(
-    ES_CONFIG={
-        "NODES": settings.ES_CONFIG["NODES"],
-        "USER": settings.ES_CONFIG["USER"],
-        "PASSWORD": settings.ES_CONFIG["PASSWORD"],
-        "INDEX": "test-airone",
-        "MAXIMUM_RESULTS_NUM": 10000,
-        "MAXIMUM_NESTED_OBJECT_NUM": 999999,
-        "TIMEOUT": 300,
-    }
-)
 class AironeTestCase(TestCase):
     ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY = [
         {"name": "val", "type": AttrTypeValue["string"]},
@@ -42,20 +32,36 @@ class AironeTestCase(TestCase):
         {"name": "roles", "type": AttrTypeValue["array_role"]},
     ]
 
+    TZ_INFO = timezone(settings.TIME_ZONE)
+
     def setUp(self):
+        OVERRIDE_ES_CONFIG = settings.ES_CONFIG.copy()
+        OVERRIDE_ES_CONFIG["INDEX"] = "test-" + settings.ES_CONFIG["INDEX"]
+        OVERRIDE_AIRONE = settings.AIRONE.copy()
+        OVERRIDE_AIRONE["FILE_STORE_PATH"] = "/tmp/airone_app_test"
+
+        if not os.path.exists("/tmp/airone_app_test"):
+            os.makedirs("/tmp/airone_app_test")
+
+        # update django settings
+        self._settings: override_settings = self.settings(
+            ES_CONFIG=OVERRIDE_ES_CONFIG, AIRONE=OVERRIDE_AIRONE
+        )
+        self._settings.enable()
+        self.modify_settings(
+            MIDDLEWARE={"remove": "airone.lib.log.LoggingRequestMiddleware"}
+        ).enable()
+
         # Before starting test, clear all documents in the Elasticsearch of test index
         self._es = ESS()
         self._es.recreate_index()
-
-        # update airone app
-        settings.AIRONE["FILE_STORE_PATH"] = "/tmp/airone_app_test"
-        if not os.path.exists(settings.AIRONE["FILE_STORE_PATH"]):
-            os.makedirs(settings.AIRONE["FILE_STORE_PATH"])
 
     def tearDown(self):
         # shutil.rmtree(settings.AIRONE['FILE_STORE_PATH'])
         for fname in os.listdir(settings.AIRONE["FILE_STORE_PATH"]):
             os.unlink(os.path.join(settings.AIRONE["FILE_STORE_PATH"], fname))
+
+        self._settings.disable()
 
     def create_entity(self, user, name, attrs=[], webhooks=[], is_public=True):
         """
@@ -128,10 +134,6 @@ class AironeViewTest(AironeTestCase):
         super(AironeViewTest, self).setUp()
 
         self.client = Client()
-
-        settings.MIDDLEWARE = [
-            x for x in settings.MIDDLEWARE if x != "airone.lib.log.LoggingRequestMiddleware"
-        ]
 
     def _do_login(self, uname, is_superuser=False):
         # create test user to authenticate

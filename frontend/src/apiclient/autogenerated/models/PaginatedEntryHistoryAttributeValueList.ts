@@ -14,54 +14,54 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  EntryHistory,
-  EntryHistoryFromJSON,
-  EntryHistoryFromJSONTyped,
-  EntryHistoryToJSON,
-} from "./EntryHistory";
+  EntryHistoryAttributeValue,
+  EntryHistoryAttributeValueFromJSON,
+  EntryHistoryAttributeValueFromJSONTyped,
+  EntryHistoryAttributeValueToJSON,
+} from "./EntryHistoryAttributeValue";
 
 /**
  *
  * @export
- * @interface PaginatedEntryHistoryList
+ * @interface PaginatedEntryHistoryAttributeValueList
  */
-export interface PaginatedEntryHistoryList {
+export interface PaginatedEntryHistoryAttributeValueList {
   /**
    *
    * @type {number}
-   * @memberof PaginatedEntryHistoryList
+   * @memberof PaginatedEntryHistoryAttributeValueList
    */
   count?: number;
   /**
    *
    * @type {string}
-   * @memberof PaginatedEntryHistoryList
+   * @memberof PaginatedEntryHistoryAttributeValueList
    */
   next?: string | null;
   /**
    *
    * @type {string}
-   * @memberof PaginatedEntryHistoryList
+   * @memberof PaginatedEntryHistoryAttributeValueList
    */
   previous?: string | null;
   /**
    *
-   * @type {Array<EntryHistory>}
-   * @memberof PaginatedEntryHistoryList
+   * @type {Array<EntryHistoryAttributeValue>}
+   * @memberof PaginatedEntryHistoryAttributeValueList
    */
-  results?: Array<EntryHistory>;
+  results?: Array<EntryHistoryAttributeValue>;
 }
 
-export function PaginatedEntryHistoryListFromJSON(
+export function PaginatedEntryHistoryAttributeValueListFromJSON(
   json: any
-): PaginatedEntryHistoryList {
-  return PaginatedEntryHistoryListFromJSONTyped(json, false);
+): PaginatedEntryHistoryAttributeValueList {
+  return PaginatedEntryHistoryAttributeValueListFromJSONTyped(json, false);
 }
 
-export function PaginatedEntryHistoryListFromJSONTyped(
+export function PaginatedEntryHistoryAttributeValueListFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): PaginatedEntryHistoryList {
+): PaginatedEntryHistoryAttributeValueList {
   if (json === undefined || json === null) {
     return json;
   }
@@ -71,12 +71,12 @@ export function PaginatedEntryHistoryListFromJSONTyped(
     previous: !exists(json, "previous") ? undefined : json["previous"],
     results: !exists(json, "results")
       ? undefined
-      : (json["results"] as Array<any>).map(EntryHistoryFromJSON),
+      : (json["results"] as Array<any>).map(EntryHistoryAttributeValueFromJSON),
   };
 }
 
-export function PaginatedEntryHistoryListToJSON(
-  value?: PaginatedEntryHistoryList | null
+export function PaginatedEntryHistoryAttributeValueListToJSON(
+  value?: PaginatedEntryHistoryAttributeValueList | null
 ): any {
   if (value === undefined) {
     return undefined;
@@ -91,6 +91,6 @@ export function PaginatedEntryHistoryListToJSON(
     results:
       value.results === undefined
         ? undefined
-        : (value.results as Array<any>).map(EntryHistoryToJSON),
+        : (value.results as Array<any>).map(EntryHistoryAttributeValueToJSON),
   };
 }

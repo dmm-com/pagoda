@@ -9,7 +9,7 @@ from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import ExceedLimitError
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
-from airone.lib.types import AttrTypeArrObj, AttrTypeArrStr, AttrTypeObj, AttrTypeStr, AttrTypeValue
+from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
@@ -34,15 +34,13 @@ class ModelTest(AironeTestCase):
         self._attr: Attribute = self.make_attr("attr")
         self._attr.save()
 
-        self._org_auto_complement_user = settings.AIRONE["AUTO_COMPLEMENT_USER"]
-
         # make auto complement user
         self._complement_user: User = User(
-            username=self._org_auto_complement_user,
+            username=settings.AIRONE["AUTO_COMPLEMENT_USER"],
             email="hoge@example.com",
             is_superuser=True,
         )
-        self._complement_user.set_password(self._org_auto_complement_user)
+        self._complement_user.set_password(settings.AIRONE["AUTO_COMPLEMENT_USER"])
         self._complement_user.save()
 
     def _get_attrinfo_template(self, ref=None, group=None, role=None):
@@ -120,11 +118,7 @@ class ModelTest(AironeTestCase):
 
         return entity
 
-    def tearDown(self):
-        # settings initialization
-        settings.AIRONE["AUTO_COMPLEMENT_USER"] = self._org_auto_complement_user
-
-    def make_attr(self, name, attrtype=AttrTypeStr, user=None, entity=None, entry=None):
+    def make_attr(self, name, attrtype=AttrTypeValue["string"], user=None, entity=None, entry=None):
         entity_attr = EntityAttr.objects.create(
             name=name,
             type=attrtype,
@@ -227,7 +221,7 @@ class ModelTest(AironeTestCase):
 
         attrbase = EntityAttr.objects.create(
             name="attrbase",
-            type=AttrTypeStr.TYPE,
+            type=AttrTypeValue["string"],
             created_user=user,
             parent_entity=entity,
         )
@@ -281,7 +275,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="e2", created_user=self._user)
         entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
 
-        attr = self.make_attr("attr2", attrtype=AttrTypeObj, entity=entity, entry=entry)
+        attr = self.make_attr("attr2", attrtype=AttrTypeValue["object"], entity=entity, entry=entry)
         attr.values.add(
             AttributeValue.objects.create(referral=e1, created_user=self._user, parent_attr=attr)
         )
@@ -297,7 +291,9 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="e2", created_user=self._user)
         entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
 
-        attr = self.make_attr("attr2", attrtype=AttrTypeArrStr, entity=entity, entry=entry)
+        attr = self.make_attr(
+            "attr2", attrtype=AttrTypeValue["array_string"], entity=entity, entry=entry
+        )
         attr_value = AttributeValue.objects.create(created_user=self._user, parent_attr=attr)
         attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
@@ -328,7 +324,9 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="e2", created_user=self._user)
         entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
 
-        attr = self.make_attr("attr2", attrtype=AttrTypeArrObj, entity=entity, entry=entry)
+        attr = self.make_attr(
+            "attr2", attrtype=AttrTypeValue["array_object"], entity=entity, entry=entry
+        )
         attr_value = AttributeValue.objects.create(created_user=self._user, parent_attr=attr)
         attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
@@ -366,7 +364,9 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="e2", created_user=self._user)
         entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
 
-        attr = self.make_attr("attr2", attrtype=AttrTypeArrObj, entity=entity, entry=entry)
+        attr = self.make_attr(
+            "attr2", attrtype=AttrTypeValue["array_object"], entity=entity, entry=entry
+        )
         attr_value = AttributeValue.objects.create(created_user=self._user, parent_attr=attr)
         attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
@@ -430,7 +430,7 @@ class ModelTest(AironeTestCase):
 
     def test_attr_helper_of_attribute_with_array_named_ref(self):
         # If 'AUTO_COMPLEMENT_USER' in settings is unmatch
-        settings.AIRONE["AUTO_COMPLEMENT_USER"] = self._org_auto_complement_user + "1"
+        settings.AIRONE["AUTO_COMPLEMENT_USER"] = settings.AIRONE["AUTO_COMPLEMENT_USER"] + "1"
 
         ref_entity = Entity.objects.create(name="referred_entity", created_user=self._user)
         ref_entry = Entry.objects.create(
@@ -754,7 +754,7 @@ class ModelTest(AironeTestCase):
     def test_coordinating_attribute_with_dynamically_added_one(self):
         newattr = EntityAttr.objects.create(
             name="newattr",
-            type=AttrTypeStr,
+            type=AttrTypeValue["string"],
             created_user=self._user,
             parent_entity=self._entity,
         )
@@ -771,7 +771,7 @@ class ModelTest(AironeTestCase):
             EntityAttr.objects.create(
                 **{
                     "name": "attr",
-                    "type": AttrTypeStr,
+                    "type": AttrTypeValue["string"],
                     "created_user": self._user,
                     "parent_entity": self._entity,
                 }
@@ -804,7 +804,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="ReferredEntity", created_user=self._user)
         entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
 
-        attr = self.make_attr("attr_ref", attrtype=AttrTypeObj)
+        attr = self.make_attr("attr_ref", attrtype=AttrTypeValue["object"])
 
         self._entry.attrs.add(attr)
 
@@ -5602,3 +5602,34 @@ class ModelTest(AironeTestCase):
             Entry.search_entries(self._user, **search_params),
             Entry.search_entries(None, **search_params),
         )
+
+    def test_get_preview_next_value(self):
+        # case not array
+        attr = self.make_attr("test", AttrTypeValue["string"])
+        attrv1 = attr.add_value(self._user, "hoge1")
+        attrv2 = attr.add_value(self._user, "hoge2")
+        attrv3 = attr.add_value(self._user, "hoge3")
+
+        self.assertIsNone(attrv1.get_preview_value())
+        self.assertEqual(attrv1.get_next_value(), attrv2)
+
+        self.assertEqual(attrv2.get_preview_value(), attrv1)
+        self.assertEqual(attrv2.get_next_value(), attrv3)
+
+        self.assertEqual(attrv3.get_preview_value(), attrv2)
+        self.assertIsNone(attrv3.get_next_value())
+
+        # case array
+        array_attr = self.make_attr("array", AttrTypeValue["array_string"])
+        array_attrv1 = array_attr.add_value(self._user, ["hoge1", "fuga1"])
+        array_attrv2 = array_attr.add_value(self._user, ["hoge2", "fuga2"])
+        array_attrv3 = array_attr.add_value(self._user, ["hoge3", "fuga3"])
+
+        self.assertIsNone(array_attrv1.get_preview_value())
+        self.assertEqual(array_attrv1.get_next_value(), array_attrv2)
+
+        self.assertEqual(array_attrv2.get_preview_value(), array_attrv1)
+        self.assertEqual(array_attrv2.get_next_value(), array_attrv3)
+
+        self.assertEqual(array_attrv3.get_preview_value(), array_attrv2)
+        self.assertIsNone(array_attrv3.get_next_value())

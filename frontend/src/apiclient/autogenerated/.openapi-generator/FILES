@@ -1,3 +1,4 @@
+.openapi-generator-ignore
 apis/AclApi.ts
 apis/EntityApi.ts
 apis/EntryApi.ts
@@ -13,6 +14,7 @@ models/ACLRole.ts
 models/AdvancedSearchResultExport.ts
 models/AdvancedSearchResultExportAttrInfo.ts
 models/Attribute.ts
+models/AttributeData.ts
 models/Entity.ts
 models/EntityAttrCreate.ts
 models/EntityAttrImportExport.ts
@@ -35,7 +37,6 @@ models/EntryBase.ts
 models/EntryCopy.ts
 models/EntryCreate.ts
 models/EntryExport.ts
-models/EntryHistory.ts
 models/EntryHistoryAttributeValue.ts
 models/EntryRetrieve.ts
 models/EntryUpdate.ts
@@ -50,7 +51,7 @@ models/JobTarget.ts
 models/PaginatedEntityHistoryList.ts
 models/PaginatedEntityListList.ts
 models/PaginatedEntryBaseList.ts
-models/PaginatedEntryHistoryList.ts
+models/PaginatedEntryHistoryAttributeValueList.ts
 models/PaginatedJobSerializersList.ts
 models/PaginatedUserListList.ts
 models/PasswordReset.ts

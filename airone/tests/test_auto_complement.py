@@ -14,20 +14,14 @@ class LibAutoComplementTest(AironeTestCase):
         self.user.set_password("guest")
         self.user.save()
 
-        self.org_auto_complement_user = settings.AIRONE["AUTO_COMPLEMENT_USER"]
-
         # make auto complement user
         self.complement_user = User(
-            username=self.org_auto_complement_user,
+            username=settings.AIRONE["AUTO_COMPLEMENT_USER"],
             email="hoge@example.com",
             is_superuser=True,
         )
-        self.complement_user.set_password(self.org_auto_complement_user)
+        self.complement_user.set_password(settings.AIRONE["AUTO_COMPLEMENT_USER"])
         self.complement_user.save()
-
-    def tearDown(self):
-        # settings initialization
-        settings.AIRONE["AUTO_COMPLEMENT_USER"] = self.org_auto_complement_user
 
     def test_get_auto_complement_user(self):
         # call get_auto_complement_user
@@ -61,7 +55,7 @@ class LibAutoComplementTest(AironeTestCase):
 
     def test_get_auto_complement_user_unmatch_complement_user(self):
         # If 'AUTO_COMPLEMENT_USER' in settings is unmatch
-        settings.AIRONE["AUTO_COMPLEMENT_USER"] = self.org_auto_complement_user + "1"
+        settings.AIRONE["AUTO_COMPLEMENT_USER"] = settings.AIRONE["AUTO_COMPLEMENT_USER"] + "1"
 
         # call get_auto_complement_user
         user = auto_complement.get_auto_complement_user(self.user)
