@@ -51,7 +51,7 @@ class EntryPermission(BasePermission):
             "destroy": ACLType.Writable,
             "restore": ACLType.Writable,
             "copy": ACLType.Writable,
-            "histories": ACLType.Readable,
+            "list": ACLType.Readable,  # histories
         }
 
         if not user.has_permission(obj, permisson.get(view.action)):
@@ -70,7 +70,7 @@ class EntryAPI(viewsets.ModelViewSet):
             "retrieve": EntryRetrieveSerializer,
             "update": EntryUpdateSerializer,
             "copy": EntryCopySerializer,
-            "histories": EntryHistoryAttributeValueSerializer,
+            "list": EntryHistoryAttributeValueSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -155,7 +155,8 @@ class EntryAPI(viewsets.ModelViewSet):
 
         return Response({}, status=status.HTTP_200_OK)
 
-    def histories(self, request, pk):
+    # histories view
+    def list(self, request, pk):
         user: User = self.request.user
         entry: Entry = self.get_object()
 
@@ -174,7 +175,7 @@ class EntryAPI(viewsets.ModelViewSet):
             .select_related("parent_attr")
         )
 
-        return self.list(request, pk)
+        return super(EntryAPI, self).list(request, pk)
 
 
 @extend_schema(
