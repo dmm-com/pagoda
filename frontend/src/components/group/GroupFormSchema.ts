@@ -5,15 +5,17 @@ import { schemaForType } from "../../services/ZodSchemaUtil";
 
 export const schema = schemaForType<Group>()(
   z.object({
-    id: z.number(),
+    id: z.number().default(0),
     name: z.string().min(1, { message: "グループ名は必須です" }),
     parentGroup: z.number().nullable().optional(),
-    members: z.array(
-      z.object({
-        id: z.number(),
-        username: z.string(),
-      })
-    ),
+    members: z
+      .array(
+        z.object({
+          id: z.number(),
+          username: z.string(),
+        })
+      )
+      .default([]),
   })
 );
 
