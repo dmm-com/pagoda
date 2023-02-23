@@ -6,34 +6,42 @@ import { schemaForType } from "../../services/ZodSchemaUtil";
 export const schema = schemaForType<Role>()(
   z
     .object({
-      id: z.number(),
-      isActive: z.boolean().optional(),
-      name: z.string().min(1, { message: "ロール名は必須です" }),
+      id: z.number().default(0),
+      isActive: z.boolean().optional().default(true),
+      name: z.string().min(1, { message: "ロール名は必須です" }).default(""),
       description: z.string().optional(),
-      users: z.array(
-        z.object({
-          id: z.number(),
-          username: z.string(),
-        })
-      ),
-      groups: z.array(
-        z.object({
-          id: z.number(),
-          name: z.string(),
-        })
-      ),
-      adminUsers: z.array(
-        z.object({
-          id: z.number(),
-          username: z.string(),
-        })
-      ),
-      adminGroups: z.array(
-        z.object({
-          id: z.number(),
-          name: z.string(),
-        })
-      ),
+      users: z
+        .array(
+          z.object({
+            id: z.number(),
+            username: z.string(),
+          })
+        )
+        .default([]),
+      groups: z
+        .array(
+          z.object({
+            id: z.number(),
+            name: z.string(),
+          })
+        )
+        .default([]),
+      adminUsers: z
+        .array(
+          z.object({
+            id: z.number(),
+            username: z.string(),
+          })
+        )
+        .default([]),
+      adminGroups: z
+        .array(
+          z.object({
+            id: z.number(),
+            name: z.string(),
+          })
+        )
+        .default([]),
     })
     .superRefine(({ users, groups, adminUsers, adminGroups }, ctx) => {
       const userIds = users.map((u) => u.id);
