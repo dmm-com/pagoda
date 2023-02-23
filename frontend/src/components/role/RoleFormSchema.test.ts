@@ -63,6 +63,16 @@ describe("schema", () => {
     expect(() => schema.parse(value)).toThrow();
   });
 
+  test("validation fails if both adminUsers and adminGroups are empty", () => {
+    const value = {
+      ...baseValue,
+      adminUsers: [],
+      adminGroups: [],
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
   test("validation fails if some users are also belonging to adminUsers", () => {
     const value = {
       ...baseValue,

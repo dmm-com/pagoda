@@ -41,6 +41,21 @@ export const schema = schemaForType<Role>()(
       const adminUserIds = adminUsers.map((u) => u.id);
       const adminGroupIds = adminGroups.map((g) => g.id);
 
+      if (adminUserIds.length === 0 && adminGroupIds.length === 0) {
+        ctx.addIssue({
+          path: ["adminUsers"],
+          code: z.ZodIssueCode.custom,
+          message:
+            "管理者ユーザーか管理者グループのどちらかは必ずメンバーを指定してください",
+        });
+        ctx.addIssue({
+          path: ["adminGroups"],
+          code: z.ZodIssueCode.custom,
+          message:
+            "管理者ユーザーか管理者グループのどちらかは必ずメンバーを指定してください",
+        });
+      }
+
       userIds
         .flatMap((id, index) => (adminUserIds.includes(id) ? [index] : []))
         .forEach((index) => {
