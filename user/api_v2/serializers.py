@@ -5,6 +5,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError as DjangoCoreValidationError
 from django.utils.http import urlsafe_base64_decode
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
@@ -12,11 +13,17 @@ from rest_framework.exceptions import ValidationError
 from user.models import User
 
 
-class UserToken(TypedDict):
-    value: str
-    lifetime: int
-    expire: str
-    created: str
+class UserRetrieveTokenSerializer(serializers.Serializer):
+    value = serializers.CharField()
+    lifetime = serializers.IntegerField()
+    expire = serializers.CharField()
+    created = serializers.CharField()
+
+    class UserTokenTypedDict(TypedDict):
+        value: str
+        lifetime: int
+        expire: str
+        created: str
 
 
 class UserTokenSerializer(serializers.ModelSerializer):
@@ -78,7 +85,8 @@ class UserRetrieveSerializer(UserBaseSerializer):
             "authenticate_type",
         ]
 
-    def get_token(self, obj: User) -> Optional[UserToken]:
+    @extend_schema_field(UserRetrieveTokenSerializer(required=False))
+    def get_token(self, obj: User) -> Optional[UserRetrieveTokenSerializer.UserTokenTypedDict]:
         current_user = self.context["request"].user
         if (current_user.id == obj.id or current_user.is_superuser) and obj.token:
             return {

@@ -142,8 +142,9 @@ Object {
                 class="MuiBox-root css-qbrse1"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                  tabindex="0"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                  disabled=""
+                  tabindex="-1"
                   type="button"
                 >
                   保存
@@ -208,13 +209,13 @@ Object {
                           class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
                         >
                           <div
-                            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-error MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
                           >
                             <input
-                              aria-describedby=":r1:-helper-text"
-                              aria-invalid="true"
+                              aria-invalid="false"
                               class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
                               id=":r1:"
+                              name="username"
                               placeholder="ユーザ名を入力してください"
                               type="text"
                               value=""
@@ -234,12 +235,6 @@ Object {
                               </legend>
                             </fieldset>
                           </div>
-                          <p
-                            class="MuiFormHelperText-root Mui-error MuiFormHelperText-sizeMedium MuiFormHelperText-contained css-1wc848c-MuiFormHelperText-root"
-                            id=":r1:-helper-text"
-                          >
-                            ユーザ名は必須です
-                          </p>
                         </div>
                       </form>
                     </td>
@@ -259,52 +254,37 @@ Object {
                         class="MuiBox-root css-nlbhye"
                       >
                         <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary css-10h6tns-MuiInputBase-root-MuiInput-root"
+                          class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
                         >
-                          <input
-                            class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                            placeholder="メールアドレスを入力してください"
-                            type="email"
-                            value=""
-                          />
+                          <div
+                            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                          >
+                            <input
+                              aria-invalid="false"
+                              class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
+                              id=":r2:"
+                              name="email"
+                              placeholder="メールアドレスを入力してください"
+                              type="email"
+                              value=""
+                            />
+                            <fieldset
+                              aria-hidden="true"
+                              class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                            >
+                              <legend
+                                class="css-ihdtdm"
+                              >
+                                <span
+                                  class="notranslate"
+                                >
+                                  ​
+                                </span>
+                              </legend>
+                            </fieldset>
+                          </div>
                         </div>
                       </form>
-                    </td>
-                  </tr>
-                  <tr
-                    class="MuiTableRow-root css-1w2cmz5-MuiTableRow-root"
-                  >
-                    <td
-                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-gu5clz-MuiTableCell-root"
-                    >
-                      管理者権限
-                    </td>
-                    <td
-                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-z9lhjr-MuiTableCell-root"
-                    >
-                      <span
-                        aria-disabled="true"
-                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-disabled PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-disabled MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
-                        tabindex="-1"
-                      >
-                        <input
-                          class="PrivateSwitchBase-input css-1m9pwf3"
-                          data-indeterminate="false"
-                          disabled=""
-                          type="checkbox"
-                        />
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                          data-testid="CheckBoxOutlineBlankIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                          />
-                        </svg>
-                      </span>
                     </td>
                   </tr>
                   <tr
@@ -325,13 +305,13 @@ Object {
                           class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
                         >
                           <div
-                            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-error MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
                           >
                             <input
-                              aria-describedby=":r2:-helper-text"
-                              aria-invalid="true"
+                              aria-invalid="false"
                               class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
-                              id=":r2:"
+                              id=":r3:"
+                              name="password"
                               placeholder="パスワードを入力してください"
                               type="password"
                               value=""
@@ -351,12 +331,6 @@ Object {
                               </legend>
                             </fieldset>
                           </div>
-                          <p
-                            class="MuiFormHelperText-root Mui-error MuiFormHelperText-sizeMedium MuiFormHelperText-contained css-1wc848c-MuiFormHelperText-root"
-                            id=":r2:-helper-text"
-                          >
-                            パスワードは必須です
-                          </p>
                         </div>
                       </form>
                     </td>
@@ -507,8 +481,9 @@ Object {
               class="MuiBox-root css-qbrse1"
             >
               <button
-                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
-                tabindex="0"
+                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-zcbmsk-MuiButtonBase-root-MuiButton-root"
+                disabled=""
+                tabindex="-1"
                 type="button"
               >
                 保存
@@ -573,13 +548,13 @@ Object {
                         class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
                       >
                         <div
-                          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-error MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
                         >
                           <input
-                            aria-describedby=":r1:-helper-text"
-                            aria-invalid="true"
+                            aria-invalid="false"
                             class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
                             id=":r1:"
+                            name="username"
                             placeholder="ユーザ名を入力してください"
                             type="text"
                             value=""
@@ -599,12 +574,6 @@ Object {
                             </legend>
                           </fieldset>
                         </div>
-                        <p
-                          class="MuiFormHelperText-root Mui-error MuiFormHelperText-sizeMedium MuiFormHelperText-contained css-1wc848c-MuiFormHelperText-root"
-                          id=":r1:-helper-text"
-                        >
-                          ユーザ名は必須です
-                        </p>
                       </div>
                     </form>
                   </td>
@@ -624,52 +593,37 @@ Object {
                       class="MuiBox-root css-nlbhye"
                     >
                       <div
-                        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary css-10h6tns-MuiInputBase-root-MuiInput-root"
+                        class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
                       >
-                        <input
-                          class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                          placeholder="メールアドレスを入力してください"
-                          type="email"
-                          value=""
-                        />
+                        <div
+                          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                        >
+                          <input
+                            aria-invalid="false"
+                            class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
+                            id=":r2:"
+                            name="email"
+                            placeholder="メールアドレスを入力してください"
+                            type="email"
+                            value=""
+                          />
+                          <fieldset
+                            aria-hidden="true"
+                            class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                          >
+                            <legend
+                              class="css-ihdtdm"
+                            >
+                              <span
+                                class="notranslate"
+                              >
+                                ​
+                              </span>
+                            </legend>
+                          </fieldset>
+                        </div>
                       </div>
                     </form>
-                  </td>
-                </tr>
-                <tr
-                  class="MuiTableRow-root css-1w2cmz5-MuiTableRow-root"
-                >
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-gu5clz-MuiTableCell-root"
-                  >
-                    管理者権限
-                  </td>
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-z9lhjr-MuiTableCell-root"
-                  >
-                    <span
-                      aria-disabled="true"
-                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-disabled PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-disabled MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
-                      tabindex="-1"
-                    >
-                      <input
-                        class="PrivateSwitchBase-input css-1m9pwf3"
-                        data-indeterminate="false"
-                        disabled=""
-                        type="checkbox"
-                      />
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                        data-testid="CheckBoxOutlineBlankIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                        />
-                      </svg>
-                    </span>
                   </td>
                 </tr>
                 <tr
@@ -690,13 +644,13 @@ Object {
                         class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
                       >
                         <div
-                          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-error MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
                         >
                           <input
-                            aria-describedby=":r2:-helper-text"
-                            aria-invalid="true"
+                            aria-invalid="false"
                             class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
-                            id=":r2:"
+                            id=":r3:"
+                            name="password"
                             placeholder="パスワードを入力してください"
                             type="password"
                             value=""
@@ -716,12 +670,6 @@ Object {
                             </legend>
                           </fieldset>
                         </div>
-                        <p
-                          class="MuiFormHelperText-root Mui-error MuiFormHelperText-sizeMedium MuiFormHelperText-contained css-1wc848c-MuiFormHelperText-root"
-                          id=":r2:-helper-text"
-                        >
-                          パスワードは必須です
-                        </p>
                       </div>
                     </form>
                   </td>

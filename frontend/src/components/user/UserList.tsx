@@ -18,6 +18,7 @@ import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
 import { usePage } from "../../hooks/usePage";
+import { DjangoContext } from "../../services/DjangoContext";
 import { normalizeToMatch } from "../../services/StringUtil";
 import { Loading } from "../common/Loading";
 import { SearchBox } from "../common/SearchBox";
@@ -59,6 +60,13 @@ export const UserList: FC = ({}) => {
     });
   };
 
+  const isSuperuser = useMemo(() => {
+    const djangoContext = DjangoContext.getInstance();
+    return (
+      djangoContext?.user?.isSuperuser != null && djangoContext.user.isSuperuser
+    );
+  }, []);
+
   const totalPageCount = useMemo(() => {
     return users.loading
       ? 0
@@ -84,6 +92,7 @@ export const UserList: FC = ({}) => {
         <Button
           color="secondary"
           variant="contained"
+          disabled={!isSuperuser}
           component={Link}
           to={newUserPath()}
           sx={{ borderRadius: "24px", height: "100%" }}

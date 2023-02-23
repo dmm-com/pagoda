@@ -27,9 +27,6 @@ test("should render a component with essential props", function () {
         onClose={() => {
           /* dummy */
         }}
-        onSubmit={() => {
-          /* dummy */
-        }}
       />,
       {
         wrapper: TestWrapper,

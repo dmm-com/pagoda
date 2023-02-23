@@ -3,10 +3,13 @@
  */
 
 import { render } from "@testing-library/react";
-import React from "react";
+import React, { FC } from "react";
+import { useForm } from "react-hook-form";
 
-import { UserForm } from "components/user/UserForm";
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "../../services/TestWrapper";
+
+import { UserForm } from "./UserForm";
+import { Schema } from "./UserFormSchema";
 
 test("should render a component with essential props", function () {
   Object.defineProperty(window, "django_context", {
@@ -34,21 +37,27 @@ test("should render a component with essential props", function () {
     authenticateType: 0,
   };
 
-  const setUserInfo = () => {
-    /* do nothing */
+  const Wrapper: FC = () => {
+    const { control } = useForm<Schema>({
+      defaultValues: userInfo,
+    });
+    return (
+      <UserForm
+        user={userInfo}
+        control={control}
+        isCreateMode={true}
+        isMyself={true}
+        isSuperuser={false}
+        isSubmittable={false}
+        handleSubmit={(_e) => Promise.resolve()}
+        handleCancel={() => {}}
+      />
+    );
   };
 
   expect(() =>
-    render(
-      <UserForm
-        userInfo={userInfo}
-        setUserInfo={setUserInfo}
-        handleSubmit={() => {}}
-        handleCancel={() => {}}
-      />,
-      {
-        wrapper: TestWrapper,
-      }
-    )
+    render(<Wrapper />, {
+      wrapper: TestWrapper,
+    })
   ).not.toThrow();
 });
