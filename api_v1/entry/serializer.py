@@ -231,7 +231,10 @@ class EntrySearchChainSerializer(serializers.Serializer):
             if not is_leaf and not sub_query_result:
                 # In this case, it's useless to continue to search processing because
                 # there is no possiblity to find out data that user wants to.
-                return (False, [])
+                if is_any:
+                    continue
+                else:
+                    return (False, [])
 
             # This divides results into small chunks, that will be sent to the elasticsearch again
             # when it has large amount of data. The size of each chunks is SEARCH_ENTRY_LIMIT
@@ -303,7 +306,10 @@ class EntrySearchChainSerializer(serializers.Serializer):
             if not is_leaf and not sub_query_result:
                 # In this case, it's useless to continue to search processing because
                 # there is no possiblity to find out data that user wants to.
-                return (False, [])
+                if is_any:
+                    continue
+                else:
+                    return (False, [])
 
             # This divides results into small chunks, that will be sent to the elasticsearch again
             # when it has large amount of data. The size of each chunks is SEARCH_ENTRY_LIMIT
