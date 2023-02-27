@@ -7,7 +7,7 @@ from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from entry.settings import CONFIG
 
-SEARCH_ENTRY_LIMIT = 999999
+SEARCH_ENTRY_LIMIT = 200
 
 
 class ReferSerializer(serializers.Serializer):
