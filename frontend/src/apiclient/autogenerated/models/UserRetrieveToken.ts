@@ -24,25 +24,25 @@ export interface UserRetrieveToken {
    * @type {string}
    * @memberof UserRetrieveToken
    */
-  value?: string;
+  value: string;
   /**
    *
    * @type {number}
    * @memberof UserRetrieveToken
    */
-  lifetime?: number;
+  lifetime: number;
   /**
    *
    * @type {string}
    * @memberof UserRetrieveToken
    */
-  expire?: string;
+  expire: string;
   /**
    *
    * @type {string}
    * @memberof UserRetrieveToken
    */
-  created?: string;
+  created: string;
 }
 
 export function UserRetrieveTokenFromJSON(json: any): UserRetrieveToken {
@@ -57,10 +57,10 @@ export function UserRetrieveTokenFromJSONTyped(
     return json;
   }
   return {
-    value: !exists(json, "value") ? undefined : json["value"],
-    lifetime: !exists(json, "lifetime") ? undefined : json["lifetime"],
-    expire: !exists(json, "expire") ? undefined : json["expire"],
-    created: !exists(json, "created") ? undefined : json["created"],
+    value: json["value"],
+    lifetime: json["lifetime"],
+    expire: json["expire"],
+    created: json["created"],
   };
 }
 

@@ -169,9 +169,10 @@ Object {
                 </div>
               </div>
               <a
-                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1dcgaey-MuiButtonBase-root-MuiButton-root"
+                aria-disabled="true"
+                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1dcgaey-MuiButtonBase-root-MuiButton-root"
                 href="/ui/users/new"
-                tabindex="0"
+                tabindex="-1"
               >
                 <svg
                   aria-hidden="true"
@@ -185,9 +186,6 @@ Object {
                   />
                 </svg>
                 新規ユーザを登録
-                <span
-                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                />
               </a>
             </div>
             <div
@@ -492,9 +490,10 @@ Object {
               </div>
             </div>
             <a
-              class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1dcgaey-MuiButtonBase-root-MuiButton-root"
+              aria-disabled="true"
+              class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1dcgaey-MuiButtonBase-root-MuiButton-root"
               href="/ui/users/new"
-              tabindex="0"
+              tabindex="-1"
             >
               <svg
                 aria-hidden="true"
@@ -508,9 +507,6 @@ Object {
                 />
               </svg>
               新規ユーザを登録
-              <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-              />
             </a>
           </div>
           <div

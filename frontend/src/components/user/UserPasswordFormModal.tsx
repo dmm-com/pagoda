@@ -49,14 +49,12 @@ interface Props {
   userId: number;
   openModal: boolean;
   onClose: () => void;
-  onSubmit: () => void;
 }
 
 export const UserPasswordFormModal: FC<Props> = ({
   userId,
   openModal,
   onClose,
-  onSubmit,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
@@ -92,9 +90,6 @@ export const UserPasswordFormModal: FC<Props> = ({
           checkPassword
         );
       }
-
-      // This calls event handler, which is specified by caller component
-      onSubmit();
 
       if (DjangoContext.getInstance()?.user?.id == userId) {
         history.replace(loginPath());

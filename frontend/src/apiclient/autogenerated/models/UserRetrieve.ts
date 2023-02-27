@@ -61,7 +61,7 @@ export interface UserRetrieve {
    * @type {UserRetrieveToken}
    * @memberof UserRetrieve
    */
-  token: UserRetrieveToken | null;
+  readonly token: UserRetrieveToken | null;
   /**
    *
    * @type {number}
@@ -107,7 +107,6 @@ export function UserRetrieveToJSON(value?: UserRetrieve | null): any {
     username: value.username,
     email: value.email,
     is_superuser: value.isSuperuser,
-    token: UserRetrieveTokenToJSON(value.token),
     authenticate_type: value.authenticateType,
   };
 }
