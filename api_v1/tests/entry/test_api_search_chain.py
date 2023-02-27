@@ -287,6 +287,40 @@ class APITest(AironeViewTest):
             ),
         )
 
+        # case with only one filtering hit
+        params = {
+            "entities": ["VM"],
+            "is_any": True,
+            "attrs": [
+                # This condition not match entry
+                {
+                    "name": "Ports",
+                    "value": "ens0",
+                    "attrs": [
+                        {
+                            "name": "IP address",
+                            "value": "wrong VALUE",  # This specifies wrong value
+                        }
+                    ],
+                },
+                # This condition will match only test-vm2
+                {"name": "Status", "value": "Service-Out"},
+            ],
+        }
+
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted(
+                [{"id": x.id, "name": x.name} for x in [self.entry_vm2]],
+                key=lambda x: x["id"],
+            ),
+        )
+
     def test_search_chain_using_AND_condition(self):
         # create query to search chained query
         params = {
