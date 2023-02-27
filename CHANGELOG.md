@@ -3,6 +3,45 @@
 ## In development
 
 ### Added
+
+### Changed
+
+### Fixed
+* Fixed search chain API when only one filtering hit.
+  Contributed by @hinashi
+
+## v3.42.0
+
+### Changed
+* Validate input role data with Zod.
+  Contributed by @syucream
+* Replace sx props with styled components.
+  Contributed by @syucream
+* Upgrade django version from 3.2.17 to 3.2.18
+
+### Fixed
+* Fixed pagination error in entry history apiv2.
+  Contributed by @hinashi
+
+## v3.41.0
+
+### Added
+* Added to use Elasticsearch security features.
+  Contributed by @hinashi
+* Added customview in delete entry api.
+  Contributed by @hinashi
+
+### Changed
+* Enable TypeScript strict mode.
+  Contributed by @syucream
+
+### Fixed
+* Fixed permissions for entry operations.
+  Contributed by @hinashi
+* Fixed filter only ancestors and others not to break group tree
+  Contributed by @syucream
+
+### Added
 * Added feature to be able to sort Entries by created time order at list page
   Contributed by @userlocalhost
 
@@ -12,7 +51,40 @@
   for increasing maintenancability.
   Contributed by @hinashi, @syucream, @userlocalhost
 
+## v3.40.0
+
+### Changed
+* Upgrade django version from 3.2.16 to 3.2.17
+* Optimize role form with React Hook Form
+  Contributed by @syucream
+
 ### Fixed
+* Fixed the following bugs
+  Contributed by @hinashi, @syucream, @userlocalhost
+  - Fixed pagination count in list page
+  - Fixed to add the first attribute into entity
+  - Fixed edit entry when nothing role value
+  - Fixed a bug not to be able to move correct page after creating Entity
+  - Fixed append list value in edit array named entry
+  - Fixed a bug not to be able to erase selected referral information at EntryEdit page
+  
+## v3.39.0
+
+### Added
+* Added feature to be able to sort Entries by created time order at list page
+  Contributed by @userlocalhost
+
+### Changed
+* The first prototype of decoupling frontend implementation from
+  presentation to service layer that only has JavaScript processing
+  for increasing maintenancability.
+  Contributed by @hinashi, @syucream, @userlocalhost
+* Changed to use DjangoContext instead of login page static descriptions
+  Contributed by @userlocalhost
+
+### Fixed
+* Fixed anchor link in edit entry.
+  Contributed by @hinashi
 
 ## v3.38.0
 
