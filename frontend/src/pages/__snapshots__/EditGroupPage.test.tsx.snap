@@ -86,7 +86,9 @@ Object {
               </h6>
               <h6
                 class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
-              />
+              >
+                グループ編集
+              </h6>
               <div
                 class="MuiBox-root css-1b3gh38"
               >
@@ -167,13 +169,21 @@ Object {
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary css-10h6tns-MuiInputBase-root-MuiInput-root"
+                      class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
                     >
-                      <input
-                        class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                        type="text"
-                        value=""
-                      />
+                      <div
+                        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl css-whebh7-MuiInputBase-root-MuiInput-root"
+                      >
+                        <input
+                          aria-invalid="false"
+                          class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                          id=":r0:"
+                          name="name"
+                          required=""
+                          type="text"
+                          value=""
+                        />
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -194,6 +204,7 @@ Object {
                   >
                     <div
                       class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon css-1qqsdnr-MuiAutocomplete-root"
+                      name="members"
                     >
                       <div
                         class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
@@ -208,7 +219,7 @@ Object {
                             autocapitalize="none"
                             autocomplete="off"
                             class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
-                            id=":r0:"
+                            id=":r1:"
                             role="combobox"
                             spellcheck="false"
                             type="text"
@@ -509,7 +520,9 @@ Object {
             </h6>
             <h6
               class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
-            />
+            >
+              グループ編集
+            </h6>
             <div
               class="MuiBox-root css-1b3gh38"
             >
@@ -590,13 +603,21 @@ Object {
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >
                   <div
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary css-10h6tns-MuiInputBase-root-MuiInput-root"
+                    class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
                   >
-                    <input
-                      class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                      type="text"
-                      value=""
-                    />
+                    <div
+                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-formControl css-whebh7-MuiInputBase-root-MuiInput-root"
+                    >
+                      <input
+                        aria-invalid="false"
+                        class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                        id=":r0:"
+                        name="name"
+                        required=""
+                        type="text"
+                        value=""
+                      />
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -617,6 +638,7 @@ Object {
                 >
                   <div
                     class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon css-1qqsdnr-MuiAutocomplete-root"
+                    name="members"
                   >
                     <div
                       class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
@@ -631,7 +653,7 @@ Object {
                           autocapitalize="none"
                           autocomplete="off"
                           class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
-                          id=":r0:"
+                          id=":r1:"
                           role="combobox"
                           spellcheck="false"
                           type="text"
