@@ -60,6 +60,10 @@ class ACLSerializer(serializers.ModelSerializer):
             "parent",
         ]
 
+        extra_kwargs = {
+            "name": {"read_only": True},
+        }
+
     def get_parent(self, obj: ACLBase) -> Optional[ACLParentType]:
         airone_model = obj.get_subclass_object()
         if isinstance(airone_model, Entry):

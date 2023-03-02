@@ -12,15 +12,10 @@ import { schemaForType } from "../../services/ZodSchemaUtil";
   "parent":null}
 */
 
-type ACLForm = Pick<
-  ACL,
-  "id" | "name" | "isPublic" | "defaultPermission" | "objtype" | "acl"
->;
+type ACLForm = Pick<ACL, "isPublic" | "defaultPermission" | "objtype" | "acl">;
 
 export const schema = schemaForType<ACLForm>()(
   z.object({
-    id: z.number().default(0),
-    name: z.string(),
     isPublic: z.boolean().optional().default(true),
     defaultPermission: z.number().optional(),
     objtype: z.number().optional(),

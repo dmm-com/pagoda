@@ -15,8 +15,6 @@ test("should render a component with essential props", function () {
   const Wrapper: FC = () => {
     const { setValue, control, getValues } = useForm<Schema>({
       defaultValues: {
-        id: 0,
-        name: "hoge",
         isPublic: true,
         defaultPermission: 0,
         acl: [],

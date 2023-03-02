@@ -43,7 +43,7 @@ export interface ACL {
    * @type {string}
    * @memberof ACL
    */
-  name: string;
+  readonly name: string;
   /**
    *
    * @type {boolean}
@@ -126,7 +126,6 @@ export function ACLToJSON(value?: ACL | null): any {
     return null;
   }
   return {
-    name: value.name,
     is_public: value.isPublic,
     default_permission: value.defaultPermission,
     objtype: value.objtype,
