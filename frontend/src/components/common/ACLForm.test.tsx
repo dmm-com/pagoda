@@ -13,7 +13,7 @@ import { TestWrapper } from "services/TestWrapper";
 
 test("should render a component with essential props", function () {
   const Wrapper: FC = () => {
-    const { setValue, control } = useForm<Schema>({
+    const { setValue, control, getValues } = useForm<Schema>({
       defaultValues: {
         id: 0,
         name: "hoge",
@@ -37,6 +37,8 @@ test("should render a component with essential props", function () {
           /* no operation */
         }}
         control={control}
+        getValues={getValues}
+        watch={undefined}
       />
     );
   };

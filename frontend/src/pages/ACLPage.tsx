@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import LockIcon from "@mui/icons-material/Lock";
 import { Box, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useCallback, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Prompt, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -52,6 +52,8 @@ export const ACLPage: FC = () => {
     setError,
     setValue,
     control,
+    getValues,
+    watch,
   } = useForm<Schema>({
     resolver: zodResolver(schema),
     mode: "onBlur",
@@ -70,31 +72,32 @@ export const ACLPage: FC = () => {
     _setACLInfo(aclInfo);
   };
 
-  const handleSubmitAlter = async () => {
-    if (acl.loading || acl.value == null) {
-      throw new Error("loading data looks being incomplete");
-    }
+  const handleSubmitOnValid = useCallback(
+    async(acl: Schema) => {
+      console.log("[onix/handleSubmitOnValid(10)] acl: ", acl);
+      // TODO better name?
+      /*
+      const aclSettings =
+        acl.value?.roles.map((role) => ({
+          member_id: role.id,
+          value: aclInfo.permissions[role.id]?.currentPermission,
+        })) ?? [];
+      */
 
-    // TODO better name?
-    const aclSettings =
-      acl.value?.roles.map((role) => ({
-        member_id: role.id,
-        value: aclInfo.permissions[role.id]?.currentPermission,
-      })) ?? [];
+      await aironeApiClientV2.updateAcl(
+        objectId,
+        acl.name,
+        acl.isPublic,
+        acl.acl,
+        acl.objtype,
+        acl.defaultPermission
+      );
 
-    await aironeApiClientV2.updateAcl(
-      objectId,
-      acl.value.name,
-      aclInfo.isPublic,
-      aclSettings,
-      acl.value.objtype,
-      aclInfo.defaultPermission
-    );
-    setSubmitted(true);
-
-    enqueueSnackbar("ACL 設定の更新が成功しました", { variant: "success" });
-    history.goBack();
-  };
+      enqueueSnackbar("ACL 設定の更新が成功しました", { variant: "success" });
+      history.goBack();
+    },
+    [objectId]
+  );
 
   const handleCancel = async () => {
     history.goBack();
@@ -205,7 +208,7 @@ export const ACLPage: FC = () => {
         <SubmitButton
           name="保存"
           disabled={!submittable}
-          handleSubmit={handleSubmitAlter}
+          handleSubmit={handleSubmit(handleSubmitOnValid)}
           handleCancel={handleCancel}
         />
       </PageHeader>
@@ -219,6 +222,8 @@ export const ACLPage: FC = () => {
             setACLInfo={setACLInfo}
             setSubmittable={setSubmittable}
             control={control}
+            getValues={getValues}
+            watch={watch}
           />
         </Container>
       )}
