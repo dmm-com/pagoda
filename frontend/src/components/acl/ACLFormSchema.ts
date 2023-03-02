@@ -12,23 +12,25 @@ import { schemaForType } from "../../services/ZodSchemaUtil";
   "parent":null}
 */
 
-interface ACLForm
-  extends Pick<ACL, "id" | "name" | "isPublic" | "defaultPermission" | "objtype" | "acl"> {
-}
+type ACLForm = Pick<
+  ACL,
+  "id" | "name" | "isPublic" | "defaultPermission" | "objtype" | "acl"
+>;
 
 export const schema = schemaForType<ACLForm>()(
-  z
-    .object({
-      id: z.number().default(0),
-      name: z.string(),
-      isPublic: z.boolean().optional().default(true),
-      defaultPermission: z.number().optional(),
-      objtype: z.number().optional(),
-      acl: z.array(z.object({
+  z.object({
+    id: z.number().default(0),
+    name: z.string(),
+    isPublic: z.boolean().optional().default(true),
+    defaultPermission: z.number().optional(),
+    objtype: z.number().optional(),
+    acl: z.array(
+      z.object({
         member_id: z.number(),
         value: z.number(),
-      })),
-    })
+      })
+    ),
+  })
 );
 
 export type Schema = z.infer<typeof schema>;
