@@ -3,15 +3,26 @@
  */
 
 import { render } from "@testing-library/react";
-import React from "react";
+import React, { FC } from "react";
 
 import { ACLForm } from "components/common/ACLForm";
 import { TestWrapper } from "services/TestWrapper";
+import { useForm } from "react-hook-form";
+import { Schema } from "../acl/ACLFormSchema";
 
 test("should render a component with essential props", function () {
-  expect(() =>
-    render(
-      <ACLForm
+  const Wrapper: FC = () => {
+    const { setValue, control } = useForm<Schema>({
+      defaultValues: {,
+        id: 0,
+        name: 'hoge',
+        isPublic: true,
+        defaultPermission: 0,
+        acl: [],
+      }
+    });
+
+    return (<ACLForm
         aclInfo={{
           isPublic: true,
           defaultPermission: 0,
@@ -23,8 +34,14 @@ test("should render a component with essential props", function () {
         setSubmittable={() => {
           /* no operation */
         }}
-      />,
-      { wrapper: TestWrapper }
-    )
+        control={control}
+      />);
+  };
+
+  expect(() =>
+    render(<Wrapper />, {
+      wrapper: TestWrapper,
+    })
+
   ).not.toThrow();
 });
