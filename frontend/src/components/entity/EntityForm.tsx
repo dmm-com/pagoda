@@ -1,6 +1,9 @@
 import { Box } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useEffect } from "react";
+import { Control } from "react-hook-form";
+
+import { Schema } from "../entity/EntityFormSchema";
 
 import { AttributesFields } from "./entityForm/AttributesFields";
 import { BasicFields } from "./entityForm/BasicFields";
@@ -19,6 +22,7 @@ interface Props {
   setEntityInfo: (entityInfo: EntityUpdate) => void;
   referralEntities?: Entity[];
   setSubmittable: (isSubmittable: boolean) => void;
+  control: Control<Schema>;
 }
 
 export const EntityForm: FC<Props> = ({
@@ -26,6 +30,7 @@ export const EntityForm: FC<Props> = ({
   setEntityInfo,
   referralEntities,
   setSubmittable,
+  control,
 }) => {
   const checkSubmittable = () => {
     if (entityInfo.name === "") {
@@ -55,14 +60,15 @@ export const EntityForm: FC<Props> = ({
 
   return (
     <StyledBox>
-      <BasicFields entityInfo={entityInfo} setEntityInfo={setEntityInfo} />
+      <BasicFields control={control} />
 
-      <WebhookFields entityInfo={entityInfo} setEntityInfo={setEntityInfo} />
+      <WebhookFields control={control} />
 
       <AttributesFields
         entityInfo={entityInfo}
         setEntityInfo={setEntityInfo}
         referralEntities={referralEntities ?? []}
+        control={control}
       />
     </StyledBox>
   );

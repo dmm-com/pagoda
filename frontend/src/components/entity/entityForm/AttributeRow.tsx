@@ -8,20 +8,23 @@ import {
   Button,
   Checkbox,
   IconButton,
-  Input,
   MenuItem,
   Select,
   TableCell,
   TableRow,
   Typography,
   ButtonTypeMap,
+  TextField,
 } from "@mui/material";
 import { ExtendButtonBaseTypeMap } from "@mui/material/ButtonBase/ButtonBase";
 import { IconButtonTypeMap } from "@mui/material/IconButton/IconButton";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import React, { FC, useMemo } from "react";
+import { Control, Controller } from "react-hook-form";
 import { Link } from "react-router-dom";
+
+import { Schema } from "../EntityFormSchema";
 
 import { aclPath } from "Routes";
 import {
@@ -75,6 +78,10 @@ interface Props {
   setEntityInfo: (entityInfo: EntityUpdate) => void;
   latestChangedIndex: number | null;
   setLatestChangedIndex: (latestChangedIndex: number | null) => void;
+  handleAppendAttribute: (index: number) => void;
+  handleDeleteAttribute: (index: number) => void;
+  handleChangeOrderAttribute: (index: number, order: number) => void;
+  control: Control<Schema>;
 }
 
 export const AttributeRow: FC<Props> = ({
@@ -86,39 +93,11 @@ export const AttributeRow: FC<Props> = ({
   setEntityInfo,
   latestChangedIndex,
   setLatestChangedIndex,
+  handleAppendAttribute,
+  handleDeleteAttribute,
+  handleChangeOrderAttribute,
+  control,
 }) => {
-  const handleAppendAttribute = (nextTo: number) => {
-    allAttrs.splice(nextTo + 1, 0, {
-      name: "",
-      type: AttributeTypes.string.type,
-      isMandatory: false,
-      isDeleteInChain: false,
-      isDeleted: false,
-      referral: [],
-    });
-    setEntityInfo({ ...entityInfo, attrs: [...allAttrs] });
-  };
-
-  const handleChangeOrderAttribute = (index: number, order: number) => {
-    const newIndex = index - order;
-    const oldIndex = index;
-    const x = allAttrs[newIndex];
-    allAttrs[newIndex] = allAttrs[oldIndex];
-    allAttrs[oldIndex] = x;
-    allAttrs[newIndex].index = index + 1 - order;
-    allAttrs[oldIndex].index = index + 1;
-    setLatestChangedIndex(newIndex);
-    setEntityInfo({ ...entityInfo, attrs: [...allAttrs] });
-  };
-
-  const handleDeleteAttribute = (index: number) => {
-    allAttrs[index] = {
-      ...allAttrs[index],
-      isDeleted: true,
-    };
-    setEntityInfo({ ...entityInfo, attrs: [...allAttrs] });
-  };
-
   const attributeTypeMenuItems = useMemo(() => {
     return Object.keys(AttributeTypes).map((typename, index) => (
       <MenuItem key={index} value={AttributeTypes[typename].type}>
@@ -151,134 +130,151 @@ export const AttributeRow: FC<Props> = ({
 
   return (
     <StyledTableRow onAnimationEnd={() => setLatestChangedIndex(null)}>
-      <TableCell>
-        {index !== undefined && (
-          <Input
-            type="text"
-            value={currentAttr?.name}
-            placeholder="属性名"
-            sx={{ width: "100%" }}
-            onChange={(e) =>
-              handleChangeAttributeValue(index, "name", e.target.value)
-            }
-            error={currentAttr?.name === ""}
-          />
-        )}
-      </TableCell>
-
-      <TableCell>
-        {index !== undefined && (
-          <Box>
-            <Box minWidth={100} marginX={1}>
-              <Select
-                fullWidth={true}
-                value={currentAttr?.type}
-                disabled={currentAttr?.id != null}
-                onChange={(e) =>
-                  handleChangeAttributeValue(index, "type", e.target.value)
-                }
-              >
-                {attributeTypeMenuItems}
-              </Select>
-            </Box>
-            {((currentAttr?.type ?? 0) & AttributeTypes.object.type) > 0 && (
-              <Box minWidth={100} marginX={1}>
-                <Typography>エンティティを選択</Typography>
-
-                <AutoCompletedField
-                  options={referralEntities}
-                  getOptionLabel={(option: Entity) => option.name}
-                  defaultValue={initialSelectedReferrals}
-                  handleChangeSelectedValue={(value: Entity[]) => {
-                    handleChangeAttributeValue(
-                      index,
-                      "referral",
-                      value.map((i) => i.id)
-                    );
-                  }}
-                  multiple
+      {index != null ? (
+        <>
+          <TableCell>
+            <Controller
+              name={`attrs.${index}.name`}
+              control={control}
+              defaultValue=""
+              render={({ field, fieldState: { error } }) => (
+                <TextField
+                  {...field}
+                  required
+                  placeholder="属性名"
+                  error={error != null}
+                  helperText={error?.message}
+                  sx={{ width: "100%" }}
                 />
+              )}
+            />
+          </TableCell>
+
+          <TableCell>
+            <Box>
+              <Box minWidth={100} marginX={1}>
+                <Select
+                  fullWidth={true}
+                  value={currentAttr?.type}
+                  disabled={currentAttr?.id != null}
+                  onChange={(e) =>
+                    handleChangeAttributeValue(index, "type", e.target.value)
+                  }
+                >
+                  {attributeTypeMenuItems}
+                </Select>
               </Box>
-            )}
-          </Box>
-        )}
-      </TableCell>
+              {((currentAttr?.type ?? 0) & AttributeTypes.object.type) > 0 && (
+                <Box minWidth={100} marginX={1}>
+                  <Typography>エンティティを選択</Typography>
 
-      <TableCell>
-        {index !== undefined && (
-          <Checkbox
-            checked={currentAttr?.isMandatory}
-            onChange={(e) =>
-              handleChangeAttributeValue(index, "isMandatory", e.target.checked)
-            }
-          />
-        )}
-      </TableCell>
+                  <AutoCompletedField
+                    options={referralEntities}
+                    getOptionLabel={(option: Entity) => option.name}
+                    defaultValue={initialSelectedReferrals}
+                    handleChangeSelectedValue={(value: Entity[]) => {
+                      handleChangeAttributeValue(
+                        index,
+                        "referral",
+                        value.map((i) => i.id)
+                      );
+                    }}
+                    multiple
+                  />
+                </Box>
+              )}
+            </Box>
+          </TableCell>
 
-      <TableCell>
-        {index !== undefined && (
-          <Checkbox
-            checked={currentAttr?.isDeleteInChain}
-            onChange={(e) =>
-              handleChangeAttributeValue(
-                index,
-                "isDeleteInChain",
-                e.target.checked
-              )
-            }
-          />
-        )}
-      </TableCell>
+          <TableCell>
+            <Controller
+              name={`attrs.${index}.isMandatory`}
+              control={control}
+              defaultValue={false}
+              render={({ field, fieldState: { error } }) => (
+                <Checkbox
+                  checked={field.value}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                />
+              )}
+            />
+          </TableCell>
 
-      <TableCell>
-        {index !== undefined && (
-          <Box display="flex" flexDirection="column">
-            <StyledIconButton
-              disabled={index === 0}
-              onClick={() => handleChangeOrderAttribute(index, 1)}
-            >
-              <ArrowUpwardIcon />
+          <TableCell>
+            <Controller
+              name={`attrs.${index}.isDeleteInChain`}
+              control={control}
+              defaultValue={false}
+              render={({ field, fieldState: { error } }) => (
+                <Checkbox
+                  checked={field.value}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                />
+              )}
+            />
+          </TableCell>
+
+          <TableCell>
+            <Box display="flex" flexDirection="column">
+              <StyledIconButton
+                disabled={index === 0}
+                onClick={() => handleChangeOrderAttribute(index, 1)}
+              >
+                <ArrowUpwardIcon />
+              </StyledIconButton>
+
+              <StyledIconButton
+                disabled={index === allAttrs.length - 1}
+                onClick={() => handleChangeOrderAttribute(index, -1)}
+              >
+                <ArrowDownwardIcon />
+              </StyledIconButton>
+            </Box>
+          </TableCell>
+
+          <TableCell>
+            <StyledIconButton onClick={() => handleDeleteAttribute(index)}>
+              <DeleteOutlineIcon />
             </StyledIconButton>
+          </TableCell>
 
-            <StyledIconButton
-              disabled={index === allAttrs.length - 1}
-              onClick={() => handleChangeOrderAttribute(index, -1)}
-            >
-              <ArrowDownwardIcon />
+          {/* This is a button to add new Attribute */}
+          <TableCell>
+            <StyledIconButton onClick={() => handleAppendAttribute(index ?? 0)}>
+              <AddIcon />
             </StyledIconButton>
-          </Box>
-        )}
-      </TableCell>
+          </TableCell>
 
-      <TableCell>
-        {index !== undefined && (
-          <StyledIconButton onClick={() => handleDeleteAttribute(index)}>
-            <DeleteOutlineIcon />
-          </StyledIconButton>
-        )}
-      </TableCell>
-
-      {/* This is a button to add new Attribute */}
-      <TableCell>
-        <StyledIconButton onClick={() => handleAppendAttribute(index ?? 0)}>
-          <AddIcon />
-        </StyledIconButton>
-      </TableCell>
-
-      <TableCell>
-        {index !== undefined && (
-          <StyledButton
-            variant="contained"
-            color="primary"
-            startIcon={<GroupIcon />}
-            component={Link}
-            to={aclPath(currentAttr?.id ?? 0)}
-            disabled={currentAttr?.id == null}
-          >
-            ACL
-          </StyledButton>
-        )}
-      </TableCell>
+          <TableCell>
+            <StyledButton
+              variant="contained"
+              color="primary"
+              startIcon={<GroupIcon />}
+              component={Link}
+              to={aclPath(currentAttr?.id ?? 0)}
+              disabled={currentAttr?.id == null}
+            >
+              ACL
+            </StyledButton>
+          </TableCell>
+        </>
+      ) : (
+        <>
+          <TableCell />
+          <TableCell />
+          <TableCell />
+          <TableCell />
+          <TableCell />
+          <TableCell />
+          {/* This is a button to add new Attribute */}
+          <TableCell>
+            <StyledIconButton onClick={() => handleAppendAttribute(index ?? 0)}>
+              <AddIcon />
+            </StyledIconButton>
+          </TableCell>
+          <TableCell />
+        </>
+      )}
     </StyledTableRow>
   );
 };

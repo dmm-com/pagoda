@@ -1,10 +1,13 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Link, Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { schema, Schema } from "../components/entity/EntityFormSchema";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
@@ -34,6 +37,18 @@ export const EditEntityPage: FC = () => {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);
 
+  const {
+    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
+    handleSubmit,
+    reset,
+    setError,
+    setValue,
+    control,
+  } = useForm<Schema>({
+    resolver: zodResolver(schema),
+    mode: "onBlur",
+  });
+
   const entity = useAsyncWithThrow(async () => {
     if (entityId !== undefined) {
       return await aironeApiClientV2.getEntity(entityId);
@@ -60,7 +75,7 @@ export const EditEntityPage: FC = () => {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmitOnValid = async (entity: Schema) => {
     if (entityInfo.name == null) {
       throw new Error("entity name is not set");
     }
@@ -84,9 +99,11 @@ export const EditEntityPage: FC = () => {
           };
         }) ?? [];
     const webhooks =
-      entityInfo.webhooks?.map(
+      entity.webhooks.map(
         (webhook): Webhook => ({
-          id: webhook.id ?? 0,
+          // FIXME allow undefined / refined server side typing
+          // @ts-ignore
+          id: webhook.id,
           url: webhook.url,
           label: webhook.label,
           isEnabled: webhook.isEnabled,
@@ -99,9 +116,9 @@ export const EditEntityPage: FC = () => {
     try {
       if (createMode) {
         await aironeApiClientV2.createEntity(
-          entityInfo.name,
-          entityInfo.note ?? "",
-          entityInfo.isToplevel ?? false,
+          entity.name,
+          entity.note,
+          entity.isToplevel,
           // @ts-ignore
           attrs,
           webhooks
@@ -110,9 +127,9 @@ export const EditEntityPage: FC = () => {
       } else {
         await aironeApiClientV2.updateEntity(
           entityId,
-          entityInfo.name,
-          entityInfo.note ?? "",
-          entityInfo.isToplevel ?? false,
+          entity.name,
+          entity.note,
+          entity.isToplevel,
           attrs,
           webhooks
         );
@@ -156,6 +173,14 @@ export const EditEntityPage: FC = () => {
     }
   }, [submitted]);
 
+  useEffect(() => {
+    !entity.loading && entity.value != null && reset(entity.value);
+  }, [entity.loading]);
+
+  useEffect(() => {
+    isSubmitSuccessful && history.push(entitiesPath());
+  }, [isSubmitSuccessful]);
+
   if (entity.loading || referralEntities.loading) {
     return <Loading />;
   }
@@ -188,7 +213,7 @@ export const EditEntityPage: FC = () => {
         <SubmitButton
           name="保存"
           disabled={!submittable}
-          handleSubmit={handleSubmit}
+          handleSubmit={handleSubmit(handleSubmitOnValid)}
           handleCancel={handleCancel}
         />
       </PageHeader>
@@ -198,6 +223,7 @@ export const EditEntityPage: FC = () => {
         setEntityInfo={setEntityInfo}
         referralEntities={referralEntities.value}
         setSubmittable={setSubmittable}
+        control={control}
       />
       <Prompt
         when={edited && !submitted}

@@ -9,6 +9,10 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { Fragment, FC, useState } from "react";
+import { Control, useFieldArray } from "react-hook-form";
+
+import { AttributeTypes } from "../../../services/Constants";
+import { Schema } from "../EntityFormSchema";
 
 import { AttributeRow } from "./AttributeRow";
 
@@ -26,16 +30,55 @@ interface Props {
   entityInfo: EntityUpdate;
   setEntityInfo: (entityInfo: EntityUpdate) => void;
   referralEntities: Entity[];
+  control: Control<Schema>;
 }
 
 export const AttributesFields: FC<Props> = ({
   entityInfo,
   setEntityInfo,
   referralEntities,
+  control,
 }) => {
+  const { fields, insert, remove, update, swap } = useFieldArray({
+    control,
+    name: "attrs",
+  });
+
   const [latestChangedIndex, setLatestChangedIndex] = useState<number | null>(
     null
   );
+
+  const handleAppendAttribute = (index: number) => {
+    insert(index, {
+      name: "",
+      type: AttributeTypes.string.type,
+      isMandatory: false,
+      isDeleteInChain: false,
+      isDeleted: false,
+      referral: [],
+      index: index,
+      isSummarized: false,
+    });
+  };
+
+  const handleDeleteAttribute = (index: number) => {
+    const target = fields[index];
+    if (target?.id != null) {
+      update(index, {
+        ...target,
+        isDeleted: true,
+      });
+    } else {
+      remove(index);
+    }
+  };
+
+  const handleChangeOrderAttribute = (index: number, order: number) => {
+    const newIndex = index - order;
+    const oldIndex = index;
+    swap(newIndex, oldIndex);
+    setLatestChangedIndex(newIndex);
+  };
 
   return (
     <Box mb="80px">
@@ -60,31 +103,38 @@ export const AttributesFields: FC<Props> = ({
         </TableHead>
         <TableBody>
           <>
-            {entityInfo.attrs?.map((attr, index) => (
-              <Fragment key={index}>
-                {attr.isDeleted !== true && (
+            {fields.map((field, index) => (
+              <Fragment key={field.id}>
+                {field.isDeleted !== true && (
                   <AttributeRow
                     index={index}
-                    currentAttr={attr}
+                    currentAttr={field}
                     allAttrs={entityInfo.attrs ?? []}
                     referralEntities={referralEntities}
                     entityInfo={entityInfo}
                     setEntityInfo={setEntityInfo}
                     latestChangedIndex={latestChangedIndex}
                     setLatestChangedIndex={setLatestChangedIndex}
+                    handleAppendAttribute={handleAppendAttribute}
+                    handleDeleteAttribute={handleDeleteAttribute}
+                    handleChangeOrderAttribute={handleChangeOrderAttribute}
+                    control={control}
                   />
                 )}
               </Fragment>
             ))}
-            {entityInfo.attrs?.filter((attr) => !attr.isDeleted).length ===
-              0 && (
+            {fields.filter((field) => !field.isDeleted).length === 0 && (
               <AttributeRow
-                allAttrs={entityInfo.attrs}
+                allAttrs={entityInfo.attrs ?? []}
                 referralEntities={referralEntities}
                 entityInfo={entityInfo}
                 setEntityInfo={setEntityInfo}
                 latestChangedIndex={latestChangedIndex}
                 setLatestChangedIndex={setLatestChangedIndex}
+                handleAppendAttribute={handleAppendAttribute}
+                handleDeleteAttribute={handleDeleteAttribute}
+                handleChangeOrderAttribute={handleChangeOrderAttribute}
+                control={control}
               />
             )}
           </>
