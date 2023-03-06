@@ -7,6 +7,16 @@
 ### Changed
 
 ### Fixed
+
+## v3.43.0
+
+### Changed
+* Validate input user data with Zod.
+  Contributed by @syucream
+* Changed to increase the maximum value of SearchChainAPI.
+  Contributed by @hinashi
+
+### Fixed
 * Fixed search chain API when only one filtering hit.
   Contributed by @hinashi
 
@@ -40,16 +50,6 @@
   Contributed by @hinashi
 * Fixed filter only ancestors and others not to break group tree
   Contributed by @syucream
-
-### Added
-* Added feature to be able to sort Entries by created time order at list page
-  Contributed by @userlocalhost
-
-### Changed
-* The first prototype of decoupling frontend implementation from
-  presentation to service layer that only has JavaScript processing
-  for increasing maintenancability.
-  Contributed by @hinashi, @syucream, @userlocalhost
 
 ## v3.40.0
 
