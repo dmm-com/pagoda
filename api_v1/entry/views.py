@@ -35,12 +35,15 @@ class EntrySearchChainAPI(APIView):
 
         if ret_data:
             # output all Attributes of returned Entries
-            result = Entry.search_entries(
-                request.user,
-                serializer.validated_data["entities"],
-                entry_name="|".join([x["name"] for x in ret_data]),
-                is_output_all=True,
-            )
+            result = {"ret_count": len(ret_data), "ret_values": []}
+            for i in range(0, len(ret_data), 100):
+                entry_info = Entry.search_entries(
+                    request.user,
+                    serializer.validated_data["entities"],
+                    entry_name="|".join(["^%s$" % x["name"] for x in ret_data[i : i + 100]]),
+                    is_output_all=True,
+                )
+                result["ret_values"].extend(entry_info["ret_values"])
             return Response(result, status=status.HTTP_200_OK)
 
         else:
