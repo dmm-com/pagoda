@@ -17,23 +17,12 @@ test("should render a component with essential props", function () {
       defaultValues: {
         isPublic: true,
         defaultPermission: 0,
-        acl: [],
+        roles: [],
       },
     });
 
     return (
       <ACLForm
-        aclInfo={{
-          isPublic: true,
-          defaultPermission: 0,
-          permissions: {},
-        }}
-        setACLInfo={() => {
-          /* no operation */
-        }}
-        setSubmittable={() => {
-          /* no operation */
-        }}
         control={control}
         getValues={getValues}
         watch={undefined}

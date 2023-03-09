@@ -63,6 +63,7 @@ export const ACLPage: FC = () => {
     return await aironeApiClientV2.getAcl(objectId);
   });
 
+  /*
   const setACLInfo = (aclInfo: {
     isPublic: boolean;
     permissions: Record<number, ACLRole>;
@@ -71,6 +72,7 @@ export const ACLPage: FC = () => {
     setEdited(true);
     _setACLInfo(aclInfo);
   };
+  */
 
   const handleSubmitOnValid = useCallback(
     async (acl: Schema) => {
@@ -86,7 +88,7 @@ export const ACLPage: FC = () => {
       await aironeApiClientV2.updateAcl(
         objectId,
         acl.isPublic,
-        acl.acl,
+        acl.roles,
         acl.objtype,
         acl.defaultPermission
       );
@@ -121,10 +123,7 @@ export const ACLPage: FC = () => {
       isPublic: acl.value?.isPublic,
       defaultPermission: acl.value?.defaultPermission,
       objtype: acl.value?.objtype,
-      acl: acl.value?.roles.map((role) => ({
-        member_id: role.id,
-        value: role.currentPermission,
-      })),
+      roles: acl.value?.roles,
     });
   }, [acl]);
 
@@ -226,9 +225,6 @@ export const ACLPage: FC = () => {
       ) : (
         <Container>
           <ACLForm
-            aclInfo={aclInfo}
-            setACLInfo={setACLInfo}
-            setSubmittable={setSubmittable}
             control={control}
             getValues={getValues}
             watch={watch}
