@@ -45,7 +45,7 @@ export const schema = schemaForType<ACLForm>()(
 
       if (!isPublic && !isDefaultPermissionFull && !isSomeRolesFull) {
         ctx.addIssue({
-          path: ["isPublic"],
+          path: ["generalError"],
           code: z.ZodIssueCode.custom,
           message: `限定公開にする場合は、いずれかのロールの権限を ${djangoContext?.aclTypes.full.name} にしてください`,
         });

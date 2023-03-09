@@ -31,7 +31,7 @@ export const ACLPage: FC = () => {
   const { objectId } = useTypedParams<{ objectId: number }>();
 
   const {
-    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful, errors },
+    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
     handleSubmit,
     reset,
     setError,
@@ -47,6 +47,13 @@ export const ACLPage: FC = () => {
   const acl = useAsync(async () => {
     return await aironeApiClientV2.getAcl(objectId);
   });
+
+  const handleSubmitOnInvalid = useCallback(
+    async (err) => {
+      enqueueSnackbar(err.generalError.message, { variant: "error" });
+    },
+    [objectId]
+  );
 
   const handleSubmitOnValid = useCallback(
     async (aclForm: Schema) => {
@@ -84,7 +91,6 @@ export const ACLPage: FC = () => {
     });
   }, [acl]);
 
-  console.log("errors", errors);
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
@@ -173,7 +179,10 @@ export const ACLPage: FC = () => {
         <SubmitButton
           name="保存"
           disabled={isSubmitting || isSubmitSuccessful}
-          handleSubmit={handleSubmit(handleSubmitOnValid)}
+          handleSubmit={handleSubmit(
+            handleSubmitOnValid,
+            handleSubmitOnInvalid
+          )}
           handleCancel={handleCancel}
         />
       </PageHeader>
