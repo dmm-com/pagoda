@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC, useEffect } from "react";
+import React, { FC, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Prompt, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -48,49 +48,52 @@ export const EditRolePage: FC = () => {
     isSubmitSuccessful && history.push(rolesPath());
   }, [isSubmitSuccessful]);
 
-  const handleSubmitOnValid = async (role: Schema) => {
-    const roleCreateUpdate: RoleCreateUpdate = {
-      ...role,
-      users: role.users.map((user) => user.id),
-      groups: role.groups.map((group) => group.id),
-      adminUsers: role.adminUsers.map((user) => user.id),
-      adminGroups: role.adminGroups.map((group) => group.id),
-    };
+  const handleSubmitOnValid = useCallback(
+    async (role: Schema) => {
+      const roleCreateUpdate: RoleCreateUpdate = {
+        ...role,
+        users: role.users.map((user) => user.id),
+        groups: role.groups.map((group) => group.id),
+        adminUsers: role.adminUsers.map((user) => user.id),
+        adminGroups: role.adminGroups.map((group) => group.id),
+      };
 
-    const willCreate = roleId == null;
-    const operationName = willCreate ? "作成" : "更新";
+      const willCreate = roleId == null;
+      const operationName = willCreate ? "作成" : "更新";
 
-    try {
-      if (willCreate) {
-        await aironeApiClientV2.createRole(roleCreateUpdate);
-      } else {
-        await aironeApiClientV2.updateRole(roleId, roleCreateUpdate);
-      }
-      enqueueSnackbar(`ロールの${operationName}に成功しました`, {
-        variant: "success",
-      });
-    } catch (e) {
-      if (e instanceof Response) {
-        await ExtractAPIException<Schema>(
-          e,
-          (message) => {
-            enqueueSnackbar(
-              `ロールの${operationName}に失敗しました。詳細: "${message}"`,
-              {
-                variant: "error",
-              }
-            );
-          },
-          (name, message) =>
-            setError(name, { type: "custom", message: message })
-        );
-      } else {
-        enqueueSnackbar(`ロールの${operationName}に失敗しました。`, {
-          variant: "error",
+      try {
+        if (willCreate) {
+          await aironeApiClientV2.createRole(roleCreateUpdate);
+        } else {
+          await aironeApiClientV2.updateRole(roleId, roleCreateUpdate);
+        }
+        enqueueSnackbar(`ロールの${operationName}に成功しました`, {
+          variant: "success",
         });
+      } catch (e) {
+        if (e instanceof Response) {
+          await ExtractAPIException<Schema>(
+            e,
+            (message) => {
+              enqueueSnackbar(
+                `ロールの${operationName}に失敗しました。詳細: "${message}"`,
+                {
+                  variant: "error",
+                }
+              );
+            },
+            (name, message) =>
+              setError(name, { type: "custom", message: message })
+          );
+        } else {
+          enqueueSnackbar(`ロールの${operationName}に失敗しました。`, {
+            variant: "error",
+          });
+        }
       }
-    }
-  };
+    },
+    [roleId]
+  );
 
   const handleCancel = async () => {
     history.goBack();
