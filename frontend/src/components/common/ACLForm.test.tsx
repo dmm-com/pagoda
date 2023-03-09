@@ -22,11 +22,7 @@ test("should render a component with essential props", function () {
     });
 
     return (
-      <ACLForm
-        control={control}
-        getValues={getValues}
-        watch={undefined}
-      />
+      <ACLForm control={control} getValues={getValues} watch={undefined} />
     );
   };
 

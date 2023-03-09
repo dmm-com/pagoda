@@ -9,7 +9,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import React, { FC, useEffect } from "react";
+import React, { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 import { UseFormGetValues } from "react-hook-form/dist/types/form";
 
@@ -30,17 +30,13 @@ interface Props {
   watch: any;
 }
 
-export const ACLForm: FC<Props> = ({
-  control,
-  getValues,
-  watch,
-}) => {
+export const ACLForm: FC<Props> = ({ control, getValues, watch }) => {
   const djangoContext = DjangoContext.getInstance();
 
   const { fields } = useFieldArray({
     control,
     name: "roles",
-  })
+  });
 
   return (
     <Box>
@@ -99,15 +95,12 @@ export const ACLForm: FC<Props> = ({
                   <TableCell>全員</TableCell>
                   <TableCell />
                   <TableCell>
-                    <Controller 
+                    <Controller
                       control={control}
                       name="defaultPermission"
                       defaultValue={djangoContext?.aclTypes.nothing.value}
                       render={({ field, fieldState: { error } }) => (
-                        <Select
-                          {...field}
-                          fullWidth={true}
-                        >
+                        <Select {...field} fullWidth={true}>
                           {Object.keys(djangoContext?.aclTypes ?? {}).map(
                             (key, index) => (
                               <MenuItem
@@ -120,43 +113,38 @@ export const ACLForm: FC<Props> = ({
                           )}
                         </Select>
                       )}
-                      />
+                    />
                   </TableCell>
                 </TableRow>
-                {fields && fields.map((role, index) => (
-                  <TableRow key={role.id}>
-                    <TableCell>{role.name}</TableCell>
-                    <TableCell>
-                      {role.description}
-                    </TableCell>
-                    <TableCell>
-                      <Controller 
-                        control={control}
-                        name={`roles.${index}.currentPermission`}
-                        defaultValue={djangoContext?.aclTypes.nothing.value}
-                        render={({ field, fieldState: { error } }) => (
-                          <Select
-                            {...field}
-                            fullWidth={true}
-                          >
-                            <MenuItem value={0}>(未設定)</MenuItem>
-                            {Object.keys(djangoContext?.aclTypes ?? {}).map(
-                              (key, index) => (
-                                <MenuItem
-                                  key={index}
-                                  value={djangoContext?.aclTypes[key].value}
-                                >
-                                  {djangoContext?.aclTypes[key].name}
-                                </MenuItem>
-                              )
-                            )}
-                          </Select>
-                        )}
+                {fields &&
+                  fields.map((role, index) => (
+                    <TableRow key={role.id}>
+                      <TableCell>{role.name}</TableCell>
+                      <TableCell>{role.description}</TableCell>
+                      <TableCell>
+                        <Controller
+                          control={control}
+                          name={`roles.${index}.currentPermission`}
+                          defaultValue={djangoContext?.aclTypes.nothing.value}
+                          render={({ field, fieldState: { error } }) => (
+                            <Select {...field} fullWidth={true}>
+                              <MenuItem value={0}>(未設定)</MenuItem>
+                              {Object.keys(djangoContext?.aclTypes ?? {}).map(
+                                (key, index) => (
+                                  <MenuItem
+                                    key={index}
+                                    value={djangoContext?.aclTypes[key].value}
+                                  >
+                                    {djangoContext?.aclTypes[key].name}
+                                  </MenuItem>
+                                )
+                              )}
+                            </Select>
+                          )}
                         />
-
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </>
