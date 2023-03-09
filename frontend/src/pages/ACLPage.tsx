@@ -31,13 +31,10 @@ export const ACLPage: FC = () => {
   const { objectId } = useTypedParams<{ objectId: number }>();
 
   const {
-    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
+    formState: { isDirty, isSubmitting, isSubmitSuccessful },
     handleSubmit,
     reset,
-    setError,
-    setValue,
     control,
-    getValues,
     watch,
   } = useForm<Schema>({
     resolver: zodResolver(schema),
@@ -191,7 +188,7 @@ export const ACLPage: FC = () => {
         <Loading />
       ) : (
         <Container>
-          <ACLForm control={control} getValues={getValues} watch={watch} />
+          <ACLForm control={control} watch={watch} />
         </Container>
       )}
 

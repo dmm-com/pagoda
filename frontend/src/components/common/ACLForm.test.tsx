@@ -13,7 +13,7 @@ import { TestWrapper } from "services/TestWrapper";
 
 test("should render a component with essential props", function () {
   const Wrapper: FC = () => {
-    const { setValue, control, getValues } = useForm<Schema>({
+    const { control, watch } = useForm<Schema>({
       defaultValues: {
         isPublic: true,
         defaultPermission: 0,
@@ -21,9 +21,7 @@ test("should render a component with essential props", function () {
       },
     });
 
-    return (
-      <ACLForm control={control} getValues={getValues} watch={undefined} />
-    );
+    return <ACLForm control={control} watch={watch} />;
   };
 
   expect(() =>
