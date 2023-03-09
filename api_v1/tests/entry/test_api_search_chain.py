@@ -102,12 +102,28 @@ class APITest(AironeViewTest):
                 "vlan": self.entry_vlan1,
             },
         )
+        self.entry_network2 = self.add_entry(
+            self.user,
+            "110.0.0.0/8",
+            self.entity_network,
+            values={
+                "vlan": self.entry_vlan1,
+            },
+        )
         self.entry_ipv4 = self.add_entry(
             self.user,
             "10.0.0.1",
             self.entity_ipv4,
             values={
                 "network": {"id": self.entry_network, "name": ""},
+            },
+        )
+        self.entry_ipv4_2 = self.add_entry(
+            self.user,
+            "110.0.0.1",
+            self.entity_ipv4,
+            values={
+                "network": {"id": self.entry_network2, "name": ""},
             },
         )
         self.entry_nic = self.add_entry(
@@ -965,7 +981,7 @@ class APITest(AironeViewTest):
                     "refers": [
                         {
                             "entity": "IPv4 Address",
-                            "entry": "10.0.0.1",
+                            "entry": "^10.0.0.1$",
                         }
                     ],
                 }

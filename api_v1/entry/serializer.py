@@ -199,7 +199,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
         def _do_backward_search(sub_query, sub_query_result):
             # make query to search Entries using Entry.search_entries()
-            search_keyword = "|".join([x["name"] for x in sub_query_result])
+            search_keyword = "|".join(["^%s$" % x["name"] for x in sub_query_result])
             if isinstance(sub_query.get("entry"), str) and len(sub_query["entry"]) > 0:
                 search_keyword = sub_query.get("entry")
 
@@ -270,7 +270,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
         def _do_forward_search(sub_query, sub_query_result):
             # make query to search Entries using Entry.search_entries()
-            search_keyword = "|".join([x["name"] for x in sub_query_result])
+            search_keyword = "|".join(["^%s$" % x["name"] for x in sub_query_result])
             if isinstance(sub_query.get("value"), str) and len(sub_query["value"]) > 0:
                 search_keyword = sub_query.get("value")
 
