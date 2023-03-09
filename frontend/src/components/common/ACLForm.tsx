@@ -1,5 +1,6 @@
 import {
   Box,
+  FormHelperText,
   MenuItem,
   Select,
   Table,
@@ -57,15 +58,21 @@ export const ACLForm: FC<Props> = ({ control, getValues, watch }) => {
                 control={control}
                 defaultValue={true}
                 render={({ field, fieldState: { error } }) => (
-                  <Select
-                    {...field}
-                    fullWidth={true}
-                    value={field.value ? 1 : 0}
-                    onChange={(e) => field.onChange(e.target.value === 1)}
-                  >
-                    <MenuItem value={1}>公開</MenuItem>
-                    <MenuItem value={0}>限定公開</MenuItem>
-                  </Select>
+                  <Box>
+                    <Select
+                      {...field}
+                      fullWidth={true}
+                      value={field.value ? 1 : 0}
+                      onChange={(e) => field.onChange(e.target.value === 1)}
+                    >
+                      <MenuItem value={1}>公開</MenuItem>
+                      <MenuItem value={0}>限定公開</MenuItem>
+                    </Select>
+
+                    {error != null && (
+                      <FormHelperText error>{error.message}</FormHelperText>
+                    )}
+                  </Box>
                 )}
               />
             </TableCell>

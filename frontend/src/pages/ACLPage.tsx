@@ -31,7 +31,7 @@ export const ACLPage: FC = () => {
   const { objectId } = useTypedParams<{ objectId: number }>();
 
   const {
-    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
+    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful, errors },
     handleSubmit,
     reset,
     setError,
@@ -41,7 +41,7 @@ export const ACLPage: FC = () => {
     watch,
   } = useForm<Schema>({
     resolver: zodResolver(schema),
-    mode: "onBlur",
+    mode: "onSubmit",
   });
 
   const acl = useAsync(async () => {
@@ -84,6 +84,7 @@ export const ACLPage: FC = () => {
     });
   }, [acl]);
 
+  console.log("errors", errors);
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
@@ -171,7 +172,7 @@ export const ACLPage: FC = () => {
       <PageHeader title={acl.value?.name ?? ""} description="ACL設定">
         <SubmitButton
           name="保存"
-          disabled={!isValid || isSubmitting || isSubmitSuccessful}
+          disabled={isSubmitting || isSubmitSuccessful}
           handleSubmit={handleSubmit(handleSubmitOnValid)}
           handleCancel={handleCancel}
         />
