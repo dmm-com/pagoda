@@ -160,7 +160,6 @@ class AironeApiClientV2 {
 
   async updateAcl(
     id: number,
-    name: string,
     isPublic: boolean,
     acl: any[],
     objectType?: number,
@@ -171,12 +170,12 @@ class AironeApiClientV2 {
         id,
         aCL: {
           id: id,
-          name: name,
           isPublic: isPublic,
           defaultPermission: defaultPermission,
           objtype: objectType,
           acl: acl,
           // readonly
+          name: "",
           parent: null,
           acltypes: [],
           members: [],
