@@ -49,7 +49,7 @@ export const AttributesFields: FC<Props> = ({
   );
 
   const handleAppendAttribute = (index: number) => {
-    insert(index, {
+    insert(index + 1, {
       name: "",
       type: AttributeTypes.string.type,
       isMandatory: false,
