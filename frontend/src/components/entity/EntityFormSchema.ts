@@ -38,7 +38,14 @@ export const schema = z.object({
         isMandatory: z.boolean().default(false),
         isDeleteInChain: z.boolean().default(false),
         isSummarized: z.boolean().default(false),
-        referral: z.any(), // FIXME
+        referral: z
+          .array(
+            z.object({
+              id: z.number(),
+              name: z.string(),
+            })
+          )
+          .default([]),
         isDeleted: z.boolean().default(false),
       })
     )
