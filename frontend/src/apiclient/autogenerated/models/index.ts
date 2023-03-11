@@ -66,5 +66,5 @@ export * from "./UserRetrieveToken";
 export * from "./UserToken";
 export * from "./UserUpdate";
 export * from "./Webhook";
+export * from "./WebhookCreateUpdate";
 export * from "./WebhookHeaders";
-export * from "./WebhookUpdate";

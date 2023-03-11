@@ -73,7 +73,7 @@ models/UserRetrieveToken.ts
 models/UserToken.ts
 models/UserUpdate.ts
 models/Webhook.ts
+models/WebhookCreateUpdate.ts
 models/WebhookHeaders.ts
-models/WebhookUpdate.ts
 models/index.ts
 runtime.ts
