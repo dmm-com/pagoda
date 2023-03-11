@@ -9,6 +9,7 @@ import { useAsync } from "react-use";
 
 import { schema, Schema } from "../components/entity/EntityFormSchema";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
 
 import { entitiesPath, entityEntriesPath, topPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -90,6 +91,7 @@ export const EditEntityPage: FC = () => {
           })
         ) ?? [];
 
+    const operationName = createMode ? "作成" : "更新";
     try {
       if (createMode) {
         await aironeApiClientV2.createEntity(
@@ -109,14 +111,28 @@ export const EditEntityPage: FC = () => {
           webhooks
         );
       }
+      enqueueSnackbar(`エンティティの${operationName}に成功しました`, {
+        variant: "success",
+      });
     } catch (e) {
       if (e instanceof Response) {
-        if (!e.ok) {
-          const text = await e.text();
-          enqueueSnackbar(text, { variant: "error" });
-        }
+        await ExtractAPIException<Schema>(
+          e,
+          (message) => {
+            enqueueSnackbar(
+              `エンティティの${operationName}に失敗しました。詳細: "${message}"`,
+              {
+                variant: "error",
+              }
+            );
+          },
+          (name, message) =>
+            setError(name, { type: "custom", message: message })
+        );
       } else {
-        throw e;
+        enqueueSnackbar(`エンティティの${operationName}に失敗しました。`, {
+          variant: "error",
+        });
       }
     }
   };
