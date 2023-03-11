@@ -37,7 +37,7 @@ class WebhookSerializer(serializers.ModelSerializer):
 
 class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
-    url = serializers.CharField(max_length=200, allow_blank=True)
+    url = serializers.CharField(required=False, max_length=200, allow_blank=True)
     headers = serializers.ListField(child=WebhookHeadersSerializer(), required=False)
     is_deleted = serializers.BooleanField(required=False, default=False)
 
@@ -55,6 +55,10 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
         return id
 
     def validate(self, webhook):
+        # case create Webhook
+        if "id" not in webhook and "url" not in webhook:
+            raise RequiredParameterError("id or url field is required")
+
         if not webhook.get("is_deleted"):
             validator = URLValidator()
             validator(webhook.get("url"))
