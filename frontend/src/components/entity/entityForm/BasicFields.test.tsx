@@ -3,28 +3,29 @@
  */
 
 import { render } from "@testing-library/react";
-import React from "react";
+import React, { FC } from "react";
+import { useForm } from "react-hook-form";
+
+import { Schema } from "../EntityFormSchema";
 
 import { BasicFields } from "./BasicFields";
 
 import { TestWrapper } from "services/TestWrapper";
 
 test("should render a component with essential props", function () {
-  expect(() =>
-    render(
-      <BasicFields
-        entityInfo={{
-          id: 1,
-          name: "hoge",
-          note: "fuga",
-          isToplevel: false,
-          attrs: [],
-        }}
-        setEntityInfo={() => {
-          /* nothing */
-        }}
-      />,
-      { wrapper: TestWrapper }
-    )
-  ).not.toThrow();
+  const entity: Schema = {
+    name: "hoge",
+    note: "fuga",
+    isToplevel: false,
+    webhooks: [],
+    attrs: [],
+  };
+  const Wrapper: FC = () => {
+    const { control } = useForm<Schema>({
+      defaultValues: entity,
+    });
+    return <BasicFields control={control} />;
+  };
+
+  expect(() => render(<Wrapper />, { wrapper: TestWrapper })).not.toThrow();
 });

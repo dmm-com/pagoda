@@ -20,11 +20,11 @@ import {
   EntityAttrCreateToJSON,
 } from "./EntityAttrCreate";
 import {
-  Webhook,
-  WebhookFromJSON,
-  WebhookFromJSONTyped,
-  WebhookToJSON,
-} from "./Webhook";
+  WebhookCreateUpdate,
+  WebhookCreateUpdateFromJSON,
+  WebhookCreateUpdateFromJSONTyped,
+  WebhookCreateUpdateToJSON,
+} from "./WebhookCreateUpdate";
 
 /**
  *
@@ -64,10 +64,10 @@ export interface EntityCreate {
   attrs?: Array<EntityAttrCreate>;
   /**
    *
-   * @type {Array<Webhook>}
+   * @type {Array<WebhookCreateUpdate>}
    * @memberof EntityCreate
    */
-  webhooks?: Array<Webhook>;
+  webhooks?: Array<WebhookCreateUpdate>;
 }
 
 export function EntityCreateFromJSON(json: any): EntityCreate {
@@ -91,7 +91,7 @@ export function EntityCreateFromJSONTyped(
       : (json["attrs"] as Array<any>).map(EntityAttrCreateFromJSON),
     webhooks: !exists(json, "webhooks")
       ? undefined
-      : (json["webhooks"] as Array<any>).map(WebhookFromJSON),
+      : (json["webhooks"] as Array<any>).map(WebhookCreateUpdateFromJSON),
   };
 }
 
@@ -113,6 +113,6 @@ export function EntityCreateToJSON(value?: EntityCreate | null): any {
     webhooks:
       value.webhooks === undefined
         ? undefined
-        : (value.webhooks as Array<any>).map(WebhookToJSON),
+        : (value.webhooks as Array<any>).map(WebhookCreateUpdateToJSON),
   };
 }

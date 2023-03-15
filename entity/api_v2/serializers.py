@@ -34,15 +34,8 @@ class WebhookSerializer(serializers.ModelSerializer):
         fields = ["id", "label", "url", "is_enabled", "is_verified", "headers", "is_deleted"]
         read_only_fields = ["is_verified"]
 
-    def validate(self, webhook):
-        if not webhook.get("is_deleted"):
-            validator = URLValidator()
-            validator(webhook.get("url"))
 
-        return webhook
-
-
-class WebhookUpdateSerializer(serializers.ModelSerializer):
+class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     url = serializers.CharField(required=False, max_length=200, allow_blank=True)
     headers = serializers.ListField(child=WebhookHeadersSerializer(), required=False)
@@ -54,9 +47,9 @@ class WebhookUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_verified"]
         extra_kwargs = {"url": {"required": False}}
 
-    def validate_id(self, id):
+    def validate_id(self, id: Optional[int]):
         entity: Entity = self.parent.parent.instance
-        if not entity.webhooks.filter(id=id).exists():
+        if id is not None and not entity.webhooks.filter(id=id).exists():
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 
         return id
@@ -169,7 +162,7 @@ class EntityCreateData(TypedDict, total=False):
     note: str
     is_toplevel: bool
     attrs: List[EntityAttrCreateSerializer]
-    webhooks: WebhookUpdateSerializer
+    webhooks: WebhookCreateUpdateSerializer
     created_user: User
 
 
@@ -179,7 +172,7 @@ class EntityUpdateData(TypedDict, total=False):
     note: str
     is_toplevel: bool
     attrs: List[EntityAttrUpdateSerializer]
-    webhooks: WebhookUpdateSerializer
+    webhooks: WebhookCreateUpdateSerializer
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -303,7 +296,7 @@ class EntityCreateSerializer(EntitySerializer):
     attrs = serializers.ListField(
         child=EntityAttrCreateSerializer(), write_only=True, required=False, default=[]
     )
-    webhooks = WebhookSerializer(many=True, write_only=True, required=False, default=[])
+    webhooks = WebhookCreateUpdateSerializer(many=True, write_only=True, required=False, default=[])
     created_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -341,7 +334,7 @@ class EntityUpdateSerializer(EntitySerializer):
     attrs = serializers.ListField(
         child=EntityAttrUpdateSerializer(), write_only=True, required=False, default=[]
     )
-    webhooks = WebhookUpdateSerializer(many=True, write_only=True, required=False, default=[])
+    webhooks = WebhookCreateUpdateSerializer(many=True, write_only=True, required=False, default=[])
 
     class Meta:
         model = Entity

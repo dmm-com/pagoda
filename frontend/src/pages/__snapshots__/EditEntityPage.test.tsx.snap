@@ -169,15 +169,36 @@ Object {
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary Mui-error css-10h6tns-MuiInputBase-root-MuiInput-root"
+                      class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
                     >
-                      <input
-                        aria-invalid="true"
-                        class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                        placeholder="エンティティ名"
-                        type="text"
-                        value=""
-                      />
+                      <div
+                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                      >
+                        <input
+                          aria-invalid="false"
+                          class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
+                          id=":r0:"
+                          name="name"
+                          placeholder="エンティティ名"
+                          required=""
+                          type="text"
+                          value=""
+                        />
+                        <fieldset
+                          aria-hidden="true"
+                          class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                        >
+                          <legend
+                            class="css-ihdtdm"
+                          >
+                            <span
+                              class="notranslate"
+                            >
+                              ​
+                            </span>
+                          </legend>
+                        </fieldset>
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -193,14 +214,36 @@ Object {
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary css-10h6tns-MuiInputBase-root-MuiInput-root"
+                      class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
                     >
-                      <input
-                        class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                        placeholder="備考"
-                        type="text"
-                        value=""
-                      />
+                      <div
+                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                      >
+                        <input
+                          aria-invalid="false"
+                          class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
+                          id=":r1:"
+                          name="note"
+                          placeholder="備考"
+                          required=""
+                          type="text"
+                          value=""
+                        />
+                        <fieldset
+                          aria-hidden="true"
+                          class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                        >
+                          <legend
+                            class="css-ihdtdm"
+                          >
+                            <span
+                              class="notranslate"
+                            >
+                              ​
+                            </span>
+                          </legend>
+                        </fieldset>
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -635,15 +678,36 @@ Object {
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >
                   <div
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary Mui-error css-10h6tns-MuiInputBase-root-MuiInput-root"
+                    class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
                   >
-                    <input
-                      aria-invalid="true"
-                      class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                      placeholder="エンティティ名"
-                      type="text"
-                      value=""
-                    />
+                    <div
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                    >
+                      <input
+                        aria-invalid="false"
+                        class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
+                        id=":r0:"
+                        name="name"
+                        placeholder="エンティティ名"
+                        required=""
+                        type="text"
+                        value=""
+                      />
+                      <fieldset
+                        aria-hidden="true"
+                        class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                      >
+                        <legend
+                          class="css-ihdtdm"
+                        >
+                          <span
+                            class="notranslate"
+                          >
+                            ​
+                          </span>
+                        </legend>
+                      </fieldset>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -659,14 +723,36 @@ Object {
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >
                   <div
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary css-10h6tns-MuiInputBase-root-MuiInput-root"
+                    class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
                   >
-                    <input
-                      class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
-                      placeholder="備考"
-                      type="text"
-                      value=""
-                    />
+                    <div
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                    >
+                      <input
+                        aria-invalid="false"
+                        class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
+                        id=":r1:"
+                        name="note"
+                        placeholder="備考"
+                        required=""
+                        type="text"
+                        value=""
+                      />
+                      <fieldset
+                        aria-hidden="true"
+                        class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                      >
+                        <legend
+                          class="css-ihdtdm"
+                        >
+                          <span
+                            class="notranslate"
+                          >
+                            ​
+                          </span>
+                        </legend>
+                      </fieldset>
+                    </div>
                   </div>
                 </td>
               </tr>
