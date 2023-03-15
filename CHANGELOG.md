@@ -8,6 +8,16 @@
 
 ### Fixed
 
+## v3.44.0
+
+### Changed
+* Validate input acl data with Zod.
+  Contributed by @hinashi, @syucream, @userlocalhost
+
+### Fixed
+* Fixed search chain API referral filtering.
+  Contributed by @hinashi
+
 ## v3.43.0
 
 ### Changed
