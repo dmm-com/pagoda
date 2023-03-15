@@ -11,7 +11,6 @@ from django.utils.encoding import smart_str
 
 from airone.lib.acl import ACLObjType
 from airone.lib.types import AttrTypes, AttrTypeValue
-from airone.lib.log import Logger
 from entity import models as entity_models
 from entry import models as entry_models
 from job.models import Job, JobOperation
