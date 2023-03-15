@@ -6,6 +6,7 @@ from django.conf import settings
 from django.test import Client, TestCase, override_settings
 from pytz import timezone
 
+from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
@@ -63,7 +64,7 @@ class AironeTestCase(TestCase):
 
         self._settings.disable()
 
-    def create_entity(self, user, name, attrs=[], webhooks=[], is_public=True):
+    def create_entity(self, user, name, attrs=[], webhooks=[], is_public=True, default_permission=ACLType.Nothing.id):
         """
         This is a helper method to create Entity for test. This method has following parameters.
         * user      : describes user instance which will be registered on creating Entity
@@ -77,7 +78,7 @@ class AironeTestCase(TestCase):
           - ref : Entity that Entry can refer to
         """
 
-        entity: Entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
+        entity: Entity = Entity.objects.create(name=name, created_user=user, is_public=is_public, default_permission=default_permission)
         for index, attr_info in enumerate(attrs):
             entity_attr: EntityAttr = EntityAttr.objects.create(
                 **{

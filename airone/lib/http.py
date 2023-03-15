@@ -11,6 +11,7 @@ from django.utils.encoding import smart_str
 
 from airone.lib.acl import ACLObjType
 from airone.lib.types import AttrTypes, AttrTypeValue
+from airone.lib.log import Logger
 from entity import models as entity_models
 from entry import models as entry_models
 from job.models import Job, JobOperation
@@ -53,6 +54,32 @@ def get_obj_with_check_perm(user, model, object_id, permission_level):
             None,
             HttpResponse("You don't have permission to access this object", status=400),
         )
+
+    # This also checks parent permission if object is Entry, Attribute or EntityAttr
+    airone_instance = target_obj.get_subclass_object()
+    if isinstance(airone_instance, entry_models.Entry):
+        if not user.has_permission(airone_instance.schema, permission_level):
+            return (
+                None,
+                HttpResponse("You don't have permission to access this object", status=400),
+            )
+
+    elif isinstance(airone_instance, entity_models.EntityAttr):
+        if not user.has_permission(airone_instance.parent_entity, permission_level):
+            return (
+                None,
+                HttpResponse("You don't have permission to access this object", status=400),
+            )
+
+    elif isinstance(airone_instance, entry_models.Attribute):
+        if (not user.has_permission(airone_instance.parent_entry, permission_level) or
+            not user.has_permission(airone_instance.parent_entry.schema, permission_level) or
+            not user.has_permission(airone_instance.schema, permission_level) or
+            not user.has_permission(airone_instance.schema.parent_entity, permission_level)):
+            return (
+                None,
+                HttpResponse("You don't have permission to access this object", status=400),
+            )
 
     return (target_obj, None)
 
