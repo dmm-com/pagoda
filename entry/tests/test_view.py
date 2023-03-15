@@ -5181,7 +5181,7 @@ class ViewTest(AironeViewTest):
 
     def test_acl_is_not_editable_when_entity_has_not_full_permission(self):
         user = self.guest_login()
-        for (index, acltype) in enumerate([ACLType.Readable, ACLType.Writable, ACLType.Nothing]):
+        for index, acltype in enumerate([ACLType.Readable, ACLType.Writable, ACLType.Nothing]):
             entity = self.create_entity(
                 user,
                 "Test Another Entity %d" % index,
@@ -5193,7 +5193,9 @@ class ViewTest(AironeViewTest):
             entry = self.add_entry(user, "TestEntry", entity)
             resp = self.client.get(reverse("entry:acl", args=[entry.id]))
             self.assertEqual(resp.status_code, 400)
-            self.assertEqual(resp.content.decode("utf-8"), "You don't have permission to access this object")
+            self.assertEqual(
+                resp.content.decode("utf-8"), "You don't have permission to access this object"
+            )
 
             # check Attribute's and EntityAttr's ACL couldn't editable
             attr = entry.attrs.last()
@@ -5201,4 +5203,6 @@ class ViewTest(AironeViewTest):
             for instance in [attr, attr.schema]:
                 resp = self.client.get(reverse("acl:index", args=[instance.id]))
                 self.assertEqual(resp.status_code, 400)
-                self.assertEqual(resp.content.decode("utf-8"), "You don't have permission to access this object")
+                self.assertEqual(
+                    resp.content.decode("utf-8"), "You don't have permission to access this object"
+                )

@@ -72,10 +72,12 @@ def get_obj_with_check_perm(user, model, object_id, permission_level):
             )
 
     elif isinstance(airone_instance, entry_models.Attribute):
-        if (not user.has_permission(airone_instance.parent_entry, permission_level) or
-            not user.has_permission(airone_instance.parent_entry.schema, permission_level) or
-            not user.has_permission(airone_instance.schema, permission_level) or
-            not user.has_permission(airone_instance.schema.parent_entity, permission_level)):
+        if (
+            not user.has_permission(airone_instance.parent_entry, permission_level)
+            or not user.has_permission(airone_instance.parent_entry.schema, permission_level)
+            or not user.has_permission(airone_instance.schema, permission_level)
+            or not user.has_permission(airone_instance.schema.parent_entity, permission_level)
+        ):
             return (
                 None,
                 HttpResponse("You don't have permission to access this object", status=400),
