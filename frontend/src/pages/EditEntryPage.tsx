@@ -26,9 +26,10 @@ import {
 
 interface Props {
   excludeAttrs?: string[];
+  entryForm?: FC;
 }
 
-export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
+export const EditEntryPage: FC<Props> = ({ excludeAttrs = [], entryForm = EntryForm }) => {
   const { entityId, entryId } =
     useTypedParams<{ entityId: number; entryId: number }>();
 
@@ -196,12 +197,25 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       </PageHeader>
 
       {entryInfo && (
+        /*
         <EntryForm
           entryInfo={entryInfo}
           setEntryInfo={setEntryInfo}
           setIsAnchorLink={setIsAnchorLink}
         />
-      )}
+        */
+        <>
+          {entryForm({
+            entryInfo: entryInfo,
+            setEntryInfo: setEntryInfo,
+            setIsAnchorLink: setIsAnchorLink
+          }
+          )}
+        </>
+      )
+
+      }
+
 
       <Prompt
         when={edited && !submitted && !isAnchorLink}
