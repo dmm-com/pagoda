@@ -58,15 +58,6 @@ Object {
                   </li>
                   <li
                     class="MuiBreadcrumbs-li"
-                  />
-                  <li
-                    aria-hidden="true"
-                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-                  >
-                    /
-                  </li>
-                  <li
-                    class="MuiBreadcrumbs-li"
                   >
                     <p
                       class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
@@ -390,15 +381,6 @@ Object {
                     エンティティ一覧
                   </a>
                 </li>
-                <li
-                  aria-hidden="true"
-                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-                >
-                  /
-                </li>
-                <li
-                  class="MuiBreadcrumbs-li"
-                />
                 <li
                   aria-hidden="true"
                   class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"

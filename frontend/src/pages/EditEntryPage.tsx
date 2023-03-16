@@ -1,8 +1,7 @@
-import LockIcon from "@mui/icons-material/Lock";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { Dispatch, FC, useEffect, useState } from "react";
-import { Link, Prompt } from "react-router-dom";
+import { Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -12,15 +11,11 @@ import { EditableEntry } from "../components/entry/entryForm/EditableEntry";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { ExtractAPIErrorMessage } from "../services/AironeAPIErrorUtil";
 
-import {
-  entitiesPath,
-  entityEntriesPath,
-  entryDetailsPath,
-  topPath,
-} from "Routes";
+import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
-import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { SubmitButton } from "components/common/SubmitButton";
+import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
+import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryForm } from "components/entry/EntryForm";
 import {
   convertAttrsFormatCtoS,
@@ -182,42 +177,11 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
 
   return (
     <Box>
-      <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
-          Top
-        </Typography>
-        <Typography component={Link} to={entitiesPath()}>
-          エンティティ一覧
-        </Typography>
-        {entity.value && (
-          <Box sx={{ display: "flex" }}>
-            <Typography
-              component={Link}
-              to={entityEntriesPath(entity.value.id)}
-            >
-              {entity.value.name}
-            </Typography>
-            {!entity.value.isPublic && <LockIcon />}
-          </Box>
-        )}
-        {entry.value && (
-          <Box sx={{ display: "flex" }}>
-            <Typography
-              component={Link}
-              to={entryDetailsPath(
-                entry.value?.schema?.id ?? 0,
-                entry.value.id
-              )}
-            >
-              {entry.value.name}
-            </Typography>
-            {!entry.value.isPublic && <LockIcon />}
-          </Box>
-        )}
-        <Typography color="textPrimary">
-          {entry.value ? "編集" : "作成"}
-        </Typography>
-      </AironeBreadcrumbs>
+      {entry.value ? (
+        <EntryBreadcrumbs entry={entry.value} title="編集" />
+      ) : (
+        <EntityBreadcrumbs entity={entity.value} title="作成" />
+      )}
 
       <PageHeader
         title={entry?.value != null ? entry.value.name : "新規エントリの作成"}

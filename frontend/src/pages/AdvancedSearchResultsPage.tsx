@@ -89,11 +89,9 @@ export const AdvancedSearchResultsPage: FC = () => {
         <Typography component={Link} to={topPath()}>
           Top
         </Typography>
-        {attrInfo.length > 0 && (
-          <Typography component={Link} to={advancedSearchPath()}>
-            高度な検索
-          </Typography>
-        )}
+        <Typography component={Link} to={advancedSearchPath()}>
+          高度な検索
+        </Typography>
         <Typography color="textPrimary">検索結果</Typography>
       </AironeBreadcrumbs>
 

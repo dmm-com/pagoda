@@ -1,17 +1,9 @@
 import AppsIcon from "@mui/icons-material/Apps";
-import { Box, Container, IconButton, Typography } from "@mui/material";
+import { Box, Container, IconButton } from "@mui/material";
 import React, { FC, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import {
-  entitiesPath,
-  entityEntriesPath,
-  entryDetailsPath,
-  topPath,
-} from "../Routes";
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
-import { AironeBreadcrumbs } from "../components/common/AironeBreadcrumbs";
 import { Loading } from "../components/common/Loading";
 import { EntryControlMenu } from "../components/entry/EntryControlMenu";
 import { EntryHistoryList } from "../components/entry/EntryHistoryList";
@@ -20,6 +12,7 @@ import { useTypedParams } from "../hooks/useTypedParams";
 import { EntryHistoryList as ConstEntryHistoryList } from "../services/Constants";
 
 import { PageHeader } from "components/common/PageHeader";
+import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 
 export const EntryHistoryListPage: FC = () => {
   const { entryId } = useTypedParams<{ entryId: number }>();
@@ -50,34 +43,7 @@ export const EntryHistoryListPage: FC = () => {
 
   return (
     <Box className="container">
-      <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
-          Top
-        </Typography>
-        <Typography component={Link} to={entitiesPath()}>
-          エンティティ一覧
-        </Typography>
-        {!entry.loading && (
-          <Typography
-            component={Link}
-            to={entityEntriesPath(entry.value?.schema?.id ?? 0)}
-          >
-            {entry.value?.schema?.name}
-          </Typography>
-        )}
-        {!entry.loading && (
-          <Typography
-            component={Link}
-            to={entryDetailsPath(
-              entry.value?.schema?.id ?? 0,
-              entry.value?.id ?? 0
-            )}
-          >
-            {entry.value?.name}
-          </Typography>
-        )}
-        <Typography color="textPrimary">変更履歴</Typography>
-      </AironeBreadcrumbs>
+      <EntryBreadcrumbs entry={entry.value} title="変更履歴" />
 
       <PageHeader title={entry.value?.name ?? ""} description="変更履歴">
         <Box width="50px">

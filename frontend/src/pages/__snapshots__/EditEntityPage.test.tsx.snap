@@ -62,7 +62,7 @@ Object {
                     <p
                       class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
                     >
-                      新規エンティティの作成
+                      作成
                     </p>
                   </li>
                 </ol>
@@ -571,7 +571,7 @@ Object {
                   <p
                     class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
                   >
-                    新規エンティティの作成
+                    作成
                   </p>
                 </li>
               </ol>
