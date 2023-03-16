@@ -39,8 +39,10 @@ urlpatterns = [
     url(r"^auth/logout/", auth_view.logout, name="logout"),
     url(r"^webhook/", include(("webhook.urls", "webhook"))),
     url(r"^role/", include(("role.urls", "role"))),
-    # url(r'^__debug__/', include('debug_toolbar.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns.append(url(r"^__debug__/", include("debug_toolbar.urls")))
 
 for extension in settings.AIRONE["EXTENSIONS"]:
     urlpatterns.append(

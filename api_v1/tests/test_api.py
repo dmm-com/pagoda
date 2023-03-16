@@ -100,7 +100,7 @@ class APITest(AironeViewTest):
         self.assertEqual(new_entry.attrs.count(), len(params["attrs"]))
 
         # checking new_entry is registered to the Elasticsearch
-        res = self._es.get(index=settings.ES_CONFIG["INDEX"], id=new_entry.id)
+        res = self._es.get(index=settings.ES_CONFIG["INDEX_NAME"], id=new_entry.id)
         self.assertTrue(res["found"])
 
         # checking for attr_val

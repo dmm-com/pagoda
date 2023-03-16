@@ -36,7 +36,7 @@ class AironeTestCase(TestCase):
 
     def setUp(self):
         OVERRIDE_ES_CONFIG = settings.ES_CONFIG.copy()
-        OVERRIDE_ES_CONFIG["INDEX"] = "test-" + settings.ES_CONFIG["INDEX"]
+        OVERRIDE_ES_CONFIG["INDEX_NAME"] = "test-" + settings.ES_CONFIG["INDEX_NAME"]
         OVERRIDE_AIRONE = settings.AIRONE.copy()
         OVERRIDE_AIRONE["FILE_STORE_PATH"] = "/tmp/airone_app_test"
 
