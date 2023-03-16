@@ -92,6 +92,12 @@ class User(AbstractUser):
         ) and not self.has_permission(target_obj.schema, permission_level):
             return False
 
+        # This also checks Entity permission if object is EntityAttr
+        if (
+            isinstance(target_obj, import_module("entity.models").EntityAttr)
+        ) and not self.has_permission(target_obj.parent_entity, permission_level):
+            return False
+
         # This check processing must be set after checking superior data structure's check
         if target_obj.is_public:
             return True

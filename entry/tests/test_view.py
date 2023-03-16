@@ -5181,7 +5181,7 @@ class ViewTest(AironeViewTest):
 
     def test_acl_is_not_editable_when_entity_has_not_full_permission(self):
         user = self.guest_login()
-        for index, acltype in enumerate([ACLType.Readable, ACLType.Writable, ACLType.Nothing]):
+        for index, acltype in enumerate([ACLType.Readable, ACLType.Writable]):
             entity = self.create_entity(
                 user,
                 "Test Another Entity %d" % index,

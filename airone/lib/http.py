@@ -48,41 +48,14 @@ def get_obj_with_check_perm(user, model, object_id, permission_level):
         return (None, HttpResponse("Failed to get entity of specified id", status=400))
 
     # only requests that have correct permission are executed
-    if not user.has_permission(target_obj, permission_level):
+    airone_instance = target_obj.get_subclass_object()
+    if not user.has_permission(airone_instance, permission_level):
         return (
             None,
             HttpResponse("You don't have permission to access this object", status=400),
         )
 
-    # This also checks parent permission if object is Entry, Attribute or EntityAttr
-    airone_instance = target_obj.get_subclass_object()
-    if isinstance(airone_instance, entry_models.Entry):
-        if not user.has_permission(airone_instance.schema, permission_level):
-            return (
-                None,
-                HttpResponse("You don't have permission to access this object", status=400),
-            )
-
-    elif isinstance(airone_instance, entity_models.EntityAttr):
-        if not user.has_permission(airone_instance.parent_entity, permission_level):
-            return (
-                None,
-                HttpResponse("You don't have permission to access this object", status=400),
-            )
-
-    elif isinstance(airone_instance, entry_models.Attribute):
-        if (
-            not user.has_permission(airone_instance.parent_entry, permission_level)
-            or not user.has_permission(airone_instance.parent_entry.schema, permission_level)
-            or not user.has_permission(airone_instance.schema, permission_level)
-            or not user.has_permission(airone_instance.schema.parent_entity, permission_level)
-        ):
-            return (
-                None,
-                HttpResponse("You don't have permission to access this object", status=400),
-            )
-
-    return (target_obj, None)
+    return (airone_instance, None)
 
 
 def check_superuser(func):
