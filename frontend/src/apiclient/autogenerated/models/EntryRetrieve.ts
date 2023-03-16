@@ -55,7 +55,7 @@ export interface EntryRetrieve {
    * @type {Entity}
    * @memberof EntryRetrieve
    */
-  readonly schema: Entity | null;
+  schema: Entity;
   /**
    *
    * @type {boolean}
@@ -124,6 +124,7 @@ export function EntryRetrieveToJSON(value?: EntryRetrieve | null): any {
   }
   return {
     name: value.name,
+    schema: EntityToJSON(value.schema),
     deleted_time:
       value.deletedTime === undefined
         ? undefined

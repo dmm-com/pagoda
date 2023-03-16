@@ -1,27 +1,20 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import LockIcon from "@mui/icons-material/Lock";
 import { Box, Chip, Grid, IconButton, Stack, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { Element, scroller } from "react-scroll";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import {
-  entitiesPath,
-  entityEntriesPath,
-  entryDetailsPath,
-  restoreEntryPath,
-  topPath,
-} from "Routes";
+import { entryDetailsPath, restoreEntryPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
-import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntryAttributes } from "components/entry/EntryAttributes";
+import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
 
@@ -74,31 +67,7 @@ export const EntryDetailsPage: FC<Props> = ({
 
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">
-      <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
-          Top
-        </Typography>
-        <Typography component={Link} to={entitiesPath()}>
-          エンティティ一覧
-        </Typography>
-        {!entry.loading && (
-          <Box sx={{ display: "flex" }}>
-            <Typography
-              component={Link}
-              to={entityEntriesPath(entry.value?.schema?.id ?? 0)}
-            >
-              {entry.value?.schema?.name}
-            </Typography>
-            {entry.value?.schema?.isPublic === false && <LockIcon />}
-          </Box>
-        )}
-        {!entry.loading && (
-          <Box sx={{ display: "flex" }}>
-            <Typography color="textPrimary">{entry.value?.name}</Typography>
-            {entry.value?.isPublic === false && <LockIcon />}
-          </Box>
-        )}
-      </AironeBreadcrumbs>
+      <EntryBreadcrumbs entry={entry.value} />
 
       <PageHeader title={entry.value?.name ?? ""} description="エントリ詳細">
         <StyledBox>

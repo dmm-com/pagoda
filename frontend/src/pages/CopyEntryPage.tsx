@@ -1,24 +1,18 @@
-import LockIcon from "@mui/icons-material/Lock";
 import { Box, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { Link, Prompt, useHistory } from "react-router-dom";
+import { Prompt, useHistory } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import {
-  entitiesPath,
-  entityEntriesPath,
-  entryDetailsPath,
-  topPath,
-} from "Routes";
+import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
-import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { CopyForm } from "components/entry/CopyForm";
+import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 
 export const CopyEntryPage: FC = () => {
   const history = useHistory();
@@ -69,36 +63,7 @@ export const CopyEntryPage: FC = () => {
 
   return (
     <Box>
-      <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
-          Top
-        </Typography>
-        <Typography component={Link} to={entitiesPath()}>
-          エンティティ一覧
-        </Typography>
-        <Box sx={{ display: "flex" }}>
-          <Typography
-            component={Link}
-            to={entityEntriesPath(entry.value?.schema?.id ?? 0)}
-          >
-            {entry.value?.schema?.name}
-          </Typography>
-          {entry.value?.schema?.isPublic === false && <LockIcon />}
-        </Box>
-        <Box sx={{ display: "flex" }}>
-          <Typography
-            component={Link}
-            to={entryDetailsPath(
-              entry.value?.schema?.id ?? 0,
-              entry.value?.id ?? 0
-            )}
-          >
-            {entry.value?.name}
-          </Typography>
-          {entry.value?.isPublic === false && <LockIcon />}
-        </Box>
-        <Typography>コピー</Typography>
-      </AironeBreadcrumbs>
+      <EntryBreadcrumbs entry={entry.value} title="コピー" />
 
       <PageHeader
         title={entry.value?.name ?? ""}
