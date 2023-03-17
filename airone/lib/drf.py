@@ -80,6 +80,10 @@ class EntryIsNotEmptyError(ValidationError):
     default_code = "AE-240000"
 
 
+class InvalidValueError(ValidationError):
+    default_code = "AE-250000"
+
+
 def custom_exception_handler(exc, context):
     def _convert_error_code(detail):
         if isinstance(detail, list):
