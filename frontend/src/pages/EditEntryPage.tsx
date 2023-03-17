@@ -16,7 +16,10 @@ import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
-import { EntryForm as DefaultEntryForm, EntryFormProps } from "components/entry/EntryForm";
+import {
+  EntryForm as DefaultEntryForm,
+  EntryFormProps,
+} from "components/entry/EntryForm";
 import {
   convertAttrsFormatCtoS,
   formalizeEntryInfo,
@@ -29,7 +32,10 @@ interface Props {
   EntryForm?: FC<EntryFormProps>;
 }
 
-export const EditEntryPage: FC<Props> = ({ excludeAttrs = [], EntryForm = DefaultEntryForm }) => {
+export const EditEntryPage: FC<Props> = ({
+  excludeAttrs = [],
+  EntryForm = DefaultEntryForm,
+}) => {
   const { entityId, entryId } =
     useTypedParams<{ entityId: number; entryId: number }>();
 
@@ -202,10 +208,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [], EntryForm = Defaul
           setEntryInfo={setEntryInfo}
           setIsAnchorLink={setIsAnchorLink}
         />
-      )
-
-      }
-
+      )}
 
       <Prompt
         when={edited && !submitted && !isAnchorLink}

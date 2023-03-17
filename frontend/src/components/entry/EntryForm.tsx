@@ -24,22 +24,22 @@ import { EditAttributeValue } from "components/entry/entryForm/EditAttributeValu
 import { DjangoContext } from "services/DjangoContext";
 import { updateEntryInfoValueFromValueInfo } from "services/entry/Edit";
 
-const AnchorLinkButton = styled(Button)(({ }) => ({
+const AnchorLinkButton = styled(Button)(({}) => ({
   border: "0.5px solid gray",
   borderRadius: 16,
   textTransform: "none",
 }));
 
-const HeaderTableRow = styled(TableRow)(({ }) => ({
+const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({ }) => ({
+const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
   width: "384px",
 }));
 
-const RequiredLabel = styled(Typography)(({ }) => ({
+const RequiredLabel = styled(Typography)(({}) => ({
   border: "0.5px solid gray",
   borderRadius: 16,
   color: "white",
