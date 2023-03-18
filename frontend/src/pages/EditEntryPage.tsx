@@ -7,7 +7,7 @@ import { useAsync } from "react-use";
 
 import { Loading } from "../components/common/Loading";
 import { PageHeader } from "../components/common/PageHeader";
-import { EditableEntry } from "../components/entry/entryForm/EditableEntry";
+import { Schema } from "../components/entry/EntryFormSchema";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { ExtractAPIErrorMessage } from "../services/AironeAPIErrorUtil";
 
@@ -36,7 +36,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const [entryInfo, _setEntryInfo] = useState<EditableEntry>();
+  const [entryInfo, _setEntryInfo] = useState<Schema>();
   const [submittable, setSubmittable] = useState<boolean>(false); // FIXME
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);
@@ -70,7 +70,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
     setSubmittable(entryInfo != null && isSubmittable(entryInfo));
   }, [entryInfo]);
 
-  const setEntryInfo: Dispatch<EditableEntry> = (entryInfo: EditableEntry) => {
+  const setEntryInfo: Dispatch<Schema> = (entryInfo: Schema) => {
     setEdited(true);
     _setEntryInfo(entryInfo);
   };

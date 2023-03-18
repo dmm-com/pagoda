@@ -1,3 +1,5 @@
+import { Schema } from "../../components/entry/EntryFormSchema";
+
 import {
   AttributeData,
   EntityDetail,
@@ -136,52 +138,54 @@ export function updateEntryInfoValueFromValueInfo(
 export function formalizeEntryInfo(
   entry: EntryRetrieve,
   excludeAttrs: string[]
-) {
+): Schema {
   return {
     name: entry.name,
-    attrs: Object.fromEntries(
-      entry.attrs
-        .filter((attr) => !excludeAttrs.includes(attr.schema.name))
-        .filter((attr) => attr.schema.id != 0)
-        .map((attr): [string, EditableEntryAttrs] => {
-          function getAttrValue(attr: EntryAttributeType) {
-            switch (attr.type) {
-              case djangoContext?.attrTypeValue.array_string:
-                return attr.value?.asArrayString?.length ?? 0 > 0
-                  ? attr.value
-                  : { asArrayString: [""] };
-              case djangoContext?.attrTypeValue.array_named_object:
-                return attr.value?.asArrayNamedObject?.length ?? 0 > 0
-                  ? attr.value
-                  : { asArrayNamedObject: [{ "": null }] };
-              default:
-                return attr.value;
-            }
+    attrs: entry.attrs
+      .filter((attr) => !excludeAttrs.includes(attr.schema.name))
+      .filter((attr) => attr.schema.id != 0)
+      .map((attr): [string, EditableEntryAttrs] => {
+        function getAttrValue(attr: EntryAttributeType) {
+          switch (attr.type) {
+            case djangoContext?.attrTypeValue.array_string:
+              return attr.value?.asArrayString?.length ?? 0 > 0
+                ? attr.value
+                : { asArrayString: [""] };
+            case djangoContext?.attrTypeValue.array_named_object:
+              return attr.value?.asArrayNamedObject?.length ?? 0 > 0
+                ? attr.value
+                : { asArrayNamedObject: [{ "": null }] };
+            default:
+              return attr.value;
           }
+        }
 
-          return [
-            attr.schema.name,
-            {
-              id: attr.id,
-              type: attr.type,
-              isMandatory: attr.isMandatory,
-              schema: attr.schema,
-              // FIXME it mismatches client/server defined types
-              // @ts-ignore
-              value: getAttrValue(attr),
-            },
-          ];
-        })
-    ),
+        return [
+          attr.schema.name,
+          {
+            id: attr.id,
+            type: attr.type,
+            isMandatory: attr.isMandatory,
+            schema: attr.schema,
+            // FIXME it mismatches client/server defined types
+            // @ts-ignore
+            value: getAttrValue(attr),
+          },
+        ];
+      })
+      .reduce((acc: Record<string, any>, [key, value]) => {
+        acc[key] = value;
+        return acc;
+      }, {}),
   };
 }
 
-export function initializeEntryInfo(entity: EntityDetail) {
+export function initializeEntryInfo(entity: EntityDetail): Schema {
   // FIXME remove ts-ignore's, maybe we should refine server defined types
   return {
     name: "",
-    attrs: Object.fromEntries(
-      entity.attrs.map((attr): [string, EditableEntryAttrs] => [
+    attrs: entity.attrs
+      .map((attr): [string, EditableEntryAttrs] => [
         attr?.name ?? "",
         {
           // @ts-ignore
@@ -210,7 +214,10 @@ export function initializeEntryInfo(entity: EntityDetail) {
           },
         },
       ])
-    ),
+      .reduce((acc: Record<string, any>, [key, value]) => {
+        acc[key] = value;
+        return acc;
+      }, {}),
   };
 }
 

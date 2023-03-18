@@ -8,10 +8,10 @@ import {
 export type EditableEntryAttrValue = {
   asObject?: EntryAttributeValueObject;
   asString?: string;
-  asNamedObject?: { [key: string]: EntryAttributeValueObject };
+  asNamedObject?: Record<string, EntryAttributeValueObject>;
   asArrayObject?: Array<EntryAttributeValueObject>;
   asArrayString?: Array<string>;
-  asArrayNamedObject?: Array<{ [key: string]: EntryAttributeValueObject }>;
+  asArrayNamedObject?: Array<Record<string, EntryAttributeValueObject>>;
   asArrayGroup?: Array<EntryAttributeValueGroup>;
   asArrayRole?: Array<EntryAttributeValueRole>;
   asBoolean?: boolean;

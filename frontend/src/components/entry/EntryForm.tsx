@@ -18,7 +18,7 @@ import { styled } from "@mui/material/styles";
 import React, { Dispatch, FC, SetStateAction, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-import { EditableEntry, EditableEntryAttrs } from "./entryForm/EditableEntry";
+import { Schema } from "./EntryFormSchema";
 
 import { EditAttributeValue } from "components/entry/entryForm/EditAttributeValue";
 import { DjangoContext } from "services/DjangoContext";
@@ -48,8 +48,8 @@ const RequiredLabel = styled(Typography)(({}) => ({
 }));
 
 interface Props {
-  entryInfo: EditableEntry;
-  setEntryInfo: Dispatch<EditableEntry>;
+  entryInfo: Schema;
+  setEntryInfo: Dispatch<Schema>;
   setIsAnchorLink: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -68,7 +68,7 @@ export const EntryForm: FC<Props> = ({
     });
   };
 
-  const changeAttributes = (attrs: Record<string, EditableEntryAttrs>) => {
+  const changeAttributes = (attrs: Record<string, any>) => {
     setEntryInfo({
       ...entryInfo,
       attrs: attrs,
