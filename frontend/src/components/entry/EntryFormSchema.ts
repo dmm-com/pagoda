@@ -32,7 +32,7 @@ export const schema = schemaForType<EditableEntry>()(
                   id: z.number(),
                   name: z.string(),
                 }),
-                _boolean: z.boolean(),
+                _boolean: z.boolean().default(false),
               })
               .optional(),
             asArrayObject: z
@@ -44,25 +44,13 @@ export const schema = schemaForType<EditableEntry>()(
                     id: z.number(),
                     name: z.string(),
                   }),
-                  _boolean: z.boolean(),
+                  _boolean: z.boolean().default(false),
                 })
               )
               .optional(),
-            asNamedObject: z.record(
-              z.string().min(1),
-              z.object({
-                id: z.number(),
-                name: z.string(),
-                schema: z.object({
-                  id: z.number(),
-                  name: z.string(),
-                }),
-                _boolean: z.boolean(),
-              })
-            ),
-            asArrayNamedObject: z.array(
-              z.record(
-                z.string(),
+            asNamedObject: z
+              .record(
+                z.string(), // FIXME min(1)
                 z.object({
                   id: z.number(),
                   name: z.string(),
@@ -70,10 +58,26 @@ export const schema = schemaForType<EditableEntry>()(
                     id: z.number(),
                     name: z.string(),
                   }),
-                  _boolean: z.boolean(),
+                  _boolean: z.boolean().default(false),
                 })
               )
-            ),
+              .optional(),
+            asArrayNamedObject: z
+              .array(
+                z.record(
+                  z.string(), // FIXME min(1)
+                  z.object({
+                    id: z.number(),
+                    name: z.string(),
+                    schema: z.object({
+                      id: z.number(),
+                      name: z.string(),
+                    }),
+                    _boolean: z.boolean().default(false),
+                  })
+                )
+              )
+              .optional(),
             asGroup: z
               .object({
                 id: z.number(),

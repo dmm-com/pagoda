@@ -5,17 +5,18 @@ import {
   Button,
   Container,
   Fab,
-  Input,
   Link,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { Dispatch, FC, SetStateAction, useEffect } from "react";
+import { Control, Controller } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 
 import { Schema } from "./EntryFormSchema";
@@ -51,12 +52,14 @@ interface Props {
   entryInfo: Schema;
   setEntryInfo: Dispatch<Schema>;
   setIsAnchorLink: Dispatch<SetStateAction<boolean>>;
+  control: Control<Schema>;
 }
 
 export const EntryForm: FC<Props> = ({
   entryInfo,
   setEntryInfo,
   setIsAnchorLink,
+  control,
 }) => {
   const djangoContext = DjangoContext.getInstance();
   const location = useLocation();
@@ -207,12 +210,19 @@ export const EntryForm: FC<Props> = ({
               </Box>
             </TableCell>
             <TableCell>
-              <Input
-                type="text"
-                defaultValue={entryInfo.name}
-                onChange={(e) => changeName(e.target.value)}
-                fullWidth
-                error={entryInfo.name === ""}
+              <Controller
+                name="name"
+                control={control}
+                defaultValue=""
+                render={({ field, fieldState: { error } }) => (
+                  <TextField
+                    {...field}
+                    variant="standard"
+                    error={error != null}
+                    helperText={error?.message}
+                    fullWidth
+                  />
+                )}
               />
             </TableCell>
           </TableRow>

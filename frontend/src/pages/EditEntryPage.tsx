@@ -1,13 +1,15 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { Dispatch, FC, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { Loading } from "../components/common/Loading";
 import { PageHeader } from "../components/common/PageHeader";
-import { Schema } from "../components/entry/EntryFormSchema";
+import { Schema, schema } from "../components/entry/EntryFormSchema";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { ExtractAPIErrorMessage } from "../services/AironeAPIErrorUtil";
 
@@ -32,6 +34,8 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
   const { entityId, entryId } =
     useTypedParams<{ entityId: number; entryId: number }>();
 
+  const willCreate = entryId == null;
+
   const history = useHistory();
 
   const { enqueueSnackbar } = useSnackbar();
@@ -41,6 +45,18 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);
   const [isAnchorLink, setIsAnchorLink] = useState<boolean>(false);
+
+  const {
+    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
+    handleSubmit,
+    reset,
+    setError,
+    setValue,
+    control,
+  } = useForm<Schema>({
+    resolver: zodResolver(schema),
+    mode: "onBlur",
+  });
 
   const entity = useAsync(async () => {
     return entityId != undefined
@@ -70,26 +86,39 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
     setSubmittable(entryInfo != null && isSubmittable(entryInfo));
   }, [entryInfo]);
 
+  useEffect(() => {
+    if (willCreate) {
+      if (!entity.loading && entity.value != null) {
+        reset(initializeEntryInfo(entity.value));
+      }
+    } else {
+      if (!entry.loading && entry.value != null) {
+        reset(formalizeEntryInfo(entry.value, excludeAttrs));
+      }
+    }
+  }, [willCreate, entity.value, entry.value]);
+
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      if (willCreate) {
+        history.replace(entityEntriesPath(entityId));
+      } else {
+        history.replace(entryDetailsPath(entityId, entryId));
+      }
+    }
+  }, [isSubmitSuccessful]);
+
   const setEntryInfo: Dispatch<Schema> = (entryInfo: Schema) => {
     setEdited(true);
     _setEntryInfo(entryInfo);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmitOnValid = async (entry: Schema) => {
     const updatedAttr = convertAttrsFormatCtoS(entryInfo?.attrs ?? {});
 
-    // TODO something better to notify validation errors
-    if (entryInfo?.name == null) {
-      throw new Error("name is required");
-    }
-
-    if (entryId == undefined) {
+    if (willCreate) {
       try {
-        await aironeApiClientV2.createEntry(
-          entityId,
-          entryInfo.name,
-          updatedAttr
-        );
+        await aironeApiClientV2.createEntry(entityId, entry.name, updatedAttr);
         setSubmitted(true);
         enqueueSnackbar("エントリの作成が完了しました", {
           variant: "success",
@@ -110,11 +139,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       }
     } else {
       try {
-        await aironeApiClientV2.updateEntry(
-          entryId,
-          entryInfo.name,
-          updatedAttr
-        );
+        await aironeApiClientV2.updateEntry(entryId, entry.name, updatedAttr);
         setSubmitted(true);
         enqueueSnackbar("エントリの更新が完了しました", {
           variant: "success",
@@ -136,29 +161,11 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
     }
   };
 
-  // NOTE: This should be fixed in near future.
-  // This unpeaceful impelmentation guarantees moving page after changing state "submitted"
-  // by handleSubmit() processing to prevent showing wrong Prompt message.
-  useEffect(() => {
-    if (submitted) {
-      if (entryId == undefined) {
-        // The difference of history.push() and history.replace() is
-        // - push() : record moving page at browser history stack
-        // - replace() : doesn't record moving page at browser history stack
-        //   (NOTE: The replace() is reasonable when user push "back" button of browser,
-        //          then editing form won't be revealed.
-        history.replace(entityEntriesPath(entityId));
-      } else {
-        history.replace(entryDetailsPath(entityId, entryId));
-      }
-    }
-  }, [submitted]);
-
   const handleCancel = () => {
-    if (entryId != null) {
-      history.replace(entryDetailsPath(entityId, entryId));
-    } else {
+    if (willCreate) {
       history.replace(entityEntriesPath(entityId));
+    } else {
+      history.replace(entryDetailsPath(entityId, entryId));
     }
   };
 
@@ -189,8 +196,10 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       >
         <SubmitButton
           name="保存"
-          disabled={!submittable}
-          handleSubmit={handleSubmit}
+          disabled={/*!isValid || */ isSubmitting || isSubmitSuccessful}
+          handleSubmit={handleSubmit(handleSubmitOnValid, (errors) => {
+            console.log(errors);
+          })}
           handleCancel={handleCancel}
         />
       </PageHeader>
@@ -200,11 +209,12 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
           entryInfo={entryInfo}
           setEntryInfo={setEntryInfo}
           setIsAnchorLink={setIsAnchorLink}
+          control={control}
         />
       )}
 
       <Prompt
-        when={edited && !submitted && !isAnchorLink}
+        when={isDirty && !isSubmitSuccessful && !isAnchorLink}
         message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
       />
     </Box>

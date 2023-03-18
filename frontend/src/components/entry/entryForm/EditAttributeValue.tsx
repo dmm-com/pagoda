@@ -611,10 +611,6 @@ export const EditAttributeValue: FC<Props> = ({
       );
 
     case djangoContext?.attrTypeValue.array_named_object:
-      console.log(
-        "attrInfo.value.asArrayNamedObject",
-        attrInfo.value.asArrayNamedObject
-      );
       return (
         <Box>
           <List>

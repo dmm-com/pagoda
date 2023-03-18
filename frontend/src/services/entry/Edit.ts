@@ -147,14 +147,15 @@ export function formalizeEntryInfo(
       .map((attr): [string, EditableEntryAttrs] => {
         function getAttrValue(attr: EntryAttributeType) {
           switch (attr.type) {
-            case djangoContext?.attrTypeValue.array_string:
-              return attr.value?.asArrayString?.length ?? 0 > 0
-                ? attr.value
-                : { asArrayString: [""] };
-            case djangoContext?.attrTypeValue.array_named_object:
-              return attr.value?.asArrayNamedObject?.length ?? 0 > 0
-                ? attr.value
-                : { asArrayNamedObject: [{ "": null }] };
+            // FIXME define the default value in Zod schema
+            // case djangoContext?.attrTypeValue.array_string:
+            //   return attr.value?.asArrayString?.length ?? 0 > 0
+            //     ? attr.value
+            //     : { asArrayString: [""] };
+            // case djangoContext?.attrTypeValue.array_named_object:
+            //   return attr.value?.asArrayNamedObject?.length ?? 0 > 0
+            //     ? attr.value
+            //     : { asArrayNamedObject: [{ "": null }] };
             default:
               return attr.value;
           }
