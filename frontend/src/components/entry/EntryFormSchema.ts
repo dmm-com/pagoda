@@ -14,6 +14,7 @@ export const schema = schemaForType<EditableEntry>()(
         z.string().min(1),
         z.object({
           id: z.number().nullable(),
+          // TODO remove these fields? it should be given by Entity
           type: z.number(),
           isMandatory: z.boolean().default(false),
           schema: z.object({
@@ -23,7 +24,7 @@ export const schema = schemaForType<EditableEntry>()(
           value: z.object({
             asBoolean: z.boolean().optional(),
             asString: z.string().optional(),
-            asArrayString: z.array(z.string()).optional(),
+            asArrayString: z.array(z.string()).optional().default([""]),
             asObject: z
               .object({
                 id: z.number(),

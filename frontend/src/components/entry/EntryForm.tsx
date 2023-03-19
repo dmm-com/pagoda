@@ -21,7 +21,7 @@ import { useLocation } from "react-router-dom";
 
 import { Schema } from "./EntryFormSchema";
 
-import { EditAttributeValue } from "components/entry/entryForm/EditAttributeValue";
+import { AttributeValueFields } from "components/entry/entryForm/AttributeValueFields";
 import { DjangoContext } from "services/DjangoContext";
 import { updateEntryInfoValueFromValueInfo } from "services/entry/Edit";
 
@@ -242,7 +242,8 @@ export const EntryForm: FC<Props> = ({
                 </Box>
               </TableCell>
               <TableCell>
-                <EditAttributeValue
+                <AttributeValueFields
+                  control={control}
                   attrName={attributeName}
                   attrInfo={entryInfo.attrs[attributeName]}
                   handleChangeAttribute={handleChangeAttribute}

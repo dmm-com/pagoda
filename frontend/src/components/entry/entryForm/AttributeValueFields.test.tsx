@@ -7,7 +7,7 @@ import React from "react";
 
 import { DjangoContext } from "../../../services/DjangoContext";
 
-import { EditAttributeValue } from "./EditAttributeValue";
+import { AttributeValueFields } from "./AttributeValueFields";
 import { EditableEntryAttrValue } from "./EditableEntry";
 
 const mockHandleChangeAttribute = () => undefined;
@@ -106,13 +106,13 @@ const arrayAttributes = [
 ];
 
 attributes.forEach((attribute) => {
-  it("show EditAttributeValue " + attribute.type, () => {
+  it("show AttributeValueFields " + attribute.type, () => {
     const djangoContext = DjangoContext.getInstance();
     const attrName = "hoge";
     const attrValue = attribute.value;
     const attrType = djangoContext?.attrTypeValue[attribute.type];
     const wrapper = shallow(
-      <EditAttributeValue
+      <AttributeValueFields
         attrName={attrName}
         attrInfo={{
           id: 9999,
@@ -140,13 +140,13 @@ attributes.forEach((attribute) => {
 });
 
 arrayAttributes.forEach((arrayAttribute) => {
-  it("show EditAttributeValue " + arrayAttribute.type, () => {
+  it("show AttributeValueFields " + arrayAttribute.type, () => {
     const djangoContext = DjangoContext.getInstance();
     const attrName = "hoge";
     const attrValue = arrayAttribute.value;
     const attrType = djangoContext?.attrTypeValue[arrayAttribute.type];
     const wrapper = shallow(
-      <EditAttributeValue
+      <AttributeValueFields
         attrName={attrName}
         attrInfo={{
           id: 9999,
