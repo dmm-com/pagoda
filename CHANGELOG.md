@@ -8,6 +8,16 @@
 
 ### Fixed
 
+## v3.45.0
+
+### Added
+* Added django-environ library.
+  Contributed by @hinashi
+
+### Changed
+* Validate input entity data with Zod.
+  Contributed by @syucream
+
 ## v3.44.0
 
 ### Changed
