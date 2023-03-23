@@ -21,6 +21,10 @@ export type EditableEntryAttrValue = {
 
 export type EditableEntry = {
   name: string;
+  schema: {
+    id: number;
+    name: string;
+  };
   attrs: Record<string, EditableEntryAttrs>;
 };
 

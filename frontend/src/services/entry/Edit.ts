@@ -139,6 +139,10 @@ export function formalizeEntryInfo(
 ) {
   return {
     name: entry.name,
+    schema: {
+      id: entry.schema.id,
+      name: entry.schema.name,
+    },
     attrs: Object.fromEntries(
       entry.attrs
         .filter((attr) => !excludeAttrs.includes(attr.schema.name))
@@ -180,6 +184,10 @@ export function initializeEntryInfo(entity: EntityDetail) {
   // FIXME remove ts-ignore's, maybe we should refine server defined types
   return {
     name: "",
+    schema: {
+      id: entity.id,
+      name: entity.name,
+    },
     attrs: Object.fromEntries(
       entity.attrs.map((attr): [string, EditableEntryAttrs] => [
         attr?.name ?? "",
