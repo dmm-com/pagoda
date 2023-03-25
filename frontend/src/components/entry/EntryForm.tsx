@@ -17,9 +17,10 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { Dispatch, FC, SetStateAction, useEffect } from "react";
 import { Control, Controller } from "react-hook-form";
+import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { useLocation } from "react-router-dom";
 
-import { Schema } from "./EntryFormSchema";
+import { Schema } from "./entryForm/EntryFormSchema";
 
 import { AttributeValueFields } from "components/entry/entryForm/AttributeValueFields";
 import { DjangoContext } from "services/DjangoContext";
@@ -53,6 +54,7 @@ interface Props {
   setEntryInfo: Dispatch<Schema>;
   setIsAnchorLink: Dispatch<SetStateAction<boolean>>;
   control: Control<Schema>;
+  setValue: UseFormSetValue<Schema>;
 }
 
 export const EntryForm: FC<Props> = ({
@@ -60,16 +62,10 @@ export const EntryForm: FC<Props> = ({
   setEntryInfo,
   setIsAnchorLink,
   control,
+  setValue,
 }) => {
   const djangoContext = DjangoContext.getInstance();
   const location = useLocation();
-
-  const changeName = (name: string) => {
-    setEntryInfo({
-      ...entryInfo,
-      name: name,
-    });
-  };
 
   const changeAttributes = (attrs: Record<string, any>) => {
     setEntryInfo({
@@ -244,6 +240,7 @@ export const EntryForm: FC<Props> = ({
               <TableCell>
                 <AttributeValueFields
                   control={control}
+                  setValue={setValue}
                   attrName={attributeName}
                   attrInfo={entryInfo.attrs[attributeName]}
                   handleChangeAttribute={handleChangeAttribute}

@@ -6,7 +6,7 @@ import { render } from "@testing-library/react";
 import React, { FC } from "react";
 import { useForm } from "react-hook-form";
 
-import { Schema } from "./EntryFormSchema";
+import { Schema } from "./entryForm/EntryFormSchema";
 
 import { EntryForm } from "components/entry/EntryForm";
 import { TestWrapper } from "services/TestWrapper";
@@ -30,6 +30,7 @@ test("should render a component with essential props", function () {
         setEntryInfo={setEntryInfo}
         setIsAnchorLink={setIsAnchorLink}
         control={control}
+        setValue={setValue}
       />
     );
   };

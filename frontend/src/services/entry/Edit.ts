@@ -1,4 +1,4 @@
-import { Schema } from "../../components/entry/EntryFormSchema";
+import { Schema } from "../../components/entry/entryForm/EntryFormSchema";
 
 import {
   AttributeData,

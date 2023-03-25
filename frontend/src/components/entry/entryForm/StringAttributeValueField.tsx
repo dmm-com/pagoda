@@ -4,7 +4,7 @@ import { Box, IconButton, List, ListItem, TextField } from "@mui/material";
 import React, { FC } from "react";
 import { Control, useFieldArray, useWatch, Controller } from "react-hook-form";
 
-import { Schema } from "../EntryFormSchema";
+import { Schema } from "./EntryFormSchema";
 
 interface CommonProps {
   attrName: string;
@@ -93,7 +93,8 @@ export const ArrayStringAttributeValueField: FC<
 > = ({ attrName, attrType, isMandatory, multiline, control }) => {
   const { fields, insert, remove } = useFieldArray({
     control,
-    name: `attrs.${attrName}.value.asArrayString` as "attrs.${string}.value.asArrayObject",
+    // @ts-ignore
+    name: `attrs.${attrName}.value.asArrayString` as "attrs.${string}.value.asArrayString",
   });
 
   const handleClickAddListItem = (index: number) => {

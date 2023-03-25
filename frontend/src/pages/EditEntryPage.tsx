@@ -9,7 +9,7 @@ import { useAsync } from "react-use";
 
 import { Loading } from "../components/common/Loading";
 import { PageHeader } from "../components/common/PageHeader";
-import { Schema, schema } from "../components/entry/EntryFormSchema";
+import { Schema, schema } from "../components/entry/entryForm/EntryFormSchema";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { ExtractAPIErrorMessage } from "../services/AironeAPIErrorUtil";
 
@@ -114,7 +114,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
   };
 
   const handleSubmitOnValid = async (entry: Schema) => {
-    const updatedAttr = convertAttrsFormatCtoS(entryInfo?.attrs ?? {});
+    const updatedAttr = convertAttrsFormatCtoS(entry.attrs);
 
     if (willCreate) {
       try {
@@ -210,6 +210,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
           setEntryInfo={setEntryInfo}
           setIsAnchorLink={setIsAnchorLink}
           control={control}
+          setValue={setValue}
         />
       )}
 

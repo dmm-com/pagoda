@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import { schemaForType } from "../../services/ZodSchemaUtil";
+import { schemaForType } from "../../../services/ZodSchemaUtil";
 
-import { EditableEntry } from "./entryForm/EditableEntry";
+import { EditableEntry } from "./EditableEntry";
 
 // A schema that's compatible with existing types
 // TODO rethink it, e.g. consider to use union as a type of value
