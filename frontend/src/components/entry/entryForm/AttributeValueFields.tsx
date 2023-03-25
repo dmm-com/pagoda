@@ -2,10 +2,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   Box,
-  Checkbox,
   IconButton,
-  List,
-  ListItem,
   Typography,
   TextField,
   Autocomplete,
@@ -264,8 +261,6 @@ export const AttributeValueFields: FC<Props> = ({
   attrName,
   attrInfo,
   handleChangeAttribute,
-  handleClickDeleteListItem,
-  handleClickAddListItem,
   control,
   setValue,
 }) => {
@@ -415,86 +410,15 @@ export const AttributeValueFields: FC<Props> = ({
         />
       );
 
-    // FIXME support by RHF
     case djangoContext?.attrTypeValue.array_named_object_boolean:
       return (
-        <Box>
-          <List>
-            {(
-              attrInfo.value.asArrayNamedObject as {
-                [key: string]: Pick<
-                  EntryAttributeValueObject,
-                  "id" | "name"
-                > & {
-                  boolean?: boolean;
-                };
-              }[]
-            ).map((info, n) => {
-              const key = info ? Object.keys(info)[0] : "";
-              return (
-                <ListItem key={n}>
-                  <Box display="flex" alignItems="flex-end">
-                    <Box display="flex" flexDirection="column">
-                      <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
-                        name
-                      </Typography>
-                      <Box width="260px">
-                        <TextField
-                          variant="standard"
-                          value={key}
-                          onChange={(e) =>
-                            handleChangeAttribute(
-                              attrName,
-                              djangoContext?.attrTypeValue.array_named_object,
-                              {
-                                index: n,
-                                key: e.target.value,
-                                ...info[key],
-                              }
-                            )
-                          }
-                          error={attrInfo.isMandatory && !key && !info[key]}
-                        />
-                      </Box>
-                    </Box>
-                    <Box
-                      display="flex"
-                      flexDirection="column"
-                      width="60px"
-                      mr="16px"
-                    >
-                      <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
-                        使用不可
-                      </Typography>
-                      <Checkbox
-                        checked={info[key]?.boolean ?? false}
-                        onChange={(e) =>
-                          handleChangeAttribute(attrName, attrInfo.type, {
-                            index: n,
-                            checked: e.target.checked,
-                          })
-                        }
-                      />
-                    </Box>
-                    <ElemReferral
-                      schemaId={attrInfo.schema.id}
-                      attrName={attrName}
-                      // @ts-ignore
-                      attrValue={info[key]?.id ? info[key] : undefined}
-                      attrType={djangoContext?.attrTypeValue.array_named_object}
-                      isMandatory={attrInfo.isMandatory && !key}
-                      index={n}
-                      disabled={attrInfo.value.asArrayNamedObject?.length == 1}
-                      handleChange={handleChangeAttribute}
-                      handleClickDeleteListItem={handleClickDeleteListItem}
-                      handleClickAddListItem={handleClickAddListItem}
-                    />
-                  </Box>
-                </ListItem>
-              );
-            })}
-          </List>
-        </Box>
+        <ArrayNamedObjectAttributeValueField
+          attrName={attrName}
+          schemaId={attrInfo.schema.id}
+          control={control}
+          setValue={setValue}
+          withBoolean
+        />
       );
 
     default:
