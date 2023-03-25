@@ -4,11 +4,13 @@ import {
   Autocomplete,
   Box,
   IconButton,
+  List,
+  ListItem,
   TextField,
   Typography,
 } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Control, Controller, useWatch } from "react-hook-form";
+import { Control, Controller, useFieldArray, useWatch } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { useAsync } from "react-use";
 
@@ -47,6 +49,9 @@ export const ObjectAttributeValueField: FC<
 }) => {
   // TODO give it via props explicitly???
   const fieldSuffix = (() => {
+    if (objectName != null && index != null) {
+      return `asArrayNamedObject.${index}.${objectName}`;
+    }
     if (objectName != null) {
       return `asNamedObject.${objectName}`;
     }
@@ -162,7 +167,6 @@ export const NamedObjectAttributeValueField: FC<
     disabled?: boolean;
   }
 > = ({
-  multiple,
   attrName,
   schemaId,
   index,
@@ -174,13 +178,18 @@ export const NamedObjectAttributeValueField: FC<
 }) => {
   const value = useWatch({
     control,
-    name: `attrs.${attrName}.value.asNamedObject`,
+    name:
+      index != null
+        ? `attrs.${attrName}.value.asArrayNamedObject.${index}`
+        : `attrs.${attrName}.value.asNamedObject`,
   });
   const objectName = Object.keys(value ?? {})[0] ?? "";
 
   const handleChangeObjectName = (newName: string) => {
     setValue(
-      `attrs.${attrName}.value.asNamedObject`,
+      index != null
+        ? `attrs.${attrName}.value.asArrayNamedObject.${index}`
+        : `attrs.${attrName}.value.asNamedObject`,
       {
         // FIXME update zod schema to allow undefined
         [newName]: value?.[objectName] ?? undefined,
@@ -212,7 +221,51 @@ export const NamedObjectAttributeValueField: FC<
         control={control}
         setValue={setValue}
         objectName={objectName}
+        index={index}
+        handleClickAddListItem={handleClickAddListItem}
+        handleClickDeleteListItem={handleClickDeleteListItem}
       />
+    </Box>
+  );
+};
+
+export const ArrayNamedObjectAttributeValueField: FC<
+  CommonProps & {
+    disabled?: boolean;
+  }
+> = ({ attrName, schemaId, control, setValue }) => {
+  const { fields, insert, remove } = useFieldArray({
+    control,
+    name: `attrs.${attrName}.value.asArrayNamedObject`,
+  });
+
+  const handleClickAddListItem = (index: number) => {
+    insert(index + 1, {});
+  };
+
+  const handleClickDeleteListItem = (index: number) => {
+    remove(index);
+    fields.length === 1 && handleClickAddListItem(0);
+  };
+
+  // FIXME disableToAppend
+  return (
+    <Box>
+      <List>
+        {fields.map((field, index) => (
+          <ListItem key={field.id}>
+            <NamedObjectAttributeValueField
+              control={control}
+              setValue={setValue}
+              attrName={attrName}
+              schemaId={schemaId}
+              index={index}
+              handleClickDeleteListItem={handleClickDeleteListItem}
+              handleClickAddListItem={handleClickAddListItem}
+            />
+          </ListItem>
+        ))}
+      </List>
     </Box>
   );
 };

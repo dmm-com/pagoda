@@ -24,6 +24,7 @@ import { DateAttributeValueField } from "./DateAttributeValueField";
 import { EditableEntryAttrs } from "./EditableEntry";
 import { Schema } from "./EntryFormSchema";
 import {
+  ArrayNamedObjectAttributeValueField,
   NamedObjectAttributeValueField,
   ObjectAttributeValueField,
 } from "./ObjectAttributeValueField";
@@ -237,73 +238,6 @@ const ElemReferral: FC<
   );
 };
 
-const ElemNamedObject: FC<
-  CommonProps & {
-    attrValue?: { [key: string]: EntryAttributeValueObject };
-    schemaId: number;
-    disabled?: boolean;
-    handleClickDeleteListItem?: (
-      attrName: string,
-      attrType: number,
-      index?: number
-    ) => void;
-    handleClickAddListItem?: (
-      attrName: string,
-      attrType: number,
-      index: number
-    ) => void;
-  }
-> = ({
-  attrName,
-  attrValue,
-  attrType,
-  isMandatory,
-  schemaId,
-  index,
-  disabled,
-  handleChange,
-  handleClickDeleteListItem,
-  handleClickAddListItem,
-}) => {
-  const key = attrValue ? Object.keys(attrValue)[0] : "";
-  return (
-    <Box display="flex" alignItems="flex-end">
-      <Box display="flex" flexDirection="column">
-        <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
-          name
-        </Typography>
-        <Box width="280px" mr="32px">
-          <TextField
-            variant="standard"
-            value={key}
-            onChange={(e) =>
-              handleChange(attrName, attrType, {
-                index: index,
-                key: e.target.value,
-                ...(attrValue?.[key] ?? {}),
-              })
-            }
-            error={isMandatory && !key && attrValue != null && !attrValue[key]}
-          />
-        </Box>
-      </Box>
-      <ElemReferral
-        schemaId={schemaId}
-        attrName={attrName}
-        // @ts-ignore
-        attrValue={attrValue ? attrValue[key] : undefined}
-        attrType={attrType}
-        isMandatory={isMandatory && !key}
-        index={index}
-        disabled={disabled}
-        handleChange={handleChange}
-        handleClickDeleteListItem={handleClickDeleteListItem}
-        handleClickAddListItem={handleClickAddListItem}
-      />
-    </Box>
-  );
-};
-
 interface Props {
   attrName: string;
   attrInfo: EditableEntryAttrs;
@@ -473,33 +407,15 @@ export const AttributeValueFields: FC<Props> = ({
 
     case djangoContext?.attrTypeValue.array_named_object:
       return (
-        <Box>
-          <List>
-            {attrInfo.value.asArrayNamedObject?.map((info, n) => (
-              <ListItem key={n}>
-                <ElemNamedObject
-                  attrName={attrName}
-                  attrValue={info}
-                  attrType={attrInfo.type}
-                  isMandatory={attrInfo.isMandatory}
-                  schemaId={attrInfo.schema.id}
-                  index={n}
-                  disabled={
-                    attrInfo.value.asArrayNamedObject?.length == 1 &&
-                    Object.entries(info).filter(
-                      ([k, v]) => k === "" && v == null
-                    ).length === 1
-                  }
-                  handleChange={handleChangeAttribute}
-                  handleClickDeleteListItem={handleClickDeleteListItem}
-                  handleClickAddListItem={handleClickAddListItem}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Box>
+        <ArrayNamedObjectAttributeValueField
+          attrName={attrName}
+          schemaId={attrInfo.schema.id}
+          control={control}
+          setValue={setValue}
+        />
       );
 
+    // FIXME support by RHF
     case djangoContext?.attrTypeValue.array_named_object_boolean:
       return (
         <Box>

@@ -94,7 +94,7 @@ export const ArrayStringAttributeValueField: FC<
   const { fields, insert, remove } = useFieldArray({
     control,
     // @ts-ignore
-    name: `attrs.${attrName}.value.asArrayString` as "attrs.${string}.value.asArrayString",
+    name: `attrs.${attrName}.value.asArrayString`,
   });
 
   const handleClickAddListItem = (index: number) => {
