@@ -20,6 +20,7 @@ import { BooleanAttributeValueField } from "./BooleanAttributeValueField";
 import { DateAttributeValueField } from "./DateAttributeValueField";
 import { EditableEntryAttrs } from "./EditableEntry";
 import { Schema } from "./EntryFormSchema";
+import { GroupAttributeValueField } from "./GroupAttributeValueField";
 import {
   ArrayNamedObjectAttributeValueField,
   NamedObjectAttributeValueField,
@@ -319,14 +320,10 @@ export const AttributeValueFields: FC<Props> = ({
 
     case djangoContext?.attrTypeValue.group:
       return (
-        <ElemReferral
+        <GroupAttributeValueField
           attrName={attrName}
-          // @ts-ignore
-          attrValue={attrInfo.value.asGroup}
-          attrType={attrInfo.type}
-          isMandatory={attrInfo.isMandatory}
-          schemaId={attrInfo.schema.id}
-          handleChange={handleChangeAttribute}
+          control={control}
+          setValue={setValue}
         />
       );
 
