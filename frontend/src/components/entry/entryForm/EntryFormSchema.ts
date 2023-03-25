@@ -29,10 +29,6 @@ export const schema = schemaForType<EditableEntry>()(
               .object({
                 id: z.number(),
                 name: z.string(),
-                schema: z.object({
-                  id: z.number(),
-                  name: z.string(),
-                }),
                 _boolean: z.boolean().default(false),
               })
               .optional(),
@@ -41,10 +37,6 @@ export const schema = schemaForType<EditableEntry>()(
                 z.object({
                   id: z.number(),
                   name: z.string(),
-                  schema: z.object({
-                    id: z.number(),
-                    name: z.string(),
-                  }),
                   _boolean: z.boolean().default(false),
                 })
               )
@@ -55,10 +47,6 @@ export const schema = schemaForType<EditableEntry>()(
                 z.object({
                   id: z.number(),
                   name: z.string(),
-                  schema: z.object({
-                    id: z.number(),
-                    name: z.string(),
-                  }),
                   _boolean: z.boolean().default(false),
                 })
               )
@@ -70,10 +58,6 @@ export const schema = schemaForType<EditableEntry>()(
                   z.object({
                     id: z.number(),
                     name: z.string(),
-                    schema: z.object({
-                      id: z.number(),
-                      name: z.string(),
-                    }),
                     _boolean: z.boolean().default(false),
                   })
                 )

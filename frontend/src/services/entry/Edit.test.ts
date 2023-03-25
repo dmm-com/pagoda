@@ -100,10 +100,6 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
         asObject: {
           id: 1,
           name: "test_object",
-          schema: {
-            id: 1,
-            name: "test_schema",
-          },
           _boolean: false,
         },
       },
@@ -126,10 +122,6 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
           hoge: {
             id: 1,
             name: "test_object",
-            schema: {
-              id: 1,
-              name: "test_schema",
-            },
             _boolean: false,
           },
         },
@@ -150,10 +142,6 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
           {
             id: 1,
             name: "test_object",
-            schema: {
-              id: 1,
-              name: "test_schema",
-            },
             _boolean: false,
           },
         ],
@@ -180,10 +168,6 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
             name1: {
               id: 1,
               name: "test_object",
-              schema: {
-                id: 1,
-                name: "test_schema",
-              },
               _boolean: false,
             },
           },
@@ -241,10 +225,6 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
           "": {
             id: 1,
             name: "test_object",
-            schema: {
-              id: 1,
-              name: "test_schema",
-            },
             _boolean: false,
           },
         },
@@ -297,10 +277,6 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
             "": {
               id: 1,
               name: "test_object",
-              schema: {
-                id: 1,
-                name: "test_schema",
-              },
               _boolean: false,
             },
           },
@@ -375,10 +351,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
           asObject: {
             id: 3,
             name: "test_object",
-            schema: {
-              id: 2,
-              name: "test_schema",
-            },
             _boolean: false,
           },
         },
@@ -407,10 +379,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
             hoge: {
               id: 2,
               name: "test_object",
-              schema: {
-                id: 3,
-                name: "test_schema",
-              },
               _boolean: false,
             },
           },
@@ -440,10 +408,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
             {
               id: 2,
               name: "test_object",
-              schema: {
-                id: 3,
-                name: "test_schema",
-              },
               _boolean: false,
             },
           ],
@@ -476,10 +440,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
               name1: {
                 id: 2,
                 name: "test_object",
-                schema: {
-                  id: 3,
-                  name: "test_schema",
-                },
                 _boolean: false,
               },
             },

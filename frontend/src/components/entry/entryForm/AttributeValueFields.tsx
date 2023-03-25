@@ -424,7 +424,7 @@ export const AttributeValueFields: FC<Props> = ({
               attrInfo.value.asArrayNamedObject as {
                 [key: string]: Pick<
                   EntryAttributeValueObject,
-                  "id" | "name" | "schema"
+                  "id" | "name"
                 > & {
                   boolean?: boolean;
                 };

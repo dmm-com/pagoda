@@ -11,11 +11,12 @@ import {
   EditableEntry,
   EditableEntryAttrs,
   EditableEntryAttrValue,
+  EditableEntryAttrValueObject,
 } from "components/entry/entryForm/EditableEntry";
 import { DjangoContext } from "services/DjangoContext";
 
 interface asArrayNamedObjectBoolean {
-  [key: string]: EntryAttributeValueObject & {
+  [key: string]: EditableEntryAttrValueObject & {
     boolean: boolean;
   };
 }
@@ -334,10 +335,7 @@ export function convertAttrsFormatCtoS(
           id: attrValue.schema.id,
           value: (
             attrValue.value.asArrayNamedObject as {
-              [key: string]: Pick<
-                EntryAttributeValueObject,
-                "id" | "name" | "schema"
-              > & {
+              [key: string]: Pick<EntryAttributeValueObject, "id" | "name"> & {
                 boolean?: boolean;
               };
             }[]
