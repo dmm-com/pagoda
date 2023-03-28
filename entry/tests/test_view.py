@@ -5219,7 +5219,14 @@ class ViewTest(AironeViewTest):
             entity = self.create_entity(
                 user,
                 "Test Another Entity %d" % index,
-                attrs=[{"name": "attr", "type": AttrTypeValue["string"], "is_public": False, "default_permission": acltype.id}],
+                attrs=[
+                    {
+                        "name": "attr",
+                        "type": AttrTypeValue["string"],
+                        "is_public": False,
+                        "default_permission": acltype.id,
+                    }
+                ],
                 is_public=True,
                 default_permission=acltype.id,
             )

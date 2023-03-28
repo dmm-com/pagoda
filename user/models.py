@@ -98,12 +98,10 @@ class User(AbstractUser):
             return False
 
         # Check all superior object's permission if object is Attribute
-        if (
-            isinstance(target_obj, import_module("entry.models").Attribute)
-        ) and (
-            not self.has_permission(target_obj.schema, permission_level) or
-            not self.has_permission(target_obj.schema.parent_entity, permission_level) or
-            not self.has_permission(target_obj.parent_entry, permission_level)
+        if (isinstance(target_obj, import_module("entry.models").Attribute)) and (
+            not self.has_permission(target_obj.schema, permission_level)
+            or not self.has_permission(target_obj.schema.parent_entity, permission_level)
+            or not self.has_permission(target_obj.parent_entry, permission_level)
         ):
             return False
 

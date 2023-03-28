@@ -84,7 +84,8 @@ class AironeTestCase(TestCase):
           - type : indicates type of creating EntityAttr [string by default]
           - is_mandatory : same parameter of EntityAttr [False by default]
           - is_public: same parameter of creating EntityAttr [True by default]
-          - default_permission: same parameter of creating EntityAttr [ACLType.Nothing.id by default]
+          - default_permission: same parameter of creating EntityAttr
+                                [ACLType.Nothing.id by default]
           - ref : Entity that Entry can refer to
         """
 
