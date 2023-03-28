@@ -88,7 +88,6 @@ class User(AbstractUser):
         # doesn't permit, access to the children's objects are also not permitted.
         if (
             isinstance(target_obj, import_module("entry.models").Entry)
-            or isinstance(target_obj, import_module("entry.models").Attribute)
         ) and not self.has_permission(target_obj.schema, permission_level):
             return False
 
@@ -96,6 +95,16 @@ class User(AbstractUser):
         if (
             isinstance(target_obj, import_module("entity.models").EntityAttr)
         ) and not self.has_permission(target_obj.parent_entity, permission_level):
+            return False
+
+        # Check all superior object's permission if object is Attribute
+        if (
+            isinstance(target_obj, import_module("entry.models").Attribute)
+        ) and (
+            not self.has_permission(target_obj.schema, permission_level) or
+            not self.has_permission(target_obj.schema.parent_entity, permission_level) or
+            not self.has_permission(target_obj.parent_entry, permission_level)
+        ):
             return False
 
         # This check processing must be set after checking superior data structure's check
