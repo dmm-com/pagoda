@@ -6,6 +6,7 @@ from django.conf import settings
 from django.test import Client, TestCase, override_settings
 from pytz import timezone
 
+from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
@@ -63,7 +64,15 @@ class AironeTestCase(TestCase):
 
         self._settings.disable()
 
-    def create_entity(self, user, name, attrs=[], webhooks=[], is_public=True):
+    def create_entity(
+        self,
+        user,
+        name,
+        attrs=[],
+        webhooks=[],
+        is_public=True,
+        default_permission=ACLType.Nothing.id,
+    ):
         """
         This is a helper method to create Entity for test. This method has following parameters.
         * user      : describes user instance which will be registered on creating Entity
@@ -74,10 +83,15 @@ class AironeTestCase(TestCase):
           - name : indicates name of creating EntityAttr
           - type : indicates type of creating EntityAttr [string by default]
           - is_mandatory : same parameter of EntityAttr [False by default]
+          - is_public: same parameter of creating EntityAttr [True by default]
+          - default_permission: same parameter of creating EntityAttr
+                                [ACLType.Nothing.id by default]
           - ref : Entity that Entry can refer to
         """
 
-        entity: Entity = Entity.objects.create(name=name, created_user=user, is_public=is_public)
+        entity: Entity = Entity.objects.create(
+            name=name, created_user=user, is_public=is_public, default_permission=default_permission
+        )
         for index, attr_info in enumerate(attrs):
             entity_attr: EntityAttr = EntityAttr.objects.create(
                 **{
@@ -85,6 +99,8 @@ class AironeTestCase(TestCase):
                     "name": attr_info["name"],
                     "type": attr_info.get("type", AttrTypeValue["string"]),
                     "is_mandatory": attr_info.get("is_mandatory", False),
+                    "is_public": attr_info.get("is_public", True),
+                    "default_permission": attr_info.get("default_permission", ACLType.Nothing.id),
                     "parent_entity": entity,
                     "created_user": user,
                 }
