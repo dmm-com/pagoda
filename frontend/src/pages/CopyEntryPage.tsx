@@ -1,4 +1,4 @@
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 import { Prompt, useHistory } from "react-router-dom";
@@ -11,9 +11,9 @@ import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
-import { 
+import {
   CopyForm as DefaultCopyForm,
-  CopyFormProps
+  CopyFormProps,
 } from "components/entry/CopyForm";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 
@@ -21,9 +21,7 @@ interface Props {
   CopyForm?: FC<CopyFormProps>;
 }
 
-export const CopyEntryPage: FC<Props> = ({
-  CopyForm = DefaultCopyForm,
-}) => {
+export const CopyEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { entityId, entryId } =
@@ -88,7 +86,11 @@ export const CopyEntryPage: FC<Props> = ({
 
       <Container>
         {entry.value && (
-          <CopyForm entries={entries} setEntries={setEntries} template_entry={entry.value} />
+          <CopyForm
+            entries={entries}
+            setEntries={setEntries}
+            template_entry={entry.value}
+          />
         )}
       </Container>
 
