@@ -11,10 +11,19 @@ import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
-import { CopyForm } from "components/entry/CopyForm";
+import { 
+  CopyForm as DefaultCopyForm,
+  CopyFormProps
+} from "components/entry/CopyForm";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 
-export const CopyEntryPage: FC = () => {
+interface Props {
+  CopyForm?: FC<CopyFormProps>;
+}
+
+export const CopyEntryPage: FC<Props> = ({
+  CopyForm = DefaultCopyForm,
+}) => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { entityId, entryId } =
@@ -78,12 +87,9 @@ export const CopyEntryPage: FC = () => {
       </PageHeader>
 
       <Container>
-        <Typography>
-          {"入力した各行ごとに " +
-            entry.value?.name.substring(0, 50) +
-            " と同じ属性を持つ別のエントリを作成"}
-        </Typography>
-        <CopyForm entries={entries} setEntries={setEntries} />
+        {entry.value && (
+          <CopyForm entries={entries} setEntries={setEntries} template_entry={entry.value} />
+        )}
       </Container>
 
       <Prompt
