@@ -7,6 +7,10 @@
 ### Changed
 
 ### Fixed
+
+## v3.46.0
+
+### Fixed
 * Fixed a bug to be able to edit Entry, Attribute and EntityAttr's ACL without Full permission
   Contributed by @userlocalhost
 
