@@ -68,7 +68,6 @@ export const GroupAttributeValueField: FC<Props> = ({
               options={groups.value ?? []}
               value={field.value ?? null}
               handleChange={handleChange}
-              setKeyword={() => {}}
             />
           )}
         />

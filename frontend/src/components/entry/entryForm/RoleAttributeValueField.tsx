@@ -68,7 +68,6 @@ export const RoleAttributeValueField: FC<Props> = ({
               options={roles.value ?? []}
               value={field.value ?? null}
               handleChange={handleChange}
-              setKeyword={() => {}}
             />
           )}
         />

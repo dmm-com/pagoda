@@ -5,7 +5,7 @@ interface Props<T extends { id: number; name: string }> {
   options: T[];
   value: T | T[] | null;
   handleChange: (value: T | T[] | null) => void;
-  setKeyword: (value: string) => void;
+  setKeyword?: (value: string) => void;
   multiple?: boolean;
   error?: { message?: string };
 }
@@ -44,7 +44,7 @@ export const ReferralLikeAutocomplete = <
       onChange={(_e, value) => _handleChange(value)}
       onInputChange={(e, value) =>
         // To run only if the user changes
-        e != null && setKeyword(value)
+        e != null && setKeyword != null && setKeyword(value)
       }
       renderInput={(params) => (
         <TextField
