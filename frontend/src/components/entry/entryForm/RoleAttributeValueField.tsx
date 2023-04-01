@@ -16,16 +16,16 @@ interface Props {
   multiple?: boolean;
 }
 
-export const GroupAttributeValueField: FC<Props> = ({
+export const RoleAttributeValueField: FC<Props> = ({
   multiple,
   attrName,
   control,
   setValue,
 }) => {
-  const groups = useAsync(async () => {
-    const _groups = await aironeApiClientV2.getGroups();
+  const roles = useAsync(async () => {
+    const _roles = await aironeApiClientV2.getRoles();
     // FIXME inject current values
-    return _groups.map((g) => ({ id: g.id, name: g.name }));
+    return _roles.map((g) => ({ id: g.id, name: g.name }));
   }, []);
 
   const handleChange = (
@@ -35,7 +35,7 @@ export const GroupAttributeValueField: FC<Props> = ({
       if (value != null && !Array.isArray(value)) {
         throw new Error("value must be an array");
       }
-      setValue(`attrs.${attrName}.value.asArrayGroup`, value, {
+      setValue(`attrs.${attrName}.value.asArrayRole`, value, {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -43,7 +43,7 @@ export const GroupAttributeValueField: FC<Props> = ({
       if (value != null && Array.isArray(value)) {
         throw new Error("value must not be an array");
       }
-      setValue(`attrs.${attrName}.value.asGroup`, value, {
+      setValue(`attrs.${attrName}.value.asRole`, value, {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -53,20 +53,20 @@ export const GroupAttributeValueField: FC<Props> = ({
   return (
     <Box>
       <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
-        グループを選択
+        ロールを選択
       </Typography>
       <Box display="flex" alignItems="center">
         <Controller
           name={
             multiple === true
-              ? `attrs.${attrName}.value.asArrayGroup`
-              : `attrs.${attrName}.value.asGroup`
+              ? `attrs.${attrName}.value.asArrayRole`
+              : `attrs.${attrName}.value.asRole`
           }
           control={control}
           render={({ field, fieldState: { error } }) => (
             <ReferralLikeAutocomplete
               multiple={multiple}
-              options={groups.value ?? []}
+              options={roles.value ?? []}
               value={field.value ?? null}
               handleChange={handleChange}
               setKeyword={() => {}}

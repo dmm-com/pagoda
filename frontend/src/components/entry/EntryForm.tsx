@@ -243,9 +243,6 @@ export const EntryForm: FC<Props> = ({
                   setValue={setValue}
                   attrName={attributeName}
                   attrInfo={entryInfo.attrs[attributeName]}
-                  handleChangeAttribute={handleChangeAttribute}
-                  handleClickDeleteListItem={handleClickDeleteListItem}
-                  handleClickAddListItem={handleClickAddListItem}
                 />
               </TableCell>
             </TableRow>
