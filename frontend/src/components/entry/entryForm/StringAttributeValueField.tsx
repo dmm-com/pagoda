@@ -8,9 +8,6 @@ import { Schema } from "./EntryFormSchema";
 
 interface CommonProps {
   attrName: string;
-  // TODO remove it?
-  attrType: number;
-  isMandatory: boolean;
   index?: number;
 }
 
@@ -23,8 +20,6 @@ export const StringAttributeValueField: FC<
   }
 > = ({
   attrName,
-  // FIXME should use it
-  isMandatory,
   index,
   handleClickDeleteListItem,
   handleClickAddListItem,
@@ -59,6 +54,7 @@ export const StringAttributeValueField: FC<
             helperText={error?.message}
             fullWidth
             multiline={multiline}
+            minRows={multiline === true ? 10 : 1}
           />
         )}
       />
@@ -90,7 +86,7 @@ export const ArrayStringAttributeValueField: FC<
     multiline?: boolean;
     control: Control<Schema>;
   }
-> = ({ attrName, attrType, isMandatory, multiline, control }) => {
+> = ({ attrName, multiline, control }) => {
   const { fields, insert, remove } = useFieldArray({
     control,
     // @ts-ignore
@@ -116,8 +112,6 @@ export const ArrayStringAttributeValueField: FC<
             <StringAttributeValueField
               control={control}
               attrName={attrName}
-              attrType={attrType}
-              isMandatory={isMandatory}
               index={index}
               handleClickDeleteListItem={handleClickDeleteListItem}
               handleClickAddListItem={handleClickAddListItem}

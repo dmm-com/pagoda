@@ -6,7 +6,6 @@ import { Schema } from "./EntryFormSchema";
 
 interface Props {
   attrName: string;
-  isMandatory: boolean;
   control: Control<Schema>;
 }
 

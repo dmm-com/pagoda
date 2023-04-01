@@ -38,12 +38,7 @@ export const AttributeValueField: FC<Props> = ({
   switch (attrInfo.type) {
     case djangoContext?.attrTypeValue.string:
       return (
-        <StringAttributeValueField
-          control={control}
-          attrName={attrName}
-          attrType={attrInfo.type}
-          isMandatory={attrInfo.isMandatory}
-        />
+        <StringAttributeValueField control={control} attrName={attrName} />
       );
 
     case djangoContext?.attrTypeValue.text:
@@ -51,8 +46,6 @@ export const AttributeValueField: FC<Props> = ({
         <StringAttributeValueField
           control={control}
           attrName={attrName}
-          attrType={attrInfo.type}
-          isMandatory={attrInfo.isMandatory}
           multiline
         />
       );
@@ -61,7 +54,6 @@ export const AttributeValueField: FC<Props> = ({
       return (
         <DateAttributeValueField
           attrName={attrName}
-          isMandatory={attrInfo.isMandatory}
           control={control}
           setValue={setValue}
         />
@@ -69,11 +61,7 @@ export const AttributeValueField: FC<Props> = ({
 
     case djangoContext?.attrTypeValue.boolean:
       return (
-        <BooleanAttributeValueField
-          attrName={attrName}
-          isMandatory={attrInfo.isMandatory}
-          control={control}
-        />
+        <BooleanAttributeValueField attrName={attrName} control={control} />
       );
 
     case djangoContext?.attrTypeValue.object:
@@ -147,12 +135,7 @@ export const AttributeValueField: FC<Props> = ({
 
     case djangoContext?.attrTypeValue.array_string:
       return (
-        <ArrayStringAttributeValueField
-          control={control}
-          attrName={attrName}
-          attrType={attrInfo.type}
-          isMandatory={attrInfo.isMandatory}
-        />
+        <ArrayStringAttributeValueField control={control} attrName={attrName} />
       );
 
     case djangoContext?.attrTypeValue.array_named_object:
