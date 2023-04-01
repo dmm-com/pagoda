@@ -7,12 +7,8 @@ import React from "react";
 
 import { DjangoContext } from "../../../services/DjangoContext";
 
-import { AttributeValueFields } from "./AttributeValueFields";
+import { AttributeValueField } from "./AttributeValueField";
 import { EditableEntryAttrValue } from "./EditableEntry";
-
-const mockHandleChangeAttribute = () => undefined;
-const mockHandleClickDeleteListItem = () => undefined;
-const mockHandleClickAddListItem = () => undefined;
 
 beforeAll(() => {
   Object.defineProperty(window, "django_context", {
@@ -106,13 +102,13 @@ const arrayAttributes = [
 ];
 
 attributes.forEach((attribute) => {
-  it("show AttributeValueFields " + attribute.type, () => {
+  it("show AttributeValueField " + attribute.type, () => {
     const djangoContext = DjangoContext.getInstance();
     const attrName = "hoge";
     const attrValue = attribute.value;
     const attrType = djangoContext?.attrTypeValue[attribute.type];
     const wrapper = shallow(
-      <AttributeValueFields
+      <AttributeValueField
         attrName={attrName}
         attrInfo={{
           id: 9999,
@@ -124,9 +120,6 @@ attributes.forEach((attribute) => {
             name: "hoge",
           },
         }}
-        handleChangeAttribute={mockHandleChangeAttribute}
-        handleClickDeleteListItem={mockHandleClickDeleteListItem}
-        handleClickAddListItem={mockHandleClickAddListItem}
       />
     );
 
@@ -140,13 +133,13 @@ attributes.forEach((attribute) => {
 });
 
 arrayAttributes.forEach((arrayAttribute) => {
-  it("show AttributeValueFields " + arrayAttribute.type, () => {
+  it("show AttributeValueField " + arrayAttribute.type, () => {
     const djangoContext = DjangoContext.getInstance();
     const attrName = "hoge";
     const attrValue = arrayAttribute.value;
     const attrType = djangoContext?.attrTypeValue[arrayAttribute.type];
     const wrapper = shallow(
-      <AttributeValueFields
+      <AttributeValueField
         attrName={attrName}
         attrInfo={{
           id: 9999,
@@ -158,9 +151,6 @@ arrayAttributes.forEach((arrayAttribute) => {
             name: "hoge",
           },
         }}
-        handleChangeAttribute={mockHandleChangeAttribute}
-        handleClickDeleteListItem={mockHandleClickDeleteListItem}
-        handleClickAddListItem={mockHandleClickAddListItem}
       />
     );
 

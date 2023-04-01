@@ -22,9 +22,7 @@ import { useLocation } from "react-router-dom";
 
 import { Schema } from "./entryForm/EntryFormSchema";
 
-import { AttributeValueFields } from "components/entry/entryForm/AttributeValueFields";
-import { DjangoContext } from "services/DjangoContext";
-import { updateEntryInfoValueFromValueInfo } from "services/entry/Edit";
+import { AttributeValueField } from "components/entry/entryForm/AttributeValueField";
 
 const AnchorLinkButton = styled(Button)(({}) => ({
   border: "0.5px solid gray",
@@ -51,7 +49,6 @@ const RequiredLabel = styled(Typography)(({}) => ({
 
 interface Props {
   entryInfo: Schema;
-  setEntryInfo: Dispatch<Schema>;
   setIsAnchorLink: Dispatch<SetStateAction<boolean>>;
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
@@ -59,97 +56,11 @@ interface Props {
 
 export const EntryForm: FC<Props> = ({
   entryInfo,
-  setEntryInfo,
   setIsAnchorLink,
   control,
   setValue,
 }) => {
-  const djangoContext = DjangoContext.getInstance();
   const location = useLocation();
-
-  const changeAttributes = (attrs: Record<string, any>) => {
-    setEntryInfo({
-      ...entryInfo,
-      attrs: attrs,
-    });
-  };
-
-  const handleChangeAttribute = (
-    attrName: string,
-    attrType: number,
-    valueInfo: any
-  ) => {
-    updateEntryInfoValueFromValueInfo(
-      entryInfo.attrs[attrName].value,
-      attrType,
-      valueInfo
-    );
-
-    // Update entryInfo.attrs value depends on the changing values
-    changeAttributes({ ...entryInfo.attrs });
-  };
-
-  const handleClickAddListItem = (
-    attrName: string,
-    attrType: number,
-    index: number
-  ) => {
-    switch (attrType) {
-      case djangoContext?.attrTypeValue.array_string:
-        entryInfo.attrs[attrName].value.asArrayString?.splice(index + 1, 0, "");
-        break;
-      case djangoContext?.attrTypeValue.array_named_object:
-        entryInfo.attrs[attrName].value.asArrayNamedObject?.splice(
-          index + 1,
-          0,
-          // @ts-ignore
-          { "": null }
-        );
-        break;
-      default:
-        throw new Error(`${attrType} is not array-like type`);
-    }
-    changeAttributes({ ...entryInfo.attrs });
-  };
-
-  const handleClickDeleteListItem = (
-    attrName: string,
-    attrType: number,
-    index?: number
-  ) => {
-    if (index !== undefined) {
-      switch (attrType) {
-        case djangoContext?.attrTypeValue.array_string:
-          entryInfo.attrs[attrName].value.asArrayString?.splice(index, 1);
-          // auto-fill an empty element
-          if (entryInfo.attrs[attrName].value.asArrayString?.length === 0) {
-            entryInfo.attrs[attrName].value.asArrayString?.splice(
-              index + 1,
-              0,
-              ""
-            );
-          }
-          break;
-        case djangoContext?.attrTypeValue.array_named_object:
-          entryInfo.attrs[attrName].value.asArrayNamedObject?.splice(index, 1);
-          // auto-fill an empty element
-          if (
-            entryInfo.attrs[attrName].value.asArrayNamedObject?.length === 0
-          ) {
-            entryInfo.attrs[attrName].value.asArrayNamedObject?.splice(
-              index + 1,
-              0,
-              // @ts-ignore
-              { "": null }
-            );
-          }
-          break;
-        default:
-          throw new Error(`${attrType} is not array-like type`);
-      }
-      changeAttributes({ ...entryInfo.attrs });
-    }
-  };
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -238,7 +149,7 @@ export const EntryForm: FC<Props> = ({
                 </Box>
               </TableCell>
               <TableCell>
-                <AttributeValueFields
+                <AttributeValueField
                   control={control}
                   setValue={setValue}
                   attrName={attributeName}

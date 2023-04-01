@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { Dispatch, FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
@@ -23,7 +23,6 @@ import {
   convertAttrsFormatCtoS,
   formalizeEntryInfo,
   initializeEntryInfo,
-  isSubmittable,
 } from "services/entry/Edit";
 
 interface Props {
@@ -40,10 +39,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const [entryInfo, _setEntryInfo] = useState<Schema>();
-  const [submittable, setSubmittable] = useState<boolean>(false); // FIXME
-  const [submitted, setSubmitted] = useState<boolean>(false);
-  const [edited, setEdited] = useState<boolean>(false);
+  const [entryInfo, setEntryInfo] = useState<Schema>();
   const [isAnchorLink, setIsAnchorLink] = useState<boolean>(false);
 
   const {
@@ -72,19 +68,15 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
 
   useEffect(() => {
     if (!entry.loading && entry.value !== undefined) {
-      _setEntryInfo(formalizeEntryInfo(entry.value, excludeAttrs));
+      setEntryInfo(formalizeEntryInfo(entry.value, excludeAttrs));
     } else if (
       !entry.loading &&
       !entity.loading &&
       entity.value !== undefined
     ) {
-      _setEntryInfo(initializeEntryInfo(entity.value));
+      setEntryInfo(initializeEntryInfo(entity.value));
     }
   }, [entity, entry]);
-
-  useEffect(() => {
-    setSubmittable(entryInfo != null && isSubmittable(entryInfo));
-  }, [entryInfo]);
 
   useEffect(() => {
     if (willCreate) {
@@ -108,18 +100,12 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
     }
   }, [isSubmitSuccessful]);
 
-  const setEntryInfo: Dispatch<Schema> = (entryInfo: Schema) => {
-    setEdited(true);
-    _setEntryInfo(entryInfo);
-  };
-
   const handleSubmitOnValid = async (entry: Schema) => {
     const updatedAttr = convertAttrsFormatCtoS(entry.attrs);
 
     if (willCreate) {
       try {
         await aironeApiClientV2.createEntry(entityId, entry.name, updatedAttr);
-        setSubmitted(true);
         enqueueSnackbar("エントリの作成が完了しました", {
           variant: "success",
         });
@@ -140,7 +126,6 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
     } else {
       try {
         await aironeApiClientV2.updateEntry(entryId, entry.name, updatedAttr);
-        setSubmitted(true);
         enqueueSnackbar("エントリの更新が完了しました", {
           variant: "success",
         });
@@ -207,7 +192,6 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       {entryInfo && (
         <EntryForm
           entryInfo={entryInfo}
-          setEntryInfo={setEntryInfo}
           setIsAnchorLink={setIsAnchorLink}
           control={control}
           setValue={setValue}

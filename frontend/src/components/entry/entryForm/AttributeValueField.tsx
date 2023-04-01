@@ -27,7 +27,7 @@ interface Props {
   setValue: UseFormSetValue<Schema>;
 }
 
-export const AttributeValueFields: FC<Props> = ({
+export const AttributeValueField: FC<Props> = ({
   attrName,
   attrInfo,
   control,

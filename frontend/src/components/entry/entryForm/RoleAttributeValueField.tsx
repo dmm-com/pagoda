@@ -24,7 +24,6 @@ export const RoleAttributeValueField: FC<Props> = ({
 }) => {
   const roles = useAsync(async () => {
     const _roles = await aironeApiClientV2.getRoles();
-    // FIXME inject current values
     return _roles.map((g) => ({ id: g.id, name: g.name }));
   }, []);
 
@@ -35,7 +34,7 @@ export const RoleAttributeValueField: FC<Props> = ({
       if (value != null && !Array.isArray(value)) {
         throw new Error("value must be an array");
       }
-      setValue(`attrs.${attrName}.value.asArrayRole`, value, {
+      setValue(`attrs.${attrName}.value.asArrayRole`, value ?? [], {
         shouldDirty: true,
         shouldValidate: true,
       });

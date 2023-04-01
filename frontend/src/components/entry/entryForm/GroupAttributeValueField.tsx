@@ -24,7 +24,6 @@ export const GroupAttributeValueField: FC<Props> = ({
 }) => {
   const groups = useAsync(async () => {
     const _groups = await aironeApiClientV2.getGroups();
-    // FIXME inject current values
     return _groups.map((g) => ({ id: g.id, name: g.name }));
   }, []);
 
