@@ -68,6 +68,7 @@ export const schema = schemaForType<EditableEntry>()(
                 id: z.number(),
                 name: z.string(),
               })
+              .nullable()
               .optional(),
             asArrayGroup: z
               .array(
@@ -82,6 +83,7 @@ export const schema = schemaForType<EditableEntry>()(
                 id: z.number(),
                 name: z.string(),
               })
+              .nullable()
               .optional(),
             asArrayRole: z
               .array(

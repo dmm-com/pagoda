@@ -34,7 +34,7 @@ export const GroupAttributeValueField: FC<Props> = ({
       if (value != null && !Array.isArray(value)) {
         throw new Error("value must be an array");
       }
-      setValue(`attrs.${attrName}.value.asArrayGroup`, value, {
+      setValue(`attrs.${attrName}.value.asArrayGroup`, value ?? [], {
         shouldDirty: true,
         shouldValidate: true,
       });

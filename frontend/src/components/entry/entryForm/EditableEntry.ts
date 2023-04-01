@@ -20,8 +20,8 @@ export type EditableEntryAttrValue = {
   asArrayGroup?: Array<EntryAttributeValueGroup>;
   asArrayRole?: Array<EntryAttributeValueRole>;
   asBoolean?: boolean;
-  asGroup?: EntryAttributeValueGroup;
-  asRole?: EntryAttributeValueRole;
+  asGroup?: EntryAttributeValueGroup | null;
+  asRole?: EntryAttributeValueRole | null;
 };
 
 export type EditableEntry = {

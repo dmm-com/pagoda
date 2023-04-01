@@ -13,9 +13,6 @@ import { TestWrapper } from "services/TestWrapper";
 
 test("should render a component with essential props", function () {
   const entryInfo = { name: "test entry", attrs: {} };
-  const setEntryInfo = () => {
-    /* do nothing */
-  };
   const setIsAnchorLink = () => {
     /* do nothing */
   };
@@ -27,7 +24,6 @@ test("should render a component with essential props", function () {
     return (
       <EntryForm
         entryInfo={entryInfo}
-        setEntryInfo={setEntryInfo}
         setIsAnchorLink={setIsAnchorLink}
         control={control}
         setValue={setValue}
