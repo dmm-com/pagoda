@@ -6,9 +6,11 @@ import { shallow } from "enzyme";
 import React from "react";
 
 import { DjangoContext } from "../../../services/DjangoContext";
+import { ReactHookFormTestWrapper } from "../../../services/ReactHookFormTestWrapper";
 
 import { AttributeValueField } from "./AttributeValueField";
 import { EditableEntryAttrValue } from "./EditableEntry";
+import { Schema } from "./EntryFormSchema";
 
 beforeAll(() => {
   Object.defineProperty(window, "django_context", {
@@ -108,18 +110,25 @@ attributes.forEach((attribute) => {
     const attrValue = attribute.value;
     const attrType = djangoContext?.attrTypeValue[attribute.type];
     const wrapper = shallow(
-      <AttributeValueField
-        attrName={attrName}
-        attrInfo={{
-          id: 9999,
-          value: attrValue as EditableEntryAttrValue,
-          type: attrType,
-          isMandatory: false,
-          schema: {
-            id: 9999,
-            name: "hoge",
-          },
-        }}
+      <ReactHookFormTestWrapper
+        defaultValues={{} as Schema}
+        render={({ control, setValue }) => (
+          <AttributeValueField
+            control={control}
+            setValue={setValue}
+            attrName={attrName}
+            attrInfo={{
+              id: 9999,
+              value: attrValue as EditableEntryAttrValue,
+              type: attrType,
+              isMandatory: false,
+              schema: {
+                id: 9999,
+                name: "hoge",
+              },
+            }}
+          />
+        )}
       />
     );
 
@@ -139,18 +148,25 @@ arrayAttributes.forEach((arrayAttribute) => {
     const attrValue = arrayAttribute.value;
     const attrType = djangoContext?.attrTypeValue[arrayAttribute.type];
     const wrapper = shallow(
-      <AttributeValueField
-        attrName={attrName}
-        attrInfo={{
-          id: 9999,
-          value: attrValue as EditableEntryAttrValue,
-          type: attrType,
-          isMandatory: false,
-          schema: {
-            id: 9999,
-            name: "hoge",
-          },
-        }}
+      <ReactHookFormTestWrapper
+        defaultValues={{} as Schema}
+        render={({ control, setValue }) => (
+          <AttributeValueField
+            control={control}
+            setValue={setValue}
+            attrName={attrName}
+            attrInfo={{
+              id: 9999,
+              value: attrValue as EditableEntryAttrValue,
+              type: attrType,
+              isMandatory: false,
+              schema: {
+                id: 9999,
+                name: "hoge",
+              },
+            }}
+          />
+        )}
       />
     );
 

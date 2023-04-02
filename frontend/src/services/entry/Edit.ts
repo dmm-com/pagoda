@@ -10,129 +10,10 @@ import {
 import {
   EditableEntry,
   EditableEntryAttrs,
-  EditableEntryAttrValue,
-  EditableEntryAttrValueObject,
 } from "components/entry/entryForm/EditableEntry";
 import { DjangoContext } from "services/DjangoContext";
 
-interface asArrayNamedObjectBoolean {
-  [key: string]: EditableEntryAttrValueObject & {
-    boolean: boolean;
-  };
-}
-
 const djangoContext = DjangoContext.getInstance();
-
-export function updateEntryInfoValueFromValueInfo(
-  attrValue: EditableEntryAttrValue,
-  attrType: number,
-  valueInfo: any
-): void {
-  switch (attrType) {
-    case djangoContext?.attrTypeValue.date:
-    case djangoContext?.attrTypeValue.string:
-    case djangoContext?.attrTypeValue.text:
-      attrValue.asString = valueInfo.value;
-      break;
-
-    case djangoContext?.attrTypeValue.boolean:
-      attrValue.asBoolean = valueInfo.checked;
-      break;
-
-    case djangoContext?.attrTypeValue.object:
-      attrValue.asObject = valueInfo.value;
-      break;
-
-    case djangoContext?.attrTypeValue.group:
-      attrValue.asGroup = valueInfo.value;
-      break;
-
-    case djangoContext?.attrTypeValue.role:
-      attrValue.asRole = valueInfo.value;
-      break;
-
-    case djangoContext?.attrTypeValue.named_object:
-      if (valueInfo?.key !== undefined) {
-        attrValue.asNamedObject = {
-          [valueInfo.key]:
-            Object.values(attrValue.asNamedObject ?? {})[0] ?? null,
-        };
-      } else {
-        attrValue.asNamedObject = {
-          [Object.keys(attrValue.asNamedObject ?? {})[0] ?? ""]:
-            valueInfo.value,
-        };
-      }
-      break;
-
-    case djangoContext?.attrTypeValue.array_string:
-      if (attrValue?.asArrayString == null) {
-        attrValue.asArrayString = [];
-      }
-      // @ts-ignore
-      attrValue.asArrayString[valueInfo.index] = valueInfo.value;
-      break;
-
-    case djangoContext?.attrTypeValue.array_object:
-      attrValue.asArrayObject = valueInfo.value;
-      break;
-
-    case djangoContext?.attrTypeValue.array_group:
-      attrValue.asArrayGroup = valueInfo.value;
-      break;
-
-    case djangoContext?.attrTypeValue.array_role:
-      attrValue.asArrayRole = valueInfo.value;
-      break;
-
-    case djangoContext?.attrTypeValue.array_named_object:
-      if ((attrValue.asArrayNamedObject?.length ?? 0) <= valueInfo.index) {
-        attrValue.asArrayNamedObject?.push({
-          // @ts-ignore
-          "": null,
-        });
-        break;
-      }
-
-      if (valueInfo?.key !== undefined) {
-        // @ts-ignore
-        attrValue.asArrayNamedObject[valueInfo.index] = {
-          [valueInfo.key]:
-            Object.values(
-              attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
-            )[0] ?? null,
-        };
-      } else {
-        const INPUT_NAME =
-          Object.keys(
-            attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
-          )[0] ?? "";
-
-        // @ts-ignore
-        // This update refer Entry information. This also act to erase it when user delete it.
-        attrValue.asArrayNamedObject[valueInfo.index] = {
-          [INPUT_NAME]: valueInfo.value,
-        } as any;
-      }
-      break;
-
-    case djangoContext?.attrTypeValue.array_named_object_boolean:
-      (attrValue.asArrayNamedObject as asArrayNamedObjectBoolean[])[
-        valueInfo.index
-      ] = {
-        [Object.keys(
-          attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
-        )[0] ?? ""]: {
-          ...Object.values(
-            attrValue.asArrayNamedObject?.[valueInfo.index] ?? {}
-          )[0],
-          boolean: valueInfo.checked,
-        },
-      };
-
-      break;
-  }
-}
 
 // Convert Entry information from server-side value to presentation format.
 // (NOTE) It might be needed to be refactored because if server returns proper format with frontend, this is not necessary.
@@ -148,15 +29,14 @@ export function formalizeEntryInfo(
       .map((attr): [string, EditableEntryAttrs] => {
         function getAttrValue(attr: EntryAttributeType) {
           switch (attr.type) {
-            // FIXME define the default value in Zod schema
-            // case djangoContext?.attrTypeValue.array_string:
-            //   return attr.value?.asArrayString?.length ?? 0 > 0
-            //     ? attr.value
-            //     : { asArrayString: [""] };
-            // case djangoContext?.attrTypeValue.array_named_object:
-            //   return attr.value?.asArrayNamedObject?.length ?? 0 > 0
-            //     ? attr.value
-            //     : { asArrayNamedObject: [{ "": null }] };
+            case djangoContext?.attrTypeValue.array_string:
+              return attr.value?.asArrayString?.length ?? 0 > 0
+                ? attr.value
+                : { asArrayString: [""] };
+            case djangoContext?.attrTypeValue.array_named_object:
+              return attr.value?.asArrayNamedObject?.length ?? 0 > 0
+                ? attr.value
+                : { asArrayNamedObject: [{ "": null }] };
             default:
               return attr.value;
           }

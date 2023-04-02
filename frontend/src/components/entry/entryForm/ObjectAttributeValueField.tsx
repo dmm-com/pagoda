@@ -171,8 +171,7 @@ export const NamedObjectAttributeValueField: FC<
         ? `attrs.${attrName}.value.asArrayNamedObject.${index}`
         : `attrs.${attrName}.value.asNamedObject`,
       {
-        // FIXME update zod schema to allow undefined
-        [newName]: value?.[objectName] ?? undefined,
+        [newName]: value?.[objectName] ?? null,
       },
       {
         shouldDirty: true,
@@ -238,7 +237,7 @@ export const ArrayNamedObjectAttributeValueField: FC<
   });
 
   const handleClickAddListItem = (index: number) => {
-    insert(index + 1, {});
+    insert(index + 1, { "": null });
   };
 
   const handleClickDeleteListItem = (index: number) => {

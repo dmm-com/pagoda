@@ -44,22 +44,26 @@ export const schema = schemaForType<EditableEntry>()(
             asNamedObject: z
               .record(
                 z.string(), // FIXME min(1)
-                z.object({
-                  id: z.number(),
-                  name: z.string(),
-                  _boolean: z.boolean().default(false),
-                })
+                z
+                  .object({
+                    id: z.number(),
+                    name: z.string(),
+                    _boolean: z.boolean().default(false),
+                  })
+                  .nullable()
               )
               .optional(),
             asArrayNamedObject: z
               .array(
                 z.record(
                   z.string(), // FIXME min(1)
-                  z.object({
-                    id: z.number(),
-                    name: z.string(),
-                    _boolean: z.boolean().default(false),
-                  })
+                  z
+                    .object({
+                      id: z.number(),
+                      name: z.string(),
+                      _boolean: z.boolean().default(false),
+                    })
+                    .nullable()
                 )
               )
               .optional(),
