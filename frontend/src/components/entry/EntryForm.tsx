@@ -48,6 +48,7 @@ const RequiredLabel = styled(Typography)(({}) => ({
 }));
 
 interface Props {
+  // TODO simplify props more
   entryInfo: Schema;
   setIsAnchorLink: Dispatch<SetStateAction<boolean>>;
   control: Control<Schema>;

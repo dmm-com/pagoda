@@ -24,7 +24,7 @@ export const schema = schemaForType<EditableEntry>()(
           value: z.object({
             asBoolean: z.boolean().optional(),
             asString: z.string().optional(),
-            asArrayString: z.array(z.string()).optional().default([""]),
+            asArrayString: z.array(z.string()).default([""]).optional(),
             asObject: z
               .object({
                 id: z.number(),
@@ -43,7 +43,7 @@ export const schema = schemaForType<EditableEntry>()(
               .optional(),
             asNamedObject: z
               .record(
-                z.string(), // FIXME min(1)
+                z.string().min(1),
                 z
                   .object({
                     id: z.number(),
@@ -51,12 +51,13 @@ export const schema = schemaForType<EditableEntry>()(
                     _boolean: z.boolean().default(false),
                   })
                   .nullable()
+                  .default(null)
               )
               .optional(),
             asArrayNamedObject: z
               .array(
                 z.record(
-                  z.string(), // FIXME min(1)
+                  z.string().min(1),
                   z
                     .object({
                       id: z.number(),
@@ -64,6 +65,7 @@ export const schema = schemaForType<EditableEntry>()(
                       _boolean: z.boolean().default(false),
                     })
                     .nullable()
+                    .default(null)
                 )
               )
               .optional(),

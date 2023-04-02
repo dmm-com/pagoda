@@ -35,6 +35,7 @@ export const ObjectAttributeValueField: FC<
     objectName?: string;
     multiple?: boolean;
     disabled?: boolean;
+    disabledToAppend?: boolean;
   }
 > = ({
   multiple,
@@ -42,6 +43,7 @@ export const ObjectAttributeValueField: FC<
   schemaId,
   index,
   disabled,
+  disabledToAppend,
   control,
   setValue,
   handleClickAddListItem,
@@ -68,7 +70,7 @@ export const ObjectAttributeValueField: FC<
     return await aironeApiClientV2.getEntryAttrReferrals(schemaId, keyword);
   }, [schemaId, keyword]);
 
-  // FIXME better typing
+  // TODO separate logics based on the types
   const handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
   ) => {
@@ -109,6 +111,7 @@ export const ObjectAttributeValueField: FC<
           render={({ field, fieldState: { error } }) => (
             <ReferralLikeAutocomplete
               multiple={multiple}
+              disabled={disabled}
               options={referrals.value ?? []}
               value={field.value ?? null}
               handleChange={handleChange}
@@ -121,7 +124,6 @@ export const ObjectAttributeValueField: FC<
           <>
             {handleClickDeleteListItem != null && (
               <IconButton
-                disabled={disabled}
                 sx={{ mx: "20px" }}
                 onClick={() => handleClickDeleteListItem(index)}
               >
@@ -129,7 +131,10 @@ export const ObjectAttributeValueField: FC<
               </IconButton>
             )}
             {handleClickAddListItem != null && (
-              <IconButton onClick={() => handleClickAddListItem(index)}>
+              <IconButton
+                disabled={disabledToAppend}
+                onClick={() => handleClickAddListItem(index)}
+              >
                 <AddIcon />
               </IconButton>
             )}
@@ -142,14 +147,12 @@ export const ObjectAttributeValueField: FC<
 
 export const NamedObjectAttributeValueField: FC<
   CommonProps & {
-    disabled?: boolean;
     withBoolean?: boolean;
   }
 > = ({
   attrName,
   schemaId,
   index,
-  disabled,
   control,
   setValue,
   handleClickAddListItem,
@@ -180,6 +183,8 @@ export const NamedObjectAttributeValueField: FC<
     );
   };
 
+  const disabledToAppend = index === 0 && objectName === "";
+
   return (
     <Box display="flex" alignItems="flex-end">
       <Box display="flex" flexDirection="column">
@@ -190,6 +195,8 @@ export const NamedObjectAttributeValueField: FC<
           <TextField
             variant="standard"
             value={objectName}
+            error={objectName === ""}
+            helperText={objectName === "" ? "name は必須です" : undefined}
             onChange={(e) => handleChangeObjectName(e.target.value)}
           />
         </Box>
@@ -220,6 +227,8 @@ export const NamedObjectAttributeValueField: FC<
         index={index}
         handleClickAddListItem={handleClickAddListItem}
         handleClickDeleteListItem={handleClickDeleteListItem}
+        disabled={objectName === ""}
+        disabledToAppend={disabledToAppend}
       />
     </Box>
   );
@@ -245,7 +254,6 @@ export const ArrayNamedObjectAttributeValueField: FC<
     fields.length === 1 && handleClickAddListItem(0);
   };
 
-  // FIXME disableToAppend
   return (
     <Box>
       <List>

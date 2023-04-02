@@ -7,6 +7,7 @@ interface Props<T extends { id: number; name: string }> {
   handleChange: (value: T | T[] | null) => void;
   setKeyword?: (value: string) => void;
   multiple?: boolean;
+  disabled?: boolean;
   error?: { message?: string };
 }
 
@@ -18,6 +19,7 @@ export const ReferralLikeAutocomplete = <
   value,
   handleChange,
   setKeyword,
+  disabled,
   error,
 }: Props<T>) => {
   const _handleChange = (value: T | T[] | null) => {
@@ -37,9 +39,10 @@ export const ReferralLikeAutocomplete = <
     <Autocomplete
       sx={{ width: "280px" }}
       multiple={multiple}
+      disabled={disabled}
       options={options ?? []}
       value={value}
-      getOptionLabel={(option) => option.name}
+      getOptionLabel={(option) => option?.name ?? "-NOT SET-"}
       isOptionEqualToValue={(option, value) => option.id === value.id}
       onChange={(_e, value) => _handleChange(value)}
       onInputChange={(e, value) =>

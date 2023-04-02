@@ -62,7 +62,6 @@ export const StringAttributeValueField: FC<
         <>
           {handleClickDeleteListItem != null && (
             <IconButton
-              disabled={disabledToAppend}
               sx={{ mx: "20px" }}
               onClick={() => handleClickDeleteListItem(index)}
             >
@@ -70,7 +69,10 @@ export const StringAttributeValueField: FC<
             </IconButton>
           )}
           {handleClickAddListItem != null && (
-            <IconButton onClick={() => handleClickAddListItem(index)}>
+            <IconButton
+              disabled={disabledToAppend}
+              onClick={() => handleClickAddListItem(index)}
+            >
               <AddIcon />
             </IconButton>
           )}
@@ -83,10 +85,9 @@ export const StringAttributeValueField: FC<
 export const ArrayStringAttributeValueField: FC<
   CommonProps & {
     attrValue?: Array<string>;
-    multiline?: boolean;
     control: Control<Schema>;
   }
-> = ({ attrName, multiline, control }) => {
+> = ({ attrName, control }) => {
   const { fields, insert, remove } = useFieldArray({
     control,
     // @ts-ignore

@@ -181,7 +181,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       >
         <SubmitButton
           name="保存"
-          disabled={/*!isValid || */ isSubmitting || isSubmitSuccessful}
+          disabled={!isValid || isSubmitting || isSubmitSuccessful}
           handleSubmit={handleSubmit(handleSubmitOnValid, (errors) => {
             console.log(errors);
           })}
