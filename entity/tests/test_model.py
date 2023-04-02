@@ -161,7 +161,7 @@ class ModelTest(TestCase):
         This checks the attribute type wouldn't be changed by specifying type.
         """
         user = self._test_user
-        entity = Entity.objects.create(name="Entity", created_user=user, is_public=False)
+        entity = Entity.objects.create(name="Entity", created_user=user)
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "attr",
@@ -192,7 +192,7 @@ class ModelTest(TestCase):
         This import EntityAttr without specifying type parameter.
         """
         user = self._test_user
-        entity = Entity.objects.create(name="Entity", created_user=user, is_public=False)
+        entity = Entity.objects.create(name="Entity", created_user=user)
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "attr",
@@ -222,7 +222,7 @@ class ModelTest(TestCase):
         This checks an attribute would be created by importing.
         """
         user = self._test_user
-        entity = Entity.objects.create(name="Entity", created_user=user, is_public=False)
+        entity = Entity.objects.create(name="Entity", created_user=user)
 
         EntityAttrResource.import_data_from_request(
             {
@@ -245,7 +245,7 @@ class ModelTest(TestCase):
         This checks an attribute wouldn't be created by importing because of luck of parameters
         """
         user = self._test_user
-        entity = Entity.objects.create(name="Entity", created_user=user, is_public=False)
+        entity = Entity.objects.create(name="Entity", created_user=user)
 
         # This processing would be failed because 'type' parameter is necessary for creating
         # a new EntityAttr instance by importing processing.

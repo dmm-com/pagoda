@@ -3,6 +3,7 @@ import unittest
 from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory
 
+from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.http import get_obj_with_check_perm, http_get
 from airone.lib.test import AironeViewTest
@@ -76,3 +77,16 @@ class ViewTest(AironeViewTest):
         self.assertIsNone(target_obj)
         self.assertEqual(error.content, b"You don't have permission to access this object")
         self.assertEqual(error.status_code, 400)
+
+    def test_get_obj_with_check_perm_without_parent_permission(self):
+        self.entity.default_permission = ACLType.Writable.id
+        self.entity.is_public = False
+        self.entity.save()
+
+        for co_instance in [self.entityattr, self.entry, self.attr]:
+            target_obj, error = get_obj_with_check_perm(
+                self.user, ACLBase, co_instance.id, ACLType.Full
+            )
+            self.assertIsNone(target_obj)
+            self.assertEqual(error.content, b"You don't have permission to access this object")
+            self.assertEqual(error.status_code, 400)
