@@ -31,7 +31,7 @@ class Common(Configuration):
     #: from unwanted access (see userguide/security.html)
     CELERY_ACCEPT_CONTENT = ["json"]
     CELERY_TASK_SERIALIZER = "json"
-    CELERY_BROKER_HEARTBEAT = 0
+    CELERY_BROKER_HEARTBEAT = 10
 
     ALLOWED_HOSTS = ["*"]
 
