@@ -51,8 +51,8 @@ test("initializeEntryInfo should return expect value", () => {
   expect(initializeEntryInfo(entity)).toStrictEqual({
     name: "",
     schema: {
-      "id": 1,
-      "name": "TestEntity",
+      id: 1,
+      name: "TestEntity",
     },
     attrs: {
       attr: {
