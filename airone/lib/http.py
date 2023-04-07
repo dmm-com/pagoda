@@ -48,13 +48,14 @@ def get_obj_with_check_perm(user, model, object_id, permission_level):
         return (None, HttpResponse("Failed to get entity of specified id", status=400))
 
     # only requests that have correct permission are executed
-    if not user.has_permission(target_obj, permission_level):
+    airone_instance = target_obj.get_subclass_object()
+    if not user.has_permission(airone_instance, permission_level):
         return (
             None,
             HttpResponse("You don't have permission to access this object", status=400),
         )
 
-    return (target_obj, None)
+    return (airone_instance, None)
 
 
 def check_superuser(func):

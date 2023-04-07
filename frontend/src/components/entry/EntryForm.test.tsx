@@ -3,7 +3,10 @@
  */
 
 import { render } from "@testing-library/react";
-import React from "react";
+import React, { FC } from "react";
+import { useForm } from "react-hook-form";
+
+import { Schema } from "./entryForm/EntryFormSchema";
 
 import { EntryForm } from "components/entry/EntryForm";
 import { TestWrapper } from "services/TestWrapper";
@@ -14,23 +17,27 @@ test("should render a component with essential props", function () {
     schema: { id: 0, name: "testEntity" },
     attrs: {},
   };
-  const setEntryInfo = () => {
-    /* do nothing */
-  };
   const setIsAnchorLink = () => {
     /* do nothing */
   };
 
-  expect(() =>
-    render(
+  const Wrapper: FC = () => {
+    const { control, setValue } = useForm<Schema>({
+      defaultValues: entryInfo,
+    });
+    return (
       <EntryForm
         entryInfo={entryInfo}
-        setEntryInfo={setEntryInfo}
         setIsAnchorLink={setIsAnchorLink}
-      />,
-      {
-        wrapper: TestWrapper,
-      }
-    )
+        control={control}
+        setValue={setValue}
+      />
+    );
+  };
+
+  expect(() =>
+    render(<Wrapper />, {
+      wrapper: TestWrapper,
+    })
   ).not.toThrow();
 });

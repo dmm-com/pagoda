@@ -5178,3 +5178,96 @@ class ViewTest(AironeViewTest):
             Entry.objects.get(id=entry.id).attrs.count(),
             Entity.objects.get(id=entity.id).attrs.count(),
         )
+
+    def test_acl_is_not_editable_when_superiors_has_not_full_permission(self):
+        # This tests Entry, EntityAttr and Attribute couldn't be editable when
+        # superior Entity doesn't have full permission.
+
+        user = self.guest_login()
+        for index, acltype in enumerate([ACLType.Readable, ACLType.Writable]):
+            entity = self.create_entity(
+                user,
+                "Test Another Entity %d" % index,
+                attrs=[{"name": "attr", "type": AttrTypeValue["string"]}],
+                is_public=False,
+                default_permission=acltype.id,
+            )
+            # check Entry's ACL can NOT be editable
+            entry = self.add_entry(user, "TestEntry", entity)
+            resp = self.client.get(reverse("entry:acl", args=[entry.id]))
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                resp.content.decode("utf-8"), "You don't have permission to access this object"
+            )
+
+            # check Attribute's and EntityAttr's ACL can NOT be editable
+            attr = entry.attrs.last()
+            self.assertEqual(attr.schema.name, "attr")
+            for instance in [attr, attr.schema]:
+                resp = self.client.get(reverse("acl:index", args=[instance.id]))
+                self.assertEqual(resp.status_code, 400)
+                self.assertEqual(
+                    resp.content.decode("utf-8"), "You don't have permission to access this object"
+                )
+
+    def test_acl_of_attribute_is_not_editable_when_entityattr_has_not_full_permission(self):
+        # This tests Attribute ACL couldn't be editable when
+        # superior EntityAttr doesn't have full permission.
+
+        user = self.guest_login()
+        for index, acltype in enumerate([ACLType.Readable, ACLType.Writable]):
+            entity = self.create_entity(
+                user,
+                "Test Another Entity %d" % index,
+                attrs=[
+                    {
+                        "name": "attr",
+                        "type": AttrTypeValue["string"],
+                        "is_public": False,
+                        "default_permission": acltype.id,
+                    }
+                ],
+                is_public=True,
+                default_permission=acltype.id,
+            )
+            # check Entry's ACL CAN be editable
+            entry = self.add_entry(user, "TestEntry", entity)
+            resp = self.client.get(reverse("entry:acl", args=[entry.id]))
+            self.assertEqual(resp.status_code, 200)
+
+            # check Attribute's and EntityAttr's ACL can NOT be editable
+            attr = entry.attrs.last()
+            self.assertEqual(attr.schema.name, "attr")
+            for instance in [attr, attr.schema]:
+                resp = self.client.get(reverse("acl:index", args=[instance.id]))
+                self.assertEqual(resp.status_code, 400)
+                self.assertEqual(
+                    resp.content.decode("utf-8"), "You don't have permission to access this object"
+                )
+
+    def test_acl_of_attribute_is_not_editable_when_entry_has_not_full_permission(self):
+        # This tests Attribute ACL couldn't be editable when
+        # superior Entry doesn't have full permission.
+
+        user = self.guest_login()
+        for index, acltype in enumerate([ACLType.Readable, ACLType.Writable]):
+            entity = self.create_entity(
+                user,
+                "Test Another Entity %d" % index,
+                attrs=[{"name": "attr", "type": AttrTypeValue["string"], "is_public": True}],
+                is_public=True,
+                default_permission=acltype.id,
+            )
+            entry = self.add_entry(user, "TestEntry", entity, is_public=False)
+            attr = entry.attrs.last()
+
+            # check EntityAttr's ACL CAN be editable
+            resp = self.client.get(reverse("acl:index", args=[attr.schema.id]))
+            self.assertEqual(resp.status_code, 200)
+
+            # check Attribute's ACL can NOT be editable
+            resp = self.client.get(reverse("acl:index", args=[attr.id]))
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                resp.content.decode("utf-8"), "You don't have permission to access this object"
+            )
