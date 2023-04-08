@@ -42,16 +42,17 @@ test("initializeEntryInfo should return expect value", () => {
         type: djangoContext?.attrTypeValue.string,
         isMandatory: true,
         isDeleteInChain: true,
+        referral: [],
       },
     ],
     webhooks: [],
     isPublic: true,
   };
+
   expect(initializeEntryInfo(entity)).toStrictEqual({
     name: "",
     attrs: {
       attr: {
-        id: 2,
         isMandatory: true,
         schema: {
           id: 2,
@@ -181,7 +182,6 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
   cases.forEach((c) => {
     const attrs: Record<string, EditableEntryAttrs> = {
       key: {
-        id: 1,
         type: c.type,
         isMandatory: true,
         schema: {
@@ -303,7 +303,6 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
   cases.forEach((c) => {
     const attrs: Record<string, EditableEntryAttrs> = {
       key: {
-        id: 1,
         type: c.type,
         isMandatory: true,
         schema: {
@@ -485,7 +484,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
   cases.forEach((c) => {
     const attrs: Record<string, EditableEntryAttrs> = {
       key: {
-        id: 1,
         type: c.client_data.type,
         isMandatory: true,
         schema: {
@@ -629,7 +627,6 @@ test("convertAttrsFormatCtoS() returns expected value when nothing value", () =>
   cases.forEach((c) => {
     const attrs: Record<string, EditableEntryAttrs> = {
       key: {
-        id: 1,
         type: c.client_data.type,
         isMandatory: true,
         schema: {

@@ -21,7 +21,7 @@ models/EntityAttrUpdate.ts
 models/EntityAttributeType.ts
 models/EntityCreate.ts
 models/EntityDetail.ts
-models/EntityDetailAttrs.ts
+models/EntityDetailAttribute.ts
 models/EntityHistory.ts
 models/EntityImportExport.ts
 models/EntityImportExportRoot.ts
