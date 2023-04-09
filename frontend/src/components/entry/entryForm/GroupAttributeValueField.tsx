@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Autocomplete, Box, TextField, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
@@ -7,7 +7,6 @@ import { useAsync } from "react-use";
 import { aironeApiClientV2 } from "../../../apiclient/AironeApiClientV2";
 
 import { Schema } from "./EntryFormSchema";
-import { ReferralLikeAutocomplete } from "./ReferralLikeAutocomplete";
 
 interface Props {
   attrName: string;
@@ -63,11 +62,26 @@ export const GroupAttributeValueField: FC<Props> = ({
           }
           control={control}
           render={({ field, fieldState: { error } }) => (
-            <ReferralLikeAutocomplete
+            <Autocomplete
+              sx={{ width: "280px" }}
               multiple={multiple}
+              loading={groups.loading}
               options={groups.value ?? []}
-              value={field.value ?? null}
-              handleChange={handleChange}
+              value={field.value}
+              getOptionLabel={(option: { id: number; name: string }) =>
+                option.name
+              }
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              onChange={(_e, value) => handleChange(value)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  error={error != null}
+                  helperText={error?.message}
+                  size="small"
+                  placeholder={multiple ? "" : "-NOT SET-"}
+                />
+              )}
             />
           )}
         />
