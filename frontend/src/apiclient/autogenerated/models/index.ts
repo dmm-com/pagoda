@@ -14,7 +14,7 @@ export * from "./EntityAttrUpdate";
 export * from "./EntityAttributeType";
 export * from "./EntityCreate";
 export * from "./EntityDetail";
-export * from "./EntityDetailAttrs";
+export * from "./EntityDetailAttribute";
 export * from "./EntityHistory";
 export * from "./EntityImportExport";
 export * from "./EntityImportExportRoot";

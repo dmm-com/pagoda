@@ -13,7 +13,6 @@ describe("schema", () => {
     name: "entry",
     attrs: {
       string: {
-        id: 1,
         type: djangoContext?.attrTypeValue.string ?? 0,
         isMandatory: false,
         schema: {

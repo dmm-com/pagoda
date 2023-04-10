@@ -33,7 +33,7 @@ export type EditableEntry = {
 
 export type EditableEntryAttrs = Pick<
   EntryAttributeType,
-  "id" | "type" | "isMandatory" | "schema"
+  "type" | "isMandatory" | "schema"
 > & {
   value: EditableEntryAttrValue;
 };

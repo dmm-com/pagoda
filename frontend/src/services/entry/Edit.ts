@@ -63,22 +63,16 @@ export function formalizeEntryInfo(
 }
 
 export function initializeEntryInfo(entity: EntityDetail): Schema {
-  // FIXME remove ts-ignore's, maybe we should refine server defined types
   return {
     name: "",
     attrs: entity.attrs
       .map((attr): [string, EditableEntryAttrs] => [
-        attr?.name ?? "",
+        attr.name,
         {
-          // @ts-ignore
-          id: attr.id,
-          // @ts-ignore
           type: attr.type,
-          isMandatory: attr.isMandatory ?? false,
+          isMandatory: attr.isMandatory,
           schema: {
-            // @ts-ignore
             id: attr.id,
-            // @ts-ignore
             name: attr.name,
           },
           value: {

@@ -122,7 +122,6 @@ attributes.forEach((attribute) => {
             setValue={setValue}
             attrName={attrName}
             attrInfo={{
-              id: 9999,
               value: attrValue as EditableEntryAttrValue,
               type: attrType,
               isMandatory: false,
@@ -160,7 +159,6 @@ arrayAttributes.forEach((arrayAttribute) => {
             setValue={setValue}
             attrName={attrName}
             attrInfo={{
-              id: 9999,
               value: attrValue as EditableEntryAttrValue,
               type: attrType,
               isMandatory: false,
