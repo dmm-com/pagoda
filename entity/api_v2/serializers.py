@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, TypedDict, Union
 
 import requests
 from django.core.validators import URLValidator
+from drf_spectacular.utils import extend_schema_field
 from requests.exceptions import ConnectionError
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -392,14 +393,23 @@ class EntityListSerializer(EntitySerializer):
         return (obj.status & Entity.STATUS_TOP_LEVEL) != 0
 
 
-class EntityDetailAttribute(TypedDict):
-    id: int
-    index: int
-    name: str
-    type: int
-    is_mandatory: bool
-    is_delete_in_chain: bool
-    referral: List[Dict[str, Any]]
+class EntityDetailAttributeSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    index = serializers.IntegerField()
+    name = serializers.CharField()
+    type = serializers.IntegerField()
+    is_mandatory = serializers.BooleanField()
+    is_delete_in_chain = serializers.BooleanField()
+    referral = serializers.ListField(child=serializers.DictField())
+
+    class EntityDetailAttribute(TypedDict):
+        id: int
+        index: int
+        name: str
+        type: int
+        is_mandatory: bool
+        is_delete_in_chain: bool
+        referral: List[Dict[str, Any]]
 
 
 class EntityDetailSerializer(EntityListSerializer):
@@ -410,10 +420,11 @@ class EntityDetailSerializer(EntityListSerializer):
         model = Entity
         fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks", "is_public"]
 
-    def get_attrs(self, obj: Entity) -> List[EntityDetailAttribute]:
+    @extend_schema_field(serializers.ListField(child=EntityDetailAttributeSerializer()))
+    def get_attrs(self, obj: Entity) -> List[EntityDetailAttributeSerializer.EntityDetailAttribute]:
         user = User.objects.get(id=self.context["request"].user.id)
 
-        attrinfo: List[EntityDetailAttribute] = [
+        attrinfo: List[EntityDetailAttributeSerializer.EntityDetailAttribute] = [
             {
                 "id": x.id,
                 "index": x.index,

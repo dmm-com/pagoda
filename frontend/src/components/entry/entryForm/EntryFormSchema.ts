@@ -17,7 +17,6 @@ export const schema = schemaForType<EditableEntry>()(
       .record(
         z.string().min(1),
         z.object({
-          id: z.number().nullable(),
           // TODO remove these fields? it should be given by Entity
           type: z.number(),
           isMandatory: z.boolean().default(false),

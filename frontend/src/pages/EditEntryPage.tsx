@@ -74,25 +74,17 @@ export const EditEntryPage: FC<Props> = ({
   });
 
   useEffect(() => {
-    if (!entry.loading && entry.value !== undefined) {
-      setEntryInfo(formalizeEntryInfo(entry.value, excludeAttrs));
-    } else if (
-      !entry.loading &&
-      !entity.loading &&
-      entity.value !== undefined
-    ) {
-      setEntryInfo(initializeEntryInfo(entity.value));
-    }
-  }, [entity, entry]);
-
-  useEffect(() => {
     if (willCreate) {
       if (!entity.loading && entity.value != null) {
-        reset(initializeEntryInfo(entity.value));
+        const _entryInfo = initializeEntryInfo(entity.value);
+        reset(_entryInfo);
+        setEntryInfo(_entryInfo);
       }
     } else {
       if (!entry.loading && entry.value != null) {
-        reset(formalizeEntryInfo(entry.value, excludeAttrs));
+        const _entryInfo = formalizeEntryInfo(entry.value, excludeAttrs);
+        reset(_entryInfo);
+        setEntryInfo(_entryInfo);
       }
     }
   }, [willCreate, entity.value, entry.value]);
@@ -110,45 +102,31 @@ export const EditEntryPage: FC<Props> = ({
   const handleSubmitOnValid = async (entry: Schema) => {
     const updatedAttr = convertAttrsFormatCtoS(entry.attrs);
 
-    if (willCreate) {
-      try {
+    const operationName = willCreate ? "作成" : "更新";
+
+    try {
+      if (willCreate) {
         await aironeApiClientV2.createEntry(entityId, entry.name, updatedAttr);
-        enqueueSnackbar("エントリの作成が完了しました", {
-          variant: "success",
-        });
-      } catch (e) {
-        if (e instanceof Response) {
-          if (!e.ok) {
-            const json = await e.json();
-            const reasons = ExtractAPIErrorMessage(json);
-
-            enqueueSnackbar(`エントリの作成が失敗しました。詳細: ${reasons}`, {
-              variant: "error",
-            });
-          }
-        } else {
-          throw e;
-        }
-      }
-    } else {
-      try {
+      } else {
         await aironeApiClientV2.updateEntry(entryId, entry.name, updatedAttr);
-        enqueueSnackbar("エントリの更新が完了しました", {
-          variant: "success",
-        });
-      } catch (e) {
-        if (e instanceof Response) {
-          if (!e.ok) {
-            const json = await e.json();
-            const reasons = ExtractAPIErrorMessage(json);
-
-            enqueueSnackbar(`エントリの更新が失敗しました。詳細: ${reasons}`, {
+      }
+      enqueueSnackbar(`エントリの${operationName}が完了しました`, {
+        variant: "success",
+      });
+    } catch (e) {
+      if (e instanceof Response) {
+        if (!e.ok) {
+          const json = await e.json();
+          const reasons = ExtractAPIErrorMessage(json);
+          enqueueSnackbar(
+            `エントリの${operationName}が失敗しました。詳細: ${reasons}`,
+            {
               variant: "error",
-            });
-          }
-        } else {
-          throw e;
+            }
+          );
         }
+      } else {
+        throw e;
       }
     }
   };
