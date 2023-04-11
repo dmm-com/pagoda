@@ -74,6 +74,7 @@ class EntityAttr(ACLBase):
         if adding_referral:
             self.referral.add(adding_referral)
 
+
 class Entity(ACLBase):
     STATUS_TOP_LEVEL = 1 << 0
     STATUS_CREATING = 1 << 1

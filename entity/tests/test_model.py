@@ -314,7 +314,9 @@ class ModelTest(TestCase):
 
     def test_add_referral(self):
         # create Entities to be referred by test EntityAttr
-        ref_entities = [Entity.objects.create(name="r-%d" % i, created_user=self._test_user) for i in range(3)]
+        ref_entities = [
+            Entity.objects.create(name="r-%d" % i, created_user=self._test_user) for i in range(3)
+        ]
 
         # create EntityAttr for test
         entity = Entity.objects.create(name="entity", created_user=self._test_user)
@@ -344,9 +346,11 @@ class ModelTest(TestCase):
 
         # set referrals with valid list value and confirms expected referrals are set
         attr.referral_clear()
-        attr.add_referral([
-            ref_entities[0].name,
-            ref_entities[1].id,
-            ref_entities[2],
-        ])
+        attr.add_referral(
+            [
+                ref_entities[0].name,
+                ref_entities[1].id,
+                ref_entities[2],
+            ]
+        )
         self.assertEqual([x.name for x in attr.referral.all()], [x.name for x in ref_entities])
