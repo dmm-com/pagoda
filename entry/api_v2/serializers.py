@@ -377,6 +377,7 @@ class EntryUpdateSerializer(EntryBaseSerializer):
 
 class EntryRetrieveSerializer(EntryBaseSerializer):
     attrs = serializers.SerializerMethodField()
+    schema = EntitySerializer()
 
     class Meta:
         model = Entry

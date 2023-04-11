@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, TypedDict, Union
 
 import requests
 from django.core.validators import URLValidator
+from drf_spectacular.utils import extend_schema_field
 from requests.exceptions import ConnectionError
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -34,15 +35,8 @@ class WebhookSerializer(serializers.ModelSerializer):
         fields = ["id", "label", "url", "is_enabled", "is_verified", "headers", "is_deleted"]
         read_only_fields = ["is_verified"]
 
-    def validate(self, webhook):
-        if not webhook.get("is_deleted"):
-            validator = URLValidator()
-            validator(webhook.get("url"))
 
-        return webhook
-
-
-class WebhookUpdateSerializer(serializers.ModelSerializer):
+class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     url = serializers.CharField(required=False, max_length=200, allow_blank=True)
     headers = serializers.ListField(child=WebhookHeadersSerializer(), required=False)
@@ -54,9 +48,9 @@ class WebhookUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_verified"]
         extra_kwargs = {"url": {"required": False}}
 
-    def validate_id(self, id):
+    def validate_id(self, id: Optional[int]):
         entity: Entity = self.parent.parent.instance
-        if not entity.webhooks.filter(id=id).exists():
+        if id is not None and not entity.webhooks.filter(id=id).exists():
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 
         return id
@@ -169,7 +163,7 @@ class EntityCreateData(TypedDict, total=False):
     note: str
     is_toplevel: bool
     attrs: List[EntityAttrCreateSerializer]
-    webhooks: WebhookUpdateSerializer
+    webhooks: WebhookCreateUpdateSerializer
     created_user: User
 
 
@@ -179,7 +173,7 @@ class EntityUpdateData(TypedDict, total=False):
     note: str
     is_toplevel: bool
     attrs: List[EntityAttrUpdateSerializer]
-    webhooks: WebhookUpdateSerializer
+    webhooks: WebhookCreateUpdateSerializer
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -303,7 +297,7 @@ class EntityCreateSerializer(EntitySerializer):
     attrs = serializers.ListField(
         child=EntityAttrCreateSerializer(), write_only=True, required=False, default=[]
     )
-    webhooks = WebhookSerializer(many=True, write_only=True, required=False, default=[])
+    webhooks = WebhookCreateUpdateSerializer(many=True, write_only=True, required=False, default=[])
     created_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -341,7 +335,7 @@ class EntityUpdateSerializer(EntitySerializer):
     attrs = serializers.ListField(
         child=EntityAttrUpdateSerializer(), write_only=True, required=False, default=[]
     )
-    webhooks = WebhookUpdateSerializer(many=True, write_only=True, required=False, default=[])
+    webhooks = WebhookCreateUpdateSerializer(many=True, write_only=True, required=False, default=[])
 
     class Meta:
         model = Entity
@@ -399,14 +393,23 @@ class EntityListSerializer(EntitySerializer):
         return (obj.status & Entity.STATUS_TOP_LEVEL) != 0
 
 
-class EntityDetailAttribute(TypedDict):
-    id: int
-    index: int
-    name: str
-    type: int
-    is_mandatory: bool
-    is_delete_in_chain: bool
-    referral: List[Dict[str, Any]]
+class EntityDetailAttributeSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    index = serializers.IntegerField()
+    name = serializers.CharField()
+    type = serializers.IntegerField()
+    is_mandatory = serializers.BooleanField()
+    is_delete_in_chain = serializers.BooleanField()
+    referral = serializers.ListField(child=serializers.DictField())
+
+    class EntityDetailAttribute(TypedDict):
+        id: int
+        index: int
+        name: str
+        type: int
+        is_mandatory: bool
+        is_delete_in_chain: bool
+        referral: List[Dict[str, Any]]
 
 
 class EntityDetailSerializer(EntityListSerializer):
@@ -417,10 +420,11 @@ class EntityDetailSerializer(EntityListSerializer):
         model = Entity
         fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks", "is_public"]
 
-    def get_attrs(self, obj: Entity) -> List[EntityDetailAttribute]:
+    @extend_schema_field(serializers.ListField(child=EntityDetailAttributeSerializer()))
+    def get_attrs(self, obj: Entity) -> List[EntityDetailAttributeSerializer.EntityDetailAttribute]:
         user = User.objects.get(id=self.context["request"].user.id)
 
-        attrinfo: List[EntityDetailAttribute] = [
+        attrinfo: List[EntityDetailAttributeSerializer.EntityDetailAttribute] = [
             {
                 "id": x.id,
                 "index": x.index,

@@ -21,7 +21,6 @@ import {
   initializeEntryInfo,
   isSubmittable,
   convertAttrsFormatCtoS,
-  updateEntryInfoValueFromValueInfo,
 } from "./Edit";
 
 import { DjangoContext } from "services/DjangoContext";
@@ -43,16 +42,17 @@ test("initializeEntryInfo should return expect value", () => {
         type: djangoContext?.attrTypeValue.string,
         isMandatory: true,
         isDeleteInChain: true,
+        referral: [],
       },
     ],
     webhooks: [],
     isPublic: true,
   };
+
   expect(initializeEntryInfo(entity)).toStrictEqual({
     name: "",
     attrs: {
       attr: {
-        id: 2,
         isMandatory: true,
         schema: {
           id: 2,
@@ -100,10 +100,6 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
         asObject: {
           id: 1,
           name: "test_object",
-          schema: {
-            id: 1,
-            name: "test_schema",
-          },
           _boolean: false,
         },
       },
@@ -126,10 +122,6 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
           hoge: {
             id: 1,
             name: "test_object",
-            schema: {
-              id: 1,
-              name: "test_schema",
-            },
             _boolean: false,
           },
         },
@@ -150,10 +142,6 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
           {
             id: 1,
             name: "test_object",
-            schema: {
-              id: 1,
-              name: "test_schema",
-            },
             _boolean: false,
           },
         ],
@@ -180,10 +168,6 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
             name1: {
               id: 1,
               name: "test_object",
-              schema: {
-                id: 1,
-                name: "test_schema",
-              },
               _boolean: false,
             },
           },
@@ -198,7 +182,6 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
   cases.forEach((c) => {
     const attrs: Record<string, EditableEntryAttrs> = {
       key: {
-        id: 1,
         type: c.type,
         isMandatory: true,
         schema: {
@@ -241,10 +224,6 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
           "": {
             id: 1,
             name: "test_object",
-            schema: {
-              id: 1,
-              name: "test_schema",
-            },
             _boolean: false,
           },
         },
@@ -297,10 +276,6 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
             "": {
               id: 1,
               name: "test_object",
-              schema: {
-                id: 1,
-                name: "test_schema",
-              },
               _boolean: false,
             },
           },
@@ -328,7 +303,6 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
   cases.forEach((c) => {
     const attrs: Record<string, EditableEntryAttrs> = {
       key: {
-        id: 1,
         type: c.type,
         isMandatory: true,
         schema: {
@@ -375,10 +349,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
           asObject: {
             id: 3,
             name: "test_object",
-            schema: {
-              id: 2,
-              name: "test_schema",
-            },
             _boolean: false,
           },
         },
@@ -407,10 +377,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
             hoge: {
               id: 2,
               name: "test_object",
-              schema: {
-                id: 3,
-                name: "test_schema",
-              },
               _boolean: false,
             },
           },
@@ -440,10 +406,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
             {
               id: 2,
               name: "test_object",
-              schema: {
-                id: 3,
-                name: "test_schema",
-              },
               _boolean: false,
             },
           ],
@@ -476,10 +438,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
               name1: {
                 id: 2,
                 name: "test_object",
-                schema: {
-                  id: 3,
-                  name: "test_schema",
-                },
                 _boolean: false,
               },
             },
@@ -526,7 +484,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
   cases.forEach((c) => {
     const attrs: Record<string, EditableEntryAttrs> = {
       key: {
-        id: 1,
         type: c.client_data.type,
         isMandatory: true,
         schema: {
@@ -670,7 +627,6 @@ test("convertAttrsFormatCtoS() returns expected value when nothing value", () =>
   cases.forEach((c) => {
     const attrs: Record<string, EditableEntryAttrs> = {
       key: {
-        id: 1,
         type: c.client_data.type,
         isMandatory: true,
         schema: {
@@ -690,55 +646,3 @@ test("convertAttrsFormatCtoS() returns expected value when nothing value", () =>
     ]);
   });
 });
-
-test("updateEntryInfoValueFromValueInfo() updates entryInfo correctly", () => {
-  const cases: Array<{
-    client_data: {
-      attrValue: EditableEntryAttrValue;
-      attrType: number;
-      valueInfo: any;
-    };
-    expected_data: EditableEntryAttrValue;
-  }> = [
-    {
-      client_data: {
-        attrValue: { asArrayNamedObject: [{}] },
-        attrType: djangoContext?.attrTypeValue.array_named_object,
-        valueInfo: {
-          index: 0,
-          key: "a",
-        },
-      },
-      expected_data: {
-        asArrayNamedObject: [{ a: null }],
-      },
-    },
-    {
-      client_data: {
-        attrValue: { asArrayNamedObject: [{}] },
-        attrType: djangoContext?.attrTypeValue.array_named_object,
-        valueInfo: {
-          index: 0,
-          value: {
-            id: 2,
-            name: "test_object",
-          },
-        } as any,
-      },
-      expected_data: {
-        asArrayNamedObject: [{ "": { id: 2, name: "test_object" } }] as any,
-      },
-    },
-  ];
-
-  cases.forEach((c) => {
-    updateEntryInfoValueFromValueInfo(
-      c.client_data.attrValue,
-      c.client_data.attrType,
-      c.client_data.valueInfo
-    );
-    expect(c.client_data.attrValue).toStrictEqual(c.expected_data);
-  });
-});
-
-test("updateEntryInfoValueFromValueInfo() updates entryInfo especially for ArrayNamedValue", () => {});

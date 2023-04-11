@@ -1,5 +1,4 @@
 import mock
-from django.test import override_settings
 from ldap import LDAPError
 from ldap.ldapobject import LDAPObject
 
@@ -7,8 +6,20 @@ from airone.lib.test import AironeTestCase
 from user.models import User
 
 
-@override_settings(AUTHENTICATION_BACKENDS=("airone.auth.ldap.LDAPBackend",))
 class ViewTest(AironeTestCase):
+    def setUp(self):
+        super(ViewTest, self).setUp()
+
+        self.settings(
+            AUTHENTICATION_BACKENDS=["airone.auth.ldap.LDAPBackend"],
+            AUTH_CONFIG={
+                "LDAP": {
+                    "SERVER_ADDRESS": "localhost",
+                    "USER_FILTER": "sn={username},ou=User,dc=example,dc=com",
+                }
+            },
+        ).enable()
+
     def test_local_authentication(self):
         # When invalid user or password were specified, login processing would be failed.
         self.assertFalse(self.client.login(username="invalid_user", password="invalid_passwd"))

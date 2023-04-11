@@ -7,8 +7,32 @@
 ### Changed
 
 ### Fixed
+
+## v3.46.0
+
+### Fixed
 * Fixed a bug to be able to edit Entry, Attribute and EntityAttr's ACL without Full permission
   Contributed by @userlocalhost
+
+## v3.45.0
+
+### Added
+* Added django-environ library.
+  Contributed by @hinashi
+
+### Changed
+* Validate input entity data with Zod.
+  Contributed by @syucream
+
+## v3.44.0
+
+### Changed
+* Validate input acl data with Zod.
+  Contributed by @hinashi, @syucream, @userlocalhost
+
+### Fixed
+* Fixed search chain API referral filtering.
+  Contributed by @hinashi
 
 ## v3.43.0
 

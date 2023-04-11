@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`should match snapshot 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <div>
@@ -60,7 +60,7 @@ Object {
                     class="MuiBreadcrumbs-li"
                   >
                     <div
-                      class="MuiBox-root css-k008qs"
+                      class="MuiBox-root css-gvoll6"
                     >
                       <a
                         class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -425,7 +425,7 @@ Object {
                   class="MuiBreadcrumbs-li"
                 >
                   <div
-                    class="MuiBox-root css-k008qs"
+                    class="MuiBox-root css-gvoll6"
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"

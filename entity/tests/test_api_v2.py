@@ -1001,7 +1001,11 @@ class ViewTest(AironeViewTest):
             resp.json(),
             {
                 "webhooks": [
-                    {"non_field_errors": [{"code": "AE-121000", "message": "Enter a valid URL."}]}
+                    {
+                        "non_field_errors": [
+                            {"code": "AE-113000", "message": "id or url field is required"}
+                        ]
+                    }
                 ]
             },
         )

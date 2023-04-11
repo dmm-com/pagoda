@@ -1,8 +1,6 @@
 import AppsIcon from "@mui/icons-material/Apps";
-import LockIcon from "@mui/icons-material/Lock";
-import { Box, Container, IconButton, Typography } from "@mui/material";
+import { Box, Container, IconButton } from "@mui/material";
 import React, { FC, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
@@ -14,10 +12,9 @@ import { usePage } from "../hooks/usePage";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { EntityHistoryList as ConstEntityHistoryList } from "../services/Constants";
 
-import { entitiesPath, entityEntriesPath, topPath } from "Routes";
-import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
+import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 
 export const EntityHistoryPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
@@ -46,26 +43,7 @@ export const EntityHistoryPage: FC = () => {
 
   return (
     <Box className="container">
-      <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
-          Top
-        </Typography>
-        <Typography component={Link} to={entitiesPath()}>
-          エンティティ一覧
-        </Typography>
-        {entity.value && (
-          <Box sx={{ display: "flex" }}>
-            <Typography
-              component={Link}
-              to={entityEntriesPath(entity.value.id)}
-            >
-              {entity.value.name}
-            </Typography>
-            {!entity.value.isPublic && <LockIcon />}
-          </Box>
-        )}
-        <Typography color="textPrimary">変更履歴</Typography>
-      </AironeBreadcrumbs>
+      <EntityBreadcrumbs entity={entity.value} title="変更履歴" />
 
       <PageHeader title={entity.value?.name ?? ""} description="変更履歴">
         <Box width="50px">

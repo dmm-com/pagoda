@@ -21,14 +21,12 @@ class ESS(Elasticsearch):
 
         self._index = index
         if not index:
-            self._index = settings.ES_CONFIG["INDEX"]
+            self._index = settings.ES_CONFIG["INDEX_NAME"]
 
         if ("timeout" not in kwargs) and (settings.ES_CONFIG["TIMEOUT"] is not None):
             kwargs["timeout"] = settings.ES_CONFIG["TIMEOUT"]
 
-        http_auth = (settings.ES_CONFIG["USER"], settings.ES_CONFIG["PASSWORD"])
-
-        super(ESS, self).__init__(settings.ES_CONFIG["NODES"], http_auth=http_auth, *args, **kwargs)
+        super(ESS, self).__init__(settings.ES_CONFIG["URL"], *args, **kwargs)
 
     def bulk(self, *args, **kwargs):
         return super(ESS, self).bulk(index=self._index, *args, **kwargs)

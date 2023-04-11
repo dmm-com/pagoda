@@ -11,7 +11,7 @@ test("Response should be converted to an appropriate error", () => {
     "name",
     NotFoundError.errorName
   );
-  expect(toError(new Response(null, { status: 999 }))).toHaveProperty(
+  expect(toError(new Response(null, { status: 599 }))).toHaveProperty(
     "name",
     UnknownError.errorName
   );

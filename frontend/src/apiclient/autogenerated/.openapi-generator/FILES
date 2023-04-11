@@ -21,7 +21,7 @@ models/EntityAttrUpdate.ts
 models/EntityAttributeType.ts
 models/EntityCreate.ts
 models/EntityDetail.ts
-models/EntityDetailAttrs.ts
+models/EntityDetailAttribute.ts
 models/EntityHistory.ts
 models/EntityImportExport.ts
 models/EntityImportExportRoot.ts
@@ -73,7 +73,7 @@ models/UserRetrieveToken.ts
 models/UserToken.ts
 models/UserUpdate.ts
 models/Webhook.ts
+models/WebhookCreateUpdate.ts
 models/WebhookHeaders.ts
-models/WebhookUpdate.ts
 models/index.ts
 runtime.ts

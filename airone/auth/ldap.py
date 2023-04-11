@@ -4,8 +4,6 @@ from django.conf import settings
 from airone.lib.log import Logger
 from user.models import User
 
-CONF_LDAP = settings.AUTH_CONFIG["LDAP"]
-
 
 class LDAPBackend(object):
     # This method is called by Django to authenticate user by specified username and password.
@@ -48,6 +46,7 @@ class LDAPBackend(object):
 
     @classmethod
     def is_authenticated(kls, username, password):
+        CONF_LDAP = settings.AUTH_CONFIG["LDAP"]
         try:
             o = ldap.initialize(CONF_LDAP["SERVER_ADDRESS"])
             o.protocol_version = ldap.VERSION3

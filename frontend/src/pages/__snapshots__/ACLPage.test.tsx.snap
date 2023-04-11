@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`should match snapshot 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <div>
@@ -50,15 +50,6 @@ Object {
                       エンティティ一覧
                     </a>
                   </li>
-                  <li
-                    aria-hidden="true"
-                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-                  >
-                    /
-                  </li>
-                  <li
-                    class="MuiBreadcrumbs-li"
-                  />
                   <li
                     aria-hidden="true"
                     class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
@@ -390,15 +381,6 @@ Object {
                     エンティティ一覧
                   </a>
                 </li>
-                <li
-                  aria-hidden="true"
-                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-                >
-                  /
-                </li>
-                <li
-                  class="MuiBreadcrumbs-li"
-                />
                 <li
                   aria-hidden="true"
                   class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"

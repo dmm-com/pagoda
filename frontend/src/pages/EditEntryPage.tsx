@@ -1,32 +1,28 @@
-import LockIcon from "@mui/icons-material/Lock";
-import { Box, Typography } from "@mui/material";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Box } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { Dispatch, FC, useEffect, useState } from "react";
-import { Link, Prompt } from "react-router-dom";
+import React, { FC, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { Loading } from "../components/common/Loading";
 import { PageHeader } from "../components/common/PageHeader";
-import { EditableEntry } from "../components/entry/entryForm/EditableEntry";
+import { Schema, schema } from "../components/entry/entryForm/EntryFormSchema";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { ExtractAPIErrorMessage } from "../services/AironeAPIErrorUtil";
 
-import {
-  entitiesPath,
-  entityEntriesPath,
-  entryDetailsPath,
-  topPath,
-} from "Routes";
+import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
-import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { SubmitButton } from "components/common/SubmitButton";
+import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
+import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryForm } from "components/entry/EntryForm";
 import {
   convertAttrsFormatCtoS,
   formalizeEntryInfo,
   initializeEntryInfo,
-  isSubmittable,
 } from "services/entry/Edit";
 
 interface Props {
@@ -37,15 +33,26 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
   const { entityId, entryId } =
     useTypedParams<{ entityId: number; entryId: number }>();
 
+  const willCreate = entryId == null;
+
   const history = useHistory();
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const [entryInfo, _setEntryInfo] = useState<EditableEntry>();
-  const [submittable, setSubmittable] = useState<boolean>(false); // FIXME
-  const [submitted, setSubmitted] = useState<boolean>(false);
-  const [edited, setEdited] = useState<boolean>(false);
+  const [entryInfo, setEntryInfo] = useState<Schema>();
   const [isAnchorLink, setIsAnchorLink] = useState<boolean>(false);
+
+  const {
+    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
+    handleSubmit,
+    reset,
+    setError,
+    setValue,
+    control,
+  } = useForm<Schema>({
+    resolver: zodResolver(schema),
+    mode: "onBlur",
+  });
 
   const entity = useAsync(async () => {
     return entityId != undefined
@@ -60,110 +67,68 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
   });
 
   useEffect(() => {
-    if (!entry.loading && entry.value !== undefined) {
-      _setEntryInfo(formalizeEntryInfo(entry.value, excludeAttrs));
-    } else if (
-      !entry.loading &&
-      !entity.loading &&
-      entity.value !== undefined
-    ) {
-      _setEntryInfo(initializeEntryInfo(entity.value));
-    }
-  }, [entity, entry]);
-
-  useEffect(() => {
-    setSubmittable(entryInfo != null && isSubmittable(entryInfo));
-  }, [entryInfo]);
-
-  const setEntryInfo: Dispatch<EditableEntry> = (entryInfo: EditableEntry) => {
-    setEdited(true);
-    _setEntryInfo(entryInfo);
-  };
-
-  const handleSubmit = async () => {
-    const updatedAttr = convertAttrsFormatCtoS(entryInfo?.attrs ?? {});
-
-    // TODO something better to notify validation errors
-    if (entryInfo?.name == null) {
-      throw new Error("name is required");
-    }
-
-    if (entryId == undefined) {
-      try {
-        await aironeApiClientV2.createEntry(
-          entityId,
-          entryInfo.name,
-          updatedAttr
-        );
-        setSubmitted(true);
-        enqueueSnackbar("エントリの作成が完了しました", {
-          variant: "success",
-        });
-      } catch (e) {
-        if (e instanceof Response) {
-          if (!e.ok) {
-            const json = await e.json();
-            const reasons = ExtractAPIErrorMessage(json);
-
-            enqueueSnackbar(`エントリの作成が失敗しました。詳細: ${reasons}`, {
-              variant: "error",
-            });
-          }
-        } else {
-          throw e;
-        }
+    if (willCreate) {
+      if (!entity.loading && entity.value != null) {
+        const _entryInfo = initializeEntryInfo(entity.value);
+        reset(_entryInfo);
+        setEntryInfo(_entryInfo);
       }
     } else {
-      try {
-        await aironeApiClientV2.updateEntry(
-          entryId,
-          entryInfo.name,
-          updatedAttr
-        );
-        setSubmitted(true);
-        enqueueSnackbar("エントリの更新が完了しました", {
-          variant: "success",
-        });
-      } catch (e) {
-        if (e instanceof Response) {
-          if (!e.ok) {
-            const json = await e.json();
-            const reasons = ExtractAPIErrorMessage(json);
-
-            enqueueSnackbar(`エントリの更新が失敗しました。詳細: ${reasons}`, {
-              variant: "error",
-            });
-          }
-        } else {
-          throw e;
-        }
+      if (!entry.loading && entry.value != null) {
+        const _entryInfo = formalizeEntryInfo(entry.value, excludeAttrs);
+        reset(_entryInfo);
+        setEntryInfo(_entryInfo);
       }
     }
-  };
+  }, [willCreate, entity.value, entry.value]);
 
-  // NOTE: This should be fixed in near future.
-  // This unpeaceful impelmentation guarantees moving page after changing state "submitted"
-  // by handleSubmit() processing to prevent showing wrong Prompt message.
   useEffect(() => {
-    if (submitted) {
-      if (entryId == undefined) {
-        // The difference of history.push() and history.replace() is
-        // - push() : record moving page at browser history stack
-        // - replace() : doesn't record moving page at browser history stack
-        //   (NOTE: The replace() is reasonable when user push "back" button of browser,
-        //          then editing form won't be revealed.
+    if (isSubmitSuccessful) {
+      if (willCreate) {
         history.replace(entityEntriesPath(entityId));
       } else {
         history.replace(entryDetailsPath(entityId, entryId));
       }
     }
-  }, [submitted]);
+  }, [isSubmitSuccessful]);
+
+  const handleSubmitOnValid = async (entry: Schema) => {
+    const updatedAttr = convertAttrsFormatCtoS(entry.attrs);
+
+    const operationName = willCreate ? "作成" : "更新";
+
+    try {
+      if (willCreate) {
+        await aironeApiClientV2.createEntry(entityId, entry.name, updatedAttr);
+      } else {
+        await aironeApiClientV2.updateEntry(entryId, entry.name, updatedAttr);
+      }
+      enqueueSnackbar(`エントリの${operationName}が完了しました`, {
+        variant: "success",
+      });
+    } catch (e) {
+      if (e instanceof Response) {
+        if (!e.ok) {
+          const json = await e.json();
+          const reasons = ExtractAPIErrorMessage(json);
+          enqueueSnackbar(
+            `エントリの${operationName}が失敗しました。詳細: ${reasons}`,
+            {
+              variant: "error",
+            }
+          );
+        }
+      } else {
+        throw e;
+      }
+    }
+  };
 
   const handleCancel = () => {
-    if (entryId != null) {
-      history.replace(entryDetailsPath(entityId, entryId));
-    } else {
+    if (willCreate) {
       history.replace(entityEntriesPath(entityId));
+    } else {
+      history.replace(entryDetailsPath(entityId, entryId));
     }
   };
 
@@ -182,42 +147,11 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
 
   return (
     <Box>
-      <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
-          Top
-        </Typography>
-        <Typography component={Link} to={entitiesPath()}>
-          エンティティ一覧
-        </Typography>
-        {entity.value && (
-          <Box sx={{ display: "flex" }}>
-            <Typography
-              component={Link}
-              to={entityEntriesPath(entity.value.id)}
-            >
-              {entity.value.name}
-            </Typography>
-            {!entity.value.isPublic && <LockIcon />}
-          </Box>
-        )}
-        {entry.value && (
-          <Box sx={{ display: "flex" }}>
-            <Typography
-              component={Link}
-              to={entryDetailsPath(
-                entry.value?.schema?.id ?? 0,
-                entry.value.id
-              )}
-            >
-              {entry.value.name}
-            </Typography>
-            {!entry.value.isPublic && <LockIcon />}
-          </Box>
-        )}
-        <Typography color="textPrimary">
-          {entry.value ? "編集" : "作成"}
-        </Typography>
-      </AironeBreadcrumbs>
+      {entry.value ? (
+        <EntryBreadcrumbs entry={entry.value} title="編集" />
+      ) : (
+        <EntityBreadcrumbs entity={entity.value} title="作成" />
+      )}
 
       <PageHeader
         title={entry?.value != null ? entry.value.name : "新規エントリの作成"}
@@ -225,8 +159,10 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       >
         <SubmitButton
           name="保存"
-          disabled={!submittable}
-          handleSubmit={handleSubmit}
+          disabled={!isValid || isSubmitting || isSubmitSuccessful}
+          handleSubmit={handleSubmit(handleSubmitOnValid, (errors) => {
+            console.log(errors);
+          })}
           handleCancel={handleCancel}
         />
       </PageHeader>
@@ -234,13 +170,14 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
       {entryInfo && (
         <EntryForm
           entryInfo={entryInfo}
-          setEntryInfo={setEntryInfo}
           setIsAnchorLink={setIsAnchorLink}
+          control={control}
+          setValue={setValue}
         />
       )}
 
       <Prompt
-        when={edited && !submitted && !isAnchorLink}
+        when={isDirty && !isSubmitSuccessful && !isAnchorLink}
         message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
       />
     </Box>

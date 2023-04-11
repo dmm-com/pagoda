@@ -4,8 +4,14 @@ import os
 import subprocess
 from typing import Any, Dict
 
+import environ
 from configurations import Configuration
+from ddtrace import config, patch_all, tracer
 from django_replicated import settings
+
+BASE_DIR = environ.Path(__file__) - 2
+env = environ.Env()
+env.read_env(os.path.join(BASE_DIR, ".env"))
 
 
 class Common(Configuration):
@@ -16,20 +22,16 @@ class Common(Configuration):
     # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
     # SECURITY WARNING: keep the secret key used in production secret!
-    SECRET_KEY = "(ch@ngeMe)"
+    SECRET_KEY = env.str("AIRONE_SECRET_KEY", "(ch@ngeMe)")
 
     # Celery settings
-    CELERY_BROKER_URL = "amqp://guest:guest@localhost//"
+    CELERY_BROKER_URL = env.str("AIRONE_RABBITMQ_URL", "amqp://guest:guest@localhost//")
 
     #: Only add pickle to this list if your broker is secured
     #: from unwanted access (see userguide/security.html)
     CELERY_ACCEPT_CONTENT = ["json"]
     CELERY_TASK_SERIALIZER = "json"
-    CELERY_BROKER_HEARTBEAT = 0
-
-    # SECURITY WARNING: don't run with debug turned on in production!
-    DEBUG = True
-    # INTERNAL_IPS = ["127.0.0.1"]
+    CELERY_BROKER_HEARTBEAT = 10
 
     ALLOWED_HOSTS = ["*"]
 
@@ -62,7 +64,6 @@ class Common(Configuration):
         "django_filters",
         "social_django",
         "simple_history",
-        # "debug_toolbar",
     ]
 
     MIDDLEWARE = [
@@ -78,8 +79,14 @@ class Common(Configuration):
         "social_django.middleware.SocialAuthExceptionMiddleware",
         "airone.lib.db.AirOneReplicationMiddleware",
         "simple_history.middleware.HistoryRequestMiddleware",
-        # "debug_toolbar.middleware.DebugToolbarMiddleware",
     ]
+
+    # SECURITY WARNING: don't run with debug turned on in production!
+    DEBUG = env.bool("AIRONE_DEBUG", False)
+    if env.bool("AIRONE_DEBUG", False):
+        INTERNAL_IPS = ["127.0.0.1"]
+        INSTALLED_APPS.append("debug_toolbar")
+        MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
     ROOT_URLCONF = "airone.urls"
 
@@ -123,17 +130,12 @@ class Common(Configuration):
     # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
     DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": "airone",
-            "USER": "airone",
-            "PASSWORD": "password",
-            "HOST": "127.0.0.1",
-            "OPTIONS": {
-                "charset": "utf8mb4",
-            },
-        }
+        "default": env.db(
+            "AIRONE_MYSQL_MASTER_URL",
+            "mysql://airone:password@127.0.0.1:3306/airone?charset=utf8mb4",
+        )
     }
+
     DATABASE_ROUTERS = ["django_replicated.router.ReplicationRouter"]
     REPLICATED_DATABASE_SLAVES = ["default"]
     REPLICATED_CACHE_BACKEND = settings.REPLICATED_CACHE_BACKEND
@@ -149,6 +151,10 @@ class Common(Configuration):
         settings.REPLICATED_FORCE_MASTER_COOKIE_STATUS_CODES
     )
     REPLICATED_MANAGE_ATOMIC_REQUESTS = settings.REPLICATED_MANAGE_ATOMIC_REQUESTS
+
+    if os.environ.get("AIRONE_MYSQL_SLAVE_URL", False):
+        DATABASES["slave"] = env.db("AIRONE_MYSQL_SLAVE_URL")
+        REPLICATED_DATABASE_SLAVES = ["slave"]
 
     # Password validation
     # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -195,14 +201,14 @@ class Common(Configuration):
     AIRONE: Dict[str, Any] = {
         "CONCURRENCY": 1,
         "VERSION": "unknown",
-        "FILE_STORE_PATH": "/tmp/airone_app",
+        "FILE_STORE_PATH": env.str("AIRONE_FILE_STORE_PATH", "/tmp/airone_app"),
         "AUTO_COMPLEMENT_USER": "auto_complementer",
-        "EXTENSIONS": [],
-        "TITLE": "AirOne",
-        "SUBTITLE": "SubTitle, Please change it",
-        "NOTE_DESC": "Description, Please change it",
-        "NOTE_LINK": "",
-        "SSO_DESC": "SSO",
+        "EXTENSIONS": env.list("AIRONE_EXTENSIONS", None, ""),
+        "TITLE": env.str("AIRONE_TITLE", "AirOne"),
+        "SUBTITLE": env.str("AIRONE_SUBTITLE", "SubTitle, Please change it"),
+        "NOTE_DESC": env.str("AIRONE_NOTE_DESC", "Description, Please change it"),
+        "NOTE_LINK": env.str("AIRONE_NOTE_LINK", ""),
+        "SSO_DESC": env.str("AIRONE_SSO_DESC", "SSO"),
     }
 
     try:
@@ -232,80 +238,89 @@ class Common(Configuration):
             # do nothing and use 'unknown' as version when git does not exists
             logging.getLogger(__name__).warning("git command not found.")
 
-    ES_CONFIG = {
-        "NODES": ["localhost:9200"],
-        "USER": "airone",
-        "PASSWORD": "password",
-        "INDEX": "airone",
-        "MAXIMUM_RESULTS_NUM": 500000,
-        "MAXIMUM_NESTED_OBJECT_NUM": 999999,
-        "TIMEOUT": None,
-    }
+    ES_CONFIG = env.search_url(
+        "AIRONE_ELASTICSEARCH_URL", "elasticsearch://airone:password@localhost:9200/airone"
+    )
+    ES_CONFIG.update(
+        {
+            "MAXIMUM_RESULTS_NUM": 500000,
+            "MAXIMUM_NESTED_OBJECT_NUM": 999999,
+            "TIMEOUT": None,
+        }
+    )
 
-    #
+    AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
+    AUTH_CONFIG: Dict[str, Dict] = {"LDAP": {}}
+
     # Note: Disable LDAP authentication by default in the mean time.
-    #
-    # AUTHENTICATION_BACKENDS = (
-    #     "airone.auth.ldap.LDAPBackend",
-    # )
+    if env.bool("AIRONE_LDAP_ENABLE", False):
+        AUTHENTICATION_BACKENDS.append("airone.auth.ldap.LDAPBackend")
+        AUTH_CONFIG = {
+            "LDAP": {
+                "SERVER_ADDRESS": env.str("AIRONE_LDAP_SERVER", "localhost"),
+                "USER_FILTER": env.str(
+                    "AIRONE_LDAP_FILTER", "sn={username},ou=User,dc=example,dc=com"
+                ),
+            }
+        }
 
-    #
     # Note: Disable SSO authentication by default in the mean time.
     # (c.f. https://python-social-auth.readthedocs.io/en/latest/backends/saml.html)
-    # AUTHENTICATION_BACKENDS = (
-    #     "django.contrib.auth.backends.ModelBackend",
-    #     "social_core.backends.saml.SAMLAuth",
-    # )
-    # SOCIAL_AUTH_SAML_SP_ENTITY_ID = ""
-    # SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ""
-    # SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ""
-    # SOCIAL_AUTH_SAML_ORG_INFO = {
-    #     "": {
-    #         "name": "",
-    #         "displayname": "",
-    #         "url": "",
-    #     }
-    # }
-    # SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = {
-    #     "givenName": "",
-    #     "emailAddress": "",
-    # }
-    # SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
-    #     "givenName": "",
-    #     "emailAddress": ""
-    # }
-    # SOCIAL_AUTH_SAML_ENABLED_IDPS = {
-    #     "": {
-    #         "entity_id": "",
-    #         "url": "",
-    #         "x509cert": """
-    #         """,
-    #         "attr_user_permanent_id": "",
-    #         "attr_name": "",
-    #         "attr_username": "",
-    #     }
-    # }
-    # SOCIAL_AUTH_CLEAN_USERNAMES = False
-    #
-    # SOCIAL_AUTH_PIPELINE = (
-    #     "social_core.pipeline.social_auth.social_details",
-    #     "social_core.pipeline.social_auth.social_uid",
-    #     "social_core.pipeline.social_auth.auth_allowed",
-    #     "social_core.pipeline.social_auth.social_user",
-    #     "airone.auth.social_auth.create_user",
-    #     # 'social_core.pipeline.user.get_username',
-    #     # 'social_core.pipeline.user.create_user',
-    #     "social_core.pipeline.social_auth.associate_user",
-    #     "social_core.pipeline.social_auth.load_extra_data",
-    #     "social_core.pipeline.user.user_details",
-    # )
-
-    AUTH_CONFIG = {
-        "LDAP": {
-            "SERVER_ADDRESS": "localhost",
-            "USER_FILTER": "sn={username},ou=User,dc=example,dc=com",
+    if env.bool("AIRONE_SSO_ENABLE", False):
+        AUTHENTICATION_BACKENDS.append("social_core.backends.saml.SAMLAuth")
+        SOCIAL_AUTH_SAML_SP_ENTITY_ID = env.str("AIRONE_SSO_URL", "")
+        SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = env.str("AIRONE_SSO_PRIVATE_KEY", "")
+        SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = env.str("AIRONE_SSO_PUBLIC_CERT", "")
+        SOCIAL_AUTH_SAML_ORG_INFO = {
+            "en-US": {
+                "name": "airone",
+                "displayname": env.str("AIRONE_SSO_DISPLAY_NAME", ""),
+                "url": env.str("AIRONE_SSO_URL", ""),
+            }
         }
-    }
+        SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = {
+            "givenName": env.str("AIRONE_SSO_CONTACT_NAME", ""),
+            "emailAddress": env.str("AIRONE_SSO_CONTACT_EMAIL", ""),
+        }
+        SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
+            "givenName": env.str("AIRONE_SSO_CONTACT_NAME", ""),
+            "emailAddress": env.str("AIRONE_SSO_CONTACT_EMAIL", ""),
+        }
+        SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+            env.str("AIRONE_SSO_PROVIDER", ""): {
+                "entity_id": env.str("AIRONE_SSO_ENTITY_ID", ""),
+                "url": env.str("AIRONE_SSO_LOGIN_URL", ""),
+                "x509cert": env.str("AIRONE_SSO_X509_CERT", "", True),
+                "attr_user_permanent_id": env.str("AIRONE_SSO_USER_ID", ""),
+                "attr_name": env.str("AIRONE_SSO_USER_ID", ""),
+                "attr_email": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+            }
+        }
+        SOCIAL_AUTH_CLEAN_USERNAMES = False
+
+        SOCIAL_AUTH_PIPELINE = (
+            "social_core.pipeline.social_auth.social_details",
+            "social_core.pipeline.social_auth.social_uid",
+            "social_core.pipeline.social_auth.auth_allowed",
+            "social_core.pipeline.social_auth.social_user",
+            "airone.auth.social_auth.create_user",
+            # 'social_core.pipeline.user.get_username',
+            # 'social_core.pipeline.user.create_user',
+            "social_core.pipeline.social_auth.associate_user",
+            "social_core.pipeline.social_auth.load_extra_data",
+            "social_core.pipeline.user.user_details",
+        )
+
+    # email
+    if env.bool("AIRONE_EMAIL_ENABLE", False):
+        EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+        EMAIL_HOST = env.str("AIRONE_EMAIL_HOST", "localhost")
+        EMAIL_PORT = env.str("AIRONE_EMAIL_PORT", "25")
+        EMAIL_HOST_USER = env.str("AIRONE_EMAIL_HOST_USER", "")
+        EMAIL_HOST_PASSWORD = env.str("AIRONE_EMAIL_HOST_PASSWORD", "")
+        EMAIL_USE_TLS = env.bool("AIRONE_EMAIL_USE_TLS", False)
+        SERVER_EMAIL = env.str("AIRONE_EMAIL_FROM", "localhost@localdomain")
+        ADMINS = [x.split(":") for x in env.list("AIRONE_EMAIL_ADMINS")]
 
     LOGGING: Dict[str, Any] = {
         "version": 1,
@@ -373,3 +388,39 @@ class Common(Configuration):
             "airone.spectacular.filter_apiv2_hook",
         ]
     }
+
+    # datadog
+    if env.bool("AIRONE_DATADOG_ENABLE", False):
+        tracer.configure(
+            hostname="localhost",
+            port=8126,
+            enabled=True,
+            partial_flush_enabled=True,
+            partial_flush_min_spans=1000,
+        )
+        tracer.set_tags(env.dict("AIRONE_DATADOG_TAG", dict, {"env": "airone"}))
+        config.django["service_name"] = "airone"
+        config.django["cache_service_name"] = "cache"
+        config.django["database_service_name"] = "db"
+        config.django["instrument_databases"] = True
+        config.django["instrument_caches"] = True
+        config.django["instrument_middleware"] = False
+        config.django["trace_query_string"] = True
+        config.celery["distributed_tracing"] = True
+
+        patch_all(mysql=False, mysqldb=False, pymysql=False, logging=True)
+
+        INSTALLED_APPS.append("ddtrace.contrib.django")
+
+        LOGGING["formatters"]["all"]["format"] = "\t".join(
+            [
+                "[%(levelname)s]",
+                "asctime:%(asctime)s",
+                "module:%(module)s",
+                "message:%(message)s",
+                "process:%(process)d",
+                "thread:%(thread)d",
+                "dd.trace_id:%(dd.trace_id)s",
+                "dd.span_id:%(dd.span_id)s",
+            ]
+        )
