@@ -88,7 +88,6 @@ class AironeTestCase(TestCase):
                                 [ACLType.Nothing.id by default]
           - ref : Entity that Entry can refer to
         """
-
         entity: Entity = Entity.objects.create(
             name=name, created_user=user, is_public=is_public, default_permission=default_permission
         )
@@ -106,12 +105,8 @@ class AironeTestCase(TestCase):
                 }
             )
 
-            if "ref" in attr_info:
-                if isinstance(attr_info["ref"], list):
-                    for ref in attr_info["ref"]:
-                        entity_attr.referral.add(ref)
-                else:
-                    entity_attr.referral.add(attr_info["ref"])
+            # register referral(s) EntityAttr.add_referral() supports any kind of types
+            entity_attr.add_referral(attr_info.get("ref")])
 
             entity.attrs.add(entity_attr)
 

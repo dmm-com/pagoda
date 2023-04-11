@@ -275,7 +275,7 @@ class ModelTest(TestCase):
             created_user=user,
             parent_entity=entity,
         )
-        attr.referral.add(entity)
+        attr.add_referral(entity)
 
         # initialize params which is same with the EntityAttr `attr`
         params = {
@@ -311,3 +311,42 @@ class ModelTest(TestCase):
         changed_params = copy(params)
         changed_params["is_delete_in_chain"] = not params["is_delete_in_chain"]
         self.assertTrue(attr.is_updated(**changed_params))
+
+    def test_add_referral(self):
+        # create Entities to be referred by test EntityAttr
+        ref_entities = [Entity.objects.create(name="r-%d" % i, created_user=self._test_user) for i in range(3)]
+
+        # create EntityAttr for test
+        entity = Entity.objects.create(name="entity", created_user=self._test_user)
+        attr = EntityAttr.objects.create(
+            name="attr",
+            type=AttrTypeValue["object"],
+            created_user=self._test_user,
+            parent_entity=entity,
+        )
+
+        # set referrals with invalid patterns and confirms it works safely and
+        # confirms that no referral will be set
+        attr.add_referral("invalid referral Entity")
+        attr.add_referral(9999999)
+        attr.add_referral(True)
+        attr.add_referral(None)
+        attr.add_referral(("foo", "bar", "baz"))
+        attr.add_referral(["foo", "bar", "baz"])
+        attr.add_referral({"hoge": "fuga"})
+        self.assertEqual([x.name for x in attr.referral.all()], [])
+
+        # set referrals with valid immediate values and confirms expected referrals are set
+        attr.add_referral(ref_entities[0].name)
+        attr.add_referral(ref_entities[1].id)
+        attr.add_referral(ref_entities[2])
+        self.assertEqual([x.name for x in attr.referral.all()], [x.name for x in ref_entities])
+
+        # set referrals with valid list value and confirms expected referrals are set
+        attr.referral_clear()
+        attr.add_referral([
+            ref_entities[0].name,
+            ref_entities[1].id,
+            ref_entities[2],
+        ])
+        self.assertEqual([x.name for x in attr.referral.all()], [x.name for x in ref_entities])
