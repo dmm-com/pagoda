@@ -25,11 +25,11 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(
       <CopyForm
-        template_entry={entry}
         entries=""
         setEntries={() => {
           /* nothing */
         }}
+        templateEntry={entry}
       />,
       { wrapper: TestWrapper }
     )

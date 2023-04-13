@@ -89,7 +89,7 @@ export const CopyEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
           <CopyForm
             entries={entries}
             setEntries={setEntries}
-            template_entry={entry.value}
+            templateEntry={entry.value}
           />
         )}
       </Container>

@@ -14,57 +14,57 @@ const SampleBox = styled(Box)({
 });
 
 const SampleTextField = styled(TextField)({
-  my: "16px",
+  margin: "8px 0",
   width: "95%",
 });
 
 export interface CopyFormProps {
-  template_entry: EntryRetrieve;
   entries: string;
   setEntries: (entries: string) => void;
+  templateEntry: EntryRetrieve;
 }
 
 export const CopyForm: FC<CopyFormProps> = ({
-  template_entry,
   entries,
   setEntries,
+  templateEntry,
 }) => {
   return (
     <>
       <Typography>
         {"入力した各行ごとに " +
-          template_entry?.name.substring(0, 50) +
+          templateEntry.name.substring(0, 50) +
           " と同じ属性を持つ別のエントリを作成"}
       </Typography>
-      <Box>
-        <TextField
-          fullWidth
-          minRows={6}
-          placeholder="コピーするエントリ名"
+      <TextField
+        id="copy-name"
+        fullWidth
+        minRows={6}
+        maxRows={15}
+        placeholder="コピーするエントリ名"
+        multiline
+        value={entries}
+        onChange={(e) => setEntries(e.target.value)}
+      />
+      <SampleBox display="flex">
+        <Typography variant="h6" mt="24px" color="primary">
+          SAMPLE
+        </Typography>
+        <Typography color="primary">
+          (Vm0001、vm0002、…vm006の6エントリを作成する場合)
+        </Typography>
+        <SampleTextField
           multiline
-          value={entries}
-          onChange={(e) => setEntries(e.target.value)}
-        />
-        <SampleBox display="flex">
-          <Typography variant="h6" mt="24px" color="primary">
-            SAMPLE
-          </Typography>
-          <Typography color="primary">
-            (Vm0001、vm0002、…vm006の6エントリを作成する場合)
-          </Typography>
-          <SampleTextField
-            multiline
-            disabled
-            label="コピーするエントリ名"
-            value="vm0001
+          disabled
+          label="コピーするエントリ名"
+          value="vm0001
 vm0002
 vm0003
 vm0004
 vm0005
 vm0006"
-          />
-        </SampleBox>
-      </Box>
+        />
+      </SampleBox>
     </>
   );
 };
