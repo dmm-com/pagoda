@@ -21,48 +21,15 @@ import { ReferralsAutocomplete } from "./ReferralsAutocomplete";
 interface CommonProps {
   attrName: string;
   schemaId: number;
-  index?: number;
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
-  handleClickDeleteListItem?: (index: number) => void;
-  handleClickAddListItem?: (index: number) => void;
 }
 
 export const ObjectAttributeValueField: FC<
   CommonProps & {
-    objectName?: string;
     multiple?: boolean;
-    disabled?: boolean;
-    disabledToAppend?: boolean;
   }
-> = ({
-  multiple,
-  attrName,
-  schemaId,
-  index,
-  disabled,
-  disabledToAppend,
-  control,
-  setValue,
-  handleClickAddListItem,
-  handleClickDeleteListItem,
-  objectName,
-}) => {
-  // TODO give it via props explicitly???
-  const fieldSuffix = (() => {
-    if (objectName != null && index != null) {
-      return `asArrayNamedObject.${index}.${objectName}`;
-    }
-    if (objectName != null) {
-      return `asNamedObject.${objectName}`;
-    }
-    if (multiple === true) {
-      return "asArrayObject";
-    }
-    return "asObject";
-  })();
-
-  // TODO separate logics based on the types
+> = ({ multiple, attrName, schemaId, control, setValue }) => {
   const handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
   ) => {
@@ -85,10 +52,16 @@ export const ObjectAttributeValueField: FC<
       }
     })();
 
-    setValue(`attrs.${attrName}.value.${fieldSuffix}`, newValue as never, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
+    setValue(
+      multiple
+        ? `attrs.${attrName}.value.asArrayObject`
+        : `attrs.${attrName}.value.asObject`,
+      newValue as never,
+      {
+        shouldDirty: true,
+        shouldValidate: true,
+      }
+    );
   };
 
   return (
@@ -98,7 +71,11 @@ export const ObjectAttributeValueField: FC<
       </Typography>
       <Box display="flex" alignItems="center">
         <Controller
-          name={`attrs.${attrName}.value.${fieldSuffix}`}
+          name={
+            multiple
+              ? `attrs.${attrName}.value.asArrayObject`
+              : `attrs.${attrName}.value.asObject`
+          }
           control={control}
           render={({ field, fieldState: { error } }) => (
             <ReferralsAutocomplete
@@ -106,31 +83,10 @@ export const ObjectAttributeValueField: FC<
               value={field.value ?? null}
               handleChange={handleChange}
               multiple={multiple}
-              disabled={disabled}
               error={error}
             />
           )}
         />
-        {index !== undefined && (
-          <>
-            {handleClickDeleteListItem != null && (
-              <IconButton
-                sx={{ mx: "20px" }}
-                onClick={() => handleClickDeleteListItem(index)}
-              >
-                <DeleteOutlineIcon />
-              </IconButton>
-            )}
-            {handleClickAddListItem != null && (
-              <IconButton
-                disabled={disabledToAppend}
-                onClick={() => handleClickAddListItem(index)}
-              >
-                <AddIcon />
-              </IconButton>
-            )}
-          </>
-        )}
       </Box>
     </Box>
   );
@@ -138,6 +94,9 @@ export const ObjectAttributeValueField: FC<
 
 export const NamedObjectAttributeValueField: FC<
   CommonProps & {
+    index?: number;
+    handleClickDeleteListItem?: (index: number) => void;
+    handleClickAddListItem?: (index: number) => void;
     withBoolean?: boolean;
   }
 > = ({
@@ -174,7 +133,36 @@ export const NamedObjectAttributeValueField: FC<
     );
   };
 
-  const disabledToAppend = index === 0 && objectName === "";
+  const handleChange = (
+    value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
+  ) => {
+    const newValue: any = (() => {
+      if (Array.isArray(value)) {
+        throw new Error("Array typed value is not supported for named object.");
+      }
+
+      if (value == null) {
+        return null;
+      } else {
+        const _value = value as GetEntryAttrReferral;
+        return {
+          ..._value,
+          _boolean: false,
+        };
+      }
+    })();
+
+    setValue(
+      index != null
+        ? `attrs.${attrName}.value.asArrayNamedObject.${index}.${objectName}`
+        : `attrs.${attrName}.value.asNamedObject.${objectName}`,
+      newValue as never,
+      {
+        shouldDirty: true,
+        shouldValidate: true,
+      }
+    );
+  };
 
   return (
     <Box display="flex" alignItems="flex-end">
@@ -209,18 +197,50 @@ export const NamedObjectAttributeValueField: FC<
           />
         </Box>
       )}
-      <ObjectAttributeValueField
-        attrName={attrName}
-        schemaId={schemaId}
-        control={control}
-        setValue={setValue}
-        objectName={objectName}
-        index={index}
-        handleClickAddListItem={handleClickAddListItem}
-        handleClickDeleteListItem={handleClickDeleteListItem}
-        disabled={objectName === ""}
-        disabledToAppend={disabledToAppend}
-      />
+      <Box>
+        <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
+          エントリを選択
+        </Typography>
+        <Box display="flex" alignItems="center">
+          <Controller
+            name={
+              index != null
+                ? `attrs.${attrName}.value.asArrayNamedObject.${index}.${objectName}`
+                : `attrs.${attrName}.value.asNamedObject.${objectName}`
+            }
+            control={control}
+            render={({ field, fieldState: { error } }) => (
+              <ReferralsAutocomplete
+                schemaId={schemaId}
+                value={field.value ?? null}
+                handleChange={handleChange}
+                disabled={objectName === ""}
+                error={error}
+              />
+            )}
+          />
+          {index !== undefined && (
+            <>
+              {handleClickDeleteListItem != null && (
+                <IconButton
+                  sx={{ mx: "20px" }}
+                  onClick={() => handleClickDeleteListItem(index)}
+                >
+                  <DeleteOutlineIcon />
+                </IconButton>
+              )}
+              {handleClickAddListItem != null && (
+                <IconButton
+                  disabled={index === 0 && objectName === ""}
+                  onClick={() => handleClickAddListItem(index)}
+                >
+                  <AddIcon />
+                </IconButton>
+              )}
+            </>
+          )}
+        </Box>
+      </Box>
     </Box>
   );
 };
