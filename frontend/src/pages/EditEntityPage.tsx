@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
-import { useSnackbar } from "notistack";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Prompt } from "react-router-dom";
@@ -9,6 +8,7 @@ import { useAsync } from "react-use";
 
 import { schema, Schema } from "../components/entity/EntityFormSchema";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+import { useFormNotification } from "../hooks/useFormNotification";
 import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
 
 import { entitiesPath, entityEntriesPath } from "Routes";
@@ -23,8 +23,14 @@ import { useTypedParams } from "hooks/useTypedParams";
 
 export const EditEntityPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
+
+  const willCreate = entityId === undefined;
+
   const history = useHistory();
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSubmitResult } = useFormNotification(
+    "エンティティ",
+    willCreate
+  );
 
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
@@ -60,7 +66,6 @@ export const EditEntityPage: FC = () => {
   };
 
   const handleSubmitOnValid = async (entity: Schema) => {
-    const createMode = entityId === undefined;
     // Adjusted attributes for the API
     const attrs =
       entity.attrs
@@ -91,9 +96,8 @@ export const EditEntityPage: FC = () => {
           })
         ) ?? [];
 
-    const operationName = createMode ? "作成" : "更新";
     try {
-      if (createMode) {
+      if (willCreate) {
         await aironeApiClientV2.createEntity(
           entity.name,
           entity.note,
@@ -111,28 +115,17 @@ export const EditEntityPage: FC = () => {
           webhooks
         );
       }
-      enqueueSnackbar(`エンティティの${operationName}に成功しました`, {
-        variant: "success",
-      });
+      enqueueSubmitResult(true);
     } catch (e) {
       if (e instanceof Response) {
         await ExtractAPIException<Schema>(
           e,
-          (message) => {
-            enqueueSnackbar(
-              `エンティティの${operationName}に失敗しました。詳細: "${message}"`,
-              {
-                variant: "error",
-              }
-            );
-          },
+          (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
           (name, message) =>
             setError(name, { type: "custom", message: message })
         );
       } else {
-        enqueueSnackbar(`エンティティの${operationName}に失敗しました。`, {
-          variant: "error",
-        });
+        enqueueSubmitResult(false);
       }
     }
   };

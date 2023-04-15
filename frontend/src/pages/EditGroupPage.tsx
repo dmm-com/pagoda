@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod";
 import { Box, Container, Typography } from "@mui/material";
-import { useSnackbar } from "notistack";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Prompt, useHistory } from "react-router-dom";
@@ -8,6 +7,7 @@ import { useAsync } from "react-use";
 
 import { PageHeader } from "../components/common/PageHeader";
 import { schema, Schema } from "../components/group/GroupFormSchema";
+import { useFormNotification } from "../hooks/useFormNotification";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
 import { DjangoContext } from "../services/DjangoContext";
@@ -20,9 +20,11 @@ import { SubmitButton } from "components/common/SubmitButton";
 import { GroupForm } from "components/group/GroupForm";
 
 export const EditGroupPage: FC = () => {
-  const history = useHistory();
-  const { enqueueSnackbar } = useSnackbar();
   const { groupId } = useTypedParams<{ groupId?: number }>();
+  const willCreate = groupId == null;
+
+  const history = useHistory();
+  const { enqueueSubmitResult } = useFormNotification("グループ", willCreate);
 
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
@@ -47,9 +49,6 @@ export const EditGroupPage: FC = () => {
   }, [group.value]);
 
   const handleSubmitOnValid = async (group: Schema) => {
-    const willCreate = groupId == null;
-    const operationName = willCreate ? "作成" : "更新";
-
     try {
       if (willCreate) {
         await aironeApiClientV2.createGroup({
@@ -62,28 +61,17 @@ export const EditGroupPage: FC = () => {
           members: group.members.map((member) => member.id),
         });
       }
-      enqueueSnackbar(`グループの${operationName}に成功しました`, {
-        variant: "success",
-      });
+      enqueueSubmitResult(true);
     } catch (e) {
       if (e instanceof Response) {
         await ExtractAPIException<Schema>(
           e,
-          (message) => {
-            enqueueSnackbar(
-              `グループの${operationName}に失敗しました。詳細: "${message}"`,
-              {
-                variant: "error",
-              }
-            );
-          },
+          (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
           (name, message) =>
             setError(name, { type: "custom", message: message })
         );
       } else {
-        enqueueSnackbar(`グループの${operationName}に失敗しました。`, {
-          variant: "error",
-        });
+        enqueueSubmitResult(false);
       }
     }
   };
