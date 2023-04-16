@@ -43,7 +43,7 @@ export const ACLPage: FC = () => {
   });
 
   const handleSubmitOnInvalid = useCallback(
-    async (err) => {
+    async (err: any) => {
       enqueueSnackbar(err.generalError.message, { variant: "error" });
     },
     [objectId]
