@@ -1,6 +1,6 @@
-import { AutocompleteInputChangeReason } from "@mui/base/AutocompleteUnstyled/useAutocomplete";
 import {
   Autocomplete,
+  AutocompleteInputChangeReason,
   Box,
   Button,
   Checkbox,

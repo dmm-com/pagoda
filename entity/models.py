@@ -53,6 +53,27 @@ class EntityAttr(ACLBase):
         finally:
             del self.skip_history_when_saving
 
+    def add_referral(self, referral):
+        adding_referral = None
+        if isinstance(referral, list):
+            [self.add_referral(x) for x in referral if x]
+
+        elif isinstance(referral, str):
+            adding_referral = Entity.objects.filter(name=referral, is_active=True).first()
+
+        elif isinstance(referral, int) and type(referral) == int:
+            # The latter type checking is necessary when a boolean typed value is passed
+            # because Bool type is implemented as a subclass of Int in Python
+            # (at the time of Python 3.8)
+            adding_referral = Entity.objects.filter(id=referral, is_active=True).first()
+
+        elif isinstance(referral, Entity) and referral.is_active:
+            adding_referral = referral
+
+        # Add referral when a valid referral is passed
+        if adding_referral:
+            self.referral.add(adding_referral)
+
 
 class Entity(ACLBase):
     STATUS_TOP_LEVEL = 1 << 0

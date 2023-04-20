@@ -64,6 +64,7 @@ class Common(Configuration):
         "django_filters",
         "social_django",
         "simple_history",
+        "storages",
     ]
 
     MIDDLEWARE = [
@@ -195,13 +196,20 @@ class Common(Configuration):
     STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+    MEDIA_ROOT = env.str("AIRONE_FILE_STORE_PATH", "/tmp/airone_app")
+
+    if env.bool("AIRONE_STORAGE_ENABLE", False):
+        DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+        AWS_ACCESS_KEY_ID = env.str("AIRONE_STORAGE_ACCESS_KEY", "")
+        AWS_SECRET_ACCESS_KEY = env.str("AIRONE_STORAGE_SECRET_ACCESS_KEY", "")
+        AWS_STORAGE_BUCKET_NAME = env.str("AIRONE_STORAGE_BUCKET_NAME", "")
+
     LOGIN_REDIRECT_URL = "/dashboard/"
 
     # global settins for AirOne
     AIRONE: Dict[str, Any] = {
         "CONCURRENCY": 1,
         "VERSION": "unknown",
-        "FILE_STORE_PATH": env.str("AIRONE_FILE_STORE_PATH", "/tmp/airone_app"),
         "AUTO_COMPLEMENT_USER": "auto_complementer",
         "EXTENSIONS": env.list("AIRONE_EXTENSIONS", None, ""),
         "TITLE": env.str("AIRONE_TITLE", "AirOne"),
@@ -229,8 +237,8 @@ class Common(Configuration):
             logging.getLogger(__name__).warning("could not describe airone version from git")
 
         # create a directory to store temporary file for applications
-        if not os.path.exists(AIRONE["FILE_STORE_PATH"]):
-            os.makedirs(AIRONE["FILE_STORE_PATH"])
+        if not os.path.exists(MEDIA_ROOT):
+            os.makedirs(MEDIA_ROOT)
 
     except OSError as e:
         # errno.ENOENT is the errno of FileNotFoundError

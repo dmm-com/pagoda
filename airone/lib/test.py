@@ -39,14 +39,14 @@ class AironeTestCase(TestCase):
         OVERRIDE_ES_CONFIG = settings.ES_CONFIG.copy()
         OVERRIDE_ES_CONFIG["INDEX_NAME"] = "test-" + settings.ES_CONFIG["INDEX_NAME"]
         OVERRIDE_AIRONE = settings.AIRONE.copy()
-        OVERRIDE_AIRONE["FILE_STORE_PATH"] = "/tmp/airone_app_test"
+        MEDIA_ROOT = "/tmp/airone_app_test"
 
         if not os.path.exists("/tmp/airone_app_test"):
             os.makedirs("/tmp/airone_app_test")
 
         # update django settings
         self._settings: override_settings = self.settings(
-            ES_CONFIG=OVERRIDE_ES_CONFIG, AIRONE=OVERRIDE_AIRONE
+            ES_CONFIG=OVERRIDE_ES_CONFIG, AIRONE=OVERRIDE_AIRONE, MEDIA_ROOT=MEDIA_ROOT
         )
         self._settings.enable()
         self.modify_settings(
@@ -58,9 +58,8 @@ class AironeTestCase(TestCase):
         self._es.recreate_index()
 
     def tearDown(self):
-        # shutil.rmtree(settings.AIRONE['FILE_STORE_PATH'])
-        for fname in os.listdir(settings.AIRONE["FILE_STORE_PATH"]):
-            os.unlink(os.path.join(settings.AIRONE["FILE_STORE_PATH"], fname))
+        for fname in os.listdir(settings.MEDIA_ROOT):
+            os.unlink(os.path.join(settings.MEDIA_ROOT, fname))
 
         self._settings.disable()
 
@@ -88,7 +87,6 @@ class AironeTestCase(TestCase):
                                 [ACLType.Nothing.id by default]
           - ref : Entity that Entry can refer to
         """
-
         entity: Entity = Entity.objects.create(
             name=name, created_user=user, is_public=is_public, default_permission=default_permission
         )
@@ -106,12 +104,8 @@ class AironeTestCase(TestCase):
                 }
             )
 
-            if "ref" in attr_info:
-                if isinstance(attr_info["ref"], list):
-                    for ref in attr_info["ref"]:
-                        entity_attr.referral.add(ref)
-                else:
-                    entity_attr.referral.add(attr_info["ref"])
+            # register referral(s) EntityAttr.add_referral() supports any kind of types
+            entity_attr.add_referral(attr_info.get("ref"))
 
             entity.attrs.add(entity_attr)
 

@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Container, Typography } from "@mui/material";
-import { useSnackbar } from "notistack";
 import React, { FC, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Prompt, useHistory } from "react-router-dom";
@@ -11,6 +10,7 @@ import { Loading } from "../components/common/Loading";
 import { PageHeader } from "../components/common/PageHeader";
 import { RoleForm } from "../components/role/RoleForm";
 import { schema, Schema } from "../components/role/RoleFormSchema";
+import { useFormNotification } from "../hooks/useFormNotification";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
 
@@ -20,9 +20,11 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { SubmitButton } from "components/common/SubmitButton";
 
 export const EditRolePage: FC = () => {
-  const history = useHistory();
-  const { enqueueSnackbar } = useSnackbar();
   const { roleId } = useTypedParams<{ roleId?: number }>();
+  const willCreate = roleId == null;
+
+  const history = useHistory();
+  const { enqueueSubmitResult } = useFormNotification("ロール", willCreate);
 
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
@@ -58,37 +60,23 @@ export const EditRolePage: FC = () => {
         adminGroups: role.adminGroups.map((group) => group.id),
       };
 
-      const willCreate = roleId == null;
-      const operationName = willCreate ? "作成" : "更新";
-
       try {
         if (willCreate) {
           await aironeApiClientV2.createRole(roleCreateUpdate);
         } else {
           await aironeApiClientV2.updateRole(roleId, roleCreateUpdate);
         }
-        enqueueSnackbar(`ロールの${operationName}に成功しました`, {
-          variant: "success",
-        });
+        enqueueSubmitResult(true);
       } catch (e) {
         if (e instanceof Response) {
           await ExtractAPIException<Schema>(
             e,
-            (message) => {
-              enqueueSnackbar(
-                `ロールの${operationName}に失敗しました。詳細: "${message}"`,
-                {
-                  variant: "error",
-                }
-              );
-            },
+            (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
             (name, message) =>
               setError(name, { type: "custom", message: message })
           );
         } else {
-          enqueueSnackbar(`ロールの${operationName}に失敗しました。`, {
-            variant: "error",
-          });
+          enqueueSubmitResult(false);
         }
       }
     },

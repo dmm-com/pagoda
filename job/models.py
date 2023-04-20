@@ -7,6 +7,7 @@ from importlib import import_module
 
 import pytz
 from django.conf import settings
+from django.core.files.storage import default_storage
 from django.db import models
 
 from acl.models import ACLBase
@@ -502,14 +503,13 @@ class Job(models.Model):
         )
 
     def set_cache(self, value):
-        with open("%s/job_%d" % (settings.AIRONE["FILE_STORE_PATH"], self.id), "wb") as fp:
+        with default_storage.open("job_%d" % self.id, "wb") as fp:
             pickle.dump(value, fp)
 
     def get_cache(self):
         value = ""
-        with open("%s/job_%d" % (settings.AIRONE["FILE_STORE_PATH"], self.id), "rb") as fp:
+        with default_storage.open("job_%d" % self.id, "rb") as fp:
             value = pickle.load(fp)
-
         return value
 
     @classmethod
