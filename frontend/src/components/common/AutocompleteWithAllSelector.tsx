@@ -1,9 +1,7 @@
 import {
+  Autocomplete,
   AutocompleteChangeReason,
   AutocompleteFreeSoloValueMapping,
-} from "@mui/base/AutocompleteUnstyled/useAutocomplete";
-import {
-  Autocomplete,
   Box,
   Checkbox,
   createFilterOptions,
