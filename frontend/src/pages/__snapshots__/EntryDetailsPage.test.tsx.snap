@@ -143,7 +143,7 @@ exports[`should match snapshot 1`] = `
                   class="MuiBox-root css-nvayut"
                 >
                   <div
-                    class="css-w4z10b-MuiStack-root"
+                    class="MuiStack-root css-w4z10b-MuiStack-root"
                   >
                     <div
                       class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-rdlxh8-MuiButtonBase-root-MuiChip-root"
@@ -277,7 +277,7 @@ exports[`should match snapshot 1`] = `
                 class="MuiBox-root css-j3ycse"
               >
                 <div
-                  class="css-1p5q5e5-MuiStack-root"
+                  class="MuiStack-root css-1p5q5e5-MuiStack-root"
                 >
                   <nav
                     aria-label="pagination navigation"
@@ -568,7 +568,7 @@ exports[`should match snapshot 1`] = `
                 class="MuiBox-root css-nvayut"
               >
                 <div
-                  class="css-w4z10b-MuiStack-root"
+                  class="MuiStack-root css-w4z10b-MuiStack-root"
                 >
                   <div
                     class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-rdlxh8-MuiButtonBase-root-MuiChip-root"
@@ -702,7 +702,7 @@ exports[`should match snapshot 1`] = `
               class="MuiBox-root css-j3ycse"
             >
               <div
-                class="css-1p5q5e5-MuiStack-root"
+                class="MuiStack-root css-1p5q5e5-MuiStack-root"
               >
                 <nav
                   aria-label="pagination navigation"
