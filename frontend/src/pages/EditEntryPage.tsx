@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
-import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Prompt } from "react-router-dom";
@@ -10,8 +9,9 @@ import { useAsync } from "react-use";
 import { Loading } from "../components/common/Loading";
 import { PageHeader } from "../components/common/PageHeader";
 import { Schema, schema } from "../components/entry/entryForm/EntryFormSchema";
+import { useFormNotification } from "../hooks/useFormNotification";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { ExtractAPIErrorMessage } from "../services/AironeAPIErrorUtil";
+import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
 
 import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
@@ -36,8 +36,7 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
   const willCreate = entryId == null;
 
   const history = useHistory();
-
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSubmitResult } = useFormNotification("エントリ", willCreate);
 
   const [entryInfo, setEntryInfo] = useState<Schema>();
   const [isAnchorLink, setIsAnchorLink] = useState<boolean>(false);
@@ -95,31 +94,23 @@ export const EditEntryPage: FC<Props> = ({ excludeAttrs = [] }) => {
   const handleSubmitOnValid = async (entry: Schema) => {
     const updatedAttr = convertAttrsFormatCtoS(entry.attrs);
 
-    const operationName = willCreate ? "作成" : "更新";
-
     try {
       if (willCreate) {
         await aironeApiClientV2.createEntry(entityId, entry.name, updatedAttr);
       } else {
         await aironeApiClientV2.updateEntry(entryId, entry.name, updatedAttr);
       }
-      enqueueSnackbar(`エントリの${operationName}が完了しました`, {
-        variant: "success",
-      });
+      enqueueSubmitResult(true);
     } catch (e) {
       if (e instanceof Response) {
-        if (!e.ok) {
-          const json = await e.json();
-          const reasons = ExtractAPIErrorMessage(json);
-          enqueueSnackbar(
-            `エントリの${operationName}が失敗しました。詳細: ${reasons}`,
-            {
-              variant: "error",
-            }
-          );
-        }
+        await ExtractAPIException<Schema>(
+          e,
+          (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
+          (name, message) =>
+            setError(name, { type: "custom", message: message })
+        );
       } else {
-        throw e;
+        enqueueSubmitResult(false);
       }
     }
   };
