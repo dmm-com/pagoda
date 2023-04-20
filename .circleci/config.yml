@@ -30,12 +30,12 @@ jobs:
       - restore_cache:
           key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}-20220708
       - run:
-          name: Install tox tox-pyenv codecov
+          name: Install tox tox-pyenv
           command: |
             python3 -m venv virtualenv
             . virtualenv/bin/activate
             pip install --upgrade pip
-            pip install tox codecov
+            pip install tox
       - run:
           name: Wait for MySQL is available
           command: dockerize -wait tcp://127.0.0.1:3306 -timeout 120s
@@ -62,8 +62,9 @@ jobs:
       - run:
           name: Coverage
           command: |
-            . virtualenv/bin/activate
-            codecov
+            curl -Os https://uploader.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            ./codecov -t ${CODECOV_TOKEN}
 
   pep8:
     docker:
