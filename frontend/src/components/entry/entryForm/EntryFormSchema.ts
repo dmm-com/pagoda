@@ -9,6 +9,10 @@ import { EditableEntry } from "./EditableEntry";
 export const schema = schemaForType<EditableEntry>()(
   z.object({
     name: z.string().min(1, "エントリ名は必須です").default(""),
+    schema: z.object({
+      id: z.number(),
+      name: z.string(),
+    }),
     attrs: z
       .record(
         z.string().min(1),

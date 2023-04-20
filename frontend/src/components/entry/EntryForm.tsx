@@ -20,9 +20,8 @@ import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { useLocation } from "react-router-dom";
 
-import { Schema } from "./entryForm/EntryFormSchema";
-
 import { AttributeValueField } from "components/entry/entryForm/AttributeValueField";
+import { Schema } from "components/entry/entryForm/EntryFormSchema";
 
 const AnchorLinkButton = styled(Button)(({}) => ({
   border: "0.5px solid gray",
@@ -47,7 +46,7 @@ const RequiredLabel = styled(Typography)(({}) => ({
   padding: "0 8px",
 }));
 
-interface Props {
+export interface EntryFormProps {
   // TODO simplify props more
   entryInfo: Schema;
   setIsAnchorLink: Dispatch<SetStateAction<boolean>>;
@@ -55,7 +54,7 @@ interface Props {
   setValue: UseFormSetValue<Schema>;
 }
 
-export const EntryForm: FC<Props> = ({
+export const EntryForm: FC<EntryFormProps> = ({
   entryInfo,
   setIsAnchorLink,
   control,
@@ -125,6 +124,7 @@ export const EntryForm: FC<Props> = ({
                 render={({ field, fieldState: { error } }) => (
                   <TextField
                     {...field}
+                    id="entry-name"
                     variant="standard"
                     error={error != null}
                     helperText={error?.message}

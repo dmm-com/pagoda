@@ -51,6 +51,10 @@ test("initializeEntryInfo should return expect value", () => {
 
   expect(initializeEntryInfo(entity)).toStrictEqual({
     name: "",
+    schema: {
+      id: 1,
+      name: "TestEntity",
+    },
     attrs: {
       attr: {
         isMandatory: true,
@@ -191,7 +195,11 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
         value: c.value,
       },
     };
-    const entryInfo: EditableEntry = { name: "test_entry", attrs: attrs };
+    const entryInfo: EditableEntry = {
+      name: "test_entry",
+      schema: { id: 0, name: "testEntity" },
+      attrs: attrs,
+    };
 
     expect(isSubmittable(entryInfo)).toStrictEqual(true);
   });
@@ -312,7 +320,11 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
         value: c.value,
       },
     };
-    const entryInfo: EditableEntry = { name: "test_entry", attrs: attrs };
+    const entryInfo: EditableEntry = {
+      name: "test_entry",
+      schema: { id: 0, name: "testEntity" },
+      attrs: attrs,
+    };
     expect(isSubmittable(entryInfo)).toStrictEqual(false);
   });
 });

@@ -185,6 +185,7 @@ exports[`should match snapshot 1`] = `
                         </div>
                         <input
                           aria-hidden="true"
+                          aria-invalid="false"
                           class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
                           name="isPublic"
                           tabindex="-1"
@@ -293,6 +294,7 @@ exports[`should match snapshot 1`] = `
                         </div>
                         <input
                           aria-hidden="true"
+                          aria-invalid="false"
                           class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
                           disabled=""
                           name="defaultPermission"
@@ -516,6 +518,7 @@ exports[`should match snapshot 1`] = `
                       </div>
                       <input
                         aria-hidden="true"
+                        aria-invalid="false"
                         class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
                         name="isPublic"
                         tabindex="-1"
@@ -624,6 +627,7 @@ exports[`should match snapshot 1`] = `
                       </div>
                       <input
                         aria-hidden="true"
+                        aria-invalid="false"
                         class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
                         disabled=""
                         name="defaultPermission"

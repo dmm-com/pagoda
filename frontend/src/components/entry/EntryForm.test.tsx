@@ -12,7 +12,11 @@ import { EntryForm } from "components/entry/EntryForm";
 import { TestWrapper } from "services/TestWrapper";
 
 test("should render a component with essential props", function () {
-  const entryInfo = { name: "test entry", attrs: {} };
+  const entryInfo = {
+    name: "test entry",
+    schema: { id: 0, name: "testEntity" },
+    attrs: {},
+  };
   const setIsAnchorLink = () => {
     /* do nothing */
   };

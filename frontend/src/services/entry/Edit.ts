@@ -23,6 +23,10 @@ export function formalizeEntryInfo(
 ): Schema {
   return {
     name: entry.name,
+    schema: {
+      id: entry.schema.id,
+      name: entry.schema.name,
+    },
     attrs: entry.attrs
       .filter((attr) => !excludeAttrs.includes(attr.schema.name))
       .filter((attr) => attr.schema.id != 0)
@@ -65,6 +69,10 @@ export function formalizeEntryInfo(
 export function initializeEntryInfo(entity: EntityDetail): Schema {
   return {
     name: "",
+    schema: {
+      id: entity.id,
+      name: entity.name,
+    },
     attrs: entity.attrs
       .map((attr): [string, EditableEntryAttrs] => [
         attr.name,

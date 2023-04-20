@@ -11,6 +11,10 @@ describe("schema", () => {
 
   const baseValue: Schema = {
     name: "entry",
+    schema: {
+      id: 2,
+      name: "entity",
+    },
     attrs: {
       string: {
         type: djangoContext?.attrTypeValue.string ?? 0,

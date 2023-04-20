@@ -207,7 +207,7 @@ exports[`should match snapshot 1`] = `
                         class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
                       >
                         <a
-                          class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
+                          class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
                           href="/ui/users/1"
                           tabindex="0"
                         >
@@ -251,7 +251,7 @@ exports[`should match snapshot 1`] = `
               class="MuiBox-root css-1b33znm"
             >
               <div
-                class="css-1p5q5e5-MuiStack-root"
+                class="MuiStack-root css-1p5q5e5-MuiStack-root"
               >
                 <nav
                   aria-label="pagination navigation"
@@ -528,7 +528,7 @@ exports[`should match snapshot 1`] = `
                       class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
                     >
                       <a
-                        class="MuiButtonBase-root MuiCardActionArea-root css-b6lsxj-MuiButtonBase-root-MuiCardActionArea-root"
+                        class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
                         href="/ui/users/1"
                         tabindex="0"
                       >
@@ -572,7 +572,7 @@ exports[`should match snapshot 1`] = `
             class="MuiBox-root css-1b33znm"
           >
             <div
-              class="css-1p5q5e5-MuiStack-root"
+              class="MuiStack-root css-1p5q5e5-MuiStack-root"
             >
               <nav
                 aria-label="pagination navigation"
