@@ -8,6 +8,20 @@
 
 ### Fixed
 
+## v3.47.0
+
+### Added
+* Added django-storages library.
+  Contributed by @hinashi
+
+### Changed
+* Upgrade TypeScript version to 5.x.
+  Contributed by @syucream
+* Validate input entry data with Zod.
+  Contributed by @syucream
+* Changed the entry form to be customizable with custom views.
+  Contributed by @hinashi, @syucream, @userlocalhost
+
 ## v3.46.0
 
 ### Fixed
