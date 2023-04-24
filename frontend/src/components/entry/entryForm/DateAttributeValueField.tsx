@@ -9,19 +9,19 @@ import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { Schema } from "./EntryFormSchema";
 
 interface Props {
-  attrName: string;
+  attrId: number;
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
 }
 
 export const DateAttributeValueField: FC<Props> = ({
-  attrName,
+  attrId,
   control,
   setValue,
 }) => {
   return (
     <Controller
-      name={`attrs.${attrName}.value.asString`}
+      name={`attrs.${attrId}.value.asString`}
       control={control}
       defaultValue=""
       render={({ field, fieldState: { error } }) => (
@@ -37,7 +37,7 @@ export const DateAttributeValueField: FC<Props> = ({
                   date.getMonth() + 1
                 }-${date.getDate()}`;
               }
-              setValue(`attrs.${attrName}.value.asString`, settingDateValue);
+              setValue(`attrs.${attrId}.value.asString`, settingDateValue);
             }}
             renderInput={(params) => (
               <TextField

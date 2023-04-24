@@ -9,7 +9,7 @@ import { aironeApiClientV2 } from "../../../apiclient/AironeApiClientV2";
 import { Schema } from "./EntryFormSchema";
 
 interface Props {
-  attrName: string;
+  attrId: number;
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
   multiple?: boolean;
@@ -17,7 +17,7 @@ interface Props {
 
 export const RoleAttributeValueField: FC<Props> = ({
   multiple,
-  attrName,
+  attrId,
   control,
   setValue,
 }) => {
@@ -33,7 +33,7 @@ export const RoleAttributeValueField: FC<Props> = ({
       if (value != null && !Array.isArray(value)) {
         throw new Error("value must be an array");
       }
-      setValue(`attrs.${attrName}.value.asArrayRole`, value ?? [], {
+      setValue(`attrs.${attrId}.value.asArrayRole`, value ?? [], {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -41,7 +41,7 @@ export const RoleAttributeValueField: FC<Props> = ({
       if (value != null && Array.isArray(value)) {
         throw new Error("value must not be an array");
       }
-      setValue(`attrs.${attrName}.value.asRole`, value, {
+      setValue(`attrs.${attrId}.value.asRole`, value, {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -57,8 +57,8 @@ export const RoleAttributeValueField: FC<Props> = ({
         <Controller
           name={
             multiple === true
-              ? `attrs.${attrName}.value.asArrayRole`
-              : `attrs.${attrName}.value.asRole`
+              ? `attrs.${attrId}.value.asArrayRole`
+              : `attrs.${attrId}.value.asRole`
           }
           control={control}
           render={({ field, fieldState: { error } }) => (

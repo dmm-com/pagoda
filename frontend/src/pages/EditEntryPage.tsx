@@ -25,7 +25,6 @@ import {
 import {
   convertAttrsFormatCtoS,
   formalizeEntryInfo,
-  initializeEntryInfo,
 } from "services/entry/Edit";
 
 interface Props {
@@ -61,9 +60,7 @@ export const EditEntryPage: FC<Props> = ({
   });
 
   const entity = useAsync(async () => {
-    return entityId != undefined
-      ? await aironeApiClientV2.getEntity(entityId)
-      : undefined;
+    return await aironeApiClientV2.getEntity(entityId);
   });
 
   const entry = useAsync(async () => {
@@ -75,13 +72,26 @@ export const EditEntryPage: FC<Props> = ({
   useEffect(() => {
     if (willCreate) {
       if (!entity.loading && entity.value != null) {
-        const _entryInfo = initializeEntryInfo(entity.value);
+        const _entryInfo = formalizeEntryInfo(
+          undefined,
+          entity.value,
+          excludeAttrs
+        );
         reset(_entryInfo);
         setEntryInfo(_entryInfo);
       }
     } else {
-      if (!entry.loading && entry.value != null) {
-        const _entryInfo = formalizeEntryInfo(entry.value, excludeAttrs);
+      if (
+        !entity.loading &&
+        entity.value != null &&
+        !entry.loading &&
+        entry.value != null
+      ) {
+        const _entryInfo = formalizeEntryInfo(
+          entry.value,
+          entity.value,
+          excludeAttrs
+        );
         reset(_entryInfo);
         setEntryInfo(_entryInfo);
       }

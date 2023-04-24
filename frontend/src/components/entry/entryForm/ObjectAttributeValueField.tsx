@@ -19,8 +19,7 @@ import { Schema } from "./EntryFormSchema";
 import { ReferralsAutocomplete } from "./ReferralsAutocomplete";
 
 interface CommonProps {
-  attrName: string;
-  schemaId: number;
+  attrId: number;
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
 }
@@ -29,7 +28,7 @@ export const ObjectAttributeValueField: FC<
   CommonProps & {
     multiple?: boolean;
   }
-> = ({ multiple, attrName, schemaId, control, setValue }) => {
+> = ({ multiple, attrId, control, setValue }) => {
   const handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
   ) => {
@@ -54,8 +53,8 @@ export const ObjectAttributeValueField: FC<
 
     setValue(
       multiple
-        ? `attrs.${attrName}.value.asArrayObject`
-        : `attrs.${attrName}.value.asObject`,
+        ? `attrs.${attrId}.value.asArrayObject`
+        : `attrs.${attrId}.value.asObject`,
       newValue as never,
       {
         shouldDirty: true,
@@ -73,13 +72,13 @@ export const ObjectAttributeValueField: FC<
         <Controller
           name={
             multiple
-              ? `attrs.${attrName}.value.asArrayObject`
-              : `attrs.${attrName}.value.asObject`
+              ? `attrs.${attrId}.value.asArrayObject`
+              : `attrs.${attrId}.value.asObject`
           }
           control={control}
           render={({ field, fieldState: { error } }) => (
             <ReferralsAutocomplete
-              schemaId={schemaId}
+              attrId={attrId}
               value={field.value ?? null}
               handleChange={handleChange}
               multiple={multiple}
@@ -100,8 +99,7 @@ export const NamedObjectAttributeValueField: FC<
     withBoolean?: boolean;
   }
 > = ({
-  attrName,
-  schemaId,
+  attrId,
   index,
   control,
   setValue,
@@ -113,16 +111,16 @@ export const NamedObjectAttributeValueField: FC<
     control,
     name:
       index != null
-        ? `attrs.${attrName}.value.asArrayNamedObject.${index}`
-        : `attrs.${attrName}.value.asNamedObject`,
+        ? `attrs.${attrId}.value.asArrayNamedObject.${index}`
+        : `attrs.${attrId}.value.asNamedObject`,
   });
   const objectName = Object.keys(value ?? {})[0] ?? "";
 
   const handleChangeObjectName = (newName: string) => {
     setValue(
       index != null
-        ? `attrs.${attrName}.value.asArrayNamedObject.${index}`
-        : `attrs.${attrName}.value.asNamedObject`,
+        ? `attrs.${attrId}.value.asArrayNamedObject.${index}`
+        : `attrs.${attrId}.value.asNamedObject`,
       {
         [newName]: value?.[objectName] ?? null,
       },
@@ -154,8 +152,8 @@ export const NamedObjectAttributeValueField: FC<
 
     setValue(
       index != null
-        ? `attrs.${attrName}.value.asArrayNamedObject.${index}.${objectName}`
-        : `attrs.${attrName}.value.asNamedObject.${objectName}`,
+        ? `attrs.${attrId}.value.asArrayNamedObject.${index}.${objectName}`
+        : `attrs.${attrId}.value.asNamedObject.${objectName}`,
       newValue as never,
       {
         shouldDirty: true,
@@ -174,8 +172,6 @@ export const NamedObjectAttributeValueField: FC<
           <TextField
             variant="standard"
             value={objectName}
-            error={objectName === ""}
-            helperText={objectName === "" ? "name は必須です" : undefined}
             onChange={(e) => handleChangeObjectName(e.target.value)}
           />
         </Box>
@@ -186,7 +182,7 @@ export const NamedObjectAttributeValueField: FC<
             使用不可
           </Typography>
           <Controller
-            name={`attrs.${attrName}.value.asArrayNamedObject.${index}.${objectName}._boolean`}
+            name={`attrs.${attrId}.value.asArrayNamedObject.${index}.${objectName}._boolean`}
             control={control}
             render={({ field, fieldState: { error } }) => (
               <Checkbox
@@ -205,13 +201,13 @@ export const NamedObjectAttributeValueField: FC<
           <Controller
             name={
               index != null
-                ? `attrs.${attrName}.value.asArrayNamedObject.${index}.${objectName}`
-                : `attrs.${attrName}.value.asNamedObject.${objectName}`
+                ? `attrs.${attrId}.value.asArrayNamedObject.${index}.${objectName}`
+                : `attrs.${attrId}.value.asNamedObject.${objectName}`
             }
             control={control}
             render={({ field, fieldState: { error } }) => (
               <ReferralsAutocomplete
-                schemaId={schemaId}
+                attrId={attrId}
                 value={field.value ?? null}
                 handleChange={handleChange}
                 disabled={objectName === ""}
@@ -250,10 +246,10 @@ export const ArrayNamedObjectAttributeValueField: FC<
     disabled?: boolean;
     withBoolean?: boolean;
   }
-> = ({ attrName, schemaId, control, setValue, withBoolean }) => {
+> = ({ attrId, control, setValue, withBoolean }) => {
   const { fields, insert, remove } = useFieldArray({
     control,
-    name: `attrs.${attrName}.value.asArrayNamedObject`,
+    name: `attrs.${attrId}.value.asArrayNamedObject`,
   });
 
   const handleClickAddListItem = (index: number) => {
@@ -273,8 +269,7 @@ export const ArrayNamedObjectAttributeValueField: FC<
             <NamedObjectAttributeValueField
               control={control}
               setValue={setValue}
-              attrName={attrName}
-              schemaId={schemaId}
+              attrId={attrId}
               index={index}
               handleClickDeleteListItem={handleClickDeleteListItem}
               handleClickAddListItem={handleClickAddListItem}

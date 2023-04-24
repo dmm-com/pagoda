@@ -7,7 +7,7 @@ import { Control, useFieldArray, useWatch, Controller } from "react-hook-form";
 import { Schema } from "./EntryFormSchema";
 
 interface CommonProps {
-  attrName: string;
+  attrId: number;
   index?: number;
 }
 
@@ -19,7 +19,7 @@ export const StringAttributeValueField: FC<
     control: Control<Schema>;
   }
 > = ({
-  attrName,
+  attrId,
   index,
   handleClickDeleteListItem,
   handleClickAddListItem,
@@ -30,8 +30,8 @@ export const StringAttributeValueField: FC<
     control,
     name:
       index != null
-        ? `attrs.${attrName}.value.asArrayString.${index}`
-        : `attrs.${attrName}.value.asString`,
+        ? `attrs.${attrId}.value.asArrayString.${index}`
+        : `attrs.${attrId}.value.asString`,
   });
 
   const disabledToAppend = index === 0 && value === "";
@@ -41,8 +41,8 @@ export const StringAttributeValueField: FC<
       <Controller
         name={
           index != null
-            ? `attrs.${attrName}.value.asArrayString.${index}`
-            : `attrs.${attrName}.value.asString`
+            ? `attrs.${attrId}.value.asArrayString.${index}`
+            : `attrs.${attrId}.value.asString`
         }
         control={control}
         defaultValue=""
@@ -87,11 +87,11 @@ export const ArrayStringAttributeValueField: FC<
     attrValue?: Array<string>;
     control: Control<Schema>;
   }
-> = ({ attrName, control }) => {
+> = ({ attrId, control }) => {
   const { fields, insert, remove } = useFieldArray({
     control,
     // @ts-ignore
-    name: `attrs.${attrName}.value.asArrayString`,
+    name: `attrs.${attrId}.value.asArrayString`,
   });
 
   const handleClickAddListItem = (index: number) => {
@@ -112,7 +112,7 @@ export const ArrayStringAttributeValueField: FC<
           <ListItem key={field.id}>
             <StringAttributeValueField
               control={control}
-              attrName={attrName}
+              attrId={attrId}
               index={index}
               handleClickDeleteListItem={handleClickDeleteListItem}
               handleClickAddListItem={handleClickAddListItem}

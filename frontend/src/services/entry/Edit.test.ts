@@ -12,22 +12,21 @@ Object.defineProperty(window, "django_context", {
 });
 
 import {
-  EditableEntry,
-  EditableEntryAttrs,
-  EditableEntryAttrValue,
-} from "../../components/entry/entryForm/EditableEntry";
-
-import {
-  initializeEntryInfo,
+  formalizeEntryInfo,
   isSubmittable,
   convertAttrsFormatCtoS,
 } from "./Edit";
 
+import {
+  EditableEntry,
+  EditableEntryAttrs,
+  EditableEntryAttrValue,
+} from "components/entry/entryForm/EditableEntry";
 import { DjangoContext } from "services/DjangoContext";
 
 const djangoContext = DjangoContext.getInstance();
 
-test("initializeEntryInfo should return expect value", () => {
+test("formalizeEntryInfo should return expect value", () => {
   const entity = {
     id: 1,
     name: "TestEntity",
@@ -38,8 +37,26 @@ test("initializeEntryInfo should return expect value", () => {
       {
         id: 2,
         index: 0,
-        name: "attr",
+        name: "string",
         type: djangoContext?.attrTypeValue.string,
+        isMandatory: true,
+        isDeleteInChain: true,
+        referral: [],
+      },
+      {
+        id: 3,
+        index: 1,
+        name: "array_string",
+        type: djangoContext?.attrTypeValue.array_string,
+        isMandatory: false,
+        isDeleteInChain: true,
+        referral: [],
+      },
+      {
+        id: 4,
+        index: 2,
+        name: "array_named_object",
+        type: djangoContext?.attrTypeValue.array_named_object,
         isMandatory: true,
         isDeleteInChain: true,
         referral: [],
@@ -49,7 +66,7 @@ test("initializeEntryInfo should return expect value", () => {
     isPublic: true,
   };
 
-  expect(initializeEntryInfo(entity)).toStrictEqual({
+  expect(formalizeEntryInfo(undefined, entity, [])).toStrictEqual({
     name: "",
     schema: {
       id: 1,
@@ -57,10 +74,11 @@ test("initializeEntryInfo should return expect value", () => {
     },
     attrs: {
       2: {
+        index: 0,
         isMandatory: true,
         schema: {
           id: 2,
-          name: "attr",
+          name: "string",
         },
         type: 2,
         value: {
@@ -75,6 +93,151 @@ test("initializeEntryInfo should return expect value", () => {
           asObject: undefined,
           asRole: undefined,
           asString: "",
+        },
+      },
+      3: {
+        index: 1,
+        isMandatory: false,
+        schema: {
+          id: 3,
+          name: "array_string",
+        },
+        type: 1026,
+        value: {
+          asArrayGroup: [],
+          asArrayNamedObject: [{}],
+          asArrayObject: [],
+          asArrayRole: [],
+          asArrayString: [""],
+          asBoolean: false,
+          asGroup: undefined,
+          asNamedObject: {},
+          asObject: undefined,
+          asRole: undefined,
+          asString: "",
+        },
+      },
+      4: {
+        index: 2,
+        isMandatory: true,
+        schema: {
+          id: 4,
+          name: "array_named_object",
+        },
+        type: 3073,
+        value: {
+          asArrayGroup: [],
+          asArrayNamedObject: [{}],
+          asArrayObject: [],
+          asArrayRole: [],
+          asArrayString: [""],
+          asBoolean: false,
+          asGroup: undefined,
+          asNamedObject: {},
+          asObject: undefined,
+          asRole: undefined,
+          asString: "",
+        },
+      },
+    },
+  });
+
+  const entry = {
+    id: 10,
+    name: "TestEntry",
+    schema: {
+      id: 1,
+      name: "TestEnttity",
+    },
+    isActive: true,
+    deletedUser: null,
+    attrs: [
+      {
+        id: 20,
+        index: 0,
+        name: "string",
+        schema: {
+          id: 2,
+          name: "string",
+        },
+        type: djangoContext?.attrTypeValue.string,
+        isMandatory: true,
+        value: {
+          asString: "",
+        },
+      },
+      {
+        id: 30,
+        index: 1,
+        name: "array_string",
+        schema: {
+          id: 3,
+          name: "array_string",
+        },
+        type: djangoContext?.attrTypeValue.array_string,
+        isMandatory: false,
+        value: {
+          asArrayString: [],
+        },
+      },
+      {
+        id: 40,
+        index: 2,
+        name: "array_named_object",
+        schema: {
+          id: 4,
+          name: "array_named_object",
+        },
+        type: djangoContext?.attrTypeValue.array_named_object,
+        isMandatory: true,
+        value: {
+          asArrayNamedObject: [],
+        },
+      },
+    ],
+  };
+
+  expect(formalizeEntryInfo(entry, entity, [])).toStrictEqual({
+    name: "TestEntry",
+    schema: {
+      id: 1,
+      name: "TestEntity",
+    },
+    attrs: {
+      2: {
+        index: 0,
+        isMandatory: true,
+        schema: {
+          id: 2,
+          name: "string",
+        },
+        type: 2,
+        value: {
+          asString: "",
+        },
+      },
+      3: {
+        index: 1,
+        isMandatory: false,
+        schema: {
+          id: 3,
+          name: "array_string",
+        },
+        type: 1026,
+        value: {
+          asArrayString: [""],
+        },
+      },
+      4: {
+        index: 2,
+        isMandatory: true,
+        schema: {
+          id: 4,
+          name: "array_named_object",
+        },
+        type: 3073,
+        value: {
+          asArrayNamedObject: [{}],
         },
       },
     },
@@ -186,11 +349,12 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
   cases.forEach((c) => {
     const attrs: Record<string, EditableEntryAttrs> = {
       key: {
+        index: 0,
         type: c.type,
         isMandatory: true,
         schema: {
           id: 1,
-          name: "test_schema",
+          name: "test",
         },
         value: c.value,
       },
@@ -311,11 +475,12 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
   cases.forEach((c) => {
     const attrs: Record<string, EditableEntryAttrs> = {
       key: {
+        index: 0,
         type: c.type,
         isMandatory: true,
         schema: {
           id: 1,
-          name: "test_schema",
+          name: "test",
         },
         value: c.value,
       },
@@ -496,11 +661,12 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
   cases.forEach((c) => {
     const attrs: Record<string, EditableEntryAttrs> = {
       key: {
+        index: 0,
         type: c.client_data.type,
         isMandatory: true,
         schema: {
           id: 1,
-          name: "test_schema",
+          name: "test",
         },
         value: c.client_data.value,
       },
@@ -639,11 +805,12 @@ test("convertAttrsFormatCtoS() returns expected value when nothing value", () =>
   cases.forEach((c) => {
     const attrs: Record<string, EditableEntryAttrs> = {
       key: {
+        index: 0,
         type: c.client_data.type,
         isMandatory: true,
         schema: {
           id: 1,
-          name: "test_schema",
+          name: "test",
         },
         value: c.client_data.value,
       },

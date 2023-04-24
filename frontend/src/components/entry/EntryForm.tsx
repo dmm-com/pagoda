@@ -134,29 +134,34 @@ export const EntryForm: FC<EntryFormProps> = ({
               />
             </TableCell>
           </TableRow>
-          {Object.entries(entryInfo.attrs).map(([attrId, attrValue]) => (
-            <TableRow key={attrId}>
-              <TableCell>
-                <Box display="flex" alignItems="center">
-                  {/* an anchor link adjusted fixed headers etc. */}
-                  <Link
-                    id={`attrs-${attrValue.schema.name}`}
-                    sx={{ marginTop: "-500px", paddingTop: "500px" }}
+          {Object.entries(entryInfo.attrs)
+            .sort((a, b) => a[1].index - b[1].index)
+            .map(([attrId, attrValue]) => (
+              <TableRow key={attrId}>
+                <TableCell>
+                  <Box display="flex" alignItems="center">
+                    {/* an anchor link adjusted fixed headers etc. */}
+                    <Link
+                      id={`attrs-${attrValue.schema.name}`}
+                      sx={{ marginTop: "-500px", paddingTop: "500px" }}
+                    />
+                    <Typography flexGrow={1}>
+                      {attrValue.schema.name}
+                    </Typography>
+                    {attrValue.isMandatory && (
+                      <RequiredLabel>必須</RequiredLabel>
+                    )}
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <AttributeValueField
+                    control={control}
+                    setValue={setValue}
+                    attrInfo={attrValue}
                   />
-                  <Typography flexGrow={1}>{attrValue.schema.name}</Typography>
-                  {attrValue.isMandatory && <RequiredLabel>必須</RequiredLabel>}
-                </Box>
-              </TableCell>
-              <TableCell>
-                <AttributeValueField
-                  control={control}
-                  setValue={setValue}
-                  attrName={attrId}
-                  attrInfo={attrValue}
-                />
-              </TableCell>
-            </TableRow>
-          ))}
+                </TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
       <Box display="flex" justifyContent="flex-end" my="12px">

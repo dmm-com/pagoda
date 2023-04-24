@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import { schemaForType } from "../../../services/ZodSchemaUtil";
-
 import { EditableEntry } from "./EditableEntry";
+
+import { schemaForType } from "services/ZodSchemaUtil";
 
 // A schema that's compatible with existing types
 // TODO rethink it, e.g. consider to use union as a type of value
@@ -18,6 +18,7 @@ export const schema = schemaForType<EditableEntry>()(
         z.string().min(1),
         z.object({
           // TODO remove these fields? it should be given by Entity
+          index: z.number(),
           type: z.number(),
           isMandatory: z.boolean().default(false),
           schema: z.object({
@@ -46,7 +47,7 @@ export const schema = schemaForType<EditableEntry>()(
               .optional(),
             asNamedObject: z
               .record(
-                z.string().min(1),
+                z.string(),
                 z
                   .object({
                     id: z.number(),
@@ -60,7 +61,7 @@ export const schema = schemaForType<EditableEntry>()(
             asArrayNamedObject: z
               .array(
                 z.record(
-                  z.string().min(1),
+                  z.string(),
                   z
                     .object({
                       id: z.number(),

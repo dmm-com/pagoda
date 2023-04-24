@@ -5,17 +5,14 @@ import { Control, Controller } from "react-hook-form";
 import { Schema } from "./EntryFormSchema";
 
 interface Props {
-  attrName: string;
+  attrId: number;
   control: Control<Schema>;
 }
 
-export const BooleanAttributeValueField: FC<Props> = ({
-  attrName,
-  control,
-}) => {
+export const BooleanAttributeValueField: FC<Props> = ({ attrId, control }) => {
   return (
     <Controller
-      name={`attrs.${attrName}.value.asBoolean`}
+      name={`attrs.${attrId}.value.asBoolean`}
       control={control}
       defaultValue={false}
       render={({ field }) => (

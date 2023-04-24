@@ -21,14 +21,12 @@ import {
 import { DjangoContext } from "services/DjangoContext";
 
 interface Props {
-  attrName: string;
   attrInfo: EditableEntryAttrs;
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
 }
 
 export const AttributeValueField: FC<Props> = ({
-  attrName,
   attrInfo,
   control,
   setValue,
@@ -38,14 +36,17 @@ export const AttributeValueField: FC<Props> = ({
   switch (attrInfo.type) {
     case djangoContext?.attrTypeValue.string:
       return (
-        <StringAttributeValueField control={control} attrName={attrName} />
+        <StringAttributeValueField
+          control={control}
+          attrId={attrInfo.schema.id}
+        />
       );
 
     case djangoContext?.attrTypeValue.text:
       return (
         <StringAttributeValueField
           control={control}
-          attrName={attrName}
+          attrId={attrInfo.schema.id}
           multiline
         />
       );
@@ -53,7 +54,7 @@ export const AttributeValueField: FC<Props> = ({
     case djangoContext?.attrTypeValue.date:
       return (
         <DateAttributeValueField
-          attrName={attrName}
+          attrId={attrInfo.schema.id}
           control={control}
           setValue={setValue}
         />
@@ -61,23 +62,25 @@ export const AttributeValueField: FC<Props> = ({
 
     case djangoContext?.attrTypeValue.boolean:
       return (
-        <BooleanAttributeValueField attrName={attrName} control={control} />
+        <BooleanAttributeValueField
+          attrId={attrInfo.schema.id}
+          control={control}
+        />
       );
 
     case djangoContext?.attrTypeValue.object:
       return (
         <ObjectAttributeValueField
-          attrName={attrName}
+          attrId={attrInfo.schema.id}
           control={control}
           setValue={setValue}
-          schemaId={attrInfo.schema.id}
         />
       );
 
     case djangoContext?.attrTypeValue.group:
       return (
         <GroupAttributeValueField
-          attrName={attrName}
+          attrId={attrInfo.schema.id}
           control={control}
           setValue={setValue}
         />
@@ -86,7 +89,7 @@ export const AttributeValueField: FC<Props> = ({
     case djangoContext?.attrTypeValue.role:
       return (
         <RoleAttributeValueField
-          attrName={attrName}
+          attrId={attrInfo.schema.id}
           control={control}
           setValue={setValue}
         />
@@ -95,8 +98,7 @@ export const AttributeValueField: FC<Props> = ({
     case djangoContext?.attrTypeValue.named_object:
       return (
         <NamedObjectAttributeValueField
-          attrName={attrName}
-          schemaId={attrInfo.schema.id}
+          attrId={attrInfo.schema.id}
           control={control}
           setValue={setValue}
         />
@@ -105,8 +107,7 @@ export const AttributeValueField: FC<Props> = ({
     case djangoContext?.attrTypeValue.array_object:
       return (
         <ObjectAttributeValueField
-          attrName={attrName}
-          schemaId={attrInfo.schema.id}
+          attrId={attrInfo.schema.id}
           control={control}
           setValue={setValue}
           multiple
@@ -116,7 +117,7 @@ export const AttributeValueField: FC<Props> = ({
     case djangoContext?.attrTypeValue.array_group:
       return (
         <GroupAttributeValueField
-          attrName={attrName}
+          attrId={attrInfo.schema.id}
           control={control}
           setValue={setValue}
           multiple
@@ -126,7 +127,7 @@ export const AttributeValueField: FC<Props> = ({
     case djangoContext?.attrTypeValue.array_role:
       return (
         <RoleAttributeValueField
-          attrName={attrName}
+          attrId={attrInfo.schema.id}
           control={control}
           setValue={setValue}
           multiple
@@ -135,14 +136,16 @@ export const AttributeValueField: FC<Props> = ({
 
     case djangoContext?.attrTypeValue.array_string:
       return (
-        <ArrayStringAttributeValueField control={control} attrName={attrName} />
+        <ArrayStringAttributeValueField
+          control={control}
+          attrId={attrInfo.schema.id}
+        />
       );
 
     case djangoContext?.attrTypeValue.array_named_object:
       return (
         <ArrayNamedObjectAttributeValueField
-          attrName={attrName}
-          schemaId={attrInfo.schema.id}
+          attrId={attrInfo.schema.id}
           control={control}
           setValue={setValue}
         />
@@ -151,8 +154,7 @@ export const AttributeValueField: FC<Props> = ({
     case djangoContext?.attrTypeValue.array_named_object_boolean:
       return (
         <ArrayNamedObjectAttributeValueField
-          attrName={attrName}
-          schemaId={attrInfo.schema.id}
+          attrId={attrInfo.schema.id}
           control={control}
           setValue={setValue}
           withBoolean
