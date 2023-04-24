@@ -16,6 +16,7 @@ describe("schema", () => {
     attrs: {
       string: {
         type: AttributeTypes.string.type,
+        index: 0,
         isMandatory: false,
         schema: {
           id: 1,
