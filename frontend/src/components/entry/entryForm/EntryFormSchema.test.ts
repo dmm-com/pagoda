@@ -28,6 +28,7 @@ describe("schema", () => {
       },
       arrayString: {
         type: AttributeTypes.array_string.type,
+        index: 1,
         isMandatory: false,
         schema: {
           id: 1,
@@ -39,6 +40,7 @@ describe("schema", () => {
       },
       object: {
         type: AttributeTypes.object.type,
+        index: 2,
         isMandatory: false,
         schema: {
           id: 1,
@@ -54,6 +56,7 @@ describe("schema", () => {
       },
       arrayObject: {
         type: AttributeTypes.array_object.type,
+        index: 3,
         isMandatory: false,
         schema: {
           id: 1,
@@ -71,6 +74,7 @@ describe("schema", () => {
       },
       namedObject: {
         type: AttributeTypes.named_object.type,
+        index: 4,
         isMandatory: false,
         schema: {
           id: 1,
@@ -88,6 +92,7 @@ describe("schema", () => {
       },
       arrayNamedObject: {
         type: AttributeTypes.array_named_object.type,
+        index: 5,
         isMandatory: false,
         schema: {
           id: 1,
@@ -107,6 +112,7 @@ describe("schema", () => {
       },
       group: {
         type: AttributeTypes.group.type,
+        index: 6,
         isMandatory: false,
         schema: {
           id: 1,
@@ -121,6 +127,7 @@ describe("schema", () => {
       },
       arrayGroup: {
         type: AttributeTypes.array_group.type,
+        index: 7,
         isMandatory: false,
         schema: {
           id: 1,
@@ -137,6 +144,7 @@ describe("schema", () => {
       },
       role: {
         type: AttributeTypes.role.type,
+        index: 8,
         isMandatory: false,
         schema: {
           id: 1,
@@ -151,6 +159,7 @@ describe("schema", () => {
       },
       arrayRole: {
         type: AttributeTypes.array_role.type,
+        index: 9,
         isMandatory: false,
         schema: {
           id: 1,
