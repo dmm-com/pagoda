@@ -56,7 +56,7 @@ test("initializeEntryInfo should return expect value", () => {
       name: "TestEntity",
     },
     attrs: {
-      attr: {
+      2: {
         isMandatory: true,
         schema: {
           id: 2,

@@ -82,14 +82,14 @@ export const EntryForm: FC<EntryFormProps> = ({
             <ArrowDropDownIcon sx={{ color: "black", padding: "0 4px" }} />
           </AnchorLinkButton>
         </Box>
-        {Object.keys(entryInfo.attrs).map((attributeName) => (
-          <Box key={attributeName} m="8px">
+        {Object.entries(entryInfo.attrs).map(([attrId, attrValue]) => (
+          <Box key={attrId} m="8px">
             <AnchorLinkButton
-              href={`#attrs-${attributeName}`}
+              href={`#attrs-${attrValue.schema.name}`}
               onClick={() => setIsAnchorLink(true)}
             >
               <Typography sx={{ color: "black", padding: "0 4px" }}>
-                {attributeName}
+                {attrValue.schema.name}
               </Typography>
               <ArrowDropDownIcon sx={{ color: "black" }} />
             </AnchorLinkButton>
@@ -134,27 +134,25 @@ export const EntryForm: FC<EntryFormProps> = ({
               />
             </TableCell>
           </TableRow>
-          {Object.keys(entryInfo.attrs).map((attributeName, index) => (
-            <TableRow key={index}>
+          {Object.entries(entryInfo.attrs).map(([attrId, attrValue]) => (
+            <TableRow key={attrId}>
               <TableCell>
                 <Box display="flex" alignItems="center">
                   {/* an anchor link adjusted fixed headers etc. */}
                   <Link
-                    id={`attrs-${attributeName}`}
+                    id={`attrs-${attrValue.schema.name}`}
                     sx={{ marginTop: "-500px", paddingTop: "500px" }}
                   />
-                  <Typography flexGrow={1}>{attributeName}</Typography>
-                  {entryInfo.attrs[attributeName]?.isMandatory && (
-                    <RequiredLabel>必須</RequiredLabel>
-                  )}
+                  <Typography flexGrow={1}>{attrValue.schema.name}</Typography>
+                  {attrValue.isMandatory && <RequiredLabel>必須</RequiredLabel>}
                 </Box>
               </TableCell>
               <TableCell>
                 <AttributeValueField
                   control={control}
                   setValue={setValue}
-                  attrName={attributeName}
-                  attrInfo={entryInfo.attrs[attributeName]}
+                  attrName={attrId}
+                  attrInfo={attrValue}
                 />
               </TableCell>
             </TableRow>

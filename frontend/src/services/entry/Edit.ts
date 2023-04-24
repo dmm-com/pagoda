@@ -1,5 +1,3 @@
-import { Schema } from "../../components/entry/entryForm/EntryFormSchema";
-
 import {
   AttributeData,
   EntityDetail,
@@ -11,6 +9,7 @@ import {
   EditableEntry,
   EditableEntryAttrs,
 } from "components/entry/entryForm/EditableEntry";
+import { Schema } from "components/entry/entryForm/EntryFormSchema";
 import { DjangoContext } from "services/DjangoContext";
 
 const djangoContext = DjangoContext.getInstance();
@@ -47,7 +46,7 @@ export function formalizeEntryInfo(
         }
 
         return [
-          attr.schema.name,
+          String(attr.schema.id),
           {
             id: attr.id,
             type: attr.type,
@@ -75,7 +74,7 @@ export function initializeEntryInfo(entity: EntityDetail): Schema {
     },
     attrs: entity.attrs
       .map((attr): [string, EditableEntryAttrs] => [
-        attr.name,
+        String(attr.id),
         {
           type: attr.type,
           isMandatory: attr.isMandatory,
