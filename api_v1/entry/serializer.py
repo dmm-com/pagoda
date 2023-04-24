@@ -12,7 +12,7 @@ SEARCH_ENTRY_LIMIT = 200
 
 class ReferSerializer(serializers.Serializer):
     entity = serializers.CharField(max_length=200)
-    entry = serializers.CharField(max_length=200, required=False)
+    entry = serializers.CharField(max_length=200, required=False, allow_blank=True)
     is_any = serializers.BooleanField(default=False)
     attrs = serializers.ListField(required=False)
     refers = serializers.ListField(required=False)
@@ -199,9 +199,20 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
         def _do_backward_search(sub_query, sub_query_result):
             # make query to search Entries using Entry.search_entries()
-            search_keyword = "|".join(["^%s$" % x["name"] for x in sub_query_result])
+            search_keyword = CONFIG.OR_SEARCH_CHARACTER.join(
+                ["^%s$" % x["name"] for x in sub_query_result]
+            )
             if isinstance(sub_query.get("entry"), str) and len(sub_query["entry"]) > 0:
-                search_keyword = sub_query.get("entry")
+                if not search_keyword:
+                    search_keyword = sub_query.get("entry", "")
+                else:
+                    search_keyword = CONFIG.OR_SEARCH_CHARACTER.join(
+                        [
+                            CONFIG.AND_SEARCH_CHARACTER.join([x, sub_query.get("entry", "")])
+                            for x in search_keyword.split(CONFIG.OR_SEARCH_CHARACTER)
+                            if x
+                        ]
+                    )
 
             # Query for forward search
             query_params = {
