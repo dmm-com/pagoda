@@ -120,8 +120,8 @@ attributes.forEach((attribute) => {
           <AttributeValueField
             control={control}
             setValue={setValue}
-            attrName={attrName}
             attrInfo={{
+              index: 0,
               value: attrValue as EditableEntryAttrValue,
               type: attrType,
               isMandatory: false,
@@ -157,8 +157,8 @@ arrayAttributes.forEach((arrayAttribute) => {
           <AttributeValueField
             control={control}
             setValue={setValue}
-            attrName={attrName}
             attrInfo={{
+              index: 0,
               value: attrValue as EditableEntryAttrValue,
               type: attrType,
               isMandatory: false,

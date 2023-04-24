@@ -9,7 +9,7 @@ import { aironeApiClientV2 } from "../../../apiclient/AironeApiClientV2";
 import { Schema } from "./EntryFormSchema";
 
 interface Props {
-  attrName: string;
+  attrId: number;
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
   multiple?: boolean;
@@ -17,7 +17,7 @@ interface Props {
 
 export const GroupAttributeValueField: FC<Props> = ({
   multiple,
-  attrName,
+  attrId,
   control,
   setValue,
 }) => {
@@ -33,7 +33,7 @@ export const GroupAttributeValueField: FC<Props> = ({
       if (value != null && !Array.isArray(value)) {
         throw new Error("value must be an array");
       }
-      setValue(`attrs.${attrName}.value.asArrayGroup`, value ?? [], {
+      setValue(`attrs.${attrId}.value.asArrayGroup`, value ?? [], {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -41,7 +41,7 @@ export const GroupAttributeValueField: FC<Props> = ({
       if (value != null && Array.isArray(value)) {
         throw new Error("value must not be an array");
       }
-      setValue(`attrs.${attrName}.value.asGroup`, value, {
+      setValue(`attrs.${attrId}.value.asGroup`, value, {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -57,8 +57,8 @@ export const GroupAttributeValueField: FC<Props> = ({
         <Controller
           name={
             multiple === true
-              ? `attrs.${attrName}.value.asArrayGroup`
-              : `attrs.${attrName}.value.asGroup`
+              ? `attrs.${attrId}.value.asArrayGroup`
+              : `attrs.${attrId}.value.asGroup`
           }
           control={control}
           render={({ field, fieldState: { error } }) => (
