@@ -8,6 +8,10 @@
 
 ### Fixed
 
+* Fixed a bug of /api_v1/entry/search_chain API implementation at the "refers" condition.
+  This unables to filter intermediate search results with Entry name at its condition.
+  Contributed by @userlocalhost
+
 ## v3.47.0
 
 ### Added

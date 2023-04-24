@@ -905,6 +905,24 @@ class APITest(AironeViewTest):
             sorted([{"id": x.id, "name": x.name} for x in [self.entry_nic]], key=lambda x: x["id"]),
         )
 
+    def test_basic_backward_reference_with_blank_entry(self):
+        # create query to search chained query with blank "entry" parameter
+        params = {
+            "entities": ["NIC"],
+            "refers": [{"entity": "VM", "entry": ""}],
+        }
+
+        # check results of backward search Entries
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
+            sorted([{"id": x.id, "name": x.name} for x in [self.entry_nic]], key=lambda x: x["id"]),
+        )
+
     def test_basic_backward_and_forward_reference(self):
         # create query to search chained query
         params = {
@@ -1066,6 +1084,123 @@ class APITest(AironeViewTest):
             sorted([x["entry"] for x in resp.json()["ret_values"]], key=lambda x: x["id"]),
             sorted([{"id": x.id, "name": x.name} for x in [self.entry_nic]], key=lambda x: x["id"]),
         )
+
+    def test_refers_with_entry_hint_at_intermediate_query(self):
+        # This test specify "entry" parameter as hint at intermediate query of "refers" condition
+        # to narrow down candidates of intermediate search process.
+        entry_nw = self.add_entry(
+            self.user,
+            "192.168.10.0/24",
+            self.entity_network,
+            values={
+                "vlan": self.entry_vlan2,
+            },
+        )
+        entry_ipaddr = self.add_entry(
+            self.user,
+            "192.168.10.10",
+            self.entity_ipv4,
+            values={
+                "network": {"id": entry_nw, "name": ""},
+            },
+        )
+        entry_nic = self.add_entry(
+            self.user,
+            "ens0",
+            self.entity_nic,
+            values={
+                "IP address": [entry_ipaddr],
+            },
+        )
+        self.add_entry(
+            self.user,
+            "vm1000",
+            self.entity_vm,
+            values={
+                "Ports": [{"id": entry_nic, "name": "ens0"}],
+                "Status": self.entry_service_in,
+            },
+        )
+
+        # Send a search_chain request without any intermediate "entry" hint,
+        # then it's expected to return all Network Entries that are associated with
+        # Service-IN VM
+        resp = self.client.post(
+            "/api/v1/entry/search_chain",
+            json.dumps(
+                {
+                    "entities": [self.entity_network.name],
+                    "refers": [
+                        {
+                            "entity": self.entity_ipv4.name,
+                            "refers": [
+                                {
+                                    "entity": self.entity_nic.name,
+                                    "refers": [
+                                        {
+                                            "entity": self.entity_vm.name,
+                                            "attrs": [
+                                                {
+                                                    "name": "Status",
+                                                    "value": self.entry_service_in.name,
+                                                }
+                                            ],
+                                        }
+                                    ],
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 2)
+        self.assertEqual(
+            sorted([x["entry"]["name"] for x in resp.json()["ret_values"]]),
+            sorted(["10.0.0.0/8", "192.168.10.0/24"]),
+        )
+
+        # Send a search_chain request with "entry" parameter at intermediate query,
+        # then it's expected to return Network Entry that isassociated with
+        # Service-IN VM and IP address has "192.168.xxx.xxx".
+        resp = self.client.post(
+            "/api/v1/entry/search_chain",
+            json.dumps(
+                {
+                    "entities": [self.entity_network.name],
+                    "refers": [
+                        {
+                            "entity": self.entity_ipv4.name,
+                            "entry": "192.168.",  # This is the point of this test
+                            "refers": [
+                                {
+                                    "entity": self.entity_nic.name,
+                                    "refers": [
+                                        {
+                                            "entity": self.entity_vm.name,
+                                            "attrs": [
+                                                {
+                                                    "name": "Status",
+                                                    "value": self.entry_service_in.name,
+                                                }
+                                            ],
+                                        }
+                                    ],
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            [x["entry"]["name"] for x in resp.json()["ret_values"]], ["192.168.10.0/24"]
+        )
+        self.assertEqual(resp.status_code, 200)
 
     def test_search_chain_with_empty_conditions(self):
         # create query to search chained query
