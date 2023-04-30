@@ -5,10 +5,10 @@ name: Node.js Package
 
 on:
   # fot test
-  # pull_request:
-  #   types: [opened, reopened]
-  release:
-    types: [created]
+  pull_request:
+    types: [opened, reopened]
+  # release:
+  #   types: [created]
 
 jobs:
   publish-gpr:
@@ -18,12 +18,17 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: pip install -r requirements-dev.txt
       - uses: actions/setup-node@v3
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
       - run: npm ci
-      # TODO generate:client
+      - run: npm run generate:client
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        working-directory: ./apiclient/typescript-fetch
