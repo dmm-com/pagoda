@@ -416,7 +416,7 @@ class Common(Configuration):
         config.django["trace_query_string"] = True
         config.celery["distributed_tracing"] = True
 
-        patch_all(mysql=False, mysqldb=False, pymysql=False, logging=True)
+        patch_all(mysql=False, mysqldb=False, pymysql=False, botocore=False, logging=True)
 
         INSTALLED_APPS.append("ddtrace.contrib.django")
 
