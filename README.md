@@ -287,6 +287,9 @@ user@hostname:~/airone$ npm run generate:client
 
 (For Customview)
 user@hostname:~/airone$ npm run generate:custom_client
+
+(At the first time)
+user@hostname:~/airone$ npm run link:client
 ```
 
 To customize UI:
