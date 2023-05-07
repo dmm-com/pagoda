@@ -1,9 +1,8 @@
 name: Publish AirOne APIv2 client npm package
 
 on:
-  # fot test
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, synchronize]
   # release:
   #   types: [created]
 
