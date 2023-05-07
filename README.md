@@ -283,13 +283,17 @@ user@hostname:~/airone$ npm run watch
 If you have any change on API V2, you need to run this command before you build:
 
 ```
+(At the first time)
+user@hostname:~/airone$ npm run link:client
+```
+
+(TODO: describe how to manage API V2 client packages)
+
+```
 user@hostname:~/airone$ npm run generate:client
 
 (For Customview)
 user@hostname:~/airone$ npm run generate:custom_client
-
-(At the first time)
-user@hostname:~/airone$ npm run link:client
 ```
 
 To customize UI:
