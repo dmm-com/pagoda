@@ -52,6 +52,12 @@ export interface EntryAttributeType {
   isMandatory: boolean;
   /**
    *
+   * @type {boolean}
+   * @memberof EntryAttributeType
+   */
+  isReadable: boolean;
+  /**
+   *
    * @type {EntryAttributeValue}
    * @memberof EntryAttributeType
    */
@@ -79,6 +85,7 @@ export function EntryAttributeTypeFromJSONTyped(
     id: json["id"],
     type: json["type"],
     isMandatory: json["is_mandatory"],
+    isReadable: json["is_readable"],
     value: EntryAttributeValueFromJSON(json["value"]),
     schema: EntityAttributeTypeFromJSON(json["schema"]),
   };
@@ -97,6 +104,7 @@ export function EntryAttributeTypeToJSON(
     id: value.id,
     type: value.type,
     is_mandatory: value.isMandatory,
+    is_readable: value.isReadable,
     value: EntryAttributeValueToJSON(value.value),
     schema: EntityAttributeTypeToJSON(value.schema),
   };

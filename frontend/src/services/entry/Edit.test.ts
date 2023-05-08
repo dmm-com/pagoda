@@ -162,6 +162,7 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: djangoContext?.attrTypeValue.string,
         isMandatory: true,
+        isReadable: true,
         value: {
           asString: "",
         },
@@ -176,6 +177,7 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: djangoContext?.attrTypeValue.array_string,
         isMandatory: false,
+        isReadable: true,
         value: {
           asArrayString: [],
         },
@@ -190,6 +192,7 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: djangoContext?.attrTypeValue.array_named_object,
         isMandatory: true,
+        isReadable: true,
         value: {
           asArrayNamedObject: [],
         },

@@ -129,6 +129,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_string": "hoge"},
                 "id": entry.attrs.get(schema__name="val").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="val").schema.id,
                     "name": "val",
@@ -151,6 +152,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="ref").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="ref").schema.id,
                     "name": "ref",
@@ -175,6 +177,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="name").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="name").schema.id,
                     "name": "name",
@@ -188,6 +191,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_boolean": False},
                 "id": entry.attrs.get(schema__name="bool").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="bool").schema.id,
                     "name": "bool",
@@ -201,6 +205,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_string": "2018-12-31"},
                 "id": entry.attrs.get(schema__name="date").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="date").schema.id,
                     "name": "date",
@@ -219,6 +224,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="group").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="group").schema.id,
                     "name": "group",
@@ -239,6 +245,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="groups").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="groups").schema.id,
                     "name": "groups",
@@ -257,6 +264,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="role").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="role").schema.id,
                     "name": "role",
@@ -277,6 +285,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="roles").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="roles").schema.id,
                     "name": "roles",
@@ -290,6 +299,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_string": "fuga"},
                 "id": entry.attrs.get(schema__name="text").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="text").schema.id,
                     "name": "text",
@@ -303,6 +313,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_array_string": ["foo", "bar"]},
                 "id": entry.attrs.get(schema__name="vals").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="vals").schema.id,
                     "name": "vals",
@@ -327,6 +338,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="refs").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="refs").schema.id,
                     "name": "refs",
@@ -363,6 +375,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="names").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="names").schema.id,
                     "name": "names",
@@ -376,6 +389,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_string": AttrTypeStr.DEFAULT_VALUE},
                 "id": None,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": self.entity.attrs.get(name="opt").id,
                     "name": "opt",
@@ -422,6 +436,46 @@ class ViewTest(AironeViewTest):
         entry.readable.roles.add(self.role)
         resp = self.client.get("/entry/api/v2/%d/" % entry.id)
         self.assertEqual(resp.status_code, 200)
+
+        # permission nothing entity attr
+        entity_attr = entry.attrs.get(schema__name="val").schema
+        entity_attr.is_public = False
+        entity_attr.save()
+        resp = self.client.get("/entry/api/v2/%d/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "val", resp.json()["attrs"])),
+            {
+                "type": AttrTypeValue["string"],
+                "value": {"as_string": ""},
+                "id": entry.attrs.get(schema__name="val").id,
+                "is_mandatory": False,
+                "is_readable": False,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="val").schema.id,
+                    "name": "val",
+                },
+            },
+        )
+
+        # permission readable entity attr
+        entity_attr.readable.roles.add(self.role)
+        resp = self.client.get("/entry/api/v2/%d/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "val", resp.json()["attrs"])),
+            {
+                "type": AttrTypeValue["string"],
+                "value": {"as_string": ""},
+                "id": entry.attrs.get(schema__name="val").id,
+                "is_mandatory": False,
+                "is_readable": True,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="val").schema.id,
+                    "name": "val",
+                },
+            },
+        )
 
     def test_retrieve_entry_with_invalid_param(self):
         resp = self.client.get("/entry/api/v2/%s/" % "hoge")
@@ -516,6 +570,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="ref").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="ref").schema.id,
                     "name": "ref",
@@ -533,6 +588,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="name").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="name").schema.id,
                     "name": "name",
@@ -546,6 +602,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_array_object": []},
                 "id": entry.attrs.get(schema__name="refs").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="refs").schema.id,
                     "name": "refs",
@@ -568,6 +625,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="names").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="names").schema.id,
                     "name": "names",
