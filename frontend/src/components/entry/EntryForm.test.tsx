@@ -17,6 +17,15 @@ test("should render a component with essential props", function () {
     schema: { id: 0, name: "testEntity" },
     attrs: {},
   };
+  const entity = {
+    id: 2,
+    name: "bbb",
+    note: "",
+    isToplevel: false,
+    attrs: [],
+    webhooks: [],
+  };
+
   const setIsAnchorLink = () => {
     /* do nothing */
   };
@@ -27,7 +36,7 @@ test("should render a component with essential props", function () {
     });
     return (
       <EntryForm
-        entryInfo={entryInfo}
+        entity={entity}
         setIsAnchorLink={setIsAnchorLink}
         control={control}
         setValue={setValue}
