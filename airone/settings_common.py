@@ -366,6 +366,11 @@ class Common(Configuration):
                 "level": "INFO",
                 "propagate": False,
             },
+            "celery": {
+                "handlers": ["console"],
+                "level": "INFO",
+                "propagate": True,
+            },
         },
     }
     # If log dir is not exists create it.
