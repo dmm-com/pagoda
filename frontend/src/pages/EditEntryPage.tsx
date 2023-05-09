@@ -177,7 +177,12 @@ export const EditEntryPage: FC<Props> = ({
 
       {initialized && entity.value != null && (
         <EntryForm
-          entity={entity.value}
+          entity={{
+            ...entity.value,
+            attrs: entity.value.attrs.filter(
+              (attr) => !excludeAttrs.includes(attr.name)
+            ),
+          }}
           setIsAnchorLink={setIsAnchorLink}
           control={control}
           setValue={setValue}
