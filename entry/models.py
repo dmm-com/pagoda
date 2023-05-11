@@ -46,7 +46,7 @@ class AttributeValue(models.Model):
 
     value = models.TextField()
     referral = models.ForeignKey(
-        ACLBase,
+        "Entry",
         null=True,
         related_name="referred_attr_value",
         on_delete=models.SET_NULL,

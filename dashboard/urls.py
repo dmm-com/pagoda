@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 
 from . import views
 
@@ -17,6 +17,7 @@ urlpatterns = [
         views.export_search_result,
         name="export_search_result",
     ),
+    url(r"^api/v2/", include(("dashboard.api_v2.urls", "dashboard.api_v2"))),
 ]
 
 # If a custom view exists, the custom view has priority for viewing
