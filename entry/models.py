@@ -47,6 +47,7 @@ class ServiceGroup(models.Model):
         on_delete=models.CASCADE,
     )
 
+
 class PolicyTemplate(models.Model):
     name = models.TextField()
     referral = models.ForeignKey(
@@ -56,11 +57,16 @@ class PolicyTemplate(models.Model):
         on_delete=models.CASCADE,
     )
 
+
 class LBVirtualServer(models.Model):
     name = models.TextField()
-    lb = models.OneToOneField("Entry", related_name="lb", on_delete=models.CASCADE)
-    ipaddr = models.OneToOneField("Entry", related_name="ipaddr", on_delete=models.CASCADE)
-    large_cateory = models.OneToOneField("Entry", related_name="large_category", on_delete=models.CASCADE)
+    lb = models.OneToOneField("Entry", related_name="lb", null=True, on_delete=models.CASCADE)
+    ipaddr = models.OneToOneField(
+        "Entry", related_name="ipaddr", null=True, on_delete=models.CASCADE
+    )
+    large_cateory = models.OneToOneField(
+        "Entry", related_name="large_category", null=True, on_delete=models.CASCADE
+    )
 
 
 class AttributeValue(models.Model):
