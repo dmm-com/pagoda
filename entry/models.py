@@ -39,6 +39,7 @@ from .settings import CONFIG
 
 
 class ServiceGroup(models.Model):
+    name = models.TextField()
     referral = models.ForeignKey(
         "LBVirtualServer",
         null=True,
@@ -47,6 +48,7 @@ class ServiceGroup(models.Model):
     )
 
 class PolicyTemplate(models.Model):
+    name = models.TextField()
     referral = models.ForeignKey(
         "LBVirtualServer",
         null=True,
@@ -55,9 +57,10 @@ class PolicyTemplate(models.Model):
     )
 
 class LBVirtualServer(models.Model):
-    lb = models.OneToOneField("Entry", on_delete=models.CASCADE)
-    ipaddr = models.OneToOneField("Entry", on_delete=models.CASCADE)
-    large_category = models.OneToOneField("Entry", on_delete=models.CASCADE)
+    name = models.TextField()
+    lb = models.OneToOneField("Entry", related_name="lb", on_delete=models.CASCADE)
+    ipaddr = models.OneToOneField("Entry", related_name="ipaddr", on_delete=models.CASCADE)
+    large_cateory = models.OneToOneField("Entry", related_name="large_category", on_delete=models.CASCADE)
 
 
 class AttributeValue(models.Model):
