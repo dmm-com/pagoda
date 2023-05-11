@@ -38,6 +38,28 @@ from user.models import User
 from .settings import CONFIG
 
 
+class ServiceGroup(models.Model):
+    referral = models.ForeignKey(
+        "LBVirtualServer",
+        null=True,
+        related_name="service_group",
+        on_delete=models.CASCADE,
+    )
+
+class PolicyTemplate(models.Model):
+    referral = models.ForeignKey(
+        "LBVirtualServer",
+        null=True,
+        related_name="policy_template",
+        on_delete=models.CASCADE,
+    )
+
+class LBVirtualServer(models.Model):
+    lb = models.OneToOneField("Entry", on_delete=models.CASCADE)
+    ipaddr = models.OneToOneField("Entry", on_delete=models.CASCADE)
+    large_category = models.OneToOneField("Entry", on_delete=models.CASCADE)
+
+
 class AttributeValue(models.Model):
     # This is a constant that indicates target object binds multiple AttributeValue objects.
     STATUS_DATA_ARRAY_PARENT = 1 << 0
