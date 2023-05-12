@@ -142,7 +142,7 @@ export function convertAttrsFormatCtoS(
           };
 
         case djangoContext?.attrTypeValue.array_string:
-          return attrValue.asArrayString;
+          return attrValue.asArrayString?.map((x) => x.value);
 
         case djangoContext?.attrTypeValue.array_object:
           return attrValue.asArrayObject?.map((x) => x.id);

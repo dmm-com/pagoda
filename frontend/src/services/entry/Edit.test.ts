@@ -575,7 +575,7 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
           asArrayString: [{ value: "value" }],
         },
       },
-      expected_data: [{ value: "value" }],
+      expected_data: ["value"],
     },
     // array_object
     {
