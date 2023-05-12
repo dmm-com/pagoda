@@ -338,6 +338,13 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     },
                 }
 
+                # "asString" is a string type and does not allow None
+                if (
+                    _get_typed_value(attr["type"]) == "asString"
+                    and entry["attrs"][name]["value"]["asString"] is None
+                ):
+                    entry["attrs"][name]["value"]["asString"] = ""
+
         return Response({"result": resp})
 
 
