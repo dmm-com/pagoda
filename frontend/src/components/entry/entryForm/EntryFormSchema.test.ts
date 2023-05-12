@@ -35,7 +35,7 @@ describe("schema", () => {
           name: "array_string",
         },
         value: {
-          asArrayString: ["string"],
+          asArrayString: [{ value: "string" }],
         },
       },
       object: {

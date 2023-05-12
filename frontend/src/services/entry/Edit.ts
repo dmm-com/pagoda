@@ -44,7 +44,7 @@ export function formalizeEntryInfo(
               asGroup: undefined,
               asRole: undefined,
               asNamedObject: {},
-              asArrayString: [""],
+              asArrayString: [{ value: "" }],
               asArrayObject: [],
               asArrayGroup: [],
               asArrayRole: [],
@@ -55,8 +55,12 @@ export function formalizeEntryInfo(
           switch (attrType) {
             case djangoContext?.attrTypeValue.array_string:
               return value?.asArrayString?.length ?? 0 > 0
-                ? value
-                : { asArrayString: [""] };
+                ? {
+                    asArrayString: value.asArrayString?.map((value) => {
+                      return { value: value };
+                    }),
+                  }
+                : { asArrayString: [{ value: "" }] };
             case djangoContext?.attrTypeValue.array_named_object:
               return value?.asArrayNamedObject?.length ?? 0 > 0
                 ? value

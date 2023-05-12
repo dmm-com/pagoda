@@ -30,7 +30,13 @@ export const schema = schemaForType<EditableEntry>()(
             value: z.object({
               asBoolean: z.boolean().default(false).optional(),
               asString: z.string().default("").optional(),
-              asArrayString: z.array(z.string()).default([""]).optional(),
+              asArrayString: z
+                .array(
+                  z.object({
+                    value: z.string(),
+                  })
+                )
+                .optional(),
               asObject: z
                 .object({
                   id: z.number(),
@@ -118,7 +124,8 @@ export const schema = schemaForType<EditableEntry>()(
                   return value.value.asString !== "";
                 case AttributeTypes.array_string.type:
                   return (
-                    value.value.asArrayString?.some((v) => v !== "") ?? false
+                    value.value.asArrayString?.some((v) => v.value !== "") ??
+                    false
                   );
                 case AttributeTypes.object.type:
                   return value.value.asObject != null;
