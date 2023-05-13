@@ -1,17 +1,18 @@
-name: Prerelease AirOne APIv2 client npm package to GitHub npm Registry
+name: Release AirOne APIv2 client npm package to GitHub npm Registry
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [labeled]
     paths:
       - '**/api_v2/**/*.py'
 
 jobs:
-  prerelease:
+  release:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    if: ${{ github.event.label.name == 'release-apiv2-client' }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -42,10 +43,6 @@ jobs:
         run: |
           npm ci
           npm run generate:client
-      - name: npm version(prerelease)
-        run: |
-          npm version prerelease --preid=$GITHUB_SHA
-        working-directory: ./apiclient/typescript-fetch
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
