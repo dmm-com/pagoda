@@ -8,9 +8,24 @@
 
 ### Fixed
 
+## v3.48.0
+
+### Changed
+* Implement isMandatory value validation.
+  Contributed by @syucream
+* Hide entry attribute if user isn't allowed to show it
+  Contributed by @syucream
+
+### Fixed
 * Fixed a bug of /api_v1/entry/search_chain API implementation at the "refers" condition.
   This unables to filter intermediate search results with Entry name at its condition.
   Contributed by @userlocalhost
+* Fixed the order of attributes in the entry edit to index order.
+  Contributed by @hinashi
+* Fixed edit entries when special characters are used in attribute names.
+  Contributed by @hinashi
+* Fixed celery trace log not output
+  Contributed by @hinashi
 
 ## v3.47.0
 

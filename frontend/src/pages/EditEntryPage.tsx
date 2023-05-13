@@ -44,8 +44,8 @@ export const EditEntryPage: FC<Props> = ({
   const history = useHistory();
   const { enqueueSubmitResult } = useFormNotification("エントリ", willCreate);
 
-  const [entryInfo, setEntryInfo] = useState<Schema>();
   const [isAnchorLink, setIsAnchorLink] = useState<boolean>(false);
+  const [initialized, setInitialized] = useState(false);
 
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
@@ -72,13 +72,13 @@ export const EditEntryPage: FC<Props> = ({
   useEffect(() => {
     if (willCreate) {
       if (!entity.loading && entity.value != null) {
-        const _entryInfo = formalizeEntryInfo(
+        const entryInfo = formalizeEntryInfo(
           undefined,
           entity.value,
           excludeAttrs
         );
-        reset(_entryInfo);
-        setEntryInfo(_entryInfo);
+        reset(entryInfo);
+        setInitialized(true);
       }
     } else {
       if (
@@ -87,13 +87,13 @@ export const EditEntryPage: FC<Props> = ({
         !entry.loading &&
         entry.value != null
       ) {
-        const _entryInfo = formalizeEntryInfo(
+        const entryInfo = formalizeEntryInfo(
           entry.value,
           entity.value,
           excludeAttrs
         );
-        reset(_entryInfo);
-        setEntryInfo(_entryInfo);
+        reset(entryInfo);
+        setInitialized(true);
       }
     }
   }, [willCreate, entity.value, entry.value]);
@@ -175,9 +175,14 @@ export const EditEntryPage: FC<Props> = ({
         />
       </PageHeader>
 
-      {entryInfo && (
+      {initialized && entity.value != null && (
         <EntryForm
-          entryInfo={entryInfo}
+          entity={{
+            ...entity.value,
+            attrs: entity.value.attrs.filter(
+              (attr) => !excludeAttrs.includes(attr.name)
+            ),
+          }}
           setIsAnchorLink={setIsAnchorLink}
           control={control}
           setValue={setValue}
