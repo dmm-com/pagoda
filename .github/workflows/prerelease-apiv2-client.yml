@@ -1,18 +1,19 @@
-name: Publish AirOne APIv2 client npm package
+name: Prerelease AirOne APIv2 client npm package to GitHub npm Registry
 
 on:
-  # TODO better trigger to fix/publish npm package, like attaching label
   pull_request:
     types: [opened, synchronize]
 
 jobs:
-  publish-gpr:
+  publish:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
       - name: apt-get
         run: |
           sudo apt-get update
@@ -39,6 +40,10 @@ jobs:
         run: |
           npm ci
           npm run generate:client
+      - name: npm version(prerelease)
+        run: |
+          npm version prerelease --preid=$GITHUB_SHA
+        working-directory: ./apiclient/typescript-fetch
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
