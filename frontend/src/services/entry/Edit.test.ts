@@ -86,7 +86,7 @@ test("formalizeEntryInfo should return expect value", () => {
           asArrayNamedObject: [{ name: "", object: null }],
           asArrayObject: [],
           asArrayRole: [],
-          asArrayString: [""],
+          asArrayString: [{ value: "" }],
           asBoolean: false,
           asGroup: undefined,
           asNamedObject: { name: "", object: null },
@@ -108,7 +108,7 @@ test("formalizeEntryInfo should return expect value", () => {
           asArrayNamedObject: [{ name: "", object: null }],
           asArrayObject: [],
           asArrayRole: [],
-          asArrayString: [""],
+          asArrayString: [{ value: "" }],
           asBoolean: false,
           asGroup: undefined,
           asNamedObject: { name: "", object: null },
@@ -130,7 +130,7 @@ test("formalizeEntryInfo should return expect value", () => {
           asArrayNamedObject: [{ name: "", object: null }],
           asArrayObject: [],
           asArrayRole: [],
-          asArrayString: [""],
+          asArrayString: [{ value: "" }],
           asBoolean: false,
           asGroup: undefined,
           asNamedObject: { name: "", object: null },
@@ -228,7 +228,7 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: 1026,
         value: {
-          asArrayString: [""],
+          asArrayString: [{ value: "" }],
         },
       },
       4: {
@@ -302,7 +302,7 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
     {
       type: djangoContext?.attrTypeValue.array_string,
       value: {
-        asArrayString: ["value"],
+        asArrayString: [{ value: "value" }],
       },
     },
     // array_object
@@ -577,7 +577,7 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
       client_data: {
         type: djangoContext?.attrTypeValue.array_string,
         value: {
-          asArrayString: ["value"],
+          asArrayString: [{ value: "value" }],
         },
       },
       expected_data: ["value"],
