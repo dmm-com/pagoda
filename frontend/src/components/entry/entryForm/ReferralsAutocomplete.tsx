@@ -17,7 +17,6 @@ interface Props {
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
   ) => void;
   multiple?: boolean;
-  disabled?: boolean;
   error?: { message?: string };
 }
 
@@ -26,7 +25,6 @@ export const ReferralsAutocomplete: FC<Props> = ({
   value,
   handleChange,
   multiple,
-  disabled,
   error,
 }) => {
   const [inputValue, setInputValue] = useState<string>(
@@ -80,7 +78,6 @@ export const ReferralsAutocomplete: FC<Props> = ({
     <Autocomplete
       sx={{ width: "280px" }}
       multiple={multiple}
-      disabled={disabled}
       loading={referrals.loading}
       options={referrals.value ?? []}
       value={value}

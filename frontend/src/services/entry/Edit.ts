@@ -43,12 +43,12 @@ export function formalizeEntryInfo(
               asObject: undefined,
               asGroup: undefined,
               asRole: undefined,
-              asNamedObject: {},
+              asNamedObject: { name: "", object: null },
               asArrayString: [{ value: "" }],
               asArrayObject: [],
               asArrayGroup: [],
               asArrayRole: [],
-              asArrayNamedObject: [{}],
+              asArrayNamedObject: [{ name: "", object: null }],
             };
           }
 
@@ -61,10 +61,26 @@ export function formalizeEntryInfo(
                     }),
                   }
                 : { asArrayString: [{ value: "" }] };
+            case djangoContext?.attrTypeValue.named_object:
+              return {
+                asNamedObject: {
+                  name: Object.keys(value?.asNamedObject ?? {})[0] ?? "",
+                  object: Object.values(value.asNamedObject ?? {})[0] ?? null,
+                },
+              };
             case djangoContext?.attrTypeValue.array_named_object:
               return value?.asArrayNamedObject?.length ?? 0 > 0
-                ? value
-                : { asArrayNamedObject: [{}] };
+                ? {
+                    asArrayNamedObject: value?.asArrayNamedObject?.map(
+                      (value) => {
+                        return {
+                          name: Object.keys(value)[0],
+                          object: Object.values(value)[0],
+                        };
+                      }
+                    ),
+                  }
+                : { asArrayNamedObject: [{ name: "", object: null }] };
             default:
               return value;
           }
@@ -137,8 +153,8 @@ export function convertAttrsFormatCtoS(
 
         case djangoContext?.attrTypeValue.named_object:
           return {
-            id: Object.values(attrValue.asNamedObject ?? {})[0]?.id ?? null,
-            name: Object.keys(attrValue.asNamedObject ?? {})[0] ?? "",
+            id: attrValue.asNamedObject?.object?.id ?? null,
+            name: attrValue.asNamedObject?.name ?? "",
           };
 
         case djangoContext?.attrTypeValue.array_string:
@@ -156,23 +172,25 @@ export function convertAttrsFormatCtoS(
         case djangoContext?.attrTypeValue.array_named_object:
           return attrValue.asArrayNamedObject?.map((x) => {
             return {
-              id: Object.values(x)[0]?.id ?? null,
-              name: Object.keys(x)[0] ?? "",
+              id: x.object?.id ?? null,
+              name: x.name,
             };
           });
 
         case djangoContext?.attrTypeValue.array_named_object_boolean:
           return (
             attrValue.asArrayNamedObject as {
-              [key: string]: Pick<EntryAttributeValueObject, "id" | "name"> & {
-                boolean?: boolean;
-              };
+              name: string;
+              object: Pick<
+                EntryAttributeValueObject,
+                "id" | "name" | "_boolean"
+              >;
             }[]
           )?.map((x) => {
             return {
-              id: Object.values(x)[0]?.id ?? null,
-              name: Object.keys(x)[0] ?? "",
-              boolean: Object.values(x)[0]?.boolean ?? false,
+              id: x.object?.id ?? null,
+              name: x.name,
+              boolean: x.object?._boolean ?? false,
             };
           });
 

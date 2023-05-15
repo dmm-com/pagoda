@@ -54,31 +54,31 @@ export const schema = schemaForType<EditableEntry>()(
                 )
                 .optional(),
               asNamedObject: z
-                .record(
-                  z.string(),
-                  z
+                .object({
+                  name: z.string(),
+                  object: z
                     .object({
                       id: z.number(),
                       name: z.string(),
                       _boolean: z.boolean().default(false),
                     })
                     .nullable()
-                    .default(null)
-                )
+                    .default(null),
+                })
                 .optional(),
               asArrayNamedObject: z
                 .array(
-                  z.record(
-                    z.string(),
-                    z
+                  z.object({
+                    name: z.string(),
+                    object: z
                       .object({
                         id: z.number(),
                         name: z.string(),
                         _boolean: z.boolean().default(false),
                       })
                       .nullable()
-                      .default(null)
-                  )
+                      .default(null),
+                  })
                 )
                 .optional(),
               asGroup: z
@@ -134,13 +134,14 @@ export const schema = schemaForType<EditableEntry>()(
                     value.value.asArrayObject?.some((v) => v != null) ?? false
                   );
                 case AttributeTypes.named_object.type:
-                  return Object.keys(value.value.asNamedObject ?? {}).some(
-                    (k) => value.value.asNamedObject?.[k] != null
+                  return (
+                    value.value.asNamedObject?.name !== "" ||
+                    value.value.asNamedObject?.object != null
                   );
                 case AttributeTypes.array_named_object.type:
                   return (
                     value.value.asArrayNamedObject?.some((v) => {
-                      return Object.keys(v ?? {}).some((k) => v?.[k] != null);
+                      return v.name !== "" || v.object != null;
                     }) ?? false
                   );
                 case AttributeTypes.group.type:
