@@ -60,7 +60,7 @@ export const AdvancedSearchResultsPage: FC = () => {
       return 0;
     }
     return Math.ceil(
-      results.value.ret_count / AdvancedSerarchResultList.MAX_ROW_COUNT
+      results.value?.ret_count ?? 0 / AdvancedSerarchResultList.MAX_ROW_COUNT
     );
   }, [results.loading, results.value?.ret_count]);
 
