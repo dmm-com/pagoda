@@ -15,7 +15,7 @@ export type EditableEntryAttrValue = {
   asString?: string;
   asNamedObject?: Record<string, EditableEntryAttrValueObject | null>;
   asArrayObject?: Array<EditableEntryAttrValueObject>;
-  asArrayString?: Array<string>;
+  asArrayString?: Array<{ value: string }>;
   asArrayNamedObject?: Array<
     Record<string, EditableEntryAttrValueObject | null>
   >;
