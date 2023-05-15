@@ -1,7 +1,9 @@
 import os
 import sys
-
+from typing import Any, Dict, List, TypedDict
+import yaml
 import configurations
+from django.db import models
 
 # append airone directory to the default path
 sys.path.append("./")
@@ -13,42 +15,73 @@ os.environ.setdefault("DJANGO_CONFIGURATION", "Dev")
 # load AirOne application
 configurations.setup()
 
-from entry.models import Entry, LBVirtualServer, ServiceGroup, PolicyTemplate  # NOQA
+from entry.models import (  # NOQA
+    LBVirtualServer,
+    LB,
+    IPADDR,
+    LargeCategory,
+    LBServiceGroup,
+    LBPolicyTemplate,
+)
 
 
-def do_set_lb_virtual_server(instance, lb_vsrv):
-    # set object typed Attribute values to test instance
-    for instance_key, attrname in [
-        ("lb", "LB"),
-        ("ipaddr", "IP Address"),
-        ("large_category", "b-05 | 大分類"),
-    ]:
-        attrv = lb_vsrv.get_attrv(attrname)
-        if attrv and attrv.referral and attrv.referral.is_active:
-            setattr(instance, instance_key, attrv.referral)
-            instance.save()
-
-    # create PolicyTemplate and LBVirtualServer instance if it's necessary
-    for model, attrname in [(ServiceGroup, "LBServiceGroup"), (PolicyTemplate, "LBPolicyTemplate")]:
-        attrv = lb_vsrv.get_attrv(attrname)
-        if attrv:
-            for co_attrv in attrv.data_array.all():
-                if co_attrv and co_attrv.referral and co_attrv.referral.is_active:
-                    ref_entry = co_attrv.referral
-                    if not model.objects.filter(name=ref_entry.name).exists():
-                        ref = model.objects.create(name=ref_entry.name)
-                        ref.referral = instance
-                        ref.save()
+class EntryExportattr(TypedDict, total=False):
+    name: str
+    value: Any
 
 
-def set_test_data():
-    for lb_vsrv in Entry.objects.filter(schema__name="LBVirtualServer", is_active=True):
-        instance = LBVirtualServer.objects.filter(name=lb_vsrv.name).first()
-        if not instance:
-            instance = LBVirtualServer.objects.create(name=lb_vsrv.name)
+class EntryExportEntry(TypedDict, total=False):
+    name: str
+    attrs: List[EntryExportattr]
 
-            do_set_lb_virtual_server(instance, lb_vsrv)
+
+class EntryExportData(TypedDict, total=False):
+    entity: str
+    entries: List[EntryExportEntry]
+
+
+class AttributeInfo(TypedDict):
+    model: models.Model
+    key: str
+
+
+def do_set_lb_virtual_server(lb_vsrv_instance: LBVirtualServer, lb_vsrv: EntryExportEntry):
+    attribute_info: Dict[str, AttributeInfo] = {
+        "LB": {"model": LB, "key": "lb"},
+        "IP Address": {"model": IPADDR, "key": "ipaddr"},
+        "b-05 | 大分類": {"model": LargeCategory, "key": "large_category"},
+        "LBServiceGroup": {"model": LBServiceGroup, "key": "lb_service_group"},
+        "LBPolicyTemplate": {"model": LBPolicyTemplate, "key": "lb_policy_template"},
+    }
+    for attr in lb_vsrv["attrs"]:
+        if not attr["value"]:
+            continue
+
+        model = attribute_info[attr["name"]]["model"]
+
+        if attr["name"] in ["LB", "IP Address", "b-05 | 大分類"]:
+            (instance, is_create) = model.objects.get_or_create(name=attr["value"])
+            setattr(lb_vsrv_instance, attribute_info[attr["name"]]["key"], instance)
+        else:
+            instances = []
+            for value in attr["value"]:
+                (instance, is_create) = model.objects.get_or_create(name=value)
+                instances.append(instance)
+            manager = getattr(lb_vsrv_instance, attribute_info[attr["name"]]["key"])
+            manager.add(*instances)
+
+        lb_vsrv_instance.save()
+
+
+def set_test_data(entries: List[EntryExportEntry]):
+    for lb_vsrv in entries:
+        (lb_vsrv_instance, is_create) = LBVirtualServer.objects.get_or_create(name=lb_vsrv["name"])
+
+        do_set_lb_virtual_server(lb_vsrv_instance, lb_vsrv)
 
 
 if __name__ == "__main__":
-    set_test_data()
+    with open("/tmp/entry_LBVirtualServer.yaml", "r") as file:
+        data: List[EntryExportData] = yaml.safe_load(file)
+
+    set_test_data(data[0]["entries"])

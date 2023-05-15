@@ -38,35 +38,33 @@ from user.models import User
 from .settings import CONFIG
 
 
-class ServiceGroup(models.Model):
-    name = models.TextField()
-    referral = models.ForeignKey(
-        "LBVirtualServer",
-        null=True,
-        related_name="service_group",
-        on_delete=models.CASCADE,
-    )
-
-
-class PolicyTemplate(models.Model):
-    name = models.TextField()
-    referral = models.ForeignKey(
-        "LBVirtualServer",
-        null=True,
-        related_name="policy_template",
-        on_delete=models.CASCADE,
-    )
-
-
 class LBVirtualServer(models.Model):
-    name = models.TextField()
-    lb = models.OneToOneField("Entry", related_name="lb", null=True, on_delete=models.CASCADE)
-    ipaddr = models.OneToOneField(
-        "Entry", related_name="ipaddr", null=True, on_delete=models.CASCADE
-    )
-    large_cateory = models.OneToOneField(
-        "Entry", related_name="large_category", null=True, on_delete=models.CASCADE
-    )
+    name = models.CharField(max_length=200, unique=True)
+    lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL)
+    ipaddr = models.ForeignKey("IPADDR", null=True, on_delete=models.SET_NULL)
+    large_cateory = models.ForeignKey("LargeCategory", null=True, on_delete=models.SET_NULL)
+    lb_policy_template = models.ManyToManyField("LBPolicyTemplate")
+    lb_service_group = models.ManyToManyField("LBServiceGroup")
+
+
+class LB(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+
+
+class IPADDR(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+
+
+class LargeCategory(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+
+
+class LBServiceGroup(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+
+
+class LBPolicyTemplate(models.Model):
+    name = models.CharField(max_length=200, unique=True)
 
 
 class AttributeValue(models.Model):
