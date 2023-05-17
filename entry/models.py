@@ -42,13 +42,17 @@ class LBVirtualServer(models.Model):
     name = models.CharField(max_length=200, unique=True)
     lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL)
     ipaddr = models.ForeignKey("IPADDR", null=True, on_delete=models.SET_NULL)
-    large_cateory = models.ForeignKey("LargeCategory", null=True, on_delete=models.SET_NULL)
+    large_category = models.ForeignKey("LargeCategory", null=True, on_delete=models.SET_NULL)
     lb_policy_template = models.ManyToManyField("LBPolicyTemplate")
     lb_service_group = models.ManyToManyField("LBServiceGroup")
 
 
 class LB(models.Model):
     name = models.CharField(max_length=200, unique=True)
+
+
+class vLB(LB):
+    pass
 
 
 class IPADDR(models.Model):
@@ -59,12 +63,28 @@ class LargeCategory(models.Model):
     name = models.CharField(max_length=200, unique=True)
 
 
-class LBServiceGroup(models.Model):
-    name = models.CharField(max_length=200, unique=True)
-
-
 class LBPolicyTemplate(models.Model):
     name = models.CharField(max_length=200, unique=True)
+    lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL)
+    lb_service_group = models.ManyToManyField("LBServiceGroup")
+
+
+class LBServiceGroup(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+    lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL)
+    lb_server = models.ManyToManyField("LBServer")
+
+
+class LBServer(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+    lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL)
+    ipaddr = models.ForeignKey("IPADDR", null=True, on_delete=models.SET_NULL)
+
+
+class Server(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+    ipaddrs = models.ManyToManyField("IPADDR")
+    large_category = models.ForeignKey("LargeCategory", null=True, on_delete=models.SET_NULL)
 
 
 class AttributeValue(models.Model):
