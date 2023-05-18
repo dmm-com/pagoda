@@ -1,7 +1,25 @@
-from rest_framework.serializers import ModelSerializer, Field, CharField, IntegerField
+from rest_framework.serializers import (
+    ReadOnlyField,
+    ModelSerializer,
+    Field,
+    CharField,
+    IntegerField,
+)
 from entity.models import Entity
 
-from entry.models import Entry, Attribute, AttributeValue
+from entry.models import (
+    IPADDR,
+    LB,
+    Server,
+    Entry,
+    Attribute,
+    AttributeValue,
+    LBPolicyTemplate,
+    LBServiceGroup,
+    LBVirtualServer,
+    LargeCategory,
+    m2mLBServiceGroupLBServer,
+)
 
 
 class RecursiveField(Field):
@@ -79,3 +97,77 @@ class AdvancedSearchSerializer(ModelSerializer):
             return []
         return super().to_representation(obj)
     """
+
+
+class LargeCategorySerializer(ModelSerializer):
+    class Meta:
+        model = LargeCategory
+        fields = ("id", "name")
+
+
+class ServerSerializer(ModelSerializer):
+    large_category = LargeCategorySerializer()
+
+    class Meta:
+        model = Server
+        fields = ("id", "name", "large_category")
+
+
+class IPADDRSerializer(ModelSerializer):
+    ref_server = ServerSerializer(source="server_set", many=True)
+
+    class Meta:
+        model = IPADDR
+        fields = ("id", "name", "ref_server")
+
+
+class LBServerSerializer(ModelSerializer):
+    id = ReadOnlyField(source="lbserver.id")
+    name = ReadOnlyField(source="lbserver.name")
+    ipaddr = IPADDRSerializer(source="lbserver.ipaddr")
+
+    class Meta:
+        model = m2mLBServiceGroupLBServer
+        fields = ("id", "name", "key", "ipaddr")
+
+
+class LBServiceGroupSerializer(ModelSerializer):
+    lb_server = LBServerSerializer(source="m2mlbservicegrouplbserver_set", many=True)
+
+    class Meta:
+        model = LBServiceGroup
+        fields = ("id", "name", "lb_server")
+
+
+class LBPolicyTemplateSerializer(ModelSerializer):
+    lb_service_group = LBServiceGroupSerializer(many=True)
+
+    class Meta:
+        model = LBPolicyTemplate
+        fields = ("id", "name", "lb_service_group")
+
+
+class LBSerializer(ModelSerializer):
+    class Meta:
+        model = LB
+        fields = ("id", "name")
+
+
+class AdvancedSearchSQLSerializer(ModelSerializer):
+    lb = LBSerializer()
+    ipaddr = IPADDRSerializer()
+    large_category = LargeCategorySerializer()
+    lb_policy_template = LBPolicyTemplateSerializer(many=True)
+    lb_service_group = LBServiceGroupSerializer(many=True)
+
+    class Meta:
+        model = LBVirtualServer
+        fields = (
+            "id",
+            "name",
+            "lb",
+            "ipaddr",
+            "large_category",
+            "lb_policy_template",
+            "lb_service_group",
+        )
