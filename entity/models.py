@@ -7,6 +7,7 @@ from webhook.models import Webhook
 
 
 class EntityAttr(ACLBase):
+    model_name = models.CharField(max_length=200, blank=True)
     # This parameter is needed to make a relationship to the corresponding Entity at importing
     parent_entity = models.ForeignKey("Entity", on_delete=models.DO_NOTHING)
 
@@ -80,6 +81,7 @@ class Entity(ACLBase):
     STATUS_CREATING = 1 << 1
     STATUS_EDITING = 1 << 2
 
+    model_name = models.CharField(max_length=200, blank=True)
     note = models.CharField(max_length=200, blank=True)
     attrs = models.ManyToManyField(EntityAttr)
 
