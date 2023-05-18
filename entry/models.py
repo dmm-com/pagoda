@@ -39,8 +39,8 @@ from .settings import CONFIG
 
 
 # These are convinient template Models for each Attribute Types
-class AttrTypeString(models.Model):
-    value = models.CharField(max_length=200, unique=True)
+#class AttrTypeString(models.Model):
+#    value = models.CharField(max_length=200, unique=True)
 
 class AttrTypeNamedObject(models.Model):
     key = models.CharField(max_length=200, unique=True)
@@ -86,7 +86,7 @@ class LBServiceGroupName(models.Model):
 
 
 # This is an example Model to describe "named_object" type instance
-class LBServiceGroupNameOfDict(models.Model, unique=True):
+class LBServiceGroupNameOfDict(models.Model):
     value = models.ForeignKey("LBServiceGroupName", on_delete=models.SET_NULL, null=True, blank=True)
     key = models.CharField(max_length=200, unique=True)
 
