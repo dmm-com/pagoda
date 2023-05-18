@@ -40,11 +40,15 @@ from .settings import CONFIG
 
 class LBVirtualServer(models.Model):
     name = models.CharField(max_length=200, unique=True)
-    lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL)
-    ipaddr = models.ForeignKey("IPADDR", null=True, on_delete=models.SET_NULL)
-    large_category = models.ForeignKey("LargeCategory", null=True, on_delete=models.SET_NULL)
-    lb_policy_template = models.ManyToManyField("LBPolicyTemplate")
-    lb_service_group = models.ManyToManyField("LBServiceGroup")
+    lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL, verbose_name="LB")
+    ipaddr = models.ForeignKey(
+        "IPADDR", null=True, on_delete=models.SET_NULL, verbose_name="IP Address"
+    )
+    large_category = models.ForeignKey(
+        "LargeCategory", null=True, on_delete=models.SET_NULL, verbose_name="b-05 | 大分類"
+    )
+    lb_policy_template = models.ManyToManyField("LBPolicyTemplate", verbose_name="LBPolicyTemplate")
+    lb_service_group = models.ManyToManyField("LBServiceGroup", verbose_name="LBServiceGroup")
 
 
 class LB(models.Model):
@@ -65,26 +69,48 @@ class LargeCategory(models.Model):
 
 class LBPolicyTemplate(models.Model):
     name = models.CharField(max_length=200, unique=True)
-    lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL)
-    lb_service_group = models.ManyToManyField("LBServiceGroup")
+    lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL, verbose_name="LB")
+    lb_service_group = models.ManyToManyField("LBServiceGroup", verbose_name="LBServiceGroup")
 
 
 class LBServiceGroup(models.Model):
     name = models.CharField(max_length=200, unique=True)
-    lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL)
-    lb_server = models.ManyToManyField("LBServer")
+    lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL, verbose_name="LB")
+    lb_server = models.ManyToManyField(
+        "LBServer",
+        through="m2mLBServiceGroupLBServer",
+        verbose_name="LBServer",
+    )
+
+
+class m2mLBServiceGroupLBServer(models.Model):
+    key = models.CharField(max_length=200)
+    lbservicegroup = models.ForeignKey("LBServiceGroup", on_delete=models.CASCADE)
+    lbserver = models.ForeignKey("LBServer", on_delete=models.CASCADE)
 
 
 class LBServer(models.Model):
     name = models.CharField(max_length=200, unique=True)
-    lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL)
-    ipaddr = models.ForeignKey("IPADDR", null=True, on_delete=models.SET_NULL)
+    lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL, verbose_name="LB")
+    ipaddr = models.ForeignKey(
+        "IPADDR", null=True, on_delete=models.SET_NULL, verbose_name="IP Address"
+    )
 
 
 class Server(models.Model):
     name = models.CharField(max_length=200, unique=True)
-    ipaddrs = models.ManyToManyField("IPADDR")
-    large_category = models.ForeignKey("LargeCategory", null=True, on_delete=models.SET_NULL)
+    ipaddrs = models.ManyToManyField(
+        "IPADDR", through="m2mServerIPADDR", verbose_name="IP Addresses"
+    )
+    large_category = models.ForeignKey(
+        "LargeCategory", null=True, on_delete=models.SET_NULL, verbose_name="b-05 | 大分類"
+    )
+
+
+class m2mServerIPADDR(models.Model):
+    key = models.CharField(max_length=200)
+    server = models.ForeignKey("Server", on_delete=models.CASCADE)
+    ipaddr = models.ForeignKey("IPADDR", on_delete=models.CASCADE)
 
 
 class AttributeValue(models.Model):

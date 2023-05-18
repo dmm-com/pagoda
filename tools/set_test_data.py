@@ -36,10 +36,14 @@ class EntryExportData(TypedDict, total=False):
     entries: List[EntryExportEntry]
 
 
-def set_test_data(entries: List[EntryExportEntry], model: Model, attribute: dict):
+def set_test_data(entries: List[EntryExportEntry], model: Model):
     attribute_info: Dict[str, Field] = {}
-    for attr_name, field_name in attribute.items():
-        attribute_info[attr_name] = model._meta.get_field(field_name)
+    for field in model._meta.get_fields():
+        if not isinstance(field, Field):
+            continue
+        if field.attname in ["id", "name"]:
+            continue
+        attribute_info[field.verbose_name] = field
 
     for entry in entries:
         (parent_instance, is_create) = model.objects.get_or_create(name=entry["name"])
@@ -51,15 +55,31 @@ def set_test_data(entries: List[EntryExportEntry], model: Model, attribute: dict
             if not attr["value"]:
                 continue
 
-            child_model = attribute_info[attr["name"]].related_model
+            child_model: Model = attribute_info[attr["name"]].related_model
 
             if isinstance(attribute_info[attr["name"]], ManyToManyField):
-                child_instances = []
+                m2m_model = attribute_info[attr["name"]].remote_field.through
                 for value in attr["value"]:
-                    (child_instance, is_create) = child_model.objects.get_or_create(name=value)
-                    child_instances.append(child_instance)
-                manager = getattr(parent_instance, attribute_info[attr["name"]].attname)
-                manager.add(*child_instances)
+                    if isinstance(value, dict):
+                        for k, v in value.items():
+                            if v is None:
+                                continue
+                            (child_instance, is_create) = child_model.objects.get_or_create(name=v)
+                            m2m_model.objects.get_or_create(
+                                **{
+                                    "key": k,
+                                    model._meta.model_name: parent_instance,
+                                    child_model._meta.model_name: child_instance,
+                                }
+                            )
+                    else:
+                        (child_instance, is_create) = child_model.objects.get_or_create(name=value)
+                        m2m_model.objects.get_or_create(
+                            **{
+                                model._meta.model_name: parent_instance,
+                                child_model._meta.model_name: child_instance,
+                            }
+                        )
             elif isinstance(attribute_info[attr["name"]], ForeignKey):
                 (child_instance, is_create) = child_model.objects.get_or_create(name=attr["value"])
                 setattr(parent_instance, attribute_info[attr["name"]].attname, child_instance)
@@ -74,58 +94,20 @@ if __name__ == "__main__":
 
     with open("/tmp/entry_LBVirtualServer.yaml", "r") as file:
         data = yaml.safe_load(file)
-        set_test_data(
-            data[0]["entries"],
-            LBVirtualServer,
-            {
-                "LB": "lb",
-                "IP Address": "ipaddr",
-                "b-05 | 大分類": "large_category",
-                "LBServiceGroup": "lb_service_group",
-                "LBPolicyTemplate": "lb_policy_template",
-            },
-        )
+        set_test_data(data[0]["entries"], LBVirtualServer)
 
     with open("/tmp/entry_LBPolicyTemplate.yaml", "r") as file:
         data = yaml.safe_load(file)
-        set_test_data(
-            data[0]["entries"],
-            LBPolicyTemplate,
-            {
-                "LB": "lb",
-                "LBServiceGroup": "lb_service_group",
-            },
-        )
+        set_test_data(data[0]["entries"], LBPolicyTemplate)
 
     with open("/tmp/entry_LBServiceGroup.yaml", "r") as file:
         data = yaml.safe_load(file)
-        set_test_data(
-            data[0]["entries"],
-            LBServiceGroup,
-            {
-                "LB": "lb",
-                "LBServer": "lb_server",
-            },
-        )
+        set_test_data(data[0]["entries"], LBServiceGroup)
 
     with open("/tmp/entry_LBServer.yaml", "r") as file:
         data = yaml.safe_load(file)
-        set_test_data(
-            data[0]["entries"],
-            LBServer,
-            {
-                "LB": "lb",
-                "IP Address": "ipaddr",
-            },
-        )
+        set_test_data(data[0]["entries"], LBServer)
 
     with open("/tmp/entry_tsuchinoko-vm.yaml", "r") as file:
         data = yaml.safe_load(file)
-        set_test_data(
-            data[0]["entries"],
-            Server,
-            {
-                "IP Addresses": "ipaddrs",
-                "b-05 | 大分類": "large_category",
-            },
-        )
+        set_test_data(data[0]["entries"], Server)
