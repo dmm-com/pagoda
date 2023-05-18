@@ -8,6 +8,21 @@
 
 ### Fixed
 
+## v3.49.0
+
+### Added
+* Prepare to publish APIv2 client npm package w/o modifying existing code.
+  Contributed by @syucream
+
+### Changed
+* Upgrade django version from 3.2.18 to 3.2.19
+* Hide disallowed value explicitly on advanced search result.
+  Contributed by @syucream
+
+### Fixed
+* Fixed error when date attribute value is None in advanced search.
+  Contributed by @hinashi
+
 ## v3.48.0
 
 ### Changed
