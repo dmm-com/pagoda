@@ -38,6 +38,14 @@ from user.models import User
 from .settings import CONFIG
 
 
+# These are convinient template Models for each Attribute Types
+class AttrTypeString(models.Model):
+    value = models.CharField(max_length=200, unique=True)
+
+class AttrTypeNamedObject(models.Model):
+    key = models.CharField(max_length=200, unique=True)
+
+
 class LBVirtualServer(models.Model):
     name = models.CharField(max_length=200, unique=True)
     lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL, verbose_name="LB")
@@ -73,8 +81,23 @@ class LBPolicyTemplate(models.Model):
     lb_service_group = models.ManyToManyField("LBServiceGroup", verbose_name="LBServiceGroup")
 
 
+class LBServiceGroupName(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+
+
+# This is an example Model to describe "named_object" type instance
+class LBServiceGroupNameOfDict(models.Model, unique=True):
+    value = models.ForeignKey("LBServiceGroupName", on_delete=models.SET_NULL, null=True, blank=True)
+    key = models.CharField(max_length=200, unique=True)
+
+
 class LBServiceGroup(models.Model):
     name = models.CharField(max_length=200, unique=True)
+
+    # Even through string field should be referral, to describe "array_string" and "named_object" type
+    #name = models.ForeignKey("LBServiceGroupName", on_delete=models.SET_NULL, null=True, blank=True)
+    #name = models.ForeignKey("LBServiceGroupNameOfDict", on_delete=models.SET_NULL, null=True, blank=True)
+
     lb = models.ForeignKey("LB", null=True, on_delete=models.SET_NULL, verbose_name="LB")
     lb_server = models.ManyToManyField(
         "LBServer",
@@ -108,6 +131,7 @@ class Server(models.Model):
 
 
 class m2mServerIPADDR(models.Model):
+    # "airone_" is the prefex not to be duplicated
     key = models.CharField(max_length=200)
     server = models.ForeignKey("Server", on_delete=models.CASCADE)
     ipaddr = models.ForeignKey("IPADDR", on_delete=models.CASCADE)
