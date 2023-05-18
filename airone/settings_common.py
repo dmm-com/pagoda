@@ -65,6 +65,7 @@ class Common(Configuration):
         "social_django",
         "simple_history",
         "storages",
+        "user_models",
     ]
 
     MIDDLEWARE = [
