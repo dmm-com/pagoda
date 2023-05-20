@@ -5,6 +5,7 @@ on:
     types: [labeled]
     paths:
       - '**/api_v2/**/*.py'
+      - '.github/workflows/release-apiv2-client.yml'
 
 jobs:
   release:
@@ -15,8 +16,6 @@ jobs:
     if: ${{ github.event.label.name == 'release-apiv2-client' }}
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
       - name: apt-get
         run: |
           sudo apt-get update
