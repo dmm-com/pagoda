@@ -5,8 +5,8 @@
 import { render } from "@testing-library/react";
 import * as React from "react";
 
-import { CopyForm } from "components/entry/CopyForm";
 import { TestWrapper } from "TestWrapper";
+import { CopyForm } from "components/entry/CopyForm";
 
 test("should render a component with essential props", function () {
   const entry = {

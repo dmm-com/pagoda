@@ -11,8 +11,8 @@ import React from "react";
 import { MemoryRouter, Route } from "react-router-dom";
 
 import { entryDetailsPath } from "Routes";
-import { EntryDetailsPage } from "pages/EntryDetailsPage";
 import { TestWrapper } from "TestWrapper";
+import { EntryDetailsPage } from "pages/EntryDetailsPage";
 
 afterEach(() => {
   jest.clearAllMocks();

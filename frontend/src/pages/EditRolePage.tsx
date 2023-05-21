@@ -12,7 +12,7 @@ import { RoleForm } from "../components/role/RoleForm";
 import { schema, Schema } from "../components/role/RoleFormSchema";
 import { useFormNotification } from "../hooks/useFormNotification";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
+import { extractAPIException } from "../services/AironeAPIErrorUtil";
 
 import { topPath, rolesPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -69,7 +69,7 @@ export const EditRolePage: FC = () => {
         enqueueSubmitResult(true);
       } catch (e) {
         if (e instanceof Response) {
-          await ExtractAPIException<Schema>(
+          await extractAPIException<Schema>(
             e,
             (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
             (name, message) =>

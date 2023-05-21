@@ -19,20 +19,20 @@ const aironeAPIErrors: Record<string, string> = {
   "AE-122000": "入力データが大きすぎます",
 };
 
-export const GetReasonFromCode = (code: string): string => {
+const getReasonFromCode = (code: string): string => {
   return (
     aironeAPIErrors[code] ??
     `フロントエンドシステムエラー(エラーコード ${code})。 AirOne 開発者にお問合せください`
   );
 };
 
-export const ExtractAPIErrorMessage = (json: any): string => {
+export const extractAPIErrorMessage = (json: any): string => {
   let reasons = "";
 
   if (json["name"]) {
     reasons = json["name"]
       .map((errorInfo: any) =>
-        GetReasonFromCode(errorInfo["airone_error_code"])
+        getReasonFromCode(errorInfo["airone_error_code"])
       )
       .join();
   }
@@ -40,7 +40,7 @@ export const ExtractAPIErrorMessage = (json: any): string => {
   if (json["non_field_errors"]) {
     reasons = json["non_field_errors"]
       .map((errorInfo: any) =>
-        GetReasonFromCode(errorInfo["airone_error_code"])
+        getReasonFromCode(errorInfo["airone_error_code"])
       )
       .join();
   }
@@ -50,7 +50,7 @@ export const ExtractAPIErrorMessage = (json: any): string => {
 
 // Extract error response with predefined data type, then report them appropriately
 // TODO check type-seafety more in runtime! currently unsafe
-export const ExtractAPIException = async <T>(
+export const extractAPIException = async <T>(
   resp: Response,
   nonFieldReporter: (message: string) => void,
   fieldReporter: (name: keyof T, message: string) => void

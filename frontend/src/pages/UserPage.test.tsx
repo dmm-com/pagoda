@@ -9,8 +9,8 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
-import { UserPage } from "pages/UserPage";
 import { TestWrapper } from "TestWrapper";
+import { UserPage } from "pages/UserPage";
 
 afterEach(() => {
   jest.clearAllMocks();

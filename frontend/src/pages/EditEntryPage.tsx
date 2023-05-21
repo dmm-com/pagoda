@@ -11,7 +11,7 @@ import { PageHeader } from "../components/common/PageHeader";
 import { Schema, schema } from "../components/entry/entryForm/EntryFormSchema";
 import { useFormNotification } from "../hooks/useFormNotification";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
+import { extractAPIException } from "../services/AironeAPIErrorUtil";
 
 import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { SubmitButton } from "components/common/SubmitButton";
@@ -120,7 +120,7 @@ export const EditEntryPage: FC<Props> = ({
       enqueueSubmitResult(true);
     } catch (e) {
       if (e instanceof Response) {
-        await ExtractAPIException<Schema>(
+        await extractAPIException<Schema>(
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
           (name, message) =>

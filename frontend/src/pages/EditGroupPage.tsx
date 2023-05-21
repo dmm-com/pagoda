@@ -9,7 +9,7 @@ import { PageHeader } from "../components/common/PageHeader";
 import { schema, Schema } from "../components/group/GroupFormSchema";
 import { useFormNotification } from "../hooks/useFormNotification";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
+import { extractAPIException } from "../services/AironeAPIErrorUtil";
 import { DjangoContext } from "../services/DjangoContext";
 import { ForbiddenError } from "../services/Exceptions";
 
@@ -64,7 +64,7 @@ export const EditGroupPage: FC = () => {
       enqueueSubmitResult(true);
     } catch (e) {
       if (e instanceof Response) {
-        await ExtractAPIException<Schema>(
+        await extractAPIException<Schema>(
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
           (name, message) =>

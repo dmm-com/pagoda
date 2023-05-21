@@ -12,7 +12,7 @@ import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useFormNotification } from "../hooks/useFormNotification";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
-import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
+import { extractAPIException } from "../services/AironeAPIErrorUtil";
 import { DjangoContext } from "../services/DjangoContext";
 
 import { topPath, usersPath } from "Routes";
@@ -101,7 +101,7 @@ export const EditUserPage: FC = () => {
       enqueueSubmitResult(true);
     } catch (e) {
       if (e instanceof Response) {
-        await ExtractAPIException<Schema>(
+        await extractAPIException<Schema>(
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
           (name, message) =>

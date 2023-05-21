@@ -6,8 +6,8 @@ import { render } from "@testing-library/react";
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 
-import { EntryReferral } from "components/entry/EntryReferral";
 import { TestWrapper } from "TestWrapper";
+import { EntryReferral } from "components/entry/EntryReferral";
 
 afterEach(() => {
   jest.clearAllMocks();

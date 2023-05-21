@@ -8,8 +8,8 @@ import { useForm } from "react-hook-form";
 
 import { Schema } from "./entryForm/EntryFormSchema";
 
-import { EntryForm } from "components/entry/EntryForm";
 import { TestWrapper } from "TestWrapper";
+import { EntryForm } from "components/entry/EntryForm";
 
 test("should render a component with essential props", function () {
   const entryInfo = {

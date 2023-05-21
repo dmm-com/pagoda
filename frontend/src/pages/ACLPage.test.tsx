@@ -9,8 +9,8 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
-import { ACLPage } from "pages/ACLPage";
 import { TestWrapper } from "TestWrapper";
+import { ACLPage } from "pages/ACLPage";
 
 afterEach(() => {
   jest.clearAllMocks();
