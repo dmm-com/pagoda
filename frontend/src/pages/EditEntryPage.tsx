@@ -14,7 +14,6 @@ import { useTypedParams } from "../hooks/useTypedParams";
 import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
 
 import { entityEntriesPath, entryDetailsPath } from "Routes";
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
@@ -22,6 +21,7 @@ import {
   EntryForm as DefaultEntryForm,
   EntryFormProps,
 } from "components/entry/EntryForm";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 import {
   convertAttrsFormatCtoS,
   formalizeEntryInfo,

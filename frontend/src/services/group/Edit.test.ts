@@ -1,4 +1,4 @@
-import { GroupTree } from "../../apiclient/AironeApiClientV2";
+import { GroupTree } from "../../repository/AironeApiClientV2";
 
 import { filterAncestorsAndOthers } from "./Edit";
 

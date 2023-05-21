@@ -3,11 +3,11 @@ import React, { FC, useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { topPath } from "Routes";
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
 import { UserImportModal } from "components/user/UserImportModal";
 import { UserList } from "components/user/UserList";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 export const UserPage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);

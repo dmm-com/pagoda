@@ -16,8 +16,8 @@ import React, { FC, useMemo, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
 import { usePage } from "../../hooks/usePage";
+import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
 import { DjangoContext } from "../../services/DjangoContext";
 import { normalizeToMatch } from "../../services/StringUtil";
 import { Loading } from "../common/Loading";

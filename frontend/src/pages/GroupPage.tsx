@@ -20,10 +20,10 @@ import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
 import { DjangoContext } from "../services/DjangoContext";
 
 import { newGroupPath, topPath } from "Routes";
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 const StyledBox = styled(Box)({
   position: "absolute",

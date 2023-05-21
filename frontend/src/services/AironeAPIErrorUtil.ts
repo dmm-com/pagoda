@@ -1,10 +1,19 @@
-// https://github.com/dmm-com/airone/wiki/(Blueprint)-AirOne-API-Error-code-mapping
-import {
-  AironeApiError,
-  AironeApiFieldsError,
-  ErrorDetail,
-} from "../apiclient/AironeApiError";
+import { ForbiddenError, NotFoundError, UnknownError } from "./Exceptions";
 
+type ErrorDetail = {
+  code: string;
+  message: string;
+};
+
+type AironeApiFieldsError<T> = {
+  [K in keyof T]?: Array<ErrorDetail>;
+};
+
+type AironeApiError<T> = AironeApiFieldsError<T> & {
+  non_field_errors?: Array<ErrorDetail>;
+};
+
+// https://github.com/dmm-com/airone/wiki/(Blueprint)-AirOne-API-Error-code-mapping
 const aironeAPIErrors: Record<string, string> = {
   "AE-220000": "入力データが既存のデータと重複しています",
   "AE-122000": "入力データが大きすぎます",
@@ -65,3 +74,18 @@ export const ExtractAPIException = async <T>(
     fieldReporter(fieldName as keyof T, message);
   });
 };
+
+export function toError(response: Response): Error | null {
+  if (!response.ok) {
+    switch (response.status) {
+      case 403:
+        return new ForbiddenError(response.toString());
+      case 404:
+        return new NotFoundError(response.toString());
+      default:
+        return new UnknownError(response.toString());
+    }
+  }
+
+  return null;
+}

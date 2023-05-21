@@ -15,9 +15,9 @@ import { useTypedParams } from "../hooks/useTypedParams";
 import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
 
 import { topPath, rolesPath } from "Routes";
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { SubmitButton } from "components/common/SubmitButton";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 export const EditRolePage: FC = () => {
   const { roleId } = useTypedParams<{ roleId?: number }>();

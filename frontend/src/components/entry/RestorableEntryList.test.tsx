@@ -17,7 +17,7 @@ test("should render a component with essential props", function () {
   /* eslint-disable */
   jest
     .spyOn(
-      require("apiclient/AironeApiClientV2").aironeApiClientV2,
+      require("repository/AironeApiClientV2").aironeApiClientV2,
       "getEntries"
     )
     .mockResolvedValue(

@@ -8,10 +8,10 @@ import { EntryImportModal } from "../components/entry/EntryImportModal";
 import { RestorableEntryList } from "../components/entry/RestorableEntryList";
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 export const RestoreEntryPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();

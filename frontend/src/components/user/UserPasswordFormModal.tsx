@@ -4,7 +4,7 @@ import { useSnackbar } from "notistack";
 import React, { FC, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
+import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
 import { DjangoContext } from "../../services/DjangoContext";
 
 import { loginPath, topPath, usersPath } from "Routes";

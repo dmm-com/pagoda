@@ -13,8 +13,8 @@ import React, { FC, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
 import { usePage } from "../../hooks/usePage";
+import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
 import { EntryReferralList } from "../../services/Constants";
 import { normalizeToMatch } from "../../services/StringUtil";
 

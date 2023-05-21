@@ -14,10 +14,10 @@ import { DjangoContext } from "../services/DjangoContext";
 import { ForbiddenError } from "../services/Exceptions";
 
 import { groupsPath, topPath } from "Routes";
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { SubmitButton } from "components/common/SubmitButton";
 import { GroupForm } from "components/group/GroupForm";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 export const EditGroupPage: FC = () => {
   const { groupId } = useTypedParams<{ groupId?: number }>();

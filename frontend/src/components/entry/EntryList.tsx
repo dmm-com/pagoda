@@ -21,10 +21,10 @@ import { usePage } from "../../hooks/usePage";
 import { normalizeToMatch } from "../../services/StringUtil";
 
 import { newEntryPath, entryDetailsPath } from "Routes";
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 import { EntryList as ConstEntryList } from "services/Constants";
 
 const StyledCard = styled(Card)(({}) => ({

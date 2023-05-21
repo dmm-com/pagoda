@@ -29,16 +29,19 @@ test("should match snapshot", async () => {
   /* eslint-disable */
   jest
     .spyOn(
-      require("../apiclient/AironeApiClientV2").aironeApiClientV2,
+      require("../repository/AironeApiClientV2").aironeApiClientV2,
       "getRole"
     )
     .mockResolvedValue(Promise.resolve(role));
   jest
-    .spyOn(require("apiclient/AironeApiClientV2").aironeApiClientV2, "getUsers")
+    .spyOn(
+      require("repository/AironeApiClientV2").aironeApiClientV2,
+      "getUsers"
+    )
     .mockResolvedValue(Promise.resolve([]));
   jest
     .spyOn(
-      require("apiclient/AironeApiClientV2").aironeApiClientV2,
+      require("repository/AironeApiClientV2").aironeApiClientV2,
       "getGroups"
     )
     .mockResolvedValue(Promise.resolve([]));
