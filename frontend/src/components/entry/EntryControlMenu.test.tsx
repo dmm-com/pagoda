@@ -6,7 +6,7 @@ import { render } from "@testing-library/react";
 import React from "react";
 
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 test("should render a component with essential props", function () {
   const anchorElem = document.createElement("button");

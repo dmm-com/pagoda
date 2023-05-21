@@ -13,7 +13,7 @@ import { MemoryRouter, Route } from "react-router-dom";
 import { EditEntryPage } from "./EditEntryPage";
 
 import { entryEditPath } from "Routes";
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();

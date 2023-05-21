@@ -6,7 +6,7 @@ import { render } from "@testing-library/react";
 import React from "react";
 
 import { EntityList } from "components/entity/EntityList";
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 test("should render with essential props", () => {
   expect(() =>

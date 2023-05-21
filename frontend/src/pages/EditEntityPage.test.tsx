@@ -11,7 +11,7 @@ import React from "react";
 
 import { EditEntityPage } from "./EditEntityPage";
 
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();

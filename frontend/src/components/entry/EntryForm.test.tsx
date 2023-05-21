@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { Schema } from "./entryForm/EntryFormSchema";
 
 import { EntryForm } from "components/entry/EntryForm";
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 test("should render a component with essential props", function () {
   const entryInfo = {

@@ -7,7 +7,7 @@ import React from "react";
 
 import { EntityControlMenu } from "./EntityControlMenu";
 
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 test("should render with essential props", () => {
   expect(() =>

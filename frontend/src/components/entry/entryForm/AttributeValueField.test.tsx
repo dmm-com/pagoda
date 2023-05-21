@@ -6,7 +6,7 @@ import { shallow } from "enzyme";
 import React from "react";
 
 import { DjangoContext } from "../../../services/DjangoContext";
-import { ReactHookFormTestWrapper } from "../../../services/ReactHookFormTestWrapper";
+import { ReactHookFormTestWrapper } from "../../../ReactHookFormTestWrapper";
 
 import { AttributeValueField } from "./AttributeValueField";
 import { Schema } from "./EntryFormSchema";

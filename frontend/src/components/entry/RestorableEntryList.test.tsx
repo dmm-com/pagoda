@@ -7,7 +7,7 @@ import React from "react";
 
 import { RestorableEntryList } from "./RestorableEntryList";
 
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();
