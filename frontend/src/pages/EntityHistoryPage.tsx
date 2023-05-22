@@ -3,13 +3,13 @@ import { Box, Container, IconButton } from "@mui/material";
 import React, { FC, useMemo, useState } from "react";
 import { useAsync } from "react-use";
 
-import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { EntityControlMenu } from "../components/entity/EntityControlMenu";
 import { EntityHistoryList } from "../components/entity/EntityHistoryList";
 import { EntryImportModal } from "../components/entry/EntryImportModal";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { usePage } from "../hooks/usePage";
 import { useTypedParams } from "../hooks/useTypedParams";
+import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
 import { EntityHistoryList as ConstEntityHistoryList } from "../services/Constants";
 
 import { Loading } from "components/common/Loading";

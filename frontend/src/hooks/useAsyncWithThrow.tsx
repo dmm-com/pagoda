@@ -5,7 +5,7 @@ import {
   PromiseType,
 } from "react-use/lib/misc/types";
 
-import { toError } from "../services/ResponseUtil";
+import { toError } from "../services/AironeAPIErrorUtil";
 
 export declare type AsyncState<T> =
   | {

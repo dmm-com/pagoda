@@ -5,8 +5,8 @@
 import { render } from "@testing-library/react";
 import React from "react";
 
+import { TestWrapper } from "TestWrapper";
 import { EntryList } from "components/entry/EntryList";
-import { TestWrapper } from "services/TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -16,7 +16,7 @@ test("should render a component with essential props", function () {
   /* eslint-disable */
   jest
     .spyOn(
-      require("apiclient/AironeApiClientV2").aironeApiClientV2,
+      require("repository/AironeApiClientV2").aironeApiClientV2,
       "getEntries"
     )
     .mockResolvedValue(

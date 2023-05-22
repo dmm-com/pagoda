@@ -9,15 +9,15 @@ import { PageHeader } from "../components/common/PageHeader";
 import { schema, Schema } from "../components/group/GroupFormSchema";
 import { useFormNotification } from "../hooks/useFormNotification";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
+import { extractAPIException } from "../services/AironeAPIErrorUtil";
 import { DjangoContext } from "../services/DjangoContext";
 import { ForbiddenError } from "../services/Exceptions";
 
 import { groupsPath, topPath } from "Routes";
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { SubmitButton } from "components/common/SubmitButton";
 import { GroupForm } from "components/group/GroupForm";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 export const EditGroupPage: FC = () => {
   const { groupId } = useTypedParams<{ groupId?: number }>();
@@ -64,7 +64,7 @@ export const EditGroupPage: FC = () => {
       enqueueSubmitResult(true);
     } catch (e) {
       if (e instanceof Response) {
-        await ExtractAPIException<Schema>(
+        await extractAPIException<Schema>(
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
           (name, message) =>

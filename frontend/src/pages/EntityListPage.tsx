@@ -3,9 +3,9 @@ import React, { FC, useCallback, useMemo, useState } from "react";
 import { useHistory, useLocation, Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { EntityImportModal } from "../components/entity/EntityImportModal";
 import { usePage } from "../hooks/usePage";
+import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
 import { EntityList as ConstEntityList } from "../services/Constants";
 
 import { topPath } from "Routes";

@@ -9,8 +9,8 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
+import { TestWrapper } from "TestWrapper";
 import { EditUserPage } from "pages/EditUserPage";
-import { TestWrapper } from "services/TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -36,7 +36,7 @@ test("should match snapshot", async () => {
   /* eslint-disable */
   jest
     .spyOn(
-      require("../apiclient/AironeApiClientV2").aironeApiClientV2,
+      require("../repository/AironeApiClientV2").aironeApiClientV2,
       "getUser"
     )
     .mockResolvedValue(Promise.resolve(user));

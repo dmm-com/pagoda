@@ -2,8 +2,8 @@ import { Box, Modal, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { ImportForm } from "components/common/ImportForm";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 const StyledModal = styled(Modal)(({}) => ({
   display: "flex",

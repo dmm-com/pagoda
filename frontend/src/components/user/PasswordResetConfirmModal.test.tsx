@@ -7,7 +7,7 @@ import React from "react";
 
 import { PasswordResetConfirmModal } from "./PasswordResetConfirmModal";
 
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();

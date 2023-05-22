@@ -4,7 +4,7 @@ import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { useAsync } from "react-use";
 
-import { aironeApiClientV2 } from "../../../apiclient/AironeApiClientV2";
+import { aironeApiClientV2 } from "../../../repository/AironeApiClientV2";
 
 import { Schema } from "./EntryFormSchema";
 

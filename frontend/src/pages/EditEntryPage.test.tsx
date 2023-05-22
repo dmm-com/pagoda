@@ -13,7 +13,7 @@ import { MemoryRouter, Route } from "react-router-dom";
 import { EditEntryPage } from "./EditEntryPage";
 
 import { entryEditPath } from "Routes";
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -51,13 +51,16 @@ test("should match snapshot", async () => {
   /* eslint-disable */
   jest
     .spyOn(
-      require("../apiclient/AironeApiClientV2").aironeApiClientV2,
+      require("../repository/AironeApiClientV2").aironeApiClientV2,
       "getEntity"
     )
     .mockResolvedValue(Promise.resolve(entity));
 
   jest
-    .spyOn(require("apiclient/AironeApiClientV2").aironeApiClientV2, "getEntry")
+    .spyOn(
+      require("repository/AironeApiClientV2").aironeApiClientV2,
+      "getEntry"
+    )
     .mockResolvedValue(Promise.resolve(entry));
   /* eslint-enable */
 

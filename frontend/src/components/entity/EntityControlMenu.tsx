@@ -21,8 +21,8 @@ import {
   topPath,
   entityEntriesPath,
 } from "Routes";
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Confirmable } from "components/common/Confirmable";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 type ExportFormatType = "YAML" | "CSV";
 

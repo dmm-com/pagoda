@@ -9,8 +9,8 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
+import { TestWrapper } from "TestWrapper";
 import { EditGroupPage } from "pages/EditGroupPage";
-import { TestWrapper } from "services/TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -84,19 +84,19 @@ test("should match snapshot", async () => {
   /* eslint-disable */
   jest
     .spyOn(
-      require("../apiclient/AironeApiClientV2").aironeApiClientV2,
+      require("../repository/AironeApiClientV2").aironeApiClientV2,
       "getUsers"
     )
     .mockResolvedValue(Promise.resolve(users));
   jest
     .spyOn(
-      require("../apiclient/AironeApiClientV2").aironeApiClientV2,
+      require("../repository/AironeApiClientV2").aironeApiClientV2,
       "getGroup"
     )
     .mockResolvedValue(Promise.resolve(group));
   jest
     .spyOn(
-      require("../apiclient/AironeApiClientV2").aironeApiClientV2,
+      require("../repository/AironeApiClientV2").aironeApiClientV2,
       "getGroupTrees"
     )
     .mockResolvedValue(Promise.resolve(groups));

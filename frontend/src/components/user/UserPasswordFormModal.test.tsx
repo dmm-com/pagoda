@@ -7,7 +7,7 @@ import React from "react";
 
 import { UserPasswordFormModal } from "./UserPasswordFormModal";
 
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 test("should render a component with essential props", function () {
   Object.defineProperty(window, "django_context", {
