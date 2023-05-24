@@ -48,8 +48,12 @@ export const PageHeader: FC<Props> = ({ title, description, children }) => {
     <Frame>
       <Fixed>
         <Header>
-          <Title variant="h6">{title}</Title>
-          <Typography variant="subtitle1">{description}</Typography>
+          <Title id="title" variant="h6">
+            {title}
+          </Title>
+          <Typography id="description" variant="subtitle1">
+            {description}
+          </Typography>
           <ChildrenBox>{children}</ChildrenBox>
         </Header>
         <Divider flexItem />

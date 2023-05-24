@@ -45,7 +45,7 @@ const AttrValueTableCell = styled(TableCell)(() => ({
 export const EntryAttributes: FC<Props> = ({ attributes }) => {
   return (
     <TableContainer component={Paper}>
-      <Table>
+      <Table id="table_attr_list">
         <TableHead sx={{ backgroundColor: "primary.dark" }}>
           <TableRow>
             <HeaderTableCell>項目</HeaderTableCell>

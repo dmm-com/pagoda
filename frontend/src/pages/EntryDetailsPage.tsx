@@ -81,6 +81,7 @@ export const EntryDetailsPage: FC<Props> = ({
             ].map((content) => {
               return (
                 <Chip
+                  id={"chip_" + content.name}
                   key={content.name}
                   icon={<ArrowDropDownIcon />}
                   label={content.label}
@@ -104,6 +105,7 @@ export const EntryDetailsPage: FC<Props> = ({
           </Stack>
           <Box width="50px">
             <IconButton
+              id="entryMenu"
               onClick={(e) => {
                 setEntryAnchorEl(e.currentTarget);
               }}

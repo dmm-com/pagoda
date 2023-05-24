@@ -58,7 +58,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
         referredEntries.value.results,
         referredEntries.value.count,
         Math.ceil(
-          referredEntries.value.count ?? 0 / EntryReferralList.MAX_ROW_COUNT
+          (referredEntries.value.count ?? 0) / EntryReferralList.MAX_ROW_COUNT
         ),
       ];
     }
@@ -68,7 +68,9 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
   return (
     <Box>
       <Box px="16px">
-        <ReferralCount>関連づけられたエントリ(計{count})</ReferralCount>
+        <ReferralCount id="ref_count">
+          {"関連づけられたエントリ(計" + count + ")"}
+        </ReferralCount>
         <SearchBox
           placeholder="エントリを絞り込む"
           value={keyword}
@@ -77,6 +79,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
           }}
           onKeyPress={(e) => {
             if (e.key === "Enter") {
+              changePage(1);
               setKeywordQuery(
                 keyword.length > 0 ? normalizeToMatch(keyword) : ""
               );
@@ -87,6 +90,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
       <Box display="flex" justifyContent="center" my="24px">
         <Stack spacing={2}>
           <Pagination
+            id="ref_page"
             siblingCount={0}
             boundaryCount={1}
             count={maxPage}
@@ -96,7 +100,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
           />
         </Stack>
       </Box>
-      <List sx={{ py: "8px" }}>
+      <List id="ref_list" sx={{ py: "8px" }}>
         {matchedEntries?.map((entry) => (
           <StyledListItem key={entry.id} divider={true} disablePadding>
             <ListItemButton

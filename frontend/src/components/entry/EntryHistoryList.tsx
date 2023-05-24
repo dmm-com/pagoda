@@ -33,6 +33,7 @@ const HeaderTableCell = styled(TableCell)(({}) => ({
 
 interface Props {
   histories: Array<EntryHistoryAttributeValue>;
+  entityId: number;
   entryId: number;
   page: number;
   maxPage: number;
@@ -41,6 +42,7 @@ interface Props {
 
 export const EntryHistoryList: FC<Props> = ({
   histories,
+  entityId,
   entryId,
   page,
   maxPage,
@@ -56,7 +58,7 @@ export const EntryHistoryList: FC<Props> = ({
         variant: "success",
       });
       history.replace(topPath());
-      history.replace(showEntryHistoryPath(entryId));
+      history.replace(showEntryHistoryPath(entityId, entryId));
     } catch (e) {
       enqueueSnackbar(`変更の復旧が失敗しました`, {
         variant: "error",

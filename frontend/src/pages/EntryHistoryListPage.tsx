@@ -15,7 +15,8 @@ import { PageHeader } from "components/common/PageHeader";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 
 export const EntryHistoryListPage: FC = () => {
-  const { entryId } = useTypedParams<{ entryId: number }>();
+  const { entityId, entryId } =
+    useTypedParams<{ entityId: number; entryId: number }>();
 
   const [page, changePage] = usePage();
 
@@ -69,6 +70,7 @@ export const EntryHistoryListPage: FC = () => {
         <Container>
           <EntryHistoryList
             histories={histories.value?.results ?? []}
+            entityId={entry.value?.schema?.id ?? 0}
             entryId={entryId}
             page={page}
             maxPage={maxPage}
