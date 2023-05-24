@@ -97,11 +97,13 @@ exports[`should match snapshot 1`] = `
             >
               <h6
                 class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
+                id="title"
               >
                 aaa
               </h6>
               <h6
                 class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
+                id="description"
               >
                 エントリ一覧
               </h6>
@@ -550,11 +552,13 @@ exports[`should match snapshot 1`] = `
           >
             <h6
               class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
+              id="title"
             >
               aaa
             </h6>
             <h6
               class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
+              id="description"
             >
               エントリ一覧
             </h6>
