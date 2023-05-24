@@ -597,7 +597,10 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
         attrinfo: List[EntryAttributeType] = []
         for entity_attr in entity_attrs:
             attr = entity_attr.attr_list[0] if entity_attr.attr_list else None
-            is_readable = user.has_permission(entity_attr, ACLType.Readable)
+            if attr:
+                is_readable = user.has_permission(attr, ACLType.Readable)
+            else:
+                is_readable = user.has_permission(entity_attr, ACLType.Readable)
             value = (
                 get_attr_value(attr)
                 if attr and is_readable
