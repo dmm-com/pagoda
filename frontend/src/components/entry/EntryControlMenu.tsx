@@ -56,7 +56,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
 
   return (
     <Menu
-      id={`entityControlMenu-${entryId}`}
+      id={`entryControlMenu-${entryId}`}
       open={Boolean(anchorElem)}
       onClose={() => handleClose(entryId)}
       anchorEl={anchorElem}
@@ -83,7 +83,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
         <MenuItem component={Link} to={aclPath(entryId)}>
           <Typography>ACL 設定</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={showEntryHistoryPath(entryId)}>
+        <MenuItem component={Link} to={showEntryHistoryPath(entityId, entryId)}>
           <Typography>変更履歴</Typography>
         </MenuItem>
         <Confirmable

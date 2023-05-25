@@ -55,9 +55,9 @@ test("should match snapshot", async () => {
 
   // wait async calls and get rendered fragment
   const result = render(
-    <MemoryRouter initialEntries={[showEntryHistoryPath(1)]}>
+    <MemoryRouter initialEntries={[showEntryHistoryPath(2, 1)]}>
       <Route
-        path={showEntryHistoryPath(":entryId")}
+        path={showEntryHistoryPath(":entityId", ":entryId")}
         component={EntryHistoryListPage}
       />
     </MemoryRouter>,

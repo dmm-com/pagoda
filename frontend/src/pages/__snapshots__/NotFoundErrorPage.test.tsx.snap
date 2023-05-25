@@ -13,6 +13,7 @@ exports[`should match snapshot 1`] = `
         >
           <h1
             class="MuiTypography-root MuiTypography-h1 css-1mdm99z-MuiTypography-root"
+            id="sorry_notfound"
           >
             404 |ω·\`)
           </h1>
@@ -48,6 +49,7 @@ exports[`should match snapshot 1`] = `
       >
         <h1
           class="MuiTypography-root MuiTypography-h1 css-1mdm99z-MuiTypography-root"
+          id="sorry_notfound"
         >
           404 |ω·\`)
         </h1>

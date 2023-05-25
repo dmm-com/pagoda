@@ -477,6 +477,46 @@ class ViewTest(AironeViewTest):
             },
         )
 
+        # permission nothing attr
+        attr = entry.attrs.get(schema=entity_attr)
+        attr.is_public = False
+        attr.save()
+        resp = self.client.get("/entry/api/v2/%d/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "val", resp.json()["attrs"])),
+            {
+                "type": AttrTypeValue["string"],
+                "value": {"as_string": ""},
+                "id": entry.attrs.get(schema__name="val").id,
+                "is_mandatory": False,
+                "is_readable": False,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="val").schema.id,
+                    "name": "val",
+                },
+            },
+        )
+
+        # permission readable attr
+        attr.readable.roles.add(self.role)
+        resp = self.client.get("/entry/api/v2/%d/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "val", resp.json()["attrs"])),
+            {
+                "type": AttrTypeValue["string"],
+                "value": {"as_string": ""},
+                "id": entry.attrs.get(schema__name="val").id,
+                "is_mandatory": False,
+                "is_readable": True,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="val").schema.id,
+                    "name": "val",
+                },
+            },
+        )
+
     def test_retrieve_entry_with_invalid_param(self):
         resp = self.client.get("/entry/api/v2/%s/" % "hoge")
         self.assertEqual(resp.status_code, 404)
