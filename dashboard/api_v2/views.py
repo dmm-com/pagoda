@@ -1,14 +1,17 @@
 from typing import Optional
+from django.forms import CharField
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.request import Request
 from django.db.models import Prefetch, Q
+from django.db import models
+from acl.models import ACLBase
 from airone.lib.drf import InvalidValueError, ObjectNotExistsError, RequiredParameterError
 from airone.lib.types import AttrTypeValue
-from entry.models import Entry, Attribute, AttributeValue, LBVirtualServer, LB
+from entry.models import Entry, Attribute, AttributeValue, LBVirtualServer, LBServiceGroup
 from entity.models import Entity, EntityAttr
-from user_models.models import DRFGenerator
+from user_models.models import DRFGenerator, UserModel
 
 from . import serializers
 
@@ -34,21 +37,46 @@ class OriginAdvancedSearchSQLAPI(ReadOnlyModelViewSet):
 class SimpleAdvancedSearchSQLAPI(ReadOnlyModelViewSet):
     serializer_class = serializers.LBSerializer
     pagination_class = AirOnePageNumberPagination
-    queryset = (
-        LB.objects.all()
-    )
+    queryset = LBServiceGroup.objects.all()
+
 
 class AdvancedSearchSQLAPI(ReadOnlyModelViewSet):
-    serializer_class = DRFGenerator.serializer.create(LB, {
-        "id": None,
-        "name": None
-    })
-
-    #serializer_class = serializers.LBSerializer
     pagination_class = AirOnePageNumberPagination
-    queryset = (
-        LB.objects.all()
-    )
+
+    def get_serializer_class(self):
+        param = "LBServiceGroup"
+
+        entity = Entity.objects.get(name=param, is_active=True)
+        attrs = {}
+        entity_attr: EntityAttr
+        for entity_attr in entity.attrs.filter(name="LB", is_active=True):
+            referral: ACLBase = entity_attr.referral.first()
+            attrs[entity_attr.name] = models.ForeignKey(
+                referral.name, null=True, on_delete=models.SET_NULL, verbose_name=entity_attr.name
+            )
+            pass
+
+        model = UserModel.declare(
+            param,
+            dict(
+                {
+                    "id": models.BigIntegerField(),
+                    "name": models.CharField(max_length=200, unique=True),
+                },
+                **attrs
+            ),
+        )
+        # lb_service_group_field = LBPolicyTemplate._meta.get_field("lb_service_group")
+        # lb_service_group_field.remote_field.model
+
+        serializer_class = DRFGenerator.serializer.create(model, {"id": None, "name": None})
+
+        return serializer_class
+
+        # return serializers.LBPolicyTemplateSerializer
+
+    def get_queryset(self):
+        return LBServiceGroup.objects.all()
 
 
 class AdvancedSearchAPI(ReadOnlyModelViewSet):

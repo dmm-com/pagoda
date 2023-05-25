@@ -139,18 +139,28 @@ class LBServiceGroupSerializer(ModelSerializer):
         fields = ("id", "name", "lb_server")
 
 
+"""
 class LBPolicyTemplateSerializer(ModelSerializer):
     lb_service_group = LBServiceGroupSerializer(many=True)
 
     class Meta:
         model = LBPolicyTemplate
         fields = ("id", "name", "lb_service_group")
+"""
 
 
 class LBSerializer(ModelSerializer):
     class Meta:
         model = LB
         fields = ("id", "name")
+
+
+class LBPolicyTemplateSerializer(ModelSerializer):
+    lb = LBSerializer()
+
+    class Meta:
+        model = LBPolicyTemplate
+        fields = ("id", "name", "lb")
 
 
 class AdvancedSearchSQLSerializer(ModelSerializer):
