@@ -6,8 +6,9 @@ from rest_framework.request import Request
 from django.db.models import Prefetch, Q
 from airone.lib.drf import InvalidValueError, ObjectNotExistsError, RequiredParameterError
 from airone.lib.types import AttrTypeValue
-from entry.models import Entry, Attribute, AttributeValue, LBVirtualServer
+from entry.models import Entry, Attribute, AttributeValue, LBVirtualServer, LB
 from entity.models import Entity, EntityAttr
+from user_models.models import DRFGenerator
 
 from . import serializers
 
@@ -16,7 +17,7 @@ class AirOnePageNumberPagination(PageNumberPagination):
     page_size_query_param = "page_size"
 
 
-class AdvancedSearchSQLAPI(ReadOnlyModelViewSet):
+class OriginAdvancedSearchSQLAPI(ReadOnlyModelViewSet):
     serializer_class = serializers.AdvancedSearchSQLSerializer
     pagination_class = AirOnePageNumberPagination
     queryset = (
@@ -27,6 +28,26 @@ class AdvancedSearchSQLAPI(ReadOnlyModelViewSet):
             "ipaddr__server_set__large_category",
         )
         .select_related("lb", "large_category")
+    )
+
+
+class SimpleAdvancedSearchSQLAPI(ReadOnlyModelViewSet):
+    serializer_class = serializers.LBSerializer
+    pagination_class = AirOnePageNumberPagination
+    queryset = (
+        LB.objects.all()
+    )
+
+class AdvancedSearchSQLAPI(ReadOnlyModelViewSet):
+    serializer_class = DRFGenerator.serializer.create(LB, {
+        "id": None,
+        "name": None
+    })
+
+    #serializer_class = serializers.LBSerializer
+    pagination_class = AirOnePageNumberPagination
+    queryset = (
+        LB.objects.all()
     )
 
 
