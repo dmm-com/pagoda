@@ -10,7 +10,7 @@ import { Schema } from "../EntityFormSchema";
 
 import { AttributesFields } from "./AttributesFields";
 
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 test("should render a component with essential props", function () {
   const entity: Schema = {

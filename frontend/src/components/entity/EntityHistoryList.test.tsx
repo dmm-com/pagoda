@@ -7,7 +7,7 @@ import React from "react";
 
 import { EntityHistoryList } from "./EntityHistoryList";
 
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 test("should render with essential props", () => {
   expect(() =>

@@ -7,7 +7,7 @@ import React from "react";
 
 import { EntityImportModal } from "./EntityImportModal";
 
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 test("should render a component with essential props", function () {
   expect(() =>

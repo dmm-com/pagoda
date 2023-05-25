@@ -7,12 +7,12 @@ import { Link, Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useToggle } from "react-use";
 
-import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { schema, Schema } from "../components/user/UserFormSchema";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useFormNotification } from "../hooks/useFormNotification";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
+import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
+import { extractAPIException } from "../services/AironeAPIErrorUtil";
 import { DjangoContext } from "../services/DjangoContext";
 
 import { topPath, usersPath } from "Routes";
@@ -101,7 +101,7 @@ export const EditUserPage: FC = () => {
       enqueueSubmitResult(true);
     } catch (e) {
       if (e instanceof Response) {
-        await ExtractAPIException<Schema>(
+        await extractAPIException<Schema>(
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
           (name, message) =>

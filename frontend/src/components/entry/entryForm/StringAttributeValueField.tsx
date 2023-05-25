@@ -2,13 +2,14 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Box, IconButton, List, ListItem, TextField } from "@mui/material";
 import React, { FC } from "react";
-import { Control, useFieldArray, useWatch, Controller } from "react-hook-form";
+import { Control, useFieldArray, Controller } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
 
 interface CommonProps {
   attrId: number;
   index?: number;
+  control: Control<Schema>;
 }
 
 export const StringAttributeValueField: FC<
@@ -16,32 +17,21 @@ export const StringAttributeValueField: FC<
     handleClickDeleteListItem?: (index: number) => void;
     handleClickAddListItem?: (index: number) => void;
     multiline?: boolean;
-    control: Control<Schema>;
   }
 > = ({
   attrId,
   index,
+  control,
   handleClickDeleteListItem,
   handleClickAddListItem,
   multiline,
-  control,
 }) => {
-  const value = useWatch({
-    control,
-    name:
-      index != null
-        ? `attrs.${attrId}.value.asArrayString.${index}`
-        : `attrs.${attrId}.value.asString`,
-  });
-
-  const disabledToAppend = index === 0 && value === "";
-
   return (
     <Box display="flex" width="100%">
       <Controller
         name={
           index != null
-            ? `attrs.${attrId}.value.asArrayString.${index}`
+            ? `attrs.${attrId}.value.asArrayString.${index}.value`
             : `attrs.${attrId}.value.asString`
         }
         control={control}
@@ -69,10 +59,7 @@ export const StringAttributeValueField: FC<
             </IconButton>
           )}
           {handleClickAddListItem != null && (
-            <IconButton
-              disabled={disabledToAppend}
-              onClick={() => handleClickAddListItem(index)}
-            >
+            <IconButton onClick={() => handleClickAddListItem(index)}>
               <AddIcon />
             </IconButton>
           )}
@@ -82,12 +69,10 @@ export const StringAttributeValueField: FC<
   );
 };
 
-export const ArrayStringAttributeValueField: FC<
-  CommonProps & {
-    attrValue?: Array<string>;
-    control: Control<Schema>;
-  }
-> = ({ attrId, control }) => {
+export const ArrayStringAttributeValueField: FC<CommonProps> = ({
+  attrId,
+  control,
+}) => {
   const { fields, insert, remove } = useFieldArray({
     control,
     // @ts-ignore
@@ -97,7 +82,7 @@ export const ArrayStringAttributeValueField: FC<
   const handleClickAddListItem = (index: number) => {
     // TODO fix the type error; its misrecognizing the type of fields as object-like type
     // @ts-ignore
-    insert(index + 1, "");
+    insert(index + 1, { value: "" });
   };
 
   const handleClickDeleteListItem = (index: number) => {
@@ -109,7 +94,7 @@ export const ArrayStringAttributeValueField: FC<
     <Box>
       <List>
         {fields.map((field, index) => (
-          <ListItem key={field.id}>
+          <ListItem key={field.id} disablePadding={true}>
             <StringAttributeValueField
               control={control}
               attrId={attrId}

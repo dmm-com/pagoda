@@ -367,6 +367,11 @@ class Common(Configuration):
                 "level": "INFO",
                 "propagate": False,
             },
+            "celery": {
+                "handlers": ["console"],
+                "level": "INFO",
+                "propagate": True,
+            },
         },
     }
     # If log dir is not exists create it.
@@ -417,7 +422,7 @@ class Common(Configuration):
         config.django["trace_query_string"] = True
         config.celery["distributed_tracing"] = True
 
-        patch_all(mysql=False, mysqldb=False, pymysql=False, logging=True)
+        patch_all(mysql=False, mysqldb=False, pymysql=False, botocore=False, logging=True)
 
         INSTALLED_APPS.append("ddtrace.contrib.django")
 

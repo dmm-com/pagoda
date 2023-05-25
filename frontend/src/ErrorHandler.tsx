@@ -13,8 +13,8 @@ import { useError } from "react-use";
 
 import { ForbiddenErrorPage } from "./pages/ForbiddenErrorPage";
 import { NotFoundErrorPage } from "./pages/NotFoundErrorPage";
+import { toError } from "./services/AironeAPIErrorUtil";
 import { ForbiddenError, NotFoundError } from "./services/Exceptions";
-import { toError } from "./services/ResponseUtil";
 
 import { topPath } from "Routes";
 

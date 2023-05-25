@@ -5,11 +5,10 @@
 import { shallow } from "enzyme";
 import React from "react";
 
+import { ReactHookFormTestWrapper } from "../../../ReactHookFormTestWrapper";
 import { DjangoContext } from "../../../services/DjangoContext";
-import { ReactHookFormTestWrapper } from "../../../services/ReactHookFormTestWrapper";
 
 import { AttributeValueField } from "./AttributeValueField";
-import { EditableEntryAttrValue } from "./EditableEntry";
 import { Schema } from "./EntryFormSchema";
 
 beforeAll(() => {
@@ -120,16 +119,8 @@ attributes.forEach((attribute) => {
           <AttributeValueField
             control={control}
             setValue={setValue}
-            attrInfo={{
-              index: 0,
-              value: attrValue as EditableEntryAttrValue,
-              type: attrType,
-              isMandatory: false,
-              schema: {
-                id: 9999,
-                name: "hoge",
-              },
-            }}
+            type={attrType}
+            schemaId={9999}
           />
         )}
       />
@@ -157,16 +148,8 @@ arrayAttributes.forEach((arrayAttribute) => {
           <AttributeValueField
             control={control}
             setValue={setValue}
-            attrInfo={{
-              index: 0,
-              value: attrValue as EditableEntryAttrValue,
-              type: attrType,
-              isMandatory: false,
-              schema: {
-                id: 9999,
-                name: "hoge",
-              },
-            }}
+            type={attrType}
+            schemaId={9999}
           />
         )}
       />

@@ -129,6 +129,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_string": "hoge"},
                 "id": entry.attrs.get(schema__name="val").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="val").schema.id,
                     "name": "val",
@@ -151,6 +152,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="ref").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="ref").schema.id,
                     "name": "ref",
@@ -175,6 +177,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="name").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="name").schema.id,
                     "name": "name",
@@ -188,6 +191,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_boolean": False},
                 "id": entry.attrs.get(schema__name="bool").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="bool").schema.id,
                     "name": "bool",
@@ -201,6 +205,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_string": "2018-12-31"},
                 "id": entry.attrs.get(schema__name="date").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="date").schema.id,
                     "name": "date",
@@ -219,6 +224,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="group").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="group").schema.id,
                     "name": "group",
@@ -239,6 +245,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="groups").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="groups").schema.id,
                     "name": "groups",
@@ -257,6 +264,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="role").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="role").schema.id,
                     "name": "role",
@@ -277,6 +285,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="roles").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="roles").schema.id,
                     "name": "roles",
@@ -290,6 +299,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_string": "fuga"},
                 "id": entry.attrs.get(schema__name="text").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="text").schema.id,
                     "name": "text",
@@ -303,6 +313,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_array_string": ["foo", "bar"]},
                 "id": entry.attrs.get(schema__name="vals").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="vals").schema.id,
                     "name": "vals",
@@ -327,6 +338,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="refs").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="refs").schema.id,
                     "name": "refs",
@@ -363,6 +375,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="names").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="names").schema.id,
                     "name": "names",
@@ -376,6 +389,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_string": AttrTypeStr.DEFAULT_VALUE},
                 "id": None,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": self.entity.attrs.get(name="opt").id,
                     "name": "opt",
@@ -422,6 +436,86 @@ class ViewTest(AironeViewTest):
         entry.readable.roles.add(self.role)
         resp = self.client.get("/entry/api/v2/%d/" % entry.id)
         self.assertEqual(resp.status_code, 200)
+
+        # permission nothing entity attr
+        entity_attr = entry.attrs.get(schema__name="val").schema
+        entity_attr.is_public = False
+        entity_attr.save()
+        resp = self.client.get("/entry/api/v2/%d/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "val", resp.json()["attrs"])),
+            {
+                "type": AttrTypeValue["string"],
+                "value": {"as_string": ""},
+                "id": entry.attrs.get(schema__name="val").id,
+                "is_mandatory": False,
+                "is_readable": False,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="val").schema.id,
+                    "name": "val",
+                },
+            },
+        )
+
+        # permission readable entity attr
+        entity_attr.readable.roles.add(self.role)
+        resp = self.client.get("/entry/api/v2/%d/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "val", resp.json()["attrs"])),
+            {
+                "type": AttrTypeValue["string"],
+                "value": {"as_string": ""},
+                "id": entry.attrs.get(schema__name="val").id,
+                "is_mandatory": False,
+                "is_readable": True,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="val").schema.id,
+                    "name": "val",
+                },
+            },
+        )
+
+        # permission nothing attr
+        attr = entry.attrs.get(schema=entity_attr)
+        attr.is_public = False
+        attr.save()
+        resp = self.client.get("/entry/api/v2/%d/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "val", resp.json()["attrs"])),
+            {
+                "type": AttrTypeValue["string"],
+                "value": {"as_string": ""},
+                "id": entry.attrs.get(schema__name="val").id,
+                "is_mandatory": False,
+                "is_readable": False,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="val").schema.id,
+                    "name": "val",
+                },
+            },
+        )
+
+        # permission readable attr
+        attr.readable.roles.add(self.role)
+        resp = self.client.get("/entry/api/v2/%d/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "val", resp.json()["attrs"])),
+            {
+                "type": AttrTypeValue["string"],
+                "value": {"as_string": ""},
+                "id": entry.attrs.get(schema__name="val").id,
+                "is_mandatory": False,
+                "is_readable": True,
+                "schema": {
+                    "id": entry.attrs.get(schema__name="val").schema.id,
+                    "name": "val",
+                },
+            },
+        )
 
     def test_retrieve_entry_with_invalid_param(self):
         resp = self.client.get("/entry/api/v2/%s/" % "hoge")
@@ -516,6 +610,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="ref").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="ref").schema.id,
                     "name": "ref",
@@ -533,6 +628,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="name").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="name").schema.id,
                     "name": "name",
@@ -546,6 +642,7 @@ class ViewTest(AironeViewTest):
                 "value": {"as_array_object": []},
                 "id": entry.attrs.get(schema__name="refs").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="refs").schema.id,
                     "name": "refs",
@@ -568,6 +665,7 @@ class ViewTest(AironeViewTest):
                 },
                 "id": entry.attrs.get(schema__name="names").id,
                 "is_mandatory": False,
+                "is_readable": True,
                 "schema": {
                     "id": entry.attrs.get(schema__name="names").schema.id,
                     "name": "names",
@@ -2659,6 +2757,36 @@ class ViewTest(AironeViewTest):
         self.assertFalse(Entry.objects.filter(name="test-entry").exists())
 
     def test_advanced_search(self):
+        entry1: Entry = self.add_entry(
+            self.user,
+            "Entry1",
+            self.entity,
+            values={
+                "val": "hoge",
+                "ref": self.ref_entry.id,
+                "name": {"name": "hoge", "id": self.ref_entry.id},
+                "bool": False,
+                "date": "2018-12-31",
+                "group": self.group.id,
+                "groups": [self.group.id],
+                "text": "fuga",
+                "vals": ["foo", "bar"],
+                "refs": [self.ref_entry.id],
+                "names": [
+                    {"name": "foo", "id": self.ref_entry.id},
+                    {"name": "bar", "id": self.ref_entry.id},
+                ],
+                "role": self.role.id,
+                "roles": [self.role.id],
+            },
+        )
+
+        entry2: Entry = self.add_entry(
+            self.user,
+            "Entry2",
+            self.entity,
+        )
+
         params = {
             "entities": [self.entity.id],
             "attrinfo": [],
@@ -2668,7 +2796,167 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
-        # TODO assert result
+        self.assertEqual(
+            resp.json(),
+            {
+                "result": {
+                    "ret_count": 2,
+                    "ret_values": [
+                        {
+                            "entity": {"id": self.entity.id, "name": "test-entity"},
+                            "entry": {"id": entry1.id, "name": "Entry1"},
+                            "attrs": {
+                                "val": {
+                                    "is_readable": True,
+                                    "type": 2,
+                                    "value": {"asString": "hoge"},
+                                },
+                                "vals": {
+                                    "is_readable": True,
+                                    "type": 1026,
+                                    "value": {"asArrayString": ["foo", "bar"]},
+                                },
+                                "ref": {
+                                    "is_readable": True,
+                                    "type": 1,
+                                    "value": {"asObject": {"id": self.ref_entry.id, "name": "r-0"}},
+                                },
+                                "refs": {
+                                    "is_readable": True,
+                                    "type": 1025,
+                                    "value": {
+                                        "asArrayObject": [{"id": self.ref_entry.id, "name": "r-0"}]
+                                    },
+                                },
+                                "name": {
+                                    "is_readable": True,
+                                    "type": 2049,
+                                    "value": {
+                                        "asNamedObject": {
+                                            "hoge": {"id": self.ref_entry.id, "name": "r-0"}
+                                        }
+                                    },
+                                },
+                                "names": {
+                                    "is_readable": True,
+                                    "type": 3073,
+                                    "value": {
+                                        "asArrayNamedObject": [
+                                            {"foo": {"id": self.ref_entry.id, "name": "r-0"}},
+                                            {"bar": {"id": self.ref_entry.id, "name": "r-0"}},
+                                        ]
+                                    },
+                                },
+                                "group": {
+                                    "is_readable": True,
+                                    "type": 16,
+                                    "value": {"asGroup": {"id": self.group.id, "name": "group0"}},
+                                },
+                                "groups": {
+                                    "is_readable": True,
+                                    "type": 1040,
+                                    "value": {
+                                        "asArrayGroup": [{"id": self.group.id, "name": "group0"}]
+                                    },
+                                },
+                                "bool": {
+                                    "is_readable": True,
+                                    "type": 8,
+                                    "value": {"asBoolean": False},
+                                },
+                                "text": {
+                                    "is_readable": True,
+                                    "type": 4,
+                                    "value": {"asString": "fuga"},
+                                },
+                                "date": {
+                                    "is_readable": True,
+                                    "type": 32,
+                                    "value": {"asString": "2018-12-31"},
+                                },
+                                "role": {
+                                    "is_readable": True,
+                                    "type": 64,
+                                    "value": {"asRole": {"id": self.role.id, "name": "role0"}},
+                                },
+                                "roles": {
+                                    "is_readable": True,
+                                    "type": 1088,
+                                    "value": {
+                                        "asArrayRole": [{"id": self.role.id, "name": "role0"}]
+                                    },
+                                },
+                            },
+                            "is_readable": True,
+                        },
+                        {
+                            "entity": {"id": self.entity.id, "name": "test-entity"},
+                            "entry": {"id": entry2.id, "name": "Entry2"},
+                            "attrs": {
+                                "val": {"is_readable": True, "type": 2, "value": {"asString": ""}},
+                                "vals": {
+                                    "is_readable": True,
+                                    "type": 1026,
+                                    "value": {"asArrayString": []},
+                                },
+                                "ref": {
+                                    "is_readable": True,
+                                    "type": 1,
+                                    "value": {"asObject": {"id": "", "name": ""}},
+                                },
+                                "refs": {
+                                    "is_readable": True,
+                                    "type": 1025,
+                                    "value": {"asArrayObject": []},
+                                },
+                                "name": {
+                                    "is_readable": True,
+                                    "type": 2049,
+                                    "value": {"asNamedObject": {"": {"id": "", "name": ""}}},
+                                },
+                                "names": {
+                                    "is_readable": True,
+                                    "type": 3073,
+                                    "value": {"asArrayNamedObject": []},
+                                },
+                                "group": {
+                                    "is_readable": True,
+                                    "type": 16,
+                                    "value": {"asGroup": {"id": "", "name": ""}},
+                                },
+                                "groups": {
+                                    "is_readable": True,
+                                    "type": 1040,
+                                    "value": {"asArrayGroup": []},
+                                },
+                                "bool": {
+                                    "is_readable": True,
+                                    "type": 8,
+                                    "value": {"asBoolean": False},
+                                },
+                                "text": {"is_readable": True, "type": 4, "value": {"asString": ""}},
+                                "date": {
+                                    "is_readable": True,
+                                    "type": 32,
+                                    "value": {"asString": ""},
+                                },
+                                "role": {
+                                    "is_readable": True,
+                                    "type": 64,
+                                    "value": {"asRole": {"id": "", "name": ""}},
+                                },
+                                "roles": {
+                                    "is_readable": True,
+                                    "type": 1088,
+                                    "value": {"asArrayRole": []},
+                                },
+                            },
+                            "is_readable": True,
+                        },
+                    ],
+                }
+            },
+        )
 
     def test_advanced_search_all_entities(self):
         params = {

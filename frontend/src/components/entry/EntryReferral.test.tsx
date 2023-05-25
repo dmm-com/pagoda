@@ -6,8 +6,8 @@ import { render } from "@testing-library/react";
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 
+import { TestWrapper } from "TestWrapper";
 import { EntryReferral } from "components/entry/EntryReferral";
-import { TestWrapper } from "services/TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -30,7 +30,7 @@ test("should render a component with essential props", async () => {
   /* eslint-disable */
   jest
     .spyOn(
-      require("apiclient/AironeApiClientV2").aironeApiClientV2,
+      require("repository/AironeApiClientV2").aironeApiClientV2,
       "getEntryReferral"
     )
     .mockResolvedValue(

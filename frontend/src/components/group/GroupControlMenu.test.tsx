@@ -7,7 +7,7 @@ import React from "react";
 
 import { GroupControlMenu } from "./GroupControlMenu";
 
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 test("should render a component with essential props", function () {
   expect(() =>

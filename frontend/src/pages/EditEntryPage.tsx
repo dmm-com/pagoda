@@ -11,10 +11,9 @@ import { PageHeader } from "../components/common/PageHeader";
 import { Schema, schema } from "../components/entry/entryForm/EntryFormSchema";
 import { useFormNotification } from "../hooks/useFormNotification";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { ExtractAPIException } from "../services/AironeAPIErrorUtil";
+import { extractAPIException } from "../services/AironeAPIErrorUtil";
 
 import { entityEntriesPath, entryDetailsPath } from "Routes";
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
@@ -22,6 +21,7 @@ import {
   EntryForm as DefaultEntryForm,
   EntryFormProps,
 } from "components/entry/EntryForm";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 import {
   convertAttrsFormatCtoS,
   formalizeEntryInfo,
@@ -44,8 +44,8 @@ export const EditEntryPage: FC<Props> = ({
   const history = useHistory();
   const { enqueueSubmitResult } = useFormNotification("エントリ", willCreate);
 
-  const [entryInfo, setEntryInfo] = useState<Schema>();
   const [isAnchorLink, setIsAnchorLink] = useState<boolean>(false);
+  const [initialized, setInitialized] = useState(false);
 
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
@@ -72,13 +72,13 @@ export const EditEntryPage: FC<Props> = ({
   useEffect(() => {
     if (willCreate) {
       if (!entity.loading && entity.value != null) {
-        const _entryInfo = formalizeEntryInfo(
+        const entryInfo = formalizeEntryInfo(
           undefined,
           entity.value,
           excludeAttrs
         );
-        reset(_entryInfo);
-        setEntryInfo(_entryInfo);
+        reset(entryInfo);
+        setInitialized(true);
       }
     } else {
       if (
@@ -87,13 +87,13 @@ export const EditEntryPage: FC<Props> = ({
         !entry.loading &&
         entry.value != null
       ) {
-        const _entryInfo = formalizeEntryInfo(
+        const entryInfo = formalizeEntryInfo(
           entry.value,
           entity.value,
           excludeAttrs
         );
-        reset(_entryInfo);
-        setEntryInfo(_entryInfo);
+        reset(entryInfo);
+        setInitialized(true);
       }
     }
   }, [willCreate, entity.value, entry.value]);
@@ -120,7 +120,7 @@ export const EditEntryPage: FC<Props> = ({
       enqueueSubmitResult(true);
     } catch (e) {
       if (e instanceof Response) {
-        await ExtractAPIException<Schema>(
+        await extractAPIException<Schema>(
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
           (name, message) =>
@@ -175,9 +175,14 @@ export const EditEntryPage: FC<Props> = ({
         />
       </PageHeader>
 
-      {entryInfo && (
+      {initialized && entity.value != null && (
         <EntryForm
-          entryInfo={entryInfo}
+          entity={{
+            ...entity.value,
+            attrs: entity.value.attrs.filter(
+              (attr) => !excludeAttrs.includes(attr.name)
+            ),
+          }}
           setIsAnchorLink={setIsAnchorLink}
           control={control}
           setValue={setValue}

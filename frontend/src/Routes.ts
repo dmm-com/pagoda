@@ -30,8 +30,10 @@ export const entityEntriesPath = (entityId: number | string) =>
 export const restoreEntryPath = (entityId: number | string, keyword?: string) =>
   basePath +
   `entities/${entityId}/restore${keyword != null ? "?keyword=" + keyword : ""}`;
-export const showEntryHistoryPath = (entryId: number | string) =>
-  basePath + `entries/${entryId}/history`;
+export const showEntryHistoryPath = (
+  entityId: number | string,
+  entryId: number | string
+) => basePath + `entities/${entityId}/entries/${entryId}/history`;
 
 // entities
 export const entityHistoryPath = (entityId: number | string) =>

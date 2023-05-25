@@ -19,7 +19,7 @@ import React, { FC } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
+import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
 import { Confirmable } from "../common/Confirmable";
 import { Loading } from "../common/Loading";
 

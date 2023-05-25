@@ -128,11 +128,13 @@ exports[`should match snapshot 1`] = `
             >
               <h6
                 class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
+                id="title"
               >
                 aaa
               </h6>
               <h6
                 class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
+                id="description"
               >
                 エントリ詳細
               </h6>
@@ -147,6 +149,7 @@ exports[`should match snapshot 1`] = `
                   >
                     <div
                       class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-rdlxh8-MuiButtonBase-root-MuiChip-root"
+                      id="chip_attr_list"
                       role="button"
                       tabindex="0"
                     >
@@ -176,6 +179,7 @@ exports[`should match snapshot 1`] = `
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                      id="entryMenu"
                       tabindex="0"
                       type="button"
                     >
@@ -217,10 +221,9 @@ exports[`should match snapshot 1`] = `
               >
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-9md421-MuiTypography-root"
+                  id="ref_count"
                 >
-                  関連づけられたエントリ(計
-                  1
-                  )
+                  関連づけられたエントリ(計1)
                 </p>
                 <div
                   class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-miwl14-MuiFormControl-root-MuiTextField-root"
@@ -282,6 +285,7 @@ exports[`should match snapshot 1`] = `
                   <nav
                     aria-label="pagination navigation"
                     class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
+                    id="ref_page"
                   >
                     <ul
                       class="MuiPagination-ul css-wjh20t-MuiPagination-ul"
@@ -348,6 +352,7 @@ exports[`should match snapshot 1`] = `
               </div>
               <ul
                 class="MuiList-root MuiList-padding css-18j85lq-MuiList-root"
+                id="ref_list"
               >
                 <li
                   class="MuiListItem-root MuiListItem-gutters MuiListItem-divider css-78288s-MuiListItem-root"
@@ -390,6 +395,7 @@ exports[`should match snapshot 1`] = `
               >
                 <table
                   class="MuiTable-root css-rqglhn-MuiTable-root"
+                  id="table_attr_list"
                 >
                   <thead
                     class="MuiTableHead-root css-15n4dzy-MuiTableHead-root"
@@ -553,11 +559,13 @@ exports[`should match snapshot 1`] = `
           >
             <h6
               class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
+              id="title"
             >
               aaa
             </h6>
             <h6
               class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
+              id="description"
             >
               エントリ詳細
             </h6>
@@ -572,6 +580,7 @@ exports[`should match snapshot 1`] = `
                 >
                   <div
                     class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-rdlxh8-MuiButtonBase-root-MuiChip-root"
+                    id="chip_attr_list"
                     role="button"
                     tabindex="0"
                   >
@@ -601,6 +610,7 @@ exports[`should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                    id="entryMenu"
                     tabindex="0"
                     type="button"
                   >
@@ -642,10 +652,9 @@ exports[`should match snapshot 1`] = `
             >
               <p
                 class="MuiTypography-root MuiTypography-body1 css-9md421-MuiTypography-root"
+                id="ref_count"
               >
-                関連づけられたエントリ(計
-                1
-                )
+                関連づけられたエントリ(計1)
               </p>
               <div
                 class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-miwl14-MuiFormControl-root-MuiTextField-root"
@@ -707,6 +716,7 @@ exports[`should match snapshot 1`] = `
                 <nav
                   aria-label="pagination navigation"
                   class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
+                  id="ref_page"
                 >
                   <ul
                     class="MuiPagination-ul css-wjh20t-MuiPagination-ul"
@@ -773,6 +783,7 @@ exports[`should match snapshot 1`] = `
             </div>
             <ul
               class="MuiList-root MuiList-padding css-18j85lq-MuiList-root"
+              id="ref_list"
             >
               <li
                 class="MuiListItem-root MuiListItem-gutters MuiListItem-divider css-78288s-MuiListItem-root"
@@ -815,6 +826,7 @@ exports[`should match snapshot 1`] = `
             >
               <table
                 class="MuiTable-root css-rqglhn-MuiTable-root"
+                id="table_attr_list"
               >
                 <thead
                   class="MuiTableHead-root css-15n4dzy-MuiTableHead-root"

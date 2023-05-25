@@ -7,7 +7,7 @@ import React from "react";
 
 import { LoginPage } from "./LoginPage";
 
-import { TestWrapper } from "services/TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();

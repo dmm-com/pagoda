@@ -3,7 +3,7 @@ import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 
-import { aironeApiClientV2 } from "../../apiclient/AironeApiClientV2";
+import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
 
 const StyledModal = styled(Modal)(({}) => ({
   display: "flex",

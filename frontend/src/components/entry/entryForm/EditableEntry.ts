@@ -13,12 +13,13 @@ export type EditableEntryAttrValueObject = Pick<
 export type EditableEntryAttrValue = {
   asObject?: EditableEntryAttrValueObject | null;
   asString?: string;
-  asNamedObject?: Record<string, EditableEntryAttrValueObject | null>;
+  asNamedObject?: { name: string; object: EditableEntryAttrValueObject | null };
   asArrayObject?: Array<EditableEntryAttrValueObject>;
-  asArrayString?: Array<string>;
-  asArrayNamedObject?: Array<
-    Record<string, EditableEntryAttrValueObject | null>
-  >;
+  asArrayString?: Array<{ value: string }>;
+  asArrayNamedObject?: Array<{
+    name: string;
+    object: EditableEntryAttrValueObject | null;
+  }>;
   asArrayGroup?: Array<EntryAttributeValueGroup>;
   asArrayRole?: Array<EntryAttributeValueRole>;
   asBoolean?: boolean;

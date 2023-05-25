@@ -891,6 +891,9 @@ def make_search_results(
             else:
                 ret_attrinfo = ret_info["attrs"][attrinfo["name"]] = {}
 
+            ret_attrinfo["is_readable"] = True
+            ret_attrinfo["type"] = attrinfo["type"]
+
             # if target attribute is array type, then values would be stored in array
             if attrinfo["name"] not in ret_info["attrs"]:
                 if attrinfo["type"] & AttrTypeValue["array"]:
@@ -917,9 +920,6 @@ def make_search_results(
                     ret_attrinfo["is_readable"] = False
                     continue
 
-            ret_attrinfo["is_readable"] = True
-
-            ret_attrinfo["type"] = attrinfo["type"]
             if (
                 attrinfo["type"] == AttrTypeValue["string"]
                 or attrinfo["type"] == AttrTypeValue["text"]

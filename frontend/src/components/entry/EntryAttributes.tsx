@@ -6,6 +6,7 @@ import {
   TableCell,
   TableRow,
   Paper,
+  Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
@@ -44,7 +45,7 @@ const AttrValueTableCell = styled(TableCell)(() => ({
 export const EntryAttributes: FC<Props> = ({ attributes }) => {
   return (
     <TableContainer component={Paper}>
-      <Table>
+      <Table id="table_attr_list">
         <TableHead sx={{ backgroundColor: "primary.dark" }}>
           <TableRow>
             <HeaderTableCell>項目</HeaderTableCell>
@@ -56,9 +57,13 @@ export const EntryAttributes: FC<Props> = ({ attributes }) => {
             <StyledTableRow key={attr.schema.name}>
               <AttrNameTableCell>{attr.schema.name}</AttrNameTableCell>
               <AttrValueTableCell sx={{ p: "0px" }}>
-                <AttributeValue
-                  attrInfo={{ type: attr.type, value: attr.value }}
-                />
+                {attr.isReadable ? (
+                  <AttributeValue
+                    attrInfo={{ type: attr.type, value: attr.value }}
+                  />
+                ) : (
+                  <Typography>Permission denied.</Typography>
+                )}
               </AttrValueTableCell>
             </StyledTableRow>
           ))}

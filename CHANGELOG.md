@@ -8,9 +8,39 @@
 
 ### Fixed
 
+## v3.49.0
+
+### Added
+* Prepare to publish APIv2 client npm package w/o modifying existing code.
+  Contributed by @syucream
+
+### Changed
+* Upgrade django version from 3.2.18 to 3.2.19
+* Hide disallowed value explicitly on advanced search result.
+  Contributed by @syucream
+
+### Fixed
+* Fixed error when date attribute value is None in advanced search.
+  Contributed by @hinashi
+
+## v3.48.0
+
+### Changed
+* Implement isMandatory value validation.
+  Contributed by @syucream
+* Hide entry attribute if user isn't allowed to show it
+  Contributed by @syucream
+
+### Fixed
 * Fixed a bug of /api_v1/entry/search_chain API implementation at the "refers" condition.
   This unables to filter intermediate search results with Entry name at its condition.
   Contributed by @userlocalhost
+* Fixed the order of attributes in the entry edit to index order.
+  Contributed by @hinashi
+* Fixed edit entries when special characters are used in attribute names.
+  Contributed by @hinashi
+* Fixed celery trace log not output
+  Contributed by @hinashi
 
 ## v3.47.0
 

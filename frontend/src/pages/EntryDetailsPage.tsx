@@ -10,13 +10,13 @@ import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
 import { entryDetailsPath, restoreEntryPath } from "Routes";
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 const StyledBox = styled(Box)({
   display: "flex",
@@ -81,6 +81,7 @@ export const EntryDetailsPage: FC<Props> = ({
             ].map((content) => {
               return (
                 <Chip
+                  id={"chip_" + content.name}
                   key={content.name}
                   icon={<ArrowDropDownIcon />}
                   label={content.label}
@@ -104,6 +105,7 @@ export const EntryDetailsPage: FC<Props> = ({
           </Stack>
           <Box width="50px">
             <IconButton
+              id="entryMenu"
               onClick={(e) => {
                 setEntryAnchorEl(e.currentTarget);
               }}

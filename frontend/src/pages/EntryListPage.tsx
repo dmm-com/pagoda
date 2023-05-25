@@ -6,11 +6,11 @@ import { EntityControlMenu } from "../components/entity/EntityControlMenu";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { EntryList } from "components/entry/EntryList";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 interface Props {
   canCreateEntry?: boolean;

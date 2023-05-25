@@ -3,19 +3,20 @@ import { Box, Container, IconButton } from "@mui/material";
 import React, { FC, useMemo, useState } from "react";
 import { useAsync } from "react-use";
 
-import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { Loading } from "../components/common/Loading";
 import { EntryControlMenu } from "../components/entry/EntryControlMenu";
 import { EntryHistoryList } from "../components/entry/EntryHistoryList";
 import { usePage } from "../hooks/usePage";
 import { useTypedParams } from "../hooks/useTypedParams";
+import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
 import { EntryHistoryList as ConstEntryHistoryList } from "../services/Constants";
 
 import { PageHeader } from "components/common/PageHeader";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 
 export const EntryHistoryListPage: FC = () => {
-  const { entryId } = useTypedParams<{ entryId: number }>();
+  const { entityId, entryId } =
+    useTypedParams<{ entityId: number; entryId: number }>();
 
   const [page, changePage] = usePage();
 
@@ -69,6 +70,7 @@ export const EntryHistoryListPage: FC = () => {
         <Container>
           <EntryHistoryList
             histories={histories.value?.results ?? []}
+            entityId={entry.value?.schema?.id ?? 0}
             entryId={entryId}
             page={page}
             maxPage={maxPage}

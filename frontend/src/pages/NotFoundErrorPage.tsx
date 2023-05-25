@@ -17,7 +17,12 @@ export const NotFoundErrorPage: FC = () => {
       justifyContent="center"
     >
       <Box display="flex" my="52px">
-        <Typography variant="h1" color="#B0BEC5" fontWeight="bold">
+        <Typography
+          id="sorry_notfound"
+          variant="h1"
+          color="#B0BEC5"
+          fontWeight="bold"
+        >
           404 |ω·`)
         </Typography>
       </Box>

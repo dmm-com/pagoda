@@ -87,6 +87,7 @@ class EntryAttributeType(TypedDict):
     id: Optional[int]
     type: int
     is_mandatory: bool
+    is_readable: bool
     value: EntryAttributeValue
     schema: EntityAttributeType
 
@@ -142,6 +143,7 @@ class EntryAttributeTypeSerializer(serializers.Serializer):
     id = serializers.IntegerField(allow_null=True)
     type = serializers.IntegerField()
     is_mandatory = serializers.BooleanField()
+    is_readable = serializers.BooleanField()
     value = EntryAttributeValueSerializer()
     schema = EntityAttributeTypeSerializer()
 
@@ -590,15 +592,26 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
             .order_by("index")
         )
 
+        user: User = self.context["request"].user
+
         attrinfo: List[EntryAttributeType] = []
         for entity_attr in entity_attrs:
             attr = entity_attr.attr_list[0] if entity_attr.attr_list else None
-            value = get_attr_value(attr) if attr else get_default_attr_value(entity_attr.type)
+            if attr:
+                is_readable = user.has_permission(attr, ACLType.Readable)
+            else:
+                is_readable = user.has_permission(entity_attr, ACLType.Readable)
+            value = (
+                get_attr_value(attr)
+                if attr and is_readable
+                else get_default_attr_value(entity_attr.type)
+            )
             attrinfo.append(
                 {
                     "id": attr.id if attr else None,
                     "type": entity_attr.type,
                     "is_mandatory": entity_attr.is_mandatory,
+                    "is_readable": is_readable,
                     "value": value,
                     "schema": {
                         "id": entity_attr.id,

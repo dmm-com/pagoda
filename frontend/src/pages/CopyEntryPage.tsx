@@ -7,7 +7,6 @@ import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
 import { entityEntriesPath, entryDetailsPath } from "Routes";
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
@@ -16,6 +15,7 @@ import {
   CopyFormProps,
 } from "components/entry/CopyForm";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 interface Props {
   CopyForm?: FC<CopyFormProps>;

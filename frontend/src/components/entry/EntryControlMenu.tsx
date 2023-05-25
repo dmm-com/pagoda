@@ -20,8 +20,8 @@ import {
   topPath,
   entryDetailsPath,
 } from "Routes";
-import { aironeApiClientV2 } from "apiclient/AironeApiClientV2";
 import { Confirmable } from "components/common/Confirmable";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 interface EntryControlProps {
   entityId: number;
@@ -56,7 +56,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
 
   return (
     <Menu
-      id={`entityControlMenu-${entryId}`}
+      id={`entryControlMenu-${entryId}`}
       open={Boolean(anchorElem)}
       onClose={() => handleClose(entryId)}
       anchorEl={anchorElem}
@@ -83,7 +83,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
         <MenuItem component={Link} to={aclPath(entryId)}>
           <Typography>ACL 設定</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={showEntryHistoryPath(entryId)}>
+        <MenuItem component={Link} to={showEntryHistoryPath(entityId, entryId)}>
           <Typography>変更履歴</Typography>
         </MenuItem>
         <Confirmable

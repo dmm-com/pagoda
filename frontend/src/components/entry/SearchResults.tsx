@@ -48,7 +48,13 @@ const StyledTableRow = styled(TableRow)({
 
 interface Props {
   results: {
-    attrs: { [key: string]: { type: number; value: EntryAttributeValue } };
+    attrs: {
+      [key: string]: {
+        type: number;
+        value: EntryAttributeValue;
+        is_readable: boolean;
+      };
+    };
     entry: {
       id: number;
       name: string;
@@ -272,7 +278,15 @@ export const SearchResults: FC<Props> = ({
                     {(() => {
                       const info = result.attrs[attrName];
                       if (info != null) {
-                        return <AttributeValue attrInfo={info} />;
+                        return (
+                          <>
+                            {info.is_readable ? (
+                              <AttributeValue attrInfo={info} />
+                            ) : (
+                              <Typography>Permission denied.</Typography>
+                            )}
+                          </>
+                        );
                       }
                     })()}
                   </TableCell>

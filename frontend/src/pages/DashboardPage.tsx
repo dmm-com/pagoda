@@ -5,8 +5,8 @@ import React, { FC } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { aironeApiClientV2 } from "../apiclient/AironeApiClientV2";
 import { useSimpleSearch } from "../hooks/useSimpleSearch";
+import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
 
 import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";

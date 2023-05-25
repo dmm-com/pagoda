@@ -8,8 +8,8 @@ import { useForm } from "react-hook-form";
 
 import { Schema } from "./EntityFormSchema";
 
+import { TestWrapper } from "TestWrapper";
 import { EntityForm } from "components/entity/EntityForm";
-import { TestWrapper } from "services/TestWrapper";
 
 test("should render a component with essential props", function () {
   const entity: Schema = {

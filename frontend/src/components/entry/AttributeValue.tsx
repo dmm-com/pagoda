@@ -1,4 +1,5 @@
 import { Checkbox, Box, List, ListItem } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import * as React from "react";
 import { FC } from "react";
 import { Link } from "react-router-dom";
@@ -12,6 +13,11 @@ import {
 
 import { groupsPath, rolePath, entryDetailsPath } from "Routes";
 import { DjangoContext } from "services/DjangoContext";
+
+const StyledBox = styled(Box)(() => ({
+  display: "flex",
+  gap: "20px",
+}));
 
 const ElemBool: FC<{ attrValue: string | boolean }> = ({ attrValue }) => {
   const checkd =
@@ -56,8 +62,8 @@ const ElemNamedObject: FC<{
 }> = ({ attrValue }) => {
   const key = Object.keys(attrValue)[0];
   return attrValue ? (
-    <Box display="flex">
-      <Box>{key}: </Box>
+    <StyledBox>
+      <Box>{key}</Box>
       {attrValue[key] ? (
         <Box
           component={Link}
@@ -71,7 +77,7 @@ const ElemNamedObject: FC<{
       ) : (
         <Box />
       )}
-    </Box>
+    </StyledBox>
   ) : (
     <Box />
   );

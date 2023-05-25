@@ -83,13 +83,13 @@ test("formalizeEntryInfo should return expect value", () => {
         type: 2,
         value: {
           asArrayGroup: [],
-          asArrayNamedObject: [{}],
+          asArrayNamedObject: [{ name: "", object: null }],
           asArrayObject: [],
           asArrayRole: [],
-          asArrayString: [""],
+          asArrayString: [{ value: "" }],
           asBoolean: false,
           asGroup: undefined,
-          asNamedObject: {},
+          asNamedObject: { name: "", object: null },
           asObject: undefined,
           asRole: undefined,
           asString: "",
@@ -105,13 +105,13 @@ test("formalizeEntryInfo should return expect value", () => {
         type: 1026,
         value: {
           asArrayGroup: [],
-          asArrayNamedObject: [{}],
+          asArrayNamedObject: [{ name: "", object: null }],
           asArrayObject: [],
           asArrayRole: [],
-          asArrayString: [""],
+          asArrayString: [{ value: "" }],
           asBoolean: false,
           asGroup: undefined,
-          asNamedObject: {},
+          asNamedObject: { name: "", object: null },
           asObject: undefined,
           asRole: undefined,
           asString: "",
@@ -127,13 +127,13 @@ test("formalizeEntryInfo should return expect value", () => {
         type: 3073,
         value: {
           asArrayGroup: [],
-          asArrayNamedObject: [{}],
+          asArrayNamedObject: [{ name: "", object: null }],
           asArrayObject: [],
           asArrayRole: [],
-          asArrayString: [""],
+          asArrayString: [{ value: "" }],
           asBoolean: false,
           asGroup: undefined,
-          asNamedObject: {},
+          asNamedObject: { name: "", object: null },
           asObject: undefined,
           asRole: undefined,
           asString: "",
@@ -162,6 +162,7 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: djangoContext?.attrTypeValue.string,
         isMandatory: true,
+        isReadable: true,
         value: {
           asString: "",
         },
@@ -176,6 +177,7 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: djangoContext?.attrTypeValue.array_string,
         isMandatory: false,
+        isReadable: true,
         value: {
           asArrayString: [],
         },
@@ -190,6 +192,7 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: djangoContext?.attrTypeValue.array_named_object,
         isMandatory: true,
+        isReadable: true,
         value: {
           asArrayNamedObject: [],
         },
@@ -225,7 +228,7 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: 1026,
         value: {
-          asArrayString: [""],
+          asArrayString: [{ value: "" }],
         },
       },
       4: {
@@ -237,7 +240,7 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: 3073,
         value: {
-          asArrayNamedObject: [{}],
+          asArrayNamedObject: [{ name: "", object: null }],
         },
       },
     },
@@ -286,7 +289,8 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
       type: djangoContext?.attrTypeValue.named_object,
       value: {
         asNamedObject: {
-          hoge: {
+          name: "hoge",
+          object: {
             id: 1,
             name: "test_object",
             _boolean: false,
@@ -298,7 +302,7 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
     {
       type: djangoContext?.attrTypeValue.array_string,
       value: {
-        asArrayString: ["value"],
+        asArrayString: [{ value: "value" }],
       },
     },
     // array_object
@@ -332,7 +336,8 @@ test("isSubmittable() returns true when entryInfo.attrs is changed", () => {
       value: {
         asArrayNamedObject: [
           {
-            name1: {
+            name: "name1",
+            object: {
               id: 1,
               name: "test_object",
               _boolean: false,
@@ -393,7 +398,8 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
       type: djangoContext?.attrTypeValue.named_object,
       value: {
         asNamedObject: {
-          "": {
+          name: "",
+          object: {
             id: 1,
             name: "test_object",
             _boolean: false,
@@ -445,7 +451,8 @@ test("isSubmittable() returns false when entryInfo is wrong value", () => {
       value: {
         asArrayNamedObject: [
           {
-            "": {
+            name: "",
+            object: {
               id: 1,
               name: "test_object",
               _boolean: false,
@@ -551,7 +558,8 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
         type: djangoContext?.attrTypeValue.named_object,
         value: {
           asNamedObject: {
-            hoge: {
+            name: "hoge",
+            object: {
               id: 2,
               name: "test_object",
               _boolean: false,
@@ -569,7 +577,7 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
       client_data: {
         type: djangoContext?.attrTypeValue.array_string,
         value: {
-          asArrayString: ["value"],
+          asArrayString: [{ value: "value" }],
         },
       },
       expected_data: ["value"],
@@ -612,7 +620,8 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
         value: {
           asArrayNamedObject: [
             {
-              name1: {
+              name: "name1",
+              object: {
                 id: 2,
                 name: "test_object",
                 _boolean: false,
@@ -732,7 +741,7 @@ test("convertAttrsFormatCtoS() returns expected value when nothing value", () =>
       client_data: {
         type: djangoContext?.attrTypeValue.named_object,
         value: {
-          asNamedObject: {},
+          asNamedObject: { name: "", object: null },
         },
       },
       expected_data: {

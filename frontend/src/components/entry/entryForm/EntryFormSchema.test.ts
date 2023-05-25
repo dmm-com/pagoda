@@ -35,7 +35,7 @@ describe("schema", () => {
           name: "array_string",
         },
         value: {
-          asArrayString: ["string"],
+          asArrayString: [{ value: "string" }],
         },
       },
       object: {
@@ -82,7 +82,8 @@ describe("schema", () => {
         },
         value: {
           asNamedObject: {
-            name: {
+            name: "name",
+            object: {
               id: 1,
               name: "object",
               _boolean: false,
@@ -101,7 +102,8 @@ describe("schema", () => {
         value: {
           asArrayNamedObject: [
             {
-              name: {
+              name: "name",
+              object: {
                 id: 1,
                 name: "object",
                 _boolean: false,
