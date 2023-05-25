@@ -13,7 +13,27 @@ from rest_framework.serializers import (
 
 class DRFGeneratorSerializer(object):
     @classmethod
-    def create(kls, model, fields):
+    def create(kls, model, obsoleted_fields={}, is_many=False):
+        fields = {}
+        for model_field in model._meta.get_fields():
+            fields[model_field.name] = None
+
+            if isinstance(model_field, models.ForeignKey):
+                args = []
+                kwargs = {}
+                fields[model_field.name] = kls.create(model_field.remote_field.model)(
+                    *args, **kwargs
+                )
+
+            elif isinstance(model_field, models.ManyToManyField):
+                # This attachs many=True parameter for serializer which is associated with ManyToManyField
+                args = []
+                kwargs = {many: True}
+
+                fields[model_field.name] = kls.create(model_field.remote_field.model, is_many=True)(
+                    *args, **kwargs
+                )
+
         MetaClass = type(
             "Meta",
             (object,),
@@ -24,6 +44,7 @@ class DRFGeneratorSerializer(object):
         )
 
         adding_params = {}
+
         for key, value in fields.items():
             if value:
                 adding_params[key] = value
@@ -110,5 +131,32 @@ class UserModel(object):
                     "__module__": "user_models",
                 },
                 **fields
+            ),
+        )
+
+    @classmethod
+    def create_model_from_entity(kls, entity):
+        attrs = {}
+
+        entity_attr: EntityAttr
+        for entity_attr in entity.attrs.filter(name="LB", is_active=True):
+            referral: ACLBase = entity_attr.referral.first()
+
+            ## TODO
+            # it's necessary to save alphabetical name for each EntityAttrs because
+            # EntityAttr.name has characters that is prohibited by MySQL to name as table-name
+            # e.g. white-space(" ") and multi-byte character("ツ")
+
+            # attrs[entity_attr.key] = entity_attr.get_field_model()
+            attrs[entity_attr.name] = entity_attr.get_field_model()
+
+        return UserModel.declare(
+            entity.name,
+            dict(
+                {
+                    "id": models.BigIntegerField(),
+                    "name": models.CharField(max_length=200, unique=True),
+                },
+                **attrs
             ),
         )

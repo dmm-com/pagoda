@@ -3,6 +3,7 @@ from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType
+from airone.lib.types import AttrTypeValue
 from webhook.models import Webhook
 
 
@@ -74,6 +75,27 @@ class EntityAttr(ACLBase):
         # Add referral when a valid referral is passed
         if adding_referral:
             self.referral.add(adding_referral)
+
+    def get_field_model(self):
+        if self.type == AttrTypeValue["string"]:
+            return models.CharField(verbose_name=self.name)
+
+        if self.type == AttrTypeValue["object"]:
+            # In the future, referral changed from ManyToMany to ForeignKey
+            referral = self.referral.first()
+            if referral is None:
+                assert RuntimeError("EntityAttr.referral is mandatory to set")
+
+            return models.ForeignKey(
+                referral.name, null=True, on_delete=models.SET_NULL, verbose_name=self.name
+            )
+
+        if self.type == AttrTypeValue["array_object"]:
+            referral = self.referral.first()
+            if referral is None:
+                assert RuntimeError("EntityAttr.referral is mandatory to set")
+
+            return models.ManyToManyField(referral.name, verbose_name=self.name)
 
 
 class Entity(ACLBase):

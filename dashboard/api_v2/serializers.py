@@ -131,12 +131,14 @@ class LBServerSerializer(ModelSerializer):
         fields = ("id", "name", "key", "ipaddr")
 
 
+"""
 class LBServiceGroupSerializer(ModelSerializer):
     lb_server = LBServerSerializer(source="m2mlbservicegrouplbserver_set", many=True)
 
     class Meta:
         model = LBServiceGroup
         fields = ("id", "name", "lb_server")
+"""
 
 
 """
