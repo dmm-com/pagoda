@@ -404,13 +404,6 @@ class Common(Configuration):
 
     # datadog
     if env.bool("AIRONE_DATADOG_ENABLE", False):
-        tracer.configure(
-            hostname="localhost",
-            port=8126,
-            enabled=True,
-            partial_flush_enabled=True,
-            partial_flush_min_spans=1000,
-        )
         tracer.set_tags(env.dict("AIRONE_DATADOG_TAG", dict, {"env": "airone"}))
         config.django["service_name"] = "airone"
         config.django["cache_service_name"] = "cache"
