@@ -34,7 +34,7 @@ export const ObjectAttributeValueField: FC<
   ) => {
     const newValue: any = (() => {
       if (value == null) {
-        return undefined;
+        return null;
       }
       if (multiple === true) {
         const _value = value as GetEntryAttrReferral[];

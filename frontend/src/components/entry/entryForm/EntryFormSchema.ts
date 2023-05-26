@@ -43,6 +43,7 @@ export const schema = schemaForType<EditableEntry>()(
                   name: z.string(),
                   _boolean: z.boolean().default(false),
                 })
+                .nullable()
                 .optional(),
               asArrayObject: z
                 .array(
