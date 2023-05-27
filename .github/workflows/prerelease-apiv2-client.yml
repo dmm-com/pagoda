@@ -37,6 +37,7 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
+          scope: '@dmm-com'
       - name: generate client
         run: |
           npm ci
@@ -45,7 +46,7 @@ jobs:
         run: |
           npm version prerelease --preid=$GITHUB_SHA
         working-directory: ./apiclient/typescript-fetch
-      - run: npm publish
+      - run: npm publish --verbose
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
         working-directory: ./apiclient/typescript-fetch
