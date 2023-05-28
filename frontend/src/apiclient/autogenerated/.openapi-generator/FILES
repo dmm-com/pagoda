@@ -10,8 +10,8 @@ index.ts
 models/ACL.ts
 models/ACLParent.ts
 models/ACLRole.ts
+models/AdvancedSearchResultAttrInfo.ts
 models/AdvancedSearchResultExport.ts
-models/AdvancedSearchResultExportAttrInfo.ts
 models/Attribute.ts
 models/AttributeData.ts
 models/Entity.ts

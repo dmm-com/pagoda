@@ -14,11 +14,11 @@
 
 import { exists, mapValues } from "../runtime";
 import {
-  AdvancedSearchResultExportAttrInfo,
-  AdvancedSearchResultExportAttrInfoFromJSON,
-  AdvancedSearchResultExportAttrInfoFromJSONTyped,
-  AdvancedSearchResultExportAttrInfoToJSON,
-} from "./AdvancedSearchResultExportAttrInfo";
+  AdvancedSearchResultAttrInfo,
+  AdvancedSearchResultAttrInfoFromJSON,
+  AdvancedSearchResultAttrInfoFromJSONTyped,
+  AdvancedSearchResultAttrInfoToJSON,
+} from "./AdvancedSearchResultAttrInfo";
 
 /**
  *
@@ -34,10 +34,10 @@ export interface AdvancedSearchResultExport {
   entities: Array<number>;
   /**
    *
-   * @type {Array<AdvancedSearchResultExportAttrInfo>}
+   * @type {Array<AdvancedSearchResultAttrInfo>}
    * @memberof AdvancedSearchResultExport
    */
-  attrinfo: Array<AdvancedSearchResultExportAttrInfo>;
+  attrinfo: Array<AdvancedSearchResultAttrInfo>;
   /**
    *
    * @type {boolean}
@@ -80,7 +80,7 @@ export function AdvancedSearchResultExportFromJSONTyped(
   return {
     entities: json["entities"],
     attrinfo: (json["attrinfo"] as Array<any>).map(
-      AdvancedSearchResultExportAttrInfoFromJSON
+      AdvancedSearchResultAttrInfoFromJSON
     ),
     hasReferral: !exists(json, "has_referral")
       ? undefined
@@ -105,7 +105,7 @@ export function AdvancedSearchResultExportToJSON(
   return {
     entities: value.entities,
     attrinfo: (value.attrinfo as Array<any>).map(
-      AdvancedSearchResultExportAttrInfoToJSON
+      AdvancedSearchResultAttrInfoToJSON
     ),
     has_referral: value.hasReferral,
     referral_name: value.referralName,

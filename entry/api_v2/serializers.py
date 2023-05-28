@@ -966,16 +966,38 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
         return instance
 
 
-class AdvancedSearchResultExportAttrInfoSerializer(serializers.Serializer):
+class AdvancedSearchResultAttrInfoSerializer(serializers.Serializer):
     name = serializers.CharField()
     keyword = serializers.CharField(
         required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
     )
 
 
+class AdvancedSearchSerializer(serializers.Serializer):
+    entities = serializers.ListField(child=serializers.IntegerField())
+    entry_name = serializers.CharField(allow_blank=True, default="")
+    attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
+    has_referral = serializers.BooleanField(default=False)
+    referral_name = serializers.CharField(required=False, allow_blank=True)
+    is_output_all = serializers.BooleanField(default=True)
+    is_all_entities = serializers.BooleanField(default=False)
+    entry_limit = serializers.IntegerField(default=CONFIG_ENTRY.MAX_LIST_ENTRIES)
+    entry_offset = serializers.IntegerField(default=0)
+
+    def validate_entry_name(self, entry_name: str):
+        if len(entry_name) > CONFIG_ENTRY.MAX_QUERY_SIZE:
+            raise ValidationError("entry_name is too long")
+        return entry_name
+
+    def validate_attrs(self, attrs: List[Dict[str, str]]):
+        if any([len(attr.get("keyword", "")) > CONFIG_ENTRY.MAX_QUERY_SIZE for attr in attrs]):
+            raise ValidationError("keyword(s) in attrs are too large")
+        return attrs
+
+
 class AdvancedSearchResultExportSerializer(serializers.Serializer):
     entities = serializers.ListField(child=serializers.IntegerField())
-    attrinfo = AdvancedSearchResultExportAttrInfoSerializer(many=True)
+    attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
     has_referral = serializers.BooleanField(required=False)
     referral_name = serializers.CharField(required=False)
     entry_name = serializers.CharField(

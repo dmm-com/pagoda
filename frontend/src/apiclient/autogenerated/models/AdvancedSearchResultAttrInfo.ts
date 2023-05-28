@@ -16,33 +16,33 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface AdvancedSearchResultExportAttrInfo
+ * @interface AdvancedSearchResultAttrInfo
  */
-export interface AdvancedSearchResultExportAttrInfo {
+export interface AdvancedSearchResultAttrInfo {
   /**
    *
    * @type {string}
-   * @memberof AdvancedSearchResultExportAttrInfo
+   * @memberof AdvancedSearchResultAttrInfo
    */
   name: string;
   /**
    *
    * @type {string}
-   * @memberof AdvancedSearchResultExportAttrInfo
+   * @memberof AdvancedSearchResultAttrInfo
    */
   keyword?: string;
 }
 
-export function AdvancedSearchResultExportAttrInfoFromJSON(
+export function AdvancedSearchResultAttrInfoFromJSON(
   json: any
-): AdvancedSearchResultExportAttrInfo {
-  return AdvancedSearchResultExportAttrInfoFromJSONTyped(json, false);
+): AdvancedSearchResultAttrInfo {
+  return AdvancedSearchResultAttrInfoFromJSONTyped(json, false);
 }
 
-export function AdvancedSearchResultExportAttrInfoFromJSONTyped(
+export function AdvancedSearchResultAttrInfoFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): AdvancedSearchResultExportAttrInfo {
+): AdvancedSearchResultAttrInfo {
   if (json === undefined || json === null) {
     return json;
   }
@@ -52,8 +52,8 @@ export function AdvancedSearchResultExportAttrInfoFromJSONTyped(
   };
 }
 
-export function AdvancedSearchResultExportAttrInfoToJSON(
-  value?: AdvancedSearchResultExportAttrInfo | null
+export function AdvancedSearchResultAttrInfoToJSON(
+  value?: AdvancedSearchResultAttrInfo | null
 ): any {
   if (value === undefined) {
     return undefined;

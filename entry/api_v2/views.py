@@ -23,6 +23,7 @@ from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
     AdvancedSearchResultExportSerializer,
+    AdvancedSearchSerializer,
     EntryAttributeValueRestoreSerializer,
     EntryBaseSerializer,
     EntryCopySerializer,
@@ -205,53 +206,22 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
     serializer_class = serializers.Serializer
 
-    MAX_LIST_ENTRIES = 100
-    MAX_QUERY_SIZE = 64
-
     def post(self, request, format=None):
-        hint_entities = request.data.get("entities")
-        hint_entry_name = request.data.get("entry_name", "")
-        hint_attrs = request.data.get("attrinfo")
-        hint_has_referral = request.data.get("has_referral", False)
-        hint_referral_name = request.data.get("referral_name", "")
-        is_output_all = request.data.get("is_output_all", True)
-        is_all_entities = request.data.get("is_all_entities", False)
-        entry_limit = request.data.get("entry_limit", self.MAX_LIST_ENTRIES)
-        entry_offset = request.data.get("entry_offset", 0)
+        serializer = AdvancedSearchSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        hint_referral = None
-        if hint_has_referral:
-            hint_referral = hint_referral_name
+        hint_entities = serializer.validated_data["entities"]
+        hint_entry_name = serializer.validated_data["entry_name"]
+        hint_attrs = serializer.validated_data["attrinfo"]
+        hint_referral = serializer.validated_data.get("referral_name")
+        has_referral = serializer.validated_data["has_referral"]
+        is_output_all = serializer.validated_data["is_output_all"]
+        is_all_entities = serializer.validated_data["is_all_entities"]
+        entry_limit = serializer.validated_data["entry_limit"]
+        entry_offset = serializer.validated_data["entry_offset"]
 
-        if (
-            not isinstance(hint_entities, list)
-            or not isinstance(hint_entry_name, str)
-            or not isinstance(hint_attrs, list)
-            or not isinstance(is_output_all, bool)
-            or not isinstance(is_all_entities, bool)
-            or (hint_referral and not isinstance(hint_referral, str))
-            or not isinstance(entry_limit, int)
-        ):
-            return Response(
-                "The type of parameter is incorrect", status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # forbid to input large size request
-        if len(hint_entry_name) > self.MAX_QUERY_SIZE:
-            return Response("Sending parameter is too large", status=400)
-
-        # check attribute params
-        for hint_attr in hint_attrs:
-            if "name" not in hint_attr:
-                return Response("The name key is required for attrinfo parameter", status=400)
-            if not isinstance(hint_attr["name"], str):
-                return Response("Invalid value for attrinfo parameter", status=400)
-            if hint_attr.get("keyword"):
-                if not isinstance(hint_attr["keyword"], str):
-                    return Response("Invalid value for attrinfo parameter", status=400)
-                # forbid to input large size request
-                if len(hint_attr["keyword"]) > self.MAX_QUERY_SIZE:
-                    return Response("Sending parameter is too large", status=400)
+        if not has_referral:
+            hint_referral = None
 
         if is_all_entities:
             attr_names = [x["name"] for x in hint_attrs]
@@ -265,10 +235,6 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             )
             if not hint_entities:
                 return Response("Invalid value for attribute parameter", status=400)
-
-        # check entities params
-        if not hint_entities:
-            return Response("The entities parameters are required", status=400)
 
         hint_entity_ids = []
         for hint_entity in hint_entities:

@@ -38,7 +38,7 @@ import {
   GroupTree as _GroupTree,
   GroupCreateUpdate,
   PaginatedEntityHistoryList,
-  AdvancedSearchResultExportAttrInfo,
+  AdvancedSearchResultAttrInfo,
   PaginatedEntryHistoryAttributeValueList,
   AttributeData,
   WebhookCreateUpdate,
@@ -675,7 +675,7 @@ class AironeApiClientV2 {
 
   async exportAdvancedSearchResults(
     entityIds: number[],
-    attrinfo: Array<AdvancedSearchResultExportAttrInfo>,
+    attrinfo: Array<AdvancedSearchResultAttrInfo>,
     entryName: string,
     hasReferral: boolean,
     format: "yaml" | "csv"

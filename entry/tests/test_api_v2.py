@@ -2971,6 +2971,31 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         # TODO assert result
 
+    def test_advanced_search_with_too_long_entry_name(self):
+        params = {
+            "entities": [],
+            "entry_name": "a" * (CONFIG.MAX_QUERY_SIZE + 1),
+            "is_all_entities": True,
+            "attrinfo": [],
+        }
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_advanced_search_with_too_long_keyword(self):
+        params = {
+            "entities": [],
+            "is_all_entities": True,
+            "attrinfo": [{"name": "a" * (CONFIG.MAX_QUERY_SIZE + 1)}],
+        }
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
     def test_restore_entry_attribute_value(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
 
