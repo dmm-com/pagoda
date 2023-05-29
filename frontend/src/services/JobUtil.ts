@@ -6,7 +6,7 @@ import {
 
 import { JobOperations, JobStatuses } from "./Constants";
 
-const jobStatusLabel = (jobStatus: number | undefined): string => {
+export const jobStatusLabel = (jobStatus: number | undefined): string => {
   switch (jobStatus) {
     case JobStatuses.PREPARING:
       return "処理前";
