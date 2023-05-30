@@ -4,7 +4,6 @@ import { Box, Chip, Grid, IconButton, Stack, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { Element, scroller } from "react-scroll";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
@@ -18,11 +17,43 @@ import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
-const StyledBox = styled(Box)({
+const FlexBox = styled(Box)(({}) => ({
+  display: "flex",
+  flexDirection: "column",
+  flexGrow: "1",
+}));
+
+const ChipBox = styled(Box)({
   display: "flex",
   alignItems: "center",
   gap: "20px",
 });
+
+const MenuBox = styled(Box)(({}) => ({
+  width: "50px",
+}));
+
+const ContentBox = styled(Box)(({}) => ({
+  padding: "0 16px 64px",
+}));
+
+const LeftGrid = styled(Grid)(({}) => ({
+  borderRight: "1px solid",
+  borderColor: "rgba(0, 0, 0, 0.12)",
+}));
+
+const RightGrid = styled(Grid)(({}) => ({
+  borderLeft: "1px solid",
+  borderColor: "rgba(0, 0, 0, 0.12)",
+}));
+
+const StyledTypography = styled(Typography)(({}) => ({
+  /* an anchor link adjusted fixed headers etc. */
+  scrollMarginTop: "180px",
+  marginBottom: "16px",
+  fontSize: "32px",
+  textAlign: "center",
+}));
 
 interface Props {
   excludeAttrs?: string[];
@@ -66,11 +97,11 @@ export const EntryDetailsPage: FC<Props> = ({
   }, [entry.loading]);
 
   return (
-    <Box display="flex" flexDirection="column" flexGrow="1">
+    <FlexBox>
       <EntryBreadcrumbs entry={entry.value} />
 
       <PageHeader title={entry.value?.name ?? ""} description="エントリ詳細">
-        <StyledBox>
+        <ChipBox>
           <Stack direction="row" spacing={1}>
             {[
               {
@@ -81,29 +112,19 @@ export const EntryDetailsPage: FC<Props> = ({
             ].map((content) => {
               return (
                 <Chip
-                  id={"chip_" + content.name}
                   key={content.name}
+                  id={"chip_" + content.name}
+                  component="a"
+                  href={`#${content.name}`}
                   icon={<ArrowDropDownIcon />}
                   label={content.label}
                   clickable={true}
                   variant="outlined"
-                  onClick={() =>
-                    scroller.scrollTo(content.name, { smooth: true })
-                  }
-                  sx={{
-                    flexDirection: "row-reverse",
-                    "& span": {
-                      pr: "0px",
-                    },
-                    "& svg": {
-                      pr: "8px",
-                    },
-                  }}
                 />
               );
             })}
           </Stack>
-          <Box width="50px">
+          <MenuBox>
             <IconButton
               id="entryMenu"
               onClick={(e) => {
@@ -118,21 +139,14 @@ export const EntryDetailsPage: FC<Props> = ({
               anchorElem={entryAnchorEl}
               handleClose={() => setEntryAnchorEl(null)}
             />
-          </Box>
-        </StyledBox>
+          </MenuBox>
+        </ChipBox>
       </PageHeader>
 
       <Grid container flexGrow="1" columns={6}>
-        <Grid
-          item
-          xs={1}
-          sx={{
-            borderRight: 1,
-            borderColor: "rgba(0, 0, 0, 0.12)",
-          }}
-        >
+        <LeftGrid item xs={1}>
           <EntryReferral entryId={entryId} />
-        </Grid>
+        </LeftGrid>
         <Grid item xs={4}>
           {[
             {
@@ -153,27 +167,19 @@ export const EntryDetailsPage: FC<Props> = ({
             ...additionalContents,
           ].map((content) => {
             return (
-              <Box key={content.name} px="16px" pb="64px">
-                <Element name={content.name} />
-                <Typography pb="16px" fontSize="32px" align="center">
+              <ContentBox key={content.name}>
+                <StyledTypography id={content.name}>
                   {content.label}
-                </Typography>
+                </StyledTypography>
                 {content.content}
-              </Box>
+              </ContentBox>
             );
           })}
         </Grid>
-        <Grid
-          item
-          xs={1}
-          sx={{
-            borderLeft: 1,
-            borderColor: "rgba(0, 0, 0, 0.12)",
-          }}
-        >
+        <RightGrid item xs={1}>
           {sideContent}
-        </Grid>
+        </RightGrid>
       </Grid>
-    </Box>
+    </FlexBox>
   );
 };
