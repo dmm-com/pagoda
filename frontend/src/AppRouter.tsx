@@ -42,11 +42,11 @@ import { AdvancedSearchPage } from "pages/AdvancedSearchPage";
 import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";
 import { DashboardPage } from "pages/DashboardPage";
 import { EditEntityPage } from "pages/EditEntityPage";
-import { EditEntryPage } from "pages/EditEntryPage";
 import { EditGroupPage } from "pages/EditGroupPage";
 import { EditUserPage } from "pages/EditUserPage";
 import { EntityHistoryPage } from "pages/EntityHistoryPage";
 import { EntityPage } from "pages/EntityListPage";
+import { EntryEditPage } from "pages/EntryEditPage";
 import { EntryHistoryListPage } from "pages/EntryHistoryListPage";
 import { EntryListPage } from "pages/EntryListPage";
 import { GroupPage } from "pages/GroupPage";
@@ -89,7 +89,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               path={advancedSearchResultPath()}
               component={AdvancedSearchResultsPage}
             />
-            <Route path={newEntryPath(":entityId")} component={EditEntryPage} />
+            <Route path={newEntryPath(":entityId")} component={EntryEditPage} />
             <Route
               path={copyEntryPath(":entityId", ":entryId")}
               component={CopyEntryPage}
@@ -104,7 +104,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             />
             <Route
               path={entryEditPath(":entityId", ":entryId")}
-              component={EditEntryPage}
+              component={EntryEditPage}
             />
             <Route
               path={showEntryHistoryPath(":entityId", ":entryId")}

@@ -10,7 +10,7 @@ import {
 import React from "react";
 import { MemoryRouter, Route } from "react-router-dom";
 
-import { EditEntryPage } from "./EditEntryPage";
+import { EntryEditPage } from "./EntryEditPage";
 
 import { entryEditPath } from "Routes";
 import { TestWrapper } from "TestWrapper";
@@ -69,7 +69,7 @@ test("should match snapshot", async () => {
     <MemoryRouter initialEntries={["/ui/entities/2/entries/1/edit"]}>
       <Route
         path={entryEditPath(":entityId", ":entryId")}
-        component={EditEntryPage}
+        component={EntryEditPage}
       />
     </MemoryRouter>,
     {
