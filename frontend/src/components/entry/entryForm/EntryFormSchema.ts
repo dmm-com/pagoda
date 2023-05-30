@@ -122,6 +122,8 @@ export const schema = schemaForType<EditableEntry>()(
 
               switch (value.type) {
                 case AttributeTypes.string.type:
+                case AttributeTypes.text.type:
+                case AttributeTypes.date.type:
                   return value.value.asString !== "";
                 case AttributeTypes.array_string.type:
                   return (
