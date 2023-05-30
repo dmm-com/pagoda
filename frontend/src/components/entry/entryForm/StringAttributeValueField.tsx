@@ -1,10 +1,21 @@
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Box, IconButton, List, ListItem, TextField } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, useFieldArray, Controller } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
+
+const StyledList = styled(List)(({}) => ({
+  padding: "0",
+}));
+
+const StyledBox = styled(Box)(({}) => ({
+  display: "flex",
+  width: "100%",
+  gap: "0 12px",
+}));
 
 interface CommonProps {
   attrId: number;
@@ -27,7 +38,7 @@ export const StringAttributeValueField: FC<
   multiline,
 }) => {
   return (
-    <Box display="flex" width="100%">
+    <StyledBox>
       <Controller
         name={
           index != null
@@ -44,7 +55,7 @@ export const StringAttributeValueField: FC<
             helperText={error?.message}
             fullWidth
             multiline={multiline}
-            minRows={multiline === true ? 10 : 1}
+            minRows={multiline === true ? 5 : 1}
           />
         )}
       />
@@ -52,20 +63,23 @@ export const StringAttributeValueField: FC<
         <>
           {handleClickDeleteListItem != null && (
             <IconButton
-              sx={{ mx: "20px" }}
+              id="del_button"
               onClick={() => handleClickDeleteListItem(index)}
             >
               <DeleteOutlineIcon />
             </IconButton>
           )}
           {handleClickAddListItem != null && (
-            <IconButton onClick={() => handleClickAddListItem(index)}>
+            <IconButton
+              id="add_button"
+              onClick={() => handleClickAddListItem(index)}
+            >
               <AddIcon />
             </IconButton>
           )}
         </>
       )}
-    </Box>
+    </StyledBox>
   );
 };
 
@@ -91,20 +105,18 @@ export const ArrayStringAttributeValueField: FC<CommonProps> = ({
   };
 
   return (
-    <Box>
-      <List>
-        {fields.map((field, index) => (
-          <ListItem key={field.id} disablePadding={true}>
-            <StringAttributeValueField
-              control={control}
-              attrId={attrId}
-              index={index}
-              handleClickDeleteListItem={handleClickDeleteListItem}
-              handleClickAddListItem={handleClickAddListItem}
-            />
-          </ListItem>
-        ))}
-      </List>
-    </Box>
+    <StyledList>
+      {fields.map((field, index) => (
+        <ListItem key={field.id} disablePadding={true}>
+          <StringAttributeValueField
+            control={control}
+            attrId={attrId}
+            index={index}
+            handleClickDeleteListItem={handleClickDeleteListItem}
+            handleClickAddListItem={handleClickAddListItem}
+          />
+        </ListItem>
+      ))}
+    </StyledList>
   );
 };
