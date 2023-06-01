@@ -1,6 +1,7 @@
 from unittest import skip
 from django.test import TestCase
 from django.db import connections, models, transaction
+from django.urls import reverse
 from user.models import User
 from user_models.models import UserModel, DRFGenerator
 from django.conf import settings
@@ -42,3 +43,32 @@ class APITest(AironeTestCase):
         serializer_class = DRFGenerator.serializer.create(model)
 
         self.assertTrue(issubclass(serializer_class, ModelSerializer))
+
+    def test_advanced_search_api(self):
+        creating_entity_info = {
+            "entity_user": {
+                "name": "User",
+                "sql_name": "user",
+                "attrs": [
+                    {
+                        "name": "user age",
+                        "sql_name": "age",
+                        "type": AttrTypeValue["string"],
+                    },
+                ],
+            },
+        }
+        user = User.objects.create(username="test-user")
+
+        for attrname, kwargs in creating_entity_info.items():
+            setattr(self, attrname, self.create_entity(user, **kwargs))
+
+        model = UserModel.create_model_from_entity(self.entity_user)
+
+        # create DB tables from generated Django model
+        self.sync_db_model(model)
+
+        model.objects.create(name="hoge", age="20")
+
+        resp = self.client.get(reverse("dashboard:search"), {"entity": "User"})
+        print(resp.json())

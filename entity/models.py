@@ -79,7 +79,7 @@ class EntityAttr(ACLBase):
 
     def get_field_model(self):
         if self.type == AttrTypeValue["string"]:
-            return models.CharField(verbose_name=self.name)
+            return models.TextField(verbose_name=self.name)
 
         if self.type == AttrTypeValue["object"]:
             # In the future, referral changed from ManyToMany to ForeignKey

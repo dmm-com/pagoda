@@ -66,11 +66,12 @@ class AironeTestCase(TestCase):
 
         self._settings.disable()
 
-    def sync_db_model(model):
+    def sync_db_model(self, model):
         connection = connections[DEFAULT_DB]
         with connection.schema_editor() as se:
             in_atomic_block = se.connection.in_atomic_block
             se.connection.in_atomic_block = False
+            print(se.table_sql(model))
             try:
                 se.create_model(model)
             finally:
@@ -103,7 +104,11 @@ class AironeTestCase(TestCase):
           - ref : Entity that Entry can refer to
         """
         entity: Entity = Entity.objects.create(
-            name=name, sql_name=sql_name, created_user=user, is_public=is_public, default_permission=default_permission
+            name=name,
+            sql_name=sql_name,
+            created_user=user,
+            is_public=is_public,
+            default_permission=default_permission,
         )
         for index, attr_info in enumerate(attrs):
             entity_attr: EntityAttr = EntityAttr.objects.create(

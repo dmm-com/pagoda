@@ -148,20 +148,18 @@ class UserModel(object):
         )
 
     @classmethod
-    def create_model_from_entity(kls, entity):
+    def create_model_from_entity(kls, entity: Entity):
         attrs = {}
 
         entity_attr: EntityAttr
-        for entity_attr in entity.attrs.filter(name="LB", is_active=True):
-            referral: ACLBase = entity_attr.referral.first()
-
-            ## TODO
+        for entity_attr in entity.attrs.filter(is_active=True):
+            # TODO
             # it's necessary to save alphabetical name for each EntityAttrs because
             # EntityAttr.name has characters that is prohibited by MySQL to name as table-name
             # e.g. white-space(" ") and multi-byte character("ツ")
 
             # attrs[entity_attr.key] = entity_attr.get_field_model()
-            attrs[entity_attr.name] = entity_attr.get_field_model()
+            attrs[entity_attr.sql_name] = entity_attr.get_field_model()
 
         return UserModel.declare(
             entity.sql_name,
