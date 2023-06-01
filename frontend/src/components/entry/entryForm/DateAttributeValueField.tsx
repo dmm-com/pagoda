@@ -1,4 +1,5 @@
-import { TextField } from "@mui/material";
+import { Box, TextField, Typography } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -7,6 +8,16 @@ import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
 import { Schema } from "./EntryFormSchema";
+
+const StyledBox = styled(Box)(({}) => ({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-start",
+}));
+
+const StyledTypography = styled(Typography)(({}) => ({
+  color: "rgba(0, 0, 0, 0.6)",
+}));
 
 interface Props {
   attrId: number;
@@ -20,35 +31,42 @@ export const DateAttributeValueField: FC<Props> = ({
   setValue,
 }) => {
   return (
-    <Controller
-      name={`attrs.${attrId}.value.asString`}
-      control={control}
-      defaultValue=""
-      render={({ field, fieldState: { error } }) => (
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <DesktopDatePicker
-            label="月日を選択"
-            inputFormat="yyyy/MM/dd"
-            value={field.value}
-            onChange={(date: Date | null) => {
-              let settingDateValue = "";
-              if (date !== null) {
-                settingDateValue = `${date.getFullYear()}-${
-                  date.getMonth() + 1
-                }-${date.getDate()}`;
-              }
-              setValue(`attrs.${attrId}.value.asString`, settingDateValue);
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                error={error != null}
-                helperText={error?.message}
-              />
-            )}
-          />
-        </LocalizationProvider>
-      )}
-    />
+    <StyledBox>
+      <StyledTypography variant="caption">月日を選択</StyledTypography>
+      <Controller
+        name={`attrs.${attrId}.value.asString`}
+        control={control}
+        defaultValue=""
+        render={({ field, fieldState: { error } }) => (
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DesktopDatePicker
+              inputFormat="yyyy/MM/dd"
+              value={field.value}
+              onChange={(date: Date | null) => {
+                let settingDateValue = "";
+                if (date !== null) {
+                  settingDateValue = `${date.getFullYear()}-${
+                    date.getMonth() + 1
+                  }-${date.getDate()}`;
+                }
+                setValue(`attrs.${attrId}.value.asString`, settingDateValue, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                });
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  error={error != null}
+                  helperText={error?.message}
+                  size="small"
+                  fullWidth={false}
+                />
+              )}
+            />
+          </LocalizationProvider>
+        )}
+      />
+    </StyledBox>
   );
 };

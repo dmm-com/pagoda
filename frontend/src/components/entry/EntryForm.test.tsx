@@ -26,22 +26,11 @@ test("should render a component with essential props", function () {
     webhooks: [],
   };
 
-  const setIsAnchorLink = () => {
-    /* do nothing */
-  };
-
   const Wrapper: FC = () => {
     const { control, setValue } = useForm<Schema>({
       defaultValues: entryInfo,
     });
-    return (
-      <EntryForm
-        entity={entity}
-        setIsAnchorLink={setIsAnchorLink}
-        control={control}
-        setValue={setValue}
-      />
-    );
+    return <EntryForm entity={entity} control={control} setValue={setValue} />;
   };
 
   expect(() =>

@@ -6,7 +6,7 @@ exports[`should match snapshot 1`] = `
   "baseElement": <body>
     <div>
       <div
-        class="MuiBox-root css-1ylu0bo"
+        class="MuiBox-root css-hv9sku"
       >
         <div
           class="MuiBox-root css-1baykhj"
@@ -147,10 +147,10 @@ exports[`should match snapshot 1`] = `
                   <div
                     class="MuiStack-root css-w4z10b-MuiStack-root"
                   >
-                    <div
-                      class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-rdlxh8-MuiButtonBase-root-MuiChip-root"
+                    <a
+                      class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-1qfr5sv-MuiButtonBase-root-MuiChip-root"
+                      href="#attr_list"
                       id="chip_attr_list"
-                      role="button"
                       tabindex="0"
                     >
                       <svg
@@ -172,10 +172,10 @@ exports[`should match snapshot 1`] = `
                       <span
                         class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                       />
-                    </div>
+                    </a>
                   </div>
                   <div
-                    class="MuiBox-root css-kgitkj"
+                    class="MuiBox-root css-vxcgou"
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
@@ -211,7 +211,7 @@ exports[`should match snapshot 1`] = `
           class="MuiGrid-root MuiGrid-container css-rvs8lc-MuiGrid-root"
         >
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-k0zms7-MuiGrid-root"
+            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1dv2ucr-MuiGrid-root"
           >
             <div
               class="MuiBox-root css-0"
@@ -380,13 +380,11 @@ exports[`should match snapshot 1`] = `
             class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-vok43g-MuiGrid-root"
           >
             <div
-              class="MuiBox-root css-rxoex8"
+              class="MuiBox-root css-1310p9u"
             >
-              <div
-                name="attr_list"
-              />
               <p
-                class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-qvkfli-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body1 css-6qxjdb-MuiTypography-root"
+                id="attr_list"
               >
                 項目一覧
               </p>
@@ -425,7 +423,7 @@ exports[`should match snapshot 1`] = `
             </div>
           </div>
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-y3fcvl-MuiGrid-root"
+            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1xemioo-MuiGrid-root"
           >
             <div
               class="MuiBox-root css-0"
@@ -437,7 +435,7 @@ exports[`should match snapshot 1`] = `
   </body>,
   "container": <div>
     <div
-      class="MuiBox-root css-1ylu0bo"
+      class="MuiBox-root css-hv9sku"
     >
       <div
         class="MuiBox-root css-1baykhj"
@@ -578,10 +576,10 @@ exports[`should match snapshot 1`] = `
                 <div
                   class="MuiStack-root css-w4z10b-MuiStack-root"
                 >
-                  <div
-                    class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-rdlxh8-MuiButtonBase-root-MuiChip-root"
+                  <a
+                    class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-1qfr5sv-MuiButtonBase-root-MuiChip-root"
+                    href="#attr_list"
                     id="chip_attr_list"
-                    role="button"
                     tabindex="0"
                   >
                     <svg
@@ -603,10 +601,10 @@ exports[`should match snapshot 1`] = `
                     <span
                       class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
-                  </div>
+                  </a>
                 </div>
                 <div
-                  class="MuiBox-root css-kgitkj"
+                  class="MuiBox-root css-vxcgou"
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
@@ -642,7 +640,7 @@ exports[`should match snapshot 1`] = `
         class="MuiGrid-root MuiGrid-container css-rvs8lc-MuiGrid-root"
       >
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-k0zms7-MuiGrid-root"
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1dv2ucr-MuiGrid-root"
         >
           <div
             class="MuiBox-root css-0"
@@ -811,13 +809,11 @@ exports[`should match snapshot 1`] = `
           class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-vok43g-MuiGrid-root"
         >
           <div
-            class="MuiBox-root css-rxoex8"
+            class="MuiBox-root css-1310p9u"
           >
-            <div
-              name="attr_list"
-            />
             <p
-              class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter css-qvkfli-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body1 css-6qxjdb-MuiTypography-root"
+              id="attr_list"
             >
               項目一覧
             </p>
@@ -856,7 +852,7 @@ exports[`should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-y3fcvl-MuiGrid-root"
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1xemioo-MuiGrid-root"
         >
           <div
             class="MuiBox-root css-0"

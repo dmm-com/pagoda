@@ -32,7 +32,7 @@ interface Props {
   EntryForm?: FC<EntryFormProps>;
 }
 
-export const EditEntryPage: FC<Props> = ({
+export const EntryEditPage: FC<Props> = ({
   excludeAttrs = [],
   EntryForm = DefaultEntryForm,
 }) => {
@@ -44,7 +44,6 @@ export const EditEntryPage: FC<Props> = ({
   const history = useHistory();
   const { enqueueSubmitResult } = useFormNotification("エントリ", willCreate);
 
-  const [isAnchorLink, setIsAnchorLink] = useState<boolean>(false);
   const [initialized, setInitialized] = useState(false);
 
   const {
@@ -183,14 +182,13 @@ export const EditEntryPage: FC<Props> = ({
               (attr) => !excludeAttrs.includes(attr.name)
             ),
           }}
-          setIsAnchorLink={setIsAnchorLink}
           control={control}
           setValue={setValue}
         />
       )}
 
       <Prompt
-        when={isDirty && !isSubmitSuccessful && !isAnchorLink}
+        when={isDirty && !isSubmitSuccessful}
         message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
       />
     </Box>

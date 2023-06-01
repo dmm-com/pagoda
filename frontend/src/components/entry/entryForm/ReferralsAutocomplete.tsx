@@ -76,7 +76,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
 
   return (
     <Autocomplete
-      sx={{ width: "280px" }}
+      fullWidth
       multiple={multiple}
       loading={referrals.loading}
       options={referrals.value ?? []}
