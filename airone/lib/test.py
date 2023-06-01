@@ -4,6 +4,7 @@ import sys
 
 from django.conf import settings
 from django.test import Client, TestCase, override_settings
+from django.db import connections
 from pytz import timezone
 
 from airone.lib.acl import ACLType
@@ -14,6 +15,8 @@ from user.models import User
 from webhook.models import Webhook
 
 from .elasticsearch import ESS
+
+DEFAULT_DB = list(settings.DATABASES.keys())[-1]
 
 
 class AironeTestCase(TestCase):
@@ -63,10 +66,21 @@ class AironeTestCase(TestCase):
 
         self._settings.disable()
 
+    def sync_db_model(model):
+        connection = connections[DEFAULT_DB]
+        with connection.schema_editor() as se:
+            in_atomic_block = se.connection.in_atomic_block
+            se.connection.in_atomic_block = False
+            try:
+                se.create_model(model)
+            finally:
+                se.connection.in_atomic_block = in_atomic_block
+
     def create_entity(
         self,
         user,
         name,
+        sql_name="",
         attrs=[],
         webhooks=[],
         is_public=True,
@@ -76,6 +90,7 @@ class AironeTestCase(TestCase):
         This is a helper method to create Entity for test. This method has following parameters.
         * user      : describes user instance which will be registered on creating Entity
         * name      : describes name of Entity to be created
+        * sql_name  : describes name of Entity to be created
         * is_public : same parameter of creating Entity [True by default]
         * attrs     : describes EntityAttrs to attach creating Entity
                       and expects to have following information
@@ -88,13 +103,14 @@ class AironeTestCase(TestCase):
           - ref : Entity that Entry can refer to
         """
         entity: Entity = Entity.objects.create(
-            name=name, created_user=user, is_public=is_public, default_permission=default_permission
+            name=name, sql_name=sql_name, created_user=user, is_public=is_public, default_permission=default_permission
         )
         for index, attr_info in enumerate(attrs):
             entity_attr: EntityAttr = EntityAttr.objects.create(
                 **{
                     "index": index,
                     "name": attr_info["name"],
+                    "sql_name": attr_info.get("sql_name", ""),
                     "type": attr_info.get("type", AttrTypeValue["string"]),
                     "is_mandatory": attr_info.get("is_mandatory", False),
                     "is_public": attr_info.get("is_public", True),

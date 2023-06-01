@@ -148,7 +148,7 @@ class UserModel(object):
         )
 
     @classmethod
-    def create_model_from_entity(kls, entity, table_name):
+    def create_model_from_entity(kls, entity):
         attrs = {}
 
         entity_attr: EntityAttr
@@ -164,7 +164,7 @@ class UserModel(object):
             attrs[entity_attr.name] = entity_attr.get_field_model()
 
         return UserModel.declare(
-            table_name,
+            entity.sql_name,
             dict(
                 {
                     # "id": models.BigIntegerField(),
