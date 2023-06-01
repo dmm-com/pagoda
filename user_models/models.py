@@ -21,8 +21,8 @@ class DRFGeneratorSerializer(object):
 
             fields[model_field.name] = None
 
-            #if model_field in getting_fields:
-                # processing digging
+            # if model_field in getting_fields:
+            # processing digging
 
             if isinstance(model_field, models.ForeignKey):
                 args = []
@@ -33,9 +33,7 @@ class DRFGeneratorSerializer(object):
                 if not model:
                     raise RuntimeError("Specified entity does not exist (%s)" % entity_name)
 
-                fields[model_field.name] = kls.create(model)(
-                    *args, **kwargs
-                )
+                fields[model_field.name] = kls.create(model)(*args, **kwargs)
 
             elif isinstance(model_field, models.ManyToManyField):
                 # This attachs many=True parameter for serializer which is associated with ManyToManyField
@@ -47,9 +45,7 @@ class DRFGeneratorSerializer(object):
                 if not model:
                     raise RuntimeError("Specified entity does not exist (%s)" % entity_name)
 
-                fields[model_field.name] = kls.create(model, is_many=True)(
-                    *args, **kwargs
-                )
+                fields[model_field.name] = kls.create(model, is_many=True)(*args, **kwargs)
 
         MetaClass = type(
             "Meta",
@@ -152,7 +148,7 @@ class UserModel(object):
         )
 
     @classmethod
-    def create_model_from_entity(kls, entity):
+    def create_model_from_entity(kls, entity, table_name):
         attrs = {}
 
         entity_attr: EntityAttr
@@ -168,10 +164,10 @@ class UserModel(object):
             attrs[entity_attr.name] = entity_attr.get_field_model()
 
         return UserModel.declare(
-            entity.name,
+            table_name,
             dict(
                 {
-                    "id": models.BigIntegerField(),
+                    # "id": models.BigIntegerField(),
                     "name": models.CharField(max_length=200, unique=True),
                 },
                 **attrs

@@ -19,7 +19,9 @@ os.environ.setdefault("DJANGO_CONFIGURATION", "Dev")
 # load AirOne application
 configurations.setup()
 
-from user_models.models import UserModel
+from user_models.models import UserModel  # NOQA
+from entity.models import Entity  # NOQA
+from custom_view.lib.settings import ADAPTED_ENTITY  # NOQA
 
 
 DEFAULT_DB = list(settings.DATABASES.keys())[-1]
@@ -94,36 +96,55 @@ def set_test_data(entries: List[EntryExportEntry], model: Model):
 
 
 def create_django_models():
+    name_map = {}
+    for key, value in ADAPTED_ENTITY.items():
+        if value.name is not None:
+            name_map[value.name] = key
+
+    model_map = {}
     for entity in Entity.objects.filter(is_active=True):
-        model = UserModel.create_model_from_entity(entity)
+        print(entity.name)
+        model = UserModel.create_model_from_entity(entity, name_map[entity.name])
 
         connection = connections[DEFAULT_DB]
         with connection.schema_editor() as se:
-            se.create_model(model)
+            try:
+                sql, params = se.table_sql(model)
+                print(sql)
+                se.create_model(model)
+            except Exception as e:
+                print(e)
+
+        model_map[entity.name] = model
+
+    return model_map
 
 
 if __name__ == "__main__":
     data: List[EntryExportData]
 
-    ## create Django Models from Entity information
-    create_django_models()
+    # create Django Models from Entity information
+    model_map = create_django_models()
 
     with open("/tmp/entry_LBVirtualServer.yaml", "r") as file:
         data = yaml.safe_load(file)
-        set_test_data(data[0]["entries"], LBVirtualServer)
+        set_test_data(data[0]["entries"], model_map["LBVirtualServer"])
+
+    entity = Entity.objects.get(name="LBVirtualServer", is_active=True)
+    model = UserModel.create_model_from_entity(entity)
 
     with open("/tmp/entry_LBPolicyTemplate.yaml", "r") as file:
         data = yaml.safe_load(file)
-        set_test_data(data[0]["entries"], LBPolicyTemplate)
+        set_test_data(data[0]["entries"], model_map["LBPolicyTemplate"])
 
     with open("/tmp/entry_LBServiceGroup.yaml", "r") as file:
         data = yaml.safe_load(file)
-        set_test_data(data[0]["entries"], LBServiceGroup)
+        set_test_data(data[0]["entries"], model_map["LBServiceGroup"])
 
     with open("/tmp/entry_LBServer.yaml", "r") as file:
         data = yaml.safe_load(file)
-        set_test_data(data[0]["entries"], LBServer)
+        set_test_data(data[0]["entries"], model_map["LBServer"])
 
     with open("/tmp/entry_tsuchinoko-vm.yaml", "r") as file:
         data = yaml.safe_load(file)
-        set_test_data(data[0]["entries"], Server)
+        set_test_data(data[0]["entries"], model_map["Server"])
