@@ -13,15 +13,27 @@ from rest_framework.serializers import (
 
 class DRFGeneratorSerializer(object):
     @classmethod
-    def create(kls, model, obsoleted_fields={}, is_many=False):
+    def create(kls, model, getting_fields=[], is_many=False):
         fields = {}
         for model_field in model._meta.get_fields():
+            if model_field.name not in getting_fields:
+                continue
+
             fields[model_field.name] = None
+
+            #if model_field in getting_fields:
+                # processing digging
 
             if isinstance(model_field, models.ForeignKey):
                 args = []
                 kwargs = {}
-                fields[model_field.name] = kls.create(model_field.remote_field.model)(
+
+                entity_name = model_field.remote_field.model
+                model = UserModel.create_model_from_entity_name(entity_name)
+                if not model:
+                    raise RuntimeError("Specified entity does not exist (%s)" % entity_name)
+
+                fields[model_field.name] = kls.create(model)(
                     *args, **kwargs
                 )
 
@@ -30,7 +42,12 @@ class DRFGeneratorSerializer(object):
                 args = []
                 kwargs = {many: True}
 
-                fields[model_field.name] = kls.create(model_field.remote_field.model, is_many=True)(
+                entity_name = model_field.remote_field.model
+                model = UserModel.create_model_from_entity_name(entity_name)
+                if not model:
+                    raise RuntimeError("Specified entity does not exist (%s)" % entity_name)
+
+                fields[model_field.name] = kls.create(model, is_many=True)(
                     *args, **kwargs
                 )
 
@@ -160,3 +177,9 @@ class UserModel(object):
                 **attrs
             ),
         )
+
+    @classmethod
+    def create_model_from_entity_name(kls, entity_name):
+        entity = Entity.objects.filter(name=entity_name, is_active=True).first()
+        if entity:
+            return kls.create_model_from_entity(entity)

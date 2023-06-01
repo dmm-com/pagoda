@@ -3,10 +3,11 @@ import sys
 from typing import Any, Dict, List, TypedDict
 import yaml
 import configurations
+from django.db import connections
 from django.db.models import Model
 from django.db.models.fields.related import ManyToManyField, ForeignKey
 from django.db.models.fields import Field
-
+from django.conf import settings
 
 # append airone directory to the default path
 sys.path.append("./")
@@ -18,7 +19,10 @@ os.environ.setdefault("DJANGO_CONFIGURATION", "Dev")
 # load AirOne application
 configurations.setup()
 
-from entry.models import LBVirtualServer, LBServiceGroup, LBPolicyTemplate, LBServer, Server  # NOQA
+from user_models.models import UserModel
+
+
+DEFAULT_DB = list(settings.DATABASES.keys())[-1]
 
 
 class EntryExportattr(TypedDict, total=False):
@@ -89,8 +93,20 @@ def set_test_data(entries: List[EntryExportEntry], model: Model):
             parent_instance.save()
 
 
+def create_django_models():
+    for entity in Entity.objects.filter(is_active=True):
+        model = UserModel.create_model_from_entity(entity)
+
+        connection = connections[DEFAULT_DB]
+        with connection.schema_editor() as se:
+            se.create_model(model)
+
+
 if __name__ == "__main__":
     data: List[EntryExportData]
+
+    ## create Django Models from Entity information
+    create_django_models()
 
     with open("/tmp/entry_LBVirtualServer.yaml", "r") as file:
         data = yaml.safe_load(file)
