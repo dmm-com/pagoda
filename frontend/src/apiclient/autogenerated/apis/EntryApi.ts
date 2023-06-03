@@ -14,6 +14,12 @@
 
 import * as runtime from "../runtime";
 import {
+  AdvancedSearch,
+  AdvancedSearchFromJSON,
+  AdvancedSearchToJSON,
+  AdvancedSearchResult,
+  AdvancedSearchResultFromJSON,
+  AdvancedSearchResultToJSON,
   AdvancedSearchResultExport,
   AdvancedSearchResultExportFromJSON,
   AdvancedSearchResultExportToJSON,
@@ -42,6 +48,10 @@ import {
   PaginatedEntryHistoryAttributeValueListFromJSON,
   PaginatedEntryHistoryAttributeValueListToJSON,
 } from "../models";
+
+export interface EntryApiV2AdvancedSearchCreateRequest {
+  advancedSearch: AdvancedSearch;
+}
 
 export interface EntryApiV2AdvancedSearchResultExportCreateRequest {
   advancedSearchResultExport: AdvancedSearchResultExport;
@@ -113,11 +123,24 @@ export class EntryApi extends runtime.BaseAPI {
    * NOTE for now it\'s just copied from /api/v1/entry/search, but it should be rewritten with DRF components.
    */
   async entryApiV2AdvancedSearchCreateRaw(
+    requestParameters: EntryApiV2AdvancedSearchCreateRequest,
     initOverrides?: RequestInit
-  ): Promise<runtime.ApiResponse<void>> {
+  ): Promise<runtime.ApiResponse<AdvancedSearchResult>> {
+    if (
+      requestParameters.advancedSearch === null ||
+      requestParameters.advancedSearch === undefined
+    ) {
+      throw new runtime.RequiredError(
+        "advancedSearch",
+        "Required parameter requestParameters.advancedSearch was null or undefined when calling entryApiV2AdvancedSearchCreate."
+      );
+    }
+
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters["Content-Type"] = "application/json";
 
     if (
       this.configuration &&
@@ -139,20 +162,28 @@ export class EntryApi extends runtime.BaseAPI {
         method: "POST",
         headers: headerParameters,
         query: queryParameters,
+        body: AdvancedSearchToJSON(requestParameters.advancedSearch),
       },
       initOverrides
     );
 
-    return new runtime.VoidApiResponse(response);
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      AdvancedSearchResultFromJSON(jsonValue)
+    );
   }
 
   /**
    * NOTE for now it\'s just copied from /api/v1/entry/search, but it should be rewritten with DRF components.
    */
   async entryApiV2AdvancedSearchCreate(
+    requestParameters: EntryApiV2AdvancedSearchCreateRequest,
     initOverrides?: RequestInit
-  ): Promise<void> {
-    await this.entryApiV2AdvancedSearchCreateRaw(initOverrides);
+  ): Promise<AdvancedSearchResult> {
+    const response = await this.entryApiV2AdvancedSearchCreateRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
   }
 
   /**

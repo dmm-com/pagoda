@@ -995,6 +995,34 @@ class AdvancedSearchSerializer(serializers.Serializer):
         return attrs
 
 
+class AdvancedSearchResultValueAttrSerializer(serializers.Serializer):
+    type = serializers.IntegerField()
+    value = EntryAttributeValueSerializer()
+    is_readable = serializers.BooleanField()
+
+
+class AdvancedSearchResultValueEntrySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+
+
+class AdvancedSearchResultValueReferralSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    schema = EntityAttributeTypeSerializer()
+
+
+class AdvancedSearchResultValueSerializer(serializers.Serializer):
+    attrs = serializers.DictField(child=AdvancedSearchResultValueAttrSerializer())
+    entry = AdvancedSearchResultValueEntrySerializer()
+    referrals = AdvancedSearchResultValueReferralSerializer(many=True, required=False)
+
+
+class AdvancedSearchResultSerializer(serializers.Serializer):
+    count = serializers.IntegerField()
+    values = AdvancedSearchResultValueSerializer(many=True)
+
+
 class AdvancedSearchResultExportSerializer(serializers.Serializer):
     entities = serializers.ListField(child=serializers.IntegerField())
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)

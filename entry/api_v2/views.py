@@ -23,6 +23,7 @@ from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
     AdvancedSearchResultExportSerializer,
+    AdvancedSearchResultSerializer,
     AdvancedSearchSerializer,
     EntryAttributeValueRestoreSerializer,
     EntryBaseSerializer,
@@ -204,8 +205,10 @@ class AdvancedSearchAPI(generics.GenericAPIView):
     rewritten with DRF components.
     """
 
-    serializer_class = serializers.Serializer
-
+    @extend_schema(
+        request=AdvancedSearchSerializer,
+        responses=AdvancedSearchResultSerializer,
+    )
     def post(self, request, format=None):
         serializer = AdvancedSearchSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -271,29 +274,29 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 def _get_typed_value(type: int) -> str:
                     if type & AttrTypeValue["array"]:
                         if type & AttrTypeValue["string"]:
-                            return "asArrayString"
+                            return "as_array_string"
                         elif type & AttrTypeValue["named"]:
-                            return "asArrayNamedObject"
+                            return "as_array_named_object"
                         elif type & AttrTypeValue["object"]:
-                            return "asArrayObject"
+                            return "as_array_object"
                         elif type & AttrTypeValue["group"]:
-                            return "asArrayGroup"
+                            return "as_array_group"
                         elif type & AttrTypeValue["role"]:
-                            return "asArrayRole"
+                            return "as_array_role"
                     elif type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
-                        return "asString"
+                        return "as_string"
                     elif type & AttrTypeValue["named"]:
-                        return "asNamedObject"
+                        return "as_named_object"
                     elif type & AttrTypeValue["object"]:
-                        return "asObject"
+                        return "as_object"
                     elif type & AttrTypeValue["boolean"]:
-                        return "asBoolean"
+                        return "as_boolean"
                     elif type & AttrTypeValue["date"]:
-                        return "asString"
+                        return "as_string"
                     elif type & AttrTypeValue["group"]:
-                        return "asGroup"
+                        return "as_group"
                     elif type & AttrTypeValue["role"]:
-                        return "asRole"
+                        return "as_role"
                     raise IncorrectTypeError(f"unexpected type: {type}")
 
                 entry["attrs"][name] = {
@@ -306,12 +309,21 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
                 # "asString" is a string type and does not allow None
                 if (
-                    _get_typed_value(attr["type"]) == "asString"
-                    and entry["attrs"][name]["value"]["asString"] is None
+                    _get_typed_value(attr["type"]) == "as_string"
+                    and entry["attrs"][name]["value"]["as_string"] is None
                 ):
-                    entry["attrs"][name]["value"]["asString"] = ""
+                    entry["attrs"][name]["value"]["as_string"] = ""
 
-        return Response({"result": resp})
+        serializer = AdvancedSearchResultSerializer(
+            data={"count": resp["ret_count"], "values": resp["ret_values"]}
+        )
+
+        # TODO validate response data strictly, like below.
+        # it'll fail because the data format will be different with EntryAttributeValueSerializer
+        # serializer.is_valid(raise_exception=True)
+        # return Response(serializer.validated_data)
+
+        return Response(serializer.initial_data)
 
 
 class AdvancedSearchResultAPI(generics.GenericAPIView):
