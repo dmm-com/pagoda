@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TypedDict
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
@@ -11,6 +11,33 @@ from airone.lib.types import AttrTypeValue
 from entity.models import Entity
 from entry.settings import CONFIG
 from user.models import User
+
+
+class AdvancedSearchResultValueIdNamePair(TypedDict):
+    id: int
+    name: str
+
+
+class AdvancedSearchResultValueAttrValue(TypedDict, total=False):
+    type: int
+    value: Any
+    is_readable: bool
+
+
+class AdvancedSearchResultValueOptionalFields(TypedDict, total=False):
+    referrals: List[AdvancedSearchResultValueIdNamePair]
+
+
+class AdvancedSearchResultValue(AdvancedSearchResultValueOptionalFields):
+    entity: AdvancedSearchResultValueIdNamePair
+    entry: AdvancedSearchResultValueIdNamePair
+    attrs: Dict[str, AdvancedSearchResultValueAttrValue]
+    is_readable: bool
+
+
+class AdvancedSearchResults(TypedDict):
+    ret_count: int
+    ret_values: List[AdvancedSearchResultValue]
 
 
 class ESS(Elasticsearch):
@@ -40,7 +67,7 @@ class ESS(Elasticsearch):
     def index(self, *args, **kwargs):
         return super(ESS, self).index(index=self._index, *args, **kwargs)
 
-    def search(self, *args, **kwargs):
+    def search(self, *args, **kwargs) -> Dict[str, Any]:
         # expand max_result_window parameter which indicates numbers to return at one searching
         if not self.additional_config:
             self.additional_config = True
@@ -181,7 +208,7 @@ __all__ = [
 def make_query(
     hint_entity: Entity,
     hint_attrs: List[Dict[str, str]],
-    entry_name: str,
+    entry_name: Optional[str],
     hint_referral: Optional[str] = None,
     hint_referral_entity_id: Optional[int] = None,
 ) -> Dict[str, str]:
@@ -768,7 +795,7 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
     return {"nested": {"path": "attr", "query": {"bool": {"filter": cond_attr}}}}
 
 
-def execute_query(query: Dict[str, str], size: int = 0) -> Dict[str, str]:
+def execute_query(query: Dict[str, str], size: int = 0) -> Dict[str, Any]:
     """Run a search query.
 
     Args:
@@ -778,7 +805,7 @@ def execute_query(query: Dict[str, str], size: int = 0) -> Dict[str, str]:
         Exception: If query execution fails, output error details.
 
     Returns:
-        dict[str, str]: Search execution result
+        dict[str, Any]: Search execution result
 
     """
     kwargs = {
@@ -805,7 +832,7 @@ def make_search_results(
     hint_referral: Optional[str],
     limit: int,
     offset: int = 0,
-) -> Dict[str, str]:
+) -> AdvancedSearchResults:
     """Acquires and returns the attribute values held by each search result
 
     When the condition of reference entry is specified, the entry to reference is acquired.
@@ -836,14 +863,14 @@ def make_search_results(
         offset (int): The number of offset to get a part of a large amount of search results
 
     Returns:
-        dict[str, str]: A set of attributes and attribute values associated with the entry
+       AdvancedSearchResults: A set of attributes and attribute values associated with the entry
             that was hit in the search
 
     """
     from entry.models import Entry
 
     # set numbers of found entries
-    results = {
+    results: AdvancedSearchResults = {
         "ret_count": res["hits"]["total"]["value"],
         "ret_values": [],
     }
@@ -859,10 +886,11 @@ def make_search_results(
         ]
 
     for entry, entry_info in sorted(hit_infos.items(), key=lambda x: x[0].name):
-        ret_info: Dict[str, Any] = {
+        ret_info: AdvancedSearchResultValue = {
             "entity": {"id": entry.schema.id, "name": entry.schema.name},
             "entry": {"id": entry.id, "name": entry.name},
             "attrs": {},
+            "is_readable": False,
         }
 
         if hint_referral is not None:
@@ -886,6 +914,7 @@ def make_search_results(
             if attrinfo["name"] not in [x["name"] for x in hint_attrs]:
                 continue
 
+            ret_attrinfo: AdvancedSearchResultValueAttrValue = {}
             if attrinfo["name"] in ret_info["attrs"]:
                 ret_attrinfo = ret_info["attrs"][attrinfo["name"]]
             else:
@@ -897,7 +926,7 @@ def make_search_results(
             # if target attribute is array type, then values would be stored in array
             if attrinfo["name"] not in ret_info["attrs"]:
                 if attrinfo["type"] & AttrTypeValue["array"]:
-                    ret_info["attrs"][attrinfo["name"]] = []
+                    ret_info["attrs"][attrinfo["name"]] = {}
                 else:
                     ret_info["attrs"][attrinfo["name"]] = ret_attrinfo
 
