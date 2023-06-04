@@ -10,7 +10,6 @@
 *.pyc
 __pycache__/
 local_settings.py
-db.sqlite3
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -150,10 +149,6 @@ custom_view/*
 custom_view/__init__.py
 !custom_view/background
 templates/custom_view
-
-# ignores db-files for sqlite
-db.sqlite*
-*.db
 
 # ignores screenlogs
 screenlog*

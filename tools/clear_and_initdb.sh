@@ -1,7 +1,6 @@
 #!/bin/sh
 
 # clear the database
-rm db.sqlite3
 for dir in `find ./ -name "migrations"`
 do
   rm ${dir}/0*.py || true
