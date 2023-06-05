@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.db import models
@@ -14,6 +14,7 @@ from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import ExceedLimitError
 from airone.lib.elasticsearch import (
     ESS,
+    AdvancedSearchResults,
     execute_query,
     make_query,
     make_query_for_simple,
@@ -2017,16 +2018,16 @@ class Entry(ACLBase):
     @classmethod
     def search_entries(
         kls,
-        user,
-        hint_entity_ids,
-        hint_attrs=None,
-        limit=CONFIG.MAX_LIST_ENTRIES,
-        entry_name=None,
-        hint_referral=None,
-        is_output_all=False,
-        hint_referral_entity_id=None,
-        offset=0,
-    ):
+        user: User,
+        hint_entity_ids: List[str],
+        hint_attrs: Optional[List[Dict[str, Any]]] = None,
+        limit: int = CONFIG.MAX_LIST_ENTRIES,
+        entry_name: Optional[str] = None,
+        hint_referral: Optional[str] = None,
+        is_output_all: bool = False,
+        hint_referral_entity_id: Optional[int] = None,
+        offset: int = 0,
+    ) -> AdvancedSearchResults:
         """Main method called from advanced search.
 
         Do the following:
@@ -2055,28 +2056,13 @@ class Entry(ACLBase):
                 The number of offset to get a part of a large amount of search results
 
         Returns:
-            dict[str, any]: As a result of the search,
+            AdvancedSearchResults: As a result of the search,
                 the acquired entry and the attribute value of the entry are returned.
-            {
-                'ret_count': (int),
-                'ret_values': [
-                    'entity': {'id': (int), 'name': (str)},
-                    'entry': {'id': (int), 'name': (str)},
-                    'attrs': {
-                        'Name of Attribute': {
-                            'type': (int),
-                            'value': (any),
-                            'is_readable': (bool),
-                        }
-                    }
-                    'is_readable': (bool),
-                ],
-            }
         """
         if not hint_attrs:
             hint_attrs = []
 
-        results = {
+        results: AdvancedSearchResults = {
             "ret_count": 0,
             "ret_values": [],
         }
@@ -2134,7 +2120,7 @@ class Entry(ACLBase):
                         )
 
             # retrieve data from database on the basis of the result of elasticsearch
-            search_result = make_search_results(
+            search_result: AdvancedSearchResults = make_search_results(
                 user, resp, hint_attrs, hint_referral, limit, offset
             )
             results["ret_count"] += search_result["ret_count"]
