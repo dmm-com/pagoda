@@ -8,6 +8,14 @@
 
 ### Fixed
 
+## v3.51.0
+
+### Changed
+* Refactoring joblist.
+  Contributed by @syucream
+* Refactored entry edit page.
+  Contributed by @hinashi
+
 ## v3.50.0
 
 ### Changed
