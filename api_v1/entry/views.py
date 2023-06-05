@@ -54,6 +54,11 @@ class EntrySearchChainAPI(APIView):
 
 class EntrySearchAPI(APIView):
     def post(self, request, format=None):
+        if not isinstance(request.data, dict):
+            return Response(
+                "parameter must be in dictionary format", status=status.HTTP_400_BAD_REQUEST
+            )
+
         hint_entities = request.data.get("entities")
         hint_entry_name = request.data.get("entry_name", "")
         hint_attrs = request.data.get("attrinfo")
