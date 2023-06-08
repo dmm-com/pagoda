@@ -24,7 +24,12 @@ interface Props {
       { filterKey: SearchResultsFilterKey; keyword: string }
     >
   ) => void;
-  handleSelectFilterConditions: () => void;
+  handleSelectFilterConditions: (
+    attrfilter: Record<
+      string,
+      { filterKey: SearchResultsFilterKey; keyword: string }
+    >
+  ) => void;
 }
 
 export const SearchResultControlMenu: FC<Props> = ({
@@ -40,6 +45,11 @@ export const SearchResultControlMenu: FC<Props> = ({
   const [keywordRequired, setKeywordRequired] = useState(true);
 
   const handleClick = (key: SearchResultsFilterKey) => {
+    console.log("key", key);
+    console.log("setNewAttrsFilter2", {
+      ...newAttrsFilter,
+      [attrName]: { ...newAttrsFilter[attrName], filterKey: key },
+    });
     setKeywordRequired(key === SearchResultsFilterKey.TextContained);
     setNewAttrsFilter({
       ...newAttrsFilter,
@@ -50,7 +60,10 @@ export const SearchResultControlMenu: FC<Props> = ({
       key === SearchResultsFilterKey.Empty ||
       key === SearchResultsFilterKey.NonEmpty
     ) {
-      handleSelectFilterConditions();
+      handleSelectFilterConditions({
+        ...newAttrsFilter,
+        [attrName]: { ...newAttrsFilter[attrName], filterKey: key },
+      });
     }
   };
 
@@ -63,7 +76,10 @@ export const SearchResultControlMenu: FC<Props> = ({
 
   const handleKeyPressKeyword = (e: any) => {
     if (e.key === "Enter") {
-      handleSelectFilterConditions();
+      handleSelectFilterConditions({
+        ...newAttrsFilter,
+        [attrName]: { ...newAttrsFilter[attrName], keyword: e.target.value },
+      });
     }
   };
 

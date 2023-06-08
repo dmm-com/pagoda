@@ -968,9 +968,15 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
 
 class AdvancedSearchResultAttrInfoSerializer(serializers.Serializer):
     name = serializers.CharField()
+    filter_key = serializers.IntegerField(required=False)
     keyword = serializers.CharField(
         required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
     )
+
+    def validate_filter_key(self, filter_key: int):
+        if filter_key not in CONFIG_ENTRY.SEARCH_RESULTS_FILTER_KEY.values():
+            raise ValidationError("filter key parameter is invalid value")
+        return filter_key
 
 
 class AdvancedSearchSerializer(serializers.Serializer):

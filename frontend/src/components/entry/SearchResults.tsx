@@ -29,6 +29,7 @@ export const SearchResultsFilterKey = {
   Empty: 0,
   NonEmpty: 1,
   TextContained: 2,
+  Duplicated: 3,
 } as const;
 
 export type SearchResultsFilterKey =
@@ -98,24 +99,24 @@ export const SearchResults: FC<Props> = ({
     [key: string]: HTMLButtonElement | null;
   }>({});
 
-  const handleSelectFilterConditions = () => {
+  const handleSelectFilterConditions = (
+    attrFilter: Record<
+      string,
+      { filterKey: SearchResultsFilterKey; keyword: string }
+    >
+  ) => {
+    console.log("attrFilter", attrFilter["string"]);
     const params = new URLSearchParams(location.search);
     params.set("entry_name", entryFilter);
     params.set("referral_name", referralFilter);
     params.set(
       "attrinfo",
       JSON.stringify(
-        Object.keys(newAttrsFilter)
-          // TODO support other filter keys with implementing Advanced Search APIv2
-          .filter(
-            (key) =>
-              newAttrsFilter[key].filterKey ===
-              SearchResultsFilterKey.TextContained
-          )
-          .map((key) => ({
-            name: key,
-            keyword: newAttrsFilter[key].keyword,
-          }))
+        Object.keys(attrFilter).map((key) => ({
+          name: key,
+          filterKey: attrFilter[key].filterKey,
+          keyword: attrFilter[key].keyword,
+        }))
       )
     );
 

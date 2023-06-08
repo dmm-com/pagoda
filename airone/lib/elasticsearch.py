@@ -286,8 +286,19 @@ def make_query(
     attr_query: Dict = {}
 
     # filter attribute by keywords
-    for hint in [x for x in hint_attrs if "name" in x and "keyword" in x and x["keyword"]]:
-        _parse_or_search(hint, attr_query)
+    for hint in [x for x in hint_attrs if "name" in x]:
+        filter_key = hint.get("filter_key")
+        if filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.EMPTY:
+            _parse_or_search({"name": hint["name"], "keyword": "\\"}, attr_query)
+        elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.NON_EMPTY:
+            pass
+        elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.TEXT_CONTAINED:
+            _parse_or_search(hint, attr_query)
+        elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED:
+            pass
+        else:
+            if hint.get("keyword"):
+                _parse_or_search(hint, attr_query)
 
     # Build queries along keywords
     if attr_query:

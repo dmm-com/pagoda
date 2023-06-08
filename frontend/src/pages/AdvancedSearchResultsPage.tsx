@@ -36,9 +36,8 @@ export const AdvancedSearchResultsPage: FC = () => {
     ? params.get("has_referral") === "true"
     : false;
   const referralName = params.get("referral_name") ?? "";
-  const attrInfo: { name: string; keyword?: string }[] = JSON.parse(
-    params.get("attrinfo") ?? "[]"
-  );
+  const attrInfo: { name: string; filterKey: number; keyword?: string }[] =
+    JSON.parse(params.get("attrinfo") ?? "[]");
 
   const [openModal, setOpenModal] = useState(false);
 

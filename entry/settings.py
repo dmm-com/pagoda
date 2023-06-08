@@ -66,5 +66,13 @@ CONFIG = Settings(
             "?",
         ],
         "TIME_FORMAT": "%Y-%m-%dT%H:%M:%S",
+        "SEARCH_RESULTS_FILTER_KEY": Settings(
+            {
+                "EMPTY": 0,
+                "NON_EMPTY": 1,
+                "TEXT_CONTAINED": 2,
+                "DUPLICATED": 3,
+            }
+        ),
     }
 )
