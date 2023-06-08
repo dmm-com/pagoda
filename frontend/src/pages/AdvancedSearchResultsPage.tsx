@@ -15,7 +15,10 @@ import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
-import { SearchResults } from "components/entry/SearchResults";
+import {
+  SearchResults,
+  SearchResultsFilterKey,
+} from "components/entry/SearchResults";
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
@@ -147,7 +150,13 @@ export const AdvancedSearchResultsPage: FC = () => {
           defaultEntryFilter={entryName}
           defaultReferralFilter={referralName}
           defaultAttrsFilter={Object.fromEntries(
-            attrInfo.map((i: any) => [i["name"], i["keyword"] || ""])
+            attrInfo.map((i: any) => [
+              i["name"],
+              {
+                filterKey: SearchResultsFilterKey.TextContained,
+                keyword: i["keyword"] || "",
+              },
+            ])
           )}
         />
       ) : (
