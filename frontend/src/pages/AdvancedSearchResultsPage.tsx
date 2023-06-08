@@ -33,7 +33,9 @@ export const AdvancedSearchResultsPage: FC = () => {
     ? params.get("has_referral") === "true"
     : false;
   const referralName = params.get("referral_name") ?? "";
-  const attrInfo = JSON.parse(params.get("attrinfo") ?? "[]");
+  const attrInfo: { name: string; keyword?: string }[] = JSON.parse(
+    params.get("attrinfo") ?? "[]"
+  );
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -42,7 +44,7 @@ export const AdvancedSearchResultsPage: FC = () => {
   });
 
   const results = useAsync(async () => {
-    const resp = await aironeApiClientV2.advancedSearchEntries(
+    return await aironeApiClientV2.advancedSearch(
       entityIds,
       entryName,
       attrInfo,
@@ -51,8 +53,6 @@ export const AdvancedSearchResultsPage: FC = () => {
       searchAllEntities,
       page
     );
-    const data = await resp.json();
-    return data.result;
   }, [page]);
 
   const maxPage = useMemo(() => {
@@ -60,9 +60,9 @@ export const AdvancedSearchResultsPage: FC = () => {
       return 0;
     }
     return Math.ceil(
-      results.value?.ret_count ?? 0 / AdvancedSerarchResultList.MAX_ROW_COUNT
+      results.value?.count ?? 0 / AdvancedSerarchResultList.MAX_ROW_COUNT
     );
-  }, [results.loading, results.value?.ret_count]);
+  }, [results.loading, results.value?.count]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {
@@ -97,7 +97,7 @@ export const AdvancedSearchResultsPage: FC = () => {
 
       <PageHeader
         title="検索結果"
-        description={`${results.value?.ret_count ?? 0} 件`}
+        description={`${results.value?.count ?? 0} 件`}
       >
         <Box display="flex" justifyContent="center">
           <Button
@@ -140,7 +140,7 @@ export const AdvancedSearchResultsPage: FC = () => {
 
       {!results.loading ? (
         <SearchResults
-          results={results.value.ret_values}
+          results={results.value?.values ?? []}
           page={page}
           maxPage={maxPage}
           handleChangePage={changePage}

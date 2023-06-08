@@ -23,62 +23,79 @@ import {
 /**
  *
  * @export
- * @interface AdvancedSearchResultExport
+ * @interface AdvancedSearch
  */
-export interface AdvancedSearchResultExport {
+export interface AdvancedSearch {
   /**
    *
    * @type {Array<number>}
-   * @memberof AdvancedSearchResultExport
+   * @memberof AdvancedSearch
    */
   entities: Array<number>;
   /**
    *
+   * @type {string}
+   * @memberof AdvancedSearch
+   */
+  entryName?: string;
+  /**
+   *
    * @type {Array<AdvancedSearchResultAttrInfo>}
-   * @memberof AdvancedSearchResultExport
+   * @memberof AdvancedSearch
    */
   attrinfo: Array<AdvancedSearchResultAttrInfo>;
   /**
    *
    * @type {boolean}
-   * @memberof AdvancedSearchResultExport
+   * @memberof AdvancedSearch
    */
   hasReferral?: boolean;
   /**
    *
    * @type {string}
-   * @memberof AdvancedSearchResultExport
+   * @memberof AdvancedSearch
    */
   referralName?: string;
   /**
    *
-   * @type {string}
-   * @memberof AdvancedSearchResultExport
+   * @type {boolean}
+   * @memberof AdvancedSearch
    */
-  entryName?: string;
+  isOutputAll?: boolean;
   /**
    *
-   * @type {string}
-   * @memberof AdvancedSearchResultExport
+   * @type {boolean}
+   * @memberof AdvancedSearch
    */
-  exportStyle: string;
+  isAllEntities?: boolean;
+  /**
+   *
+   * @type {number}
+   * @memberof AdvancedSearch
+   */
+  entryLimit?: number;
+  /**
+   *
+   * @type {number}
+   * @memberof AdvancedSearch
+   */
+  entryOffset?: number;
 }
 
-export function AdvancedSearchResultExportFromJSON(
-  json: any
-): AdvancedSearchResultExport {
-  return AdvancedSearchResultExportFromJSONTyped(json, false);
+export function AdvancedSearchFromJSON(json: any): AdvancedSearch {
+  return AdvancedSearchFromJSONTyped(json, false);
 }
 
-export function AdvancedSearchResultExportFromJSONTyped(
+export function AdvancedSearchFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): AdvancedSearchResultExport {
+): AdvancedSearch {
   if (json === undefined || json === null) {
     return json;
   }
   return {
     entities: json["entities"],
+    entryName: !exists(json, "entry_name") ? undefined : json["entry_name"],
     attrinfo: (json["attrinfo"] as Array<any>).map(
       AdvancedSearchResultAttrInfoFromJSON
     ),
@@ -88,14 +105,20 @@ export function AdvancedSearchResultExportFromJSONTyped(
     referralName: !exists(json, "referral_name")
       ? undefined
       : json["referral_name"],
-    entryName: !exists(json, "entry_name") ? undefined : json["entry_name"],
-    exportStyle: json["export_style"],
+    isOutputAll: !exists(json, "is_output_all")
+      ? undefined
+      : json["is_output_all"],
+    isAllEntities: !exists(json, "is_all_entities")
+      ? undefined
+      : json["is_all_entities"],
+    entryLimit: !exists(json, "entry_limit") ? undefined : json["entry_limit"],
+    entryOffset: !exists(json, "entry_offset")
+      ? undefined
+      : json["entry_offset"],
   };
 }
 
-export function AdvancedSearchResultExportToJSON(
-  value?: AdvancedSearchResultExport | null
-): any {
+export function AdvancedSearchToJSON(value?: AdvancedSearch | null): any {
   if (value === undefined) {
     return undefined;
   }
@@ -104,12 +127,15 @@ export function AdvancedSearchResultExportToJSON(
   }
   return {
     entities: value.entities,
+    entry_name: value.entryName,
     attrinfo: (value.attrinfo as Array<any>).map(
       AdvancedSearchResultAttrInfoToJSON
     ),
     has_referral: value.hasReferral,
     referral_name: value.referralName,
-    entry_name: value.entryName,
-    export_style: value.exportStyle,
+    is_output_all: value.isOutputAll,
+    is_all_entities: value.isAllEntities,
+    entry_limit: value.entryLimit,
+    entry_offset: value.entryOffset,
   };
 }

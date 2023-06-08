@@ -48,18 +48,14 @@ test("should match snapshot", async () => {
   jest
     .spyOn(
       require("repository/AironeApiClientV2").aironeApiClientV2,
-      "advancedSearchEntries"
+      "advancedSearch"
     )
-    .mockResolvedValue({
-      json() {
-        return Promise.resolve({
-          result: {
-            ret_count: 1,
-            ret_values: results,
-          },
-        });
-      },
-    });
+    .mockResolvedValue(
+      Promise.resolve({
+        count: 1,
+        values: results,
+      })
+    );
   jest
     .spyOn(
       require("repository/AironeApiClientV2").aironeApiClientV2,
