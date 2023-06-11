@@ -4,10 +4,11 @@ from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
+from entity.models import Entity
 from role.models import Role
 
 
-class ACLAPITest(AironeViewTest):
+class ViewTest(AironeViewTest):
     def initialization_for_retrieve_test(self):
         self.user = self.admin_login()
         self.role = Role.objects.create(name="role")
@@ -278,3 +279,12 @@ class ACLAPITest(AironeViewTest):
             },
         )
         self.assertFalse(role.is_permitted(acl, ACLType.Full))
+
+    def test_retrieve_history(self):
+        self.initialization_for_retrieve_test()
+
+        entity = Entity.objects.create(name="test", created_user=self.user)
+
+        resp = self.client.get("/acl/api/v2/acls/%s/history" % entity.id)
+        self.assertEqual(resp.status_code, 200)
+        # FIXME check response body

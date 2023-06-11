@@ -213,3 +213,54 @@ class ACLSerializer(serializers.ModelSerializer):
         if acl_type != ACLType.Nothing:
             permission = getattr(acl_obj, acl_type.name)
             permission.roles.add(role)
+
+
+class ACLHistoryUserSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    username = serializers.CharField()
+
+
+class ACLHistoryChangeSerializer(serializers.Serializer):
+    action = serializers.CharField()
+    target = serializers.CharField()
+    old = serializers.Field()
+    new = serializers.Field()
+
+
+class ACLHistorySerializer(serializers.Serializer):
+    user = serializers.SerializerMethodField()
+    time = serializers.SerializerMethodField()
+    changes = serializers.SerializerMethodField()
+
+    @extend_schema_field(ACLHistoryUserSerializer)
+    def get_user(self, history):
+        if not history.history_user:
+            return None
+        return {
+            "id": history.history_user.id,
+            "username": history.history_user.username,
+        }
+
+    def get_time(self, history):
+        return history.history_date
+
+    @extend_schema_field(ACLHistoryChangeSerializer)
+    def get_changes(self, history):
+        # TODO inject details in HistoricalPermission (or having an another serializer?)
+        if history.prev_record:
+            delta = history.diff_against(history.prev_record)
+            return [
+                {
+                    "action": "update",
+                    "target": change.field,
+                    "old": change.old,
+                    "new": change.new,
+                }
+                for change in delta.changes
+                if change.field in ["is_public", "default_permission"]
+            ]
+        else:
+            return [
+                {"action": "create", "target": field, "old": None, "new": getattr(history, field)}
+                for field in ["is_public", "default_permission"]
+            ]
