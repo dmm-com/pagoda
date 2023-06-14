@@ -1,0 +1,63 @@
+{{- if .Values.ingress.enabled -}}
+{{- if .Values.rollout.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: airone-preview
+  labels:
+    {{- include "airone.labels" . | nindent 4 }}
+  {{- if .Values.certManager.enabled }}
+  annotations:
+    cert-manager.io/issuer: {{ .Values.certManager.name | quote }}
+  {{- end }}
+spec:
+  ingressClassName: nginx
+{{- if .Values.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.rollout.previewHost | quote }}
+      secretName: {{ .Values.rollout.previewSecretName }}
+{{- end }}
+  rules:
+    - host: {{ .Values.rollout.previewHost | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: airone-preview
+                port:
+                  number: 8080
+---
+{{- end}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: airone
+  labels:
+    {{- include "airone.labels" . | nindent 4 }}
+  {{- if .Values.certManager.enabled }}
+  annotations:
+    cert-manager.io/issuer: {{ .Values.certManager.name | quote }}
+  {{- end }}
+spec:
+  ingressClassName: nginx
+{{- if .Values.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.activeHost | quote }}
+      secretName: {{ .Values.tls.secretName }}
+{{- end }}
+  rules:
+    - host: {{ .Values.activeHost | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: airone
+                port:
+                  number: 8080
+{{- end }}

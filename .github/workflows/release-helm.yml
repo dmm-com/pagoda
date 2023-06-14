@@ -1,0 +1,37 @@
+name: release helm
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+            fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+
+      - run: helm repo add mysql-innodbcluster https://mysql.github.io/mysql-operator/
+      - run: helm repo add elasticsearch https://helm.elastic.co
+      - run: helm repo add rabbitmq https://charts.bitnami.com/bitnami
+
+      - name: Build dependencies chart
+        run: helm dependency build helm
+
+      - name: Configure Git
+        run: |
+          git config user.name "inf-dev"
+          git config user.email "inf-dev@dmm.com"
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.5.0
+        with:
+          charts_dir: .
+          config: helm/cr.yaml
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
