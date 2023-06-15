@@ -147,7 +147,7 @@ export const EntryForm: FC<EntryFormProps> = ({
           </TableRow>
           {entity.attrs
             .sort((a, b) => a.index - b.index)
-            .map(({ id, name, type, isMandatory }) => (
+            .map(({ id, name, type, isMandatory, isWritable }) => (
               <TableRow key={id}>
                 <StyledTableCell id={`attrs-${name}`}>
                   <TableBox>
@@ -156,12 +156,16 @@ export const EntryForm: FC<EntryFormProps> = ({
                   </TableBox>
                 </StyledTableCell>
                 <StyledTableCell>
-                  <AttributeValueField
-                    control={control}
-                    setValue={setValue}
-                    type={type}
-                    schemaId={id}
-                  />
+                  {isWritable ? (
+                    <AttributeValueField
+                      control={control}
+                      setValue={setValue}
+                      type={type}
+                      schemaId={id}
+                    />
+                  ) : (
+                    <Typography>Permission denied.</Typography>
+                  )}
                 </StyledTableCell>
               </TableRow>
             ))}

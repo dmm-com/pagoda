@@ -57,6 +57,12 @@ export interface EntityDetailAttribute {
   isDeleteInChain: boolean;
   /**
    *
+   * @type {boolean}
+   * @memberof EntityDetailAttribute
+   */
+  isWritable: boolean;
+  /**
+   *
    * @type {Array<{ [key: string]: any; }>}
    * @memberof EntityDetailAttribute
    */
@@ -83,6 +89,7 @@ export function EntityDetailAttributeFromJSONTyped(
     type: json["type"],
     isMandatory: json["is_mandatory"],
     isDeleteInChain: json["is_delete_in_chain"],
+    isWritable: json["is_writable"],
     referral: json["referral"],
   };
 }
@@ -103,6 +110,7 @@ export function EntityDetailAttributeToJSON(
     type: value.type,
     is_mandatory: value.isMandatory,
     is_delete_in_chain: value.isDeleteInChain,
+    is_writable: value.isWritable,
     referral: value.referral,
   };
 }
