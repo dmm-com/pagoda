@@ -1,5 +1,7 @@
+from datetime import datetime
 from typing import Any, Dict, List, Optional, TypedDict
 
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
@@ -221,46 +223,83 @@ class ACLHistoryUserSerializer(serializers.Serializer):
 
 
 class ACLHistoryChangeSerializer(serializers.Serializer):
+    # unkwnon | create | update | delete
     action = serializers.CharField()
+    # is_public | default_permission | <role name>
     target = serializers.CharField()
-    old = serializers.Field()
-    new = serializers.Field()
+    before = serializers.SerializerMethodField(required=False)
+    after = serializers.SerializerMethodField(required=False)
+
+    def get_before(self, change) -> Any:
+        return change.before
+
+    def get_after(self, change) -> Any:
+        return change.after
 
 
 class ACLHistorySerializer(serializers.Serializer):
-    user = serializers.SerializerMethodField()
-    time = serializers.SerializerMethodField()
+    id = serializers.IntegerField(source="history_id")
+    user = ACLHistoryUserSerializer(source="history_user")
+    time = serializers.DateTimeField(source="history_date")
     changes = serializers.SerializerMethodField()
 
-    @extend_schema_field(ACLHistoryUserSerializer)
-    def get_user(self, history):
-        if not history.history_user:
-            return None
-        return {
-            "id": history.history_user.id,
-            "username": history.history_user.username,
-        }
+    TYPE_MAP = {
+        ACLType.Readable.id: ACLType.Readable,
+        ACLType.Writable.id: ACLType.Writable,
+        ACLType.Full.id: ACLType.Full,
+    }
 
-    def get_time(self, history):
-        return history.history_date
-
-    @extend_schema_field(ACLHistoryChangeSerializer)
+    @extend_schema_field(ACLHistoryChangeSerializer(many=True))
     def get_changes(self, history):
-        # TODO inject details in HistoricalPermission (or having an another serializer?)
-        if history.prev_record:
-            delta = history.diff_against(history.prev_record)
-            return [
-                {
-                    "action": "update",
-                    "target": change.field,
-                    "old": change.old,
-                    "new": change.new,
-                }
-                for change in delta.changes
-                if change.field in ["is_public", "default_permission"]
-            ]
+        if history.__class__.__name__ == "HistoricalHistoricalPermission":
+            if history.prev_record:
+                delta = history.diff_against(history.prev_record, excluded_fields=["status"])
+                if "roles" not in delta.changed_fields:
+                    return None
+
+                before = {r.id: r for r in history.prev_record.roles.all()}
+                after = {r.id: r for r in history.roles.all()}
+                return [
+                    {
+                        "action": "delete",
+                        "target": before[key].role.name,
+                        "before": self._acl_id(history.codename),
+                        "after": None,
+                    }
+                    for key in set(before.keys()) - set(after.keys())
+                ] + [
+                    {
+                        "action": "create",
+                        "target": after[key].role.name,
+                        "before": None,
+                        "after": self._acl_id(history.codename),
+                    }
+                    for key in set(after.keys()) - set(before.keys())
+                ]
         else:
-            return [
-                {"action": "create", "target": field, "old": None, "new": getattr(history, field)}
-                for field in ["is_public", "default_permission"]
-            ]
+            if history.prev_record:
+                delta = history.diff_against(history.prev_record, excluded_fields=["status"])
+                return [
+                    {
+                        "action": "update",
+                        "target": change.field,
+                        "before": change.old,
+                        "after": change.new,
+                    }
+                    for change in delta.changes
+                    if change.field in ["is_public", "default_permission"]
+                ]
+            else:
+                return [
+                    {
+                        "action": "create",
+                        "target": field,
+                        "before": None,
+                        "after": getattr(history, field),
+                    }
+                    for field in ["is_public", "default_permission"]
+                    if hasattr(history, field)
+                ]
+
+    def _acl_id(self, codename: str) -> int:
+        return int(codename.split(".")[1])

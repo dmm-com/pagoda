@@ -13,7 +13,18 @@
  */
 
 import * as runtime from "../runtime";
-import { ACL, ACLFromJSON, ACLToJSON } from "../models";
+import {
+  ACL,
+  ACLFromJSON,
+  ACLToJSON,
+  ACLHistory,
+  ACLHistoryFromJSON,
+  ACLHistoryToJSON,
+} from "../models";
+
+export interface AclApiV2AclsHistoryListRequest {
+  id: number;
+}
 
 export interface AclApiV2AclsRetrieveRequest {
   id: number;
@@ -28,6 +39,68 @@ export interface AclApiV2AclsUpdateRequest {
  *
  */
 export class AclApi extends runtime.BaseAPI {
+  /**
+   */
+  async aclApiV2AclsHistoryListRaw(
+    requestParameters: AclApiV2AclsHistoryListRequest,
+    initOverrides?: RequestInit
+  ): Promise<runtime.ApiResponse<Array<ACLHistory>>> {
+    if (requestParameters.id === null || requestParameters.id === undefined) {
+      throw new runtime.RequiredError(
+        "id",
+        "Required parameter requestParameters.id was null or undefined when calling aclApiV2AclsHistoryList."
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/acl/api/v2/acls/{id}/history`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(requestParameters.id))
+        ),
+        method: "GET",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) =>
+      jsonValue.map(ACLHistoryFromJSON)
+    );
+  }
+
+  /**
+   */
+  async aclApiV2AclsHistoryList(
+    requestParameters: AclApiV2AclsHistoryListRequest,
+    initOverrides?: RequestInit
+  ): Promise<Array<ACLHistory>> {
+    const response = await this.aclApiV2AclsHistoryListRaw(
+      requestParameters,
+      initOverrides
+    );
+    return await response.value();
+  }
+
   /**
    */
   async aclApiV2AclsRetrieveRaw(

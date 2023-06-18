@@ -1,6 +1,7 @@
 import React, { FC } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
+import { ACLHistoryPage } from "./pages/ACLHistoryPage";
 import { CopyEntryPage } from "./pages/CopyEntryPage";
 import { EditRolePage } from "./pages/EditRolePage";
 import { EntryDetailsPage } from "./pages/EntryDetailsPage";
@@ -35,6 +36,7 @@ import {
   rolePath,
   newRolePath,
   topPath,
+  aclHistoryPath,
 } from "Routes";
 import { Header } from "components/Header";
 import { ACLPage } from "pages/ACLPage";
@@ -125,6 +127,10 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             <Route path={groupPath(":groupId")} component={EditGroupPage} />
             <Route path={groupsPath()} component={GroupPage} />
             <Route path={jobsPath()} component={JobPage} />
+            <Route
+              path={aclHistoryPath(":objectId")}
+              component={ACLHistoryPage}
+            />
             <Route path={aclPath(":objectId")} component={ACLPage} />
             <Route path={newUserPath()} component={EditUserPage} />
             <Route path={userPath(":userId")} component={EditUserPage} />

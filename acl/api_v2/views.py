@@ -1,10 +1,15 @@
-from rest_framework import mixins, viewsets
+import itertools
+
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import generics, mixins, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 
-from acl.api_v2.serializers import ACLSerializer, ACLHistorySerializer
+from acl.api_v2.serializers import ACLHistorySerializer, ACLSerializer
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
+from role.models import HistoricalPermission
 
 
 class ACLFullPermission(BasePermission):
@@ -23,26 +28,34 @@ class ACLAPI(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.Generi
     permission_classes = [IsAuthenticated & ACLFullPermission]
 
 
-class ACLHistoryAPI(viewsets.GenericViewSet):
+@extend_schema(
+    parameters=[
+        OpenApiParameter("id", OpenApiTypes.INT, OpenApiParameter.PATH),
+    ]
+)
+class ACLHistoryAPI(generics.ListAPIView):
     serializer_class = ACLHistorySerializer
 
     def get_queryset(self):
-        pk: int = self.kwargs["pk"]
-        acl = ACLBase.objects.filter(id=pk).first()
-
-        acl_history = acl.get_subclass_object().history.all()
-
-        # FIXME experiment to get both ACL level and permission level history
-        # NOTE probably its hard to combine histories from different models
-        # so we need to search a workaround, like having 2 serializers then generating 1 response
-        # permission = HistoricalPermission.objects.filter(codename__startswith="%s." % pk)
-        # print(acl_history.union(*[p.history.all() for p in permission], all=True))
-
-        return acl_history
+        """Unnecessary in this serializer"""
+        pass
 
     def get(self, request, pk: int):
-        queryset = self.get_queryset()
+        acl = ACLBase.objects.filter(id=pk).first()
+        acl_history = list(acl.get_subclass_object().history.all())
 
-        serializer = ACLHistorySerializer(queryset, many=True)
+        permissions = HistoricalPermission.objects.filter(codename__startswith="%s." % pk)
+        permission_history = list(
+            itertools.chain.from_iterable([p.history.all() for p in permissions])
+        )
 
-        return Response(serializer.data)
+        serializer = ACLHistorySerializer(data=acl_history + permission_history, many=True)
+        serializer.is_valid()
+
+        # filter histories have empty changes
+        # then, order by time desc
+        transformed = sorted(
+            [h for h in serializer.data if h["changes"]], reverse=True, key=lambda x: x["time"]
+        )
+
+        return Response(transformed)

@@ -9,6 +9,6 @@ urlpatterns = [
     ),
     url(
         r"^acls/(?P<pk>\d+)/history$",
-        views.ACLHistoryAPI.as_view({"get": "get"}),
+        views.ACLHistoryAPI.as_view(),
     ),
 ]
