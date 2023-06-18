@@ -1,7 +1,5 @@
-from datetime import datetime
 from typing import Any, Dict, List, Optional, TypedDict
 
-from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
@@ -242,12 +240,6 @@ class ACLHistorySerializer(serializers.Serializer):
     user = ACLHistoryUserSerializer(source="history_user")
     time = serializers.DateTimeField(source="history_date")
     changes = serializers.SerializerMethodField()
-
-    TYPE_MAP = {
-        ACLType.Readable.id: ACLType.Readable,
-        ACLType.Writable.id: ACLType.Writable,
-        ACLType.Full.id: ACLType.Full,
-    }
 
     @extend_schema_field(ACLHistoryChangeSerializer(many=True))
     def get_changes(self, history):
