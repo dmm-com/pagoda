@@ -1,0 +1,154 @@
+image:
+  repository: ghcr.io/dmm-com/airone
+  tag: latest
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: docker-secret
+
+podLabels: {}
+podAnnotations: {}
+
+storageClass: ""
+
+install: false
+
+gunicorn:
+  replicas: 1
+  workers: 1
+  timeout: 600
+
+celery:
+  replicas: 1
+  concurrency: 20
+
+activeHost: airone.local
+
+tls:
+  enabled: false
+  secretName: airone-example-tls
+
+rollout:
+  enabled: false
+  previewHost: airone-preview.local
+
+ingress:
+  enabled: false
+
+cronjob:
+  enabled: false
+  schedule: "*/1 * * * *"
+  command: |-
+    ["/bin/bash"]
+  args: |-
+    ["-c", ". /config/dynamicenv.sh"]
+
+addEnvVarSecret: ""
+
+airone:
+  existingSecret: ""
+  database: airone
+  index: airone
+  secretKey: changeme
+  debug: ""
+  fileStorePath: ""
+  title: ""
+  subtitle: ""
+  noteDesc: ""
+  noteLink: ""
+  ssoDesc: ""
+  extensions: []
+  ldap:
+    enabled: false
+    server: ""
+    filter: ""
+  sso:
+    enabled: false
+    url: ""
+    privateKey: ""
+    publicCert: ""
+    displayName: ""
+    contactName: ""
+    contactEmail: ""
+    provider: ""
+    entityId: ""
+    loginUrl: ""
+    x509Cert: ""
+    userId: ""
+  storage:
+    enabled: false
+    bucket: ""
+    accessKey: ""
+    secretAccessKey: ""
+  email:
+    enabled: false
+    host: ""
+    port: ""
+    user: ""
+    password: ""
+    useTls: ""
+    from: ""
+    to: ""
+  datadog:
+    enable: false
+    tag: ""
+
+externalMySQL:
+  user: ""
+  password: ""
+  master: ""
+  slave: ""
+  database: ""
+
+mysql:
+  enabled: true
+  serverVersion: 8.0.27
+  credentials:
+    root:
+      user: airone
+      password: password
+      host: "%"
+  serverInstances: 1
+  routerInstances: 1
+  tls:
+    useSelfSigned: true
+  datadirVolumeClaimTemplate:
+    resources:
+      requests:
+        storage: 30Gi
+
+externalElasticsearch:
+  user: ""
+  password: ""
+  host: ""
+  index: ""
+
+elasticsearch:
+  enabled: true
+  imageTag: 7.17.3
+  secret:
+    enabled: true
+    password: password
+  minimumMasterNodes: 1
+  replicas: 1
+  # esConfig:
+  #   elasticsearch.yml: |
+  #     xpack.security.enabled: true
+  # volumeClaimTemplate:
+  #   storageClassName: efs-sc
+
+externalRabbitmq:
+  user: ""
+  password: ""
+  host: ""
+
+rabbitmq:
+  enabled: true
+  image:
+    tag: 3.8.19-debian-10-r30
+  auth:
+    username: airone
+    password: password
+  replicaCount: 1
+  # persistence:
+  #   storageClass: efs-sc

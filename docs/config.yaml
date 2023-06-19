@@ -1,7 +1,8 @@
 ---
-baseURL: http://airone-doc.dmmlabs.com/
+baseURL: https://dmm-com.github.io/airone/docs/
 title: AirOne
 theme: hugo-geekdoc
+canonifyURLs: true
 pygmentsUseClasses: true
 pygmentsCodeFences: true
 timeout: 180000

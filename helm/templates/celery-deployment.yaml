@@ -1,0 +1,61 @@
+{{- if .Values.rollout.enabled -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+{{- else -}}
+apiVersion: apps/v1
+kind: Deployment
+{{- end }}
+metadata:
+  name: celery
+  labels:
+    {{- include "airone.labels" . | nindent 4 }}
+    app.kubernetes.io/component: celery
+spec:
+{{- if .Values.rollout.enabled }}
+  strategy:
+    blueGreen:
+      activeService: celery
+      autoPromotionEnabled: false
+      scaleDownDelaySeconds: 1800
+  revisionHistoryLimit: 1
+{{- end }}
+  replicas: {{ .Values.celery.replicas }}
+  selector:
+    matchLabels:
+      app: celery
+  template:
+    metadata:
+      labels:
+        app: celery
+        {{- if .Values.podLabels }}
+        {{- tpl (toYaml .Values.podLabels) $ | nindent 8 }}
+        {{- end }}
+      {{- if .Values.podAnnotations }}
+      annotations:
+      {{ toYaml .Values.podAnnotations | nindent 8 }}
+      {{- end }}
+    spec:
+      containers:
+        - name: celery
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          {{- include "airone.env" . | nindent 12 }}
+          {{- if .Values.addEnvVarSecret }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.addEnvVarSecret }}
+          {{- end }}
+          command: ["/bin/bash"]
+          args: ["-c", ". /config/dynamicenv.sh && . /config/create_vhost.sh && /docker-entrypoint.sh celery"]
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          configMap:
+            name: airone-config
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

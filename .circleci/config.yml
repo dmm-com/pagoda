@@ -91,20 +91,6 @@ jobs:
             . virtualenv/bin/activate
             tox
 
-  build_gh_page:
-    docker:
-      - image: cibuilds/hugo:0.74
-    steps:
-      - checkout
-      - run:
-          name: Build contents for GitHub pages
-          command: |
-            cd docs
-            hugo
-      - run:
-          name: Deploy contents to the gh_pages branch
-          command: ./scripts/deploy_gh_pages_using_circle-ci.sh
-
   frontend:
     docker:
       - image: cimg/node:18.12
@@ -134,7 +120,3 @@ workflows:
       - python38
       - staticchecks
       - frontend
-      - build_gh_page:
-          filters:
-            branches:
-              only: master

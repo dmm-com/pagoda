@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airone-config
+  labels:
+    {{- include "airone.labels" . | nindent 4 }}
+data:
+  dynamicenv.sh: |
+    # Build connection URLs from environment variables.
+    # NOTES:
+    #   This script should be sourced, not run directly.
+    #   All variables are expected to be set by the caller.
+    export AIRONE_MYSQL_MASTER_URL=mysql://${AIRONE_MYSQL_USER}:${AIRONE_MYSQL_PASSWORD}@${AIRONE_MYSQL_MASTER_HOST}/${AIRONE_MYSQL_DATABASE}?charset=utf8mb4
+    export AIRONE_MYSQL_SLAVE_URL=mysql://${AIRONE_MYSQL_USER}:${AIRONE_MYSQL_PASSWORD}@${AIRONE_MYSQL_SLAVE_HOST}/${AIRONE_MYSQL_DATABASE}?charset=utf8mb4
+    export AIRONE_ELASTICSEARCH_URL=elasticsearch://${AIRONE_ELASTICSEARCH_USER}:${AIRONE_ELASTICSEARCH_PASSWORD}@${AIRONE_ELASTICSEARCH_HOST}/${AIRONE_ELASTICSEARCH_INDEX}
+    export AIRONE_RABBITMQ_URL=amqp://${AIRONE_RABBITMQ_USER}:${AIRONE_RABBITMQ_PASSWORD}@${AIRONE_RABBITMQ_HOST}/${AIRONE_TAG}
+  create_db.sh: |
+    #!/usr/bin/env bash
+    mysqlsh --sql \
+      --uri=${AIRONE_MYSQL_USER}@${AIRONE_MYSQL_MASTER_HOST} \
+      --password=${AIRONE_MYSQL_PASSWORD} \
+      --passwords-from-stdin \
+      --execute="CREATE DATABASE IF NOT EXISTS ${AIRONE_MYSQL_DATABASE}"
+  create_vhost.sh: |
+    #!/usr/bin/env bash
+    curl -X PUT -u ${AIRONE_RABBITMQ_USER}:${AIRONE_RABBITMQ_PASSWORD} -H "Content-Type: application/json" http://${AIRONE_RABBITMQ_HOST}:15672/api/vhosts/${AIRONE_TAG}
