@@ -71,6 +71,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         attrInfo,
         entryName,
         hasReferral,
+        searchAllEntities,
         exportStyle
       );
       enqueueSnackbar("エクスポートジョブの登録に成功しました", {

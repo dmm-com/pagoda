@@ -58,6 +58,12 @@ export interface AdvancedSearchResultExport {
   entryName?: string;
   /**
    *
+   * @type {boolean}
+   * @memberof AdvancedSearchResultExport
+   */
+  isAllEntities?: boolean;
+  /**
+   *
    * @type {string}
    * @memberof AdvancedSearchResultExport
    */
@@ -89,6 +95,9 @@ export function AdvancedSearchResultExportFromJSONTyped(
       ? undefined
       : json["referral_name"],
     entryName: !exists(json, "entry_name") ? undefined : json["entry_name"],
+    isAllEntities: !exists(json, "is_all_entities")
+      ? undefined
+      : json["is_all_entities"],
     exportStyle: json["export_style"],
   };
 }
@@ -110,6 +119,7 @@ export function AdvancedSearchResultExportToJSON(
     has_referral: value.hasReferral,
     referral_name: value.referralName,
     entry_name: value.entryName,
+    is_all_entities: value.isAllEntities,
     export_style: value.exportStyle,
   };
 }
