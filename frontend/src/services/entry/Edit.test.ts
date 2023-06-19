@@ -41,6 +41,7 @@ test("formalizeEntryInfo should return expect value", () => {
         type: djangoContext?.attrTypeValue.string,
         isMandatory: true,
         isDeleteInChain: true,
+        isWritable: true,
         referral: [],
       },
       {
@@ -50,6 +51,7 @@ test("formalizeEntryInfo should return expect value", () => {
         type: djangoContext?.attrTypeValue.array_string,
         isMandatory: false,
         isDeleteInChain: true,
+        isWritable: true,
         referral: [],
       },
       {
@@ -59,6 +61,7 @@ test("formalizeEntryInfo should return expect value", () => {
         type: djangoContext?.attrTypeValue.array_named_object,
         isMandatory: true,
         isDeleteInChain: true,
+        isWritable: true,
         referral: [],
       },
     ],
