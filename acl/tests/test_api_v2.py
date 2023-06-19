@@ -1,13 +1,15 @@
+import itertools
 import json
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
+from entity.models import Entity
 from role.models import Role
 
 
-class ACLAPITest(AironeViewTest):
+class ViewTest(AironeViewTest):
     def initialization_for_retrieve_test(self):
         self.user = self.admin_login()
         self.role = Role.objects.create(name="role")
@@ -278,3 +280,57 @@ class ACLAPITest(AironeViewTest):
             },
         )
         self.assertFalse(role.is_permitted(acl, ACLType.Full))
+
+    def test_list_history(self):
+        self.initialization_for_retrieve_test()
+
+        entity = Entity.objects.create(name="test", created_user=self.user)
+
+        resp = self.client.get("/acl/api/v2/acls/%s/history" % entity.id)
+        self.assertEqual(resp.status_code, 200)
+
+        # initial values should be recorded
+        self.assertEqual(len(resp.json()), 1)
+        changes = list(itertools.chain.from_iterable([h["changes"] for h in resp.json()]))
+        self.assertIn(
+            {"action": "create", "target": "is_public", "before": None, "after": True}, changes
+        )
+        self.assertIn(
+            {
+                "action": "create",
+                "target": "default_permission",
+                "before": None,
+                "after": ACLType.Nothing.id,
+            },
+            changes,
+        )
+
+        # some changes
+        role = Role.objects.create(name="role1")
+        entity.is_public = False
+        entity.default_permission = ACLType.Readable.id
+        entity.writable.roles.add(role)
+        entity.save()
+
+        resp = self.client.get("/acl/api/v2/acls/%s/history" % entity.id)
+        self.assertEqual(resp.status_code, 200)
+
+        # 2 changed values should be recorded
+        self.assertEqual(len(resp.json()), 3)
+        changes = list(itertools.chain.from_iterable([h["changes"] for h in resp.json()]))
+        self.assertIn(
+            {"action": "update", "target": "is_public", "before": True, "after": False}, changes
+        )
+        self.assertIn(
+            {
+                "action": "update",
+                "target": "default_permission",
+                "before": ACLType.Nothing.id,
+                "after": ACLType.Readable.id,
+            },
+            changes,
+        )
+        self.assertIn(
+            {"action": "create", "target": role.name, "before": None, "after": ACLType.Writable.id},
+            changes,
+        )

@@ -19,6 +19,7 @@ import {
   entityEntriesPath,
   topPath,
   entryDetailsPath,
+  aclHistoryPath,
 } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
@@ -85,6 +86,9 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
         </MenuItem>
         <MenuItem component={Link} to={showEntryHistoryPath(entityId, entryId)}>
           <Typography>変更履歴</Typography>
+        </MenuItem>
+        <MenuItem component={Link} to={aclHistoryPath(entryId)}>
+          <Typography>ACL 変更履歴</Typography>
         </MenuItem>
         <Confirmable
           componentGenerator={(handleOpen) => (

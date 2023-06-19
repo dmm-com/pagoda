@@ -8,6 +8,8 @@ export const advancedSearchResultPath = () =>
 export const jobsPath = () => basePath + "jobs";
 export const aclPath = (objectId: number | string) =>
   basePath + `acl/${objectId}`;
+export const aclHistoryPath = (objectId: number | string) =>
+  basePath + `acl/${objectId}/history`;
 export const searchPath = () => basePath + "search";
 
 // entris

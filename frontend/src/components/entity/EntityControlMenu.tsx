@@ -20,6 +20,7 @@ import {
   restoreEntryPath,
   topPath,
   entityEntriesPath,
+  aclHistoryPath,
 } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
@@ -99,6 +100,9 @@ export const EntityControlMenu: FC<Props> = ({
       </MenuItem>
       <MenuItem component={Link} to={entityHistoryPath(entityId)}>
         <Typography>変更履歴</Typography>
+      </MenuItem>
+      <MenuItem component={Link} to={aclHistoryPath(entityId)}>
+        <Typography>ACL 変更履歴</Typography>
       </MenuItem>
       <RateLimitedClickable
         intervalSec={5}
