@@ -687,6 +687,7 @@ class AironeApiClientV2 {
     attrinfo: Array<AdvancedSearchResultAttrInfo>,
     entryName: string,
     hasReferral: boolean,
+    isAllEntities: boolean,
     format: "yaml" | "csv"
   ): Promise<void> {
     await this.entry.entryApiV2AdvancedSearchResultExportCreate(
@@ -696,6 +697,7 @@ class AironeApiClientV2 {
           attrinfo: attrinfo,
           entryName: entryName,
           hasReferral: hasReferral,
+          isAllEntities: isAllEntities,
           exportStyle: format,
         },
       },

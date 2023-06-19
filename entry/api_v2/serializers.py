@@ -16,7 +16,7 @@ from airone.lib.drf import (
 )
 from airone.lib.types import AttrDefaultValue, AttrTypeValue
 from entity.api_v2.serializers import EntitySerializer
-from entity.models import Entity
+from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
 from group.models import Group
@@ -1031,6 +1031,7 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
     entry_name = serializers.CharField(
         required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
     )
+    is_all_entities = serializers.BooleanField(default=False)
     export_style = serializers.CharField()
 
     def validate_entities(self, entities: List[int]):
@@ -1042,6 +1043,22 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
         if export_style != "yaml" and export_style != "csv":
             raise ValidationError("format must be yaml or csv")
         return export_style
+
+    def validate(self, params):
+        if params["is_all_entities"]:
+            attr_names = [x["name"] for x in params["attrinfo"]]
+            params["entities"] = list(
+                EntityAttr.objects.filter(
+                    name__in=attr_names, is_active=True, parent_entity__is_active=True
+                )
+                .order_by("parent_entity__name")
+                .values_list("parent_entity__id", flat=True)
+                .distinct()
+            )
+            if not params["entities"]:
+                raise ValidationError("Invalid value for attribute parameter")
+
+        return params
 
     def save(self, **kwargs):
         user: User = self.context["request"].user
