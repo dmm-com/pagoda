@@ -24,7 +24,7 @@ def update_es_document(entities):
         target_entity = target_entity.filter(name__in=entities)
 
     for entity in target_entity:
-        Job.new_update_documents(entity).run()
+        Job.new_update_documents(entity).run(will_delay=False)
 
 
 def get_options():
