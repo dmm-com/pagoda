@@ -38,6 +38,7 @@ export const RestoreEntryPage: FC = () => {
       <PageHeader title={entity.value.name} description="削除エントリの復旧">
         <Box width="50px">
           <IconButton
+            id="entity_menu"
             onClick={(e) => {
               setEntityAnchorEl(e.currentTarget);
             }}

@@ -15,7 +15,7 @@ import { RateLimitedClickable } from "../common/RateLimitedClickable";
 import {
   aclPath,
   entityHistoryPath,
-  entityPath,
+  editEntityPath,
   entitiesPath,
   restoreEntryPath,
   topPath,
@@ -92,7 +92,7 @@ export const EntityControlMenu: FC<Props> = ({
       <MenuItem component={Link} to={entityEntriesPath(entityId)}>
         <Typography>エントリ一覧</Typography>
       </MenuItem>
-      <MenuItem component={Link} to={entityPath(entityId)}>
+      <MenuItem component={Link} to={editEntityPath(entityId)}>
         <Typography>編集</Typography>
       </MenuItem>
       <MenuItem component={Link} to={aclPath(entityId)}>

@@ -130,6 +130,7 @@ exports[`should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                    id="entity_menu"
                     tabindex="0"
                     type="button"
                   >
@@ -497,6 +498,7 @@ exports[`should match snapshot 1`] = `
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                  id="entity_menu"
                   tabindex="0"
                   type="button"
                 >
