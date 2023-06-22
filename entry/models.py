@@ -2092,6 +2092,19 @@ class Entry(ACLBase):
                     else False
                 )
 
+                # replace filter_key parameter in the hint_attrs
+                filter_key = hint_attr.pop("filter_key", None)
+                if filter_key is not None:
+                    if filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.CLEARED:
+                        # remove "keyword" parameter
+                        hint_attr.pop("keyword", None)
+                    elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.EMPTY:
+                        hint_attr["keyword"] = "\\"
+                    elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.NON_EMPTY:
+                        hint_attr["keyword"] = "*"
+                    elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED:
+                        pass
+
             # make query for elasticsearch to retrieve data user wants
             query = make_query(
                 entity, hint_attrs, entry_name, hint_referral, hint_referral_entity_id
