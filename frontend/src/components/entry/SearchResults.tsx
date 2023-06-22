@@ -1,4 +1,5 @@
 import FilterListIcon from "@mui/icons-material/FilterList";
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import {
   Box,
   IconButton,
@@ -64,6 +65,7 @@ interface Props {
   >;
 }
 
+
 export const SearchResults: FC<Props> = ({
   results,
   page,
@@ -75,6 +77,22 @@ export const SearchResults: FC<Props> = ({
 }) => {
   const location = useLocation();
   const history = useHistory();
+
+  const isFiltered = (attrFilter: {filterKey: number, keyword: string}) => {
+
+    switch(attrFilter.filterKey) {
+      case SearchResultsFilterKey.Empty:
+        return true
+      case SearchResultsFilterKey.NonEmpty:
+        return true
+      case SearchResultsFilterKey.TextContained:
+        return attrFilter.keyword !== ""
+    }
+
+    return false
+
+    return SearchResultsFilterKey.Empty || SearchResultsFilterKey.NonEmpty || (attrFilter.filterKey === SearchResultsFilterKey.TextContained && attrFilter.keyword === "")
+  };
 
   const [entryFilter, entryFilterDispatcher] = useReducer(
     (
@@ -193,7 +211,11 @@ export const SearchResults: FC<Props> = ({
                         });
                       }}
                     >
+                    {isFiltered(newAttrsFilter[attrName]) ? (
+                      <FilterAltIcon />
+                    ) : (
                       <FilterListIcon />
+                    )}
                     </IconButton>
                     <SearchResultControlMenu
                       attrName={attrName}
