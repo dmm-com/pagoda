@@ -89,7 +89,7 @@ export const EntityList: FC<Props> = ({
       <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width="600px">
           <SearchBox
-            placeholder="エンティティ名で絞り込む"
+            placeholder="エンティティを絞り込む"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onKeyPress={(e) => {
@@ -112,7 +112,7 @@ export const EntityList: FC<Props> = ({
       </Box>
 
       {/* This box shows each entity Cards */}
-      <Grid container spacing={2}>
+      <Grid container spacing={2} id="entity_list">
         {entities.map((entity) => (
           <Grid item xs={4} key={entity.id}>
             <StyledCard>
@@ -161,6 +161,9 @@ export const EntityList: FC<Props> = ({
       <Box display="flex" justifyContent="center" my="30px">
         <Stack spacing={2}>
           <Pagination
+            id="entity_page"
+            siblingCount={0}
+            boundaryCount={1}
             count={maxPage}
             page={page}
             onChange={(e, page) => handleChangePage(page)}

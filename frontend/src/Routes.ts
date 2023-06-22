@@ -41,7 +41,7 @@ export const showEntryHistoryPath = (
 export const entityHistoryPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/history`;
 export const newEntityPath = () => basePath + "entities/new";
-export const entityPath = (entityId: number | string) =>
+export const editEntityPath = (entityId: number | string) =>
   basePath + `entities/${entityId}`;
 export const entitiesPath = () => basePath + "entities";
 
