@@ -78,18 +78,6 @@ export const SearchResults: FC<Props> = ({
   const location = useLocation();
   const history = useHistory();
 
-  // const isFiltered = (attrFilter: {filterKey: number, keyword: string}) => {
-  //   switch(attrFilter.filterKey) {
-  //     case SearchResultsFilterKey.Empty:
-  //       return true
-  //     case SearchResultsFilterKey.NonEmpty:
-  //       return true
-  //     case SearchResultsFilterKey.TextContained:
-  //       return attrFilter.keyword !== ""
-  //   }
-  //   return false
-  // };
-
   const _defaultAttrsFilter = defaultAttrsFilter ?? {};
   const isFiltered: Record<string, boolean> = Object.fromEntries(
     Object.keys(_defaultAttrsFilter ?? {}).map((attrName: string) => {

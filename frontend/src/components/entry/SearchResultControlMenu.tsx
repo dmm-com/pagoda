@@ -56,17 +56,7 @@ export const SearchResultControlMenu: FC<Props> = ({
   // const [keyword, setKeyword] = useState("");
   const [keywordRequired, setKeywordRequired] = useState(true);
 
-  console.log(
-    "[onix/SearchResultControlMenu(00)] newAttrsFilter: ",
-    newAttrsFilter
-  );
-
   const handleClick = (key: SearchResultsFilterKey) => {
-    console.log("key", key);
-    console.log("setNewAttrsFilter2", {
-      ...newAttrsFilter,
-      [attrName]: { ...newAttrsFilter[attrName], filterKey: key },
-    });
     setKeywordRequired(key === SearchResultsFilterKey.TextContained);
     setNewAttrsFilter({
       ...newAttrsFilter,
@@ -96,7 +86,7 @@ export const SearchResultControlMenu: FC<Props> = ({
   const handleChangeKeyword = (e: any) => {
     setNewAttrsFilter({
       ...newAttrsFilter,
-      [attrName]: { ...newAttrsFilter[attrName], keyword: e.target.value },
+      [attrName]: { ...newAttrsFilter[attrName], keyword: e.target.value, filterKey: SearchResultsFilterKey.TextContained},
     });
   };
 
@@ -104,7 +94,7 @@ export const SearchResultControlMenu: FC<Props> = ({
     if (e.key === "Enter") {
       handleSelectFilterConditions({
         ...newAttrsFilter,
-        [attrName]: { ...newAttrsFilter[attrName], keyword: e.target.value },
+        [attrName]: { ...newAttrsFilter[attrName], keyword: e.target.value, filterKey: SearchResultsFilterKey.TextContained},
       });
     }
   };

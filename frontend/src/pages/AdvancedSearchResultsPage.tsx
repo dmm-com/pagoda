@@ -85,6 +85,8 @@ export const AdvancedSearchResultsPage: FC = () => {
     }
   };
 
+  console.log("[onix/AdvancedSearchResultPage(99)] attrInfo: ", attrInfo);
+
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
@@ -152,7 +154,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             attrInfo.map((i: any) => [
               i["name"],
               {
-                filterKey: SearchResultsFilterKey.Cleared,
+                filterKey: i["filterKey"] || SearchResultsFilterKey.Cleared,
                 keyword: i["keyword"] || "",
               },
             ])
