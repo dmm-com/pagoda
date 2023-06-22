@@ -152,7 +152,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             attrInfo.map((i: any) => [
               i["name"],
               {
-                filterKey: SearchResultsFilterKey.TextContained,
+                filterKey: SearchResultsFilterKey.Cleared,
                 keyword: i["keyword"] || "",
               },
             ])

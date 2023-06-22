@@ -1,14 +1,26 @@
 import { Check } from "@mui/icons-material";
 import {
+  Box,
+  Button,
+  Divider,
   ListItemIcon,
   Menu,
   MenuItem,
   TextField,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
 
 import { SearchResultsFilterKey } from "./SearchResults";
+
+const StyledTextField = styled(TextField)({
+  margin: "8px",
+});
+
+const StyledBox = styled(Box)({
+  margin: "8px",
+});
 
 interface Props {
   attrName: string;
@@ -61,14 +73,23 @@ export const SearchResultControlMenu: FC<Props> = ({
       [attrName]: { ...newAttrsFilter[attrName], filterKey: key },
     });
 
-    if (
-      key === SearchResultsFilterKey.Empty ||
-      key === SearchResultsFilterKey.NonEmpty
-    ) {
-      handleSelectFilterConditions({
-        ...newAttrsFilter,
-        [attrName]: { ...newAttrsFilter[attrName], filterKey: key },
-      });
+    switch (key) {
+      case SearchResultsFilterKey.Empty:
+      case SearchResultsFilterKey.NonEmpty:
+        handleSelectFilterConditions({
+          ...newAttrsFilter,
+          [attrName]: { ...newAttrsFilter[attrName], filterKey: key },
+        });
+
+      case SearchResultsFilterKey.Cleared:
+        handleSelectFilterConditions({
+          ...newAttrsFilter,
+          [attrName]: {
+            ...newAttrsFilter[attrName],
+            filterKey: key,
+            keyword: "",
+          },
+        });
     }
   };
 
@@ -89,7 +110,7 @@ export const SearchResultControlMenu: FC<Props> = ({
   };
 
   const filterKey =
-    newAttrsFilter[attrName].filterKey ?? SearchResultsFilterKey.TextContained;
+    newAttrsFilter[attrName].filterKey ?? SearchResultsFilterKey.Cleared;
   const keyword = newAttrsFilter[attrName].keyword ?? "";
 
   return (
@@ -99,6 +120,16 @@ export const SearchResultControlMenu: FC<Props> = ({
       onClose={() => handleClose(attrName)}
       anchorEl={anchorElem}
     >
+      <StyledBox>
+        <Button
+          variant="outlined"
+          fullWidth
+          onClick={() => handleClick(SearchResultsFilterKey.Cleared)}
+        >
+          <Typography>クリア</Typography>
+        </Button>
+      </StyledBox>
+      <Divider />
       <MenuItem onClick={() => handleClick(SearchResultsFilterKey.Empty)}>
         {filterKey == SearchResultsFilterKey.Empty && (
           <ListItemIcon>
@@ -125,14 +156,13 @@ export const SearchResultControlMenu: FC<Props> = ({
         )}
         <Typography>次を含むテキスト</Typography>
       </MenuItem>
-      {keywordRequired && (
-        <TextField
-          placeholder="絞り込みキーワード"
-          value={keyword}
-          onChange={handleChangeKeyword}
-          onKeyPress={handleKeyPressKeyword}
-        />
-      )}
+      <StyledTextField
+        size="small"
+        placeholder="絞り込みキーワード"
+        value={keyword}
+        onChange={handleChangeKeyword}
+        onKeyPress={handleKeyPressKeyword}
+      />
     </Menu>
   );
 };

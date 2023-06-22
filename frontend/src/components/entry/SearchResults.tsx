@@ -27,10 +27,11 @@ import { AttributeValue } from "components/entry/AttributeValue";
 import { SearchResultControlMenu } from "components/entry/SearchResultControlMenu";
 
 export const SearchResultsFilterKey = {
-  Empty: 0,
-  NonEmpty: 1,
-  TextContained: 2,
-  Duplicated: 3,
+  Cleared: 0,
+  Empty: 1,
+  NonEmpty: 2,
+  TextContained: 3,
+  Duplicated: 4,
 } as const;
 
 export type SearchResultsFilterKey =
