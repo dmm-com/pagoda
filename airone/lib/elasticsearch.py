@@ -287,11 +287,14 @@ def make_query(
 
     # filter attribute by keywords
     for hint in [x for x in hint_attrs if "name" in x]:
+        print("[onix/make_query(10)] hint: %s" % str(hint))
         filter_key = hint.get("filter_key")
-        if filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.EMPTY:
+        if filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.CLEARED:
+            _parse_or_search({"name": hint["name"]}, attr_query)
+        elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.EMPTY:
             _parse_or_search({"name": hint["name"], "keyword": "\\"}, attr_query)
         elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.NON_EMPTY:
-            pass
+            _parse_or_search({"name": hint["name"], "keyword": "*"}, attr_query)
         elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.TEXT_CONTAINED:
             _parse_or_search(hint, attr_query)
         elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED:
