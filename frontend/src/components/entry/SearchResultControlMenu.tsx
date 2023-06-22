@@ -44,7 +44,10 @@ export const SearchResultControlMenu: FC<Props> = ({
   // const [keyword, setKeyword] = useState("");
   const [keywordRequired, setKeywordRequired] = useState(true);
 
-  console.log("[onix/SearchResultControlMenu(00)] newAttrsFilter: ", newAttrsFilter);
+  console.log(
+    "[onix/SearchResultControlMenu(00)] newAttrsFilter: ",
+    newAttrsFilter
+  );
 
   const handleClick = (key: SearchResultsFilterKey) => {
     console.log("key", key);

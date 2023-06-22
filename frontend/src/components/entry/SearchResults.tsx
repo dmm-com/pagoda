@@ -1,5 +1,5 @@
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import {
   Box,
   IconButton,
@@ -65,7 +65,6 @@ interface Props {
   >;
 }
 
-
 export const SearchResults: FC<Props> = ({
   results,
   page,
@@ -78,21 +77,33 @@ export const SearchResults: FC<Props> = ({
   const location = useLocation();
   const history = useHistory();
 
-  const isFiltered = (attrFilter: {filterKey: number, keyword: string}) => {
+  // const isFiltered = (attrFilter: {filterKey: number, keyword: string}) => {
+  //   switch(attrFilter.filterKey) {
+  //     case SearchResultsFilterKey.Empty:
+  //       return true
+  //     case SearchResultsFilterKey.NonEmpty:
+  //       return true
+  //     case SearchResultsFilterKey.TextContained:
+  //       return attrFilter.keyword !== ""
+  //   }
+  //   return false
+  // };
 
-    switch(attrFilter.filterKey) {
-      case SearchResultsFilterKey.Empty:
-        return true
-      case SearchResultsFilterKey.NonEmpty:
-        return true
-      case SearchResultsFilterKey.TextContained:
-        return attrFilter.keyword !== ""
-    }
-
-    return false
-
-    return SearchResultsFilterKey.Empty || SearchResultsFilterKey.NonEmpty || (attrFilter.filterKey === SearchResultsFilterKey.TextContained && attrFilter.keyword === "")
-  };
+  const _defaultAttrsFilter = defaultAttrsFilter ?? {};
+  const isFiltered: Record<string, boolean> = Object.fromEntries(
+    Object.keys(_defaultAttrsFilter ?? {}).map((attrName: string) => {
+      const attrFilter = _defaultAttrsFilter[attrName];
+      switch (attrFilter.filterKey) {
+        case SearchResultsFilterKey.Empty:
+          return [attrName, true];
+        case SearchResultsFilterKey.NonEmpty:
+          return [attrName, true];
+        case SearchResultsFilterKey.TextContained:
+          return [attrName, attrFilter.keyword !== ""];
+      }
+      return [attrName, false];
+    })
+  );
 
   const [entryFilter, entryFilterDispatcher] = useReducer(
     (
@@ -163,7 +174,9 @@ export const SearchResults: FC<Props> = ({
               >
                 <Box display="flex" justifyContent="space-between">
                   <Typography>エントリ名</Typography>
-                  <FilterListIcon></FilterListIcon>
+                  <IconButton color="inherit">
+                    <FilterListIcon />
+                  </IconButton>
                 </Box>
 
                 {/*
@@ -204,6 +217,7 @@ export const SearchResults: FC<Props> = ({
                   <Box display="flex" justifyContent="space-between">
                     <Typography>{attrName}</Typography>
                     <IconButton
+                      color="inherit"
                       onClick={(e) => {
                         setAttributeMenuEls({
                           ...attributeMenuEls,
@@ -211,11 +225,11 @@ export const SearchResults: FC<Props> = ({
                         });
                       }}
                     >
-                    {isFiltered(newAttrsFilter[attrName]) ? (
-                      <FilterAltIcon />
-                    ) : (
-                      <FilterListIcon />
-                    )}
+                      {isFiltered[attrName] ?? false ? (
+                        <FilterAltIcon />
+                      ) : (
+                        <FilterListIcon />
+                      )}
                     </IconButton>
                     <SearchResultControlMenu
                       attrName={attrName}
