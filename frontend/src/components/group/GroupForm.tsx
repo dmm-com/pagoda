@@ -87,7 +87,7 @@ export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
                 name="members"
                 control={control}
                 defaultValue={[]}
-                render={({ field, fieldState: { error } }) => (
+                render={({ field }) => (
                   <Autocomplete
                     {...field}
                     options={users.value ?? []}
@@ -129,7 +129,7 @@ export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
         <Controller
           name="parentGroup"
           control={control}
-          render={({ field, fieldState: { error } }) => (
+          render={({ field }) => (
             <GroupTreeRoot
               groupTrees={groupTrees.value ?? []}
               selectedGroupId={field.value ?? null}

@@ -64,7 +64,9 @@ export const AdvancedSearchModal: FC<Props> = ({
       "attrinfo",
       JSON.stringify(
         selectedAttrNames.map((attrname) => {
-          const currAttrInfo = attrinfo.filter((x: any) => x.name == attrname);
+          const currAttrInfo = attrinfo.filter(
+            (x: { name: string }) => x.name == attrname
+          );
 
           if (currAttrInfo.length > 0) {
             return {

@@ -49,8 +49,10 @@ test("should render a component with essential props", function () {
         isMyself={true}
         isSuperuser={false}
         isSubmittable={false}
-        handleSubmit={(_e) => Promise.resolve()}
-        handleCancel={() => {}}
+        handleSubmit={() => Promise.resolve()}
+        handleCancel={() => {
+          /* do nothing */
+        }}
       />
     );
   };

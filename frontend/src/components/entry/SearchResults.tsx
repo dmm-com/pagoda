@@ -278,9 +278,8 @@ export const SearchResults: FC<Props> = ({
                   <TableCell sx={{ minWidth: "300px" }}>
                     <List>
                       {result.referrals?.map((referral) => (
-                        <ListItem>
+                        <ListItem key={referral.id}>
                           <Box
-                            key={referral.id}
                             component={Link}
                             to={entryDetailsPath(0, referral.id)}
                           >

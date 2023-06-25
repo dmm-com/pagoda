@@ -19,34 +19,8 @@ const aironeAPIErrors: Record<string, string> = {
   "AE-122000": "入力データが大きすぎます",
 };
 
-const getReasonFromCode = (code: string): string => {
-  return (
-    aironeAPIErrors[code] ??
-    `フロントエンドシステムエラー(エラーコード ${code})。 AirOne 開発者にお問合せください`
-  );
-};
-
-export const extractAPIErrorMessage = (json: any): string => {
-  let reasons = "";
-
-  if (json["name"]) {
-    reasons = json["name"]
-      .map((errorInfo: any) =>
-        getReasonFromCode(errorInfo["airone_error_code"])
-      )
-      .join();
-  }
-
-  if (json["non_field_errors"]) {
-    reasons = json["non_field_errors"]
-      .map((errorInfo: any) =>
-        getReasonFromCode(errorInfo["airone_error_code"])
-      )
-      .join();
-  }
-
-  return reasons;
-};
+const extractErrorDetail = (errorDetail: ErrorDetail): string =>
+  aironeAPIErrors[errorDetail.code] ?? errorDetail.message;
 
 // Extract error response with predefined data type, then report them appropriately
 // TODO check type-seafety more in runtime! currently unsafe
@@ -63,13 +37,15 @@ export const extractAPIException = async <T>(
   const typed = json as AironeApiError<T>;
 
   if (typed.non_field_errors != null) {
-    const fullMessage = typed.non_field_errors.map((e) => e.message).join(", ");
+    const fullMessage = typed.non_field_errors
+      .map((e) => extractErrorDetail(e))
+      .join(", ");
     nonFieldReporter(fullMessage);
   }
 
   Object.keys(typed as AironeApiFieldsError<T>).forEach((fieldName: string) => {
     const details = (typed as Record<string, Array<ErrorDetail>>)[fieldName];
-    const message = details.map((d) => d.message).join(", ");
+    const message = details.map((e) => extractErrorDetail(e)).join(", ");
 
     fieldReporter(fieldName as keyof T, message);
   });

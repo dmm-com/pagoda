@@ -89,13 +89,11 @@ export const ArrayStringAttributeValueField: FC<CommonProps> = ({
 }) => {
   const { fields, insert, remove } = useFieldArray({
     control,
-    // @ts-ignore
     name: `attrs.${attrId}.value.asArrayString`,
   });
 
   const handleClickAddListItem = (index: number) => {
     // TODO fix the type error; its misrecognizing the type of fields as object-like type
-    // @ts-ignore
     insert(index + 1, { value: "" });
   };
 

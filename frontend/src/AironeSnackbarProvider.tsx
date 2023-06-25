@@ -1,6 +1,5 @@
+import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import ErrorOutlinedIcon from "@mui/icons-material/ErrorOutlined";
-// @ts-ignore
-import SuccessOutlinedIcon from "@mui/material/internal/svg-icons/SuccessOutlined";
 import { styled } from "@mui/material/styles";
 import { SnackbarProvider } from "notistack";
 import React, { FC } from "react";
@@ -21,7 +20,11 @@ export const AironeSnackbarProvider: FC<{ children: React.ReactNode }> = ({
     <StyledSnackbarProvider
       maxSnack={3}
       iconVariant={{
-        success: <SuccessOutlinedIcon sx={{ fontSize: "20px", mr: "8px" }} />,
+        success: (
+          <CheckCircleOutlineOutlinedIcon
+            sx={{ fontSize: "20px", mr: "8px" }}
+          />
+        ),
         error: <ErrorOutlinedIcon sx={{ fontSize: "20px", mr: "8px" }} />,
       }}
     >

@@ -174,13 +174,14 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                         renderTags={(value, getTagProps) =>
                           value.map((option, index) => (
                             <Chip
+                              {...getTagProps({ index })}
+                              key={option.name}
                               label={option.name}
                               color={
                                 (error as FieldError[] | undefined)?.[index]
                                   ? "error"
                                   : undefined
                               }
-                              {...getTagProps({ index })}
                             />
                           ))
                         }
@@ -241,13 +242,14 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                         renderTags={(value, getTagProps) =>
                           value.map((option, index) => (
                             <Chip
+                              {...getTagProps({ index })}
+                              key={option.name}
                               label={option.name}
                               color={
                                 (error as FieldError[] | undefined)?.[index]
                                   ? "error"
                                   : undefined
                               }
-                              {...getTagProps({ index })}
                             />
                           ))
                         }
@@ -326,13 +328,14 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                         renderTags={(value, getTagProps) =>
                           value.map((option, index) => (
                             <Chip
+                              {...getTagProps({ index })}
+                              key={option.username}
                               label={option.username}
                               color={
                                 (error as FieldError[] | undefined)?.[index]
                                   ? "error"
                                   : undefined
                               }
-                              {...getTagProps({ index })}
                             />
                           ))
                         }
@@ -397,13 +400,14 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                         renderTags={(value, getTagProps) =>
                           value.map((option, index) => (
                             <Chip
+                              {...getTagProps({ index })}
+                              key={option.username}
                               label={option.username}
                               color={
                                 (error as FieldError[] | undefined)?.[index]
                                   ? "error"
                                   : undefined
                               }
-                              {...getTagProps({ index })}
                             />
                           ))
                         }
