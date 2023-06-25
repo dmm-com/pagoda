@@ -16,7 +16,7 @@ import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
 import { Control, Controller, useFieldArray, useWatch } from "react-hook-form";
 
-import { Schema } from "../EntityFormSchema";
+import { Schema } from "./EntityFormSchema";
 
 const StyledModal = styled(Modal)(({}) => ({
   display: "flex",

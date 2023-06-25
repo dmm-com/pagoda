@@ -6,7 +6,10 @@ import { Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { schema, Schema } from "../components/entity/EntityFormSchema";
+import {
+  schema,
+  Schema,
+} from "../components/entity/entityForm/EntityFormSchema";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useFormNotification } from "../hooks/useFormNotification";
 import { extractAPIException } from "../services/AironeAPIErrorUtil";

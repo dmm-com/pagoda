@@ -6,7 +6,7 @@ import { render } from "@testing-library/react";
 import React, { FC } from "react";
 import { useForm } from "react-hook-form";
 
-import { Schema } from "./EntityFormSchema";
+import { Schema } from "./entityForm/EntityFormSchema";
 
 import { TestWrapper } from "TestWrapper";
 import { EntityForm } from "components/entity/EntityForm";

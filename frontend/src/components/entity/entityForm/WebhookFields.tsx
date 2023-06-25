@@ -17,8 +17,7 @@ import { styled } from "@mui/material/styles";
 import React, { FC, Fragment } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 
-import { Schema } from "../EntityFormSchema";
-
+import { Schema } from "./EntityFormSchema";
 import { WebhookHeadersModal } from "./WebhookHeadersModal";
 
 const HeaderTableRow = styled(TableRow)(({}) => ({
