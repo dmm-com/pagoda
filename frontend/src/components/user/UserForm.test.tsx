@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { TestWrapper } from "../../TestWrapper";
 
 import { UserForm } from "./UserForm";
-import { Schema } from "./UserFormSchema";
+import { Schema } from "./userForm/UserFormSchema";
 
 test("should render a component with essential props", function () {
   Object.defineProperty(window, "django_context", {

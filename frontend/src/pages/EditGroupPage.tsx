@@ -6,7 +6,7 @@ import { Link, Prompt, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { PageHeader } from "../components/common/PageHeader";
-import { schema, Schema } from "../components/group/GroupFormSchema";
+import { schema, Schema } from "../components/group/groupForm/GroupFormSchema";
 import { useFormNotification } from "../hooks/useFormNotification";
 import { useTypedParams } from "../hooks/useTypedParams";
 import { extractAPIException } from "../services/AironeAPIErrorUtil";

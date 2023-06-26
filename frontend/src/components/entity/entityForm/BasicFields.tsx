@@ -13,7 +13,7 @@ import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller } from "react-hook-form";
 
-import { Schema } from "../EntityFormSchema";
+import { Schema } from "./EntityFormSchema";
 
 const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
