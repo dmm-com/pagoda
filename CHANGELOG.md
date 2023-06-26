@@ -8,6 +8,14 @@
 
 ### Fixed
 
+## v3.52.0
+
+### Added
+* Added ACL history page.
+  Contributed by @syucream
+* Added helm chart.
+  Contributed by @hinashi
+
 ## v3.51.0
 
 ### Changed
