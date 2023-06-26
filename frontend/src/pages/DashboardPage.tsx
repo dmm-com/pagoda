@@ -33,7 +33,7 @@ const Result = styled(Typography)(({ theme }) => ({
   textOverflow: "ellipsis",
 })) as OverridableComponent<TypographyTypeMap>;
 
-const ResultEntityForEntry = styled(Typography)(({ theme }) => ({
+const ResultEntityForEntry = styled(Typography)(({}) => ({
   color: "gray",
 }));
 

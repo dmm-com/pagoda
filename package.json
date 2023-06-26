@@ -19,7 +19,7 @@
     "link:client": "cd apiclient/typescript-fetch/ && npm link && cd ../../ && npm link '@dmm-com/airone-apiclient-typescript-fetch'",
     "watch": "webpack build --watch --mode development",
     "watch:custom": "webpack build --watch --entry ./frontend/src/customview/CustomApp.tsx --mode development",
-    "lint": "npx eslint frontend ; npx prettier --check frontend",
+    "lint": "npx eslint frontend && npx prettier --check frontend",
     "fix": "npx eslint --fix frontend ; npx prettier --write frontend",
     "test": "TZ=UTC npx jest frontend",
     "test:ci": "TZ=UTC npx jest frontend --runInBand",

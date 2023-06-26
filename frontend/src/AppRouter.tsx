@@ -1,4 +1,5 @@
 import React, { FC } from "react";
+import { RouteComponentProps } from "react-router";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 import { ACLHistoryPage } from "./pages/ACLHistoryPage";
@@ -61,7 +62,9 @@ interface Props {
     path: string;
     routePath: string;
     component?: FC;
-    render?: any;
+    render?: (
+      props: RouteComponentProps<{ [K: string]: string | undefined }>
+    ) => React.ReactNode;
   }[];
 }
 

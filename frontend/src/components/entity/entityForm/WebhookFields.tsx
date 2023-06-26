@@ -128,7 +128,7 @@ export const WebhookFields: FC<Props> = ({ control }) => {
                       name={`webhooks.${index}.isEnabled`}
                       control={control}
                       defaultValue={false}
-                      render={({ field, fieldState: { error } }) => (
+                      render={({ field }) => (
                         <Checkbox
                           checked={field.value}
                           onChange={(e) => field.onChange(e.target.checked)}

@@ -66,14 +66,6 @@ const TimeoutIcon = styled(Box)(({}) => ({
   borderRadius: "8px",
 }));
 
-const ProcessingIcon = styled(Box)(({}) => ({
-  width: "16px",
-  height: "16px",
-  margin: "0 4px",
-  backgroundColor: "#90CAF9",
-  borderRadius: "8px",
-}));
-
 const CancelledIcon = styled(Box)(({}) => ({
   width: "16px",
   height: "16px",

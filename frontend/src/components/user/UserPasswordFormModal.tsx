@@ -30,7 +30,7 @@ const PasswordField = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(4),
 }));
 
-const PasswordFieldLabel = styled("label")(({ theme }) => ({
+const PasswordFieldLabel = styled("label")(({}) => ({
   color: "#90A4AE",
 }));
 
@@ -40,7 +40,7 @@ const PasswordFieldInput = styled(TextField)(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
-const Buttons = styled(Box)(({ theme }) => ({
+const Buttons = styled(Box)(({}) => ({
   display: "flex",
   justifyContent: "flex-end",
 }));

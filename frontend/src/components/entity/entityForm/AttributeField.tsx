@@ -142,7 +142,7 @@ export const AttributeField: FC<Props> = ({
                   name={`attrs.${index}.type`}
                   control={control}
                   defaultValue={0}
-                  render={({ field, fieldState: { error } }) => (
+                  render={({ field }) => (
                     <Select
                       {...field}
                       fullWidth={true}
@@ -161,7 +161,7 @@ export const AttributeField: FC<Props> = ({
                     name={`attrs.${index}.referral`}
                     control={control}
                     defaultValue={[]}
-                    render={({ field, fieldState: { error } }) => (
+                    render={({ field }) => (
                       <Autocomplete
                         {...field}
                         options={referralEntities}
@@ -196,7 +196,7 @@ export const AttributeField: FC<Props> = ({
               name={`attrs.${index}.isMandatory`}
               control={control}
               defaultValue={false}
-              render={({ field, fieldState: { error } }) => (
+              render={({ field }) => (
                 <Checkbox
                   checked={field.value}
                   onChange={(e) => field.onChange(e.target.checked)}
@@ -210,7 +210,7 @@ export const AttributeField: FC<Props> = ({
               name={`attrs.${index}.isDeleteInChain`}
               control={control}
               defaultValue={false}
-              render={({ field, fieldState: { error } }) => (
+              render={({ field }) => (
                 <Checkbox
                   checked={field.value}
                   onChange={(e) => field.onChange(e.target.checked)}

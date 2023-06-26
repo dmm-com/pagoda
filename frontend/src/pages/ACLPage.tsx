@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Container } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useCallback, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { FieldErrors, useForm } from "react-hook-form";
 import { Prompt, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -43,8 +43,9 @@ export const ACLPage: FC = () => {
   });
 
   const handleSubmitOnInvalid = useCallback(
-    async (err: any) => {
-      enqueueSnackbar(err.generalError.message, { variant: "error" });
+    async (err: FieldErrors<Schema & { generalError: string }>) => {
+      err.generalError &&
+        enqueueSnackbar(err.generalError.message, { variant: "error" });
     },
     [objectId]
   );
