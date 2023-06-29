@@ -2270,8 +2270,6 @@ class ModelTest(AironeTestCase):
                 },
             ],
         )
-        print("[onix-test(90)] result: %s" % str(result))
-
         self.assertEqual(result["ret_count"], 4)
         self.assertEqual(
             [x["entry"]["name"] for x in result["ret_values"]], ["dup-%s" % i for i in range(4)]

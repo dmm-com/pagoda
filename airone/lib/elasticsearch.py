@@ -239,6 +239,29 @@ def make_query(
 
     """
 
+    # Conversion processing from "filter_key" to "keyword" for each hint_attrs
+    for hint_attr in hint_attrs:
+        # replace filter_key parameter in the hint_attrs
+        filter_key = hint_attr.pop("filter_key", None)
+        if filter_key is not None:
+            if filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.CLEARED:
+                # remove "keyword" parameter
+                hint_attr.pop("keyword", None)
+            elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.EMPTY:
+                hint_attr["keyword"] = "\\"
+            elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.NON_EMPTY:
+                hint_attr["keyword"] = "*"
+            elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED:
+                aggs_query = make_aggs_query(hint_attr["name"])
+                resp = execute_query(aggs_query)
+                keyword_infos = resp["aggregations"]["attr_aggs"]["attr_name_aggs"][
+                    "attr_value_aggs"
+                ]["buckets"]
+                keyword_list = [x["key"] for x in keyword_infos]
+                hint_attr["keyword"] = CONFIG.OR_SEARCH_CHARACTER.join(
+                    ["^" + x + "$" for x in keyword_list]
+                )
+
     # Making a query to send ElasticSearch by the specified parameters
     query: Dict = {
         "query": {
