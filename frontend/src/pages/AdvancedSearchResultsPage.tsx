@@ -87,8 +87,6 @@ export const AdvancedSearchResultsPage: FC = () => {
     }
   };
 
-  console.log("[onix/AdvancedSearchResultPage(99)] attrInfo: ", attrInfo);
-
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>

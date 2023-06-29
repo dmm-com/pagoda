@@ -64,6 +64,7 @@ export const SearchResultControlMenu: FC<Props> = ({
     });
 
     switch (key) {
+      case SearchResultsFilterKey.Duplicated:
       case SearchResultsFilterKey.Empty:
       case SearchResultsFilterKey.NonEmpty:
         handleSelectFilterConditions({
@@ -136,19 +137,17 @@ export const SearchResultControlMenu: FC<Props> = ({
         )}
         <Typography>空白ではない</Typography>
       </MenuItem>
-      <MenuItem
-        onClick={() => handleClick(SearchResultsFilterKey.TextContained)}
-      >
-        {filterKey == SearchResultsFilterKey.TextContained && (
+      <MenuItem onClick={() => handleClick(SearchResultsFilterKey.Duplicated)}>
+        {filterKey == SearchResultsFilterKey.Duplicated && (
           <ListItemIcon>
             <Check />
           </ListItemIcon>
         )}
-        <Typography>次を含むテキスト</Typography>
+        <Typography>重複</Typography>
       </MenuItem>
       <StyledTextField
         size="small"
-        placeholder="絞り込みキーワード"
+        placeholder="次を含むテキスト"
         value={keyword}
         onChange={handleChangeKeyword}
         onKeyPress={handleKeyPressKeyword}
