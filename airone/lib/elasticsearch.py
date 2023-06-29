@@ -353,6 +353,40 @@ def make_query_for_simple(
     return query
 
 
+def make_aggs_query(
+    hint_entity: Entity,
+    hint_attrs: List[Dict[str, str]],
+    entry_name: Optional[str],
+    hint_referral: Optional[str] = None,
+    hint_referral_entity_id: Optional[int] = None,
+) -> Dict[str, str]:
+    query = make_query(hint_entity, hint_attrs, entry_name, hint_referral, hint_referral_entity_id)
+
+    return {
+        "size": 0,
+        "aggs": {
+            "attr_aggs": {
+                "nested": {
+                    "path": "attr",
+                },
+                "aggs": {
+                    "attr_name_aggs": {
+                        "filter": query["query"],
+                        "aggs": {
+                            "attr_value_aggs": {
+                                "terms": {
+                                    "field": "attr.value.keyword",
+                                    "min_doc_count": 2
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 def _get_regex_pattern(keyword: str) -> str:
     """Create a regex pattern pattern.
 

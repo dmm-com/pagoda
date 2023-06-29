@@ -1,3 +1,4 @@
+from pprint import pprint
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
@@ -17,6 +18,7 @@ from airone.lib.elasticsearch import (
     AdvancedSearchResults,
     execute_query,
     make_query,
+    make_aggs_query,
     make_query_for_simple,
     make_search_results,
     make_search_results_for_simple,
@@ -2089,7 +2091,14 @@ class Entry(ACLBase):
                     elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.NON_EMPTY:
                         hint_attr["keyword"] = "*"
                     elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED:
-                        pass
+                        aggs_query = make_aggs_query(
+                            entity, hint_attrs, entry_name, hint_referral, hint_referral_entity_id
+                        )
+                        resp = execute_query(aggs_query)
+
+                        pprint(resp)
+
+                        return
 
             # make query for elasticsearch to retrieve data user wants
             query = make_query(
