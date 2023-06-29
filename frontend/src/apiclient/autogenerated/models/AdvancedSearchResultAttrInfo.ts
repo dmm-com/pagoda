@@ -27,6 +27,12 @@ export interface AdvancedSearchResultAttrInfo {
   name: string;
   /**
    *
+   * @type {number}
+   * @memberof AdvancedSearchResultAttrInfo
+   */
+  filterKey?: number;
+  /**
+   *
    * @type {string}
    * @memberof AdvancedSearchResultAttrInfo
    */
@@ -48,6 +54,7 @@ export function AdvancedSearchResultAttrInfoFromJSONTyped(
   }
   return {
     name: json["name"],
+    filterKey: !exists(json, "filter_key") ? undefined : json["filter_key"],
     keyword: !exists(json, "keyword") ? undefined : json["keyword"],
   };
 }
@@ -63,6 +70,7 @@ export function AdvancedSearchResultAttrInfoToJSON(
   }
   return {
     name: value.name,
+    filter_key: value.filterKey,
     keyword: value.keyword,
   };
 }

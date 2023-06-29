@@ -253,7 +253,8 @@ def make_query(
                 hint_attr["keyword"] = "*"
             elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED:
                 aggs_query = make_aggs_query(hint_attr["name"])
-                resp = execute_query(aggs_query)
+                # TODO Set to 1 for convenience
+                resp = execute_query(aggs_query, 1)
                 keyword_infos = resp["aggregations"]["attr_aggs"]["attr_name_aggs"][
                     "attr_value_aggs"
                 ]["buckets"]
@@ -379,9 +380,7 @@ def make_query_for_simple(
     return query
 
 
-def make_aggs_query(
-    hint_attr_name: str,
-) -> Dict[str, str]:
+def make_aggs_query(hint_attr_name: str) -> Dict:
     return {
         "aggs": {
             "attr_aggs": {
