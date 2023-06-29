@@ -25,9 +25,12 @@ interface Props {
   handleClose: () => void;
   entryFilterDispatcher: any;
   handleSelectFilterConditions: (
-    attrfilter:
+    attrfilter?:
       | Record<string, { filterKey: SearchResultsFilterKey; keyword: string }>
-      | undefined
+      | undefined,
+    overwriteEntryName?:
+      | string
+      | undefined,
   ) => void;
 }
 
@@ -38,13 +41,13 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
   entryFilterDispatcher,
   handleSelectFilterConditions,
 }) => {
-  const handleClick = () => {
-    handleSelectFilterConditions(undefined);
+  const handleClear = () => {
+    handleSelectFilterConditions(undefined, "");
   };
 
   const handleKeyPressKeyword = (e: any) => {
     if (e.key === "Enter") {
-      handleSelectFilterConditions(undefined);
+      handleSelectFilterConditions();
     }
   };
 
@@ -55,7 +58,7 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
       anchorEl={anchorElem}
     >
       <StyledBox>
-        <Button variant="outlined" fullWidth onClick={() => handleClick()}>
+        <Button variant="outlined" fullWidth onClick={() => handleClear()}>
           <Typography>クリア</Typography>
         </Button>
       </StyledBox>

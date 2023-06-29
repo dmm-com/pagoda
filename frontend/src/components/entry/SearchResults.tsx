@@ -125,11 +125,16 @@ export const SearchResults: FC<Props> = ({
   const handleSelectFilterConditions = (
     attrFilter:
       | Record<string, { filterKey: SearchResultsFilterKey; keyword: string }>
-      | undefined = undefined
+      | undefined = undefined,
+    overwriteEntryName:
+      | string
+      | undefined = undefined,
   ) => {
     const settingAttrFilter = attrFilter ?? newAttrsFilter;
+    const settingEntryFilter = overwriteEntryName ?? entryFilter;
+
     const params = new URLSearchParams(location.search);
-    params.set("entry_name", entryFilter);
+    params.set("entry_name", settingEntryFilter);
     params.set("referral_name", referralFilter);
     params.set(
       "attrinfo",
@@ -173,14 +178,11 @@ export const SearchResults: FC<Props> = ({
                       setEntryMenuEls(e.currentTarget);
                     }}
                   >
-                    {
-                      /*isFiltered[attrName] ?? false ? (
-                        <FilterAltIcon />
-                      ) : (
-                        <FilterListIcon />
-                      )*/
+                    {defaultEntryFilter ? (
+                      <FilterAltIcon />
+                    ) : (
                       <FilterListIcon />
-                    }
+                    )}
                   </IconButton>
                   <SearchResultControlMenuForEntry
                     entryFilter={entryFilter}

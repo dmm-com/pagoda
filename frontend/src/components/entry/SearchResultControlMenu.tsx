@@ -37,10 +37,13 @@ interface Props {
     >
   ) => void;
   handleSelectFilterConditions: (
-    attrfilter: Record<
+    attrfilter?: Record<
       string,
       { filterKey: SearchResultsFilterKey; keyword: string }
-    >
+    >,
+    overwriteEntryName?:
+      | string
+      | undefined,
   ) => void;
 }
 
