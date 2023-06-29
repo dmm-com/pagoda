@@ -8,6 +8,9 @@ apis/UserApi.ts
 apis/index.ts
 index.ts
 models/ACL.ts
+models/ACLHistory.ts
+models/ACLHistoryChange.ts
+models/ACLHistoryUser.ts
 models/ACLParent.ts
 models/ACLRole.ts
 models/AdvancedSearch.ts

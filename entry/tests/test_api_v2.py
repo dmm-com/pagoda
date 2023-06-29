@@ -3838,6 +3838,7 @@ class ViewTest(AironeViewTest):
         export_params = {
             "entities": [entity.id],
             "attrinfo": [{"name": "attr", "keyword": "data-5"}],
+            "is_all_entities": False,
             "export_style": "csv",
         }
 
@@ -4029,6 +4030,55 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             yaml_contents["test-entity"][0]["attrs"], {x["column"]: x["yaml"] for x in results}
         )
+
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
+    def test_export_with_all_entities(self):
+        self.add_entry(self.user, "Entry", self.entity, values={"val": "hoge"})
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [],
+                    "attrinfo": [{"name": "hoge"}],
+                    "is_all_entities": "true",
+                    "export_style": "yaml",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "non_field_errors": [
+                    {
+                        "code": "AE-121000",
+                        "message": "Invalid value for attribute parameter",
+                    }
+                ]
+            },
+        )
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [],
+                    "attrinfo": [{"name": "val"}],
+                    "is_all_entities": "true",
+                    "export_style": "yaml",
+                }
+            ),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        self.assertEqual(resp_data, {"test-entity": [{"attrs": {"val": "hoge"}, "name": "Entry"}]})
 
     def test_entry_history(self):
         values = {

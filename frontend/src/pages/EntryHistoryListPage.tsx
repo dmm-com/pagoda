@@ -15,8 +15,7 @@ import { PageHeader } from "components/common/PageHeader";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 
 export const EntryHistoryListPage: FC = () => {
-  const { entityId, entryId } =
-    useTypedParams<{ entityId: number; entryId: number }>();
+  const { entryId } = useTypedParams<{ entityId: number; entryId: number }>();
 
   const [page, changePage] = usePage();
 

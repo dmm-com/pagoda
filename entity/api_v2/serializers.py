@@ -400,6 +400,7 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
     type = serializers.IntegerField()
     is_mandatory = serializers.BooleanField()
     is_delete_in_chain = serializers.BooleanField()
+    is_writable = serializers.BooleanField()
     referral = serializers.ListField(child=serializers.DictField())
 
     class EntityDetailAttribute(TypedDict):
@@ -409,6 +410,7 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
         type: int
         is_mandatory: bool
         is_delete_in_chain: bool
+        is_writable: bool
         referral: List[Dict[str, Any]]
 
 
@@ -432,6 +434,7 @@ class EntityDetailSerializer(EntityListSerializer):
                 "type": x.type,
                 "is_mandatory": x.is_mandatory,
                 "is_delete_in_chain": x.is_delete_in_chain,
+                "is_writable": user.has_permission(x, ACLType.Writable),
                 "referral": [
                     {
                         "id": r.id,
@@ -441,7 +444,6 @@ class EntityDetailSerializer(EntityListSerializer):
                 ],
             }
             for x in obj.attrs.filter(is_active=True).order_by("index")
-            if user.has_permission(x, ACLType.Writable)
         ]
 
         # add and remove attributes depending on entity

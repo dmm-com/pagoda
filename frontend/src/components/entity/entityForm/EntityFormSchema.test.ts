@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { AttributeTypes } from "../../services/Constants";
+import { AttributeTypes } from "../../../services/Constants";
 
 import { Schema, schema } from "./EntityFormSchema";
 

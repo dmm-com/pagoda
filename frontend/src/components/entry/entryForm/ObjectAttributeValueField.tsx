@@ -68,7 +68,7 @@ export const ObjectAttributeValueField: FC<
   const handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
   ) => {
-    const newValue: any = (() => {
+    const newValue = (() => {
       if (value == null) {
         return null;
       }
@@ -144,7 +144,7 @@ export const NamedObjectAttributeValueField: FC<
   const handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
   ) => {
-    const newValue: any = (() => {
+    const newValue = (() => {
       if (Array.isArray(value)) {
         throw new Error("Array typed value is not supported for named object.");
       }
@@ -185,7 +185,7 @@ export const NamedObjectAttributeValueField: FC<
             }
             control={control}
             defaultValue=""
-            render={({ field, fieldState: { error } }) => (
+            render={({ field }) => (
               <TextField {...field} variant="standard" fullWidth />
             )}
           />
@@ -197,7 +197,7 @@ export const NamedObjectAttributeValueField: FC<
           <Controller
             name={`attrs.${attrId}.value.asArrayNamedObject.${index}.object._boolean`}
             control={control}
-            render={({ field, fieldState: { error } }) => (
+            render={({ field }) => (
               <Checkbox
                 checked={field.value}
                 onChange={(e) => field.onChange(e.target.checked)}

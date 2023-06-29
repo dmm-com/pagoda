@@ -48,6 +48,7 @@ export const EntityHistoryPage: FC = () => {
       <PageHeader title={entity.value?.name ?? ""} description="変更履歴">
         <Box width="50px">
           <IconButton
+            id="entity_menu"
             onClick={(e) => {
               setEntityAnchorEl(e.currentTarget);
             }}

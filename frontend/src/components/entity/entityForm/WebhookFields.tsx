@@ -17,8 +17,7 @@ import { styled } from "@mui/material/styles";
 import React, { FC, Fragment } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 
-import { Schema } from "../EntityFormSchema";
-
+import { Schema } from "./EntityFormSchema";
 import { WebhookHeadersModal } from "./WebhookHeadersModal";
 
 const HeaderTableRow = styled(TableRow)(({}) => ({
@@ -129,7 +128,7 @@ export const WebhookFields: FC<Props> = ({ control }) => {
                       name={`webhooks.${index}.isEnabled`}
                       control={control}
                       defaultValue={false}
-                      render={({ field, fieldState: { error } }) => (
+                      render={({ field }) => (
                         <Checkbox
                           checked={field.value}
                           onChange={(e) => field.onChange(e.target.checked)}

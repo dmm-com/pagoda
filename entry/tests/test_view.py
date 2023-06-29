@@ -2082,7 +2082,7 @@ class ViewTest(AironeViewTest):
             name=self._entity_attr.name,
             schema=self._entity_attr,
             created_user=user,
-            parent_entry=entry,
+            parent_entry=dup_entry,
         )
 
         params = {
@@ -4921,47 +4921,6 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             job.text,
             "[task.import] [job:%d] Unexpected situation was happened" % job.id,
-        )
-
-    @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
-    def test_import_entry_with_multiple_attr(self):
-        user = self.admin_login()
-
-        # Create a test entry
-        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
-        entry.complement_attrs(user)
-
-        # Add 1 data and update to deleted
-        attr = entry.attrs.get(schema__name="test")
-        attr.add_value(user, "test_value")
-        attr.delete()
-
-        # Add second data
-        attr.add_value(user, "test_value2")
-
-        fp = self.open_fixture_file("import_data02.yaml")
-        self.client.post(reverse("entry:do_import", args=[self._entity.id]), {"file": fp})
-        fp.close()
-
-        # checks created jobs and its params are as expected
-        jobs = Job.objects.filter(user=user)
-        job_expectations = [
-            {"operation": JobOperation.IMPORT_ENTRY, "status": Job.STATUS["DONE"]},
-            {
-                "operation": JobOperation.NOTIFY_UPDATE_ENTRY,
-                "status": Job.STATUS["PREPARING"],
-            },
-        ]
-        self.assertEqual(jobs.count(), len(job_expectations))
-        for expectation in job_expectations:
-            obj = jobs.get(operation=expectation["operation"].value)
-            self.assertEqual(obj.status, expectation["status"])
-            self.assertIsNone(obj.dependent_job)
-
-        # Check attribute value
-        self.assertEqual(
-            entry.attrs.get(schema__name="test", is_active=True).get_latest_value().value,
-            "fuga",
         )
 
     @patch(

@@ -1,0 +1,51 @@
+{{- if .Values.install -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airone-install
+  labels:
+    {{- include "airone.labels" . | nindent 4 }}
+    app.kubernetes.io/component: install
+  annotations:
+    # This is what defines this resource as a hook.
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      name: airone-install
+      labels:
+        {{- include "airone.selectorLabels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: create-db
+          image: mysql/mysql-operator
+          env:
+          {{- include "airone.env" . | nindent 12 }}
+          command: ["/bin/bash", "/config/create_db.sh"]
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      containers:
+        - name: airone-install
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          {{- include "airone.env" . | nindent 12 }}
+          command: ["/bin/bash"]
+          args: ["-c", ". /config/dynamicenv.sh && . /config/create_vhost.sh && /docker-entrypoint.sh install"]
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          configMap:
+            name: airone-config
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

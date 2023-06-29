@@ -1,6 +1,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from "./ACL";
+export * from "./ACLHistory";
+export * from "./ACLHistoryChange";
+export * from "./ACLHistoryUser";
 export * from "./ACLParent";
 export * from "./ACLRole";
 export * from "./AdvancedSearch";

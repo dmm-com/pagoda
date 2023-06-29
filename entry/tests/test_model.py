@@ -1034,22 +1034,32 @@ class ModelTest(AironeTestCase):
     def test_clone_attribute_typed_string(self):
         attr = self.make_attr(name="attr", attrtype=AttrTypeValue["string"])
         attr.add_value(self._user, "hoge")
-        cloned_attr = attr.clone(self._user)
+        copy_entry = Entry.objects.create(
+            schema=self._entity, name="copy_entry", created_user=self._user
+        )
+        cloned_attr = attr.clone(self._user, parent_entry=copy_entry)
 
         self.assertIsNotNone(cloned_attr)
         self.assertNotEqual(cloned_attr.id, attr.id)
         self.assertEqual(cloned_attr.name, attr.name)
+        self.assertEqual(attr.parent_entry, self._entry)
+        self.assertEqual(cloned_attr.parent_entry, copy_entry)
         self.assertEqual(cloned_attr.values.count(), attr.values.count())
         self.assertNotEqual(cloned_attr.values.last(), attr.values.last())
 
     def test_clone_attribute_typed_array_string(self):
         attr = self.make_attr(name="attr", attrtype=AttrTypeValue["array_string"])
         attr.add_value(self._user, [str(i) for i in range(10)])
+        copy_entry = Entry.objects.create(
+            schema=self._entity, name="copy_entry", created_user=self._user
+        )
+        cloned_attr = attr.clone(self._user, parent_entry=copy_entry)
 
-        cloned_attr = attr.clone(self._user)
         self.assertIsNotNone(cloned_attr)
         self.assertNotEqual(cloned_attr.id, attr.id)
         self.assertEqual(cloned_attr.name, attr.name)
+        self.assertEqual(attr.parent_entry, self._entry)
+        self.assertEqual(cloned_attr.parent_entry, copy_entry)
         self.assertEqual(cloned_attr.values.count(), attr.values.count())
         self.assertNotEqual(cloned_attr.values.last(), attr.values.last())
 
@@ -1293,27 +1303,6 @@ class ModelTest(AironeTestCase):
             self.assertEqual(result["index"], attr.schema.index)
             self.assertEqual(result["is_readable"], True)
             self.assertEqual(result["last_value"], attrinfo[attr.name]["exp_val"])
-
-    def test_get_available_attrs_with_multi_attribute(self):
-        self._entity.attrs.add(self._attr.schema)
-        self._entry.attrs.add(self._attr)
-
-        # Add and register duplicate Attribute after registers
-        dup_attr = Attribute.objects.create(
-            name=self._attr.schema.name,
-            schema=self._attr.schema,
-            created_user=self._user,
-            parent_entry=self._entry,
-        )
-        self._entry.attrs.add(dup_attr)
-
-        self._attr.delete()
-
-        attr = self._entry.attrs.filter(schema=self._attr.schema, is_active=True).first()
-        attr.add_value(self._user, "hoge")
-
-        results = self._entry.get_available_attrs(self._user)
-        self.assertEqual(results[0]["last_value"], "hoge")
 
     def test_get_available_attrs_with_multi_attribute_value(self):
         self._entity.attrs.add(self._attr.schema)
@@ -2734,90 +2723,6 @@ class ModelTest(AironeTestCase):
         )
         self.assertFalse(res["found"])
 
-    def test_register_entry_to_elasticsearch_with_multi_attribute(self):
-        self._entity.attrs.add(self._attr.schema)
-        self._entry.attrs.add(self._attr)
-
-        # Add and register duplicate Attribute after registers
-        dup_attr = Attribute.objects.create(
-            name=self._attr.schema.name,
-            schema=self._attr.schema,
-            created_user=self._user,
-            parent_entry=self._entry,
-        )
-        self._entry.attrs.add(dup_attr)
-
-        self._attr.delete()
-
-        attr = self._entry.attrs.filter(schema=self._attr.schema, is_active=True).first()
-        attr.add_value(self._user, "hoge")
-
-        self._entry.register_es()
-
-        res = self._es.get(index=settings.ES_CONFIG["INDEX_NAME"], id=self._entry.id)
-        self.assertEqual(res["_source"]["attr"][0]["value"], "hoge")
-
-    def test_es_documents_of_entry_when_it_is_updated(self):
-        """
-        This checks "referrals" parameter of es-document at an Entry when
-        it is changed to refer another Entry.
-        """
-        user = User.objects.create(username="test-user")
-        ref_entity = self.create_entity(user, "RefEntity")
-        (ref_entry0, ref_entry1) = [self.add_entry(user, "e%s" % i, ref_entity) for i in range(2)]
-
-        entity = self.create_entity(
-            user,
-            "Entity",
-            attrs=[{"name": "attr", "type": AttrTypeValue["object"], "ref": ref_entity}],
-        )
-        entry = self.add_entry(user, "entry", entity, values={"attr": ref_entry0})
-
-        # This checks initial es-documents of referral Entries (e0 and e1)
-        ret = Entry.search_entries(
-            user,
-            [ref_entity.id],
-            hint_referral="",
-        )
-        self.assertEqual(ret["ret_count"], 2)
-        expected_entry_info = [
-            {
-                "id": entry.id,
-                "name": entry.name,
-                "schema": {
-                    "id": entity.id,
-                    "name": entity.name,
-                },
-            }
-        ]
-        for info in ret["ret_values"]:
-            if info["entry"]["id"] == ref_entry0.id:
-                self.assertEqual(info["referrals"], expected_entry_info)
-            elif info["entry"]["id"] == ref_entry1.id:
-                self.assertEqual(info["referrals"], [])
-            else:
-                raise RuntimeError("Unexpected es-document was returned")
-
-        # After chaning referral Entry from e0 to e1, the es-documents of those
-        # "referrals" parameters also must be changed.
-        attr = entry.attrs.get(schema__name="attr", is_active=True)
-        attr.add_value(user, ref_entry1)
-        entry.register_es()
-
-        # Check es-documents after editing Entry
-        ret = Entry.search_entries(
-            user,
-            [ref_entity.id],
-            hint_referral="",
-        )
-        for info in ret["ret_values"]:
-            if info["entry"]["id"] == ref_entry0.id:
-                self.assertEqual(info["referrals"], [])
-            elif info["entry"]["id"] == ref_entry1.id:
-                self.assertEqual(info["referrals"], expected_entry_info)
-            else:
-                raise RuntimeError("Unexpected es-document was returned")
-
     def test_unregister_entry_to_elasticsearch(self):
         user = User.objects.create(username="hoge")
 
@@ -3596,48 +3501,6 @@ class ModelTest(AironeTestCase):
             ret = Entry.is_importable_data(info["data"])
 
             self.assertEqual(ret, info["expect"])
-
-    def test_remove_duplicate_attr(self):
-        # initialize EntityAttr and Entry objects to test
-        entity_attr = EntityAttr.objects.create(
-            **{
-                "name": "attr",
-                "type": AttrTypeValue["object"],
-                "created_user": self._user,
-                "parent_entity": self._entity,
-            }
-        )
-        self._entity.attrs.add(entity_attr)
-
-        entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
-        entry.complement_attrs(self._user)
-
-        # Add and register duplicate Attribute after registers
-        dup_attr = Attribute.objects.create(
-            name=entity_attr.name,
-            schema=entity_attr,
-            created_user=self._user,
-            parent_entry=entry,
-        )
-        entry.attrs.add(dup_attr)
-
-        # checks duplicate attr is registered as expected
-        self.assertEqual(entry.attrs.count(), 2)
-        self.assertTrue(entry.attrs.filter(id=dup_attr.id).exists())
-
-        # remove duplicate attribute
-        entry.may_remove_duplicate_attr(dup_attr)
-
-        # checks duplicate attr would be removed
-        self.assertEqual(entry.attrs.count(), 1)
-        self.assertNotEqual(entry.attrs.first().id, dup_attr)
-        self.assertFalse(dup_attr.is_active)
-
-        # checks original attr would never be removed by same method
-        orig_attr = entry.attrs.first()
-        entry.may_remove_duplicate_attr(orig_attr)
-        self.assertEqual(entry.attrs.count(), 1)
-        self.assertEqual(entry.attrs.first(), orig_attr)
 
     def test_restore_entry(self):
         entity = self.create_entity_with_all_type_attributes(self._user)

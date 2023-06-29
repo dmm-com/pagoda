@@ -149,7 +149,7 @@ exports[`should match snapshot 1`] = `
                       aria-invalid="false"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                       id=":r0:"
-                      placeholder="エンティティ名で絞り込む"
+                      placeholder="エンティティを絞り込む"
                       type="text"
                       value=""
                     />
@@ -191,6 +191,7 @@ exports[`should match snapshot 1`] = `
             </div>
             <div
               class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-mhc70k-MuiGrid-root"
+              id="entity_list"
             >
               <div
                 class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
@@ -388,6 +389,7 @@ exports[`should match snapshot 1`] = `
                 <nav
                   aria-label="pagination navigation"
                   class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
+                  id="entity_page"
                 >
                   <ul
                     class="MuiPagination-ul css-wjh20t-MuiPagination-ul"
@@ -588,7 +590,7 @@ exports[`should match snapshot 1`] = `
                     aria-invalid="false"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                     id=":r0:"
-                    placeholder="エンティティ名で絞り込む"
+                    placeholder="エンティティを絞り込む"
                     type="text"
                     value=""
                   />
@@ -630,6 +632,7 @@ exports[`should match snapshot 1`] = `
           </div>
           <div
             class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-mhc70k-MuiGrid-root"
+            id="entity_list"
           >
             <div
               class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
@@ -827,6 +830,7 @@ exports[`should match snapshot 1`] = `
               <nav
                 aria-label="pagination navigation"
                 class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
+                id="entity_page"
               >
                 <ul
                   class="MuiPagination-ul css-wjh20t-MuiPagination-ul"

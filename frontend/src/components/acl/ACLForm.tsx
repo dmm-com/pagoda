@@ -15,7 +15,7 @@ import React, { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 import { UseFormWatch } from "react-hook-form/dist/types/form";
 
-import { Schema } from "components/acl/ACLFormSchema";
+import { Schema } from "components/acl/aclForm/ACLFormSchema";
 import { DjangoContext } from "services/DjangoContext";
 
 interface Props {

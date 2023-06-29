@@ -88,7 +88,7 @@ export const UserControlMenu: FC<UserControlProps> = ({
             </MenuItem>
           )}
           dialogTitle={`本当に削除しますか？(${user.username})`}
-          onClickYes={(e) => handleDelete(user)}
+          onClickYes={() => handleDelete(user)}
         />
         <UserPasswordFormModal
           userId={user.id}
