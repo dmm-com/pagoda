@@ -44,6 +44,9 @@ interface Props {
     overwriteEntryName?:
       | string
       | undefined,
+    overwriteReferral?:
+      | string
+      | undefined,
   ) => void;
 }
 

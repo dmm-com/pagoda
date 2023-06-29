@@ -129,13 +129,20 @@ export const SearchResults: FC<Props> = ({
     overwriteEntryName:
       | string
       | undefined = undefined,
+    overwriteReferral:
+      | string
+      | undefined = undefined,
   ) => {
     const settingAttrFilter = attrFilter ?? newAttrsFilter;
     const settingEntryFilter = overwriteEntryName ?? entryFilter;
+    const settingReferralFilter = overwriteReferral ?? referralFilter;
+
+    console.log("[onix/handleSelectFilterConditions(10)] settingEntryFilter: ", settingEntryFilter);
+    console.log("[onix/handleSelectFilterConditions(10)] settingReferralFilter: ", settingReferralFilter);
 
     const params = new URLSearchParams(location.search);
     params.set("entry_name", settingEntryFilter);
-    params.set("referral_name", referralFilter);
+    params.set("referral_name", settingReferralFilter);
     params.set(
       "attrinfo",
       JSON.stringify(
@@ -190,6 +197,7 @@ export const SearchResults: FC<Props> = ({
                     handleClose={() => setEntryMenuEls(null)}
                     entryFilterDispatcher={entryFilterDispatcher}
                     handleSelectFilterConditions={handleSelectFilterConditions}
+                    handleClear={() => handleSelectFilterConditions(undefined, "")}
                   />
                 </Box>
 
@@ -300,6 +308,26 @@ export const SearchResults: FC<Props> = ({
                   sx={{ color: "primary.contrastText", minWidth: "300px" }}
                 >
                   <Typography>参照エントリ</Typography>
+                  <IconButton
+                    color="inherit"
+                    onClick={(e) => {
+                      setEntryMenuEls(e.currentTarget);
+                    }}
+                  >
+                    {defaultEntryFilter ? (
+                      <FilterAltIcon />
+                    ) : (
+                      <FilterListIcon />
+                    )}
+                  </IconButton>
+                  <SearchResultControlMenuForEntry
+                    entryFilter={referralFilter}
+                    anchorElem={entryMenuEls}
+                    handleClose={() => setEntryMenuEls(null)}
+                    entryFilterDispatcher={referralFilterDispatcher}
+                    handleSelectFilterConditions={handleSelectFilterConditions}
+                    handleClear={() => handleSelectFilterConditions(undefined, undefined, "")}
+                  />
                   {/* TODO migrate to SearchResultControlMenu*/}
                   {/*
                   <TextField

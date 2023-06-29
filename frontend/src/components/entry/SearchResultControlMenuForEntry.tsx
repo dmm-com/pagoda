@@ -31,7 +31,11 @@ interface Props {
     overwriteEntryName?:
       | string
       | undefined,
+    overwriteReferral?:
+      | string
+      | undefined,
   ) => void;
+  handleClear: () => void;
 }
 
 export const SearchResultControlMenuForEntry: FC<Props> = ({
@@ -40,11 +44,8 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
   handleClose,
   entryFilterDispatcher,
   handleSelectFilterConditions,
+  handleClear,
 }) => {
-  const handleClear = () => {
-    handleSelectFilterConditions(undefined, "");
-  };
-
   const handleKeyPressKeyword = (e: any) => {
     if (e.key === "Enter") {
       handleSelectFilterConditions();
