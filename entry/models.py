@@ -1,4 +1,3 @@
-from pprint import pprint
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
@@ -2091,14 +2090,15 @@ class Entry(ACLBase):
                     elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.NON_EMPTY:
                         hint_attr["keyword"] = "*"
                     elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED:
-                        aggs_query = make_aggs_query(
-                            entity, hint_attrs, entry_name, hint_referral, hint_referral_entity_id
-                        )
+                        aggs_query = make_aggs_query(hint_attr["name"])
                         resp = execute_query(aggs_query)
-
-                        pprint(resp)
-
-                        return
+                        keyword_infos = resp["aggregations"]["attr_aggs"]["attr_name_aggs"][
+                            "attr_value_aggs"
+                        ]["buckets"]
+                        keyword_list = [x["key"] for x in keyword_infos]
+                        hint_attr["keyword"] = CONFIG.OR_SEARCH_CHARACTER.join(
+                            ["^" + x + "$" for x in keyword_list]
+                        )
 
             # make query for elasticsearch to retrieve data user wants
             query = make_query(

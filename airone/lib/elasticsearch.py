@@ -174,6 +174,9 @@ class ESS(Elasticsearch):
                                 "type": "text",
                                 "index": "true",
                                 "analyzer": "keyword",
+                                "fields": {
+                                    "keyword": {"type": "keyword"},
+                                },
                             },
                             "referral_id": {
                                 "type": "integer",
@@ -354,16 +357,9 @@ def make_query_for_simple(
 
 
 def make_aggs_query(
-    hint_entity: Entity,
-    hint_attrs: List[Dict[str, str]],
-    entry_name: Optional[str],
-    hint_referral: Optional[str] = None,
-    hint_referral_entity_id: Optional[int] = None,
+    hint_attr_name: str,
 ) -> Dict[str, str]:
-    query = make_query(hint_entity, hint_attrs, entry_name, hint_referral, hint_referral_entity_id)
-
     return {
-        "size": 0,
         "aggs": {
             "attr_aggs": {
                 "nested": {
@@ -371,19 +367,21 @@ def make_aggs_query(
                 },
                 "aggs": {
                     "attr_name_aggs": {
-                        "filter": query["query"],
+                        "filter": {
+                            "bool": {
+                                "must": [{"term": {"attr.name": hint_attr_name}}],
+                                "must_not": [{"term": {"attr.value.keyword": ""}}],
+                            }
+                        },
                         "aggs": {
                             "attr_value_aggs": {
-                                "terms": {
-                                    "field": "attr.value.keyword",
-                                    "min_doc_count": 2
-                                }
+                                "terms": {"field": "attr.value.keyword", "min_doc_count": 2}
                             }
-                        }
+                        },
                     }
-                }
+                },
             }
-        }
+        },
     }
 
 

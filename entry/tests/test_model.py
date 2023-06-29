@@ -2249,9 +2249,16 @@ class ModelTest(AironeTestCase):
 
         # create Entries that have duplicated value at "str" attribute
         [self.add_entry(self._user, "dup-%s" % i, entity, values={"str": "hoge"}) for i in range(2)]
+        [
+            self.add_entry(self._user, "dup-%s" % i, entity, values={"str": "fuga"})
+            for i in range(2, 4)
+        ]
 
         # create Entries that don't have duplicated value at "str" attribute
-        [self.add_entry(self._user, "non-dup-%d" % i, entity, values={"str": "fuga-%d" % i}) for i in range(2)]
+        [
+            self.add_entry(self._user, "non-dup-%d" % i, entity, values={"str": "fuga-%d" % i})
+            for i in range(2)
+        ]
 
         result = Entry.search_entries(
             self._user,
@@ -2260,11 +2267,15 @@ class ModelTest(AironeTestCase):
                 {
                     "name": "str",
                     "filter_key": CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED,
-                }
+                },
             ],
         )
         print("[onix-test(90)] result: %s" % str(result))
 
+        self.assertEqual(result["ret_count"], 4)
+        self.assertEqual(
+            [x["entry"]["name"] for x in result["ret_values"]], ["dup-%s" % i for i in range(4)]
+        )
 
     def test_search_entries_with_hint_referral_entity(self):
         user = User.objects.create(username="hoge")
