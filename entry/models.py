@@ -2111,7 +2111,8 @@ class Entry(ACLBase):
             )
             results["ret_count"] += search_result["ret_count"]
             results["ret_values"].extend(search_result["ret_values"])
-            limit -= search_result["ret_count"]
+            limit -= len(search_result["ret_values"])
+            offset = max(0, offset - search_result["ret_count"])
 
         return results
 
