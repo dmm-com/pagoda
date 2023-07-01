@@ -67,7 +67,16 @@ export interface UserRetrieve {
    * @type {number}
    * @memberof UserRetrieve
    */
-  authenticateType?: number;
+  authenticateType: UserRetrieveAuthenticateTypeEnum;
+}
+
+/**
+ * @export
+ * @enum {string}
+ */
+export enum UserRetrieveAuthenticateTypeEnum {
+  AUTH_TYPE_LOCAL = 1,
+  AUTH_TYPE_LDAP = 2,
 }
 
 export function UserRetrieveFromJSON(json: any): UserRetrieve {
@@ -90,9 +99,7 @@ export function UserRetrieveFromJSONTyped(
       : json["is_superuser"],
     dateJoined: json["date_joined"],
     token: UserRetrieveTokenFromJSON(json["token"]),
-    authenticateType: !exists(json, "authenticate_type")
-      ? undefined
-      : json["authenticate_type"],
+    authenticateType: json["authenticate_type"],
   };
 }
 
