@@ -13,14 +13,14 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntityDetailAttribute } from "./EntityDetailAttribute";
 import {
-  EntityDetailAttribute,
   EntityDetailAttributeFromJSON,
   EntityDetailAttributeFromJSONTyped,
   EntityDetailAttributeToJSON,
 } from "./EntityDetailAttribute";
+import type { Webhook } from "./Webhook";
 import {
-  Webhook,
   WebhookFromJSON,
   WebhookFromJSONTyped,
   WebhookToJSON,
@@ -80,6 +80,20 @@ export interface EntityDetail {
    * @memberof EntityDetail
    */
   isPublic?: boolean;
+}
+
+/**
+ * Check if a given object implements the EntityDetail interface.
+ */
+export function instanceOfEntityDetail(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "isToplevel" in value;
+  isInstance = isInstance && "attrs" in value;
+  isInstance = isInstance && "webhooks" in value;
+
+  return isInstance;
 }
 
 export function EntityDetailFromJSON(json: any): EntityDetail {

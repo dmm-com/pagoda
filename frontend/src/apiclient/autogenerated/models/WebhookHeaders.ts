@@ -33,6 +33,17 @@ export interface WebhookHeaders {
   headerValue: string;
 }
 
+/**
+ * Check if a given object implements the WebhookHeaders interface.
+ */
+export function instanceOfWebhookHeaders(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "headerKey" in value;
+  isInstance = isInstance && "headerValue" in value;
+
+  return isInstance;
+}
+
 export function WebhookHeadersFromJSON(json: any): WebhookHeaders {
   return WebhookHeadersFromJSONTyped(json, false);
 }

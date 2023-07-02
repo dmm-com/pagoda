@@ -13,29 +13,31 @@
  */
 
 import * as runtime from "../runtime";
-import {
+import type {
   EntityCreate,
+  EntityDetail,
+  EntityImportExportRoot,
+  EntityUpdate,
+  EntryCreate,
+  PaginatedEntityHistoryList,
+  PaginatedEntityListList,
+  PaginatedEntryBaseList,
+} from "../models";
+import {
   EntityCreateFromJSON,
   EntityCreateToJSON,
-  EntityDetail,
   EntityDetailFromJSON,
   EntityDetailToJSON,
-  EntityImportExportRoot,
   EntityImportExportRootFromJSON,
   EntityImportExportRootToJSON,
-  EntityUpdate,
   EntityUpdateFromJSON,
   EntityUpdateToJSON,
-  EntryCreate,
   EntryCreateFromJSON,
   EntryCreateToJSON,
-  PaginatedEntityHistoryList,
   PaginatedEntityHistoryListFromJSON,
   PaginatedEntityHistoryListToJSON,
-  PaginatedEntityListList,
   PaginatedEntityListListFromJSON,
   PaginatedEntityListListToJSON,
-  PaginatedEntryBaseList,
   PaginatedEntryBaseListFromJSON,
   PaginatedEntryBaseListToJSON,
 } from "../models";
@@ -97,10 +99,11 @@ export interface EntityApiV2UpdateRequest {
  */
 export class EntityApi extends runtime.BaseAPI {
   /**
+   *
    */
   async entityApiV2AttrsListRaw(
     requestParameters: EntityApiV2AttrsListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<Array<string>>> {
     const queryParameters: any = {};
 
@@ -138,10 +141,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2AttrsList(
     requestParameters: EntityApiV2AttrsListRequest = {},
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<Array<string>> {
     const response = await this.entityApiV2AttrsListRaw(
       requestParameters,
@@ -151,10 +155,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2CreateRaw(
     requestParameters: EntityApiV2CreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<EntityCreate>> {
     if (
       requestParameters.entityCreate === null ||
@@ -207,10 +212,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2Create(
     requestParameters: EntityApiV2CreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<EntityCreate> {
     const response = await this.entityApiV2CreateRaw(
       requestParameters,
@@ -220,10 +226,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2DestroyRaw(
     requestParameters: EntityApiV2DestroyRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -271,19 +278,21 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2Destroy(
     requestParameters: EntityApiV2DestroyRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<void> {
     await this.entityApiV2DestroyRaw(requestParameters, initOverrides);
   }
 
   /**
+   *
    */
   async entityApiV2EntriesCreateRaw(
     requestParameters: EntityApiV2EntriesCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<EntryCreate>> {
     if (
       requestParameters.entityId === null ||
@@ -345,10 +354,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2EntriesCreate(
     requestParameters: EntityApiV2EntriesCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<EntryCreate> {
     const response = await this.entityApiV2EntriesCreateRaw(
       requestParameters,
@@ -358,10 +368,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2EntriesListRaw(
     requestParameters: EntityApiV2EntriesListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<PaginatedEntryBaseList>> {
     if (
       requestParameters.entityId === null ||
@@ -426,10 +437,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2EntriesList(
     requestParameters: EntityApiV2EntriesListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<PaginatedEntryBaseList> {
     const response = await this.entityApiV2EntriesListRaw(
       requestParameters,
@@ -439,9 +451,10 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2ExportRetrieveRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<EntityImportExportRoot>> {
     const queryParameters: any = {};
 
@@ -477,19 +490,21 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2ExportRetrieve(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<EntityImportExportRoot> {
     const response = await this.entityApiV2ExportRetrieveRaw(initOverrides);
     return await response.value();
   }
 
   /**
+   *
    */
   async entityApiV2HistoriesListRaw(
     requestParameters: EntityApiV2HistoriesListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<PaginatedEntityHistoryList>> {
     if (
       requestParameters.entityId === null ||
@@ -546,10 +561,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2HistoriesList(
     requestParameters: EntityApiV2HistoriesListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<PaginatedEntityHistoryList> {
     const response = await this.entityApiV2HistoriesListRaw(
       requestParameters,
@@ -559,9 +575,10 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2ImportCreateRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     const queryParameters: any = {};
 
@@ -595,16 +612,20 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
-  async entityApiV2ImportCreate(initOverrides?: RequestInit): Promise<void> {
+  async entityApiV2ImportCreate(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<void> {
     await this.entityApiV2ImportCreateRaw(initOverrides);
   }
 
   /**
+   *
    */
   async entityApiV2ListRaw(
     requestParameters: EntityApiV2ListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<PaginatedEntityListList>> {
     const queryParameters: any = {};
 
@@ -660,10 +681,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2List(
     requestParameters: EntityApiV2ListRequest = {},
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<PaginatedEntityListList> {
     const response = await this.entityApiV2ListRaw(
       requestParameters,
@@ -673,10 +695,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2RetrieveRaw(
     requestParameters: EntityApiV2RetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<EntityDetail>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -726,10 +749,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2Retrieve(
     requestParameters: EntityApiV2RetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<EntityDetail> {
     const response = await this.entityApiV2RetrieveRaw(
       requestParameters,
@@ -739,10 +763,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2UpdateRaw(
     requestParameters: EntityApiV2UpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<EntityUpdate>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -795,10 +820,11 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entityApiV2Update(
     requestParameters: EntityApiV2UpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<EntityUpdate> {
     const response = await this.entityApiV2UpdateRaw(
       requestParameters,

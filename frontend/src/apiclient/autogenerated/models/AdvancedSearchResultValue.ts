@@ -13,20 +13,20 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { AdvancedSearchResultValueAttr } from "./AdvancedSearchResultValueAttr";
 import {
-  AdvancedSearchResultValueAttr,
   AdvancedSearchResultValueAttrFromJSON,
   AdvancedSearchResultValueAttrFromJSONTyped,
   AdvancedSearchResultValueAttrToJSON,
 } from "./AdvancedSearchResultValueAttr";
+import type { AdvancedSearchResultValueEntry } from "./AdvancedSearchResultValueEntry";
 import {
-  AdvancedSearchResultValueEntry,
   AdvancedSearchResultValueEntryFromJSON,
   AdvancedSearchResultValueEntryFromJSONTyped,
   AdvancedSearchResultValueEntryToJSON,
 } from "./AdvancedSearchResultValueEntry";
+import type { AdvancedSearchResultValueReferral } from "./AdvancedSearchResultValueReferral";
 import {
-  AdvancedSearchResultValueReferral,
   AdvancedSearchResultValueReferralFromJSON,
   AdvancedSearchResultValueReferralFromJSONTyped,
   AdvancedSearchResultValueReferralToJSON,
@@ -56,6 +56,17 @@ export interface AdvancedSearchResultValue {
    * @memberof AdvancedSearchResultValue
    */
   referrals?: Array<AdvancedSearchResultValueReferral>;
+}
+
+/**
+ * Check if a given object implements the AdvancedSearchResultValue interface.
+ */
+export function instanceOfAdvancedSearchResultValue(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "attrs" in value;
+  isInstance = isInstance && "entry" in value;
+
+  return isInstance;
 }
 
 export function AdvancedSearchResultValueFromJSON(

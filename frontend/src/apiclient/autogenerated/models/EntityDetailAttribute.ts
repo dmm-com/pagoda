@@ -69,6 +69,23 @@ export interface EntityDetailAttribute {
   referral: Array<{ [key: string]: any }>;
 }
 
+/**
+ * Check if a given object implements the EntityDetailAttribute interface.
+ */
+export function instanceOfEntityDetailAttribute(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "index" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "type" in value;
+  isInstance = isInstance && "isMandatory" in value;
+  isInstance = isInstance && "isDeleteInChain" in value;
+  isInstance = isInstance && "isWritable" in value;
+  isInstance = isInstance && "referral" in value;
+
+  return isInstance;
+}
+
 export function EntityDetailAttributeFromJSON(
   json: any
 ): EntityDetailAttribute {

@@ -13,14 +13,10 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { Entity } from "./Entity";
+import { EntityFromJSON, EntityFromJSONTyped, EntityToJSON } from "./Entity";
+import type { UserBase } from "./UserBase";
 import {
-  Entity,
-  EntityFromJSON,
-  EntityFromJSONTyped,
-  EntityToJSON,
-} from "./Entity";
-import {
-  UserBase,
   UserBaseFromJSON,
   UserBaseFromJSONTyped,
   UserBaseToJSON,
@@ -49,7 +45,7 @@ export interface EntryBase {
    * @type {Entity}
    * @memberof EntryBase
    */
-  readonly schema: Entity | null;
+  readonly schema: Entity;
   /**
    *
    * @type {boolean}
@@ -61,7 +57,7 @@ export interface EntryBase {
    * @type {UserBase}
    * @memberof EntryBase
    */
-  readonly deletedUser: UserBase | null;
+  readonly deletedUser: UserBase;
   /**
    *
    * @type {Date}
@@ -74,6 +70,21 @@ export interface EntryBase {
    * @memberof EntryBase
    */
   readonly updatedTime: Date;
+}
+
+/**
+ * Check if a given object implements the EntryBase interface.
+ */
+export function instanceOfEntryBase(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "schema" in value;
+  isInstance = isInstance && "isActive" in value;
+  isInstance = isInstance && "deletedUser" in value;
+  isInstance = isInstance && "updatedTime" in value;
+
+  return isInstance;
 }
 
 export function EntryBaseFromJSON(json: any): EntryBase {

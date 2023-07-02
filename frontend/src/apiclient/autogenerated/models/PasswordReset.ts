@@ -27,6 +27,16 @@ export interface PasswordReset {
   username: string;
 }
 
+/**
+ * Check if a given object implements the PasswordReset interface.
+ */
+export function instanceOfPasswordReset(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "username" in value;
+
+  return isInstance;
+}
+
 export function PasswordResetFromJSON(json: any): PasswordReset {
   return PasswordResetFromJSONTyped(json, false);
 }

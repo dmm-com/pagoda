@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntityAttributeType } from "./EntityAttributeType";
 import {
-  EntityAttributeType,
   EntityAttributeTypeFromJSON,
   EntityAttributeTypeFromJSONTyped,
   EntityAttributeTypeToJSON,
@@ -44,6 +44,20 @@ export interface AdvancedSearchResultValueReferral {
    * @memberof AdvancedSearchResultValueReferral
    */
   schema: EntityAttributeType;
+}
+
+/**
+ * Check if a given object implements the AdvancedSearchResultValueReferral interface.
+ */
+export function instanceOfAdvancedSearchResultValueReferral(
+  value: object
+): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "schema" in value;
+
+  return isInstance;
 }
 
 export function AdvancedSearchResultValueReferralFromJSON(

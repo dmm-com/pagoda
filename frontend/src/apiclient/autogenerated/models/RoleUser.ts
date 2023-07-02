@@ -33,6 +33,17 @@ export interface RoleUser {
   username: string;
 }
 
+/**
+ * Check if a given object implements the RoleUser interface.
+ */
+export function instanceOfRoleUser(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "username" in value;
+
+  return isInstance;
+}
+
 export function RoleUserFromJSON(json: any): RoleUser {
   return RoleUserFromJSONTyped(json, false);
 }

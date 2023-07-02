@@ -63,6 +63,16 @@ export interface RoleCreateUpdate {
   adminGroups?: Array<number>;
 }
 
+/**
+ * Check if a given object implements the RoleCreateUpdate interface.
+ */
+export function instanceOfRoleCreateUpdate(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
+}
+
 export function RoleCreateUpdateFromJSON(json: any): RoleCreateUpdate {
   return RoleCreateUpdateFromJSONTyped(json, false);
 }

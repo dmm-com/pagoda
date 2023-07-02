@@ -33,6 +33,17 @@ export interface EntityAttributeType {
   name: string;
 }
 
+/**
+ * Check if a given object implements the EntityAttributeType interface.
+ */
+export function instanceOfEntityAttributeType(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
+}
+
 export function EntityAttributeTypeFromJSON(json: any): EntityAttributeType {
   return EntityAttributeTypeFromJSONTyped(json, false);
 }

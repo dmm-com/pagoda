@@ -33,6 +33,17 @@ export interface EntryAttributeValueRole {
   name: string;
 }
 
+/**
+ * Check if a given object implements the EntryAttributeValueRole interface.
+ */
+export function instanceOfEntryAttributeValueRole(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
+}
+
 export function EntryAttributeValueRoleFromJSON(
   json: any
 ): EntryAttributeValueRole {

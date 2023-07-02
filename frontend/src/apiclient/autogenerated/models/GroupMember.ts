@@ -33,6 +33,17 @@ export interface GroupMember {
   username: string;
 }
 
+/**
+ * Check if a given object implements the GroupMember interface.
+ */
+export function instanceOfGroupMember(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "username" in value;
+
+  return isInstance;
+}
+
 export function GroupMemberFromJSON(json: any): GroupMember {
   return GroupMemberFromJSONTyped(json, false);
 }

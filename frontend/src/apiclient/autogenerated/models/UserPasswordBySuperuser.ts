@@ -33,6 +33,17 @@ export interface UserPasswordBySuperuser {
   chkPasswd: string;
 }
 
+/**
+ * Check if a given object implements the UserPasswordBySuperuser interface.
+ */
+export function instanceOfUserPasswordBySuperuser(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "newPasswd" in value;
+  isInstance = isInstance && "chkPasswd" in value;
+
+  return isInstance;
+}
+
 export function UserPasswordBySuperuserFromJSON(
   json: any
 ): UserPasswordBySuperuser {

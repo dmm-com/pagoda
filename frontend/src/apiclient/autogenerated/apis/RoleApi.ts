@@ -13,14 +13,12 @@
  */
 
 import * as runtime from "../runtime";
+import type { Role, RoleCreateUpdate, RoleImportExportChild } from "../models";
 import {
-  Role,
   RoleFromJSON,
   RoleToJSON,
-  RoleCreateUpdate,
   RoleCreateUpdateFromJSON,
   RoleCreateUpdateToJSON,
-  RoleImportExportChild,
   RoleImportExportChildFromJSON,
   RoleImportExportChildToJSON,
 } from "../models";
@@ -47,10 +45,11 @@ export interface RoleApiV2UpdateRequest {
  */
 export class RoleApi extends runtime.BaseAPI {
   /**
+   *
    */
   async roleApiV2CreateRaw(
     requestParameters: RoleApiV2CreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<RoleCreateUpdate>> {
     if (
       requestParameters.roleCreateUpdate === null ||
@@ -99,10 +98,11 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async roleApiV2Create(
     requestParameters: RoleApiV2CreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<RoleCreateUpdate> {
     const response = await this.roleApiV2CreateRaw(
       requestParameters,
@@ -112,10 +112,11 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async roleApiV2DestroyRaw(
     requestParameters: RoleApiV2DestroyRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -159,18 +160,20 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async roleApiV2Destroy(
     requestParameters: RoleApiV2DestroyRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<void> {
     await this.roleApiV2DestroyRaw(requestParameters, initOverrides);
   }
 
   /**
+   *
    */
   async roleApiV2ExportListRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<Array<RoleImportExportChild>>> {
     const queryParameters: any = {};
 
@@ -206,18 +209,20 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async roleApiV2ExportList(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<Array<RoleImportExportChild>> {
     const response = await this.roleApiV2ExportListRaw(initOverrides);
     return await response.value();
   }
 
   /**
+   *
    */
   async roleApiV2ImportCreateRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     const queryParameters: any = {};
 
@@ -251,15 +256,19 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
-  async roleApiV2ImportCreate(initOverrides?: RequestInit): Promise<void> {
+  async roleApiV2ImportCreate(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<void> {
     await this.roleApiV2ImportCreateRaw(initOverrides);
   }
 
   /**
+   *
    */
   async roleApiV2ListRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<Array<Role>>> {
     const queryParameters: any = {};
 
@@ -295,17 +304,21 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
-  async roleApiV2List(initOverrides?: RequestInit): Promise<Array<Role>> {
+  async roleApiV2List(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<Array<Role>> {
     const response = await this.roleApiV2ListRaw(initOverrides);
     return await response.value();
   }
 
   /**
+   *
    */
   async roleApiV2RetrieveRaw(
     requestParameters: RoleApiV2RetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<Role>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -351,10 +364,11 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async roleApiV2Retrieve(
     requestParameters: RoleApiV2RetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<Role> {
     const response = await this.roleApiV2RetrieveRaw(
       requestParameters,
@@ -364,10 +378,11 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async roleApiV2UpdateRaw(
     requestParameters: RoleApiV2UpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<RoleCreateUpdate>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -426,10 +441,11 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async roleApiV2Update(
     requestParameters: RoleApiV2UpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<RoleCreateUpdate> {
     const response = await this.roleApiV2UpdateRaw(
       requestParameters,

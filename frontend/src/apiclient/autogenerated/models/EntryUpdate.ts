@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { AttributeData } from "./AttributeData";
 import {
-  AttributeData,
   AttributeDataFromJSON,
   AttributeDataFromJSONTyped,
   AttributeDataToJSON,
@@ -44,6 +44,16 @@ export interface EntryUpdate {
    * @memberof EntryUpdate
    */
   attrs?: Array<AttributeData>;
+}
+
+/**
+ * Check if a given object implements the EntryUpdate interface.
+ */
+export function instanceOfEntryUpdate(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+
+  return isInstance;
 }
 
 export function EntryUpdateFromJSON(json: any): EntryUpdate {

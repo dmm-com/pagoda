@@ -45,6 +45,19 @@ export interface UserRetrieveToken {
   created: string;
 }
 
+/**
+ * Check if a given object implements the UserRetrieveToken interface.
+ */
+export function instanceOfUserRetrieveToken(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "value" in value;
+  isInstance = isInstance && "lifetime" in value;
+  isInstance = isInstance && "expire" in value;
+  isInstance = isInstance && "created" in value;
+
+  return isInstance;
+}
+
 export function UserRetrieveTokenFromJSON(json: any): UserRetrieveToken {
   return UserRetrieveTokenFromJSONTyped(json, false);
 }

@@ -13,20 +13,16 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { Entity } from "./Entity";
+import { EntityFromJSON, EntityFromJSONTyped, EntityToJSON } from "./Entity";
+import type { EntryAttributeType } from "./EntryAttributeType";
 import {
-  Entity,
-  EntityFromJSON,
-  EntityFromJSONTyped,
-  EntityToJSON,
-} from "./Entity";
-import {
-  EntryAttributeType,
   EntryAttributeTypeFromJSON,
   EntryAttributeTypeFromJSONTyped,
   EntryAttributeTypeToJSON,
 } from "./EntryAttributeType";
+import type { UserBase } from "./UserBase";
 import {
-  UserBase,
   UserBaseFromJSON,
   UserBaseFromJSONTyped,
   UserBaseToJSON,
@@ -67,7 +63,7 @@ export interface EntryRetrieve {
    * @type {UserBase}
    * @memberof EntryRetrieve
    */
-  readonly deletedUser: UserBase | null;
+  readonly deletedUser: UserBase;
   /**
    *
    * @type {Date}
@@ -86,6 +82,21 @@ export interface EntryRetrieve {
    * @memberof EntryRetrieve
    */
   isPublic?: boolean;
+}
+
+/**
+ * Check if a given object implements the EntryRetrieve interface.
+ */
+export function instanceOfEntryRetrieve(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "schema" in value;
+  isInstance = isInstance && "isActive" in value;
+  isInstance = isInstance && "deletedUser" in value;
+  isInstance = isInstance && "attrs" in value;
+
+  return isInstance;
 }
 
 export function EntryRetrieveFromJSON(json: any): EntryRetrieve {

@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { WebhookHeaders } from "./WebhookHeaders";
 import {
-  WebhookHeaders,
   WebhookHeadersFromJSON,
   WebhookHeadersFromJSONTyped,
   WebhookHeadersToJSON,
@@ -68,6 +68,16 @@ export interface WebhookCreateUpdate {
    * @memberof WebhookCreateUpdate
    */
   isDeleted?: boolean;
+}
+
+/**
+ * Check if a given object implements the WebhookCreateUpdate interface.
+ */
+export function instanceOfWebhookCreateUpdate(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "isVerified" in value;
+
+  return isInstance;
 }
 
 export function WebhookCreateUpdateFromJSON(json: any): WebhookCreateUpdate {

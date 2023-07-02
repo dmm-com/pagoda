@@ -13,11 +13,10 @@
  */
 
 import * as runtime from "../runtime";
+import type { JobSerializers, PaginatedJobSerializersList } from "../models";
 import {
-  JobSerializers,
   JobSerializersFromJSON,
   JobSerializersToJSON,
-  PaginatedJobSerializersList,
   PaginatedJobSerializersListFromJSON,
   PaginatedJobSerializersListToJSON,
 } from "../models";
@@ -49,10 +48,11 @@ export interface JobApiV2RetrieveRequest {
  */
 export class JobApi extends runtime.BaseAPI {
   /**
+   *
    */
   async jobApiV2DestroyRaw(
     requestParameters: JobApiV2DestroyRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -96,19 +96,21 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async jobApiV2Destroy(
     requestParameters: JobApiV2DestroyRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<void> {
     await this.jobApiV2DestroyRaw(requestParameters, initOverrides);
   }
 
   /**
+   *
    */
   async jobApiV2JobsListRaw(
     requestParameters: JobApiV2JobsListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<PaginatedJobSerializersList>> {
     const queryParameters: any = {};
 
@@ -158,10 +160,11 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async jobApiV2JobsList(
     requestParameters: JobApiV2JobsListRequest = {},
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<PaginatedJobSerializersList> {
     const response = await this.jobApiV2JobsListRaw(
       requestParameters,
@@ -171,10 +174,11 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async jobApiV2RerunPartialUpdateRaw(
     requestParameters: JobApiV2RerunPartialUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -218,19 +222,21 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async jobApiV2RerunPartialUpdate(
     requestParameters: JobApiV2RerunPartialUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<void> {
     await this.jobApiV2RerunPartialUpdateRaw(requestParameters, initOverrides);
   }
 
   /**
+   *
    */
   async jobApiV2RerunUpdateRaw(
     requestParameters: JobApiV2RerunUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -274,19 +280,21 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async jobApiV2RerunUpdate(
     requestParameters: JobApiV2RerunUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<void> {
     await this.jobApiV2RerunUpdateRaw(requestParameters, initOverrides);
   }
 
   /**
+   *
    */
   async jobApiV2RetrieveRaw(
     requestParameters: JobApiV2RetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<JobSerializers>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -332,10 +340,11 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async jobApiV2Retrieve(
     requestParameters: JobApiV2RetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<JobSerializers> {
     const response = await this.jobApiV2RetrieveRaw(
       requestParameters,

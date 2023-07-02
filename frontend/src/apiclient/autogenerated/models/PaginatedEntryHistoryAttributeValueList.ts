@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntryHistoryAttributeValue } from "./EntryHistoryAttributeValue";
 import {
-  EntryHistoryAttributeValue,
   EntryHistoryAttributeValueFromJSON,
   EntryHistoryAttributeValueFromJSONTyped,
   EntryHistoryAttributeValueToJSON,
@@ -50,6 +50,17 @@ export interface PaginatedEntryHistoryAttributeValueList {
    * @memberof PaginatedEntryHistoryAttributeValueList
    */
   results?: Array<EntryHistoryAttributeValue>;
+}
+
+/**
+ * Check if a given object implements the PaginatedEntryHistoryAttributeValueList interface.
+ */
+export function instanceOfPaginatedEntryHistoryAttributeValueList(
+  value: object
+): boolean {
+  let isInstance = true;
+
+  return isInstance;
 }
 
 export function PaginatedEntryHistoryAttributeValueListFromJSON(

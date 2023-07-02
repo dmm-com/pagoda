@@ -13,14 +13,14 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { RoleGroup } from "./RoleGroup";
 import {
-  RoleGroup,
   RoleGroupFromJSON,
   RoleGroupFromJSONTyped,
   RoleGroupToJSON,
 } from "./RoleGroup";
+import type { RoleUser } from "./RoleUser";
 import {
-  RoleUser,
   RoleUserFromJSON,
   RoleUserFromJSONTyped,
   RoleUserToJSON,
@@ -80,6 +80,21 @@ export interface Role {
    * @memberof Role
    */
   adminGroups: Array<RoleGroup>;
+}
+
+/**
+ * Check if a given object implements the Role interface.
+ */
+export function instanceOfRole(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "users" in value;
+  isInstance = isInstance && "groups" in value;
+  isInstance = isInstance && "adminUsers" in value;
+  isInstance = isInstance && "adminGroups" in value;
+
+  return isInstance;
 }
 
 export function RoleFromJSON(json: any): Role {

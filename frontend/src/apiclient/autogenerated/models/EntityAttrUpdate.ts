@@ -75,6 +75,15 @@ export interface EntityAttrUpdate {
   isDeleted?: boolean;
 }
 
+/**
+ * Check if a given object implements the EntityAttrUpdate interface.
+ */
+export function instanceOfEntityAttrUpdate(value: object): boolean {
+  let isInstance = true;
+
+  return isInstance;
+}
+
 export function EntityAttrUpdateFromJSON(json: any): EntityAttrUpdate {
   return EntityAttrUpdateFromJSONTyped(json, false);
 }

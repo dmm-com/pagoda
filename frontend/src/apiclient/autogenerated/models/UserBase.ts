@@ -51,6 +51,18 @@ export interface UserBase {
   readonly dateJoined: string;
 }
 
+/**
+ * Check if a given object implements the UserBase interface.
+ */
+export function instanceOfUserBase(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "username" in value;
+  isInstance = isInstance && "dateJoined" in value;
+
+  return isInstance;
+}
+
 export function UserBaseFromJSON(json: any): UserBase {
   return UserBaseFromJSONTyped(json, false);
 }

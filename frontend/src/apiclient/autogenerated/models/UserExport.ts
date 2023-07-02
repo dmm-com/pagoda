@@ -45,6 +45,18 @@ export interface UserExport {
   email?: string;
 }
 
+/**
+ * Check if a given object implements the UserExport interface.
+ */
+export function instanceOfUserExport(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "username" in value;
+  isInstance = isInstance && "groups" in value;
+
+  return isInstance;
+}
+
 export function UserExportFromJSON(json: any): UserExport {
   return UserExportFromJSONTyped(json, false);
 }

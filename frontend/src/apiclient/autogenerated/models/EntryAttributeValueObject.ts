@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntityAttributeType } from "./EntityAttributeType";
 import {
-  EntityAttributeType,
   EntityAttributeTypeFromJSON,
   EntityAttributeTypeFromJSONTyped,
   EntityAttributeTypeToJSON,
@@ -50,6 +50,19 @@ export interface EntryAttributeValueObject {
    * @memberof EntryAttributeValueObject
    */
   _boolean: boolean;
+}
+
+/**
+ * Check if a given object implements the EntryAttributeValueObject interface.
+ */
+export function instanceOfEntryAttributeValueObject(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "schema" in value;
+  isInstance = isInstance && "_boolean" in value;
+
+  return isInstance;
 }
 
 export function EntryAttributeValueObjectFromJSON(
