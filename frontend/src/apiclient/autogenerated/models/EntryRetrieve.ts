@@ -63,7 +63,7 @@ export interface EntryRetrieve {
    * @type {UserBase}
    * @memberof EntryRetrieve
    */
-  readonly deletedUser: UserBase;
+  readonly deletedUser: UserBase | null;
   /**
    *
    * @type {Date}

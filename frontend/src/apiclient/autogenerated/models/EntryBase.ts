@@ -57,7 +57,7 @@ export interface EntryBase {
    * @type {UserBase}
    * @memberof EntryBase
    */
-  readonly deletedUser: UserBase;
+  readonly deletedUser: UserBase | null;
   /**
    *
    * @type {Date}
