@@ -119,20 +119,16 @@ exports[`should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="MuiBox-root css-1vgydj2"
+          class="MuiBox-root css-gifilx"
         >
           <div
-            class="MuiBox-root css-1yado2t"
+            class="MuiBox-root css-0"
           >
-            <div
-              class="MuiBox-root css-1ebprri"
+            <h4
+              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-qtllij-MuiTypography-root"
             >
-              <h4
-                class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
-              >
-                基本情報
-              </h4>
-            </div>
+              基本情報
+            </h4>
             <table
               class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
             >
@@ -143,14 +139,16 @@ exports[`should match snapshot 1`] = `
                   class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
                 >
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
                     scope="col"
+                    width="400px"
                   >
                     項目
                   </th>
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
                     scope="col"
+                    width="800px"
                   >
                     内容
                   </th>
@@ -160,7 +158,7 @@ exports[`should match snapshot 1`] = `
                 class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
               >
                 <tr
-                  class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                  class="MuiTableRow-root css-1ddlhx2-MuiTableRow-root"
                 >
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -171,15 +169,15 @@ exports[`should match snapshot 1`] = `
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <div
-                      class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
+                      class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                     >
                       <div
-                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                       >
                         <input
                           aria-invalid="false"
-                          class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
-                          id=":r0:"
+                          class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1n4twyu-MuiInputBase-input-MuiOutlinedInput-input"
+                          id="entity-name"
                           name="name"
                           placeholder="エンティティ名"
                           required=""
@@ -205,7 +203,7 @@ exports[`should match snapshot 1`] = `
                   </td>
                 </tr>
                 <tr
-                  class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                  class="MuiTableRow-root css-1ddlhx2-MuiTableRow-root"
                 >
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -216,14 +214,14 @@ exports[`should match snapshot 1`] = `
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <div
-                      class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
+                      class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                     >
                       <div
-                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                       >
                         <input
                           aria-invalid="false"
-                          class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
+                          class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1n4twyu-MuiInputBase-input-MuiOutlinedInput-input"
                           id=":r1:"
                           name="note"
                           placeholder="備考"
@@ -250,7 +248,7 @@ exports[`should match snapshot 1`] = `
                   </td>
                 </tr>
                 <tr
-                  class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                  class="MuiTableRow-root css-1ddlhx2-MuiTableRow-root"
                 >
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -262,6 +260,7 @@ exports[`should match snapshot 1`] = `
                   >
                     <span
                       class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                      data-testid="isToplevel"
                     >
                       <input
                         class="PrivateSwitchBase-input css-1m9pwf3"
@@ -285,232 +284,238 @@ exports[`should match snapshot 1`] = `
               </tbody>
             </table>
           </div>
-          <div
-            class="MuiBox-root css-1yado2t"
+          <h4
+            class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-qtllij-MuiTypography-root"
           >
-            <div
-              class="MuiBox-root css-1ebprri"
-            >
-              <h4
-                class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
-              >
-                Webhook
-              </h4>
-            </div>
-            <table
-              class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
-            >
-              <thead
-                class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
-              >
-                <tr
-                  class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
-                >
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    URL
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    ラベル
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  />
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    URL有効化
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    削除
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    追加
-                  </th>
-                </tr>
-              </thead>
-              <tbody
-                class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-              >
-                <tr
-                  class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
-                >
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  >
-                    <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-                      tabindex="0"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                        data-testid="AddIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                        />
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div
-            class="MuiBox-root css-1yado2t"
+            Webhook
+          </h4>
+          <table
+            class="MuiTable-root css-rqglhn-MuiTable-root"
+            id="table_webhook_list"
           >
-            <div
-              class="MuiBox-root css-1ebprri"
+            <thead
+              class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
             >
-              <h4
-                class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
+              <tr
+                class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
               >
-                属性情報
-              </h4>
-            </div>
-            <table
-              class="MuiTable-root css-rqglhn-MuiTable-root"
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="50px"
+                />
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="400px"
+                >
+                  URL
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="350px"
+                >
+                  ラベル
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  Header
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  有効
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  削除
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  追加
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
             >
-              <thead
-                class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+              <tr
+                class="MuiTableRow-root css-10uopc6-MuiTableRow-root"
               >
-                <tr
-                  class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                />
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                />
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                />
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                />
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                />
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                />
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                    tabindex="0"
+                    type="button"
                   >
-                    属性名
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    型
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    必須
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    関連削除
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    並び替え
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    削除
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    追加
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    ACL設定
-                  </th>
-                </tr>
-              </thead>
-              <tbody
-                class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-              >
-                <tr
-                  class="MuiTableRow-root css-1lwfqbm-MuiTableRow-root"
-                >
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  >
-                    <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
-                      tabindex="0"
-                      type="button"
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      data-testid="AddIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                        data-testid="AddIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                        />
-                      </svg>
-                    </button>
-                  </td>
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                      <path
+                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                      />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <h4
+            class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-qtllij-MuiTypography-root"
+          >
+            属性情報
+          </h4>
+          <table
+            class="MuiTable-root css-rqglhn-MuiTable-root"
+            id="table_attribute_list"
+          >
+            <thead
+              class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+            >
+              <tr
+                class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
+              >
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="300px"
+                >
+                  属性名
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="300px"
+                >
+                  型
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  必須
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  関連削除
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  並び替え
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  削除
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  追加
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  ACL設定
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              class="MuiTableBody-root css-kcs60j-MuiTableBody-root"
+            >
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              >
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                    data-testid="AddIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                    />
+                  </svg>
+                </button>
+              </td>
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -630,20 +635,16 @@ exports[`should match snapshot 1`] = `
         </div>
       </div>
       <div
-        class="MuiBox-root css-1vgydj2"
+        class="MuiBox-root css-gifilx"
       >
         <div
-          class="MuiBox-root css-1yado2t"
+          class="MuiBox-root css-0"
         >
-          <div
-            class="MuiBox-root css-1ebprri"
+          <h4
+            class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-qtllij-MuiTypography-root"
           >
-            <h4
-              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
-            >
-              基本情報
-            </h4>
-          </div>
+            基本情報
+          </h4>
           <table
             class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
           >
@@ -654,14 +655,16 @@ exports[`should match snapshot 1`] = `
                 class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
               >
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
                   scope="col"
+                  width="400px"
                 >
                   項目
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
                   scope="col"
+                  width="800px"
                 >
                   内容
                 </th>
@@ -671,7 +674,7 @@ exports[`should match snapshot 1`] = `
               class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
             >
               <tr
-                class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                class="MuiTableRow-root css-1ddlhx2-MuiTableRow-root"
               >
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -682,15 +685,15 @@ exports[`should match snapshot 1`] = `
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >
                   <div
-                    class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
+                    class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                   >
                     <div
-                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                     >
                       <input
                         aria-invalid="false"
-                        class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
-                        id=":r0:"
+                        class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1n4twyu-MuiInputBase-input-MuiOutlinedInput-input"
+                        id="entity-name"
                         name="name"
                         placeholder="エンティティ名"
                         required=""
@@ -716,7 +719,7 @@ exports[`should match snapshot 1`] = `
                 </td>
               </tr>
               <tr
-                class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                class="MuiTableRow-root css-1ddlhx2-MuiTableRow-root"
               >
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -727,14 +730,14 @@ exports[`should match snapshot 1`] = `
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >
                   <div
-                    class="MuiFormControl-root MuiTextField-root css-136h9lv-MuiFormControl-root-MuiTextField-root"
+                    class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                   >
                     <div
-                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                     >
                       <input
                         aria-invalid="false"
-                        class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
+                        class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1n4twyu-MuiInputBase-input-MuiOutlinedInput-input"
                         id=":r1:"
                         name="note"
                         placeholder="備考"
@@ -761,7 +764,7 @@ exports[`should match snapshot 1`] = `
                 </td>
               </tr>
               <tr
-                class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                class="MuiTableRow-root css-1ddlhx2-MuiTableRow-root"
               >
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -773,6 +776,7 @@ exports[`should match snapshot 1`] = `
                 >
                   <span
                     class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    data-testid="isToplevel"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -796,232 +800,238 @@ exports[`should match snapshot 1`] = `
             </tbody>
           </table>
         </div>
-        <div
-          class="MuiBox-root css-1yado2t"
+        <h4
+          class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-qtllij-MuiTypography-root"
         >
-          <div
-            class="MuiBox-root css-1ebprri"
-          >
-            <h4
-              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
-            >
-              Webhook
-            </h4>
-          </div>
-          <table
-            class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
-          >
-            <thead
-              class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
-            >
-              <tr
-                class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
-              >
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  URL
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  ラベル
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                />
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  URL有効化
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  削除
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  追加
-                </th>
-              </tr>
-            </thead>
-            <tbody
-              class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-            >
-              <tr
-                class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
-              >
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                >
-                  <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
-                    tabindex="0"
-                    type="button"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                      data-testid="AddIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                      />
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div
-          class="MuiBox-root css-1yado2t"
+          Webhook
+        </h4>
+        <table
+          class="MuiTable-root css-rqglhn-MuiTable-root"
+          id="table_webhook_list"
         >
-          <div
-            class="MuiBox-root css-1ebprri"
+          <thead
+            class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
           >
-            <h4
-              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
+            <tr
+              class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
             >
-              属性情報
-            </h4>
-          </div>
-          <table
-            class="MuiTable-root css-rqglhn-MuiTable-root"
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="50px"
+              />
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="400px"
+              >
+                URL
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="350px"
+              >
+                ラベル
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="100px"
+              >
+                Header
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="100px"
+              >
+                有効
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="100px"
+              >
+                削除
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="100px"
+              >
+                追加
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
           >
-            <thead
-              class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+            <tr
+              class="MuiTableRow-root css-10uopc6-MuiTableRow-root"
             >
-              <tr
-                class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
               >
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                  tabindex="0"
+                  type="button"
                 >
-                  属性名
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  型
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  必須
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  関連削除
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  並び替え
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  削除
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  追加
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  ACL設定
-                </th>
-              </tr>
-            </thead>
-            <tbody
-              class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-            >
-              <tr
-                class="MuiTableRow-root css-1lwfqbm-MuiTableRow-root"
-              >
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                >
-                  <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
-                    tabindex="0"
-                    type="button"
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                    data-testid="AddIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                      data-testid="AddIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                      />
-                    </svg>
-                  </button>
-                </td>
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                    <path
+                      d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                    />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <h4
+          class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-qtllij-MuiTypography-root"
+        >
+          属性情報
+        </h4>
+        <table
+          class="MuiTable-root css-rqglhn-MuiTable-root"
+          id="table_attribute_list"
+        >
+          <thead
+            class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+          >
+            <tr
+              class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
+            >
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="300px"
+              >
+                属性名
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="300px"
+              >
+                型
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="100px"
+              >
+                必須
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="100px"
+              >
+                関連削除
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="100px"
+              >
+                並び替え
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="100px"
+              >
+                削除
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="100px"
+              >
+                追加
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
+                width="100px"
+              >
+                ACL設定
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            class="MuiTableBody-root css-kcs60j-MuiTableBody-root"
+          >
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+            />
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+            />
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+            />
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+            />
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+            />
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+            />
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+            >
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                  data-testid="AddIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+            />
+          </tbody>
+        </table>
       </div>
     </div>
   </div>,
