@@ -1392,6 +1392,17 @@ class ViewTest(AironeViewTest):
         self.assertEqual(history.details.count(), 1)
         self.assertEqual(history.details.first().target_obj, entity_attr.aclbase_ptr)
 
+        # unset toplevel attribute
+        params = {
+            "id": entity.id,
+            "is_toplevel": False,
+        }
+        self.client.put(
+            "/entity/api/v2/%d/" % entity.id, json.dumps(params), "application/json"
+        )
+        entity.refresh_from_db()
+        self.assertEqual(entity.status, 0)
+
     def test_update_entity_with_invalid_url(self):
         params = {}
         resp = self.client.put(
