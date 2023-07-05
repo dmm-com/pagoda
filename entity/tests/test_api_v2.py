@@ -1397,9 +1397,7 @@ class ViewTest(AironeViewTest):
             "id": entity.id,
             "is_toplevel": False,
         }
-        self.client.put(
-            "/entity/api/v2/%d/" % entity.id, json.dumps(params), "application/json"
-        )
+        self.client.put("/entity/api/v2/%d/" % entity.id, json.dumps(params), "application/json")
         entity.refresh_from_db()
         self.assertEqual(entity.status, 0)
 
