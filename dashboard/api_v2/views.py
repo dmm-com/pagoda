@@ -45,11 +45,11 @@ class AdvancedSearchSQLAPI(ReadOnlyModelViewSet):
 
     def get_serializer_class(self):
         # create DRF Serializer Class frmo Django model dynamically
-        serializer_class = DRFGenerator.serializer.create(self._airone_model, getting_fields=["LB"])
+        serializer_class = DRFGenerator.serializer.create(
+            self._airone_model, getting_fields=["id", "name", "attrs"]
+        )
 
         return serializer_class
-
-        # return serializers.LBPolicyTemplateSerializer
 
     def get_queryset(self):
         entity_name = self.request.query_params.get("entity", None)

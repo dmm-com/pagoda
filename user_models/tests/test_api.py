@@ -5,7 +5,7 @@ from django.urls import reverse
 from user.models import User
 from user_models.models import UserModel, DRFGenerator
 from django.conf import settings
-from airone.lib.test import AironeTestCase
+from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity
 
@@ -14,7 +14,7 @@ from rest_framework.serializers import (
 )
 
 
-class APITest(AironeTestCase):
+class APITest(AironeViewTest):
     def setUp(self):
         super(APITest, self).setUp()
 
@@ -58,7 +58,7 @@ class APITest(AironeTestCase):
                 ],
             },
         }
-        user = User.objects.create(username="test-user")
+        user = self.guest_login()
 
         for attrname, kwargs in creating_entity_info.items():
             setattr(self, attrname, self.create_entity(user, **kwargs))
@@ -70,5 +70,5 @@ class APITest(AironeTestCase):
 
         model.objects.create(name="hoge", age="20")
 
-        resp = self.client.get(reverse("dashboard:search"), {"entity": "User"})
+        resp = self.client.get("/dashboard/api/v2/advanced_search_sql/", {"entity": "User"})
         print(resp.json())

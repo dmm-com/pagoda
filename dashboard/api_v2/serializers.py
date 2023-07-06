@@ -181,3 +181,26 @@ class AdvancedSearchSQLSerializer(ModelSerializer):
             "lb_policy_template",
             "lb_service_group",
         )
+
+
+"""
+class UserEntitySerializer(ModelSerializer):
+    class Meta:
+        model = Entity
+        fields = ("id", "name")
+
+
+class UserAttrsSerializer(ModelSerializer):
+    class Meta:
+        model = TestUser
+        fields = "age"
+
+
+class UserSerializer(ModelSerializer):
+    # schema = UserEntitySerializer
+    attrs = UserAttrsSerializer
+
+    class Meta:
+        model = TestUser
+        fields = ("id", "name", "attrs")
+"""
