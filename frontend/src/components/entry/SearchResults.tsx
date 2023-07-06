@@ -26,6 +26,7 @@ import { entryDetailsPath } from "Routes";
 import { AttributeValue } from "components/entry/AttributeValue";
 import { SearchResultControlMenu } from "components/entry/SearchResultControlMenu";
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
+import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
 
 export const SearchResultsFilterKey = {
   Cleared: 0,
@@ -121,6 +122,9 @@ export const SearchResults: FC<Props> = ({
   const [entryMenuEls, setEntryMenuEls] = useState<HTMLButtonElement | null>(
     null
   );
+  const [referralMenuEls, setReferralMenuEls] = useState<HTMLButtonElement | null>(
+    null
+  );
 
   const handleSelectFilterConditions = (
     attrFilter:
@@ -137,6 +141,8 @@ export const SearchResults: FC<Props> = ({
     const settingEntryFilter = overwriteEntryName ?? entryFilter;
     const settingReferralFilter = overwriteReferral ?? referralFilter;
 
+    console.log("[onix/handleSelectFilterConditions(09)] referralFilter: ", referralFilter);
+    console.log("[onix/handleSelectFilterConditions(09)] overwriteReferral: ", overwriteReferral);
     console.log("[onix/handleSelectFilterConditions(10)] settingEntryFilter: ", settingEntryFilter);
     console.log("[onix/handleSelectFilterConditions(10)] settingReferralFilter: ", settingReferralFilter);
 
@@ -305,59 +311,36 @@ export const SearchResults: FC<Props> = ({
               ))}
               {hasReferral && (
                 <TableCell
-                  sx={{ color: "primary.contrastText", minWidth: "300px" }}
+                  sx={{
+                    color: "primary.contrastText",
+                    minWidth: "300px",
+                    backgroundColor: "inherit",
+                    outline: "1px solid #FFFFFF",
+                  }}
                 >
-                  <Typography>参照エントリ</Typography>
-                  <IconButton
-                    color="inherit"
-                    onClick={(e) => {
-                      setEntryMenuEls(e.currentTarget);
-                    }}
-                  >
-                    {defaultEntryFilter ? (
-                      <FilterAltIcon />
-                    ) : (
-                      <FilterListIcon />
-                    )}
-                  </IconButton>
-                  <SearchResultControlMenuForEntry
-                    entryFilter={referralFilter}
-                    anchorElem={entryMenuEls}
-                    handleClose={() => setEntryMenuEls(null)}
-                    entryFilterDispatcher={referralFilterDispatcher}
-                    handleSelectFilterConditions={handleSelectFilterConditions}
-                    handleClear={() => handleSelectFilterConditions(undefined, undefined, "")}
-                  />
-                  {/* TODO migrate to SearchResultControlMenu*/}
-                  {/*
-                  <TextField
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: "white" }} />
-                        </InputAdornment>
-                      ),
-                      sx: {
-                        color: "#FFFFFF",
-                        "&.Mui-focused": {
-                          background: "#00000061",
-                        },
-                      },
-                    }}
-                    inputProps={{
-                      style: {
-                        padding: "8px 0 8px 4px",
-                      },
-                    }}
-                    sx={{
-                      background: "#0000001F",
-                      margin: "8px 0",
-                    }}
-                    defaultValue={defaultReferralFilter}
-                    onChange={referralFilterDispatcher}
-                    onKeyPress={handleKeyPress}
-                  />
-                  */}
+                  <Box display="flex" justifyContent="space-between">
+                    <Typography>参照エントリ</Typography>
+                    <IconButton
+                      color="inherit"
+                      onClick={(e) => {
+                        setReferralMenuEls(e.currentTarget);
+                      }}
+                    >
+                      {defaultReferralFilter ? (
+                        <FilterAltIcon />
+                      ) : (
+                        <FilterListIcon />
+                      )}
+                    </IconButton>
+                    <SearchResultControlMenuForEntry
+                      entryFilter={referralFilter}
+                      anchorElem={referralMenuEls}
+                      handleClose={() => setReferralMenuEls(null)}
+                      entryFilterDispatcher={referralFilterDispatcher}
+                      handleSelectFilterConditions={handleSelectFilterConditions}
+                      handleClear={() => handleSelectFilterConditions(undefined, undefined, "")}
+                    />
+                  </Box>
                 </TableCell>
               )}
             </TableRow>
