@@ -194,7 +194,11 @@ def create(request, entity_id):
 
 @http_post(
     [
-        {"name": "entry_name", "type": str, "checker": lambda x: x["entry_name"]},
+        {
+            "name": "entry_name",
+            "type": str,
+            "checker": lambda x: (x["entry_name"] and len(x["entry_name"].strip()) > 0),
+        },
         {
             "name": "attrs",
             "type": list,
@@ -281,7 +285,11 @@ def edit(request, entry_id):
 
 @http_post(
     [
-        {"name": "entry_name", "type": str, "checker": lambda x: (x["entry_name"])},
+        {
+            "name": "entry_name",
+            "type": str,
+            "checker": lambda x: (x["entry_name"] and len(x["entry_name"].strip()) > 0),
+        },
         {
             "name": "attrs",
             "type": list,
