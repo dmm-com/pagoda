@@ -16,7 +16,10 @@ import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
-import { SearchResults } from "components/entry/SearchResults";
+import {
+  SearchResults,
+  SearchResultsFilterKey,
+} from "components/entry/SearchResults";
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
@@ -34,9 +37,8 @@ export const AdvancedSearchResultsPage: FC = () => {
     ? params.get("has_referral") === "true"
     : false;
   const referralName = params.get("referral_name") ?? "";
-  const attrInfo: AdvancedSearchResultAttrInfo[] = JSON.parse(
-    params.get("attrinfo") ?? "[]"
-  );
+  const attrInfo: { name: string; filterKey: number; keyword?: string }[] =
+    JSON.parse(params.get("attrinfo") ?? "[]");
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -149,9 +151,12 @@ export const AdvancedSearchResultsPage: FC = () => {
           defaultEntryFilter={entryName}
           defaultReferralFilter={referralName}
           defaultAttrsFilter={Object.fromEntries(
-            attrInfo.map((i: AdvancedSearchResultAttrInfo) => [
+            attrInfo.map((i: any) => [
               i["name"],
-              i["keyword"] || "",
+              {
+                filterKey: i["filterKey"] || SearchResultsFilterKey.Cleared,
+                keyword: i["keyword"] || "",
+              },
             ])
           )}
         />

@@ -4,6 +4,9 @@
 
 ### Added
 
+* Enabled to search Entries that has same AttributeValue at the advanced search processing.
+  Contributed by @hinashi, @userlocalhost, @syucream
+
 ### Changed
 
 ### Fixed

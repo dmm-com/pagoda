@@ -7,3 +7,6 @@ class Settings(object):
 
     def __contains__(self, key):
         return key in self.conf
+
+    def values(self):
+        return self.conf.values()

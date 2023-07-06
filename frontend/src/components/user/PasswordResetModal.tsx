@@ -42,7 +42,6 @@ export const PasswordResetModal: FC<Props> = ({ openModal, closeModal }) => {
       enqueueSnackbar("パスワードリセットメールの送信に失敗しました", {
         variant: "error",
       });
-      console.log(e);
     }
   }, [username, closeModal]);
 

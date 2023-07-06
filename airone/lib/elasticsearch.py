@@ -174,6 +174,9 @@ class ESS(Elasticsearch):
                                 "type": "text",
                                 "index": "true",
                                 "analyzer": "keyword",
+                                "fields": {
+                                    "keyword": {"type": "keyword"},
+                                },
                             },
                             "referral_id": {
                                 "type": "integer",
@@ -236,6 +239,30 @@ def make_query(
 
     """
 
+    # Conversion processing from "filter_key" to "keyword" for each hint_attrs
+    for hint_attr in hint_attrs:
+        # replace filter_key parameter in the hint_attrs
+        filter_key = hint_attr.pop("filter_key", None)
+        if filter_key is not None:
+            if filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.CLEARED:
+                # remove "keyword" parameter
+                hint_attr.pop("keyword", None)
+            elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.EMPTY:
+                hint_attr["keyword"] = "\\"
+            elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.NON_EMPTY:
+                hint_attr["keyword"] = "*"
+            elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED:
+                aggs_query = make_aggs_query(hint_attr["name"])
+                # TODO Set to 1 for convenience
+                resp = execute_query(aggs_query, 1)
+                keyword_infos = resp["aggregations"]["attr_aggs"]["attr_name_aggs"][
+                    "attr_value_aggs"
+                ]["buckets"]
+                keyword_list = [x["key"] for x in keyword_infos]
+                hint_attr["keyword"] = CONFIG.OR_SEARCH_CHARACTER.join(
+                    ["^" + x + "$" for x in keyword_list]
+                )
+
     # Making a query to send ElasticSearch by the specified parameters
     query: Dict = {
         "query": {
@@ -286,8 +313,9 @@ def make_query(
     attr_query: Dict = {}
 
     # filter attribute by keywords
-    for hint in [x for x in hint_attrs if "name" in x and "keyword" in x and x["keyword"]]:
-        _parse_or_search(hint, attr_query)
+    for hint in [x for x in hint_attrs if "name" in x]:
+        if hint.get("keyword"):
+            _parse_or_search(hint, attr_query)
 
     # Build queries along keywords
     if attr_query:
@@ -350,6 +378,33 @@ def make_query_for_simple(
         ]
 
     return query
+
+
+def make_aggs_query(hint_attr_name: str) -> Dict:
+    return {
+        "aggs": {
+            "attr_aggs": {
+                "nested": {
+                    "path": "attr",
+                },
+                "aggs": {
+                    "attr_name_aggs": {
+                        "filter": {
+                            "bool": {
+                                "must": [{"term": {"attr.name": hint_attr_name}}],
+                                "must_not": [{"term": {"attr.value.keyword": ""}}],
+                            }
+                        },
+                        "aggs": {
+                            "attr_value_aggs": {
+                                "terms": {"field": "attr.value.keyword", "min_doc_count": 2}
+                            }
+                        },
+                    }
+                },
+            }
+        },
+    }
 
 
 def _get_regex_pattern(keyword: str) -> str:
