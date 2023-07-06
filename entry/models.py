@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.db import models
@@ -14,6 +14,7 @@ from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import ExceedLimitError
 from airone.lib.elasticsearch import (
     ESS,
+    AdvancedSearchResults,
     execute_query,
     make_query,
     make_query_for_simple,
@@ -544,6 +545,11 @@ class Attribute(ACLBase):
     # This parameter is needed to make a relationship with corresponding EntityAttr
     schema = models.ForeignKey(EntityAttr, on_delete=models.DO_NOTHING)
     parent_entry = models.ForeignKey("Entry", on_delete=models.DO_NOTHING)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["parent_entry", "schema"], name="unique_attribute")
+        ]
 
     def __init__(self, *args, **kwargs):
         super(Attribute, self).__init__(*args, **kwargs)
@@ -1387,7 +1393,7 @@ class Entry(ACLBase):
     attrs = models.ManyToManyField(Attribute)
     schema = models.ForeignKey(Entity, on_delete=models.DO_NOTHING)
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(excluded_fields=["status", "updated_time"])
 
     def __init__(self, *args, **kwargs):
         super(Entry, self).__init__(*args, **kwargs)
@@ -1478,19 +1484,6 @@ class Entry(ACLBase):
 
         return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities)
 
-    def may_remove_duplicate_attr(self, attr):
-        """
-        This removes speicified Attribute object if an Attribute object which refers same
-        EntityAttr at schema parameter is registered to prevent saving duplicate one.
-        """
-        if self.attrs.filter(Q(schema=attr.schema, is_active=True), ~Q(id=attr.id)).exists():
-            # remove attribute from Attribute list of this entry
-            self.attrs.remove(attr)
-
-            # update target attribute will be inactive
-            attr.is_active = False
-            attr.save(update_fields=["is_active"])
-
     def complement_attrs(self, user):
         """
         This method complements Attributes which are appended after creation of Entity
@@ -1507,8 +1500,6 @@ class Entry(ACLBase):
                 continue
 
             newattr = self.add_attribute_from_base(entity_attr, user)
-            if not newattr:
-                continue
 
             if entity_attr.type & AttrTypeValue["array"]:
                 # Create a initial AttributeValue for editing processing
@@ -1524,10 +1515,6 @@ class Entry(ACLBase):
                 attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
                 newattr.values.add(attr_value)
-
-            # When multiple requests to add new Attribute came here, multiple Attriutes
-            # might be existed. If there were, this would delete new one.
-            self.may_remove_duplicate_attr(newattr)
 
     # NOTE: Type-Read
     def get_available_attrs(self, user, permission=ACLType.Readable):
@@ -2116,16 +2103,16 @@ class Entry(ACLBase):
     @classmethod
     def search_entries(
         kls,
-        user,
-        hint_entity_ids,
-        hint_attrs=None,
-        limit=CONFIG.MAX_LIST_ENTRIES,
-        entry_name=None,
-        hint_referral=None,
-        is_output_all=False,
-        hint_referral_entity_id=None,
-        offset=0,
-    ):
+        user: User,
+        hint_entity_ids: List[str],
+        hint_attrs: Optional[List[Dict[str, Any]]] = None,
+        limit: int = CONFIG.MAX_LIST_ENTRIES,
+        entry_name: Optional[str] = None,
+        hint_referral: Optional[str] = None,
+        is_output_all: bool = False,
+        hint_referral_entity_id: Optional[int] = None,
+        offset: int = 0,
+    ) -> AdvancedSearchResults:
         """Main method called from advanced search.
 
         Do the following:
@@ -2154,28 +2141,13 @@ class Entry(ACLBase):
                 The number of offset to get a part of a large amount of search results
 
         Returns:
-            dict[str, any]: As a result of the search,
+            AdvancedSearchResults: As a result of the search,
                 the acquired entry and the attribute value of the entry are returned.
-            {
-                'ret_count': (int),
-                'ret_values': [
-                    'entity': {'id': (int), 'name': (str)},
-                    'entry': {'id': (int), 'name': (str)},
-                    'attrs': {
-                        'Name of Attribute': {
-                            'type': (int),
-                            'value': (any),
-                            'is_readable': (bool),
-                        }
-                    }
-                    'is_readable': (bool),
-                ],
-            }
         """
         if not hint_attrs:
             hint_attrs = []
 
-        results = {
+        results: AdvancedSearchResults = {
             "ret_count": 0,
             "ret_values": [],
         }
@@ -2233,12 +2205,13 @@ class Entry(ACLBase):
                         )
 
             # retrieve data from database on the basis of the result of elasticsearch
-            search_result = make_search_results(
+            search_result: AdvancedSearchResults = make_search_results(
                 user, resp, hint_attrs, hint_referral, limit, offset
             )
             results["ret_count"] += search_result["ret_count"]
             results["ret_values"].extend(search_result["ret_values"])
-            limit -= search_result["ret_count"]
+            limit -= len(search_result["ret_values"])
+            offset = max(0, offset - search_result["ret_count"])
 
         return results
 

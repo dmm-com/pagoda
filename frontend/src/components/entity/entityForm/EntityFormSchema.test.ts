@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { AttributeTypes } from "../../services/Constants";
+import { AttributeTypes } from "../../../services/Constants";
 
 import { Schema, schema } from "./EntityFormSchema";
 
@@ -23,7 +23,6 @@ describe("schema", () => {
             headerValue: "value1",
           },
         ],
-        isDeleted: false,
       },
     ],
     attrs: [
@@ -32,15 +31,14 @@ describe("schema", () => {
         type: AttributeTypes.string.type,
         isMandatory: false,
         isDeleteInChain: false,
-        isDeleted: false,
+        isSummarized: false,
+        isWritable: true,
         referral: [
           {
             id: 1,
             name: "referred1",
           },
         ],
-        index: 0,
-        isSummarized: false,
       },
     ],
   };

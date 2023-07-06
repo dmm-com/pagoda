@@ -39,6 +39,18 @@ export interface GroupTree {
   readonly children: Array<{ [key: string]: any }>;
 }
 
+/**
+ * Check if a given object implements the GroupTree interface.
+ */
+export function instanceOfGroupTree(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "children" in value;
+
+  return isInstance;
+}
+
 export function GroupTreeFromJSON(json: any): GroupTree {
   return GroupTreeFromJSONTyped(json, false);
 }

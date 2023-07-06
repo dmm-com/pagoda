@@ -1,3 +1,4 @@
+.openapi-generator-ignore
 apis/AclApi.ts
 apis/EntityApi.ts
 apis/EntryApi.ts
@@ -8,10 +9,19 @@ apis/UserApi.ts
 apis/index.ts
 index.ts
 models/ACL.ts
+models/ACLHistory.ts
+models/ACLHistoryChange.ts
+models/ACLHistoryUser.ts
 models/ACLParent.ts
 models/ACLRole.ts
+models/AdvancedSearch.ts
+models/AdvancedSearchResult.ts
+models/AdvancedSearchResultAttrInfo.ts
 models/AdvancedSearchResultExport.ts
-models/AdvancedSearchResultExportAttrInfo.ts
+models/AdvancedSearchResultValue.ts
+models/AdvancedSearchResultValueAttr.ts
+models/AdvancedSearchResultValueEntry.ts
+models/AdvancedSearchResultValueReferral.ts
 models/Attribute.ts
 models/AttributeData.ts
 models/Entity.ts

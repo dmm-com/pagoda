@@ -33,6 +33,17 @@ export interface GetEntryAttrReferral {
   name: string;
 }
 
+/**
+ * Check if a given object implements the GetEntryAttrReferral interface.
+ */
+export function instanceOfGetEntryAttrReferral(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
+}
+
 export function GetEntryAttrReferralFromJSON(json: any): GetEntryAttrReferral {
   return GetEntryAttrReferralFromJSONTyped(json, false);
 }

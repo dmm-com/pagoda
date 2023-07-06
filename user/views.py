@@ -96,7 +96,8 @@ def edit(request, user_id):
             if user.token
             else None
         ),
-        "is_authenticated_by_local": user.authenticate_type == User.AUTH_TYPE_LOCAL,
+        "is_authenticated_by_local": user.authenticate_type
+        == User.AuthenticateType.AUTH_TYPE_LOCAL,
     }
 
     return render(request, "edit_user.html", context)
@@ -292,7 +293,7 @@ def change_ldap_auth(request, recv_data):
     if LDAPBackend.is_authenticated(request.user.username, recv_data["ldap_password"]):
         # When LDAP authentication is passed with current username and specified password,
         # this chnages authentication type from local to LDAP.
-        request.user.authenticate_type = User.AUTH_TYPE_LDAP
+        request.user.authenticate_type = User.AuthenticateType.AUTH_TYPE_LDAP
         request.user.save(update_fields=["authenticate_type"])
 
         return HttpResponse("Succeeded")
@@ -315,7 +316,7 @@ class PasswordReset(auth_views.PasswordResetView):
         user = User.objects.filter(username=username).first()
         if not user:
             return HttpResponse("user does not exist", status=400)
-        if user.authenticate_type != User.AUTH_TYPE_LOCAL:
+        if user.authenticate_type != User.AuthenticateType.AUTH_TYPE_LOCAL:
             return HttpResponse(
                 "This user is authenticated without AirOne local way(like LDAP)."
                 "Please confirm your authenticate information.",

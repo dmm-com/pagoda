@@ -8,6 +8,9 @@ module.exports = {
         config: path.resolve('webpack.config.js')
       },
     },
+    "react": {
+      "version": "detect",
+    },
   },
   rules: {
     'react/jsx-uses-react': 'error',

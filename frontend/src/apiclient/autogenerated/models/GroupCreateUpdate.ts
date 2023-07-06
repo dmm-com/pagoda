@@ -45,6 +45,17 @@ export interface GroupCreateUpdate {
   members?: Array<number>;
 }
 
+/**
+ * Check if a given object implements the GroupCreateUpdate interface.
+ */
+export function instanceOfGroupCreateUpdate(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
+}
+
 export function GroupCreateUpdateFromJSON(json: any): GroupCreateUpdate {
   return GroupCreateUpdateFromJSONTyped(json, false);
 }

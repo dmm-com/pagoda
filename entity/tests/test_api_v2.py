@@ -81,6 +81,7 @@ class ViewTest(AironeViewTest):
                     "index": 0,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "val",
                     "referral": [],
                     "type": AttrTypeValue["string"],
@@ -90,6 +91,7 @@ class ViewTest(AironeViewTest):
                     "index": 1,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "vals",
                     "referral": [],
                     "type": AttrTypeValue["array_string"],
@@ -99,6 +101,7 @@ class ViewTest(AironeViewTest):
                     "index": 2,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "ref",
                     "referral": [],
                     "type": AttrTypeValue["object"],
@@ -108,6 +111,7 @@ class ViewTest(AironeViewTest):
                     "index": 3,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "refs",
                     "referral": [],
                     "type": AttrTypeValue["array_object"],
@@ -117,6 +121,7 @@ class ViewTest(AironeViewTest):
                     "index": 4,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "name",
                     "referral": [],
                     "type": AttrTypeValue["named_object"],
@@ -126,6 +131,7 @@ class ViewTest(AironeViewTest):
                     "index": 5,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "names",
                     "referral": [],
                     "type": AttrTypeValue["array_named_object"],
@@ -135,6 +141,7 @@ class ViewTest(AironeViewTest):
                     "index": 6,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "group",
                     "referral": [],
                     "type": AttrTypeValue["group"],
@@ -144,6 +151,7 @@ class ViewTest(AironeViewTest):
                     "index": 7,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "groups",
                     "referral": [],
                     "type": AttrTypeValue["array_group"],
@@ -153,6 +161,7 @@ class ViewTest(AironeViewTest):
                     "index": 8,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "bool",
                     "referral": [],
                     "type": AttrTypeValue["boolean"],
@@ -162,6 +171,7 @@ class ViewTest(AironeViewTest):
                     "index": 9,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "text",
                     "referral": [],
                     "type": AttrTypeValue["text"],
@@ -171,6 +181,7 @@ class ViewTest(AironeViewTest):
                     "index": 10,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "date",
                     "referral": [],
                     "type": AttrTypeValue["date"],
@@ -180,6 +191,7 @@ class ViewTest(AironeViewTest):
                     "index": 11,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "role",
                     "referral": [],
                     "type": AttrTypeValue["role"],
@@ -189,6 +201,7 @@ class ViewTest(AironeViewTest):
                     "index": 12,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_writable": True,
                     "name": "roles",
                     "referral": [],
                     "type": AttrTypeValue["array_role"],
@@ -211,6 +224,7 @@ class ViewTest(AironeViewTest):
                 "index": 13,
                 "is_delete_in_chain": True,
                 "is_mandatory": True,
+                "is_writable": True,
                 "name": "refs",
                 "referral": [
                     {
@@ -299,6 +313,28 @@ class ViewTest(AironeViewTest):
         self.entity.readable.roles.add(self.role)
         resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
         self.assertEqual(resp.status_code, 200)
+
+        # permission nothing EntityAttr
+        self.entity.writable.roles.add(self.role)
+        entity_attr: EntityAttr = self.entity.attrs.first()
+        entity_attr.is_public = False
+        entity_attr.save()
+
+        resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(resp.json()["attrs"][0]["is_writable"])
+
+        # permission readble EntityAttr update
+        entity_attr.readable.roles.add(self.role)
+        resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(resp.json()["attrs"][0]["is_writable"])
+
+        # permission writable EntityAttr
+        entity_attr.writable.roles.add(self.role)
+        resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.json()["attrs"][0]["is_writable"])
 
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
@@ -1355,6 +1391,15 @@ class ViewTest(AironeViewTest):
         self.assertEqual(history.operation, History.MOD_ENTITY)
         self.assertEqual(history.details.count(), 1)
         self.assertEqual(history.details.first().target_obj, entity_attr.aclbase_ptr)
+
+        # unset toplevel attribute
+        params = {
+            "id": entity.id,
+            "is_toplevel": False,
+        }
+        self.client.put("/entity/api/v2/%d/" % entity.id, json.dumps(params), "application/json")
+        entity.refresh_from_db()
+        self.assertEqual(entity.status, 0)
 
     def test_update_entity_with_invalid_url(self):
         params = {}

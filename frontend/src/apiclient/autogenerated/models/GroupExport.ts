@@ -33,6 +33,17 @@ export interface GroupExport {
   name: string;
 }
 
+/**
+ * Check if a given object implements the GroupExport interface.
+ */
+export function instanceOfGroupExport(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
+}
+
 export function GroupExportFromJSON(json: any): GroupExport {
   return GroupExportFromJSONTyped(json, false);
 }

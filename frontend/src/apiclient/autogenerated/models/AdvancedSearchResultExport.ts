@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { AdvancedSearchResultAttrInfo } from "./AdvancedSearchResultAttrInfo";
 import {
-  AdvancedSearchResultExportAttrInfo,
-  AdvancedSearchResultExportAttrInfoFromJSON,
-  AdvancedSearchResultExportAttrInfoFromJSONTyped,
-  AdvancedSearchResultExportAttrInfoToJSON,
-} from "./AdvancedSearchResultExportAttrInfo";
+  AdvancedSearchResultAttrInfoFromJSON,
+  AdvancedSearchResultAttrInfoFromJSONTyped,
+  AdvancedSearchResultAttrInfoToJSON,
+} from "./AdvancedSearchResultAttrInfo";
 
 /**
  *
@@ -34,10 +34,10 @@ export interface AdvancedSearchResultExport {
   entities: Array<number>;
   /**
    *
-   * @type {Array<AdvancedSearchResultExportAttrInfo>}
+   * @type {Array<AdvancedSearchResultAttrInfo>}
    * @memberof AdvancedSearchResultExport
    */
-  attrinfo: Array<AdvancedSearchResultExportAttrInfo>;
+  attrinfo: Array<AdvancedSearchResultAttrInfo>;
   /**
    *
    * @type {boolean}
@@ -58,10 +58,28 @@ export interface AdvancedSearchResultExport {
   entryName?: string;
   /**
    *
+   * @type {boolean}
+   * @memberof AdvancedSearchResultExport
+   */
+  isAllEntities?: boolean;
+  /**
+   *
    * @type {string}
    * @memberof AdvancedSearchResultExport
    */
   exportStyle: string;
+}
+
+/**
+ * Check if a given object implements the AdvancedSearchResultExport interface.
+ */
+export function instanceOfAdvancedSearchResultExport(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "entities" in value;
+  isInstance = isInstance && "attrinfo" in value;
+  isInstance = isInstance && "exportStyle" in value;
+
+  return isInstance;
 }
 
 export function AdvancedSearchResultExportFromJSON(
@@ -80,7 +98,7 @@ export function AdvancedSearchResultExportFromJSONTyped(
   return {
     entities: json["entities"],
     attrinfo: (json["attrinfo"] as Array<any>).map(
-      AdvancedSearchResultExportAttrInfoFromJSON
+      AdvancedSearchResultAttrInfoFromJSON
     ),
     hasReferral: !exists(json, "has_referral")
       ? undefined
@@ -89,6 +107,9 @@ export function AdvancedSearchResultExportFromJSONTyped(
       ? undefined
       : json["referral_name"],
     entryName: !exists(json, "entry_name") ? undefined : json["entry_name"],
+    isAllEntities: !exists(json, "is_all_entities")
+      ? undefined
+      : json["is_all_entities"],
     exportStyle: json["export_style"],
   };
 }
@@ -105,11 +126,12 @@ export function AdvancedSearchResultExportToJSON(
   return {
     entities: value.entities,
     attrinfo: (value.attrinfo as Array<any>).map(
-      AdvancedSearchResultExportAttrInfoToJSON
+      AdvancedSearchResultAttrInfoToJSON
     ),
     has_referral: value.hasReferral,
     referral_name: value.referralName,
     entry_name: value.entryName,
+    is_all_entities: value.isAllEntities,
     export_style: value.exportStyle,
   };
 }

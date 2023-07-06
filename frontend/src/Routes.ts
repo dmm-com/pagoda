@@ -8,6 +8,8 @@ export const advancedSearchResultPath = () =>
 export const jobsPath = () => basePath + "jobs";
 export const aclPath = (objectId: number | string) =>
   basePath + `acl/${objectId}`;
+export const aclHistoryPath = (objectId: number | string) =>
+  basePath + `acl/${objectId}/history`;
 export const searchPath = () => basePath + "search";
 
 // entris
@@ -39,7 +41,7 @@ export const showEntryHistoryPath = (
 export const entityHistoryPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/history`;
 export const newEntityPath = () => basePath + "entities/new";
-export const entityPath = (entityId: number | string) =>
+export const editEntityPath = (entityId: number | string) =>
   basePath + `entities/${entityId}`;
 export const entitiesPath = () => basePath + "entities";
 

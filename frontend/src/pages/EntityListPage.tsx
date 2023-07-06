@@ -14,7 +14,7 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityList } from "components/entity/EntityList";
 
-export const EntityPage: FC = () => {
+export const EntityListPage: FC = () => {
   const location = useLocation();
   const history = useHistory();
 

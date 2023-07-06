@@ -34,6 +34,7 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
       <PageHeader title={entity.value?.name ?? ""} description="エントリ一覧">
         <Box width="50px">
           <IconButton
+            id="entity_menu"
             onClick={(e) => {
               setEntityAnchorEl(e.currentTarget);
             }}

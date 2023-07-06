@@ -45,6 +45,19 @@ export interface ACLRole {
   currentPermission: number;
 }
 
+/**
+ * Check if a given object implements the ACLRole interface.
+ */
+export function instanceOfACLRole(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "description" in value;
+  isInstance = isInstance && "currentPermission" in value;
+
+  return isInstance;
+}
+
 export function ACLRoleFromJSON(json: any): ACLRole {
   return ACLRoleFromJSONTyped(json, false);
 }

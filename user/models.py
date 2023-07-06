@@ -24,16 +24,18 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
+    class AuthenticateType(models.IntegerChoices):
+        AUTH_TYPE_LOCAL = 1 << 0, "AUTH_TYPE_LOCAL"
+        AUTH_TYPE_LDAP = 1 << 1, "AUTH_TYPE_LDAP"
+
     objects = UserManager()
 
     MAXIMUM_TOKEN_LIFETIME = 10**8
     TOKEN_LIFETIME = 86400
 
-    # These constants describe where user data is stored.
-    AUTH_TYPE_LOCAL = 1 << 0
-    AUTH_TYPE_LDAP = 1 << 1
-
-    authenticate_type = models.IntegerField(default=AUTH_TYPE_LOCAL)
+    authenticate_type = models.IntegerField(
+        default=AuthenticateType.AUTH_TYPE_LOCAL, choices=AuthenticateType.choices
+    )
     authorized_type = models.IntegerField(default=0)
     token_lifetime = models.IntegerField(default=TOKEN_LIFETIME)
 

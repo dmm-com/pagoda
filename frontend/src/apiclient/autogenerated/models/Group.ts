@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { GroupMember } from "./GroupMember";
 import {
-  GroupMember,
   GroupMemberFromJSON,
   GroupMemberFromJSONTyped,
   GroupMemberToJSON,
@@ -50,6 +50,18 @@ export interface Group {
    * @memberof Group
    */
   readonly members: Array<GroupMember>;
+}
+
+/**
+ * Check if a given object implements the Group interface.
+ */
+export function instanceOfGroup(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "members" in value;
+
+  return isInstance;
 }
 
 export function GroupFromJSON(json: any): Group {

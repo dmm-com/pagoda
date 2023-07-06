@@ -38,7 +38,7 @@ class ViewTest(AironeViewTest):
         name,
         email="email",
         is_superuser=False,
-        authenticate_type=User.AUTH_TYPE_LOCAL,
+        authenticate_type=User.AuthenticateType.AUTH_TYPE_LOCAL,
     ):
         user = User(
             username=name,
@@ -2799,162 +2799,158 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             resp.json(),
             {
-                "result": {
-                    "ret_count": 2,
-                    "ret_values": [
-                        {
-                            "entity": {"id": self.entity.id, "name": "test-entity"},
-                            "entry": {"id": entry1.id, "name": "Entry1"},
-                            "attrs": {
-                                "val": {
-                                    "is_readable": True,
-                                    "type": 2,
-                                    "value": {"asString": "hoge"},
-                                },
-                                "vals": {
-                                    "is_readable": True,
-                                    "type": 1026,
-                                    "value": {"asArrayString": ["foo", "bar"]},
-                                },
-                                "ref": {
-                                    "is_readable": True,
-                                    "type": 1,
-                                    "value": {"asObject": {"id": self.ref_entry.id, "name": "r-0"}},
-                                },
-                                "refs": {
-                                    "is_readable": True,
-                                    "type": 1025,
-                                    "value": {
-                                        "asArrayObject": [{"id": self.ref_entry.id, "name": "r-0"}]
-                                    },
-                                },
-                                "name": {
-                                    "is_readable": True,
-                                    "type": 2049,
-                                    "value": {
-                                        "asNamedObject": {
-                                            "hoge": {"id": self.ref_entry.id, "name": "r-0"}
-                                        }
-                                    },
-                                },
-                                "names": {
-                                    "is_readable": True,
-                                    "type": 3073,
-                                    "value": {
-                                        "asArrayNamedObject": [
-                                            {"foo": {"id": self.ref_entry.id, "name": "r-0"}},
-                                            {"bar": {"id": self.ref_entry.id, "name": "r-0"}},
-                                        ]
-                                    },
-                                },
-                                "group": {
-                                    "is_readable": True,
-                                    "type": 16,
-                                    "value": {"asGroup": {"id": self.group.id, "name": "group0"}},
-                                },
-                                "groups": {
-                                    "is_readable": True,
-                                    "type": 1040,
-                                    "value": {
-                                        "asArrayGroup": [{"id": self.group.id, "name": "group0"}]
-                                    },
-                                },
-                                "bool": {
-                                    "is_readable": True,
-                                    "type": 8,
-                                    "value": {"asBoolean": False},
-                                },
-                                "text": {
-                                    "is_readable": True,
-                                    "type": 4,
-                                    "value": {"asString": "fuga"},
-                                },
-                                "date": {
-                                    "is_readable": True,
-                                    "type": 32,
-                                    "value": {"asString": "2018-12-31"},
-                                },
-                                "role": {
-                                    "is_readable": True,
-                                    "type": 64,
-                                    "value": {"asRole": {"id": self.role.id, "name": "role0"}},
-                                },
-                                "roles": {
-                                    "is_readable": True,
-                                    "type": 1088,
-                                    "value": {
-                                        "asArrayRole": [{"id": self.role.id, "name": "role0"}]
-                                    },
+                "count": 2,
+                "values": [
+                    {
+                        "entity": {"id": self.entity.id, "name": "test-entity"},
+                        "entry": {"id": entry1.id, "name": "Entry1"},
+                        "attrs": {
+                            "val": {
+                                "is_readable": True,
+                                "type": 2,
+                                "value": {"as_string": "hoge"},
+                            },
+                            "vals": {
+                                "is_readable": True,
+                                "type": 1026,
+                                "value": {"as_array_string": ["foo", "bar"]},
+                            },
+                            "ref": {
+                                "is_readable": True,
+                                "type": 1,
+                                "value": {"as_object": {"id": self.ref_entry.id, "name": "r-0"}},
+                            },
+                            "refs": {
+                                "is_readable": True,
+                                "type": 1025,
+                                "value": {
+                                    "as_array_object": [{"id": self.ref_entry.id, "name": "r-0"}]
                                 },
                             },
-                            "is_readable": True,
-                        },
-                        {
-                            "entity": {"id": self.entity.id, "name": "test-entity"},
-                            "entry": {"id": entry2.id, "name": "Entry2"},
-                            "attrs": {
-                                "val": {"is_readable": True, "type": 2, "value": {"asString": ""}},
-                                "vals": {
-                                    "is_readable": True,
-                                    "type": 1026,
-                                    "value": {"asArrayString": []},
-                                },
-                                "ref": {
-                                    "is_readable": True,
-                                    "type": 1,
-                                    "value": {"asObject": {"id": "", "name": ""}},
-                                },
-                                "refs": {
-                                    "is_readable": True,
-                                    "type": 1025,
-                                    "value": {"asArrayObject": []},
-                                },
-                                "name": {
-                                    "is_readable": True,
-                                    "type": 2049,
-                                    "value": {"asNamedObject": {"": {"id": "", "name": ""}}},
-                                },
-                                "names": {
-                                    "is_readable": True,
-                                    "type": 3073,
-                                    "value": {"asArrayNamedObject": []},
-                                },
-                                "group": {
-                                    "is_readable": True,
-                                    "type": 16,
-                                    "value": {"asGroup": {"id": "", "name": ""}},
-                                },
-                                "groups": {
-                                    "is_readable": True,
-                                    "type": 1040,
-                                    "value": {"asArrayGroup": []},
-                                },
-                                "bool": {
-                                    "is_readable": True,
-                                    "type": 8,
-                                    "value": {"asBoolean": False},
-                                },
-                                "text": {"is_readable": True, "type": 4, "value": {"asString": ""}},
-                                "date": {
-                                    "is_readable": True,
-                                    "type": 32,
-                                    "value": {"asString": ""},
-                                },
-                                "role": {
-                                    "is_readable": True,
-                                    "type": 64,
-                                    "value": {"asRole": {"id": "", "name": ""}},
-                                },
-                                "roles": {
-                                    "is_readable": True,
-                                    "type": 1088,
-                                    "value": {"asArrayRole": []},
+                            "name": {
+                                "is_readable": True,
+                                "type": 2049,
+                                "value": {
+                                    "as_named_object": {
+                                        "hoge": {"id": self.ref_entry.id, "name": "r-0"}
+                                    }
                                 },
                             },
-                            "is_readable": True,
+                            "names": {
+                                "is_readable": True,
+                                "type": 3073,
+                                "value": {
+                                    "as_array_named_object": [
+                                        {"foo": {"id": self.ref_entry.id, "name": "r-0"}},
+                                        {"bar": {"id": self.ref_entry.id, "name": "r-0"}},
+                                    ]
+                                },
+                            },
+                            "group": {
+                                "is_readable": True,
+                                "type": 16,
+                                "value": {"as_group": {"id": self.group.id, "name": "group0"}},
+                            },
+                            "groups": {
+                                "is_readable": True,
+                                "type": 1040,
+                                "value": {
+                                    "as_array_group": [{"id": self.group.id, "name": "group0"}]
+                                },
+                            },
+                            "bool": {
+                                "is_readable": True,
+                                "type": 8,
+                                "value": {"as_boolean": False},
+                            },
+                            "text": {
+                                "is_readable": True,
+                                "type": 4,
+                                "value": {"as_string": "fuga"},
+                            },
+                            "date": {
+                                "is_readable": True,
+                                "type": 32,
+                                "value": {"as_string": "2018-12-31"},
+                            },
+                            "role": {
+                                "is_readable": True,
+                                "type": 64,
+                                "value": {"as_role": {"id": self.role.id, "name": "role0"}},
+                            },
+                            "roles": {
+                                "is_readable": True,
+                                "type": 1088,
+                                "value": {"as_array_role": [{"id": self.role.id, "name": "role0"}]},
+                            },
                         },
-                    ],
-                }
+                        "is_readable": True,
+                    },
+                    {
+                        "entity": {"id": self.entity.id, "name": "test-entity"},
+                        "entry": {"id": entry2.id, "name": "Entry2"},
+                        "attrs": {
+                            "val": {"is_readable": True, "type": 2, "value": {"as_string": ""}},
+                            "vals": {
+                                "is_readable": True,
+                                "type": 1026,
+                                "value": {"as_array_string": []},
+                            },
+                            "ref": {
+                                "is_readable": True,
+                                "type": 1,
+                                "value": {"as_object": {"id": "", "name": ""}},
+                            },
+                            "refs": {
+                                "is_readable": True,
+                                "type": 1025,
+                                "value": {"as_array_object": []},
+                            },
+                            "name": {
+                                "is_readable": True,
+                                "type": 2049,
+                                "value": {"as_named_object": {"": {"id": "", "name": ""}}},
+                            },
+                            "names": {
+                                "is_readable": True,
+                                "type": 3073,
+                                "value": {"as_array_named_object": []},
+                            },
+                            "group": {
+                                "is_readable": True,
+                                "type": 16,
+                                "value": {"as_group": {"id": "", "name": ""}},
+                            },
+                            "groups": {
+                                "is_readable": True,
+                                "type": 1040,
+                                "value": {"as_array_group": []},
+                            },
+                            "bool": {
+                                "is_readable": True,
+                                "type": 8,
+                                "value": {"as_boolean": False},
+                            },
+                            "text": {"is_readable": True, "type": 4, "value": {"as_string": ""}},
+                            "date": {
+                                "is_readable": True,
+                                "type": 32,
+                                "value": {"as_string": ""},
+                            },
+                            "role": {
+                                "is_readable": True,
+                                "type": 64,
+                                "value": {"as_role": {"id": "", "name": ""}},
+                            },
+                            "roles": {
+                                "is_readable": True,
+                                "type": 1088,
+                                "value": {"as_array_role": []},
+                            },
+                        },
+                        "is_readable": True,
+                    },
+                ],
             },
         )
 
@@ -2970,6 +2966,31 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         # TODO assert result
+
+    def test_advanced_search_with_too_long_entry_name(self):
+        params = {
+            "entities": [],
+            "entry_name": "a" * (CONFIG.MAX_QUERY_SIZE + 1),
+            "is_all_entities": True,
+            "attrinfo": [],
+        }
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_advanced_search_with_too_long_keyword(self):
+        params = {
+            "entities": [],
+            "is_all_entities": True,
+            "attrinfo": [{"name": "a" * (CONFIG.MAX_QUERY_SIZE + 1)}],
+        }
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
 
     def test_restore_entry_attribute_value(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
@@ -3817,6 +3838,7 @@ class ViewTest(AironeViewTest):
         export_params = {
             "entities": [entity.id],
             "attrinfo": [{"name": "attr", "keyword": "data-5"}],
+            "is_all_entities": False,
             "export_style": "csv",
         }
 
@@ -4008,6 +4030,55 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             yaml_contents["test-entity"][0]["attrs"], {x["column"]: x["yaml"] for x in results}
         )
+
+    @patch(
+        "dashboard.tasks.export_search_result.delay",
+        Mock(side_effect=dashboard_tasks.export_search_result),
+    )
+    def test_export_with_all_entities(self):
+        self.add_entry(self.user, "Entry", self.entity, values={"val": "hoge"})
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [],
+                    "attrinfo": [{"name": "hoge"}],
+                    "is_all_entities": "true",
+                    "export_style": "yaml",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "non_field_errors": [
+                    {
+                        "code": "AE-121000",
+                        "message": "Invalid value for attribute parameter",
+                    }
+                ]
+            },
+        )
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [],
+                    "attrinfo": [{"name": "val"}],
+                    "is_all_entities": "true",
+                    "export_style": "yaml",
+                }
+            ),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 200)
+        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        self.assertEqual(resp_data, {"test-entity": [{"attrs": {"val": "hoge"}, "name": "Entry"}]})
 
     def test_entry_history(self):
         values = {

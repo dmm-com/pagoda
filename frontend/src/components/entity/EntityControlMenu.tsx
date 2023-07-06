@@ -15,11 +15,12 @@ import { RateLimitedClickable } from "../common/RateLimitedClickable";
 import {
   aclPath,
   entityHistoryPath,
-  entityPath,
+  editEntityPath,
   entitiesPath,
   restoreEntryPath,
   topPath,
   entityEntriesPath,
+  aclHistoryPath,
 } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
@@ -91,7 +92,7 @@ export const EntityControlMenu: FC<Props> = ({
       <MenuItem component={Link} to={entityEntriesPath(entityId)}>
         <Typography>エントリ一覧</Typography>
       </MenuItem>
-      <MenuItem component={Link} to={entityPath(entityId)}>
+      <MenuItem component={Link} to={editEntityPath(entityId)}>
         <Typography>編集</Typography>
       </MenuItem>
       <MenuItem component={Link} to={aclPath(entityId)}>
@@ -99,6 +100,9 @@ export const EntityControlMenu: FC<Props> = ({
       </MenuItem>
       <MenuItem component={Link} to={entityHistoryPath(entityId)}>
         <Typography>変更履歴</Typography>
+      </MenuItem>
+      <MenuItem component={Link} to={aclHistoryPath(entityId)}>
+        <Typography>ACL 変更履歴</Typography>
       </MenuItem>
       <RateLimitedClickable
         intervalSec={5}

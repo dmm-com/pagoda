@@ -21,7 +21,7 @@ class ViewTest(AironeViewTest):
         name,
         email="email",
         is_superuser=False,
-        authenticate_type=User.AUTH_TYPE_LOCAL,
+        authenticate_type=User.AuthenticateType.AUTH_TYPE_LOCAL,
     ):
         user = User(
             username=name,
@@ -714,7 +714,7 @@ class ViewTest(AironeViewTest):
         )
         self.guest.refresh_from_db()
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(self.guest.authenticate_type, User.AUTH_TYPE_LDAP)
+        self.assertEqual(self.guest.authenticate_type, User.AuthenticateType.AUTH_TYPE_LDAP)
 
     @patch("user.views.LDAPBackend.is_authenticated", Mock(return_value=False))
     def test_post_chnage_auth_with_incorrect_password(self):
@@ -745,7 +745,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(resp.status_code, 400)
 
     def test_password_reset_with_invalid_username(self):
-        user = self._create_user("testuser", authenticate_type=User.AUTH_TYPE_LDAP)
+        user = self._create_user("testuser", authenticate_type=User.AuthenticateType.AUTH_TYPE_LDAP)
 
         # testing this view class requires a complicated client.
         # instead of that, we call the override method directly for now.

@@ -1,8 +1,7 @@
 #!/bin/sh
 
 # clear the database
-rm db.sqlite3
-for dir in `find ./ -name "migrations"`
+for dir in `find ./ -name "migrations" -maxdepth 2`
 do
   rm ${dir}/0*.py || true
 done

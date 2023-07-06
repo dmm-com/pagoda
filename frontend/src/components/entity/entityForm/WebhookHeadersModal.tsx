@@ -16,12 +16,21 @@ import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
 import { Control, Controller, useFieldArray, useWatch } from "react-hook-form";
 
-import { Schema } from "../EntityFormSchema";
+import { Schema } from "./EntityFormSchema";
 
 const StyledModal = styled(Modal)(({}) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+}));
+
+const StyledTable = styled(Table)(({}) => ({
+  "& td": {
+    height: "72px",
+    padding: "8px",
+    verticalAlign: "top",
+    borderBottom: "0px",
+  },
 }));
 
 const Paper = styled(Box)(({ theme }) => ({
@@ -84,46 +93,41 @@ export const WebhookHeadersModal: FC<Props> = ({
   };
 
   return (
-    <StyledModal
-      aria-labelledby="transition-modal-title"
-      aria-describedby="transition-modal-description"
-      open={webhookIndex >= 0}
-      onClose={handleCloseModal}
-    >
-      <Paper>
+    <StyledModal open={webhookIndex >= 0} onClose={handleCloseModal}>
+      <Paper id="modal_webhook_header">
         <Typography variant={"h6"}>AdditionalHeader (Optional)</Typography>
         <Typography variant={"caption"}>
           指定した endpoint URL
           に送るリクエストに付加するヘッダ情報を入力してください。
         </Typography>
-        <Table className="table">
+        <StyledTable className="table">
           <TableBody>
             {fields.length === 0 && (
               <TableRow>
-                <TableCell sx={{ p: "4px 8px 0px 0px", borderBottom: "0px" }}>
+                <TableCell>
                   <TextField
                     label="Key"
                     variant="standard"
-                    fullWidth={true}
-                    disabled={true}
+                    fullWidth
+                    disabled
                     onClick={() => handleAppendWebhookAdditionalHeader(0)}
                   />
                 </TableCell>
-                <TableCell sx={{ p: "4px 8px 0px 0px", borderBottom: "0px" }}>
+                <TableCell>
                   <TextField
                     label="Value"
                     variant="standard"
-                    fullWidth={true}
-                    disabled={true}
+                    fullWidth
+                    disabled
                     onClick={() => handleAppendWebhookAdditionalHeader(0)}
                   />
                 </TableCell>
-                <TableCell sx={{ borderBottom: "0px" }}>
-                  <IconButton disabled={true}>
+                <TableCell>
+                  <IconButton disabled>
                     <DeleteOutlineIcon />
                   </IconButton>
                 </TableCell>
-                <TableCell sx={{ borderBottom: "0px" }}>
+                <TableCell>
                   <IconButton
                     onClick={() => handleAppendWebhookAdditionalHeader(0)}
                   >
@@ -134,7 +138,7 @@ export const WebhookHeadersModal: FC<Props> = ({
             )}
             {fields.map((field, index) => (
               <TableRow key={field.id}>
-                <TableCell sx={{ p: "4px 8px 0px 0px", borderBottom: "0px" }}>
+                <TableCell>
                   <Controller
                     name={`webhooks.${webhookIndex}.headers.${index}.headerKey`}
                     control={control}
@@ -144,15 +148,14 @@ export const WebhookHeadersModal: FC<Props> = ({
                         {...field}
                         label="Key"
                         variant="standard"
-                        fullWidth={true}
+                        fullWidth
                         error={error != null}
                         helperText={error?.message}
-                        sx={{ width: "100%" }}
                       />
                     )}
                   />
                 </TableCell>
-                <TableCell sx={{ p: "4px 8px 0px 0px", borderBottom: "0px" }}>
+                <TableCell>
                   <Controller
                     name={`webhooks.${webhookIndex}.headers.${index}.headerValue`}
                     control={control}
@@ -162,16 +165,15 @@ export const WebhookHeadersModal: FC<Props> = ({
                         {...field}
                         label="Value"
                         variant="standard"
-                        fullWidth={true}
+                        fullWidth
                         error={error != null}
                         helperText={error?.message}
-                        sx={{ width: "100%" }}
                       />
                     )}
                   />
                 </TableCell>
 
-                <TableCell sx={{ borderBottom: "0px" }}>
+                <TableCell>
                   <IconButton
                     onClick={() => handleDeleteWebhookAdditionalHeader(index)}
                   >
@@ -179,7 +181,7 @@ export const WebhookHeadersModal: FC<Props> = ({
                   </IconButton>
                 </TableCell>
 
-                <TableCell sx={{ borderBottom: "0px" }}>
+                <TableCell>
                   <IconButton
                     onClick={() =>
                       handleAppendWebhookAdditionalHeader(index + 1)
@@ -191,7 +193,7 @@ export const WebhookHeadersModal: FC<Props> = ({
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+        </StyledTable>
 
         <Box sx={{ width: "92%" }}>
           <Button onClick={handleCloseModal}>

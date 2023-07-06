@@ -1,4 +1,5 @@
 import { Autocomplete, Box, TextField, Typography } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
@@ -7,6 +8,15 @@ import { useAsync } from "react-use";
 import { aironeApiClientV2 } from "../../../repository/AironeApiClientV2";
 
 import { Schema } from "./EntryFormSchema";
+
+const StyledTypography = styled(Typography)(({}) => ({
+  color: "rgba(0, 0, 0, 0.6)",
+}));
+
+const StyledBox = styled(Box)(({}) => ({
+  display: "flex",
+  alignItems: "center",
+}));
 
 interface Props {
   attrId: number;
@@ -50,10 +60,8 @@ export const RoleAttributeValueField: FC<Props> = ({
 
   return (
     <Box>
-      <Typography variant="caption" color="rgba(0, 0, 0, 0.6)">
-        ロールを選択
-      </Typography>
-      <Box display="flex" alignItems="center">
+      <StyledTypography variant="caption">ロールを選択</StyledTypography>
+      <StyledBox>
         <Controller
           name={
             multiple === true
@@ -63,7 +71,7 @@ export const RoleAttributeValueField: FC<Props> = ({
           control={control}
           render={({ field, fieldState: { error } }) => (
             <Autocomplete
-              sx={{ width: "280px" }}
+              fullWidth
               multiple={multiple}
               loading={roles.loading}
               options={roles.value ?? []}
@@ -85,7 +93,7 @@ export const RoleAttributeValueField: FC<Props> = ({
             />
           )}
         />
-      </Box>
+      </StyledBox>
     </Box>
   );
 };

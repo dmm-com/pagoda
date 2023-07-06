@@ -33,6 +33,17 @@ export interface AttributeData {
   value: any | null;
 }
 
+/**
+ * Check if a given object implements the AttributeData interface.
+ */
+export function instanceOfAttributeData(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "value" in value;
+
+  return isInstance;
+}
+
 export function AttributeDataFromJSON(json: any): AttributeData {
   return AttributeDataFromJSONTyped(json, false);
 }

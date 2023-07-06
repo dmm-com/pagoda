@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { UserList } from "./UserList";
 import {
-  UserList,
   UserListFromJSON,
   UserListFromJSONTyped,
   UserListToJSON,
@@ -50,6 +50,15 @@ export interface PaginatedUserListList {
    * @memberof PaginatedUserListList
    */
   results?: Array<UserList>;
+}
+
+/**
+ * Check if a given object implements the PaginatedUserListList interface.
+ */
+export function instanceOfPaginatedUserListList(value: object): boolean {
+  let isInstance = true;
+
+  return isInstance;
 }
 
 export function PaginatedUserListListFromJSON(

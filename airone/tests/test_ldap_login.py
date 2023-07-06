@@ -34,7 +34,9 @@ class ViewTest(AironeTestCase):
         self.assertTrue(self.client.login(username="guest", password="guest"))
         self.assertTrue(
             User.objects.filter(
-                username="guest", is_active=True, authenticate_type=User.AUTH_TYPE_LOCAL
+                username="guest",
+                is_active=True,
+                authenticate_type=User.AuthenticateType.AUTH_TYPE_LOCAL,
             ).exists()
         )
 
@@ -69,6 +71,6 @@ class ViewTest(AironeTestCase):
             User.objects.filter(
                 username="ldap_user",
                 is_active=True,
-                authenticate_type=User.AUTH_TYPE_LDAP,
+                authenticate_type=User.AuthenticateType.AUTH_TYPE_LDAP,
             ).exists()
         )

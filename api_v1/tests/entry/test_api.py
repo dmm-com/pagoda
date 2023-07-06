@@ -21,6 +21,10 @@ class APITest(AironeViewTest):
             {"referral": ["hoge"]},
             {"entry_limit": "hoge"},
         ]
+        resp = self.client.post("/api/v1/entry/search", [], "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'"parameter must be in dictionary format"')
+
         for invalid_param in invalid_params:
             params = {**valid_params, **invalid_param}
             resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")

@@ -33,6 +33,17 @@ export interface Attribute {
   name: string;
 }
 
+/**
+ * Check if a given object implements the Attribute interface.
+ */
+export function instanceOfAttribute(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
+}
+
 export function AttributeFromJSON(json: any): Attribute {
   return AttributeFromJSONTyped(json, false);
 }

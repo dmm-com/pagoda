@@ -1,10 +1,19 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from "./ACL";
+export * from "./ACLHistory";
+export * from "./ACLHistoryChange";
+export * from "./ACLHistoryUser";
 export * from "./ACLParent";
 export * from "./ACLRole";
+export * from "./AdvancedSearch";
+export * from "./AdvancedSearchResult";
+export * from "./AdvancedSearchResultAttrInfo";
 export * from "./AdvancedSearchResultExport";
-export * from "./AdvancedSearchResultExportAttrInfo";
+export * from "./AdvancedSearchResultValue";
+export * from "./AdvancedSearchResultValueAttr";
+export * from "./AdvancedSearchResultValueEntry";
+export * from "./AdvancedSearchResultValueReferral";
 export * from "./Attribute";
 export * from "./AttributeData";
 export * from "./Entity";

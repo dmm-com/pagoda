@@ -1,0 +1,39 @@
+{{- if .Values.cronjob.enabled }}
+kind: CronJob
+apiVersion: batch/v1beta1
+metadata:
+  name: airone-cronjob
+spec:
+  schedule: {{ .Values.cronjob.schedule | quote}}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: airone-cronjob
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              env:
+              {{- include "airone.env" . | nindent 16 }}
+              {{- if .Values.addEnvVarSecret }}
+              envFrom:
+                - secretRef:
+                    name: {{ .Values.addEnvVarSecret }}
+              {{- end }}
+              command: {{ .Values.cronjob.command }}
+              args: {{ .Values.cronjob.args }}
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+          volumes:
+            - name: config
+              configMap:
+                name: airone-config
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          restartPolicy: OnFailure
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+{{- end }}

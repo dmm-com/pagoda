@@ -1,6 +1,8 @@
 import React, { FC } from "react";
+import { RouteComponentProps } from "react-router";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
+import { ACLHistoryPage } from "./pages/ACLHistoryPage";
 import { CopyEntryPage } from "./pages/CopyEntryPage";
 import { EditRolePage } from "./pages/EditRolePage";
 import { EntryDetailsPage } from "./pages/EntryDetailsPage";
@@ -15,7 +17,7 @@ import {
   entitiesPath,
   entityEntriesPath,
   entityHistoryPath,
-  entityPath,
+  editEntityPath,
   groupPath,
   groupsPath,
   jobsPath,
@@ -35,6 +37,7 @@ import {
   rolePath,
   newRolePath,
   topPath,
+  aclHistoryPath,
 } from "Routes";
 import { Header } from "components/Header";
 import { ACLPage } from "pages/ACLPage";
@@ -42,11 +45,11 @@ import { AdvancedSearchPage } from "pages/AdvancedSearchPage";
 import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";
 import { DashboardPage } from "pages/DashboardPage";
 import { EditEntityPage } from "pages/EditEntityPage";
-import { EditEntryPage } from "pages/EditEntryPage";
 import { EditGroupPage } from "pages/EditGroupPage";
 import { EditUserPage } from "pages/EditUserPage";
 import { EntityHistoryPage } from "pages/EntityHistoryPage";
-import { EntityPage } from "pages/EntityListPage";
+import { EntityListPage } from "pages/EntityListPage";
+import { EntryEditPage } from "pages/EntryEditPage";
 import { EntryHistoryListPage } from "pages/EntryHistoryListPage";
 import { EntryListPage } from "pages/EntryListPage";
 import { GroupPage } from "pages/GroupPage";
@@ -59,7 +62,9 @@ interface Props {
     path: string;
     routePath: string;
     component?: FC;
-    render?: any;
+    render?: (
+      props: RouteComponentProps<{ [K: string]: string | undefined }>
+    ) => React.ReactNode;
   }[];
 }
 
@@ -89,7 +94,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               path={advancedSearchResultPath()}
               component={AdvancedSearchResultsPage}
             />
-            <Route path={newEntryPath(":entityId")} component={EditEntryPage} />
+            <Route path={newEntryPath(":entityId")} component={EntryEditPage} />
             <Route
               path={copyEntryPath(":entityId", ":entryId")}
               component={CopyEntryPage}
@@ -104,7 +109,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             />
             <Route
               path={entryEditPath(":entityId", ":entryId")}
-              component={EditEntryPage}
+              component={EntryEditPage}
             />
             <Route
               path={showEntryHistoryPath(":entityId", ":entryId")}
@@ -119,12 +124,19 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               component={EntityHistoryPage}
             />
             <Route path={newEntityPath()} component={EditEntityPage} />
-            <Route path={entityPath(":entityId")} component={EditEntityPage} />
-            <Route path={entitiesPath()} component={EntityPage} />
+            <Route
+              path={editEntityPath(":entityId")}
+              component={EditEntityPage}
+            />
+            <Route path={entitiesPath()} component={EntityListPage} />
             <Route path={newGroupPath()} component={EditGroupPage} />
             <Route path={groupPath(":groupId")} component={EditGroupPage} />
             <Route path={groupsPath()} component={GroupPage} />
             <Route path={jobsPath()} component={JobPage} />
+            <Route
+              path={aclHistoryPath(":objectId")}
+              component={ACLHistoryPage}
+            />
             <Route path={aclPath(":objectId")} component={ACLPage} />
             <Route path={newUserPath()} component={EditUserPage} />
             <Route path={userPath(":userId")} component={EditUserPage} />

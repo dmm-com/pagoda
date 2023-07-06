@@ -45,6 +45,17 @@ export interface UserCreate {
   isSuperuser?: boolean;
 }
 
+/**
+ * Check if a given object implements the UserCreate interface.
+ */
+export function instanceOfUserCreate(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "username" in value;
+  isInstance = isInstance && "password" in value;
+
+  return isInstance;
+}
+
 export function UserCreateFromJSON(json: any): UserCreate {
   return UserCreateFromJSONTyped(json, false);
 }

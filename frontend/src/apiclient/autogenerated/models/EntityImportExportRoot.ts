@@ -13,14 +13,14 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntityAttrImportExport } from "./EntityAttrImportExport";
 import {
-  EntityAttrImportExport,
   EntityAttrImportExportFromJSON,
   EntityAttrImportExportFromJSONTyped,
   EntityAttrImportExportToJSON,
 } from "./EntityAttrImportExport";
+import type { EntityImportExport } from "./EntityImportExport";
 import {
-  EntityImportExport,
   EntityImportExportFromJSON,
   EntityImportExportFromJSONTyped,
   EntityImportExportToJSON,
@@ -44,6 +44,17 @@ export interface EntityImportExportRoot {
    * @memberof EntityImportExportRoot
    */
   entityAttr: Array<EntityAttrImportExport>;
+}
+
+/**
+ * Check if a given object implements the EntityImportExportRoot interface.
+ */
+export function instanceOfEntityImportExportRoot(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "entity" in value;
+  isInstance = isInstance && "entityAttr" in value;
+
+  return isInstance;
 }
 
 export function EntityImportExportRootFromJSON(

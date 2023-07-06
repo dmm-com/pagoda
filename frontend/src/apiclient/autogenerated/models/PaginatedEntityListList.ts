@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntityList } from "./EntityList";
 import {
-  EntityList,
   EntityListFromJSON,
   EntityListFromJSONTyped,
   EntityListToJSON,
@@ -50,6 +50,15 @@ export interface PaginatedEntityListList {
    * @memberof PaginatedEntityListList
    */
   results?: Array<EntityList>;
+}
+
+/**
+ * Check if a given object implements the PaginatedEntityListList interface.
+ */
+export function instanceOfPaginatedEntityListList(value: object): boolean {
+  let isInstance = true;
+
+  return isInstance;
 }
 
 export function PaginatedEntityListListFromJSON(

@@ -7,7 +7,7 @@ import { Link, Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useToggle } from "react-use";
 
-import { schema, Schema } from "../components/user/UserFormSchema";
+import { schema, Schema } from "../components/user/userForm/UserFormSchema";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useFormNotification } from "../hooks/useFormNotification";
 import { useTypedParams } from "../hooks/useTypedParams";

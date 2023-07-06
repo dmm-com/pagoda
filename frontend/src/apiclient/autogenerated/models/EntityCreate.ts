@@ -13,14 +13,14 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntityAttrCreate } from "./EntityAttrCreate";
 import {
-  EntityAttrCreate,
   EntityAttrCreateFromJSON,
   EntityAttrCreateFromJSONTyped,
   EntityAttrCreateToJSON,
 } from "./EntityAttrCreate";
+import type { WebhookCreateUpdate } from "./WebhookCreateUpdate";
 import {
-  WebhookCreateUpdate,
   WebhookCreateUpdateFromJSON,
   WebhookCreateUpdateFromJSONTyped,
   WebhookCreateUpdateToJSON,
@@ -68,6 +68,17 @@ export interface EntityCreate {
    * @memberof EntityCreate
    */
   webhooks?: Array<WebhookCreateUpdate>;
+}
+
+/**
+ * Check if a given object implements the EntityCreate interface.
+ */
+export function instanceOfEntityCreate(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
 }
 
 export function EntityCreateFromJSON(json: any): EntityCreate {

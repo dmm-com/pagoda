@@ -193,6 +193,15 @@ describe("schema", () => {
     expect(() => schema.parse(value)).toThrow();
   });
 
+  test("validation fails if name has only whitespaces", () => {
+    const value = {
+      ...baseValue,
+      name: "   ",
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
   test("validation fails if string attr value is mandatory and empty", () => {
     const value = {
       ...baseValue,

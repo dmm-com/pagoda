@@ -39,6 +39,17 @@ export interface Entity {
   isPublic?: boolean;
 }
 
+/**
+ * Check if a given object implements the Entity interface.
+ */
+export function instanceOfEntity(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
+}
+
 export function EntityFromJSON(json: any): Entity {
   return EntityFromJSONTyped(json, false);
 }

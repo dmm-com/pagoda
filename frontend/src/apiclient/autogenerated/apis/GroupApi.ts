@@ -13,17 +13,19 @@
  */
 
 import * as runtime from "../runtime";
-import {
+import type {
   Group,
+  GroupCreateUpdate,
+  GroupExport,
+  GroupTree,
+} from "../models";
+import {
   GroupFromJSON,
   GroupToJSON,
-  GroupCreateUpdate,
   GroupCreateUpdateFromJSON,
   GroupCreateUpdateToJSON,
-  GroupExport,
   GroupExportFromJSON,
   GroupExportToJSON,
-  GroupTree,
   GroupTreeFromJSON,
   GroupTreeToJSON,
 } from "../models";
@@ -50,10 +52,11 @@ export interface GroupApiV2GroupsUpdateRequest {
  */
 export class GroupApi extends runtime.BaseAPI {
   /**
+   *
    */
   async groupApiV2GroupsCreateRaw(
     requestParameters: GroupApiV2GroupsCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<GroupCreateUpdate>> {
     if (
       requestParameters.groupCreateUpdate === null ||
@@ -102,10 +105,11 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async groupApiV2GroupsCreate(
     requestParameters: GroupApiV2GroupsCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<GroupCreateUpdate> {
     const response = await this.groupApiV2GroupsCreateRaw(
       requestParameters,
@@ -115,10 +119,11 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async groupApiV2GroupsDestroyRaw(
     requestParameters: GroupApiV2GroupsDestroyRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -162,18 +167,20 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async groupApiV2GroupsDestroy(
     requestParameters: GroupApiV2GroupsDestroyRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<void> {
     await this.groupApiV2GroupsDestroyRaw(requestParameters, initOverrides);
   }
 
   /**
+   *
    */
   async groupApiV2GroupsExportListRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<Array<GroupExport>>> {
     const queryParameters: any = {};
 
@@ -209,18 +216,20 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async groupApiV2GroupsExportList(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<Array<GroupExport>> {
     const response = await this.groupApiV2GroupsExportListRaw(initOverrides);
     return await response.value();
   }
 
   /**
+   *
    */
   async groupApiV2GroupsImportCreateRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     const queryParameters: any = {};
 
@@ -254,17 +263,19 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async groupApiV2GroupsImportCreate(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<void> {
     await this.groupApiV2GroupsImportCreateRaw(initOverrides);
   }
 
   /**
+   *
    */
   async groupApiV2GroupsListRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<Array<Group>>> {
     const queryParameters: any = {};
 
@@ -300,19 +311,21 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async groupApiV2GroupsList(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<Array<Group>> {
     const response = await this.groupApiV2GroupsListRaw(initOverrides);
     return await response.value();
   }
 
   /**
+   *
    */
   async groupApiV2GroupsRetrieveRaw(
     requestParameters: GroupApiV2GroupsRetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<Group>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -358,10 +371,11 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async groupApiV2GroupsRetrieve(
     requestParameters: GroupApiV2GroupsRetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<Group> {
     const response = await this.groupApiV2GroupsRetrieveRaw(
       requestParameters,
@@ -371,9 +385,10 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async groupApiV2GroupsTreeListRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<Array<GroupTree>>> {
     const queryParameters: any = {};
 
@@ -409,19 +424,21 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async groupApiV2GroupsTreeList(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<Array<GroupTree>> {
     const response = await this.groupApiV2GroupsTreeListRaw(initOverrides);
     return await response.value();
   }
 
   /**
+   *
    */
   async groupApiV2GroupsUpdateRaw(
     requestParameters: GroupApiV2GroupsUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<GroupCreateUpdate>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -480,10 +497,11 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async groupApiV2GroupsUpdate(
     requestParameters: GroupApiV2GroupsUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<GroupCreateUpdate> {
     const response = await this.groupApiV2GroupsUpdateRaw(
       requestParameters,

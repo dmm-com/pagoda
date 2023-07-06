@@ -16,33 +16,43 @@ import { exists, mapValues } from "../runtime";
 /**
  *
  * @export
- * @interface AdvancedSearchResultExportAttrInfo
+ * @interface AdvancedSearchResultAttrInfo
  */
-export interface AdvancedSearchResultExportAttrInfo {
+export interface AdvancedSearchResultAttrInfo {
   /**
    *
    * @type {string}
-   * @memberof AdvancedSearchResultExportAttrInfo
+   * @memberof AdvancedSearchResultAttrInfo
    */
   name: string;
   /**
    *
    * @type {string}
-   * @memberof AdvancedSearchResultExportAttrInfo
+   * @memberof AdvancedSearchResultAttrInfo
    */
   keyword?: string;
 }
 
-export function AdvancedSearchResultExportAttrInfoFromJSON(
-  json: any
-): AdvancedSearchResultExportAttrInfo {
-  return AdvancedSearchResultExportAttrInfoFromJSONTyped(json, false);
+/**
+ * Check if a given object implements the AdvancedSearchResultAttrInfo interface.
+ */
+export function instanceOfAdvancedSearchResultAttrInfo(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
 }
 
-export function AdvancedSearchResultExportAttrInfoFromJSONTyped(
+export function AdvancedSearchResultAttrInfoFromJSON(
+  json: any
+): AdvancedSearchResultAttrInfo {
+  return AdvancedSearchResultAttrInfoFromJSONTyped(json, false);
+}
+
+export function AdvancedSearchResultAttrInfoFromJSONTyped(
   json: any,
   ignoreDiscriminator: boolean
-): AdvancedSearchResultExportAttrInfo {
+): AdvancedSearchResultAttrInfo {
   if (json === undefined || json === null) {
     return json;
   }
@@ -52,8 +62,8 @@ export function AdvancedSearchResultExportAttrInfoFromJSONTyped(
   };
 }
 
-export function AdvancedSearchResultExportAttrInfoToJSON(
-  value?: AdvancedSearchResultExportAttrInfo | null
+export function AdvancedSearchResultAttrInfoToJSON(
+  value?: AdvancedSearchResultAttrInfo | null
 ): any {
   if (value === undefined) {
     return undefined;

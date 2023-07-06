@@ -27,6 +27,15 @@ export interface EntryExport {
   format?: string;
 }
 
+/**
+ * Check if a given object implements the EntryExport interface.
+ */
+export function instanceOfEntryExport(value: object): boolean {
+  let isInstance = true;
+
+  return isInstance;
+}
+
 export function EntryExportFromJSON(json: any): EntryExport {
   return EntryExportFromJSONTyped(json, false);
 }

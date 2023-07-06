@@ -8,6 +8,32 @@
 
 ### Fixed
 
+## v3.52.0
+
+### Added
+* Added ACL history page.
+  Contributed by @syucream
+* Added helm chart.
+  Contributed by @hinashi
+
+## v3.51.0
+
+### Changed
+* Refactoring joblist.
+  Contributed by @syucream
+* Refactored entry edit page.
+  Contributed by @hinashi
+
+## v3.50.0
+
+### Changed
+* Create repository layer and reorganize service layer.
+  Contributed by @syucream
+
+### Fixed
+* Fixed deleting entries in entry edit.
+  Contributed by @hinashi
+
 ## v3.49.0
 
 ### Added

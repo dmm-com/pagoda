@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { JobTarget } from "./JobTarget";
 import {
-  JobTarget,
   JobTargetFromJSON,
   JobTargetFromJSONTyped,
   JobTargetToJSON,
@@ -61,13 +61,27 @@ export interface JobSerializers {
    * @type {JobTarget}
    * @memberof JobSerializers
    */
-  readonly target: JobTarget | null;
+  readonly target: JobTarget;
   /**
    *
    * @type {number}
    * @memberof JobSerializers
    */
   readonly passedTime: number;
+}
+
+/**
+ * Check if a given object implements the JobSerializers interface.
+ */
+export function instanceOfJobSerializers(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "text" in value;
+  isInstance = isInstance && "createdAt" in value;
+  isInstance = isInstance && "target" in value;
+  isInstance = isInstance && "passedTime" in value;
+
+  return isInstance;
 }
 
 export function JobSerializersFromJSON(json: any): JobSerializers {

@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { JobSerializers } from "./JobSerializers";
 import {
-  JobSerializers,
   JobSerializersFromJSON,
   JobSerializersFromJSONTyped,
   JobSerializersToJSON,
@@ -50,6 +50,15 @@ export interface PaginatedJobSerializersList {
    * @memberof PaginatedJobSerializersList
    */
   results?: Array<JobSerializers>;
+}
+
+/**
+ * Check if a given object implements the PaginatedJobSerializersList interface.
+ */
+export function instanceOfPaginatedJobSerializersList(value: object): boolean {
+  let isInstance = true;
+
+  return isInstance;
 }
 
 export function PaginatedJobSerializersListFromJSON(
