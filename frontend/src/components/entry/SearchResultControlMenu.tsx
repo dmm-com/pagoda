@@ -41,12 +41,8 @@ interface Props {
       string,
       { filterKey: SearchResultsFilterKey; keyword: string }
     >,
-    overwriteEntryName?:
-      | string
-      | undefined,
-    overwriteReferral?:
-      | string
-      | undefined,
+    overwriteEntryName?: string | undefined,
+    overwriteReferral?: string | undefined
   ) => void;
 }
 
@@ -93,7 +89,11 @@ export const SearchResultControlMenu: FC<Props> = ({
   const handleChangeKeyword = (e: any) => {
     setNewAttrsFilter({
       ...newAttrsFilter,
-      [attrName]: { ...newAttrsFilter[attrName], keyword: e.target.value, filterKey: SearchResultsFilterKey.TextContained},
+      [attrName]: {
+        ...newAttrsFilter[attrName],
+        keyword: e.target.value,
+        filterKey: SearchResultsFilterKey.TextContained,
+      },
     });
   };
 
@@ -101,7 +101,11 @@ export const SearchResultControlMenu: FC<Props> = ({
     if (e.key === "Enter") {
       handleSelectFilterConditions({
         ...newAttrsFilter,
-        [attrName]: { ...newAttrsFilter[attrName], keyword: e.target.value, filterKey: SearchResultsFilterKey.TextContained},
+        [attrName]: {
+          ...newAttrsFilter[attrName],
+          keyword: e.target.value,
+          filterKey: SearchResultsFilterKey.TextContained,
+        },
       });
     }
   };

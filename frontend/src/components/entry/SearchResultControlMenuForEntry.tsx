@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 
 import { SearchResultsFilterKey } from "./SearchResults";
 
@@ -28,12 +28,8 @@ interface Props {
     attrfilter?:
       | Record<string, { filterKey: SearchResultsFilterKey; keyword: string }>
       | undefined,
-    overwriteEntryName?:
-      | string
-      | undefined,
-    overwriteReferral?:
-      | string
-      | undefined,
+    overwriteEntryName?: string | undefined,
+    overwriteReferral?: string | undefined
   ) => void;
   handleClear: () => void;
 }
