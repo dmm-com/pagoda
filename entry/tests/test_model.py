@@ -2203,7 +2203,8 @@ class ModelTest(AironeTestCase):
             )
             _assert_result_full(attr, result)
 
-        # check to get Entries that only have substantial Attribute values with filter_key instead of keyword
+        # check to get Entries that only have substantial Attribute values
+        # with filter_key instead of keyword
         for attr in entity.attrs.filter(is_active=True):
             result = Entry.search_entries(
                 user,

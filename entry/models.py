@@ -16,7 +16,6 @@ from airone.lib.elasticsearch import (
     ESS,
     AdvancedSearchResults,
     execute_query,
-    make_aggs_query,
     make_query,
     make_query_for_simple,
     make_search_results,
