@@ -2261,10 +2261,7 @@ class ModelTest(AironeTestCase):
         ]
 
         # create Entries that have empty value
-        [
-            self.add_entry(self._user, "empty-%d" % i, entity, values={"str": ""})
-            for i in range(2)
-        ]
+        [self.add_entry(self._user, "empty-%d" % i, entity, values={"str": ""}) for i in range(2)]
 
         result = Entry.search_entries(
             self._user,
