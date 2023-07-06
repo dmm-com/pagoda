@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntityHistory } from "./EntityHistory";
 import {
-  EntityHistory,
   EntityHistoryFromJSON,
   EntityHistoryFromJSONTyped,
   EntityHistoryToJSON,
@@ -50,6 +50,15 @@ export interface PaginatedEntityHistoryList {
    * @memberof PaginatedEntityHistoryList
    */
   results?: Array<EntityHistory>;
+}
+
+/**
+ * Check if a given object implements the PaginatedEntityHistoryList interface.
+ */
+export function instanceOfPaginatedEntityHistoryList(value: object): boolean {
+  let isInstance = true;
+
+  return isInstance;
 }
 
 export function PaginatedEntityHistoryListFromJSON(

@@ -9,7 +9,7 @@ import { schemaForType } from "services/ZodSchemaUtil";
 // TODO rethink it, e.g. consider to use union as a type of value
 export const schema = schemaForType<EditableEntry>()(
   z.object({
-    name: z.string().min(1, "エントリ名は必須です").default(""),
+    name: z.string().trim().min(1, "エントリ名は必須です").default(""),
     schema: z.object({
       id: z.number(),
       name: z.string(),

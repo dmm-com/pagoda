@@ -25,7 +25,7 @@ class EntityAttr(ACLBase):
     # if this parameter set.
     is_delete_in_chain = models.BooleanField(default=False)
 
-    history = HistoricalRecords(m2m_fields=[referral])
+    history = HistoricalRecords(m2m_fields=[referral], excluded_fields=["status", "updated_time"])
 
     def __init__(self, *args, **kwargs):
         super(ACLBase, self).__init__(*args, **kwargs)
@@ -86,7 +86,7 @@ class Entity(ACLBase):
     # This indicates informatoin where to send request for notification
     webhooks = models.ManyToManyField(Webhook, default=[], related_name="registered_entity")
 
-    history = HistoricalRecords(m2m_fields=[attrs], excluded_fields=["status"])
+    history = HistoricalRecords(m2m_fields=[attrs], excluded_fields=["status", "updated_time"])
 
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)

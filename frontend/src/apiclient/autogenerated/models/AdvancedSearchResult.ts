@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { AdvancedSearchResultValue } from "./AdvancedSearchResultValue";
 import {
-  AdvancedSearchResultValue,
   AdvancedSearchResultValueFromJSON,
   AdvancedSearchResultValueFromJSONTyped,
   AdvancedSearchResultValueToJSON,
@@ -38,6 +38,17 @@ export interface AdvancedSearchResult {
    * @memberof AdvancedSearchResult
    */
   values: Array<AdvancedSearchResultValue>;
+}
+
+/**
+ * Check if a given object implements the AdvancedSearchResult interface.
+ */
+export function instanceOfAdvancedSearchResult(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "count" in value;
+  isInstance = isInstance && "values" in value;
+
+  return isInstance;
 }
 
 export function AdvancedSearchResultFromJSON(json: any): AdvancedSearchResult {

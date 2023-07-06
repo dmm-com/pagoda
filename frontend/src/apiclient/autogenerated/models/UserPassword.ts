@@ -39,6 +39,18 @@ export interface UserPassword {
   chkPasswd: string;
 }
 
+/**
+ * Check if a given object implements the UserPassword interface.
+ */
+export function instanceOfUserPassword(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "oldPasswd" in value;
+  isInstance = isInstance && "newPasswd" in value;
+  isInstance = isInstance && "chkPasswd" in value;
+
+  return isInstance;
+}
+
 export function UserPasswordFromJSON(json: any): UserPassword {
   return UserPasswordFromJSONTyped(json, false);
 }

@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { AdvancedSearchResultAttrInfo } from "./AdvancedSearchResultAttrInfo";
 import {
-  AdvancedSearchResultAttrInfo,
   AdvancedSearchResultAttrInfoFromJSON,
   AdvancedSearchResultAttrInfoFromJSONTyped,
   AdvancedSearchResultAttrInfoToJSON,
@@ -80,6 +80,17 @@ export interface AdvancedSearch {
    * @memberof AdvancedSearch
    */
   entryOffset?: number;
+}
+
+/**
+ * Check if a given object implements the AdvancedSearch interface.
+ */
+export function instanceOfAdvancedSearch(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "entities" in value;
+  isInstance = isInstance && "attrinfo" in value;
+
+  return isInstance;
 }
 
 export function AdvancedSearchFromJSON(json: any): AdvancedSearch {

@@ -33,6 +33,19 @@ export interface AdvancedSearchResultValueEntry {
   name: string;
 }
 
+/**
+ * Check if a given object implements the AdvancedSearchResultValueEntry interface.
+ */
+export function instanceOfAdvancedSearchResultValueEntry(
+  value: object
+): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
+}
+
 export function AdvancedSearchResultValueEntryFromJSON(
   json: any
 ): AdvancedSearchResultValueEntry {

@@ -18,7 +18,7 @@ class ViewTest(AironeViewTest):
         name,
         email="email",
         is_superuser=False,
-        authenticate_type=User.AUTH_TYPE_LOCAL,
+        authenticate_type=User.AuthenticateType.AUTH_TYPE_LOCAL,
     ):
         user = User(
             username=name,

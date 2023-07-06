@@ -13,11 +13,10 @@
  */
 
 import * as runtime from "../runtime";
+import type { ACL, ACLHistory } from "../models";
 import {
-  ACL,
   ACLFromJSON,
   ACLToJSON,
-  ACLHistory,
   ACLHistoryFromJSON,
   ACLHistoryToJSON,
 } from "../models";
@@ -40,10 +39,11 @@ export interface AclApiV2AclsUpdateRequest {
  */
 export class AclApi extends runtime.BaseAPI {
   /**
+   *
    */
   async aclApiV2AclsHistoryListRaw(
     requestParameters: AclApiV2AclsHistoryListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<Array<ACLHistory>>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -89,10 +89,11 @@ export class AclApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async aclApiV2AclsHistoryList(
     requestParameters: AclApiV2AclsHistoryListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<Array<ACLHistory>> {
     const response = await this.aclApiV2AclsHistoryListRaw(
       requestParameters,
@@ -102,10 +103,11 @@ export class AclApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async aclApiV2AclsRetrieveRaw(
     requestParameters: AclApiV2AclsRetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<ACL>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -151,10 +153,11 @@ export class AclApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async aclApiV2AclsRetrieve(
     requestParameters: AclApiV2AclsRetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<ACL> {
     const response = await this.aclApiV2AclsRetrieveRaw(
       requestParameters,
@@ -164,10 +167,11 @@ export class AclApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async aclApiV2AclsUpdateRaw(
     requestParameters: AclApiV2AclsUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<ACL>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -223,10 +227,11 @@ export class AclApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async aclApiV2AclsUpdate(
     requestParameters: AclApiV2AclsUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<ACL> {
     const response = await this.aclApiV2AclsUpdateRaw(
       requestParameters,

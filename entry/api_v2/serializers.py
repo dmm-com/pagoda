@@ -150,7 +150,7 @@ class EntryAttributeTypeSerializer(serializers.Serializer):
 
 class EntryBaseSerializer(serializers.ModelSerializer):
     schema = EntitySerializer(read_only=True)
-    deleted_user = UserBaseSerializer(read_only=True)
+    deleted_user = UserBaseSerializer(read_only=True, allow_null=True)
 
     class Meta:
         model = Entry

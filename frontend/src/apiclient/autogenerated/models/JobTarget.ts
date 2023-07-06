@@ -45,6 +45,19 @@ export interface JobTarget {
   schemaName: string | null;
 }
 
+/**
+ * Check if a given object implements the JobTarget interface.
+ */
+export function instanceOfJobTarget(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "schemaId" in value;
+  isInstance = isInstance && "schemaName" in value;
+
+  return isInstance;
+}
+
 export function JobTargetFromJSON(json: any): JobTarget {
   return JobTargetFromJSONTyped(json, false);
 }

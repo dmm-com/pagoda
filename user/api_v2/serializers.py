@@ -71,7 +71,18 @@ class UserUpdateSerializer(UserBaseSerializer):
 
 
 class UserRetrieveSerializer(UserBaseSerializer):
+    @extend_schema_field(
+        {
+            "type": "integer",
+            "enum": User.AuthenticateType.values,
+            "x-enum-varnames": User.AuthenticateType.names,
+        }
+    )
+    class AuthenticateTypeField(serializers.IntegerField):
+        pass
+
     token = serializers.SerializerMethodField()
+    authenticate_type = AuthenticateTypeField()
 
     class Meta:
         model = User

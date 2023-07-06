@@ -10,7 +10,9 @@ class LDAPBackend(object):
     def authenticate(self, request, username=None, password=None):
         # check authentication with local database at first.
         user = User.objects.filter(
-            username=username, authenticate_type=User.AUTH_TYPE_LOCAL, is_active=True
+            username=username,
+            authenticate_type=User.AuthenticateType.AUTH_TYPE_LOCAL,
+            is_active=True,
         ).first()
         if user and user.check_password(password):
             return user
@@ -32,7 +34,7 @@ class LDAPBackend(object):
             (user, _) = User.objects.get_or_create(
                 **{
                     "username": username,
-                    "authenticate_type": User.AUTH_TYPE_LDAP,
+                    "authenticate_type": User.AuthenticateType.AUTH_TYPE_LDAP,
                 }
             )
         else:

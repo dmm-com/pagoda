@@ -27,6 +27,16 @@ export interface EntryCopy {
   copyEntryNames: Array<string>;
 }
 
+/**
+ * Check if a given object implements the EntryCopy interface.
+ */
+export function instanceOfEntryCopy(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "copyEntryNames" in value;
+
+  return isInstance;
+}
+
 export function EntryCopyFromJSON(json: any): EntryCopy {
   return EntryCopyFromJSONTyped(json, false);
 }

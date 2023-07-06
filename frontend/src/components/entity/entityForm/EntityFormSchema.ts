@@ -15,7 +15,7 @@ export const schema = z.object({
           .default(""),
         label: z.string().default(""),
         isEnabled: z.boolean().default(false),
-        isVerified: z.boolean().default(false),
+        isVerified: z.boolean().default(false).optional(),
         headers: z
           .array(
             z.object({
@@ -24,7 +24,6 @@ export const schema = z.object({
             })
           )
           .default([]),
-        isDeleted: z.boolean().default(false),
       })
     )
     .default([]),
@@ -34,10 +33,10 @@ export const schema = z.object({
         id: z.number().optional(),
         name: z.string().min(1, "属性名は必須です").default(""),
         type: z.number(),
-        index: z.number(),
         isMandatory: z.boolean().default(false),
         isDeleteInChain: z.boolean().default(false),
         isSummarized: z.boolean().default(false),
+        isWritable: z.boolean().default(true),
         referral: z
           .array(
             z.object({
@@ -46,7 +45,6 @@ export const schema = z.object({
             })
           )
           .default([]),
-        isDeleted: z.boolean().default(false),
       })
     )
     .default([]),

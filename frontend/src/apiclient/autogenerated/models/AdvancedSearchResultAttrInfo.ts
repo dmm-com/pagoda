@@ -39,6 +39,16 @@ export interface AdvancedSearchResultAttrInfo {
   keyword?: string;
 }
 
+/**
+ * Check if a given object implements the AdvancedSearchResultAttrInfo interface.
+ */
+export function instanceOfAdvancedSearchResultAttrInfo(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
+}
+
 export function AdvancedSearchResultAttrInfoFromJSON(
   json: any
 ): AdvancedSearchResultAttrInfo {

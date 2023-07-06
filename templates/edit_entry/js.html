@@ -26,6 +26,12 @@ var get_register_attrs = function(base) {
 
 AirOneButtonUtil.initialize($('#submit-button'), gettext('button_save'),
                             gettext('button_communicating'), true, true, function(e) {
+  // ensure to pass form validation
+  if(! $('#edit-form')[0].reportValidity()) {
+    $("#submit-button").trigger('enableButton');
+    return false;
+  }
+
   $('#edit-form').submit();
 });
   

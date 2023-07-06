@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntryBase } from "./EntryBase";
 import {
-  EntryBase,
   EntryBaseFromJSON,
   EntryBaseFromJSONTyped,
   EntryBaseToJSON,
@@ -50,6 +50,15 @@ export interface PaginatedEntryBaseList {
    * @memberof PaginatedEntryBaseList
    */
   results?: Array<EntryBase>;
+}
+
+/**
+ * Check if a given object implements the PaginatedEntryBaseList interface.
+ */
+export function instanceOfPaginatedEntryBaseList(value: object): boolean {
+  let isInstance = true;
+
+  return isInstance;
 }
 
 export function PaginatedEntryBaseListFromJSON(

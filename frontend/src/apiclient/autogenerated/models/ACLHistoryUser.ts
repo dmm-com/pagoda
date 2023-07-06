@@ -33,6 +33,17 @@ export interface ACLHistoryUser {
   username: string;
 }
 
+/**
+ * Check if a given object implements the ACLHistoryUser interface.
+ */
+export function instanceOfACLHistoryUser(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "username" in value;
+
+  return isInstance;
+}
+
 export function ACLHistoryUserFromJSON(json: any): ACLHistoryUser {
   return ACLHistoryUserFromJSONTyped(json, false);
 }

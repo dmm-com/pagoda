@@ -45,6 +45,19 @@ export interface ACLHistoryChange {
   readonly after: any | null;
 }
 
+/**
+ * Check if a given object implements the ACLHistoryChange interface.
+ */
+export function instanceOfACLHistoryChange(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "action" in value;
+  isInstance = isInstance && "target" in value;
+  isInstance = isInstance && "before" in value;
+  isInstance = isInstance && "after" in value;
+
+  return isInstance;
+}
+
 export function ACLHistoryChangeFromJSON(json: any): ACLHistoryChange {
   return ACLHistoryChangeFromJSONTyped(json, false);
 }

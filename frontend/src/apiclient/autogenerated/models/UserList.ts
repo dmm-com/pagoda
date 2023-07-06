@@ -51,6 +51,18 @@ export interface UserList {
   readonly dateJoined: string;
 }
 
+/**
+ * Check if a given object implements the UserList interface.
+ */
+export function instanceOfUserList(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "username" in value;
+  isInstance = isInstance && "dateJoined" in value;
+
+  return isInstance;
+}
+
 export function UserListFromJSON(json: any): UserList {
   return UserListFromJSONTyped(json, false);
 }

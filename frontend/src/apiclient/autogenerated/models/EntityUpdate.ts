@@ -13,14 +13,14 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntityAttrUpdate } from "./EntityAttrUpdate";
 import {
-  EntityAttrUpdate,
   EntityAttrUpdateFromJSON,
   EntityAttrUpdateFromJSONTyped,
   EntityAttrUpdateToJSON,
 } from "./EntityAttrUpdate";
+import type { WebhookCreateUpdate } from "./WebhookCreateUpdate";
 import {
-  WebhookCreateUpdate,
   WebhookCreateUpdateFromJSON,
   WebhookCreateUpdateFromJSONTyped,
   WebhookCreateUpdateToJSON,
@@ -68,6 +68,16 @@ export interface EntityUpdate {
    * @memberof EntityUpdate
    */
   webhooks?: Array<WebhookCreateUpdate>;
+}
+
+/**
+ * Check if a given object implements the EntityUpdate interface.
+ */
+export function instanceOfEntityUpdate(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+
+  return isInstance;
 }
 
 export function EntityUpdateFromJSON(json: any): EntityUpdate {

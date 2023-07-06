@@ -63,6 +63,17 @@ export interface EntityAttrCreate {
   isDeleteInChain?: boolean;
 }
 
+/**
+ * Check if a given object implements the EntityAttrCreate interface.
+ */
+export function instanceOfEntityAttrCreate(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "type" in value;
+
+  return isInstance;
+}
+
 export function EntityAttrCreateFromJSON(json: any): EntityAttrCreate {
   return EntityAttrCreateFromJSONTyped(json, false);
 }

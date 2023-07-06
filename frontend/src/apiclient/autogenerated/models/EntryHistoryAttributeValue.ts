@@ -13,14 +13,14 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { Attribute } from "./Attribute";
 import {
-  Attribute,
   AttributeFromJSON,
   AttributeFromJSONTyped,
   AttributeToJSON,
 } from "./Attribute";
+import type { EntryAttributeValue } from "./EntryAttributeValue";
 import {
-  EntryAttributeValue,
   EntryAttributeValueFromJSON,
   EntryAttributeValueFromJSONTyped,
   EntryAttributeValueToJSON,
@@ -67,19 +67,35 @@ export interface EntryHistoryAttributeValue {
    * @type {EntryAttributeValue}
    * @memberof EntryHistoryAttributeValue
    */
-  readonly currValue: EntryAttributeValue | null;
+  readonly currValue: EntryAttributeValue;
   /**
    *
    * @type {EntryAttributeValue}
    * @memberof EntryHistoryAttributeValue
    */
-  readonly prevValue: EntryAttributeValue | null;
+  readonly prevValue: EntryAttributeValue;
   /**
    *
    * @type {Attribute}
    * @memberof EntryHistoryAttributeValue
    */
   parentAttr: Attribute;
+}
+
+/**
+ * Check if a given object implements the EntryHistoryAttributeValue interface.
+ */
+export function instanceOfEntryHistoryAttributeValue(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "type" in value;
+  isInstance = isInstance && "createdTime" in value;
+  isInstance = isInstance && "createdUser" in value;
+  isInstance = isInstance && "currValue" in value;
+  isInstance = isInstance && "prevValue" in value;
+  isInstance = isInstance && "parentAttr" in value;
+
+  return isInstance;
 }
 
 export function EntryHistoryAttributeValueFromJSON(

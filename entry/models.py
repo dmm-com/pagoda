@@ -1295,7 +1295,7 @@ class Entry(ACLBase):
     attrs = models.ManyToManyField(Attribute)
     schema = models.ForeignKey(Entity, on_delete=models.DO_NOTHING)
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(excluded_fields=["status", "updated_time"])
 
     def __init__(self, *args, **kwargs):
         super(Entry, self).__init__(*args, **kwargs)
@@ -2112,7 +2112,8 @@ class Entry(ACLBase):
             )
             results["ret_count"] += search_result["ret_count"]
             results["ret_values"].extend(search_result["ret_values"])
-            limit -= search_result["ret_count"]
+            limit -= len(search_result["ret_values"])
+            offset = max(0, offset - search_result["ret_count"])
 
         return results
 

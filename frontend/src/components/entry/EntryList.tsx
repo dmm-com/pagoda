@@ -89,7 +89,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
     <Box>
       {/* This box shows search box and create button */}
       <Box display="flex" justifyContent="space-between" mb="16px">
-        <Box width={500}>
+        <Box width="600px">
           <SearchBox
             placeholder="エントリを絞り込む"
             value={keyword}
@@ -97,7 +97,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  keyword.length > 0 ? normalizeToMatch(keyword) : undefined
+                  keyword.length > 0 ? normalizeToMatch(keyword) : ""
                 );
             }}
           />
@@ -119,7 +119,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
       {entries.loading ? (
         <Loading />
       ) : (
-        <Grid container spacing={2}>
+        <Grid container spacing={2} id="entry_list">
           {entries.value?.results?.map((entry) => {
             return (
               <Grid item xs={4} key={entry.id}>
@@ -168,6 +168,9 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
       <Box display="flex" justifyContent="center" my="30px">
         <Stack spacing={2}>
           <Pagination
+            id="entry_page"
+            siblingCount={0}
+            boundaryCount={1}
             count={totalPageCount}
             page={page}
             onChange={(_, newPage) => changePage(newPage)}

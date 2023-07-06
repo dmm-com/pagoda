@@ -4264,6 +4264,37 @@ class ModelTest(AironeTestCase):
         )
         self.assertEqual(ret["ret_count"], 0)
 
+    def test_search_entries_with_offset(self):
+        entities = []
+        for i in range(3):
+            entity = self.create_entity(
+                self._user,
+                "Entity%d" % i,
+                [
+                    {
+                        "name": "test",
+                        "type": AttrTypeValue["string"],
+                    }
+                ],
+            )
+            entities.append(entity.id)
+            for num in range(5):
+                self.add_entry(self._user, "Entry%d" % num, entity)
+
+        ret = Entry.search_entries(self._user, [entities[0]], [{"name": "test"}], limit=2, offset=2)
+        self.assertEqual(ret["ret_count"], 5)
+        self.assertEqual(
+            [{x["entity"]["name"]: x["entry"]["name"]} for x in ret["ret_values"]],
+            [{"Entity0": "Entry2"}, {"Entity0": "Entry3"}],
+        )
+
+        ret = Entry.search_entries(self._user, entities, [{"name": "test"}], limit=2, offset=4)
+        self.assertEqual(ret["ret_count"], 15)
+        self.assertEqual(
+            [{x["entity"]["name"]: x["entry"]["name"]} for x in ret["ret_values"]],
+            [{"Entity0": "Entry4"}, {"Entity1": "Entry0"}],
+        )
+
     def test_search_entries_for_simple(self):
         self._entity.attrs.add(self._attr.schema)
         self._entry.attrs.add(self._attr)

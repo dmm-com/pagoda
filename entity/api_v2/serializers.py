@@ -209,8 +209,9 @@ class EntitySerializer(serializers.ModelSerializer):
 
         # set status parameters
         if is_toplevel_data:
-            entity.status = Entity.STATUS_TOP_LEVEL
-            entity.save(update_fields=["status"])
+            entity.set_status(Entity.STATUS_TOP_LEVEL)
+        else:
+            entity.del_status(Entity.STATUS_TOP_LEVEL)
 
         # create EntityAttr instances in associated with specifying data
         for attr_data in attrs_data:

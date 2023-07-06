@@ -8,7 +8,6 @@ from rest_framework.exceptions import NotFound
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.serializers import Serializer
 
 import custom_view
 from airone.lib.acl import ACLType
@@ -200,6 +199,7 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
 
 
 class AdvancedSearchAPI(generics.GenericAPIView):
+    serializer_class = AdvancedSearchSerializer
     """
     NOTE for now it's just copied from /api/v1/entry/search, but it should be
     rewritten with DRF components.
@@ -210,7 +210,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         responses=AdvancedSearchResultSerializer,
     )
     def post(self, request, format=None):
-        serializer = AdvancedSearchSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         hint_entities = serializer.validated_data["entities"]
@@ -330,7 +330,7 @@ class AdvancedSearchResultAPI(generics.GenericAPIView):
     serializer_class = AdvancedSearchResultExportSerializer
 
     def post(self, request):
-        serializer: Serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.validated_data)
@@ -374,7 +374,7 @@ class EntryExportAPI(generics.GenericAPIView):
                 "Failed to get entity of specified id", status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = EntryExportSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
             return Response(
                 "Parameters in post body is invalid", status=status.HTTP_400_BAD_REQUEST

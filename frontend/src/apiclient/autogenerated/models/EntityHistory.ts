@@ -57,6 +57,21 @@ export interface EntityHistory {
   readonly isDetail: boolean;
 }
 
+/**
+ * Check if a given object implements the EntityHistory interface.
+ */
+export function instanceOfEntityHistory(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "operation" in value;
+  isInstance = isInstance && "time" in value;
+  isInstance = isInstance && "username" in value;
+  isInstance = isInstance && "text" in value;
+  isInstance = isInstance && "targetObj" in value;
+  isInstance = isInstance && "isDetail" in value;
+
+  return isInstance;
+}
+
 export function EntityHistoryFromJSON(json: any): EntityHistory {
   return EntityHistoryFromJSONTyped(json, false);
 }

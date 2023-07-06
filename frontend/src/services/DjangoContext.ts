@@ -24,9 +24,6 @@ export class DjangoContext {
     [name: string]: { value: number; name: string };
   };
   user: User | undefined;
-  userAuthenticateType: {
-    [name: string]: number;
-  };
 
   private static _instance: DjangoContext | undefined;
 
@@ -38,11 +35,6 @@ export class DjangoContext {
     this.noteLink = context.note_link;
     this.version = context.version;
     this.user = context.user ? new User(context.user) : undefined;
-
-    this.userAuthenticateType = {
-      local: 1 << 0,
-      ldap: 1 << 1,
-    };
 
     this.attrTypeValue = {
       string: 2,

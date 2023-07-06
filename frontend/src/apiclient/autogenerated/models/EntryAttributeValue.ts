@@ -13,20 +13,20 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntryAttributeValueGroup } from "./EntryAttributeValueGroup";
 import {
-  EntryAttributeValueGroup,
   EntryAttributeValueGroupFromJSON,
   EntryAttributeValueGroupFromJSONTyped,
   EntryAttributeValueGroupToJSON,
 } from "./EntryAttributeValueGroup";
+import type { EntryAttributeValueObject } from "./EntryAttributeValueObject";
 import {
-  EntryAttributeValueObject,
   EntryAttributeValueObjectFromJSON,
   EntryAttributeValueObjectFromJSONTyped,
   EntryAttributeValueObjectToJSON,
 } from "./EntryAttributeValueObject";
+import type { EntryAttributeValueRole } from "./EntryAttributeValueRole";
 import {
-  EntryAttributeValueRole,
   EntryAttributeValueRoleFromJSON,
   EntryAttributeValueRoleFromJSONTyped,
   EntryAttributeValueRoleToJSON,
@@ -104,6 +104,15 @@ export interface EntryAttributeValue {
    * @memberof EntryAttributeValue
    */
   asArrayRole?: Array<EntryAttributeValueRole>;
+}
+
+/**
+ * Check if a given object implements the EntryAttributeValue interface.
+ */
+export function instanceOfEntryAttributeValue(value: object): boolean {
+  let isInstance = true;
+
+  return isInstance;
 }
 
 export function EntryAttributeValueFromJSON(json: any): EntryAttributeValue {
