@@ -152,7 +152,7 @@ exports[`should match snapshot 1`] = `
               class="MuiBox-root css-1abudc7"
             >
               <div
-                class="MuiBox-root css-qxh7fn"
+                class="MuiBox-root css-1m3p9o7"
               >
                 <div
                   class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-miwl14-MuiFormControl-root-MuiTextField-root"
@@ -229,6 +229,7 @@ exports[`should match snapshot 1`] = `
             </div>
             <div
               class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-mhc70k-MuiGrid-root"
+              id="entry_list"
             >
               <div
                 class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
@@ -405,6 +406,7 @@ exports[`should match snapshot 1`] = `
                 <nav
                   aria-label="pagination navigation"
                   class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
+                  id="entry_page"
                 >
                   <ul
                     class="MuiPagination-ul css-wjh20t-MuiPagination-ul"
@@ -608,7 +610,7 @@ exports[`should match snapshot 1`] = `
             class="MuiBox-root css-1abudc7"
           >
             <div
-              class="MuiBox-root css-qxh7fn"
+              class="MuiBox-root css-1m3p9o7"
             >
               <div
                 class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-miwl14-MuiFormControl-root-MuiTextField-root"
@@ -685,6 +687,7 @@ exports[`should match snapshot 1`] = `
           </div>
           <div
             class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-mhc70k-MuiGrid-root"
+            id="entry_list"
           >
             <div
               class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
@@ -861,6 +864,7 @@ exports[`should match snapshot 1`] = `
               <nav
                 aria-label="pagination navigation"
                 class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
+                id="entry_page"
               >
                 <ul
                   class="MuiPagination-ul css-wjh20t-MuiPagination-ul"
