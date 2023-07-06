@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { AdvancedSearchResultAttrInfo } from "./AdvancedSearchResultAttrInfo";
 import {
-  AdvancedSearchResultAttrInfo,
   AdvancedSearchResultAttrInfoFromJSON,
   AdvancedSearchResultAttrInfoFromJSONTyped,
   AdvancedSearchResultAttrInfoToJSON,
@@ -68,6 +68,18 @@ export interface AdvancedSearchResultExport {
    * @memberof AdvancedSearchResultExport
    */
   exportStyle: string;
+}
+
+/**
+ * Check if a given object implements the AdvancedSearchResultExport interface.
+ */
+export function instanceOfAdvancedSearchResultExport(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "entities" in value;
+  isInstance = isInstance && "attrinfo" in value;
+  isInstance = isInstance && "exportStyle" in value;
+
+  return isInstance;
 }
 
 export function AdvancedSearchResultExportFromJSON(

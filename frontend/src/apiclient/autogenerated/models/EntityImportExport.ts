@@ -51,6 +51,15 @@ export interface EntityImportExport {
   createdUser?: string;
 }
 
+/**
+ * Check if a given object implements the EntityImportExport interface.
+ */
+export function instanceOfEntityImportExport(value: object): boolean {
+  let isInstance = true;
+
+  return isInstance;
+}
+
 export function EntityImportExportFromJSON(json: any): EntityImportExport {
   return EntityImportExportFromJSONTyped(json, false);
 }

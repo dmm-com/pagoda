@@ -51,6 +51,18 @@ export interface EntityList {
   readonly isToplevel: boolean;
 }
 
+/**
+ * Check if a given object implements the EntityList interface.
+ */
+export function instanceOfEntityList(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "isToplevel" in value;
+
+  return isInstance;
+}
+
 export function EntityListFromJSON(json: any): EntityList {
   return EntityListFromJSONTyped(json, false);
 }

@@ -13,38 +13,40 @@
  */
 
 import * as runtime from "../runtime";
-import {
+import type {
   AdvancedSearch,
+  AdvancedSearchResult,
+  AdvancedSearchResultExport,
+  EntryBase,
+  EntryCopy,
+  EntryExport,
+  EntryRetrieve,
+  EntryUpdate,
+  GetEntryAttrReferral,
+  PaginatedEntryBaseList,
+  PaginatedEntryHistoryAttributeValueList,
+} from "../models";
+import {
   AdvancedSearchFromJSON,
   AdvancedSearchToJSON,
-  AdvancedSearchResult,
   AdvancedSearchResultFromJSON,
   AdvancedSearchResultToJSON,
-  AdvancedSearchResultExport,
   AdvancedSearchResultExportFromJSON,
   AdvancedSearchResultExportToJSON,
-  EntryBase,
   EntryBaseFromJSON,
   EntryBaseToJSON,
-  EntryCopy,
   EntryCopyFromJSON,
   EntryCopyToJSON,
-  EntryExport,
   EntryExportFromJSON,
   EntryExportToJSON,
-  EntryRetrieve,
   EntryRetrieveFromJSON,
   EntryRetrieveToJSON,
-  EntryUpdate,
   EntryUpdateFromJSON,
   EntryUpdateToJSON,
-  GetEntryAttrReferral,
   GetEntryAttrReferralFromJSON,
   GetEntryAttrReferralToJSON,
-  PaginatedEntryBaseList,
   PaginatedEntryBaseListFromJSON,
   PaginatedEntryBaseListToJSON,
-  PaginatedEntryHistoryAttributeValueList,
   PaginatedEntryHistoryAttributeValueListFromJSON,
   PaginatedEntryHistoryAttributeValueListToJSON,
 } from "../models";
@@ -124,7 +126,7 @@ export class EntryApi extends runtime.BaseAPI {
    */
   async entryApiV2AdvancedSearchCreateRaw(
     requestParameters: EntryApiV2AdvancedSearchCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<AdvancedSearchResult>> {
     if (
       requestParameters.advancedSearch === null ||
@@ -177,7 +179,7 @@ export class EntryApi extends runtime.BaseAPI {
    */
   async entryApiV2AdvancedSearchCreate(
     requestParameters: EntryApiV2AdvancedSearchCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<AdvancedSearchResult> {
     const response = await this.entryApiV2AdvancedSearchCreateRaw(
       requestParameters,
@@ -187,10 +189,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2AdvancedSearchResultExportCreateRaw(
     requestParameters: EntryApiV2AdvancedSearchResultExportCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<AdvancedSearchResultExport>> {
     if (
       requestParameters.advancedSearchResultExport === null ||
@@ -241,10 +244,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2AdvancedSearchResultExportCreate(
     requestParameters: EntryApiV2AdvancedSearchResultExportCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<AdvancedSearchResultExport> {
     const response = await this.entryApiV2AdvancedSearchResultExportCreateRaw(
       requestParameters,
@@ -254,10 +258,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2AttrReferralsListRaw(
     requestParameters: EntryApiV2AttrReferralsListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<Array<GetEntryAttrReferral>>> {
     if (
       requestParameters.attrId === null ||
@@ -310,10 +315,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2AttrReferralsList(
     requestParameters: EntryApiV2AttrReferralsListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<Array<GetEntryAttrReferral>> {
     const response = await this.entryApiV2AttrReferralsListRaw(
       requestParameters,
@@ -323,10 +329,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2AttrvRestorePartialUpdateRaw(
     requestParameters: EntryApiV2AttrvRestorePartialUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -370,10 +377,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2AttrvRestorePartialUpdate(
     requestParameters: EntryApiV2AttrvRestorePartialUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<void> {
     await this.entryApiV2AttrvRestorePartialUpdateRaw(
       requestParameters,
@@ -382,10 +390,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2AttrvRestoreUpdateRaw(
     requestParameters: EntryApiV2AttrvRestoreUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -429,10 +438,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2AttrvRestoreUpdate(
     requestParameters: EntryApiV2AttrvRestoreUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<void> {
     await this.entryApiV2AttrvRestoreUpdateRaw(
       requestParameters,
@@ -441,10 +451,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2CopyCreateRaw(
     requestParameters: EntryApiV2CopyCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<EntryCopy>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -503,10 +514,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2CopyCreate(
     requestParameters: EntryApiV2CopyCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<EntryCopy> {
     const response = await this.entryApiV2CopyCreateRaw(
       requestParameters,
@@ -516,10 +528,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2DestroyRaw(
     requestParameters: EntryApiV2DestroyRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -563,19 +576,21 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2Destroy(
     requestParameters: EntryApiV2DestroyRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<void> {
     await this.entryApiV2DestroyRaw(requestParameters, initOverrides);
   }
 
   /**
+   *
    */
   async entryApiV2ExportCreateRaw(
     requestParameters: EntryApiV2ExportCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<EntryExport>> {
     if (
       requestParameters.entityId === null ||
@@ -627,10 +642,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2ExportCreate(
     requestParameters: EntryApiV2ExportCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<EntryExport> {
     const response = await this.entryApiV2ExportCreateRaw(
       requestParameters,
@@ -640,10 +656,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2HistoriesListRaw(
     requestParameters: EntryApiV2HistoriesListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<PaginatedEntryHistoryAttributeValueList>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -697,10 +714,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2HistoriesList(
     requestParameters: EntryApiV2HistoriesListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<PaginatedEntryHistoryAttributeValueList> {
     const response = await this.entryApiV2HistoriesListRaw(
       requestParameters,
@@ -710,9 +728,10 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2ImportCreateRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     const queryParameters: any = {};
 
@@ -746,16 +765,20 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
-  async entryApiV2ImportCreate(initOverrides?: RequestInit): Promise<void> {
+  async entryApiV2ImportCreate(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<void> {
     await this.entryApiV2ImportCreateRaw(initOverrides);
   }
 
   /**
+   *
    */
   async entryApiV2ReferralListRaw(
     requestParameters: EntryApiV2ReferralListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<PaginatedEntryBaseList>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -813,10 +836,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2ReferralList(
     requestParameters: EntryApiV2ReferralListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<PaginatedEntryBaseList> {
     const response = await this.entryApiV2ReferralListRaw(
       requestParameters,
@@ -826,10 +850,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2RestoreCreateRaw(
     requestParameters: EntryApiV2RestoreCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<EntryBase>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -878,10 +903,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2RestoreCreate(
     requestParameters: EntryApiV2RestoreCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<EntryBase> {
     const response = await this.entryApiV2RestoreCreateRaw(
       requestParameters,
@@ -891,10 +917,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2RetrieveRaw(
     requestParameters: EntryApiV2RetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<EntryRetrieve>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -940,10 +967,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2Retrieve(
     requestParameters: EntryApiV2RetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<EntryRetrieve> {
     const response = await this.entryApiV2RetrieveRaw(
       requestParameters,
@@ -953,10 +981,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2SearchListRaw(
     requestParameters: EntryApiV2SearchListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<Array<EntryBase>>> {
     const queryParameters: any = {};
 
@@ -996,10 +1025,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2SearchList(
     requestParameters: EntryApiV2SearchListRequest = {},
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<Array<EntryBase>> {
     const response = await this.entryApiV2SearchListRaw(
       requestParameters,
@@ -1009,10 +1039,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2UpdateRaw(
     requestParameters: EntryApiV2UpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<EntryUpdate>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -1061,10 +1092,11 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async entryApiV2Update(
     requestParameters: EntryApiV2UpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<EntryUpdate> {
     const response = await this.entryApiV2UpdateRaw(
       requestParameters,

@@ -13,14 +13,14 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { ACLHistoryChange } from "./ACLHistoryChange";
 import {
-  ACLHistoryChange,
   ACLHistoryChangeFromJSON,
   ACLHistoryChangeFromJSONTyped,
   ACLHistoryChangeToJSON,
 } from "./ACLHistoryChange";
+import type { ACLHistoryUser } from "./ACLHistoryUser";
 import {
-  ACLHistoryUser,
   ACLHistoryUserFromJSON,
   ACLHistoryUserFromJSONTyped,
   ACLHistoryUserToJSON,
@@ -56,6 +56,19 @@ export interface ACLHistory {
    * @memberof ACLHistory
    */
   readonly changes: Array<ACLHistoryChange>;
+}
+
+/**
+ * Check if a given object implements the ACLHistory interface.
+ */
+export function instanceOfACLHistory(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "user" in value;
+  isInstance = isInstance && "time" in value;
+  isInstance = isInstance && "changes" in value;
+
+  return isInstance;
 }
 
 export function ACLHistoryFromJSON(json: any): ACLHistory {

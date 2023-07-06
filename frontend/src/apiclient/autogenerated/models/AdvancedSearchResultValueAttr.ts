@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntryAttributeValue } from "./EntryAttributeValue";
 import {
-  EntryAttributeValue,
   EntryAttributeValueFromJSON,
   EntryAttributeValueFromJSONTyped,
   EntryAttributeValueToJSON,
@@ -44,6 +44,20 @@ export interface AdvancedSearchResultValueAttr {
    * @memberof AdvancedSearchResultValueAttr
    */
   isReadable: boolean;
+}
+
+/**
+ * Check if a given object implements the AdvancedSearchResultValueAttr interface.
+ */
+export function instanceOfAdvancedSearchResultValueAttr(
+  value: object
+): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "type" in value;
+  isInstance = isInstance && "value" in value;
+  isInstance = isInstance && "isReadable" in value;
+
+  return isInstance;
 }
 
 export function AdvancedSearchResultValueAttrFromJSON(

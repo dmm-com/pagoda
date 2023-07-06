@@ -69,6 +69,21 @@ export interface RoleImportExportChild {
   permissions?: Array<{ [key: string]: any }>;
 }
 
+/**
+ * Check if a given object implements the RoleImportExportChild interface.
+ */
+export function instanceOfRoleImportExportChild(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "users" in value;
+  isInstance = isInstance && "groups" in value;
+  isInstance = isInstance && "adminUsers" in value;
+  isInstance = isInstance && "adminGroups" in value;
+
+  return isInstance;
+}
+
 export function RoleImportExportChildFromJSON(
   json: any
 ): RoleImportExportChild {

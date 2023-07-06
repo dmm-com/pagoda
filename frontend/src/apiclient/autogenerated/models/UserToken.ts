@@ -27,6 +27,16 @@ export interface UserToken {
   readonly key: string;
 }
 
+/**
+ * Check if a given object implements the UserToken interface.
+ */
+export function instanceOfUserToken(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "key" in value;
+
+  return isInstance;
+}
+
 export function UserTokenFromJSON(json: any): UserToken {
   return UserTokenFromJSONTyped(json, false);
 }

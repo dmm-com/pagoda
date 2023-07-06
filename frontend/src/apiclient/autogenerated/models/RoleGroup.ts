@@ -33,6 +33,17 @@ export interface RoleGroup {
   name: string;
 }
 
+/**
+ * Check if a given object implements the RoleGroup interface.
+ */
+export function instanceOfRoleGroup(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+
+  return isInstance;
+}
+
 export function RoleGroupFromJSON(json: any): RoleGroup {
   return RoleGroupFromJSONTyped(json, false);
 }

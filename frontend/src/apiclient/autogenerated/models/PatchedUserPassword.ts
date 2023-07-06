@@ -39,6 +39,15 @@ export interface PatchedUserPassword {
   chkPasswd?: string;
 }
 
+/**
+ * Check if a given object implements the PatchedUserPassword interface.
+ */
+export function instanceOfPatchedUserPassword(value: object): boolean {
+  let isInstance = true;
+
+  return isInstance;
+}
+
 export function PatchedUserPasswordFromJSON(json: any): PatchedUserPassword {
   return PatchedUserPasswordFromJSONTyped(json, false);
 }

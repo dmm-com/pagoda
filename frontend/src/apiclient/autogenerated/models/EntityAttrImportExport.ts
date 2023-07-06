@@ -63,6 +63,16 @@ export interface EntityAttrImportExport {
   refer: string;
 }
 
+/**
+ * Check if a given object implements the EntityAttrImportExport interface.
+ */
+export function instanceOfEntityAttrImportExport(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "refer" in value;
+
+  return isInstance;
+}
+
 export function EntityAttrImportExportFromJSON(
   json: any
 ): EntityAttrImportExport {

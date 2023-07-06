@@ -39,6 +39,15 @@ export interface ACLParent {
   isPublic?: boolean;
 }
 
+/**
+ * Check if a given object implements the ACLParent interface.
+ */
+export function instanceOfACLParent(value: object): boolean {
+  let isInstance = true;
+
+  return isInstance;
+}
+
 export function ACLParentFromJSON(json: any): ACLParent {
   return ACLParentFromJSONTyped(json, false);
 }

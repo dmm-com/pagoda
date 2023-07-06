@@ -13,14 +13,14 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { EntityAttributeType } from "./EntityAttributeType";
 import {
-  EntityAttributeType,
   EntityAttributeTypeFromJSON,
   EntityAttributeTypeFromJSONTyped,
   EntityAttributeTypeToJSON,
 } from "./EntityAttributeType";
+import type { EntryAttributeValue } from "./EntryAttributeValue";
 import {
-  EntryAttributeValue,
   EntryAttributeValueFromJSON,
   EntryAttributeValueFromJSONTyped,
   EntryAttributeValueToJSON,
@@ -68,6 +68,21 @@ export interface EntryAttributeType {
    * @memberof EntryAttributeType
    */
   schema: EntityAttributeType;
+}
+
+/**
+ * Check if a given object implements the EntryAttributeType interface.
+ */
+export function instanceOfEntryAttributeType(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "type" in value;
+  isInstance = isInstance && "isMandatory" in value;
+  isInstance = isInstance && "isReadable" in value;
+  isInstance = isInstance && "value" in value;
+  isInstance = isInstance && "schema" in value;
+
+  return isInstance;
 }
 
 export function EntryAttributeTypeFromJSON(json: any): EntryAttributeType {

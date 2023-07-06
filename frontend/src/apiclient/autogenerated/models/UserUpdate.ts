@@ -39,6 +39,16 @@ export interface UserUpdate {
   isSuperuser?: boolean;
 }
 
+/**
+ * Check if a given object implements the UserUpdate interface.
+ */
+export function instanceOfUserUpdate(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "username" in value;
+
+  return isInstance;
+}
+
 export function UserUpdateFromJSON(json: any): UserUpdate {
   return UserUpdateFromJSONTyped(json, false);
 }

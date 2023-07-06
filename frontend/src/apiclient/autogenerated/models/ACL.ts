@@ -13,14 +13,14 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { ACLParent } from "./ACLParent";
 import {
-  ACLParent,
   ACLParentFromJSON,
   ACLParentFromJSONTyped,
   ACLParentToJSON,
 } from "./ACLParent";
+import type { ACLRole } from "./ACLRole";
 import {
-  ACLRole,
   ACLRoleFromJSON,
   ACLRoleFromJSONTyped,
   ACLRoleToJSON,
@@ -92,6 +92,22 @@ export interface ACL {
    * @memberof ACL
    */
   parent: ACLParent | null;
+}
+
+/**
+ * Check if a given object implements the ACL interface.
+ */
+export function instanceOfACL(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "acltypes" in value;
+  isInstance = isInstance && "members" in value;
+  isInstance = isInstance && "acl" in value;
+  isInstance = isInstance && "roles" in value;
+  isInstance = isInstance && "parent" in value;
+
+  return isInstance;
 }
 
 export function ACLFromJSON(json: any): ACL {

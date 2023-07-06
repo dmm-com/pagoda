@@ -13,8 +13,8 @@
  */
 
 import { exists, mapValues } from "../runtime";
+import type { UserRetrieveToken } from "./UserRetrieveToken";
 import {
-  UserRetrieveToken,
   UserRetrieveTokenFromJSON,
   UserRetrieveTokenFromJSONTyped,
   UserRetrieveTokenToJSON,
@@ -61,13 +61,26 @@ export interface UserRetrieve {
    * @type {UserRetrieveToken}
    * @memberof UserRetrieve
    */
-  readonly token: UserRetrieveToken | null;
+  readonly token: UserRetrieveToken;
   /**
    *
    * @type {number}
    * @memberof UserRetrieve
    */
   authenticateType?: number;
+}
+
+/**
+ * Check if a given object implements the UserRetrieve interface.
+ */
+export function instanceOfUserRetrieve(value: object): boolean {
+  let isInstance = true;
+  isInstance = isInstance && "id" in value;
+  isInstance = isInstance && "username" in value;
+  isInstance = isInstance && "dateJoined" in value;
+  isInstance = isInstance && "token" in value;
+
+  return isInstance;
 }
 
 export function UserRetrieveFromJSON(json: any): UserRetrieve {

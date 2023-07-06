@@ -13,41 +13,43 @@
  */
 
 import * as runtime from "../runtime";
-import {
+import type {
   PaginatedUserListList,
+  PasswordReset,
+  PasswordResetConfirm,
+  PatchedUserPassword,
+  PatchedUserPasswordBySuperuser,
+  UserCreate,
+  UserExport,
+  UserPassword,
+  UserPasswordBySuperuser,
+  UserRetrieve,
+  UserToken,
+  UserUpdate,
+} from "../models";
+import {
   PaginatedUserListListFromJSON,
   PaginatedUserListListToJSON,
-  PasswordReset,
   PasswordResetFromJSON,
   PasswordResetToJSON,
-  PasswordResetConfirm,
   PasswordResetConfirmFromJSON,
   PasswordResetConfirmToJSON,
-  PatchedUserPassword,
   PatchedUserPasswordFromJSON,
   PatchedUserPasswordToJSON,
-  PatchedUserPasswordBySuperuser,
   PatchedUserPasswordBySuperuserFromJSON,
   PatchedUserPasswordBySuperuserToJSON,
-  UserCreate,
   UserCreateFromJSON,
   UserCreateToJSON,
-  UserExport,
   UserExportFromJSON,
   UserExportToJSON,
-  UserPassword,
   UserPasswordFromJSON,
   UserPasswordToJSON,
-  UserPasswordBySuperuser,
   UserPasswordBySuperuserFromJSON,
   UserPasswordBySuperuserToJSON,
-  UserRetrieve,
   UserRetrieveFromJSON,
   UserRetrieveToJSON,
-  UserToken,
   UserTokenFromJSON,
   UserTokenToJSON,
-  UserUpdate,
   UserUpdateFromJSON,
   UserUpdateToJSON,
 } from "../models";
@@ -112,10 +114,11 @@ export interface UserApiV2UpdateRequest {
  */
 export class UserApi extends runtime.BaseAPI {
   /**
+   *
    */
   async userApiV2CreateRaw(
     requestParameters: UserApiV2CreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<UserCreate>> {
     if (
       requestParameters.userCreate === null ||
@@ -164,10 +167,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2Create(
     requestParameters: UserApiV2CreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<UserCreate> {
     const response = await this.userApiV2CreateRaw(
       requestParameters,
@@ -177,10 +181,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2DestroyRaw(
     requestParameters: UserApiV2DestroyRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -224,19 +229,21 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2Destroy(
     requestParameters: UserApiV2DestroyRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<void> {
     await this.userApiV2DestroyRaw(requestParameters, initOverrides);
   }
 
   /**
+   *
    */
   async userApiV2EditPasswdPartialUpdateRaw(
     requestParameters: UserApiV2EditPasswdPartialUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<UserPassword>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -285,10 +292,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2EditPasswdPartialUpdate(
     requestParameters: UserApiV2EditPasswdPartialUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<UserPassword> {
     const response = await this.userApiV2EditPasswdPartialUpdateRaw(
       requestParameters,
@@ -298,10 +306,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2EditPasswdUpdateRaw(
     requestParameters: UserApiV2EditPasswdUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<UserPassword>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -360,10 +369,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2EditPasswdUpdate(
     requestParameters: UserApiV2EditPasswdUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<UserPassword> {
     const response = await this.userApiV2EditPasswdUpdateRaw(
       requestParameters,
@@ -373,9 +383,10 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2ExportListRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<Array<UserExport>>> {
     const queryParameters: any = {};
 
@@ -411,18 +422,20 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2ExportList(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<Array<UserExport>> {
     const response = await this.userApiV2ExportListRaw(initOverrides);
     return await response.value();
   }
 
   /**
+   *
    */
   async userApiV2ImportCreateRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<void>> {
     const queryParameters: any = {};
 
@@ -456,16 +469,20 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
-  async userApiV2ImportCreate(initOverrides?: RequestInit): Promise<void> {
+  async userApiV2ImportCreate(
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<void> {
     await this.userApiV2ImportCreateRaw(initOverrides);
   }
 
   /**
+   *
    */
   async userApiV2ListRaw(
     requestParameters: UserApiV2ListRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<PaginatedUserListList>> {
     const queryParameters: any = {};
 
@@ -513,10 +530,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2List(
     requestParameters: UserApiV2ListRequest = {},
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<PaginatedUserListList> {
     const response = await this.userApiV2ListRaw(
       requestParameters,
@@ -526,10 +544,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2PasswordResetConfirmCreateRaw(
     requestParameters: UserApiV2PasswordResetConfirmCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<PasswordResetConfirm>> {
     if (
       requestParameters.passwordResetConfirm === null ||
@@ -580,10 +599,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2PasswordResetConfirmCreate(
     requestParameters: UserApiV2PasswordResetConfirmCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<PasswordResetConfirm> {
     const response = await this.userApiV2PasswordResetConfirmCreateRaw(
       requestParameters,
@@ -593,10 +613,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2PasswordResetCreateRaw(
     requestParameters: UserApiV2PasswordResetCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<PasswordReset>> {
     if (
       requestParameters.passwordReset === null ||
@@ -645,10 +666,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2PasswordResetCreate(
     requestParameters: UserApiV2PasswordResetCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<PasswordReset> {
     const response = await this.userApiV2PasswordResetCreateRaw(
       requestParameters,
@@ -658,10 +680,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2RetrieveRaw(
     requestParameters: UserApiV2RetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<UserRetrieve>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -707,10 +730,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2Retrieve(
     requestParameters: UserApiV2RetrieveRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<UserRetrieve> {
     const response = await this.userApiV2RetrieveRaw(
       requestParameters,
@@ -720,10 +744,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2SuEditPasswdPartialUpdateRaw(
     requestParameters: UserApiV2SuEditPasswdPartialUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<UserPasswordBySuperuser>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -774,10 +799,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2SuEditPasswdPartialUpdate(
     requestParameters: UserApiV2SuEditPasswdPartialUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<UserPasswordBySuperuser> {
     const response = await this.userApiV2SuEditPasswdPartialUpdateRaw(
       requestParameters,
@@ -787,10 +813,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2SuEditPasswdUpdateRaw(
     requestParameters: UserApiV2SuEditPasswdUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<UserPasswordBySuperuser>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -851,10 +878,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2SuEditPasswdUpdate(
     requestParameters: UserApiV2SuEditPasswdUpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<UserPasswordBySuperuser> {
     const response = await this.userApiV2SuEditPasswdUpdateRaw(
       requestParameters,
@@ -864,10 +892,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2TokenCreateRaw(
     requestParameters: UserApiV2TokenCreateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<UserToken>> {
     const queryParameters: any = {};
 
@@ -906,10 +935,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2TokenCreate(
     requestParameters: UserApiV2TokenCreateRequest = {},
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<UserToken> {
     const response = await this.userApiV2TokenCreateRaw(
       requestParameters,
@@ -919,9 +949,10 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2TokenRetrieveRaw(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<UserToken>> {
     const queryParameters: any = {};
 
@@ -957,19 +988,21 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2TokenRetrieve(
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<UserToken> {
     const response = await this.userApiV2TokenRetrieveRaw(initOverrides);
     return await response.value();
   }
 
   /**
+   *
    */
   async userApiV2UpdateRaw(
     requestParameters: UserApiV2UpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<runtime.ApiResponse<UserUpdate>> {
     if (requestParameters.id === null || requestParameters.id === undefined) {
       throw new runtime.RequiredError(
@@ -1028,10 +1061,11 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
+   *
    */
   async userApiV2Update(
     requestParameters: UserApiV2UpdateRequest,
-    initOverrides?: RequestInit
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<UserUpdate> {
     const response = await this.userApiV2UpdateRaw(
       requestParameters,
