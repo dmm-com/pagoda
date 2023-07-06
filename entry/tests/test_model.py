@@ -2167,10 +2167,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(ret["ret_count"], 1)
         self.assertEqual(ret["ret_values"][0]["entry"]["name"], "e-10")
 
-        # check to get Entries that only have substantial Attribute values
-        for attr in entity.attrs.filter(is_active=True):
-            result = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "*"}])
-
+        def _assert_result_full(attr, result):
             if attr.type != AttrTypeValue["boolean"]:
                 # confirm "entry-black" Entry, which doesn't have any substantial Attribute values,
                 # doesn't exist on the result.
@@ -2185,6 +2182,102 @@ class ModelTest(AironeTestCase):
             else:
                 # both True and False value will be matched for boolean type Attribute
                 self.assertEqual(result["ret_count"], 12)
+
+        # check to get Entries that only have substantial Attribute values
+        for attr in entity.attrs.filter(is_active=True):
+            result = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "*"}])
+            _assert_result_full(attr, result)
+
+        # check to get Entries that only have substantial Attribute values with filter_key
+        for attr in entity.attrs.filter(is_active=True):
+            result = Entry.search_entries(
+                user,
+                [entity.id],
+                [
+                    {
+                        "name": attr.name,
+                        "keyword": "*",
+                        "filter_key": CONFIG.SEARCH_RESULTS_FILTER_KEY.TEXT_CONTAINED,
+                    }
+                ],
+            )
+            _assert_result_full(attr, result)
+
+        # check to get Entries that only have substantial Attribute values
+        # with filter_key instead of keyword
+        for attr in entity.attrs.filter(is_active=True):
+            result = Entry.search_entries(
+                user,
+                [entity.id],
+                [{"name": attr.name, "filter_key": CONFIG.SEARCH_RESULTS_FILTER_KEY.NON_EMPTY}],
+            )
+            _assert_result_full(attr, result)
+
+        # check to get Entries that have empty Attribute values with filter_key instead of keyword
+        for attr in entity.attrs.filter(is_active=True):
+            result = Entry.search_entries(
+                user,
+                [entity.id],
+                [{"name": attr.name, "filter_key": CONFIG.SEARCH_RESULTS_FILTER_KEY.EMPTY}],
+            )
+            if attr.type == AttrTypeValue["boolean"]:
+                self.assertEqual(result["ret_count"], 0)
+            else:
+                self.assertEqual(result["ret_count"], 1)
+                self.assertEqual(result["ret_values"][0]["entry"]["name"], "entry-blank")
+
+        # check to get Entries with the "CLEARED" filter_key and keyword
+        for attr in entity.attrs.filter(is_active=True):
+            result = Entry.search_entries(
+                user,
+                [entity.id],
+                [
+                    {
+                        "name": attr.name,
+                        "keyword": "DO MATCH NOTHING",
+                        "filter_key": CONFIG.SEARCH_RESULTS_FILTER_KEY.CLEARED,
+                    }
+                ],
+            )
+
+            # This expect to match anything
+            self.assertEqual(
+                result["ret_count"], Entry.objects.filter(schema=entity, is_active=True).count()
+            )
+
+    def test_search_entries_with_duplicated_filter_key(self):
+        entity = self.create_entity_with_all_type_attributes(self._user)
+
+        # create Entries that have duplicated value at "str" attribute
+        [self.add_entry(self._user, "dup-%s" % i, entity, values={"str": "hoge"}) for i in range(2)]
+        [
+            self.add_entry(self._user, "dup-%s" % i, entity, values={"str": "fuga"})
+            for i in range(2, 4)
+        ]
+
+        # create Entries that don't have duplicated value at "str" attribute
+        [
+            self.add_entry(self._user, "non-dup-%d" % i, entity, values={"str": "fuga-%d" % i})
+            for i in range(2)
+        ]
+
+        # create Entries that have empty value
+        [self.add_entry(self._user, "empty-%d" % i, entity, values={"str": ""}) for i in range(2)]
+
+        result = Entry.search_entries(
+            self._user,
+            [entity.id],
+            [
+                {
+                    "name": "str",
+                    "filter_key": CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED,
+                },
+            ],
+        )
+        self.assertEqual(result["ret_count"], 4)
+        self.assertEqual(
+            [x["entry"]["name"] for x in result["ret_values"]], ["dup-%s" % i for i in range(4)]
+        )
 
     def test_search_entries_with_hint_referral_entity(self):
         user = User.objects.create(username="hoge")

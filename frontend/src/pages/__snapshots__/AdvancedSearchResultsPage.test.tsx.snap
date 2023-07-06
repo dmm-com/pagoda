@@ -177,60 +177,31 @@ exports[`should match snapshot 1`] = `
                     class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ch6etv-MuiTableCell-root"
                     scope="col"
                   >
-                    <p
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    >
-                      エントリ名
-                    </p>
                     <div
-                      class="MuiFormControl-root MuiTextField-root css-aq4grv-MuiFormControl-root-MuiTextField-root"
+                      class="MuiBox-root css-1omog99"
                     >
-                      <div
-                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-adornedStart css-1wpm5vl-MuiInputBase-root-MuiOutlinedInput-root"
+                      <p
+                        class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                       >
-                        <div
-                          class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
-                        >
-                          <span
-                            class="notranslate"
-                          >
-                            ​
-                          </span>
-                          <svg
-                            aria-hidden="true"
-                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1d159sf-MuiSvgIcon-root"
-                            data-testid="SearchIcon"
-                            focusable="false"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                            />
-                          </svg>
-                        </div>
-                        <input
-                          aria-invalid="false"
-                          class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                          id=":r0:"
-                          style="padding: 8px 0px 8px 4px;"
-                          type="text"
-                          value=""
-                        />
-                        <fieldset
+                        エントリ名
+                      </p>
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium css-zylse7-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
                           aria-hidden="true"
-                          class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="FilterListIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
                         >
-                          <legend
-                            class="css-ihdtdm"
-                          >
-                            <span
-                              class="notranslate"
-                            >
-                              ​
-                            </span>
-                          </legend>
-                        </fieldset>
-                      </div>
+                          <path
+                            d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"
+                          />
+                        </svg>
+                      </button>
                     </div>
                   </th>
                 </tr>
@@ -502,60 +473,31 @@ exports[`should match snapshot 1`] = `
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ch6etv-MuiTableCell-root"
                   scope="col"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                  >
-                    エントリ名
-                  </p>
                   <div
-                    class="MuiFormControl-root MuiTextField-root css-aq4grv-MuiFormControl-root-MuiTextField-root"
+                    class="MuiBox-root css-1omog99"
                   >
-                    <div
-                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-adornedStart css-1wpm5vl-MuiInputBase-root-MuiOutlinedInput-root"
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                     >
-                      <div
-                        class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
-                      >
-                        <span
-                          class="notranslate"
-                        >
-                          ​
-                        </span>
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1d159sf-MuiSvgIcon-root"
-                          data-testid="SearchIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                          />
-                        </svg>
-                      </div>
-                      <input
-                        aria-invalid="false"
-                        class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
-                        id=":r0:"
-                        style="padding: 8px 0px 8px 4px;"
-                        type="text"
-                        value=""
-                      />
-                      <fieldset
+                      エントリ名
+                    </p>
+                    <button
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit MuiIconButton-sizeMedium css-zylse7-MuiButtonBase-root-MuiIconButton-root"
+                      tabindex="0"
+                      type="button"
+                    >
+                      <svg
                         aria-hidden="true"
-                        class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="FilterListIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        <legend
-                          class="css-ihdtdm"
-                        >
-                          <span
-                            class="notranslate"
-                          >
-                            ​
-                          </span>
-                        </legend>
-                      </fieldset>
-                    </div>
+                        <path
+                          d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"
+                        />
+                      </svg>
+                    </button>
                   </div>
                 </th>
               </tr>

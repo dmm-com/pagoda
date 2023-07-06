@@ -72,12 +72,13 @@ export interface UserRetrieve {
 
 /**
  * @export
- * @enum {string}
  */
-export enum UserRetrieveAuthenticateTypeEnum {
-  AUTH_TYPE_LOCAL = 1,
-  AUTH_TYPE_LDAP = 2,
-}
+export const UserRetrieveAuthenticateTypeEnum = {
+  AUTH_TYPE_LOCAL: 1,
+  AUTH_TYPE_LDAP: 2,
+} as const;
+export type UserRetrieveAuthenticateTypeEnum =
+  typeof UserRetrieveAuthenticateTypeEnum[keyof typeof UserRetrieveAuthenticateTypeEnum];
 
 /**
  * Check if a given object implements the UserRetrieve interface.
@@ -88,6 +89,7 @@ export function instanceOfUserRetrieve(value: object): boolean {
   isInstance = isInstance && "username" in value;
   isInstance = isInstance && "dateJoined" in value;
   isInstance = isInstance && "token" in value;
+  isInstance = isInstance && "authenticateType" in value;
 
   return isInstance;
 }
