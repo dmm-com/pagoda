@@ -7,6 +7,7 @@ from django.conf import settings
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import ExceedLimitError
+from airone.lib.elasticsearch import AdvancedSearchResultAttrInfoFilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrTypeValue
@@ -2197,7 +2198,7 @@ class ModelTest(AironeTestCase):
                     {
                         "name": attr.name,
                         "keyword": "*",
-                        "filter_key": CONFIG.SEARCH_RESULTS_FILTER_KEY.TEXT_CONTAINED,
+                        "filter_key": AdvancedSearchResultAttrInfoFilterKey.TEXT_CONTAINED,
                     }
                 ],
             )
@@ -2209,7 +2210,7 @@ class ModelTest(AironeTestCase):
             result = Entry.search_entries(
                 user,
                 [entity.id],
-                [{"name": attr.name, "filter_key": CONFIG.SEARCH_RESULTS_FILTER_KEY.NON_EMPTY}],
+                [{"name": attr.name, "filter_key": AdvancedSearchResultAttrInfoFilterKey.NON_EMPTY}],
             )
             _assert_result_full(attr, result)
 
@@ -2218,7 +2219,7 @@ class ModelTest(AironeTestCase):
             result = Entry.search_entries(
                 user,
                 [entity.id],
-                [{"name": attr.name, "filter_key": CONFIG.SEARCH_RESULTS_FILTER_KEY.EMPTY}],
+                [{"name": attr.name, "filter_key": AdvancedSearchResultAttrInfoFilterKey.EMPTY}],
             )
             if attr.type == AttrTypeValue["boolean"]:
                 self.assertEqual(result["ret_count"], 0)
@@ -2235,7 +2236,7 @@ class ModelTest(AironeTestCase):
                     {
                         "name": attr.name,
                         "keyword": "DO MATCH NOTHING",
-                        "filter_key": CONFIG.SEARCH_RESULTS_FILTER_KEY.CLEARED,
+                        "filter_key": AdvancedSearchResultAttrInfoFilterKey.CLEARED,
                     }
                 ],
             )
@@ -2270,7 +2271,7 @@ class ModelTest(AironeTestCase):
             [
                 {
                     "name": "str",
-                    "filter_key": CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED,
+                    "filter_key": AdvancedSearchResultAttrInfoFilterKey.DUPLICATED,
                 },
             ],
         )

@@ -30,7 +30,7 @@ export interface AdvancedSearchResultAttrInfo {
    * @type {number}
    * @memberof AdvancedSearchResultAttrInfo
    */
-  filterKey?: number;
+  filterKey?: AdvancedSearchResultAttrInfoFilterKeyEnum;
   /**
    *
    * @type {string}
@@ -38,6 +38,19 @@ export interface AdvancedSearchResultAttrInfo {
    */
   keyword?: string;
 }
+
+/**
+ * @export
+ */
+export const AdvancedSearchResultAttrInfoFilterKeyEnum = {
+  CLEARED: 0,
+  EMPTY: 1,
+  NON_EMPTY: 2,
+  TEXT_CONTAINED: 3,
+  DUPLICATED: 4,
+} as const;
+export type AdvancedSearchResultAttrInfoFilterKeyEnum =
+  typeof AdvancedSearchResultAttrInfoFilterKeyEnum[keyof typeof AdvancedSearchResultAttrInfoFilterKeyEnum];
 
 /**
  * Check if a given object implements the AdvancedSearchResultAttrInfo interface.

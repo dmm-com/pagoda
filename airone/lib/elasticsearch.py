@@ -1,3 +1,4 @@
+import enum
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, TypedDict
@@ -38,6 +39,14 @@ class AdvancedSearchResultValue(AdvancedSearchResultValueOptionalFields):
 class AdvancedSearchResults(TypedDict):
     ret_count: int
     ret_values: List[AdvancedSearchResultValue]
+
+
+class AdvancedSearchResultAttrInfoFilterKey(enum.Enum):
+    CLEARED = 0
+    EMPTY = 1
+    NON_EMPTY = 2
+    TEXT_CONTAINED = 3
+    DUPLICATED = 4
 
 
 class ESS(Elasticsearch):
@@ -244,14 +253,14 @@ def make_query(
         # replace filter_key parameter in the hint_attrs
         filter_key = hint_attr.pop("filter_key", None)
         if filter_key is not None:
-            if filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.CLEARED:
+            if filter_key == AdvancedSearchResultAttrInfoFilterKey.CLEARED:
                 # remove "keyword" parameter
                 hint_attr.pop("keyword", None)
-            elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.EMPTY:
+            elif filter_key == AdvancedSearchResultAttrInfoFilterKey.EMPTY:
                 hint_attr["keyword"] = "\\"
-            elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.NON_EMPTY:
+            elif filter_key == AdvancedSearchResultAttrInfoFilterKey.NON_EMPTY:
                 hint_attr["keyword"] = "*"
-            elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED:
+            elif filter_key == AdvancedSearchResultAttrInfoFilterKey.DUPLICATED:
                 aggs_query = make_aggs_query(hint_attr["name"])
                 # TODO Set to 1 for convenience
                 resp = execute_query(aggs_query, 1)

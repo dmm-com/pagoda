@@ -122,7 +122,7 @@ export interface EntryApiV2UpdateRequest {
  */
 export class EntryApi extends runtime.BaseAPI {
   /**
-   * NOTE for now it\'s just copied from /api/v1/entry/search, but it should be rewritten with DRF components.
+   *
    */
   async entryApiV2AdvancedSearchCreateRaw(
     requestParameters: EntryApiV2AdvancedSearchCreateRequest,
@@ -175,7 +175,7 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   * NOTE for now it\'s just copied from /api/v1/entry/search, but it should be rewritten with DRF components.
+   *
    */
   async entryApiV2AdvancedSearchCreate(
     requestParameters: EntryApiV2AdvancedSearchCreateRequest,

@@ -14,6 +14,7 @@ from airone.lib.drf import (
     ObjectNotExistsError,
     RequiredParameterError,
 )
+from airone.lib.elasticsearch import AdvancedSearchResultAttrInfoFilterKey
 from airone.lib.types import AttrDefaultValue, AttrTypeValue
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity, EntityAttr
@@ -967,14 +968,24 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
 
 
 class AdvancedSearchResultAttrInfoSerializer(serializers.Serializer):
+    @extend_schema_field(
+        {
+            "type": "integer",
+            "enum": [k.value for k in AdvancedSearchResultAttrInfoFilterKey],
+            "x-enum-varnames": [k.name for k in AdvancedSearchResultAttrInfoFilterKey],
+        }
+    )
+    class FilterKeyField(serializers.IntegerField):
+        pass
+
     name = serializers.CharField()
-    filter_key = serializers.IntegerField(required=False)
+    filter_key = FilterKeyField(required=False)
     keyword = serializers.CharField(
         required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
     )
 
     def validate_filter_key(self, filter_key: int):
-        if filter_key not in CONFIG_ENTRY.SEARCH_RESULTS_FILTER_KEY.values():
+        if filter_key not in [k.value for k in AdvancedSearchResultAttrInfoFilterKey]:
             raise ValidationError("filter key parameter is invalid value")
         return filter_key
 
