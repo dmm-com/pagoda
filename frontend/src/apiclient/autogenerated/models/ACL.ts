@@ -61,7 +61,7 @@ export interface ACL {
    * @type {number}
    * @memberof ACL
    */
-  objtype?: number;
+  objtype: ACLObjtypeEnum;
   /**
    *
    * @type {Array<{ [key: string]: any; }>}
@@ -95,12 +95,24 @@ export interface ACL {
 }
 
 /**
+ * @export
+ */
+export const ACLObjtypeEnum = {
+  Entity: 1,
+  EntityAttr: 2,
+  Entry: 4,
+  EntryAttr: 8,
+} as const;
+export type ACLObjtypeEnum = typeof ACLObjtypeEnum[keyof typeof ACLObjtypeEnum];
+
+/**
  * Check if a given object implements the ACL interface.
  */
 export function instanceOfACL(value: object): boolean {
   let isInstance = true;
   isInstance = isInstance && "id" in value;
   isInstance = isInstance && "name" in value;
+  isInstance = isInstance && "objtype" in value;
   isInstance = isInstance && "acltypes" in value;
   isInstance = isInstance && "members" in value;
   isInstance = isInstance && "acl" in value;
@@ -125,7 +137,7 @@ export function ACLFromJSONTyped(json: any, ignoreDiscriminator: boolean): ACL {
     defaultPermission: !exists(json, "default_permission")
       ? undefined
       : json["default_permission"],
-    objtype: !exists(json, "objtype") ? undefined : json["objtype"],
+    objtype: json["objtype"],
     acltypes: json["acltypes"],
     members: json["members"],
     acl: json["acl"],

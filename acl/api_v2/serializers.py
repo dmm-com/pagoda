@@ -38,12 +38,23 @@ class ACLRoleListSerializer(serializers.ListSerializer):
 
 
 class ACLSerializer(serializers.ModelSerializer):
+    @extend_schema_field(
+        {
+            "type": "integer",
+            "enum": [k.value for k in ACLObjType],
+            "x-enum-varnames": [k.name for k in ACLObjType],
+        }
+    )
+    class ObjTypeField(serializers.IntegerField):
+        pass
+
     parent = serializers.SerializerMethodField(method_name="get_parent", read_only=True)
     acltypes = serializers.SerializerMethodField(method_name="get_acltypes", read_only=True)
     members = serializers.SerializerMethodField(method_name="get_members", read_only=True)
     roles = serializers.SerializerMethodField(method_name="get_roles", read_only=True)
     # TODO better name?
     acl = serializers.ListField(write_only=True)
+    objtype = ObjTypeField()
 
     class Meta:
         model = ACLBase
@@ -189,14 +200,15 @@ class ACLSerializer(serializers.ModelSerializer):
         return acl_obj
 
     @staticmethod
-    def _get_acl_model(object_id):
-        if int(object_id) == ACLObjType.Entity:
+    def _get_acl_model(object_id: int):
+        objtype = ACLObjType(object_id)
+        if objtype == ACLObjType.Entity:
             return Entity
-        if int(object_id) == ACLObjType.Entry:
+        if objtype == ACLObjType.Entry:
             return Entry
-        elif int(object_id) == ACLObjType.EntityAttr:
+        elif objtype == ACLObjType.EntityAttr:
             return EntityAttr
-        elif int(object_id) == ACLObjType.EntryAttr:
+        elif objtype == ACLObjType.EntryAttr:
             return Attribute
         else:
             return ACLBase

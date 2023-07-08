@@ -29,7 +29,7 @@ class EntityAttr(ACLBase):
 
     def __init__(self, *args, **kwargs):
         super(ACLBase, self).__init__(*args, **kwargs)
-        self.objtype = ACLObjType.EntityAttr
+        self.objtype = ACLObjType.EntityAttr.value
 
     def is_updated(self, name, is_mandatory, is_delete_in_chain, index):
         # checks each parameters that are different between current object parameters
@@ -90,4 +90,4 @@ class Entity(ACLBase):
 
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)
-        self.objtype = ACLObjType.Entity
+        self.objtype = ACLObjType.Entity.value

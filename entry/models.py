@@ -454,7 +454,7 @@ class Attribute(ACLBase):
 
     def __init__(self, *args, **kwargs):
         super(Attribute, self).__init__(*args, **kwargs)
-        self.objtype = ACLObjType.EntryAttr
+        self.objtype = ACLObjType.EntryAttr.value
 
     def is_array(self):
         return self.schema.type & AttrTypeValue["array"]
@@ -1298,7 +1298,7 @@ class Entry(ACLBase):
 
     def __init__(self, *args, **kwargs):
         super(Entry, self).__init__(*args, **kwargs)
-        self.objtype = ACLObjType.Entry
+        self.objtype = ACLObjType.Entry.value
 
     def add_attribute_from_base(self, base, request_user):
         if not isinstance(base, EntityAttr):
