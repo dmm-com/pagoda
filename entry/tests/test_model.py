@@ -7,7 +7,7 @@ from django.conf import settings
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import ExceedLimitError
-from airone.lib.elasticsearch import AdvancedSearchResultAttrInfoFilterKey
+from airone.lib.elasticsearch import FilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrTypeValue
@@ -2198,7 +2198,7 @@ class ModelTest(AironeTestCase):
                     {
                         "name": attr.name,
                         "keyword": "*",
-                        "filter_key": AdvancedSearchResultAttrInfoFilterKey.TEXT_CONTAINED,
+                        "filter_key": FilterKey.TEXT_CONTAINED.value,
                     }
                 ],
             )
@@ -2210,7 +2210,12 @@ class ModelTest(AironeTestCase):
             result = Entry.search_entries(
                 user,
                 [entity.id],
-                [{"name": attr.name, "filter_key": AdvancedSearchResultAttrInfoFilterKey.NON_EMPTY}],
+                [
+                    {
+                        "name": attr.name,
+                        "filter_key": FilterKey.NON_EMPTY.value,
+                    }
+                ],
             )
             _assert_result_full(attr, result)
 
@@ -2219,7 +2224,12 @@ class ModelTest(AironeTestCase):
             result = Entry.search_entries(
                 user,
                 [entity.id],
-                [{"name": attr.name, "filter_key": AdvancedSearchResultAttrInfoFilterKey.EMPTY}],
+                [
+                    {
+                        "name": attr.name,
+                        "filter_key": FilterKey.EMPTY.value,
+                    }
+                ],
             )
             if attr.type == AttrTypeValue["boolean"]:
                 self.assertEqual(result["ret_count"], 0)
@@ -2236,7 +2246,7 @@ class ModelTest(AironeTestCase):
                     {
                         "name": attr.name,
                         "keyword": "DO MATCH NOTHING",
-                        "filter_key": AdvancedSearchResultAttrInfoFilterKey.CLEARED,
+                        "filter_key": FilterKey.CLEARED.value,
                     }
                 ],
             )
@@ -2271,13 +2281,45 @@ class ModelTest(AironeTestCase):
             [
                 {
                     "name": "str",
-                    "filter_key": AdvancedSearchResultAttrInfoFilterKey.DUPLICATED,
+                    "filter_key": FilterKey.DUPLICATED.value,
                 },
             ],
         )
         self.assertEqual(result["ret_count"], 4)
         self.assertEqual(
             [x["entry"]["name"] for x in result["ret_values"]], ["dup-%s" % i for i in range(4)]
+        )
+
+    def test_search_entries_with_text_not_contained_filter_key(self):
+        entity = self.create_entity_with_all_type_attributes(self._user)
+
+        # some entries have "hoge" or "fuga" attribute value
+        [
+            self.add_entry(self._user, "hoge-%s" % i, entity, values={"str": "hoge"})
+            for i in range(3)
+        ]
+        [
+            self.add_entry(self._user, "fuga-%s" % i, entity, values={"str": "fuga"})
+            for i in range(2)
+        ]
+
+        # filter entries have "hoge"
+        result = Entry.search_entries(
+            self._user,
+            [entity.id],
+            [
+                {
+                    "name": "str",
+                    "keyword": "hoge",
+                    "filter_key": FilterKey.TEXT_NOT_CONTAINED.value,
+                },
+            ],
+        )
+
+        # check the result contains only entries don't have "hoge"
+        self.assertEqual(result["ret_count"], 2)
+        self.assertEqual(
+            [x["entry"]["name"] for x in result["ret_values"]], ["fuga-%s" % i for i in range(2)]
         )
 
     def test_search_entries_with_hint_referral_entity(self):

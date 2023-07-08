@@ -41,12 +41,24 @@ class AdvancedSearchResults(TypedDict):
     ret_values: List[AdvancedSearchResultValue]
 
 
-class AdvancedSearchResultAttrInfoFilterKey(enum.Enum):
+class FilterKey(enum.Enum):
     CLEARED = 0
     EMPTY = 1
     NON_EMPTY = 2
     TEXT_CONTAINED = 3
-    DUPLICATED = 4
+    TEXT_NOT_CONTAINED = 4
+    DUPLICATED = 5
+
+
+class AdvancedSearchResultAttrInfoOptionalFields(TypedDict, total=False):
+    filter_key: FilterKey
+    keyword: str
+    exact_match: bool
+
+
+class AdvancedSearchResultAttrInfo(AdvancedSearchResultAttrInfoOptionalFields):
+    name: str
+    is_readable: bool
 
 
 class ESS(Elasticsearch):
@@ -250,17 +262,16 @@ def make_query(
 
     # Conversion processing from "filter_key" to "keyword" for each hint_attrs
     for hint_attr in hint_attrs:
-        # replace filter_key parameter in the hint_attrs
-        filter_key = hint_attr.pop("filter_key", None)
+        filter_key = hint_attr.get("filter_key", None)
         if filter_key is not None:
-            if filter_key == AdvancedSearchResultAttrInfoFilterKey.CLEARED:
+            if filter_key == FilterKey.CLEARED.value:
                 # remove "keyword" parameter
                 hint_attr.pop("keyword", None)
-            elif filter_key == AdvancedSearchResultAttrInfoFilterKey.EMPTY:
+            elif filter_key == FilterKey.EMPTY.value:
                 hint_attr["keyword"] = "\\"
-            elif filter_key == AdvancedSearchResultAttrInfoFilterKey.NON_EMPTY:
+            elif filter_key == FilterKey.NON_EMPTY.value:
                 hint_attr["keyword"] = "*"
-            elif filter_key == AdvancedSearchResultAttrInfoFilterKey.DUPLICATED:
+            elif filter_key == FilterKey.DUPLICATED.value:
                 aggs_query = make_aggs_query(hint_attr["name"])
                 # TODO Set to 1 for convenience
                 resp = execute_query(aggs_query, 1)
@@ -821,7 +832,11 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
                 date_cond["range"]["attr.date_value"]["lte"] = timestr
 
         str_cond = {"regexp": {"attr.value": _get_regex_pattern(keyword)}}
-        cond_attr.append({"bool": {"should": [date_cond, str_cond]}})
+
+        if hint.get("filter_key") == FilterKey.TEXT_NOT_CONTAINED.value:
+            cond_attr.append({"bool": {"must_not": [date_cond, str_cond]}})
+        else:
+            cond_attr.append({"bool": {"should": [date_cond, str_cond]}})
 
     else:
         hint_keyword_val = _get_hint_keyword_val(keyword)
@@ -847,7 +862,10 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
             if "exact_match" not in hint:
                 cond_val.append({"regexp": {"attr.value": _get_regex_pattern(hint_keyword_val)}})
 
-            cond_attr.append({"bool": {"should": cond_val}})
+            if hint.get("filter_key") == FilterKey.TEXT_NOT_CONTAINED.value:
+                cond_attr.append({"bool": {"must_not": cond_val}})
+            else:
+                cond_attr.append({"bool": {"should": cond_val}})
 
         else:
             cond_val_tmp = [
