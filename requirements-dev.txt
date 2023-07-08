@@ -1,8 +1,5 @@
 black
 coverage
-flake8
-isort
-autoflake
 mypy
 requests-html==0.10.0
 types-six
