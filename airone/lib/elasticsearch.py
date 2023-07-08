@@ -50,13 +50,13 @@ class FilterKey(enum.Enum):
     DUPLICATED = 5
 
 
-class AdvancedSearchResultAttrInfoOptionalFields(TypedDict, total=False):
+class _AttrHintOptionalFields(TypedDict, total=False):
     filter_key: FilterKey
     keyword: str
     exact_match: bool
 
 
-class AdvancedSearchResultAttrInfo(AdvancedSearchResultAttrInfoOptionalFields):
+class AttrHint(_AttrHintOptionalFields):
     name: str
     is_readable: bool
 
@@ -231,7 +231,7 @@ __all__ = [
 
 def make_query(
     hint_entity: Entity,
-    hint_attrs: List[Dict[str, str]],
+    hint_attrs: List[AttrHint],
     entry_name: Optional[str],
     hint_referral: Optional[str] = None,
     hint_referral_entity_id: Optional[int] = None,
@@ -248,7 +248,7 @@ def make_query(
 
     Args:
         hint_entity (Entity): Entity ID specified in the search condition input
-        hint_attrs (list(dict[str, str])): A list of search strings and attribute sets
+        hint_attrs (list(AttrHint)): A list of search strings and attribute sets
         entry_name (str): Search string for entry name
         hint_referral (str): Search string for referred entry name
         hint_referral_entity_id (int):
@@ -625,13 +625,13 @@ def _make_attr_query_for_simple(hint_string: str) -> Dict[str, str]:
     return attr_query
 
 
-def _parse_or_search(hint: Dict[str, str], attr_query: Dict[str, str]) -> Dict[str, str]:
+def _parse_or_search(hint: AttrHint, attr_query: Dict[str, str]) -> Dict[str, str]:
     """Performs keyword analysis processing.
 
     The search keyword is separated by OR and passed to the next process.
 
     Args:
-        hint (dict[str, str]): Dictionary of attribute names and search keywords to be processed
+        hint (AttrHint): Dictionary of attribute names and search keywords to be processed
         attr_query (dict[str, str]): Search query being created
 
     Returns:
@@ -649,7 +649,7 @@ def _parse_or_search(hint: Dict[str, str], attr_query: Dict[str, str]) -> Dict[s
 
 
 def _parse_and_search(
-    hint: Dict[str, str],
+    hint: AttrHint,
     keyword_divided_or: str,
     attr_query: Dict[str, Any],
     duplicate_keys: List[str],
@@ -673,7 +673,7 @@ def _parse_and_search(
         }
 
     Args:
-        hint (dict[str, str]): Dictionary of attribute names and search keywords to be processed
+        hint (AttrHint): Dictionary of attribute names and search keywords to be processed
         keyword_divided_or (str): Character string with search keywords separated by OR
         attr_query (dict[str, str]): Search query being created
         duplicate_keys (list(str)): Holds a list of the smallest character strings
@@ -702,7 +702,7 @@ def _parse_and_search(
 
 
 def _build_queries_along_keywords(
-    hint_attrs: List[Dict[str, str]],
+    hint_attrs: List[AttrHint],
     attr_query: Dict[str, str],
 ) -> Dict[str, str]:
     """Build queries along search terms.
@@ -724,7 +724,7 @@ def _build_queries_along_keywords(
        for the retrieved search keywords is completed.
 
     Args:
-        hint_attrs (list(dict[str, str])): A list of search strings and attribute sets
+        hint_attrs (list(AttrHint)): A list of search strings and attribute sets
         attr_query (dict[str, str]): A query that summarizes attributes
             by the smallest unit of a search keyword
 
@@ -780,7 +780,7 @@ def _build_queries_along_keywords(
     return res_query
 
 
-def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, Dict]:
+def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> Dict[str, Dict]:
     """creates an attribute filter from keywords.
 
     For the attribute set in the name of hint, create a filter for filtering search keywords.
@@ -801,7 +801,7 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
     4. After the above process, create a 'nested' query and return it.
 
     Args:
-        hint (dict[str, str]): Dictionary of attribute names and search keywords to be processed
+        hint (AttrHint): Dictionary of attribute names and search keywords to be processed
         keyword (str): String to search for
             String of the smallest unit in which search keyword is separated by `AND` and `OR`
 
@@ -910,7 +910,7 @@ def execute_query(query: Dict[str, str], size: int = 0) -> Dict[str, Any]:
 def make_search_results(
     user: User,
     res: Dict[str, Any],
-    hint_attrs: List[Dict[str, str]],
+    hint_attrs: List[AttrHint],
     hint_referral: Optional[str],
     limit: int,
     offset: int = 0,
@@ -940,7 +940,7 @@ def make_search_results(
 
     Args:
         res (`str`, optional): Search results for Elasticsearch
-        hint_attrs (list(dict[str, str])):  A list of search strings and attribute sets
+        hint_attrs (list(AttrHint)):  A list of search strings and attribute sets
         limit (int): Maximum number of search results to return
         offset (int): The number of offset to get a part of a large amount of search results
 
