@@ -17,9 +17,6 @@ export class DjangoContext {
   noteDesc: string;
   noteLink: string;
   attrTypeValue: any;
-  aclTypes: {
-    [name: string]: { value: number; name: string };
-  };
   user: User | undefined;
 
   private static _instance: DjangoContext | undefined;
@@ -48,13 +45,6 @@ export class DjangoContext {
       group: 16,
       date: 32,
       role: 64,
-    };
-
-    this.aclTypes = {
-      nothing: { value: 1, name: "権限なし" },
-      readable: { value: 2, name: "閲覧" },
-      writable: { value: 4, name: "閲覧・編集" },
-      full: { value: 8, name: "閲覧・編集・削除" },
     };
   }
 

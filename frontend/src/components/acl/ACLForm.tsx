@@ -15,8 +15,9 @@ import React, { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 import { UseFormWatch } from "react-hook-form/dist/types/form";
 
+import { ACLType, ACLTypeLabels } from "../../services/Constants";
+
 import { Schema } from "components/acl/aclForm/ACLFormSchema";
-import { DjangoContext } from "services/DjangoContext";
 
 interface Props {
   control: Control<Schema>;
@@ -42,8 +43,6 @@ const HeaderTableCellNote = styled(TableCell)(() => ({
 }));
 
 export const ACLForm: FC<Props> = ({ control, watch }) => {
-  const djangoContext = DjangoContext.getInstance();
-
   const { fields } = useFieldArray({
     control,
     name: "roles",
@@ -113,7 +112,7 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
                 <Controller
                   control={control}
                   name="defaultPermission"
-                  defaultValue={djangoContext?.aclTypes.nothing.value}
+                  defaultValue={ACLType.Nothing}
                   render={({ field }) => (
                     <Select
                       {...field}
@@ -121,16 +120,11 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
                       disabled={watch("isPublic")}
                       MenuProps={{ disableScrollLock: true }}
                     >
-                      {Object.keys(djangoContext?.aclTypes ?? {}).map(
-                        (key, index) => (
-                          <MenuItem
-                            key={index}
-                            value={djangoContext?.aclTypes[key].value}
-                          >
-                            {djangoContext?.aclTypes[key].name}
-                          </MenuItem>
-                        )
-                      )}
+                      {Object.values(ACLType).map((value) => (
+                        <MenuItem key={value} value={value}>
+                          {ACLTypeLabels[value]}
+                        </MenuItem>
+                      ))}
                     </Select>
                   )}
                 />
@@ -145,7 +139,7 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
                     <Controller
                       control={control}
                       name={`roles.${index}.currentPermission`}
-                      defaultValue={djangoContext?.aclTypes.nothing.value}
+                      defaultValue={ACLType.Nothing}
                       render={({ field }) => (
                         <Select
                           {...field}
@@ -154,16 +148,11 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
                           MenuProps={{ disableScrollLock: true }}
                         >
                           <MenuItem value={0}>(未設定)</MenuItem>
-                          {Object.keys(djangoContext?.aclTypes ?? {}).map(
-                            (key, index) => (
-                              <MenuItem
-                                key={index}
-                                value={djangoContext?.aclTypes[key].value}
-                              >
-                                {djangoContext?.aclTypes[key].name}
-                              </MenuItem>
-                            )
-                          )}
+                          {Object.values(ACLType).map((value) => (
+                            <MenuItem key={value} value={value}>
+                              {ACLTypeLabels[value]}
+                            </MenuItem>
+                          ))}
                         </Select>
                       )}
                     />
