@@ -200,15 +200,14 @@ class ACLSerializer(serializers.ModelSerializer):
         return acl_obj
 
     @staticmethod
-    def _get_acl_model(object_id: int):
-        objtype = ACLObjType(object_id)
-        if objtype == ACLObjType.Entity:
+    def _get_acl_model(object_id):
+        if int(object_id) == ACLObjType.Entity:
             return Entity
-        if objtype == ACLObjType.Entry:
+        if int(object_id) == ACLObjType.Entry:
             return Entry
-        elif objtype == ACLObjType.EntityAttr:
+        elif int(object_id) == ACLObjType.EntityAttr:
             return EntityAttr
-        elif objtype == ACLObjType.EntryAttr:
+        elif int(object_id) == ACLObjType.EntryAttr:
             return Attribute
         else:
             return ACLBase
