@@ -4,12 +4,22 @@
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## v3.53.0
+
+### Added
 * Enabled to search Entries that has same AttributeValue at the advanced search processing.
   Contributed by @hinashi, @userlocalhost, @syucream
 
 ### Changed
-
-### Fixed
+* Upgrade django version from 3.2.19 to 3.2.20
+* Represent authenticate_type as an enum value.
+  @syucream
+* Disallow blank entry name on the new UI.
+  @syucream
 
 ## v3.52.0
 
