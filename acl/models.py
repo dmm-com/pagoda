@@ -149,13 +149,13 @@ class ACLBase(models.Model):
 
     def get_subclass_object(self):
         # Use importlib to prevent circular import
-        if self.objtype == ACLObjType.Entity:
+        if self.objtype == ACLObjType.Entity.value:
             model = importlib.import_module("entity.models").Entity
-        elif self.objtype == ACLObjType.EntityAttr:
+        elif self.objtype == ACLObjType.EntityAttr.value:
             model = importlib.import_module("entity.models").EntityAttr
-        elif self.objtype == ACLObjType.Entry:
+        elif self.objtype == ACLObjType.Entry.value:
             model = importlib.import_module("entry.models").Entry
-        elif self.objtype == ACLObjType.EntryAttr:
+        elif self.objtype == ACLObjType.EntryAttr.value:
             model = importlib.import_module("entry.models").Attribute
         else:
             # set ACLBase model

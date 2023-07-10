@@ -135,10 +135,10 @@ def render(request, template, context={}):
     context["navigator"] = {
         "entities": [x for x in entity_objects],
         "acl_objtype": {
-            "entity": ACLObjType.Entity,
-            "entry": ACLObjType.Entry,
-            "attrbase": ACLObjType.EntityAttr,
-            "attr": ACLObjType.EntryAttr,
+            "entity": ACLObjType.Entity.value,
+            "entry": ACLObjType.Entry.value,
+            "attrbase": ACLObjType.EntityAttr.value,
+            "attr": ACLObjType.EntryAttr.value,
         },
     }
 

@@ -154,13 +154,13 @@ def set(request, recv_data):
 
 
 def _get_acl_model(object_id):
-    if int(object_id) == ACLObjType.Entity:
+    if int(object_id) == ACLObjType.Entity.value:
         return Entity
-    if int(object_id) == ACLObjType.Entry:
+    if int(object_id) == ACLObjType.Entry.value:
         return Entry
-    elif int(object_id) == ACLObjType.EntityAttr:
+    elif int(object_id) == ACLObjType.EntityAttr.value:
         return EntityAttr
-    elif int(object_id) == ACLObjType.EntryAttr:
+    elif int(object_id) == ACLObjType.EntryAttr.value:
         return Attribute
     else:
         return ACLBase

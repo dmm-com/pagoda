@@ -38,12 +38,23 @@ class ACLRoleListSerializer(serializers.ListSerializer):
 
 
 class ACLSerializer(serializers.ModelSerializer):
+    @extend_schema_field(
+        {
+            "type": "integer",
+            "enum": [k.value for k in ACLObjType],
+            "x-enum-varnames": [k.name for k in ACLObjType],
+        }
+    )
+    class ObjTypeField(serializers.IntegerField):
+        pass
+
     parent = serializers.SerializerMethodField(method_name="get_parent", read_only=True)
     acltypes = serializers.SerializerMethodField(method_name="get_acltypes", read_only=True)
     members = serializers.SerializerMethodField(method_name="get_members", read_only=True)
     roles = serializers.SerializerMethodField(method_name="get_roles", read_only=True)
     # TODO better name?
     acl = serializers.ListField(write_only=True)
+    objtype = ObjTypeField()
 
     class Meta:
         model = ACLBase

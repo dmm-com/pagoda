@@ -148,3 +148,18 @@ export const JobOperations = {
 };
 
 export const JobRefreshIntervalMilliSec = 60 * 1000;
+
+export const ACLType = {
+  Nothing: 1,
+  Readable: 2,
+  Writable: 4,
+  Full: 8,
+} as const;
+export type ACLType = typeof ACLType[keyof typeof ACLType];
+
+export const ACLTypeLabels: Record<ACLType, string> = {
+  [ACLType.Nothing]: "権限なし",
+  [ACLType.Readable]: "閲覧",
+  [ACLType.Writable]: "閲覧・編集",
+  [ACLType.Full]: "閲覧・編集・削除",
+};

@@ -149,7 +149,7 @@ class ModelTest(AironeTestCase):
         self._attr.values.add(value)
 
         self.assertEqual(Attribute.objects.count(), 1)
-        self.assertEqual(Attribute.objects.last().objtype, ACLObjType.EntryAttr)
+        self.assertEqual(Attribute.objects.last().objtype, ACLObjType.EntryAttr.value)
         self.assertEqual(Attribute.objects.last().values.count(), 1)
         self.assertEqual(Attribute.objects.last().values.last(), value)
 
