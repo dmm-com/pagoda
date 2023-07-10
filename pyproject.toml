@@ -14,20 +14,3 @@ extend-exclude = ["./*/migrations", "manage.py", "./node_modules"]
 
 [tool.ruff.per-file-ignores]
 "./airone/tests/test_elasticsearch.py" = ["E501"]
-
-# TODO remove it if ruff works well
-[tool.autoflake]
-in_place = true
-recursive = true
-imports = ["django", "requests", "urllib3"]
-exclude = ["node_modules", "venv", "virtualenv"]
-remove_all_unused_imports = true
-ignore_init_module_imports = true
-ignore_pass_after_docstring = true
-
-# TODO remove it if ruff works well
-[tool.isort]
-line_length = 100
-profile = "black"
-skip_glob = "*/migrations/*.py"
-skip = "virtualenv, .tox"
