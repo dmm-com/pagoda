@@ -9,7 +9,7 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
-import { SearchResultsFilterKey } from "./SearchResults";
+import { AttrsFilter } from "./SearchResults";
 
 const StyledTextField = styled(TextField)({
   margin: "8px",
@@ -25,9 +25,7 @@ interface Props {
   handleClose: () => void;
   entryFilterDispatcher: any;
   handleSelectFilterConditions: (
-    attrfilter?:
-      | Record<string, { filterKey: SearchResultsFilterKey; keyword: string }>
-      | undefined,
+    attrfilter?: AttrsFilter,
     overwriteEntryName?: string | undefined,
     overwriteReferral?: string | undefined
   ) => void;

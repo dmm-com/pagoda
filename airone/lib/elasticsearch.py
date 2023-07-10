@@ -1,3 +1,4 @@
+import enum
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, TypedDict
@@ -38,6 +39,26 @@ class AdvancedSearchResultValue(AdvancedSearchResultValueOptionalFields):
 class AdvancedSearchResults(TypedDict):
     ret_count: int
     ret_values: List[AdvancedSearchResultValue]
+
+
+class FilterKey(enum.Enum):
+    CLEARED = 0
+    EMPTY = 1
+    NON_EMPTY = 2
+    TEXT_CONTAINED = 3
+    TEXT_NOT_CONTAINED = 4
+    DUPLICATED = 5
+
+
+class _AttrHintOptionalFields(TypedDict, total=False):
+    filter_key: FilterKey
+    keyword: str
+    exact_match: bool
+
+
+class AttrHint(_AttrHintOptionalFields):
+    name: str
+    is_readable: bool
 
 
 class ESS(Elasticsearch):
@@ -210,7 +231,7 @@ __all__ = [
 
 def make_query(
     hint_entity: Entity,
-    hint_attrs: List[Dict[str, str]],
+    hint_attrs: List[AttrHint],
     entry_name: Optional[str],
     hint_referral: Optional[str] = None,
     hint_referral_entity_id: Optional[int] = None,
@@ -227,7 +248,7 @@ def make_query(
 
     Args:
         hint_entity (Entity): Entity ID specified in the search condition input
-        hint_attrs (list(dict[str, str])): A list of search strings and attribute sets
+        hint_attrs (list(AttrHint)): A list of search strings and attribute sets
         entry_name (str): Search string for entry name
         hint_referral (str): Search string for referred entry name
         hint_referral_entity_id (int):
@@ -241,17 +262,16 @@ def make_query(
 
     # Conversion processing from "filter_key" to "keyword" for each hint_attrs
     for hint_attr in hint_attrs:
-        # replace filter_key parameter in the hint_attrs
-        filter_key = hint_attr.pop("filter_key", None)
+        filter_key = hint_attr.get("filter_key", None)
         if filter_key is not None:
-            if filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.CLEARED:
+            if filter_key == FilterKey.CLEARED.value:
                 # remove "keyword" parameter
                 hint_attr.pop("keyword", None)
-            elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.EMPTY:
+            elif filter_key == FilterKey.EMPTY.value:
                 hint_attr["keyword"] = "\\"
-            elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.NON_EMPTY:
+            elif filter_key == FilterKey.NON_EMPTY.value:
                 hint_attr["keyword"] = "*"
-            elif filter_key == CONFIG.SEARCH_RESULTS_FILTER_KEY.DUPLICATED:
+            elif filter_key == FilterKey.DUPLICATED.value:
                 aggs_query = make_aggs_query(hint_attr["name"])
                 # TODO Set to 1 for convenience
                 resp = execute_query(aggs_query, 1)
@@ -605,13 +625,13 @@ def _make_attr_query_for_simple(hint_string: str) -> Dict[str, str]:
     return attr_query
 
 
-def _parse_or_search(hint: Dict[str, str], attr_query: Dict[str, str]) -> Dict[str, str]:
+def _parse_or_search(hint: AttrHint, attr_query: Dict[str, str]) -> Dict[str, str]:
     """Performs keyword analysis processing.
 
     The search keyword is separated by OR and passed to the next process.
 
     Args:
-        hint (dict[str, str]): Dictionary of attribute names and search keywords to be processed
+        hint (AttrHint): Dictionary of attribute names and search keywords to be processed
         attr_query (dict[str, str]): Search query being created
 
     Returns:
@@ -629,7 +649,7 @@ def _parse_or_search(hint: Dict[str, str], attr_query: Dict[str, str]) -> Dict[s
 
 
 def _parse_and_search(
-    hint: Dict[str, str],
+    hint: AttrHint,
     keyword_divided_or: str,
     attr_query: Dict[str, Any],
     duplicate_keys: List[str],
@@ -653,7 +673,7 @@ def _parse_and_search(
         }
 
     Args:
-        hint (dict[str, str]): Dictionary of attribute names and search keywords to be processed
+        hint (AttrHint): Dictionary of attribute names and search keywords to be processed
         keyword_divided_or (str): Character string with search keywords separated by OR
         attr_query (dict[str, str]): Search query being created
         duplicate_keys (list(str)): Holds a list of the smallest character strings
@@ -682,7 +702,7 @@ def _parse_and_search(
 
 
 def _build_queries_along_keywords(
-    hint_attrs: List[Dict[str, str]],
+    hint_attrs: List[AttrHint],
     attr_query: Dict[str, str],
 ) -> Dict[str, str]:
     """Build queries along search terms.
@@ -704,7 +724,7 @@ def _build_queries_along_keywords(
        for the retrieved search keywords is completed.
 
     Args:
-        hint_attrs (list(dict[str, str])): A list of search strings and attribute sets
+        hint_attrs (list(AttrHint)): A list of search strings and attribute sets
         attr_query (dict[str, str]): A query that summarizes attributes
             by the smallest unit of a search keyword
 
@@ -760,7 +780,7 @@ def _build_queries_along_keywords(
     return res_query
 
 
-def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, Dict]:
+def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> Dict[str, Dict]:
     """creates an attribute filter from keywords.
 
     For the attribute set in the name of hint, create a filter for filtering search keywords.
@@ -781,7 +801,7 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
     4. After the above process, create a 'nested' query and return it.
 
     Args:
-        hint (dict[str, str]): Dictionary of attribute names and search keywords to be processed
+        hint (AttrHint): Dictionary of attribute names and search keywords to be processed
         keyword (str): String to search for
             String of the smallest unit in which search keyword is separated by `AND` and `OR`
 
@@ -812,7 +832,11 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
                 date_cond["range"]["attr.date_value"]["lte"] = timestr
 
         str_cond = {"regexp": {"attr.value": _get_regex_pattern(keyword)}}
-        cond_attr.append({"bool": {"should": [date_cond, str_cond]}})
+
+        if hint.get("filter_key") == FilterKey.TEXT_NOT_CONTAINED.value:
+            cond_attr.append({"bool": {"must_not": [date_cond, str_cond]}})
+        else:
+            cond_attr.append({"bool": {"should": [date_cond, str_cond]}})
 
     else:
         hint_keyword_val = _get_hint_keyword_val(keyword)
@@ -838,7 +862,10 @@ def _make_an_attribute_filter(hint: Dict[str, str], keyword: str) -> Dict[str, D
             if "exact_match" not in hint:
                 cond_val.append({"regexp": {"attr.value": _get_regex_pattern(hint_keyword_val)}})
 
-            cond_attr.append({"bool": {"should": cond_val}})
+            if hint.get("filter_key") == FilterKey.TEXT_NOT_CONTAINED.value:
+                cond_attr.append({"bool": {"must_not": cond_val}})
+            else:
+                cond_attr.append({"bool": {"should": cond_val}})
 
         else:
             cond_val_tmp = [
@@ -883,7 +910,7 @@ def execute_query(query: Dict[str, str], size: int = 0) -> Dict[str, Any]:
 def make_search_results(
     user: User,
     res: Dict[str, Any],
-    hint_attrs: List[Dict[str, str]],
+    hint_attrs: List[AttrHint],
     hint_referral: Optional[str],
     limit: int,
     offset: int = 0,
@@ -913,7 +940,7 @@ def make_search_results(
 
     Args:
         res (`str`, optional): Search results for Elasticsearch
-        hint_attrs (list(dict[str, str])):  A list of search strings and attribute sets
+        hint_attrs (list(AttrHint)):  A list of search strings and attribute sets
         limit (int): Maximum number of search results to return
         offset (int): The number of offset to get a part of a large amount of search results
 

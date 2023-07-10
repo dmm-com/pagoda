@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from django.conf import settings
 from django.db import models
@@ -15,6 +15,7 @@ from airone.lib.drf import ExceedLimitError
 from airone.lib.elasticsearch import (
     ESS,
     AdvancedSearchResults,
+    AttrHint,
     execute_query,
     make_query,
     make_query_for_simple,
@@ -2006,7 +2007,7 @@ class Entry(ACLBase):
         kls,
         user: User,
         hint_entity_ids: List[str],
-        hint_attrs: Optional[List[Dict[str, Any]]] = None,
+        hint_attrs: Optional[List[AttrHint]] = None,
         limit: int = CONFIG.MAX_LIST_ENTRIES,
         entry_name: Optional[str] = None,
         hint_referral: Optional[str] = None,
