@@ -31,7 +31,7 @@ export const entityEntriesPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries`;
 export const restoreEntryPath = (entityId: number | string, keyword?: string) =>
   basePath +
-  `entities/${entityId}/restore${keyword != null ? "?keyword=" + keyword : ""}`;
+  `entities/${entityId}/restore${keyword != null ? "?query=" + keyword : ""}`;
 export const showEntryHistoryPath = (
   entityId: number | string,
   entryId: number | string

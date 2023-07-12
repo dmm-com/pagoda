@@ -145,6 +145,9 @@ exports[`should match snapshot 1`] = `
                         d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
                       />
                     </svg>
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
                   </button>
                 </div>
               </div>
@@ -164,7 +167,7 @@ exports[`should match snapshot 1`] = `
               class="MuiBox-root css-1abudc7"
             >
               <div
-                class="MuiBox-root css-qxh7fn"
+                class="MuiBox-root css-1m3p9o7"
               >
                 <div
                   class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-miwl14-MuiFormControl-root-MuiTextField-root"
@@ -219,36 +222,185 @@ exports[`should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="MuiBox-root css-0"
-              data-testid="loading"
+              class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-mhc70k-MuiGrid-root"
+              id="entry_list"
             >
               <div
-                class="MuiBox-root css-1tq2trd"
+                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
               >
-                <span
-                  class="MuiCircularProgress-root MuiCircularProgress-indeterminate MuiCircularProgress-colorPrimary css-18lrjg1-MuiCircularProgress-root"
-                  role="progressbar"
-                  style="width: 40px; height: 40px;"
+                <div
+                  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-mzvg6y-MuiPaper-root-MuiCard-root"
                 >
-                  <svg
-                    class="MuiCircularProgress-svg css-1idz92c-MuiCircularProgress-svg"
-                    viewBox="22 22 44 44"
+                  <div
+                    class="MuiCardHeader-root css-1xgp7xg-MuiCardHeader-root"
                   >
-                    <circle
-                      class="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate css-176wh8e-MuiCircularProgress-circle"
-                      cx="44"
-                      cy="44"
-                      fill="none"
-                      r="20.2"
-                      stroke-width="3.6"
-                    />
-                  </svg>
-                </span>
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-frkdmv-MuiTypography-root"
+                    <div
+                      class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
+                    >
+                      <span
+                        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
+                      >
+                        <button
+                          class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          <h6
+                            class="MuiTypography-root MuiTypography-h6 css-1vtsck5-MuiTypography-root"
+                          >
+                            aaa
+                          </h6>
+                          <span
+                            class="MuiCardActionArea-focusHighlight css-1v2exvi-MuiCardActionArea-focusHighlight"
+                          />
+                        </button>
+                      </span>
+                    </div>
+                    <div
+                      class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
+                    >
+                      <div
+                        class="MuiBox-root css-0"
+                      >
+                        <button
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="RestoreIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
+              >
+                <div
+                  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-mzvg6y-MuiPaper-root-MuiCard-root"
                 >
-                  Loading...
-                </p>
+                  <div
+                    class="MuiCardHeader-root css-1xgp7xg-MuiCardHeader-root"
+                  >
+                    <div
+                      class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
+                    >
+                      <span
+                        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
+                      >
+                        <button
+                          class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          <h6
+                            class="MuiTypography-root MuiTypography-h6 css-1vtsck5-MuiTypography-root"
+                          >
+                            aaaaa
+                          </h6>
+                          <span
+                            class="MuiCardActionArea-focusHighlight css-1v2exvi-MuiCardActionArea-focusHighlight"
+                          />
+                        </button>
+                      </span>
+                    </div>
+                    <div
+                      class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
+                    >
+                      <div
+                        class="MuiBox-root css-0"
+                      >
+                        <button
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="RestoreIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
+              >
+                <div
+                  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-mzvg6y-MuiPaper-root-MuiCard-root"
+                >
+                  <div
+                    class="MuiCardHeader-root css-1xgp7xg-MuiCardHeader-root"
+                  >
+                    <div
+                      class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
+                    >
+                      <span
+                        class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
+                      >
+                        <button
+                          class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          <h6
+                            class="MuiTypography-root MuiTypography-h6 css-1vtsck5-MuiTypography-root"
+                          >
+                            bbbbb
+                          </h6>
+                          <span
+                            class="MuiCardActionArea-focusHighlight css-1v2exvi-MuiCardActionArea-focusHighlight"
+                          />
+                        </button>
+                      </span>
+                    </div>
+                    <div
+                      class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
+                    >
+                      <div
+                        class="MuiBox-root css-0"
+                      >
+                        <button
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                            data-testid="RestoreIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div
@@ -260,6 +412,7 @@ exports[`should match snapshot 1`] = `
                 <nav
                   aria-label="pagination navigation"
                   class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
+                  id="entry_page"
                 >
                   <ul
                     class="MuiPagination-ul css-wjh20t-MuiPagination-ul"
@@ -456,6 +609,9 @@ exports[`should match snapshot 1`] = `
                       d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
                     />
                   </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
                 </button>
               </div>
             </div>
@@ -475,7 +631,7 @@ exports[`should match snapshot 1`] = `
             class="MuiBox-root css-1abudc7"
           >
             <div
-              class="MuiBox-root css-qxh7fn"
+              class="MuiBox-root css-1m3p9o7"
             >
               <div
                 class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-miwl14-MuiFormControl-root-MuiTextField-root"
@@ -530,36 +686,185 @@ exports[`should match snapshot 1`] = `
             </div>
           </div>
           <div
-            class="MuiBox-root css-0"
-            data-testid="loading"
+            class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-mhc70k-MuiGrid-root"
+            id="entry_list"
           >
             <div
-              class="MuiBox-root css-1tq2trd"
+              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
             >
-              <span
-                class="MuiCircularProgress-root MuiCircularProgress-indeterminate MuiCircularProgress-colorPrimary css-18lrjg1-MuiCircularProgress-root"
-                role="progressbar"
-                style="width: 40px; height: 40px;"
+              <div
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-mzvg6y-MuiPaper-root-MuiCard-root"
               >
-                <svg
-                  class="MuiCircularProgress-svg css-1idz92c-MuiCircularProgress-svg"
-                  viewBox="22 22 44 44"
+                <div
+                  class="MuiCardHeader-root css-1xgp7xg-MuiCardHeader-root"
                 >
-                  <circle
-                    class="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate css-176wh8e-MuiCircularProgress-circle"
-                    cx="44"
-                    cy="44"
-                    fill="none"
-                    r="20.2"
-                    stroke-width="3.6"
-                  />
-                </svg>
-              </span>
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-frkdmv-MuiTypography-root"
+                  <div
+                    class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
+                  >
+                    <span
+                      class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
+                    >
+                      <button
+                        class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <h6
+                          class="MuiTypography-root MuiTypography-h6 css-1vtsck5-MuiTypography-root"
+                        >
+                          aaa
+                        </h6>
+                        <span
+                          class="MuiCardActionArea-focusHighlight css-1v2exvi-MuiCardActionArea-focusHighlight"
+                        />
+                      </button>
+                    </span>
+                  </div>
+                  <div
+                    class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
+                  >
+                    <div
+                      class="MuiBox-root css-0"
+                    >
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="RestoreIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
+            >
+              <div
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-mzvg6y-MuiPaper-root-MuiCard-root"
               >
-                Loading...
-              </p>
+                <div
+                  class="MuiCardHeader-root css-1xgp7xg-MuiCardHeader-root"
+                >
+                  <div
+                    class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
+                  >
+                    <span
+                      class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
+                    >
+                      <button
+                        class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <h6
+                          class="MuiTypography-root MuiTypography-h6 css-1vtsck5-MuiTypography-root"
+                        >
+                          aaaaa
+                        </h6>
+                        <span
+                          class="MuiCardActionArea-focusHighlight css-1v2exvi-MuiCardActionArea-focusHighlight"
+                        />
+                      </button>
+                    </span>
+                  </div>
+                  <div
+                    class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
+                  >
+                    <div
+                      class="MuiBox-root css-0"
+                    >
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="RestoreIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
+            >
+              <div
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-mzvg6y-MuiPaper-root-MuiCard-root"
+              >
+                <div
+                  class="MuiCardHeader-root css-1xgp7xg-MuiCardHeader-root"
+                >
+                  <div
+                    class="MuiCardHeader-content css-1qbkelo-MuiCardHeader-content"
+                  >
+                    <span
+                      class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-1qvr50w-MuiTypography-root"
+                    >
+                      <button
+                        class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <h6
+                          class="MuiTypography-root MuiTypography-h6 css-1vtsck5-MuiTypography-root"
+                        >
+                          bbbbb
+                        </h6>
+                        <span
+                          class="MuiCardActionArea-focusHighlight css-1v2exvi-MuiCardActionArea-focusHighlight"
+                        />
+                      </button>
+                    </span>
+                  </div>
+                  <div
+                    class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
+                  >
+                    <div
+                      class="MuiBox-root css-0"
+                    >
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="RestoreIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div
@@ -571,6 +876,7 @@ exports[`should match snapshot 1`] = `
               <nav
                 aria-label="pagination navigation"
                 class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
+                id="entry_page"
               >
                 <ul
                   class="MuiPagination-ul css-wjh20t-MuiPagination-ul"

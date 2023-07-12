@@ -117,6 +117,7 @@ export const WebhookFields: FC<Props> = ({ control }) => {
                   render={({ field, fieldState: { error } }) => (
                     <TextField
                       {...field}
+                      id="webhook-url"
                       placeholder="URL"
                       error={error != null}
                       helperText={error?.message}
