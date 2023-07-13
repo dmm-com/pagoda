@@ -326,6 +326,57 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         return Response(serializer.initial_data)
 
 
+class AdvancedSearchDBAPI(generics.GenericAPIView):
+    serializer_class = AdvancedSearchSerializer
+
+    def get(self, request, format=None):
+        user: User = request.user
+        entity_name = "tsuchinoko-vm"
+        entity = Entity.objects.filter(name=entity_name, is_active=True).first()
+        user.has_permission(entity, ACLType.Readable)
+        attrinfo = []
+        for entity_attr in entity.attrs.filter(is_active=True):
+            attrinfo.append({"name": entity_attr.name})
+
+        results = []
+        for entry in (
+            Entry.objects.filter(schema=entity, is_active=True)
+            .order_by("name")
+            .select_related("schema")[0:100]
+        ):
+            result = {
+                "entity": {
+                    "id": entry.schema.id,
+                    "name": entry.schema.name,
+                },
+                "entry": {
+                    "id": entry.id,
+                    "name": entry.name,
+                },
+                "attrs": {},
+                "referrals": [],
+                "is_readble": user.has_permission(entry, ACLType.Readable),
+            }
+
+            attrs = {}
+            attr: Attribute
+            for attr in entry.attrs.filter(is_active=True).select_related("schema"):
+                # if attr.name in attrinfo["name"]:
+                if user.has_permission(attr, ACLType.Readable):
+                    attrs[attr.schema.name] = {
+                        "is_readble": True,
+                        "type": attr.schema.type,
+                        # "value": attr.get_latest_value().get_value(),
+                    }
+
+            result["attrs"] = attrs
+            results.append(result)
+
+        serializer = AdvancedSearchResultSerializer(data={"count": len(results), "values": results})
+
+        return Response(serializer.initial_data)
+
+
 class AdvancedSearchResultAPI(generics.GenericAPIView):
     serializer_class = AdvancedSearchResultExportSerializer
 

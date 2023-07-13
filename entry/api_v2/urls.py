@@ -74,5 +74,6 @@ urlpatterns = [
         views.EntryAttributeValueRestoreAPI.as_view(),
     ),
     path("advanced_search/", views.AdvancedSearchAPI.as_view()),
+    path("advanced_search_db/", views.AdvancedSearchDBAPI.as_view()),
     path("import/", views.EntryImportAPI.as_view()),
 ]
