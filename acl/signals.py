@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save
+from django.db.models import Q
 from django.dispatch import receiver
 
 from airone.lib.acl import ACLType
@@ -12,12 +13,32 @@ from .models import ACLBase
 
 def create_permission(instance):
     content_type = ContentType.objects.get_for_model(instance)
-    HistoricalPermission(name="Readable", content_type=content_type, is_readable=True).save()
-    HistoricalPermission(name="Writable", content_type=content_type, is_writable=True).save()
-    HistoricalPermission(name="Full", content_type=content_type, is_full=True).save()
-#    for acltype in ACLType.availables():
-#        codename = "%s.%s" % (instance.id, acltype.id)
-#        HistoricalPermission(name=acltype.name, codename=codename, content_type=content_type).save()
+    for acltype in ACLType.availables():
+        codename = "%s.%s" % (instance.id, acltype.id)
+        if acltype.id == ACLType.Readable.id:
+            HistoricalPermission(
+                name=acltype.name,
+                codename=codename,
+                content_type=content_type,
+                target_obj_id=instance.id,
+                is_readable=True,
+            ).save()
+        if acltype.id == ACLType.Writable.id:
+            HistoricalPermission(
+                name=acltype.name,
+                codename=codename,
+                content_type=content_type,
+                target_obj_id=instance.id,
+                is_writable=True,
+            ).save()
+        if acltype.id == ACLType.Full.id:
+            HistoricalPermission(
+                name=acltype.name,
+                codename=codename,
+                content_type=content_type,
+                target_obj_id=instance.id,
+                is_full=True,
+            ).save()
 
 
 @receiver(post_save, sender=ACLBase)

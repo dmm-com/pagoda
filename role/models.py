@@ -6,6 +6,7 @@ from django.contrib.auth.models import Permission
 from django.db import models
 from django.db.models import Q
 from simple_history.models import HistoricalRecords
+from airone.lib.acl import ACLType
 
 from airone.lib.types import AttrTypeValue
 
@@ -79,21 +80,24 @@ class Role(models.Model):
           this method don't care about hieralchical data structure
           (e.g. Entity/Entry, EntityAttr/Attribute).
         """
-#        return any(
-#            [
-#                permission_level.id <= x.get_aclid()
-#                for x in self.permissions.filter(codename__startswith=(str(target_obj.id) + "."))
-#            ]
-#        )
         # It doesn't care for each Role's permission
         if permission_level.id == ACLType.Readable.id:
-            return self.permissions.filter(Q(is_readable=True, target_obj_id=target_obj.id) | Q(is_wriatble=True, target_obj_id=target_obj.id)).exists()
+            return self.permissions.filter(
+                Q(is_readable=True, target_obj_id=target_obj.id)
+                | Q(is_writable=True, target_obj_id=target_obj.id)
+                | Q(is_full=True, target_obj_id=target_obj.id)
+            ).exists()
 
         elif permission_level.id == ACLType.Writable.id:
-            return self.permissions.filter(is_wriatble=True, target_obj_id=target_obj.id).exists()
+            return self.permissions.filter(
+                Q(is_writable=True, target_obj_id=target_obj.id)
+                | Q(is_full=True, target_obj_id=target_obj.id)
+            ).exists()
 
-        else:
-            return False
+        elif permission_level.id == ACLType.Full.id:
+            return self.permissions.filter(is_full=True, target_obj_id=target_obj.id).exists()
+
+        return False
 
     def delete(self):
         """
