@@ -20,20 +20,22 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
-
-import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
-import { usePage } from "../../hooks/usePage";
-import { formatDate } from "../../services/DateUtil";
-import { Confirmable } from "../common/Confirmable";
+import { useHistory, useLocation } from "react-router-dom";
 
 import { EntryAttributes } from "./EntryAttributes";
 
+import { restoreEntryPath, topPath } from "Routes";
+import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
+import { usePage } from "hooks/usePage";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 import { EntryList as ConstEntryList } from "services/Constants";
+import { formatDate } from "services/DateUtil";
+import { normalizeToMatch } from "services/StringUtil";
 
 const StyledCard = styled(Card)(({}) => ({
   height: "100%",
@@ -53,15 +55,6 @@ const EntryName = styled(Typography)(({}) => ({
   whiteSpace: "nowrap",
 }));
 
-const HeaderTableCell = styled(TableCell)(({ theme }) => ({
-  color: theme.palette.primary.contrastText,
-}));
-
-interface Props {
-  entityId: number;
-  initialKeyword?: string | null;
-}
-
 const StyledModal = styled(Modal)(({}) => ({
   display: "flex",
   alignItems: "center",
@@ -75,7 +68,8 @@ const PaperBox = styled(Box)(({ theme }) => ({
   border: "2px solid #000",
   boxShadow: theme.shadows[5],
   padding: theme.spacing(2, 3, 1),
-  width: "50%",
+  width: theme.breakpoints.values.lg,
+  height: "80%",
 }));
 
 const StyledTableRow = styled(TableRow)(() => ({
@@ -87,31 +81,43 @@ const StyledTableRow = styled(TableRow)(() => ({
   },
 }));
 
+const HeaderTableCell = styled(TableCell)(({ theme }) => ({
+  color: theme.palette.primary.contrastText,
+  boxSizing: "border-box",
+}));
+
 const ItemNameTableCell = styled(TableCell)(() => ({
-  width: "400px",
+  width: "200px",
   wordBreak: "break-word",
 }));
 
 const ItemValueTableCell = styled(TableCell)(() => ({
-  width: "750px",
+  width: "950px",
   wordBreak: "break-word",
 }));
 
-export const RestorableEntryList: FC<Props> = ({
-  entityId,
-  initialKeyword,
-}) => {
+interface Props {
+  entityId: number;
+}
+
+export const RestorableEntryList: FC<Props> = ({ entityId }) => {
+  const location = useLocation();
   const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
 
   const [page, changePage] = usePage();
 
-  const [keyword, setKeyword] = useState(initialKeyword ?? "");
+  const params = new URLSearchParams(location.search);
+
+  const [query, setQuery] = useState<string>(params.get("query") ?? "");
+
+  const [keyword, setKeyword] = useState(query ?? "");
   const [openModal, setOpenModal] = useState(false);
   const [selectedEntryId, setSelectedEntryId] = useState<number>();
 
   const entries = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getEntries(entityId, false, page, keyword);
-  }, [page, keyword]);
+  }, [page, query]);
 
   const entryDetail = useAsyncWithThrow(async () => {
     if (selectedEntryId == null) {
@@ -120,9 +126,31 @@ export const RestorableEntryList: FC<Props> = ({
     return await aironeApiClientV2.getEntry(selectedEntryId);
   }, [selectedEntryId]);
 
+  const handleChangeQuery = (newQuery?: string) => {
+    changePage(1);
+    setQuery(newQuery ?? "");
+
+    history.push({
+      pathname: location.pathname,
+      search: newQuery ? `?query=${newQuery}` : "",
+    });
+  };
+
   const handleRestore = async (entryId: number) => {
-    await aironeApiClientV2.restoreEntry(entryId);
-    history.go(0);
+    await aironeApiClientV2
+      .restoreEntry(entryId)
+      .then(() => {
+        enqueueSnackbar("エントリの復旧が完了しました", {
+          variant: "success",
+        });
+        history.replace(topPath());
+        history.replace(restoreEntryPath(entityId, keyword));
+      })
+      .catch(() => {
+        enqueueSnackbar("エントリの復旧が失敗しました", {
+          variant: "error",
+        });
+      });
   };
 
   const totalPageCount = entries.loading
@@ -133,15 +161,16 @@ export const RestorableEntryList: FC<Props> = ({
     <Box>
       {/* This box shows search box and create button */}
       <Box display="flex" justifyContent="space-between" mb="16px">
-        <Box width={500}>
+        <Box width="600px">
           <SearchBox
             placeholder="エントリを絞り込む"
             value={keyword}
-            onChange={(e) => {
-              setKeyword(e.target.value);
-              /* Reset page number to prevent vanishing entities from display
-               * when user move other page */
-              changePage(1);
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyPress={(e) => {
+              e.key === "Enter" &&
+                handleChangeQuery(
+                  keyword.length > 0 ? normalizeToMatch(keyword) : ""
+                );
             }}
           />
         </Box>
@@ -151,7 +180,7 @@ export const RestorableEntryList: FC<Props> = ({
       {entries.loading ? (
         <Loading />
       ) : (
-        <Grid container spacing={2}>
+        <Grid container spacing={2} id="entry_list">
           {entries.value?.results?.map((entry) => {
             return (
               <Grid item xs={4} key={entry.id}>
@@ -192,6 +221,9 @@ export const RestorableEntryList: FC<Props> = ({
       <Box display="flex" justifyContent="center" my="30px">
         <Stack spacing={2}>
           <Pagination
+            id="entry_page"
+            siblingCount={0}
+            boundaryCount={1}
             count={totalPageCount}
             page={page}
             onChange={(_, newPage) => changePage(newPage)}
@@ -206,13 +238,15 @@ export const RestorableEntryList: FC<Props> = ({
         onClose={() => setOpenModal(false)}
       >
         <PaperBox>
-          {!entryDetail.loading && entryDetail.value != null && (
+          {entryDetail.loading ? (
+            <Loading />
+          ) : (
             <>
               <Typography color="primary" my={2}>
                 Operation Information
               </Typography>
-              <TableContainer component={Paper}>
-                <Table>
+              <TableContainer component={Paper} style={{ overflowX: "unset" }}>
+                <Table id="table_info_list">
                   <TableHead sx={{ backgroundColor: "primary.dark" }}>
                     <TableRow>
                       <HeaderTableCell>項目</HeaderTableCell>
