@@ -79,12 +79,21 @@ class Role(models.Model):
           this method don't care about hieralchical data structure
           (e.g. Entity/Entry, EntityAttr/Attribute).
         """
-        return any(
-            [
-                permission_level.id <= x.get_aclid()
-                for x in self.permissions.filter(codename__startswith=(str(target_obj.id) + "."))
-            ]
-        )
+#        return any(
+#            [
+#                permission_level.id <= x.get_aclid()
+#                for x in self.permissions.filter(codename__startswith=(str(target_obj.id) + "."))
+#            ]
+#        )
+        # It doesn't care for each Role's permission
+        if permission_level.id == ACLType.Readable.id:
+            return self.permissions.filter(Q(is_readable=True, target_obj_id=target_obj.id) | Q(is_wriatble=True, target_obj_id=target_obj.id)).exists()
+
+        elif permission_level.id == ACLType.Writable.id:
+            return self.permissions.filter(is_wriatble=True, target_obj_id=target_obj.id).exists()
+
+        else:
+            return False
 
     def delete(self):
         """
@@ -140,5 +149,9 @@ class Role(models.Model):
 
 
 class HistoricalPermission(Permission):
+    target_obj_id = models.IntegerField(default=0)
+    is_readable = models.BooleanField(default=False)
+    is_writable = models.BooleanField(default=False)
+    is_full = models.BooleanField(default=False)
     roles = models.ManyToManyField(Role, related_name="permissions", blank=True)
     history = HistoricalRecords(m2m_fields=[roles])
