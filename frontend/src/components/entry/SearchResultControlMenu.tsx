@@ -111,6 +111,9 @@ export const SearchResultControlMenu: FC<Props> = ({
       onClose={() => handleClose(attrName)}
       anchorEl={anchorElem}
     >
+      <Box pl="16px" py="8px">
+        <Typography>絞り込み条件</Typography>
+      </Box>
       <StyledBox>
         <Button
           variant="outlined"
