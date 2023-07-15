@@ -109,7 +109,7 @@ export const SearchResults: FC<Props> = ({
     ) => event.target.value,
     defaultReferralFilter ?? ""
   );
-  const [newAttrsFilter, setNewAttrsFilter] = useState<AttrsFilter>(
+  const [attrsFilter, setAttrsFilter] = useState<AttrsFilter>(
     defaultAttrsFilter ?? {}
   );
 
@@ -126,11 +126,11 @@ export const SearchResults: FC<Props> = ({
   const hasReferral = !!params.get("has_referral");
 
   const handleSelectFilterConditions = (
-    attrFilter: AttrsFilter | undefined = undefined,
-    overwriteEntryName: string | undefined = undefined,
-    overwriteReferral: string | undefined = undefined
+    overwriteAttrsFilter?: AttrsFilter,
+    overwriteEntryName?: string,
+    overwriteReferral?: string
   ) => {
-    const settingAttrFilter = attrFilter ?? newAttrsFilter;
+    const settingAttrFilter = overwriteAttrsFilter ?? attrsFilter;
     const settingEntryFilter = overwriteEntryName ?? entryFilter;
     const settingReferralFilter = overwriteReferral ?? referralFilter;
 
@@ -195,7 +195,7 @@ export const SearchResults: FC<Props> = ({
                   />
                 </HeaderBox>
               </TableCell>
-              {Object.keys(newAttrsFilter).map((attrName) => (
+              {Object.keys(attrsFilter).map((attrName) => (
                 <TableCell
                   sx={{ color: "primary.contrastText", minWidth: "300px" }}
                   key={attrName}
@@ -219,7 +219,7 @@ export const SearchResults: FC<Props> = ({
                     </IconButton>
                     <SearchResultControlMenu
                       attrName={attrName}
-                      newAttrsFilter={newAttrsFilter}
+                      newAttrsFilter={attrsFilter}
                       anchorElem={attributeMenuEls[attrName]}
                       handleClose={(name: string) =>
                         setAttributeMenuEls({
@@ -227,7 +227,7 @@ export const SearchResults: FC<Props> = ({
                           [name]: null,
                         })
                       }
-                      setNewAttrsFilter={setNewAttrsFilter}
+                      setNewAttrsFilter={setAttrsFilter}
                       handleSelectFilterConditions={
                         handleSelectFilterConditions
                       }
@@ -291,7 +291,7 @@ export const SearchResults: FC<Props> = ({
                     {result.entry.name}
                   </Box>
                 </TableCell>
-                {Object.keys(newAttrsFilter).map((attrName) => (
+                {Object.keys(attrsFilter).map((attrName) => (
                   <TableCell sx={{ minWidth: "300px" }} key={attrName}>
                     {(() => {
                       const info = result.attrs[attrName];
