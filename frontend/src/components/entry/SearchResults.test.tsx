@@ -18,6 +18,10 @@ test("should render a component with essential props", function () {
         handleChangePage={() => {
           /* do nothing */
         }}
+        bulkOperationEntryIds={[]}
+        handleChangeBulkOperationEntryId={() => {
+          /* do nothing */
+        }}
       />,
       { wrapper: TestWrapper }
     )

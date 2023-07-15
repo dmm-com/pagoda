@@ -75,4 +75,5 @@ urlpatterns = [
     ),
     path("advanced_search/", views.AdvancedSearchAPI.as_view()),
     path("import/", views.EntryImportAPI.as_view()),
+    path("bulk_delete/", views.EntryBulkDeleteAPI.as_view()),
 ]

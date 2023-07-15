@@ -393,6 +393,18 @@ class AironeApiClientV2 {
     );
   }
 
+  async destroyEntries(ids: Array<number>): Promise<void> {
+    return await this.entry.entryApiV2BulkDeleteDestroy(
+      { ids },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
   async restoreEntry(id: number): Promise<EntryBase> {
     return await this.entry.entryApiV2RestoreCreate(
       { id },

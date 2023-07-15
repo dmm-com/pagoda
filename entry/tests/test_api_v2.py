@@ -4263,3 +4263,129 @@ class ViewTest(AironeViewTest):
                 ]
             )
         )
+
+    def test_destroy_entries(self):
+        entry1: Entry = self.add_entry(self.user, "entry1", self.entity)
+        entry2: Entry = self.add_entry(self.user, "entry2", self.entity)
+
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s&ids=%s" % (entry1.id, entry2.id),
+            None,
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(resp.content, b"")
+
+        entry1.refresh_from_db()
+        entry2.refresh_from_db()
+        self.assertRegex(entry1.name, "entry1_deleted_")
+        self.assertFalse(entry1.is_active)
+        self.assertEqual(entry1.deleted_user, self.user)
+        self.assertIsNotNone(entry1.deleted_time)
+        self.assertRegex(entry2.name, "entry2_deleted_")
+        self.assertFalse(entry2.is_active)
+        self.assertEqual(entry2.deleted_user, self.user)
+        self.assertIsNotNone(entry2.deleted_time)
+
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s&ids=%s" % (entry1.id, entry2.id),
+            None,
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 404)
+
+    def test_destroy_entries_without_permission(self):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+
+        # permission nothing entity
+        self.entity.is_public = False
+        self.entity.save()
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+
+        # permission readable entity
+        self.role.users.add(self.user)
+        self.entity.readable.roles.add(self.role)
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+
+        # permission writable entity
+        self.entity.writable.roles.add(self.role)
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json"
+        )
+        self.assertEqual(resp.status_code, 204)
+
+        entry.restore()
+
+        # permission nothing entry
+        entry.is_public = False
+        entry.save()
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+
+        # permission readable entry
+        entry.readable.roles.add(self.role)
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+
+        # permission writable entry
+        entry.writable.roles.add(self.role)
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json"
+        )
+        self.assertEqual(resp.status_code, 204)
+
+    def test_destory_entries_with_invalid_param(self):
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s" % "hoge", None, "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s" % 9999, None, "application/json"
+        )
+        self.assertEqual(resp.status_code, 404)
+
+    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("custom_view.call_custom")
+    def test_destroy_entries_with_custom_view(self, mock_call_custom):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+
+        def side_effect(handler_name, entity_name, user, entry):
+            raise ValidationError("delete error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "delete error"}])
+
+        def side_effect(handler_name, entity_name, user, entry):
+            self.assertTrue(handler_name in ["before_delete_entry_v2", "after_delete_entry_v2"])
+            self.assertEqual(entity_name, self.entity.name)
+            self.assertEqual(user, self.user)
+            self.assertEqual(entry, entry)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json"
+        )
+        self.assertEqual(resp.status_code, 204)
+        self.assertTrue(mock_call_custom.called)
+
+    @mock.patch("entry.tasks.notify_delete_entry.delay")
+    def test_destroy_entries_notify(self, mock_task):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+        self.client.delete("/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json")
+
+        self.assertTrue(mock_task.called)

@@ -72,6 +72,10 @@ export interface EntryApiV2AttrvRestoreUpdateRequest {
   id: number;
 }
 
+export interface EntryApiV2BulkDeleteDestroyRequest {
+  ids?: Array<number>;
+}
+
 export interface EntryApiV2CopyCreateRequest {
   id: number;
   entryCopy: EntryCopy;
@@ -448,6 +452,58 @@ export class EntryApi extends runtime.BaseAPI {
       requestParameters,
       initOverrides
     );
+  }
+
+  /**
+   *
+   */
+  async entryApiV2BulkDeleteDestroyRaw(
+    requestParameters: EntryApiV2BulkDeleteDestroyRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<runtime.ApiResponse<void>> {
+    const queryParameters: any = {};
+
+    if (requestParameters.ids) {
+      queryParameters["ids"] = requestParameters.ids;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (
+      this.configuration &&
+      (this.configuration.username !== undefined ||
+        this.configuration.password !== undefined)
+    ) {
+      headerParameters["Authorization"] =
+        "Basic " +
+        btoa(this.configuration.username + ":" + this.configuration.password);
+    }
+    if (this.configuration && this.configuration.apiKey) {
+      headerParameters["Authorization"] =
+        this.configuration.apiKey("Authorization"); // tokenAuth authentication
+    }
+
+    const response = await this.request(
+      {
+        path: `/entry/api/v2/bulk_delete/`,
+        method: "DELETE",
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides
+    );
+
+    return new runtime.VoidApiResponse(response);
+  }
+
+  /**
+   *
+   */
+  async entryApiV2BulkDeleteDestroy(
+    requestParameters: EntryApiV2BulkDeleteDestroyRequest = {},
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<void> {
+    await this.entryApiV2BulkDeleteDestroyRaw(requestParameters, initOverrides);
   }
 
   /**
