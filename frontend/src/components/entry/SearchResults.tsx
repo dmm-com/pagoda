@@ -219,7 +219,7 @@ export const SearchResults: FC<Props> = ({
                     </IconButton>
                     <SearchResultControlMenu
                       attrName={attrName}
-                      newAttrsFilter={attrsFilter}
+                      attrsFilter={attrsFilter}
                       anchorElem={attributeMenuEls[attrName]}
                       handleClose={(name: string) =>
                         setAttributeMenuEls({
@@ -227,7 +227,7 @@ export const SearchResults: FC<Props> = ({
                           [name]: null,
                         })
                       }
-                      setNewAttrsFilter={setAttrsFilter}
+                      setAttrsFilter={setAttrsFilter}
                       handleSelectFilterConditions={
                         handleSelectFilterConditions
                       }
