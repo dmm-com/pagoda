@@ -20,6 +20,8 @@ import { styled } from "@mui/material/styles";
 import React, { ChangeEvent, FC, useState, useReducer } from "react";
 import { useHistory, useLocation, Link } from "react-router-dom";
 
+import { formatAdvancedSearchPrams } from "../../services/entry/AdvancedSearch";
+
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
 
@@ -62,6 +64,7 @@ interface Props {
   results: Array<AdvancedSearchResultValue>;
   page: number;
   maxPage: number;
+  hasReferral: boolean;
   handleChangePage: (page: number) => void;
   defaultEntryFilter?: string;
   defaultReferralFilter?: string;
@@ -73,6 +76,7 @@ export const SearchResults: FC<Props> = ({
   page,
   maxPage,
   handleChangePage,
+  hasReferral,
   defaultEntryFilter,
   defaultReferralFilter,
   defaultAttrsFilter = {},
@@ -122,35 +126,22 @@ export const SearchResults: FC<Props> = ({
   const [referralMenuEls, setReferralMenuEls] =
     useState<HTMLButtonElement | null>(null);
 
-  const params = new URLSearchParams(location.search);
-  const hasReferral = !!params.get("has_referral");
-
   const handleSelectFilterConditions = (
     overwriteAttrsFilter?: AttrsFilter,
     overwriteEntryName?: string,
     overwriteReferral?: string
   ) => {
-    const settingAttrFilter = overwriteAttrsFilter ?? attrsFilter;
-    const settingEntryFilter = overwriteEntryName ?? entryFilter;
-    const settingReferralFilter = overwriteReferral ?? referralFilter;
-
-    params.set("entry_name", settingEntryFilter);
-    params.set("referral_name", settingReferralFilter);
-    params.set(
-      "attrinfo",
-      JSON.stringify(
-        Object.keys(settingAttrFilter).map((key) => ({
-          name: key,
-          filterKey: settingAttrFilter[key].filterKey,
-          keyword: settingAttrFilter[key].keyword,
-        }))
-      )
-    );
+    const newParams = formatAdvancedSearchPrams({
+      attrFilter: overwriteAttrsFilter ?? attrsFilter,
+      entryName: overwriteEntryName ?? entryFilter,
+      referralName: overwriteReferral ?? referralFilter,
+      baseParams: new URLSearchParams(location.search),
+    });
 
     // simply reload with the new params
     history.push({
       pathname: location.pathname,
-      search: "?" + params.toString(),
+      search: "?" + newParams.toString(),
     });
     history.go(0);
   };

@@ -149,6 +149,7 @@ export const AdvancedSearchResultsPage: FC = () => {
           page={page}
           maxPage={maxPage}
           handleChangePage={changePage}
+          hasReferral={hasReferral}
           defaultEntryFilter={entryName}
           defaultReferralFilter={referralName}
           defaultAttrsFilter={Object.fromEntries(
