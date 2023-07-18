@@ -8,6 +8,16 @@
 
 ### Fixed
 
+## v3.54.0
+
+### Added
+* Support text not contained filter key in advanced search.
+  Contributed by @syucream
+
+### Fixed
+* Fixed restore entry page.
+  Contributed by @hinashi
+
 ## v3.53.0
 
 ### Added
