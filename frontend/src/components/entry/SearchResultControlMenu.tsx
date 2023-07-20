@@ -26,10 +26,10 @@ const StyledBox = styled(Box)({
 
 interface Props {
   attrName: string;
-  newAttrsFilter: AttrsFilter;
+  attrsFilter: AttrsFilter;
   anchorElem: HTMLButtonElement | null;
   handleClose: (name: string) => void;
-  setNewAttrsFilter: (filter: AttrsFilter) => void;
+  setAttrsFilter: (filter: AttrsFilter) => void;
   handleSelectFilterConditions: (
     attrfilter?: AttrsFilter,
     overwriteEntryName?: string | undefined,
@@ -39,16 +39,16 @@ interface Props {
 
 export const SearchResultControlMenu: FC<Props> = ({
   attrName,
-  newAttrsFilter,
+  attrsFilter,
   anchorElem,
   handleClose,
-  setNewAttrsFilter,
+  setAttrsFilter,
   handleSelectFilterConditions,
 }) => {
   const handleClick = (key: AdvancedSearchResultAttrInfoFilterKeyEnum) => {
-    setNewAttrsFilter({
-      ...newAttrsFilter,
-      [attrName]: { ...newAttrsFilter[attrName], filterKey: key },
+    setAttrsFilter({
+      ...attrsFilter,
+      [attrName]: { ...attrsFilter[attrName], filterKey: key },
     });
 
     switch (key) {
@@ -56,15 +56,15 @@ export const SearchResultControlMenu: FC<Props> = ({
       case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
       case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
         handleSelectFilterConditions({
-          ...newAttrsFilter,
-          [attrName]: { ...newAttrsFilter[attrName], filterKey: key },
+          ...attrsFilter,
+          [attrName]: { ...attrsFilter[attrName], filterKey: key },
         });
 
       case AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED:
         handleSelectFilterConditions({
-          ...newAttrsFilter,
+          ...attrsFilter,
           [attrName]: {
-            ...newAttrsFilter[attrName],
+            ...attrsFilter[attrName],
             filterKey: key,
             keyword: "",
           },
@@ -75,10 +75,10 @@ export const SearchResultControlMenu: FC<Props> = ({
   const handleChangeKeyword =
     (filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum) =>
     (e: ChangeEvent<HTMLInputElement>) => {
-      setNewAttrsFilter({
-        ...newAttrsFilter,
+      setAttrsFilter({
+        ...attrsFilter,
         [attrName]: {
-          ...newAttrsFilter[attrName],
+          ...attrsFilter[attrName],
           keyword: e.target.value,
           filterKey,
         },
@@ -90,9 +90,9 @@ export const SearchResultControlMenu: FC<Props> = ({
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "Enter") {
         handleSelectFilterConditions({
-          ...newAttrsFilter,
+          ...attrsFilter,
           [attrName]: {
-            ...newAttrsFilter[attrName],
+            ...attrsFilter[attrName],
             filterKey,
           },
         });
@@ -100,9 +100,9 @@ export const SearchResultControlMenu: FC<Props> = ({
     };
 
   const filterKey =
-    newAttrsFilter[attrName].filterKey ??
+    attrsFilter[attrName].filterKey ??
     AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED;
-  const keyword = newAttrsFilter[attrName].keyword ?? "";
+  const keyword = attrsFilter[attrName].keyword ?? "";
 
   return (
     <Menu
@@ -111,6 +111,9 @@ export const SearchResultControlMenu: FC<Props> = ({
       onClose={() => handleClose(attrName)}
       anchorEl={anchorElem}
     >
+      <Box pl="16px" py="8px">
+        <Typography>絞り込み条件</Typography>
+      </Box>
       <StyledBox>
         <Button
           variant="outlined"

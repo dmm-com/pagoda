@@ -22,6 +22,7 @@ test("should render a component with essential props", function () {
         handleChangeBulkOperationEntryId={() => {
           /* do nothing */
         }}
+        hasReferral={false}
       />,
       { wrapper: TestWrapper }
     )

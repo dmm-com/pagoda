@@ -18,7 +18,10 @@ import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
-import { extractAPIException } from "services/AironeAPIErrorUtil";
+import {
+  extractAPIException,
+  isResponseError,
+} from "services/AironeAPIErrorUtil";
 import { findDuplicateIndexes } from "services/entity/Edit";
 
 export const EditEntityPage: FC = () => {
@@ -140,7 +143,7 @@ export const EditEntityPage: FC = () => {
       }
       enqueueSubmitResult(true);
     } catch (e) {
-      if (e instanceof Response) {
+      if (e instanceof Error && isResponseError(e)) {
         await extractAPIException<Schema>(
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),

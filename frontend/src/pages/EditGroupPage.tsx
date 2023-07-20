@@ -5,19 +5,21 @@ import { useForm } from "react-hook-form";
 import { Link, Prompt, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { PageHeader } from "../components/common/PageHeader";
-import { schema, Schema } from "../components/group/groupForm/GroupFormSchema";
-import { useFormNotification } from "../hooks/useFormNotification";
-import { useTypedParams } from "../hooks/useTypedParams";
-import { extractAPIException } from "../services/AironeAPIErrorUtil";
-import { DjangoContext } from "../services/DjangoContext";
-import { ForbiddenError } from "../services/Exceptions";
-
 import { groupsPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { GroupForm } from "components/group/GroupForm";
+import { schema, Schema } from "components/group/groupForm/GroupFormSchema";
+import { useFormNotification } from "hooks/useFormNotification";
+import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import {
+  extractAPIException,
+  isResponseError,
+} from "services/AironeAPIErrorUtil";
+import { DjangoContext } from "services/DjangoContext";
+import { ForbiddenError } from "services/Exceptions";
 
 export const EditGroupPage: FC = () => {
   const { groupId } = useTypedParams<{ groupId?: number }>();
@@ -63,7 +65,7 @@ export const EditGroupPage: FC = () => {
       }
       enqueueSubmitResult(true);
     } catch (e) {
-      if (e instanceof Response) {
+      if (e instanceof Error && isResponseError(e)) {
         await extractAPIException<Schema>(
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),

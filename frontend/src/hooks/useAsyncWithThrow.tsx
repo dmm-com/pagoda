@@ -5,7 +5,7 @@ import {
   PromiseType,
 } from "react-use/lib/misc/types";
 
-import { toError } from "../services/AironeAPIErrorUtil";
+import { isResponseError, toError } from "../services/AironeAPIErrorUtil";
 
 export declare type AsyncState<T> =
   | {
@@ -33,8 +33,8 @@ export const useAsyncWithThrow = <T extends FunctionReturningPromise>(
   const raw = useAsync(fn, deps);
 
   if (raw.error != null) {
-    if (raw.error instanceof Response) {
-      const httpError = toError(raw.error);
+    if (isResponseError(raw.error)) {
+      const httpError = toError(raw.error.response);
       if (httpError != null) {
         throw httpError;
       }
