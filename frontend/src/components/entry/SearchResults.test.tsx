@@ -18,6 +18,7 @@ test("should render a component with essential props", function () {
         handleChangePage={() => {
           /* do nothing */
         }}
+        hasReferral={false}
       />,
       { wrapper: TestWrapper }
     )
