@@ -6,14 +6,9 @@ import { Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { Loading } from "../components/common/Loading";
-import { PageHeader } from "../components/common/PageHeader";
-import { Schema, schema } from "../components/entry/entryForm/EntryFormSchema";
-import { useFormNotification } from "../hooks/useFormNotification";
-import { useTypedParams } from "../hooks/useTypedParams";
-import { extractAPIException } from "../services/AironeAPIErrorUtil";
-
 import { entityEntriesPath, entryDetailsPath } from "Routes";
+import { Loading } from "components/common/Loading";
+import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
@@ -21,7 +16,14 @@ import {
   EntryForm as DefaultEntryForm,
   EntryFormProps,
 } from "components/entry/EntryForm";
+import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
+import { useFormNotification } from "hooks/useFormNotification";
+import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import {
+  extractAPIException,
+  isResponseError,
+} from "services/AironeAPIErrorUtil";
 import {
   convertAttrsFormatCtoS,
   formalizeEntryInfo,
@@ -118,7 +120,8 @@ export const EntryEditPage: FC<Props> = ({
       }
       enqueueSubmitResult(true);
     } catch (e) {
-      if (e instanceof Response) {
+      console.log("e", e);
+      if (e instanceof Error && isResponseError(e)) {
         await extractAPIException<Schema>(
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),

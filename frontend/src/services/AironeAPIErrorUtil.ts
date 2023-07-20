@@ -27,15 +27,15 @@ const extractErrorDetail = (errorDetail: ErrorDetail): string =>
 // Extract error response with predefined data type, then report them appropriately
 // TODO check type-seafety more in runtime! currently unsafe
 export const extractAPIException = async <T>(
-  resp: Response,
+  errpr: ResponseError,
   nonFieldReporter: (message: string) => void,
   fieldReporter: (name: keyof T, message: string) => void
 ) => {
-  if (resp.ok) {
+  if (errpr.response.ok) {
     return;
   }
 
-  const json = await resp.json();
+  const json = await errpr.response.json();
   const typed = json as AironeApiError<T>;
 
   if (typed.non_field_errors != null) {
