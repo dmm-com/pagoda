@@ -2,6 +2,7 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import {
   Box,
+  Checkbox,
   IconButton,
   List,
   ListItem,
@@ -72,6 +73,8 @@ interface Props {
   defaultEntryFilter?: string;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
+  bulkOperationEntryIds: Array<number>;
+  handleChangeBulkOperationEntryId: (id: number, checked: boolean) => void;
 }
 
 export const SearchResults: FC<Props> = ({
@@ -83,6 +86,8 @@ export const SearchResults: FC<Props> = ({
   defaultEntryFilter,
   defaultReferralFilter,
   defaultAttrsFilter = {},
+  bulkOperationEntryIds,
+  handleChangeBulkOperationEntryId,
 }) => {
   const location = useLocation();
   const history = useHistory();
@@ -155,6 +160,7 @@ export const SearchResults: FC<Props> = ({
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: "primary.dark" }}>
+              <TableCell />
               <TableCell
                 sx={{
                   color: "primary.contrastText",
@@ -270,8 +276,19 @@ export const SearchResults: FC<Props> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {results.map((result, index) => (
-              <StyledTableRow key={index}>
+            {results.map((result) => (
+              <StyledTableRow key={result.entry.id}>
+                <TableCell sx={{ padding: 0 }}>
+                  <Checkbox
+                    checked={bulkOperationEntryIds.includes(result.entry.id)}
+                    onChange={(e) =>
+                      handleChangeBulkOperationEntryId(
+                        result.entry.id,
+                        e.target.checked
+                      )
+                    }
+                  />
+                </TableCell>
                 <TableCell
                   sx={{
                     backgroundColor: "inherit",

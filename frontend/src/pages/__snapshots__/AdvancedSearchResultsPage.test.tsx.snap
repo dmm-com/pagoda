@@ -150,6 +150,33 @@ exports[`should match snapshot 1`] = `
                       />
                     </button>
                   </div>
+                  <div
+                    class="MuiBox-root css-0"
+                  >
+                    <button
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium css-vn55rx-MuiButtonBase-root-MuiButton-root"
+                      disabled=""
+                      tabindex="-1"
+                      type="button"
+                    >
+                      <span
+                        class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          data-testid="DeleteOutlineIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5-1-1h-5l-1 1H5v2h14V4z"
+                          />
+                        </svg>
+                      </span>
+                      まとめて削除
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -173,6 +200,10 @@ exports[`should match snapshot 1`] = `
                 <tr
                   class="MuiTableRow-root MuiTableRow-head css-4vqmpn-MuiTableRow-root"
                 >
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ygcj2i-MuiTableCell-root"
+                    scope="col"
+                  />
                   <th
                     class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ch6etv-MuiTableCell-root"
                     scope="col"
@@ -212,6 +243,30 @@ exports[`should match snapshot 1`] = `
                 <tr
                   class="MuiTableRow-root css-1uu4dfr-MuiTableRow-root"
                 >
+                  <td
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-d9l1z9-MuiTableCell-root"
+                  >
+                    <span
+                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input css-1m9pwf3"
+                        data-indeterminate="false"
+                        type="checkbox"
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="CheckBoxOutlineBlankIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                  </td>
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-oxe5pz-MuiTableCell-root"
                   >
@@ -446,6 +501,33 @@ exports[`should match snapshot 1`] = `
                     />
                   </button>
                 </div>
+                <div
+                  class="MuiBox-root css-0"
+                >
+                  <button
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium css-vn55rx-MuiButtonBase-root-MuiButton-root"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
+                  >
+                    <span
+                      class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="DeleteOutlineIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5-1-1h-5l-1 1H5v2h14V4z"
+                        />
+                      </svg>
+                    </span>
+                    まとめて削除
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -469,6 +551,10 @@ exports[`should match snapshot 1`] = `
               <tr
                 class="MuiTableRow-root MuiTableRow-head css-4vqmpn-MuiTableRow-root"
               >
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ygcj2i-MuiTableCell-root"
+                  scope="col"
+                />
                 <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1ch6etv-MuiTableCell-root"
                   scope="col"
@@ -508,6 +594,30 @@ exports[`should match snapshot 1`] = `
               <tr
                 class="MuiTableRow-root css-1uu4dfr-MuiTableRow-root"
               >
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-d9l1z9-MuiTableCell-root"
+                >
+                  <span
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-root MuiCheckbox-colorPrimary css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                  >
+                    <input
+                      class="PrivateSwitchBase-input css-1m9pwf3"
+                      data-indeterminate="false"
+                      type="checkbox"
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      data-testid="CheckBoxOutlineBlankIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                      />
+                    </svg>
+                  </span>
+                </td>
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-oxe5pz-MuiTableCell-root"
                 >

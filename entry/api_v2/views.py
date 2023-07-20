@@ -4,7 +4,7 @@ from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, serializers, status, viewsets
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
@@ -15,6 +15,7 @@ from airone.lib.drf import (
     DuplicatedObjectExistsError,
     IncorrectTypeError,
     ObjectNotExistsError,
+    RequiredParameterError,
     YAMLParser,
 )
 from airone.lib.types import AttrTypeValue
@@ -495,3 +496,44 @@ class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
     queryset = AttributeValue.objects.all()
     serializer_class = EntryAttributeValueRestoreSerializer
     permission_classes = [IsAuthenticated]
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            "ids", {"type": "array", "items": {"type": "number"}}, OpenApiParameter.QUERY
+        ),
+    ],
+)
+class EntryBulkDeleteAPI(generics.DestroyAPIView):
+    def delete(self, request, *args, **kwargs):
+        ids: list[str] = self.request.query_params.getlist("ids", [])
+        if len(ids) == 0 or not all([id.isdecimal() for id in ids]):
+            raise RequiredParameterError("some ids are invalid")
+
+        entries = Entry.objects.filter(id__in=ids, is_active=True)
+        if len(ids) != entries.count():
+            raise NotFound("some specified entries don't exist")
+
+        user: User = request.user
+        if not all([user.has_permission(e, ACLType.Writable) for e in entries]):
+            raise PermissionDenied("deleting some entries is not allowed")
+
+        for entry in entries:
+            if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
+                custom_view.call_custom("before_delete_entry_v2", entry.schema.name, user, entry)
+
+            # register operation History for deleting entry
+            user.seth_entry_del(entry)
+
+            # delete entry
+            entry.delete(deleted_user=user)
+
+            if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
+                custom_view.call_custom("after_delete_entry_v2", entry.schema.name, user, entry)
+
+            # Send notification to the webhook URL
+            job_notify: Job = Job.new_notify_delete_entry(user, entry)
+            job_notify.run()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
