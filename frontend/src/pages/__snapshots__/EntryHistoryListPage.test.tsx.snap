@@ -190,118 +190,122 @@ exports[`should match snapshot 1`] = `
         <div
           class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
         >
-          <div
-            class="MuiBox-root css-0"
+          <table
+            class="MuiTable-root css-rqglhn-MuiTable-root"
+            id="table_history_list"
           >
-            <table
-              class="MuiTable-root css-rqglhn-MuiTable-root"
+            <thead
+              class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
             >
-              <thead
-                class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+              <tr
+                class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
               >
-                <tr
-                  class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                  scope="col"
+                  width="140px"
                 >
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    項目
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    変更前
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    変更後
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    実行日時
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    実行者
-                  </th>
-                  <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                    scope="col"
-                  >
-                    復旧
-                  </th>
-                </tr>
-              </thead>
-              <tbody
-                class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-              />
-            </table>
+                  項目
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                  scope="col"
+                  width="300px"
+                >
+                  変更前
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                  scope="col"
+                  width="300px"
+                >
+                  変更後
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                  scope="col"
+                  width="80px"
+                >
+                  実行日時
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  実行者
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                  scope="col"
+                  width="40px"
+                >
+                  復旧
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+            />
+          </table>
+          <div
+            class="MuiBox-root css-1b33znm"
+          >
             <div
-              class="MuiBox-root css-1b33znm"
+              class="MuiStack-root css-1p5q5e5-MuiStack-root"
             >
-              <div
-                class="MuiStack-root css-1p5q5e5-MuiStack-root"
+              <nav
+                aria-label="pagination navigation"
+                class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
+                id="history_page"
               >
-                <nav
-                  aria-label="pagination navigation"
-                  class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
+                <ul
+                  class="MuiPagination-ul css-wjh20t-MuiPagination-ul"
                 >
-                  <ul
-                    class="MuiPagination-ul css-wjh20t-MuiPagination-ul"
-                  >
-                    <li>
-                      <button
-                        aria-label="Go to previous page"
-                        class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
-                        disabled=""
-                        tabindex="-1"
-                        type="button"
+                  <li>
+                    <button
+                      aria-label="Go to previous page"
+                      class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                      disabled=""
+                      tabindex="-1"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-g2z002-MuiSvgIcon-root-MuiPaginationItem-icon"
+                        data-testid="NavigateBeforeIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-g2z002-MuiSvgIcon-root-MuiPaginationItem-icon"
-                          data-testid="NavigateBeforeIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
-                          />
-                        </svg>
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        aria-label="Go to next page"
-                        class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
-                        disabled=""
-                        tabindex="-1"
-                        type="button"
+                        <path
+                          d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                        />
+                      </svg>
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      aria-label="Go to next page"
+                      class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                      disabled=""
+                      tabindex="-1"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-g2z002-MuiSvgIcon-root-MuiPaginationItem-icon"
+                        data-testid="NavigateNextIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-g2z002-MuiSvgIcon-root-MuiPaginationItem-icon"
-                          data-testid="NavigateNextIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
-                          />
-                        </svg>
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
+                        <path
+                          d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                        />
+                      </svg>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
             </div>
           </div>
         </div>
@@ -494,118 +498,122 @@ exports[`should match snapshot 1`] = `
       <div
         class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
       >
-        <div
-          class="MuiBox-root css-0"
+        <table
+          class="MuiTable-root css-rqglhn-MuiTable-root"
+          id="table_history_list"
         >
-          <table
-            class="MuiTable-root css-rqglhn-MuiTable-root"
+          <thead
+            class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
           >
-            <thead
-              class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+            <tr
+              class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
             >
-              <tr
-                class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                scope="col"
+                width="140px"
               >
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  項目
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  変更前
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  変更後
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  実行日時
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  実行者
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
-                  scope="col"
-                >
-                  復旧
-                </th>
-              </tr>
-            </thead>
-            <tbody
-              class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
-            />
-          </table>
+                項目
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                scope="col"
+                width="300px"
+              >
+                変更前
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                scope="col"
+                width="300px"
+              >
+                変更後
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                scope="col"
+                width="80px"
+              >
+                実行日時
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                scope="col"
+                width="100px"
+              >
+                実行者
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                scope="col"
+                width="40px"
+              >
+                復旧
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+          />
+        </table>
+        <div
+          class="MuiBox-root css-1b33znm"
+        >
           <div
-            class="MuiBox-root css-1b33znm"
+            class="MuiStack-root css-1p5q5e5-MuiStack-root"
           >
-            <div
-              class="MuiStack-root css-1p5q5e5-MuiStack-root"
+            <nav
+              aria-label="pagination navigation"
+              class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
+              id="history_page"
             >
-              <nav
-                aria-label="pagination navigation"
-                class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
+              <ul
+                class="MuiPagination-ul css-wjh20t-MuiPagination-ul"
               >
-                <ul
-                  class="MuiPagination-ul css-wjh20t-MuiPagination-ul"
-                >
-                  <li>
-                    <button
-                      aria-label="Go to previous page"
-                      class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
-                      disabled=""
-                      tabindex="-1"
-                      type="button"
+                <li>
+                  <button
+                    aria-label="Go to previous page"
+                    class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-g2z002-MuiSvgIcon-root-MuiPaginationItem-icon"
+                      data-testid="NavigateBeforeIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-g2z002-MuiSvgIcon-root-MuiPaginationItem-icon"
-                        data-testid="NavigateBeforeIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
-                        />
-                      </svg>
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      aria-label="Go to next page"
-                      class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
-                      disabled=""
-                      tabindex="-1"
-                      type="button"
+                      <path
+                        d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                      />
+                    </svg>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    aria-label="Go to next page"
+                    class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-g2z002-MuiSvgIcon-root-MuiPaginationItem-icon"
+                      data-testid="NavigateNextIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-g2z002-MuiSvgIcon-root-MuiPaginationItem-icon"
-                        data-testid="NavigateNextIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
-                        />
-                      </svg>
-                    </button>
-                  </li>
-                </ul>
-              </nav>
-            </div>
+                      <path
+                        d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                      />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </nav>
           </div>
         </div>
       </div>

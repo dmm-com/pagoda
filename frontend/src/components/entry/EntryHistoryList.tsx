@@ -9,6 +9,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
@@ -31,6 +32,15 @@ const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
 }));
 
+const StyledTableRow = styled(TableRow)(() => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: "#607D8B0A",
+  },
+  "& td": {
+    padding: "8px 16px",
+  },
+}));
+
 interface Props {
   histories: Array<EntryHistoryAttributeValue>;
   entityId: number;
@@ -51,9 +61,9 @@ export const EntryHistoryList: FC<Props> = ({
   const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
 
-  const handleRestore = useCallback(async (attrValueId: number) => {
+  const handleRestore = useCallback(async (prevAttrValueId: number) => {
     try {
-      await aironeApiClientV2.restoreEntryHistory(attrValueId);
+      await aironeApiClientV2.restoreEntryHistory(prevAttrValueId);
       enqueueSnackbar(`変更の復旧が完了しました`, {
         variant: "success",
       });
@@ -67,59 +77,57 @@ export const EntryHistoryList: FC<Props> = ({
   }, []);
 
   return (
-    <Box>
-      <Table>
+    <>
+      <Table id="table_history_list">
         <TableHead>
           <HeaderTableRow>
-            <HeaderTableCell>項目</HeaderTableCell>
-            <HeaderTableCell>変更前</HeaderTableCell>
-            <HeaderTableCell>変更後</HeaderTableCell>
-            <HeaderTableCell>実行日時</HeaderTableCell>
-            <HeaderTableCell>実行者</HeaderTableCell>
-            <HeaderTableCell>復旧</HeaderTableCell>
+            <HeaderTableCell width="140px">項目</HeaderTableCell>
+            <HeaderTableCell width="300px">変更前</HeaderTableCell>
+            <HeaderTableCell width="300px">変更後</HeaderTableCell>
+            <HeaderTableCell width="80px">実行日時</HeaderTableCell>
+            <HeaderTableCell width="100px">実行者</HeaderTableCell>
+            <HeaderTableCell width="40px">復旧</HeaderTableCell>
           </HeaderTableRow>
         </TableHead>
 
         <TableBody>
           {histories.map((history) => (
-            <TableRow key={history.id}>
+            <StyledTableRow key={history.id}>
               <TableCell>{history.parentAttr.name}</TableCell>
               <TableCell>
-                {history.prevValue != null && (
+                {history.prevValue ? (
                   <AttributeValue
                     attrInfo={{
                       type: history.type,
                       value: history.prevValue,
                     }}
                   />
+                ) : (
+                  <Typography>-</Typography>
                 )}
               </TableCell>
               <TableCell>
-                {history.currValue != null && (
-                  <AttributeValue
-                    attrInfo={{
-                      type: history.type,
-                      value: history.currValue,
-                    }}
-                  />
-                )}
+                <AttributeValue
+                  attrInfo={{
+                    type: history.type,
+                    value: history.currValue,
+                  }}
+                />
               </TableCell>
               <TableCell>{formatDate(history.createdTime)}</TableCell>
               <TableCell>{history.createdUser}</TableCell>
               <TableCell>
-                {!history.isLatest && (
-                  <Confirmable
-                    componentGenerator={(handleOpen) => (
-                      <IconButton onClick={handleOpen}>
-                        <RestoreIcon />
-                      </IconButton>
-                    )}
-                    dialogTitle={`本当に復旧しますか？`}
-                    onClickYes={() => handleRestore(history.id)}
-                  />
-                )}
+                <Confirmable
+                  componentGenerator={(handleOpen) => (
+                    <IconButton onClick={handleOpen} disabled={!history.prevId}>
+                      <RestoreIcon />
+                    </IconButton>
+                  )}
+                  dialogTitle={`変更前の値に復旧しますか？`}
+                  onClickYes={() => handleRestore(history.prevId!)}
+                />
               </TableCell>
-            </TableRow>
+            </StyledTableRow>
           ))}
         </TableBody>
       </Table>
@@ -127,6 +135,9 @@ export const EntryHistoryList: FC<Props> = ({
       <Box display="flex" justifyContent="center" my="30px">
         <Stack spacing={2}>
           <Pagination
+            id="history_page"
+            siblingCount={0}
+            boundaryCount={1}
             count={maxPage}
             page={page}
             onChange={(e, page) => handleChangePage(page)}
@@ -134,6 +145,6 @@ export const EntryHistoryList: FC<Props> = ({
           />
         </Stack>
       </Box>
-    </Box>
+    </>
   );
 };

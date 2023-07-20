@@ -210,7 +210,7 @@ exports[`should match snapshot 1`] = `
                 class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
               >
                 <tr
-                  class="MuiTableRow-root css-xlk0ly-MuiTableRow-root"
+                  class="MuiTableRow-root css-1uu4dfr-MuiTableRow-root"
                 >
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-oxe5pz-MuiTableCell-root"
@@ -506,7 +506,7 @@ exports[`should match snapshot 1`] = `
               class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
             >
               <tr
-                class="MuiTableRow-root css-xlk0ly-MuiTableRow-root"
+                class="MuiTableRow-root css-1uu4dfr-MuiTableRow-root"
               >
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-oxe5pz-MuiTableCell-root"

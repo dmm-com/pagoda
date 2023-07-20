@@ -26,6 +26,9 @@ const StyledTableRow = styled(TableRow)(() => ({
   "&:last-child td, &:last-child th": {
     border: 0,
   },
+  "& td": {
+    padding: "8px 16px",
+  },
 }));
 
 const HeaderTableCell = styled(TableCell)(({ theme }) => ({
@@ -56,7 +59,7 @@ export const EntryAttributes: FC<Props> = ({ attributes }) => {
           {attributes.map((attr) => (
             <StyledTableRow key={attr.schema.name}>
               <AttrNameTableCell>{attr.schema.name}</AttrNameTableCell>
-              <AttrValueTableCell sx={{ p: "0px" }}>
+              <AttrValueTableCell>
                 {attr.isReadable ? (
                   <AttributeValue
                     attrInfo={{ type: attr.type, value: attr.value }}
