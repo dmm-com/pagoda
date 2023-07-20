@@ -7,14 +7,6 @@ import { Link, Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 import { useToggle } from "react-use";
 
-import { schema, Schema } from "../components/user/userForm/UserFormSchema";
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
-import { useFormNotification } from "../hooks/useFormNotification";
-import { useTypedParams } from "../hooks/useTypedParams";
-import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
-import { extractAPIException } from "../services/AironeAPIErrorUtil";
-import { DjangoContext } from "../services/DjangoContext";
-
 import { topPath, usersPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
@@ -22,6 +14,16 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { UserForm } from "components/user/UserForm";
 import { UserPasswordFormModal } from "components/user/UserPasswordFormModal";
+import { schema, Schema } from "components/user/userForm/UserFormSchema";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
+import { useFormNotification } from "hooks/useFormNotification";
+import { useTypedParams } from "hooks/useTypedParams";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import {
+  extractAPIException,
+  isResponseError,
+} from "services/AironeAPIErrorUtil";
+import { DjangoContext } from "services/DjangoContext";
 
 export const EditUserPage: FC = () => {
   const { userId } = useTypedParams<{ userId?: number }>();
@@ -100,7 +102,7 @@ export const EditUserPage: FC = () => {
       }
       enqueueSubmitResult(true);
     } catch (e) {
-      if (e instanceof Response) {
+      if (e instanceof Error && isResponseError(e)) {
         await extractAPIException<Schema>(
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
