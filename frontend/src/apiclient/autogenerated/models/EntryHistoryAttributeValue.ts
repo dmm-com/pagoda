@@ -52,12 +52,6 @@ export interface EntryHistoryAttributeValue {
   readonly createdTime: Date;
   /**
    *
-   * @type {boolean}
-   * @memberof EntryHistoryAttributeValue
-   */
-  isLatest?: boolean;
-  /**
-   *
    * @type {string}
    * @memberof EntryHistoryAttributeValue
    */
@@ -74,6 +68,12 @@ export interface EntryHistoryAttributeValue {
    * @memberof EntryHistoryAttributeValue
    */
   readonly prevValue: EntryAttributeValue;
+  /**
+   *
+   * @type {number}
+   * @memberof EntryHistoryAttributeValue
+   */
+  readonly prevId: number | null;
   /**
    *
    * @type {Attribute}
@@ -93,6 +93,7 @@ export function instanceOfEntryHistoryAttributeValue(value: object): boolean {
   isInstance = isInstance && "createdUser" in value;
   isInstance = isInstance && "currValue" in value;
   isInstance = isInstance && "prevValue" in value;
+  isInstance = isInstance && "prevId" in value;
   isInstance = isInstance && "parentAttr" in value;
 
   return isInstance;
@@ -115,10 +116,10 @@ export function EntryHistoryAttributeValueFromJSONTyped(
     id: json["id"],
     type: json["type"],
     createdTime: new Date(json["created_time"]),
-    isLatest: !exists(json, "is_latest") ? undefined : json["is_latest"],
     createdUser: json["created_user"],
     currValue: EntryAttributeValueFromJSON(json["curr_value"]),
     prevValue: EntryAttributeValueFromJSON(json["prev_value"]),
+    prevId: json["prev_id"],
     parentAttr: AttributeFromJSON(json["parent_attr"]),
   };
 }
@@ -134,7 +135,6 @@ export function EntryHistoryAttributeValueToJSON(
   }
   return {
     type: value.type,
-    is_latest: value.isLatest,
     created_user: value.createdUser,
     parent_attr: AttributeToJSON(value.parentAttr),
   };

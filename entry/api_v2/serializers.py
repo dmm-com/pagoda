@@ -776,6 +776,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
     created_user = serializers.CharField(source="created_user.username")
     curr_value = serializers.SerializerMethodField()
     prev_value = serializers.SerializerMethodField()
+    prev_id = serializers.SerializerMethodField()
     parent_attr = AttributeSerializer()
 
     class Meta:
@@ -784,10 +785,10 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
             "id",
             "type",
             "created_time",
-            "is_latest",
             "created_user",
             "curr_value",
             "prev_value",
+            "prev_id",
             "parent_attr",
         )
 
@@ -830,7 +831,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
             return {"as_boolean": obj.boolean}
 
         elif obj.data_type == AttrTypeValue["date"]:
-            return {"as_string": obj.date if obj.date else None}
+            return {"as_string": obj.date if obj.date else ""}
 
         elif obj.data_type == AttrTypeValue["named_object"]:
             named: Dict[str, Optional[EntryAttributeValueObject]] = {
@@ -876,13 +877,15 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
             ]
             return {"as_array_named_object": array_named_object}
 
-        elif obj.data_type == AttrTypeValue["group"] and obj.value:
-            group = Group.objects.get(id=obj.value)
+        elif obj.data_type == AttrTypeValue["group"]:
+            group = Group.objects.get(id=obj.value) if obj.value else None
             return {
                 "as_group": {
                     "id": group.id,
                     "name": group.name,
                 }
+                if group
+                else None
             }
 
         elif obj.data_type == AttrTypeValue["array_group"]:
@@ -897,13 +900,15 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                 ]
             }
 
-        elif obj.data_type == AttrTypeValue["role"] and obj.value:
-            role = Role.objects.get(id=obj.value)
+        elif obj.data_type == AttrTypeValue["role"]:
+            role = Role.objects.get(id=obj.value) if obj.value else None
             return {
                 "as_role": {
                     "id": role.id,
                     "name": role.name,
                 }
+                if role
+                else None
             }
 
         elif obj.data_type == AttrTypeValue["array_role"]:
@@ -932,6 +937,12 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
         prev_value = obj.get_preview_value()
         if prev_value:
             return self._get_value(prev_value)
+        return None
+
+    def get_prev_id(self, obj: AttributeValue) -> Optional[int]:
+        prev_value = obj.get_preview_value()
+        if prev_value:
+            return prev_value.id
         return None
 
 
