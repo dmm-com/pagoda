@@ -14,6 +14,7 @@ from airone.lib.types import (
     AttrTypeArrNamedObj,
     AttrTypeArrObj,
     AttrTypeArrStr,
+    AttrTypeDate,
     AttrTypeNamedObj,
     AttrTypeObj,
     AttrTypeStr,
@@ -4194,6 +4195,20 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["count"], 18)
+        attrv = entry.get_attrv("date")
+        self.assertEqual(
+            resp.json()["results"][0],
+            {
+                "created_time": attrv.created_time.astimezone(self.TZ_INFO).isoformat(),
+                "created_user": "guest",
+                "curr_value": {"as_string": "2018-12-31"},
+                "id": attrv.id,
+                "parent_attr": {"id": attrv.parent_attr.id, "name": "date"},
+                "prev_id": None,
+                "prev_value": None,
+                "type": AttrTypeDate.TYPE,
+            },
+        )
 
         for name in values.keys():
             attr: Attribute = entry.attrs.get(schema__name=name)
