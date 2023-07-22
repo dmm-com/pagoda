@@ -8,7 +8,62 @@ export type AttrsFilter = Record<
   { filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum; keyword: string }
 >;
 
-export function formatAdvancedSearchPrams({
+interface AdvancedSearchParams {
+  entityIds: number[];
+  searchAllEntities: boolean;
+  entryName: string;
+  hasReferral: boolean;
+  referralName: string;
+  attrInfo: AdvancedSearchResultAttrInfo[];
+}
+
+const AdvancedSearchParamKey = {
+  ENTITY_IDS: "entity",
+  SEARCH_ALL_ENTITIES: "is_all_entities",
+  ENTRY_NAME: "entry_name",
+  HAS_REFERRAL: "has_referral",
+  REFERRAL_NAME: "referral_name",
+  ATTR_INFO: "attrinfo",
+} as const;
+type AdvancedSearchParamKey =
+  typeof AdvancedSearchParamKey[keyof typeof AdvancedSearchParamKey];
+
+/**
+ * A wrapper around URLSearchParams that provides a keyname-safe interface for advanced search
+ */
+class AdvancedSearchParamsInner {
+  private params: URLSearchParams;
+
+  constructor(params: URLSearchParams) {
+    this.params = params;
+  }
+
+  get(key: AdvancedSearchParamKey): string | null {
+    return this.params.get(key);
+  }
+
+  getAll(key: AdvancedSearchParamKey): string[] | null {
+    return this.params.getAll(key);
+  }
+
+  set(key: AdvancedSearchParamKey, value: string): void {
+    return this.params.set(key, value);
+  }
+
+  append(key: AdvancedSearchParamKey, value: string): void {
+    return this.params.append(key, value);
+  }
+
+  delete(key: AdvancedSearchParamKey): void {
+    return this.params.delete(key);
+  }
+
+  urlSearchParams(): URLSearchParams {
+    return this.params;
+  }
+}
+
+export function formatAdvancedSearchParams({
   attrFilter,
   entityIds,
   searchAllEntities,
@@ -25,7 +80,7 @@ export function formatAdvancedSearchPrams({
   referralName?: string;
   baseParams?: URLSearchParams;
 }): URLSearchParams {
-  const params = new URLSearchParams(baseParams);
+  const params = new AdvancedSearchParamsInner(new URLSearchParams(baseParams));
 
   if (entityIds != null) {
     params.delete("entity");
@@ -65,5 +120,29 @@ export function formatAdvancedSearchPrams({
     );
   }
 
-  return params;
+  return params.urlSearchParams();
+}
+
+export function extractAdvancedSearchParams(
+  baseParams: URLSearchParams
+): AdvancedSearchParams {
+  const params = new AdvancedSearchParamsInner(baseParams);
+
+  const entityIds = params.getAll("entity")?.map((id) => Number(id)) ?? [];
+  const searchAllEntities = params.get("is_all_entities") === "true";
+  const entryName = params.get("entry_name") ?? "";
+  const hasReferral = params.get("has_referral") === "true";
+  const referralName = params.get("referral_name") ?? "";
+  const attrInfo: AdvancedSearchResultAttrInfo[] = JSON.parse(
+    params.get("attrinfo") ?? "[]"
+  );
+
+  return {
+    entityIds,
+    searchAllEntities,
+    entryName,
+    hasReferral,
+    referralName,
+    attrInfo,
+  };
 }
