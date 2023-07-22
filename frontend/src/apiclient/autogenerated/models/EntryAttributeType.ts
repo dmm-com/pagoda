@@ -43,7 +43,7 @@ export interface EntryAttributeType {
    * @type {number}
    * @memberof EntryAttributeType
    */
-  type: number;
+  type: EntryAttributeTypeTypeEnum;
   /**
    *
    * @type {boolean}
@@ -69,6 +69,28 @@ export interface EntryAttributeType {
    */
   schema: EntityAttributeType;
 }
+
+/**
+ * @export
+ */
+export const EntryAttributeTypeTypeEnum = {
+  OBJECT: 1,
+  STRING: 2,
+  NAMED_OBJECT: 2049,
+  ARRAY_OBJECT: 1025,
+  ARRAY_STRING: 1026,
+  ARRAY_NAMED_OBJECT: 3073,
+  ARRAY_NAMED_OBJECT_BOOLEAN: 3081,
+  ARRAY_GROUP: 1040,
+  ARRAY_ROLE: 1088,
+  TEXT: 4,
+  BOOLEAN: 8,
+  GROUP: 16,
+  DATE: 32,
+  ROLE: 64,
+} as const;
+export type EntryAttributeTypeTypeEnum =
+  typeof EntryAttributeTypeTypeEnum[keyof typeof EntryAttributeTypeTypeEnum];
 
 /**
  * Check if a given object implements the EntryAttributeType interface.

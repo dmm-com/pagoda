@@ -15,7 +15,7 @@ from airone.lib.drf import (
     RequiredParameterError,
 )
 from airone.lib.elasticsearch import FilterKey
-from airone.lib.types import AttrDefaultValue, AttrTypeValue
+from airone.lib.types import AttrDefaultValue, AttrTypeValue, AttrType
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
@@ -141,8 +141,18 @@ class EntryAttributeValueSerializer(serializers.Serializer):
 
 
 class EntryAttributeTypeSerializer(serializers.Serializer):
+    @extend_schema_field(
+        {
+            "type": "integer",
+            "enum": [k.value for k in AttrType],
+            "x-enum-varnames": [k.name for k in AttrType],
+        }
+    )
+    class AttrTypeField(serializers.IntegerField):
+        pass
+
     id = serializers.IntegerField(allow_null=True)
-    type = serializers.IntegerField()
+    type = AttrTypeField()
     is_mandatory = serializers.BooleanField()
     is_readable = serializers.BooleanField()
     value = EntryAttributeValueSerializer()

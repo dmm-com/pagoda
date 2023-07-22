@@ -1,6 +1,7 @@
 import {
   AttributeData,
   EntityDetail,
+  EntryAttributeTypeTypeEnum,
   EntryAttributeValue,
   EntryAttributeValueObject,
   EntryRetrieve,
@@ -10,9 +11,6 @@ import {
   EditableEntryAttrs,
 } from "components/entry/entryForm/EditableEntry";
 import { Schema } from "components/entry/entryForm/EntryFormSchema";
-import { DjangoContext } from "services/DjangoContext";
-
-const djangoContext = DjangoContext.getInstance();
 
 // Convert Entry information from server-side value to presentation format.
 // (NOTE) It might be needed to be refactored because if server returns proper format with frontend, this is not necessary.
@@ -52,7 +50,7 @@ export function formalizeEntryInfo(
           }
 
           switch (attrType) {
-            case djangoContext?.attrTypeValue.array_string:
+            case EntryAttributeTypeTypeEnum.ARRAY_STRING:
               return value?.asArrayString?.length ?? 0 > 0
                 ? {
                     asArrayString: value.asArrayString?.map((value) => {
@@ -60,14 +58,14 @@ export function formalizeEntryInfo(
                     }),
                   }
                 : { asArrayString: [{ value: "" }] };
-            case djangoContext?.attrTypeValue.named_object:
+            case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
               return {
                 asNamedObject: {
                   name: Object.keys(value?.asNamedObject ?? {})[0] ?? "",
                   object: Object.values(value.asNamedObject ?? {})[0] ?? null,
                 },
               };
-            case djangoContext?.attrTypeValue.array_named_object:
+            case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
               return value?.asArrayNamedObject?.length ?? 0 > 0
                 ? {
                     asArrayNamedObject: value?.asArrayNamedObject?.map(
@@ -108,42 +106,42 @@ export function convertAttrsFormatCtoS(
   return Object.entries(attrs).map(([{}, attr]) => {
     function getAttrValue(attrType: number, attrValue: EditableEntryAttrValue) {
       switch (attrType) {
-        case djangoContext?.attrTypeValue.string:
-        case djangoContext?.attrTypeValue.text:
-        case djangoContext?.attrTypeValue.date:
+        case EntryAttributeTypeTypeEnum.STRING:
+        case EntryAttributeTypeTypeEnum.TEXT:
+        case EntryAttributeTypeTypeEnum.DATE:
           return attrValue.asString;
 
-        case djangoContext?.attrTypeValue.boolean:
+        case EntryAttributeTypeTypeEnum.BOOLEAN:
           return attrValue.asBoolean;
 
-        case djangoContext?.attrTypeValue.object:
+        case EntryAttributeTypeTypeEnum.OBJECT:
           return attrValue.asObject?.id ?? null;
 
-        case djangoContext?.attrTypeValue.group:
+        case EntryAttributeTypeTypeEnum.GROUP:
           return attrValue.asGroup?.id ?? null;
 
-        case djangoContext?.attrTypeValue.role:
+        case EntryAttributeTypeTypeEnum.ROLE:
           return attrValue.asRole?.id ?? null;
 
-        case djangoContext?.attrTypeValue.named_object:
+        case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
           return {
             id: attrValue.asNamedObject?.object?.id ?? null,
             name: attrValue.asNamedObject?.name ?? "",
           };
 
-        case djangoContext?.attrTypeValue.array_string:
+        case EntryAttributeTypeTypeEnum.ARRAY_STRING:
           return attrValue.asArrayString?.map((x) => x.value);
 
-        case djangoContext?.attrTypeValue.array_object:
+        case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
           return attrValue.asArrayObject?.map((x) => x.id);
 
-        case djangoContext?.attrTypeValue.array_group:
+        case EntryAttributeTypeTypeEnum.ARRAY_GROUP:
           return attrValue.asArrayGroup?.map((x) => x.id);
 
-        case djangoContext?.attrTypeValue.array_role:
+        case EntryAttributeTypeTypeEnum.ARRAY_ROLE:
           return attrValue.asArrayRole?.map((x) => x.id);
 
-        case djangoContext?.attrTypeValue.array_named_object:
+        case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
           return attrValue.asArrayNamedObject?.map((x) => {
             return {
               id: x.object?.id ?? null,
@@ -151,7 +149,7 @@ export function convertAttrsFormatCtoS(
             };
           });
 
-        case djangoContext?.attrTypeValue.array_named_object_boolean:
+        case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT_BOOLEAN:
           return (
             attrValue.asArrayNamedObject as {
               name: string;
