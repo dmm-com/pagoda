@@ -362,7 +362,7 @@ class Common(Configuration):
         },
         "loggers": {
             "airone": {
-                "handlers": ["file", "console"],
+                "handlers": ["console"],
                 "level": "INFO",
                 "propagate": False,
             },
