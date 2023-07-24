@@ -16,6 +16,15 @@ module.exports = {
     'react/jsx-uses-react': 'error',
     'react/jsx-uses-vars': 'error',
     'unused-imports/no-unused-imports': 'error',
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [{
+          "name": "@mui/icons-material",
+          "message": "import @mui/icons-material/ICONNAME instead.",
+        }],
+      },
+    ],
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {

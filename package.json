@@ -9,7 +9,9 @@
   "scripts": {
     "build": "npm run build:development",
     "build:development": "webpack build --mode development",
+    "build:development:analyze": "webpack build --mode development --analyze",
     "build:production": "webpack build --mode production",
+    "build:production:analyze": "webpack build --mode production --analyze",
     "build:custom": "npm run build:custom_development",
     "build:custom_development": "webpack build --entry ./frontend/src/customview/CustomApp.tsx --mode development",
     "build:custom_production": "webpack build --entry ./frontend/src/customview/CustomApp.tsx --mode production",
@@ -72,6 +74,7 @@
     "ts-jest": "^29.1.0",
     "typescript": "^5.0.4",
     "webpack": "^5.76.0",
+    "webpack-bundle-analyzer": "^4.9.0",
     "webpack-cli": "^4.4.0",
     "zod": "^3.20.6"
   },
