@@ -9,7 +9,7 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
-import { AttrsFilter } from "./SearchResults";
+import { AttrsFilter } from "../../services/entry/AdvancedSearch";
 
 const StyledTextField = styled(TextField)({
   margin: "8px",

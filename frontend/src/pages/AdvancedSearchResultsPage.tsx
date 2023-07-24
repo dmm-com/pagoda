@@ -16,6 +16,7 @@ import { RateLimitedClickable } from "../components/common/RateLimitedClickable"
 import { usePage } from "../hooks/usePage";
 import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
 import { AdvancedSerarchResultList } from "../services/Constants";
+import { extractAdvancedSearchParams } from "../services/entry/AdvancedSearch";
 
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -27,27 +28,24 @@ export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-
   const [page, changePage] = usePage();
-
-  const params = new URLSearchParams(location.search);
-  const entityIds = params.getAll("entity").map((id) => Number(id));
-  const searchAllEntities = params.has("is_all_entities")
-    ? params.get("is_all_entities") === "true"
-    : false;
-  const entryName = params.get("entry_name") ?? "";
-  const hasReferral = params.has("has_referral")
-    ? params.get("has_referral") === "true"
-    : false;
-  const referralName = params.get("referral_name") ?? "";
-  const attrInfo: AdvancedSearchResultAttrInfo[] = JSON.parse(
-    params.get("attrinfo") ?? "[]"
-  );
 
   const [openModal, setOpenModal] = useState(false);
   const [bulkOperationEntryIds, setBulkOperationEntryIds] = useState<
     Array<number>
   >([]);
+
+  const {
+    entityIds,
+    searchAllEntities,
+    entryName,
+    hasReferral,
+    referralName,
+    attrInfo,
+  } = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return extractAdvancedSearchParams(params);
+  }, [location.search]);
 
   const entityAttrs = useAsync(async () => {
     return await aironeApiClientV2.getEntityAttrs(entityIds, searchAllEntities);

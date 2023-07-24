@@ -20,7 +20,7 @@ import {
 import { AutocompleteWithAllSelector } from "../components/common/AutocompleteWithAllSelector";
 import { PageHeader } from "../components/common/PageHeader";
 import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
-import { formatAdvancedSearchPrams } from "../services/entry/AdvancedSearch";
+import { formatAdvancedSearchParams } from "../services/entry/AdvancedSearch";
 
 import { advancedSearchResultPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -67,7 +67,7 @@ export const AdvancedSearchPage: FC = () => {
   }, [selectedEntities, searchAllEntities]);
 
   const searchParams = useMemo(() => {
-    return formatAdvancedSearchPrams({
+    return formatAdvancedSearchParams({
       attrFilter: Object.fromEntries(
         selectedAttrs.map((attr) => [
           attr,
