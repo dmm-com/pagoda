@@ -8,6 +8,16 @@
 
 ### Fixed
 
+## v3.55.0
+
+### Added
+* Support bulk delete entries.
+  Contributed by @syucream
+
+### Fixed
+* Fixed entry histoty page.
+  Contributed by @hinashi
+
 ## v3.54.0
 
 ### Added
