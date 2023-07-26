@@ -34,7 +34,7 @@ class ViewTest(AironeViewTest):
                     "id": self.role.id,
                     "name": self.role.name,
                     "description": self.role.description,
-                    "current_permission": 0,
+                    "current_permission": 1,
                 }
             ],
         )

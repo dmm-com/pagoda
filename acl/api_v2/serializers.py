@@ -9,8 +9,7 @@ from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import IncorrectTypeError, ObjectNotExistsError, RequiredParameterError
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
-from group.models import Group
-from role.models import Role
+from role.models import HistoricalPermission, Role
 from user.models import User
 
 
@@ -49,8 +48,6 @@ class ACLSerializer(serializers.ModelSerializer):
         pass
 
     parent = serializers.SerializerMethodField(method_name="get_parent", read_only=True)
-    acltypes = serializers.SerializerMethodField(method_name="get_acltypes", read_only=True)
-    members = serializers.SerializerMethodField(method_name="get_members", read_only=True)
     roles = serializers.SerializerMethodField(method_name="get_roles", read_only=True)
     # TODO better name?
     acl = serializers.ListField(write_only=True)
@@ -64,8 +61,6 @@ class ACLSerializer(serializers.ModelSerializer):
             "is_public",
             "default_permission",
             "objtype",
-            "acltypes",
-            "members",
             "acl",
             "roles",
             "parent",
@@ -97,36 +92,6 @@ class ACLSerializer(serializers.ModelSerializer):
             }
         else:
             return None
-
-    def get_acltypes(self, obj: ACLBase) -> List[Dict[str, Any]]:
-        return [{"id": x.id, "name": x.label} for x in ACLType.all()]
-
-    def get_members(self, obj: ACLBase) -> List[Dict[str, Any]]:
-        # get ACLTypeID of target_obj if a permission is set
-        def get_current_permission(member):
-            permissions = [x for x in member.permissions.all() if x.get_objid() == obj.id]
-            if permissions:
-                return permissions[0].get_aclid()
-            else:
-                return 0
-
-        return [
-            {
-                "id": x.id,
-                "name": x.username,
-                "current_permission": get_current_permission(x),
-                "type": "user",
-            }
-            for x in User.objects.filter(is_active=True)
-        ] + [
-            {
-                "id": x.id,
-                "name": x.name,
-                "current_permission": get_current_permission(x),
-                "type": "group",
-            }
-            for x in Group.objects.filter(is_active=True)
-        ]
 
     @extend_schema_field(ACLRoleListSerializer)
     def get_roles(self, obj: ACLBase) -> List[ACLRoleSerializer.ACLRoleType]:
@@ -160,7 +125,7 @@ class ACLSerializer(serializers.ModelSerializer):
             if not role:
                 raise ObjectNotExistsError("Invalid member_id of Role instance is specified")
 
-        user = self.context["request"].user
+        user: User = self.context["request"].user
         if not user.is_permitted_to_change(
             self.instance,
             ACLType.Full,
@@ -182,22 +147,25 @@ class ACLSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    def update(self, instance, validated_data):
-        acl_obj = getattr(self._get_acl_model(validated_data["objtype"]), "objects").get(
-            id=instance.id
-        )
-        acl_obj.is_public = validated_data["is_public"]
-        acl_obj.default_permission = validated_data["default_permission"]
-        acl_obj.save()
+    def update(self, instance: ACLBase, validated_data):
+        instance.is_public = validated_data["is_public"]
+        instance.default_permission = validated_data["default_permission"]
+        instance.save()
+
+        permissions = {}
+        for permission in HistoricalPermission.objects.filter(
+            codename__startswith="%s." % instance.id
+        ):
+            permissions[permission.name] = permission
 
         for item in [x for x in validated_data["acl"] if x["value"]]:
             role = Role.objects.get(id=item["member_id"])
             acl_type = [x for x in ACLType.all() if x == int(item["value"])][0]
 
             # update permissios for the target ACLBased object
-            self._set_permission(role, acl_obj, acl_type)
+            self._set_permission(role, instance, permissions, acl_type)
 
-        return acl_obj
+        return instance
 
     @staticmethod
     def _get_acl_model(object_id):
@@ -213,16 +181,20 @@ class ACLSerializer(serializers.ModelSerializer):
             return ACLBase
 
     @staticmethod
-    def _set_permission(role, acl_obj, acl_type):
+    def _set_permission(
+        role: Role, acl_obj: ACLBase, permissions: Dict[str, HistoricalPermission], acl_type
+    ):
         # clear unset permissions of target ACLbased object
-        for _acltype in ACLType.all():
-            if _acltype != acl_type and _acltype != ACLType.Nothing:
-                permission = getattr(acl_obj, _acltype.name)
+        permission: HistoricalPermission
+        for permission in role.permissions.filter(codename__startswith="%s." % acl_obj.id):
+            if acl_type == ACLType.Nothing:
+                permission.roles.remove(role)
+            if acl_type.name != permission.name:
                 permission.roles.remove(role)
 
         # set new permission to be specified except for 'Nothing' permission
         if acl_type != ACLType.Nothing:
-            permission = getattr(acl_obj, acl_type.name)
+            permission = permissions[acl_type.name]
             permission.roles.add(role)
 
 
