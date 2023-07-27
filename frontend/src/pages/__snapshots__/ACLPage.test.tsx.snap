@@ -9,67 +9,8 @@ exports[`should match snapshot 1`] = `
         class="container-fluid MuiBox-root css-0"
       >
         <div
-          class="MuiBox-root css-1baykhj"
-        >
-          <div
-            class="MuiBox-root css-t0pdf1"
-          >
-            <div
-              class="MuiBox-root css-jqffe8"
-            >
-              <nav
-                aria-label="breadcrumb"
-                class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
-              >
-                <ol
-                  class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
-                >
-                  <li
-                    class="MuiBreadcrumbs-li"
-                  >
-                    <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/ui/"
-                    >
-                      Top
-                    </a>
-                  </li>
-                  <li
-                    aria-hidden="true"
-                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-                  >
-                    /
-                  </li>
-                  <li
-                    class="MuiBreadcrumbs-li"
-                  >
-                    <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/ui/entities"
-                    >
-                      エンティティ一覧
-                    </a>
-                  </li>
-                  <li
-                    aria-hidden="true"
-                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-                  >
-                    /
-                  </li>
-                  <li
-                    class="MuiBreadcrumbs-li"
-                  >
-                    <p
-                      class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
-                    >
-                      ACL
-                    </p>
-                  </li>
-                </ol>
-              </nav>
-            </div>
-          </div>
-        </div>
+          class="MuiBox-root css-0"
+        />
         <div
           class="MuiBox-root css-1wo2fgg"
         >
@@ -155,7 +96,7 @@ exports[`should match snapshot 1`] = `
                 </tr>
               </thead>
               <tbody
-                class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+                class="MuiTableBody-root css-141pbfj-MuiTableBody-root"
               >
                 <tr
                   class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
@@ -169,56 +110,52 @@ exports[`should match snapshot 1`] = `
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <div
-                      class="MuiBox-root css-0"
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-sizeSmall  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
                     >
                       <div
-                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                        aria-labelledby="is_public"
+                        class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-jedpe8-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                        id="is_public"
+                        role="button"
+                        tabindex="0"
                       >
-                        <div
-                          aria-expanded="false"
-                          aria-haspopup="listbox"
-                          aria-labelledby="mui-component-select-isPublic"
-                          class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
-                          id="mui-component-select-isPublic"
-                          role="button"
-                          tabindex="0"
-                        >
-                          公開
-                        </div>
-                        <input
-                          aria-hidden="true"
-                          aria-invalid="false"
-                          class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
-                          name="isPublic"
-                          tabindex="-1"
-                          value="1"
-                        />
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconOutlined css-hfutr2-MuiSvgIcon-root-MuiSelect-icon"
-                          data-testid="ArrowDropDownIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M7 10l5 5 5-5z"
-                          />
-                        </svg>
-                        <fieldset
-                          aria-hidden="true"
-                          class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
-                        >
-                          <legend
-                            class="css-ihdtdm"
-                          >
-                            <span
-                              class="notranslate"
-                            >
-                              ​
-                            </span>
-                          </legend>
-                        </fieldset>
+                        公開
                       </div>
+                      <input
+                        aria-hidden="true"
+                        aria-invalid="false"
+                        class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
+                        name="isPublic"
+                        tabindex="-1"
+                        value="1"
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconOutlined css-hfutr2-MuiSvgIcon-root-MuiSelect-icon"
+                        data-testid="ArrowDropDownIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M7 10l5 5 5-5z"
+                        />
+                      </svg>
+                      <fieldset
+                        aria-hidden="true"
+                        class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                      >
+                        <legend
+                          class="css-ihdtdm"
+                        >
+                          <span
+                            class="notranslate"
+                          >
+                            ​
+                          </span>
+                        </legend>
+                      </fieldset>
                     </div>
                   </td>
                 </tr>
@@ -238,6 +175,7 @@ exports[`should match snapshot 1`] = `
               </div>
               <table
                 class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
+                id="table_role_list"
               >
                 <thead
                   class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
@@ -264,7 +202,7 @@ exports[`should match snapshot 1`] = `
                   </tr>
                 </thead>
                 <tbody
-                  class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+                  class="MuiTableBody-root css-141pbfj-MuiTableBody-root"
                 >
                   <tr
                     class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
@@ -281,14 +219,14 @@ exports[`should match snapshot 1`] = `
                       class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                     >
                       <div
-                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
+                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-fullWidth MuiInputBase-sizeSmall  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
                       >
                         <div
                           aria-disabled="true"
                           aria-expanded="false"
                           aria-haspopup="listbox"
                           aria-labelledby="mui-component-select-defaultPermission"
-                          class="MuiSelect-select MuiSelect-outlined Mui-disabled MuiInputBase-input MuiOutlinedInput-input Mui-disabled css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                          class="MuiSelect-select MuiSelect-outlined Mui-disabled MuiInputBase-input MuiOutlinedInput-input Mui-disabled MuiInputBase-inputSizeSmall css-jedpe8-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
                           id="mui-component-select-defaultPermission"
                           role="button"
                         >
@@ -344,67 +282,8 @@ exports[`should match snapshot 1`] = `
       class="container-fluid MuiBox-root css-0"
     >
       <div
-        class="MuiBox-root css-1baykhj"
-      >
-        <div
-          class="MuiBox-root css-t0pdf1"
-        >
-          <div
-            class="MuiBox-root css-jqffe8"
-          >
-            <nav
-              aria-label="breadcrumb"
-              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
-            >
-              <ol
-                class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
-              >
-                <li
-                  class="MuiBreadcrumbs-li"
-                >
-                  <a
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/ui/"
-                  >
-                    Top
-                  </a>
-                </li>
-                <li
-                  aria-hidden="true"
-                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-                >
-                  /
-                </li>
-                <li
-                  class="MuiBreadcrumbs-li"
-                >
-                  <a
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/ui/entities"
-                  >
-                    エンティティ一覧
-                  </a>
-                </li>
-                <li
-                  aria-hidden="true"
-                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
-                >
-                  /
-                </li>
-                <li
-                  class="MuiBreadcrumbs-li"
-                >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
-                  >
-                    ACL
-                  </p>
-                </li>
-              </ol>
-            </nav>
-          </div>
-        </div>
-      </div>
+        class="MuiBox-root css-0"
+      />
       <div
         class="MuiBox-root css-1wo2fgg"
       >
@@ -490,7 +369,7 @@ exports[`should match snapshot 1`] = `
               </tr>
             </thead>
             <tbody
-              class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+              class="MuiTableBody-root css-141pbfj-MuiTableBody-root"
             >
               <tr
                 class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
@@ -504,56 +383,52 @@ exports[`should match snapshot 1`] = `
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >
                   <div
-                    class="MuiBox-root css-0"
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-sizeSmall  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
                   >
                     <div
-                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
+                      aria-expanded="false"
+                      aria-haspopup="listbox"
+                      aria-labelledby="is_public"
+                      class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-jedpe8-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                      id="is_public"
+                      role="button"
+                      tabindex="0"
                     >
-                      <div
-                        aria-expanded="false"
-                        aria-haspopup="listbox"
-                        aria-labelledby="mui-component-select-isPublic"
-                        class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
-                        id="mui-component-select-isPublic"
-                        role="button"
-                        tabindex="0"
-                      >
-                        公開
-                      </div>
-                      <input
-                        aria-hidden="true"
-                        aria-invalid="false"
-                        class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
-                        name="isPublic"
-                        tabindex="-1"
-                        value="1"
-                      />
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconOutlined css-hfutr2-MuiSvgIcon-root-MuiSelect-icon"
-                        data-testid="ArrowDropDownIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M7 10l5 5 5-5z"
-                        />
-                      </svg>
-                      <fieldset
-                        aria-hidden="true"
-                        class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
-                      >
-                        <legend
-                          class="css-ihdtdm"
-                        >
-                          <span
-                            class="notranslate"
-                          >
-                            ​
-                          </span>
-                        </legend>
-                      </fieldset>
+                      公開
                     </div>
+                    <input
+                      aria-hidden="true"
+                      aria-invalid="false"
+                      class="MuiSelect-nativeInput css-yf8vq0-MuiSelect-nativeInput"
+                      name="isPublic"
+                      tabindex="-1"
+                      value="1"
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon MuiSelect-iconOutlined css-hfutr2-MuiSvgIcon-root-MuiSelect-icon"
+                      data-testid="ArrowDropDownIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M7 10l5 5 5-5z"
+                      />
+                    </svg>
+                    <fieldset
+                      aria-hidden="true"
+                      class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                    >
+                      <legend
+                        class="css-ihdtdm"
+                      >
+                        <span
+                          class="notranslate"
+                        >
+                          ​
+                        </span>
+                      </legend>
+                    </fieldset>
                   </div>
                 </td>
               </tr>
@@ -573,6 +448,7 @@ exports[`should match snapshot 1`] = `
             </div>
             <table
               class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
+              id="table_role_list"
             >
               <thead
                 class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
@@ -599,7 +475,7 @@ exports[`should match snapshot 1`] = `
                 </tr>
               </thead>
               <tbody
-                class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+                class="MuiTableBody-root css-141pbfj-MuiTableBody-root"
               >
                 <tr
                   class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
@@ -616,14 +492,14 @@ exports[`should match snapshot 1`] = `
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
                     <div
-                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-fullWidth  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-fullWidth MuiInputBase-sizeSmall  css-1ualgfl-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
                     >
                       <div
                         aria-disabled="true"
                         aria-expanded="false"
                         aria-haspopup="listbox"
                         aria-labelledby="mui-component-select-defaultPermission"
-                        class="MuiSelect-select MuiSelect-outlined Mui-disabled MuiInputBase-input MuiOutlinedInput-input Mui-disabled css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                        class="MuiSelect-select MuiSelect-outlined Mui-disabled MuiInputBase-input MuiOutlinedInput-input Mui-disabled MuiInputBase-inputSizeSmall css-jedpe8-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
                         id="mui-component-select-defaultPermission"
                         role="button"
                       >

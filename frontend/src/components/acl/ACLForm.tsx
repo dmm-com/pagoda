@@ -1,6 +1,5 @@
 import {
   Box,
-  FormHelperText,
   MenuItem,
   Select,
   Table,
@@ -15,9 +14,8 @@ import React, { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 import { UseFormWatch } from "react-hook-form/dist/types/form";
 
-import { ACLType, ACLTypeLabels } from "../../services/Constants";
-
 import { Schema } from "components/acl/aclForm/ACLFormSchema";
+import { ACLType, ACLTypeLabels } from "services/Constants";
 
 interface Props {
   control: Control<Schema>;
@@ -42,6 +40,18 @@ const HeaderTableCellNote = styled(TableCell)(() => ({
   width: "363px",
 }));
 
+const StyledTableBody = styled(TableBody)({
+  "tr:nth-of-type(odd)": {
+    backgroundColor: "white",
+  },
+  "tr:nth-of-type(even)": {
+    backgroundColor: "#607D8B0A",
+  },
+  "& td": {
+    padding: "8px 16px",
+  },
+});
+
 export const ACLForm: FC<Props> = ({ control, watch }) => {
   const { fields } = useFieldArray({
     control,
@@ -57,7 +67,7 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
             <HeaderTableCellContext>内容</HeaderTableCellContext>
           </HeaderTableRow>
         </TableHead>
-        <TableBody>
+        <StyledTableBody>
           <TableRow>
             <TableCell>公開設定</TableCell>
             <TableCell>
@@ -65,28 +75,24 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
                 name="isPublic"
                 control={control}
                 defaultValue={true}
-                render={({ field, fieldState: { error } }) => (
-                  <Box>
-                    <Select
-                      {...field}
-                      fullWidth={true}
-                      value={field.value ? 1 : 0}
-                      onChange={(e) => field.onChange(e.target.value === 1)}
-                      MenuProps={{ disableScrollLock: true }}
-                    >
-                      <MenuItem value={1}>公開</MenuItem>
-                      <MenuItem value={0}>限定公開</MenuItem>
-                    </Select>
-
-                    {error != null && (
-                      <FormHelperText error>{error.message}</FormHelperText>
-                    )}
-                  </Box>
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    id="is_public"
+                    size="small"
+                    fullWidth
+                    value={field.value ? 1 : 0}
+                    onChange={(e) => field.onChange(e.target.value === 1)}
+                    MenuProps={{ disableScrollLock: true }}
+                  >
+                    <MenuItem value={1}>公開</MenuItem>
+                    <MenuItem value={0}>限定公開</MenuItem>
+                  </Select>
                 )}
               />
             </TableCell>
           </TableRow>
-        </TableBody>
+        </StyledTableBody>
       </Table>
 
       <Box>
@@ -96,7 +102,7 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
           </Typography>
         </Box>
 
-        <Table className="table table-bordered">
+        <Table id="table_role_list" className="table table-bordered">
           <TableHead>
             <HeaderTableRow>
               <HeaderTableCellItem>ロール</HeaderTableCellItem>
@@ -104,7 +110,7 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
               <HeaderTableCellContext />
             </HeaderTableRow>
           </TableHead>
-          <TableBody>
+          <StyledTableBody>
             <TableRow>
               <TableCell>全員</TableCell>
               <TableCell />
@@ -116,7 +122,8 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
                   render={({ field }) => (
                     <Select
                       {...field}
-                      fullWidth={true}
+                      size="small"
+                      fullWidth
                       disabled={watch("isPublic")}
                       MenuProps={{ disableScrollLock: true }}
                     >
@@ -143,11 +150,11 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
                       render={({ field }) => (
                         <Select
                           {...field}
-                          fullWidth={true}
+                          size="small"
+                          fullWidth
                           disabled={watch("isPublic")}
                           MenuProps={{ disableScrollLock: true }}
                         >
-                          <MenuItem value={0}>(未設定)</MenuItem>
                           {Object.values(ACLType).map((value) => (
                             <MenuItem key={value} value={value}>
                               {ACLTypeLabels[value]}
@@ -159,7 +166,7 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
                   </TableCell>
                 </TableRow>
               ))}
-          </TableBody>
+          </StyledTableBody>
         </Table>
       </Box>
     </Box>

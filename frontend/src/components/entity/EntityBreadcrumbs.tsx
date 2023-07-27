@@ -14,10 +14,11 @@ const StyledBox = styled(Box)({
 
 interface Props {
   entity?: EntityDetail;
+  attr?: string;
   title?: string;
 }
 
-export const EntityBreadcrumbs: FC<Props> = ({ entity, title }) => {
+export const EntityBreadcrumbs: FC<Props> = ({ entity, attr, title }) => {
   return (
     <AironeBreadcrumbs>
       <Typography component={Link} to={topPath()}>
@@ -34,6 +35,7 @@ export const EntityBreadcrumbs: FC<Props> = ({ entity, title }) => {
           {!entity.isPublic && <LockIcon />}
         </StyledBox>
       )}
+      {attr && <Typography color="textPrimary">{attr}</Typography>}
       {title && <Typography color="textPrimary">{title}</Typography>}
     </AironeBreadcrumbs>
   );

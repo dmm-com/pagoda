@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models import Q
 from simple_history.models import HistoricalRecords
 
+from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 
 
@@ -105,7 +106,7 @@ class Role(models.Model):
         if permissions:
             return permissions[0].get_aclid()
         else:
-            return 0
+            return ACLType.Nothing().id
 
     def get_referred_entries(self, entity_name=None):
         # make query to identify AttributeValue that specify this Role instance
