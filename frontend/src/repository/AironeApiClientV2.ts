@@ -311,7 +311,7 @@ class AironeApiClientV2 {
         "Content-Type": "application/yaml",
         "X-CSRFToken": getCsrfToken(),
       },
-      body: data,
+      body: new Blob([data]),
     });
   }
 
@@ -535,7 +535,7 @@ class AironeApiClientV2 {
         "Content-Type": "application/yaml",
         "X-CSRFToken": getCsrfToken(),
       },
-      body: data,
+      body: new Blob([data]),
     });
   }
 
@@ -602,7 +602,7 @@ class AironeApiClientV2 {
         "Content-Type": "application/yaml",
         "X-CSRFToken": getCsrfToken(),
       },
-      body: data,
+      body: new Blob([data]),
     });
   }
 
@@ -757,7 +757,7 @@ class AironeApiClientV2 {
         "Content-Type": "application/yaml",
         "X-CSRFToken": getCsrfToken(),
       },
-      body: data,
+      body: new Blob([data]),
     });
   }
 
@@ -863,7 +863,7 @@ class AironeApiClientV2 {
         "Content-Type": "application/yaml",
         "X-CSRFToken": getCsrfToken(),
       },
-      body: data,
+      body: new Blob([data]),
     });
   }
 
