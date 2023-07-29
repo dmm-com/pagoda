@@ -16,7 +16,6 @@ export class DjangoContext {
   subTitle: string;
   noteDesc: string;
   noteLink: string;
-  attrTypeValue: any;
   user: User | undefined;
 
   private static _instance: DjangoContext | undefined;
@@ -29,23 +28,6 @@ export class DjangoContext {
     this.noteLink = context.note_link;
     this.version = context.version;
     this.user = context.user ? new User(context.user) : undefined;
-
-    this.attrTypeValue = {
-      string: 2,
-      object: 1,
-      named_object: 2049,
-      array_object: 1025,
-      array_string: 1026,
-      array_named_object: 3073,
-      array_named_object_boolean: 3081,
-      array_group: 1040,
-      array_role: 1088,
-      text: 4,
-      boolean: 8,
-      group: 16,
-      date: 32,
-      role: 64,
-    };
   }
 
   static getInstance() {
