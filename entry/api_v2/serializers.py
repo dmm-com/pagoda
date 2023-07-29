@@ -15,7 +15,7 @@ from airone.lib.drf import (
     RequiredParameterError,
 )
 from airone.lib.elasticsearch import FilterKey
-from airone.lib.types import AttrDefaultValue, AttrTypeValue, AttrType
+from airone.lib.types import AttrDefaultValue, AttrType, AttrTypeValue
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
