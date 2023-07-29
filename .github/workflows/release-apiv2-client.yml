@@ -1,7 +1,9 @@
 name: Release AirOne APIv2 client npm package to GitHub npm Registry
 
 on:
-  pull_request:
+  # use pull_request_target with labeled(repo owner's operation) to prevent leaking secrets
+  # see also https://pankona.github.io/blog/2021/03/29/github-actions-pull-request-target/
+  pull_request_target:
     types: [labeled]
     paths:
       - '**/api_v2/**/*.py'
@@ -38,6 +40,7 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
+          scope: '@dmm-com'
       - name: generate client
         run: |
           npm ci
