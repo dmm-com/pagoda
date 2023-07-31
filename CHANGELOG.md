@@ -8,6 +8,16 @@
 
 ### Fixed
 
+## v3.56.0
+
+### Changed
+* Use path based import to reduce bundle size.
+  Contributed by @syucream
+
+### Fixed
+* Fixed acl setting page.
+  Contributed by @hinashi
+
 ## v3.55.0
 
 ### Added
