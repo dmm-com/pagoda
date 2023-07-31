@@ -1,3 +1,4 @@
+import enum
 from typing import Any
 
 from six import with_metaclass
@@ -159,3 +160,20 @@ AttrDefaultValue = {
     AttrTypeValue["date"]: AttrTypeDate.DEFAULT_VALUE,
     AttrTypeValue["role"]: AttrTypeRole.DEFAULT_VALUE,
 }
+
+
+class AttrType(enum.Enum):
+    OBJECT = AttrTypeObj.TYPE
+    STRING = AttrTypeStr.TYPE
+    NAMED_OBJECT = AttrTypeNamedObj.TYPE
+    ARRAY_OBJECT = AttrTypeArrObj.TYPE
+    ARRAY_STRING = AttrTypeArrStr.TYPE
+    ARRAY_NAMED_OBJECT = AttrTypeArrNamedObj.TYPE
+    ARRAY_NAMED_OBJECT_BOOLEAN = 3081  # unmanaged by AttrTypeXXX
+    ARRAY_GROUP = AttrTypeArrGroup.TYPE
+    ARRAY_ROLE = AttrTypeArrRole.TYPE
+    TEXT = AttrTypeText.TYPE
+    BOOLEAN = AttrTypeBoolean.TYPE
+    GROUP = AttrTypeGroup.TYPE
+    DATE = AttrTypeDate.TYPE
+    ROLE = AttrTypeRole.TYPE
