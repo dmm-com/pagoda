@@ -8,11 +8,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dmm-com/airone.git"
+    "url": "git://github.com/dmm-com/airone.git"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com/"
   },
-  "author": "",
+  "author": "Hiroyasu OHYAMA",
   "license": "ISC"
 }
