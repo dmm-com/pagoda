@@ -7,6 +7,8 @@
 ### Changed
 
 ### Fixed
+* Fixed problem that prohibited attribute to be edited is set to blank at Entry edit processing (#899).
+  Contributed by @userlocalhost, @hinashi
 
 ## v3.56.0
 
