@@ -61,25 +61,13 @@ export interface ACL {
    * @type {number}
    * @memberof ACL
    */
-  objtype: ACLObjtypeEnum;
-  /**
-   *
-   * @type {Array<{ [key: string]: any; }>}
-   * @memberof ACL
-   */
-  readonly acltypes: Array<{ [key: string]: any }>;
-  /**
-   *
-   * @type {Array<{ [key: string]: any; }>}
-   * @memberof ACL
-   */
-  readonly members: Array<{ [key: string]: any }>;
+  readonly objtype: ACLObjtypeEnum;
   /**
    *
    * @type {Array<any>}
    * @memberof ACL
    */
-  acl: Array<any>;
+  acl?: Array<any>;
   /**
    *
    * @type {Array<ACLRole>}
@@ -113,9 +101,6 @@ export function instanceOfACL(value: object): boolean {
   isInstance = isInstance && "id" in value;
   isInstance = isInstance && "name" in value;
   isInstance = isInstance && "objtype" in value;
-  isInstance = isInstance && "acltypes" in value;
-  isInstance = isInstance && "members" in value;
-  isInstance = isInstance && "acl" in value;
   isInstance = isInstance && "roles" in value;
   isInstance = isInstance && "parent" in value;
 
@@ -138,9 +123,7 @@ export function ACLFromJSONTyped(json: any, ignoreDiscriminator: boolean): ACL {
       ? undefined
       : json["default_permission"],
     objtype: json["objtype"],
-    acltypes: json["acltypes"],
-    members: json["members"],
-    acl: json["acl"],
+    acl: !exists(json, "acl") ? undefined : json["acl"],
     roles: (json["roles"] as Array<any>).map(ACLRoleFromJSON),
     parent: ACLParentFromJSON(json["parent"]),
   };
@@ -156,7 +139,6 @@ export function ACLToJSON(value?: ACL | null): any {
   return {
     is_public: value.isPublic,
     default_permission: value.defaultPermission,
-    objtype: value.objtype,
     acl: value.acl,
     parent: ACLParentToJSON(value.parent),
   };

@@ -34,12 +34,6 @@ import {
 export interface ACLHistory {
   /**
    *
-   * @type {number}
-   * @memberof ACLHistory
-   */
-  id: number;
-  /**
-   *
    * @type {ACLHistoryUser}
    * @memberof ACLHistory
    */
@@ -50,6 +44,12 @@ export interface ACLHistory {
    * @memberof ACLHistory
    */
   time: Date;
+  /**
+   *
+   * @type {string}
+   * @memberof ACLHistory
+   */
+  readonly name: string;
   /**
    *
    * @type {Array<ACLHistoryChange>}
@@ -63,9 +63,9 @@ export interface ACLHistory {
  */
 export function instanceOfACLHistory(value: object): boolean {
   let isInstance = true;
-  isInstance = isInstance && "id" in value;
   isInstance = isInstance && "user" in value;
   isInstance = isInstance && "time" in value;
+  isInstance = isInstance && "name" in value;
   isInstance = isInstance && "changes" in value;
 
   return isInstance;
@@ -83,9 +83,9 @@ export function ACLHistoryFromJSONTyped(
     return json;
   }
   return {
-    id: json["id"],
     user: ACLHistoryUserFromJSON(json["user"]),
     time: new Date(json["time"]),
+    name: json["name"],
     changes: (json["changes"] as Array<any>).map(ACLHistoryChangeFromJSON),
   };
 }
@@ -98,7 +98,6 @@ export function ACLHistoryToJSON(value?: ACLHistory | null): any {
     return null;
   }
   return {
-    id: value.id,
     user: ACLHistoryUserToJSON(value.user),
     time: value.time.toISOString(),
   };

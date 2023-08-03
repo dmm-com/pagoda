@@ -31,7 +31,7 @@ export interface AclApiV2AclsRetrieveRequest {
 
 export interface AclApiV2AclsUpdateRequest {
   id: number;
-  aCL: ACL;
+  aCL?: ACL;
 }
 
 /**
@@ -177,13 +177,6 @@ export class AclApi extends runtime.BaseAPI {
       throw new runtime.RequiredError(
         "id",
         "Required parameter requestParameters.id was null or undefined when calling aclApiV2AclsUpdate."
-      );
-    }
-
-    if (requestParameters.aCL === null || requestParameters.aCL === undefined) {
-      throw new runtime.RequiredError(
-        "aCL",
-        "Required parameter requestParameters.aCL was null or undefined when calling aclApiV2AclsUpdate."
       );
     }
 
