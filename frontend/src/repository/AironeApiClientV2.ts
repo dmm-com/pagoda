@@ -180,8 +180,6 @@ class AironeApiClientV2 {
           // readonly
           name: "",
           parent: null,
-          acltypes: [],
-          members: [],
           roles: [],
         },
       },

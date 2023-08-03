@@ -1,11 +1,10 @@
-import itertools
 import json
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
-from entity.models import Entity
+from entity.models import Entity, EntityAttr
 from role.models import Role
 
 
@@ -132,26 +131,57 @@ class ViewTest(AironeViewTest):
 
         acl = ACLBase.objects.create(name="test", created_user=user)
 
-        resp = self.client.put(
-            "/acl/api/v2/acls/%s" % acl.id,
-            json.dumps(
+        param = {
+            "is_public": False,
+            "default_permission": str(ACLType.Nothing.id),
+            "acl": [
                 {
-                    "name": acl.name,
-                    "is_public": False,
-                    "default_permission": str(ACLType.Nothing.id),
-                    "objtype": acl.objtype,
-                    "acl": [
-                        {
-                            "member_id": str(role.id),
-                            "value": str(ACLType.Full.id),
-                        },
-                    ],
-                }
-            ),
-            "application/json;charset=utf-8",
+                    "member_id": str(role.id),
+                    "value": str(ACLType.Full.id),
+                },
+            ],
+        }
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id, json.dumps(param), "application/json;charset=utf-8"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertTrue(acl.is_public, False)
+        self.assertTrue(acl.default_permission, ACLType.Nothing)
         self.assertTrue(role.is_permitted(acl, ACLType.Full))
+
+        param = {"is_public": True}
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id, json.dumps(param), "application/json;charset=utf-8"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(acl.is_public, True)
+        self.assertTrue(acl.default_permission, ACLType.Nothing)
+        self.assertTrue(acl.full.roles.filter(id=role.id).exists())
+
+        param = {"default_permission": ACLType.Full.id}
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id, json.dumps(param), "application/json;charset=utf-8"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(acl.is_public, True)
+        self.assertTrue(acl.default_permission, ACLType.Full)
+        self.assertTrue(acl.full.roles.filter(id=role.id).exists())
+
+        param = {
+            "acl": [
+                {
+                    "member_id": str(role.id),
+                    "value": str(ACLType.Nothing.id),
+                },
+            ],
+        }
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id, json.dumps(param), "application/json;charset=utf-8"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(acl.is_public, True)
+        self.assertTrue(acl.default_permission, ACLType.Full)
+        self.assertFalse(acl.full.roles.filter(id=role.id).exists())
 
     def test_update_by_others(self):
         user = self.guest_login()
@@ -164,10 +194,8 @@ class ViewTest(AironeViewTest):
             "/acl/api/v2/acls/%s" % acl.id,
             json.dumps(
                 {
-                    "name": acl.name,
                     "is_public": False,
                     "default_permission": str(ACLType.Nothing.id),
-                    "objtype": acl.objtype,
                     "acl": [
                         {
                             "member_id": str(role.id),
@@ -193,10 +221,8 @@ class ViewTest(AironeViewTest):
             "/acl/api/v2/acls/%s" % acl.id,
             json.dumps(
                 {
-                    "name": acl.name,
                     "is_public": False,
                     "default_permission": str(ACLType.Nothing.id),
-                    "objtype": acl.objtype,
                     "acl": [
                         {
                             "member_id": str(role.id),
@@ -212,9 +238,124 @@ class ViewTest(AironeViewTest):
             resp.json(),
             {
                 "code": "AE-210000",
-                "message": "Inadmissible setting.By this change you will never change this ACL",
+                "message": "Inadmissible setting. By this change you will never change this ACL",
             },
         )
+
+        resp = self.client.put("/acl/api/v2/acls/%s" % acl.id, {}, "application/json;charset=utf-8")
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps({"is_public": False}),
+            "application/json;charset=utf-8",
+        )
+        self.assertEqual(resp.status_code, 200)
+        acl.refresh_from_db()
+        self.assertEqual(acl.is_public, False)
+
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps({"is_public": True}),
+            "application/json;charset=utf-8",
+        )
+        self.assertEqual(resp.status_code, 200)
+        acl.refresh_from_db()
+        self.assertEqual(acl.is_public, True)
+
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps({"default_permission": str(ACLType.Nothing.id)}),
+            "application/json;charset=utf-8",
+        )
+        self.assertEqual(resp.status_code, 200)
+        acl.refresh_from_db()
+        self.assertEqual(acl.default_permission, ACLType.Nothing)
+
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps({"default_permission": str(ACLType.Full.id)}),
+            "application/json;charset=utf-8",
+        )
+        self.assertEqual(resp.status_code, 200)
+        acl.refresh_from_db()
+        self.assertEqual(acl.default_permission, ACLType.Full)
+
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps(
+                {
+                    "acl": [
+                        {
+                            "member_id": str(role.id),
+                            "value": str(ACLType.Nothing.id),
+                        }
+                    ]
+                }
+            ),
+            "application/json;charset=utf-8",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(acl.full.roles.filter(id=role.id).exists(), False)
+
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps(
+                {
+                    "acl": [
+                        {
+                            "member_id": str(role.id),
+                            "value": str(ACLType.Full.id),
+                        }
+                    ]
+                }
+            ),
+            "application/json;charset=utf-8",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(acl.full.roles.filter(id=role.id).exists(), True)
+
+        acl.default_permission = ACLType.Nothing.id
+        acl.save()
+        acl.full.roles.remove(role)
+
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps({"is_public": False}),
+            "application/json;charset=utf-8",
+        )
+        self.assertEqual(resp.status_code, 403)
+
+        acl.is_public = False
+        acl.default_permission = ACLType.Full.id
+        acl.save()
+
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps({"default_permission": str(ACLType.Nothing.id)}),
+            "application/json;charset=utf-8",
+        )
+        self.assertEqual(resp.status_code, 403)
+
+        acl.default_permission = ACLType.Nothing.id
+        acl.save()
+        acl.full.roles.add(role)
+
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps(
+                {
+                    "acl": [
+                        {
+                            "member_id": str(role.id),
+                            "value": str(ACLType.Nothing.id),
+                        }
+                    ]
+                }
+            ),
+            "application/json;charset=utf-8",
+        )
+        self.assertEqual(resp.status_code, 403)
 
     def test_remove_acl_when_administrative_role_is_left(self):
         user = self.guest_login()
@@ -229,10 +370,8 @@ class ViewTest(AironeViewTest):
             "/acl/api/v2/acls/%s" % acl.id,
             json.dumps(
                 {
-                    "name": acl.name,
                     "is_public": False,
                     "default_permission": str(ACLType.Nothing.id),
-                    "objtype": acl.objtype,
                     "acl": [
                         {
                             "member_id": str(roles[0].id),
@@ -257,10 +396,8 @@ class ViewTest(AironeViewTest):
             "/acl/api/v2/acls/%s" % acl.id,
             json.dumps(
                 {
-                    "name": acl.name,
                     "is_public": True,
-                    "default_permission": str(ACLType.Nothing.id),
-                    "objtype": acl.objtype,
+                    "default_permission": str(ACLType.Full.id),
                     "acl": [
                         {
                             "member_id": str(role.id),
@@ -283,43 +420,53 @@ class ViewTest(AironeViewTest):
 
     def test_list_history(self):
         self.initialization_for_retrieve_test()
+        self.client.post("/entity/api/v2/", json.dumps({"name": "test"}), "application/json")
 
-        entity = Entity.objects.create(name="test", created_user=self.user)
+        entity = Entity.objects.get(name="test", is_active=True)
+        history = entity.history.first()
 
         resp = self.client.get("/acl/api/v2/acls/%s/history" % entity.id)
         self.assertEqual(resp.status_code, 200)
 
         # initial values should be recorded
-        self.assertEqual(len(resp.json()), 1)
-        changes = list(itertools.chain.from_iterable([h["changes"] for h in resp.json()]))
-        self.assertIn(
-            {"action": "create", "target": "is_public", "before": None, "after": True}, changes
-        )
-        self.assertIn(
-            {
-                "action": "create",
-                "target": "default_permission",
-                "before": None,
-                "after": ACLType.Nothing.id,
-            },
-            changes,
+        self.assertEqual(
+            resp.json(),
+            [
+                {
+                    "name": "test",
+                    "user": {"id": self.user.id, "username": "admin"},
+                    "time": history.history_date.astimezone(self.TZ_INFO).isoformat(),
+                    "changes": [
+                        {"action": "create", "target": "is_public", "before": None, "after": True},
+                        {
+                            "action": "create",
+                            "target": "default_permission",
+                            "before": None,
+                            "after": ACLType.Nothing.id,
+                        },
+                    ],
+                }
+            ],
         )
 
         # some changes
-        role = Role.objects.create(name="role1")
         entity.is_public = False
         entity.default_permission = ACLType.Readable.id
-        entity.writable.roles.add(role)
         entity.save()
 
         resp = self.client.get("/acl/api/v2/acls/%s/history" % entity.id)
         self.assertEqual(resp.status_code, 200)
 
         # 2 changed values should be recorded
-        self.assertEqual(len(resp.json()), 3)
-        changes = list(itertools.chain.from_iterable([h["changes"] for h in resp.json()]))
+        self.assertEqual(len(resp.json()), 2)
         self.assertIn(
-            {"action": "update", "target": "is_public", "before": True, "after": False}, changes
+            {
+                "action": "update",
+                "target": "is_public",
+                "before": True,
+                "after": False,
+            },
+            resp.json()[0]["changes"],
         )
         self.assertIn(
             {
@@ -328,9 +475,117 @@ class ViewTest(AironeViewTest):
                 "before": ACLType.Nothing.id,
                 "after": ACLType.Readable.id,
             },
-            changes,
+            resp.json()[0]["changes"],
         )
-        self.assertIn(
-            {"action": "create", "target": role.name, "before": None, "after": ACLType.Writable.id},
-            changes,
+
+    def test_list_history_with_role(self):
+        self.initialization_for_retrieve_test()
+        entity = Entity.objects.create(name="test", created_user=self.user)
+
+        param = {
+            "acl": [
+                {
+                    "member_id": str(self.role.id),
+                    "value": str(ACLType.Writable.id),
+                },
+            ],
+        }
+        self.client.put("/acl/api/v2/acls/%d" % entity.id, json.dumps(param), "application/json")
+        history = entity.writable.history.first()
+
+        resp = self.client.get("/acl/api/v2/acls/%s/history" % entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()), 2)
+        self.assertEqual(
+            resp.json()[0],
+            {
+                "name": "test",
+                "user": {"id": self.user.id, "username": "admin"},
+                "time": history.history_date.astimezone(self.TZ_INFO).isoformat(),
+                "changes": [
+                    {
+                        "action": "create",
+                        "target": "role",
+                        "before": ACLType.Nothing.id,
+                        "after": ACLType.Writable.id,
+                    }
+                ],
+            },
+        )
+
+        param = {
+            "acl": [
+                {
+                    "member_id": str(self.role.id),
+                    "value": str(ACLType.Readable.id),
+                },
+            ],
+        }
+        self.client.put("/acl/api/v2/acls/%d" % entity.id, json.dumps(param), "application/json")
+
+        resp = self.client.get("/acl/api/v2/acls/%s/history" % entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()), 3)
+        self.assertEqual(
+            resp.json()[0]["changes"],
+            [
+                {
+                    "action": "update",
+                    "target": "role",
+                    "before": ACLType.Writable.id,
+                    "after": ACLType.Readable.id,
+                }
+            ],
+        )
+
+    def test_list_history_with_entity_attr(self):
+        self.initialization_for_retrieve_test()
+
+        param = {
+            "name": "test",
+            "attrs": [
+                {
+                    "name": "string",
+                    "type": AttrTypeValue["string"],
+                }
+            ],
+        }
+
+        self.client.post("/entity/api/v2/", json.dumps(param), "application/json")
+
+        entity = Entity.objects.get(name="test", is_active=True)
+        entity_attr: EntityAttr = entity.attrs.get(name="string", is_active=True)
+        entity_attr.writable.roles.add(self.role)
+
+        resp = self.client.get("/acl/api/v2/acls/%s/history" % entity.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()), 3)
+        self.assertEqual([h["name"] for h in resp.json()], ["string", "string", "test"])
+        self.assertEqual(
+            resp.json()[0]["changes"],
+            [
+                {
+                    "action": "create",
+                    "target": "role",
+                    "before": ACLType.Nothing.id,
+                    "after": ACLType.Writable.id,
+                }
+            ],
+        )
+        self.assertEqual(
+            resp.json()[1]["changes"],
+            [
+                {
+                    "action": "create",
+                    "target": "is_public",
+                    "before": None,
+                    "after": True,
+                },
+                {
+                    "action": "create",
+                    "target": "default_permission",
+                    "before": None,
+                    "after": ACLType.Nothing.id,
+                },
+            ],
         )

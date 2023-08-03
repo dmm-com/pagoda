@@ -1,5 +1,8 @@
 import itertools
+from typing import Union
 
+from django.db.models import Q
+from django.http import Http404
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, mixins, viewsets
@@ -8,7 +11,9 @@ from rest_framework.response import Response
 
 from acl.api_v2.serializers import ACLHistorySerializer, ACLSerializer
 from acl.models import ACLBase
-from airone.lib.acl import ACLType
+from airone.lib.acl import ACLObjType, ACLType
+from entity.models import Entity, EntityAttr
+from entry.models import Attribute, Entry
 from role.models import HistoricalPermission
 
 
@@ -42,9 +47,22 @@ class ACLHistoryAPI(generics.ListAPIView):
 
     def get(self, request, pk: int):
         acl = ACLBase.objects.filter(id=pk).first()
-        acl_history = list(acl.get_subclass_object().history.all())
+        if not acl:
+            raise Http404
 
-        permissions = HistoricalPermission.objects.filter(codename__startswith="%s." % pk)
+        instance: Union[Entity, EntityAttr, Entry, Attribute] = acl.get_subclass_object()
+
+        acl_history = list(instance.history.all())
+        codename_query = Q(codename__startswith=instance.id)
+        if instance.objtype == ACLObjType.Entity.value:
+            attrs = instance.attrs.filter(is_active=True)
+            acl_history = acl_history + list(
+                itertools.chain.from_iterable([attr.history.all() for attr in attrs])
+            )
+            for attr in attrs:
+                codename_query |= Q(codename__startswith=attr.id)
+
+        permissions = HistoricalPermission.objects.filter(codename_query)
         permission_history = list(
             itertools.chain.from_iterable([p.history.all() for p in permissions])
         )
@@ -52,10 +70,37 @@ class ACLHistoryAPI(generics.ListAPIView):
         serializer = ACLHistorySerializer(data=acl_history + permission_history, many=True)
         serializer.is_valid()
 
-        # filter histories have empty changes
-        # then, order by time desc
-        transformed = sorted(
-            [h for h in serializer.data if h["changes"]], reverse=True, key=lambda x: x["time"]
-        )
+        # order by time desc
+        sorted_history = sorted(serializer.data, reverse=True, key=lambda x: x["time"])
+        results = []
+        for i, history in enumerate(sorted_history):
+            # filter histories have empty changes
+            if history["changes"] == []:
+                continue
 
-        return Response(transformed)
+            # oldest history is unchanged
+            if i + 1 == len(sorted_history):
+                results.append(history)
+                continue
+
+            # history of different target is unchanged
+            prev_history = sorted_history[i + 1]
+            if history["name"] != prev_history["name"]:
+                results.append(history)
+                continue
+
+            # processing to combine two role changes into one
+            for change in history["changes"]:
+                for j, prev_change in enumerate(prev_history["changes"]):
+                    if change["target"] == prev_change["target"] and change["action"] == "create":
+                        change["action"] = "update"
+                        change["before"] = prev_change["before"]
+                        del prev_history["changes"][j]
+                    elif change["target"] == prev_change["target"] and change["action"] == "delete":
+                        change["action"] = "update"
+                        change["after"] = prev_change["after"]
+                        del prev_history["changes"][j]
+
+            results.append(history)
+
+        return Response(results)

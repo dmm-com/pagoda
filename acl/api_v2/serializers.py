@@ -50,8 +50,8 @@ class ACLSerializer(serializers.ModelSerializer):
     parent = serializers.SerializerMethodField(method_name="get_parent", read_only=True)
     roles = serializers.SerializerMethodField(method_name="get_roles", read_only=True)
     # TODO better name?
-    acl = serializers.ListField(write_only=True)
-    objtype = ObjTypeField()
+    acl = serializers.ListField(write_only=True, required=False)
+    objtype = ObjTypeField(read_only=True)
 
     class Meta:
         model = ACLBase
@@ -115,7 +115,7 @@ class ACLSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs: Dict[str, Any]):
         # validate acl paramter
-        for acl_info in attrs["acl"]:
+        for acl_info in attrs.get("acl", []):
             if "member_id" not in acl_info:
                 raise RequiredParameterError(
                     '"member_id" parameter is necessary for "acl" parameter'
@@ -125,32 +125,47 @@ class ACLSerializer(serializers.ModelSerializer):
             if not role:
                 raise ObjectNotExistsError("Invalid member_id of Role instance is specified")
 
+        acl: ACLBase = self.instance
         user: User = self.context["request"].user
         if not user.is_permitted_to_change(
-            self.instance,
+            acl,
             ACLType.Full,
             **{
-                "will_be_public": attrs["is_public"],
-                "default_permission": attrs["default_permission"],
+                "will_be_public": attrs.get("is_public", acl.is_public),
+                "default_permission": attrs.get("default_permission", acl.default_permission),
                 "acl_settings": [
                     {
                         "role": Role.objects.filter(id=x["member_id"], is_active=True).first(),
                         "value": int(x["value"]),
                     }
-                    for x in attrs["acl"]
+                    for x in attrs.get("acl", [])
+                ]
+                + [
+                    {"role": role, "value": ACLType.Full}
+                    for role in acl.full.roles.exclude(
+                        id__in=[x["member_id"] for x in attrs.get("acl", [])]
+                    )
                 ],
             }
         ):
             raise PermissionDenied(
-                "Inadmissible setting." "By this change you will never change this ACL"
+                "Inadmissible setting. By this change you will never change this ACL"
             )
 
         return attrs
 
     def update(self, instance: ACLBase, validated_data):
-        instance.is_public = validated_data["is_public"]
-        instance.default_permission = validated_data["default_permission"]
-        instance.save()
+        obj = instance.get_subclass_object()
+        if "is_public" in validated_data and validated_data["is_public"] != obj.is_public:
+            obj.is_public = validated_data["is_public"]
+
+        if (
+            "default_permission" in validated_data
+            and validated_data["default_permission"] != obj.default_permission
+        ):
+            obj.default_permission = validated_data["default_permission"]
+
+        obj.save()
 
         permissions = {}
         for permission in HistoricalPermission.objects.filter(
@@ -158,7 +173,7 @@ class ACLSerializer(serializers.ModelSerializer):
         ):
             permissions[permission.name] = permission
 
-        for item in [x for x in validated_data["acl"] if x["value"]]:
+        for item in [x for x in validated_data.get("acl", []) if x["value"]]:
             role = Role.objects.get(id=item["member_id"])
             acl_type = [x for x in ACLType.all() if x == int(item["value"])][0]
 
@@ -219,10 +234,18 @@ class ACLHistoryChangeSerializer(serializers.Serializer):
 
 
 class ACLHistorySerializer(serializers.Serializer):
-    id = serializers.IntegerField(source="history_id")
     user = ACLHistoryUserSerializer(source="history_user")
     time = serializers.DateTimeField(source="history_date")
+    name = serializers.SerializerMethodField()
     changes = serializers.SerializerMethodField()
+
+    @extend_schema_field(str)
+    def get_name(self, history):
+        if history.__class__.__name__ == "HistoricalHistoricalPermission":
+            obj = ACLBase.objects.filter(id=history.codename.split(".")[0]).first()
+            return obj.name if obj else ""
+        else:
+            return history.name
 
     @extend_schema_field(ACLHistoryChangeSerializer(many=True))
     def get_changes(self, history):
@@ -230,7 +253,7 @@ class ACLHistorySerializer(serializers.Serializer):
             if history.prev_record:
                 delta = history.diff_against(history.prev_record, excluded_fields=["status"])
                 if "roles" not in delta.changed_fields:
-                    return None
+                    return []
 
                 before = {r.id: r for r in history.prev_record.roles.all()}
                 after = {r.id: r for r in history.roles.all()}
@@ -239,18 +262,20 @@ class ACLHistorySerializer(serializers.Serializer):
                         "action": "delete",
                         "target": before[key].role.name,
                         "before": self._acl_id(history.codename),
-                        "after": None,
+                        "after": ACLType.Nothing.id,
                     }
                     for key in set(before.keys()) - set(after.keys())
                 ] + [
                     {
                         "action": "create",
                         "target": after[key].role.name,
-                        "before": None,
+                        "before": ACLType.Nothing.id,
                         "after": self._acl_id(history.codename),
                     }
                     for key in set(after.keys()) - set(before.keys())
                 ]
+            else:
+                return []
         else:
             if history.prev_record:
                 delta = history.diff_against(history.prev_record, excluded_fields=["status"])
