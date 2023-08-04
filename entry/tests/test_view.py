@@ -5230,3 +5230,52 @@ class ViewTest(AironeViewTest):
             self.assertEqual(
                 resp.content.decode("utf-8"), "You don't have permission to access this object"
             )
+
+    @patch(
+        "entry.tasks.create_entry_attrs.delay",
+        Mock(side_effect=tasks.create_entry_attrs),
+    )
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
+    def test_update_entry_has_prohibited_attribute(self):
+        admin = User.objects.create(username="Admin", is_superuser=True)
+        user = self.guest_login()
+
+        # Create Entity and Entry that user can't update it
+        entity = self.create_entity(
+            user,
+            "Entity",
+            attrs=[
+                {"name": "Attr", "type": AttrTypeValue["string"]},
+            ],
+        )
+        entity_attr = entity.attrs.last()
+        entity_attr.is_public = False
+        entity_attr.default_permissoin = ACLType.Nothing.id
+        entity_attr.save()
+
+        entry = self.add_entry(
+            admin,
+            "entry",
+            entity,
+            values={"Attr": "hogefuga"},
+        )
+
+        # This request try to update Attr's value, which is prohibited to update
+        # by requested user.
+        params = {
+            "entry_name": "entry",
+            "attrs": [
+                {
+                    "entity_attr_id": "",
+                    "id": str(entry.attrs.last().id),
+                    "type": str(AttrTypeValue["string"]),
+                    "value": [{"data": "", "index": 0}],
+                    "referral_key": [],
+                },
+            ],
+        }
+        resp = self.client.post(
+            reverse("entry:do_edit", args=[entry.id]), json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(entry.get_attrv("Attr").value, "hogefuga")

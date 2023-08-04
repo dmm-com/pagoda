@@ -340,6 +340,10 @@ def edit_entry_attrs(self, job_id):
                 if not attr:
                     attr = entry.add_attribute_from_base(entity_attr, user)
 
+            # check permission of EntityAttr
+            if not user.has_permission(attr, ACLType.Writable):
+                continue
+
             try:
                 converted_value = _convert_data_value(attr, info)
             except ValueError as e:
