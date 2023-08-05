@@ -121,7 +121,9 @@ class AttributeValue(models.Model):
 
         return cloned_value
 
-    def get_value(self, with_metainfo=False, serialize=False, is_active=True):
+    def get_value(
+        self, with_metainfo=False, with_entity: bool = False, serialize=False, is_active=True
+    ):
         """
         This returns registered value according to the type of Attribute
         """
@@ -135,6 +137,16 @@ class AttributeValue(models.Model):
                             "name": attrv.referral.name,
                         }
                     }
+                elif with_entity:
+                    referral_entry = attrv.referral.get_subclass_object()
+                    if not isinstance(referral_entry, Entry):
+                        raise ValueError("object(%s) is not Entry object", attrv.referral)
+                    return {
+                        attrv.value: {
+                            "name": attrv.referral.name,
+                            "entity": referral_entry.schema.name,
+                        }
+                    }
                 else:
                     return {attrv.value: attrv.referral.name}
             else:
@@ -144,6 +156,14 @@ class AttributeValue(models.Model):
             if attrv.referral and (attrv.referral.is_active or not is_active):
                 if with_metainfo:
                     return {"id": attrv.referral.id, "name": attrv.referral.name}
+                elif with_entity:
+                    referral_entry = attrv.referral.get_subclass_object()
+                    if not isinstance(referral_entry, Entry):
+                        raise ValueError("object(%s) is not Entry object", attrv.referral)
+                    return {
+                        "name": attrv.referral.name,
+                        "entity": referral_entry.schema.name,
+                    }
                 else:
                     return attrv.referral.name
 
@@ -1719,7 +1739,7 @@ class Entry(ACLBase):
 
         return {"name": self.name, "attrs": attrinfo}
 
-    def export_v2(self, user):
+    def export_v2(self, user, with_entity: bool = False):
         attrinfo = []
 
         # This calling of complement_attrs is needed to take into account the case of the Attributes
@@ -1731,23 +1751,27 @@ class Entry(ACLBase):
                 continue
 
             latest_value = attr.get_latest_value()
-            value = None
+            value: Optional[Any] = None
             if latest_value:
                 if latest_value.data_type == AttrTypeValue["array_object"]:
                     # remove elements have None value
-                    value = [x for x in latest_value.get_value() if x]
+                    value = [x for x in latest_value.get_value(with_entity=with_entity) if x]
                 elif latest_value.data_type == AttrTypeValue["named_object"]:
                     # remove elements have empty name and None value
-                    value = {n: v for n, v in latest_value.get_value().items() if len(n) > 0 or v}
+                    value = {
+                        n: v
+                        for n, v in latest_value.get_value(with_entity=with_entity).items()
+                        if len(n) > 0 or v
+                    }
                 elif latest_value.data_type == AttrTypeValue["array_named_object"]:
                     # remove elements have empty name and None value
                     value = [
                         x
-                        for x in latest_value.get_value()
+                        for x in latest_value.get_value(with_entity=with_entity)
                         if len(list(x.keys())[0]) > 0 or list(x.values())[0]
                     ]
                 else:
-                    value = latest_value.get_value()
+                    value = latest_value.get_value(with_entity=with_entity)
 
             attrinfo.append(
                 {

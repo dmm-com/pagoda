@@ -603,6 +603,7 @@ def export_entries_v2(self, job_id):
     user = job.user
     entity = Entity.objects.get(id=job.target.id)
     params = json.loads(job.params)
+    with_entity = params["export_format"] != "csv"
 
     exported_entity = []
     exported_entries = []
@@ -622,7 +623,7 @@ def export_entries_v2(self, job_id):
             return
 
         if user.has_permission(entry, ACLType.Readable):
-            exported_entries.append(entry.export_v2(user))
+            exported_entries.append(entry.export_v2(user, with_entity=with_entity))
 
         # increment loop counter
         export_item_counter += 1
