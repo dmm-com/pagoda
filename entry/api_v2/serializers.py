@@ -729,13 +729,17 @@ class EntryImportEntitySerializer(serializers.Serializer):
                     if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["named"]:
                         if not isinstance(attr_data["value"], dict):
                             return
-                        attr_data["value"] = {
-                            "name": list(attr_data["value"].keys())[0],
-                            "id": _object(
-                                list(attr_data["value"].values())[0],
-                                entity_attrs[attr_data["name"]]["refs"],
-                            ),
-                        }
+                        attr_data["value"] = (
+                            {
+                                "name": list(attr_data["value"].keys())[0],
+                                "id": _object(
+                                    list(attr_data["value"].values())[0],
+                                    entity_attrs[attr_data["name"]]["refs"],
+                                ),
+                            }
+                            if len(attr_data["value"].keys()) > 0
+                            else {}
+                        )
                     else:
                         attr_data["value"] = _object(
                             attr_data["value"], entity_attrs[attr_data["name"]]["refs"]

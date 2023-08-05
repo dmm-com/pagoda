@@ -225,8 +225,12 @@ def _do_import_entries_v2(job: Job):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-        except ValidationError:
+        except ValidationError as e:
             err_msg.append(entry_data["name"])
+            Logger.warning(
+                "failed to validate on entry import v2: entry=%s, error=%s"
+                % (entry_data["name"], e)
+            )
 
     if err_msg:
         text = "Imported Entry count: %d, Failed import Entry: %s" % (total_count, err_msg)

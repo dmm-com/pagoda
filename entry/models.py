@@ -359,16 +359,19 @@ class AttributeValue(models.Model):
 
             if type & AttrTypeValue["object"]:
                 if type & AttrTypeValue["named"]:
-                    if not isinstance(value, dict):
-                        raise Exception("value(%s) is not dict" % value)
-                    if not ("name" in value.keys() and "id" in value.keys()):
-                        raise Exception("value(%s) is not key('name', 'id')" % value)
-                    if not any(
-                        [
-                            _is_validate_attr_str(value["name"]),
-                            _is_validate_attr_object(value["id"]),
-                        ]
-                    ):
+                    if value:
+                        if not isinstance(value, dict):
+                            raise Exception("value(%s) is not dict" % value)
+                        if not ("name" in value.keys() and "id" in value.keys()):
+                            raise Exception("value(%s) is not key('name', 'id')" % value)
+                        if not any(
+                            [
+                                _is_validate_attr_str(value["name"]),
+                                _is_validate_attr_object(value["id"]),
+                            ]
+                        ):
+                            return False
+                    if is_mandatory and not value:
                         return False
                 else:
                     if not _is_validate_attr_object(value):
