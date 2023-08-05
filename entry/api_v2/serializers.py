@@ -694,7 +694,7 @@ class EntryImportEntitySerializer(serializers.Serializer):
         def _convert_value_name_to_id(attr_data, entity_attrs):
             def _object(
                 val: Optional[Union[str, dict]],
-                refs: list[ACLBase],
+                refs,
             ):
                 if val:
                     # for compatibility;
