@@ -45,6 +45,7 @@ export const CopyForm: FC<CopyFormProps> = ({
         multiline
         value={entries}
         onChange={(e) => setEntries(e.target.value)}
+        inputProps={{ sx: { resize: "vertical" } }}
       />
       <SampleBox display="flex">
         <Typography variant="h6" mt="24px" color="primary">
