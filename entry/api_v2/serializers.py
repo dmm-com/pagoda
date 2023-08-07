@@ -15,6 +15,7 @@ from airone.lib.drf import (
     RequiredParameterError,
 )
 from airone.lib.elasticsearch import FilterKey
+from airone.lib.log import Logger
 from airone.lib.types import AttrDefaultValue, AttrType, AttrTypeValue
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity, EntityAttr
@@ -691,10 +692,27 @@ class EntryImportEntitySerializer(serializers.Serializer):
             return params
 
         def _convert_value_name_to_id(attr_data, entity_attrs):
-            def _object(val, refs):
+            def _object(
+                val: Optional[Union[str, dict]],
+                refs,
+            ):
                 if val:
-                    ref_entry = Entry.objects.filter(name=val, schema__in=refs).first()
-                    return ref_entry.id if ref_entry else "0"
+                    # for compatibility;
+                    # it will pick wrong entry if there are multiple entries with same name
+                    if isinstance(val, str):
+                        if len(refs) >= 2:
+                            Logger.warn(
+                                "ambiguous object given: entry name(%s), entity ids(%s)",
+                                (val, refs),
+                            )
+                        ref_entry = Entry.objects.filter(name=val, schema__in=refs).first()
+                        return ref_entry.id if ref_entry else "0"
+                    # fully qualified entry, safer than above
+                    if isinstance(val, dict):
+                        ref_entry = Entry.objects.filter(
+                            name=val["name"], schema__name=val["entity"]
+                        ).first()
+                        return ref_entry.id if ref_entry else "0"
                 return None
 
             def _group(val):
@@ -729,13 +747,17 @@ class EntryImportEntitySerializer(serializers.Serializer):
                     if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["named"]:
                         if not isinstance(attr_data["value"], dict):
                             return
-                        attr_data["value"] = {
-                            "name": list(attr_data["value"].keys())[0],
-                            "id": _object(
-                                list(attr_data["value"].values())[0],
-                                entity_attrs[attr_data["name"]]["refs"],
-                            ),
-                        }
+                        attr_data["value"] = (
+                            {
+                                "name": list(attr_data["value"].keys())[0],
+                                "id": _object(
+                                    list(attr_data["value"].values())[0],
+                                    entity_attrs[attr_data["name"]]["refs"],
+                                ),
+                            }
+                            if len(attr_data["value"].keys()) > 0
+                            else {}
+                        )
                     else:
                         attr_data["value"] = _object(
                             attr_data["value"], entity_attrs[attr_data["name"]]["refs"]

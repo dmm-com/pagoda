@@ -1,0 +1,45 @@
+- entity: test-entity
+  entries:
+  - name: test-entry
+    attrs:
+      - name: val
+        value: foo
+      - name: vals
+        value:
+          - foo
+      - name: ref
+        value:
+          name: r-0
+          entity: ref_entity
+      - name: refs
+        value:
+          - name: r-0
+            entity: ref_entity
+      - name: name
+        value:
+          foo:
+            name: r-0
+            entity: ref_entity
+      - name: names
+        value:
+          - foo:
+              name: r-0
+              entity: ref_entity
+      - name: group
+        value: group0
+      - name: groups
+        value:
+          - group0
+      - name: bool
+        value: True
+      - name: text
+        value: "foo
+
+bar"
+      - name: date
+        value: 2018-12-31 
+      - name: role
+        value: role0
+      - name: roles
+        value:
+          - role0
