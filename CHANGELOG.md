@@ -5,6 +5,7 @@
 ### Added
 
 ### Changed
+* Bumping up pyyaml version for fixing npm packaging ailure.
 
 ### Fixed
 * Fixed problem that prohibited attribute to be edited is set to blank at Entry edit processing (#899).
