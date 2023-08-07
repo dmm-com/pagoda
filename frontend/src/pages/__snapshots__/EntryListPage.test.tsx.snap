@@ -398,8 +398,20 @@ exports[`should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="MuiBox-root css-1b33znm"
+              class="MuiBox-root css-1uem5yy"
             >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+              >
+                1
+                -
+                 
+                0
+                 
+                / 
+                0
+                 件
+              </p>
               <div
                 class="MuiStack-root css-1p5q5e5-MuiStack-root"
               >
@@ -856,8 +868,20 @@ exports[`should match snapshot 1`] = `
             </div>
           </div>
           <div
-            class="MuiBox-root css-1b33znm"
+            class="MuiBox-root css-1uem5yy"
           >
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+            >
+              1
+              -
+               
+              0
+               
+              / 
+              0
+               件
+            </p>
             <div
               class="MuiStack-root css-1p5q5e5-MuiStack-root"
             >

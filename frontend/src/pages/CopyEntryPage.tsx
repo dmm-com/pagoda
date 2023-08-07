@@ -29,6 +29,7 @@ export const CopyEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 
   // newline delimited string value, not string[]
   const [entries, _setEntries] = useState<string>("");
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);
 
@@ -46,20 +47,21 @@ export const CopyEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   };
 
   const handleCopy = async () => {
-    await aironeApiClientV2
-      .copyEntry(entryId, entries.split("\n"))
-      .then(() => {
-        setSubmitted(true);
-        enqueueSnackbar("エントリコピーのジョブ登録が成功しました", {
-          variant: "success",
-        });
-        history.replace(entityEntriesPath(entityId));
-      })
-      .catch(() => {
-        enqueueSnackbar("エントリコピーのジョブ登録が失敗しました", {
-          variant: "error",
-        });
+    setSubmitting(true);
+    try {
+      await aironeApiClientV2.copyEntry(entryId, entries.split("\n"));
+      setSubmitted(true);
+      enqueueSnackbar("エントリコピーのジョブ登録が成功しました", {
+        variant: "success",
       });
+      setTimeout(() => {
+        history.replace(entityEntriesPath(entityId));
+      }, 0.1);
+    } catch {
+      enqueueSnackbar("エントリコピーのジョブ登録が失敗しました", {
+        variant: "error",
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -78,7 +80,7 @@ export const CopyEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
       >
         <SubmitButton
           name="コピーを作成"
-          disabled={!entries}
+          disabled={!entries || submitting || submitted}
           handleSubmit={handleCopy}
           handleCancel={handleCancel}
         />
