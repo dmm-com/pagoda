@@ -5,6 +5,7 @@
 ### Added
 
 ### Changed
+* Bumping up pyyaml version for fixing npm packaging failure.
 
 ### Fixed
 
