@@ -2540,6 +2540,53 @@ class ViewTest(AironeViewTest):
         self.assertEqual(result["ret_values"][1]["entry"]["name"], "test-entry2")
         self.assertEqual(result["ret_values"][1]["entity"]["name"], "test-entity2")
 
+    @patch("entry.tasks.notify_create_entry.delay", Mock(side_effect=tasks.notify_create_entry))
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_entry_has_referrals_with_entities(self):
+        fp = self.open_fixture_file("import_data_v2_with_entities.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+
+        self.assertEqual(resp.status_code, 200)
+        job = Job.objects.get(operation=JobOperation.IMPORT_ENTRY_V2.value)
+        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.text, "Imported Entry count: 1")
+        self.assertEqual(
+            resp.json(),
+            {
+                "result": {
+                    "error": [],
+                    "job_ids": [job.id],
+                }
+            },
+        )
+
+        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        self.assertEqual(result["ret_count"], 1)
+        self.assertEqual(result["ret_values"][0]["entry"]["name"], "test-entry")
+        self.assertEqual(result["ret_values"][0]["entity"]["name"], "test-entity")
+        attrs = {
+            "bool": True,
+            "date": "2018-12-31",
+            "group": {"id": self.group.id, "name": "group0"},
+            "groups": [{"id": self.group.id, "name": "group0"}],
+            "name": {"foo": {"id": self.ref_entry.id, "name": "r-0"}},
+            "names": [{"foo": {"id": self.ref_entry.id, "name": "r-0"}}],
+            "ref": {"id": self.ref_entry.id, "name": "r-0"},
+            "refs": [{"id": self.ref_entry.id, "name": "r-0"}],
+            "text": "foo\nbar",
+            "val": "foo",
+            "vals": ["foo"],
+            "role": {"id": self.role.id, "name": "role0"},
+            "roles": [{"id": self.role.id, "name": "role0"}],
+        }
+        for attr_name in result["ret_values"][0]["attrs"]:
+            self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
+
+        entry = Entry.objects.get(name="test-entry")
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
+        self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+
     def test_import_invalid_data(self):
         # nothing data
         resp = self.client.post("/entry/api/v2/import/", None, "application/yaml")

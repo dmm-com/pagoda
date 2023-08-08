@@ -81,7 +81,7 @@ class ViewTest(AironeViewTest):
         entity.full.roles.add(role)
 
         resp = self.client.get("/role/api/v2/export")
-        data = yaml.load(resp.content.decode("utf-8"))
+        data = yaml.safe_load(resp.content.decode("utf-8"))
 
         self.assertEqual(
             data[0]["permissions"],

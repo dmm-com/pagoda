@@ -165,7 +165,15 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
           })}
         </Grid>
       )}
-      <Box display="flex" justifyContent="center" my="30px">
+      <Box display="flex" justifyContent="center" alignItems="center" my="30px">
+        <Typography>
+          {ConstEntryList.MAX_ROW_COUNT * (page - 1) + 1}-{" "}
+          {Math.min(
+            ConstEntryList.MAX_ROW_COUNT * page,
+            entries.value?.count ?? 0
+          )}{" "}
+          / {entries.value?.count ?? 0} 件
+        </Typography>
         <Stack spacing={2}>
           <Pagination
             id="entry_page"

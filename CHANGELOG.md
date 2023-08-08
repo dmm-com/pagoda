@@ -5,10 +5,21 @@
 ### Added
 
 ### Changed
+* Bumping up pyyaml version for fixing npm packaging failure.
+
+### Fixed
+
+## v3.57.0
+
+### Changed
+* Convert to Blob before calling APIV2 client method.
+  Contributed by @syucream
 
 ### Fixed
 * Fixed problem that prohibited attribute to be edited is set to blank at Entry edit processing (#899).
   Contributed by @userlocalhost, @hinashi
+* Fixed acl history page.
+  Contributed by @hinashi
 
 ## v3.56.0
 
