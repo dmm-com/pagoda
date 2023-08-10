@@ -2324,7 +2324,7 @@ class Entry(ACLBase):
         """
         return AttributeValue.objects.filter(
             is_latest=True,
-            parent_attr__name=attr_name,
+            parent_attr__schema__name=attr_name,
             parent_attr__schema__is_active=True,
             parent_attr__parent_entry=self,
         ).last()

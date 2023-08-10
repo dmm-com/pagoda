@@ -8,6 +8,9 @@
 * Bumping up pyyaml version for fixing npm packaging failure.
 
 ### Fixed
+* Fixed a bug not to be able to get AttributeValue instance when
+  an EntityAttr's name was changed after creating Entry.
+  Contributed by @userlocalhost, @hinashi
 
 ## v3.57.0
 

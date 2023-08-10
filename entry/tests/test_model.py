@@ -4702,6 +4702,24 @@ class ModelTest(AironeTestCase):
         entry.attrs.get(schema__name="attr").values.all().update(is_latest=True)
         self.assertEqual(entry.get_attrv("attr").value, "fuga")
 
+    def test_get_attrv_after_changing_attrname(self):
+        # prepare Entry and Attribute for testing Entry.get_attrv method
+        entity = self.create_entity(
+            self._user,
+            "Test Entity",
+            attrs=[{"name": "attr", "type": AttrTypeValue["string"]}],
+        )
+        entry = self.add_entry(
+            self._user, "Test Entry", entity, is_public=False, values={"attr": "value"}
+        )
+
+        # change EntityAttr name after creating Entry
+        entity_attr = entity.attrs.last()
+        entity_attr.name = "attr-changed"
+        entity_attr.save()
+
+        self.assertEqual(entry.get_attrv("attr-changed").value, "value")
+
     def test_inherit_individual_attribute_permissions_when_it_is_complemented(self):
         [user1, user2] = [User.objects.create(username=x) for x in ["u1", "u2"]]
         groups = [Group.objects.create(name=x) for x in ["g1", "g2"]]
