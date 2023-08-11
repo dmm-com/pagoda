@@ -1,4 +1,4 @@
-import { Checkbox, Box, List, ListItem } from "@mui/material";
+import { Checkbox, Box, List, ListItem, Divider } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import * as React from "react";
 import { FC } from "react";
@@ -71,6 +71,7 @@ const ElemNamedObject: FC<{
   return attrValue ? (
     <StyledBox>
       <Box>{key}</Box>
+      <Divider orientation="vertical" flexItem />
       {attrValue[key] ? (
         <Box
           component={Link}
