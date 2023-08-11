@@ -25,6 +25,12 @@ import {
   ACLRoleFromJSONTyped,
   ACLRoleToJSON,
 } from "./ACLRole";
+import type { ACLSetting } from "./ACLSetting";
+import {
+  ACLSettingFromJSON,
+  ACLSettingFromJSONTyped,
+  ACLSettingToJSON,
+} from "./ACLSetting";
 
 /**
  *
@@ -64,10 +70,10 @@ export interface ACL {
   readonly objtype: ACLObjtypeEnum;
   /**
    *
-   * @type {Array<any>}
+   * @type {Array<ACLSetting>}
    * @memberof ACL
    */
-  acl?: Array<any>;
+  aclSettings?: Array<ACLSetting>;
   /**
    *
    * @type {Array<ACLRole>}
@@ -123,7 +129,9 @@ export function ACLFromJSONTyped(json: any, ignoreDiscriminator: boolean): ACL {
       ? undefined
       : json["default_permission"],
     objtype: json["objtype"],
-    acl: !exists(json, "acl") ? undefined : json["acl"],
+    aclSettings: !exists(json, "acl_settings")
+      ? undefined
+      : (json["acl_settings"] as Array<any>).map(ACLSettingFromJSON),
     roles: (json["roles"] as Array<any>).map(ACLRoleFromJSON),
     parent: ACLParentFromJSON(json["parent"]),
   };
@@ -139,7 +147,10 @@ export function ACLToJSON(value?: ACL | null): any {
   return {
     is_public: value.isPublic,
     default_permission: value.defaultPermission,
-    acl: value.acl,
+    acl_settings:
+      value.aclSettings === undefined
+        ? undefined
+        : (value.aclSettings as Array<any>).map(ACLSettingToJSON),
     parent: ACLParentToJSON(value.parent),
   };
 }

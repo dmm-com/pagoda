@@ -6,6 +6,7 @@ export * from "./ACLHistoryChange";
 export * from "./ACLHistoryUser";
 export * from "./ACLParent";
 export * from "./ACLRole";
+export * from "./ACLSetting";
 export * from "./AdvancedSearch";
 export * from "./AdvancedSearchResult";
 export * from "./AdvancedSearchResultAttrInfo";

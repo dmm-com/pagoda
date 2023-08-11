@@ -6,7 +6,7 @@ from rest_framework.exceptions import PermissionDenied
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
-from airone.lib.drf import IncorrectTypeError, ObjectNotExistsError, RequiredParameterError
+from airone.lib.drf import IncorrectTypeError, ObjectNotExistsError
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from role.models import HistoricalPermission, Role
@@ -36,6 +36,11 @@ class ACLRoleListSerializer(serializers.ListSerializer):
     child = ACLRoleSerializer()
 
 
+class ACLSettingSerializer(serializers.Serializer):
+    member_id = serializers.IntegerField()
+    value = serializers.IntegerField()
+
+
 class ACLSerializer(serializers.ModelSerializer):
     @extend_schema_field(
         {
@@ -50,7 +55,8 @@ class ACLSerializer(serializers.ModelSerializer):
     parent = serializers.SerializerMethodField(method_name="get_parent", read_only=True)
     roles = serializers.SerializerMethodField(method_name="get_roles", read_only=True)
     # TODO better name?
-    acl = serializers.ListField(write_only=True, required=False)
+    # acl = serializers.ListField(write_only=True, required=False)
+    acl_settings = ACLSettingSerializer(write_only=True, required=False, many=True)
     objtype = ObjTypeField(read_only=True)
 
     class Meta:
@@ -61,7 +67,7 @@ class ACLSerializer(serializers.ModelSerializer):
             "is_public",
             "default_permission",
             "objtype",
-            "acl",
+            "acl_settings",
             "roles",
             "parent",
         ]
@@ -114,16 +120,10 @@ class ACLSerializer(serializers.ModelSerializer):
         return default_permission
 
     def validate(self, attrs: Dict[str, Any]):
-        # validate acl paramter
-        for acl_info in attrs.get("acl", []):
-            if "member_id" not in acl_info:
-                raise RequiredParameterError(
-                    '"member_id" parameter is necessary for "acl" parameter'
-                )
-
-            role = Role.objects.filter(id=acl_info["member_id"]).first()
-            if not role:
-                raise ObjectNotExistsError("Invalid member_id of Role instance is specified")
+        # validate acl_settings parameter
+        member_ids = [s["member_id"] for s in attrs.get("acl_settings", [])]
+        if Role.objects.filter(id__in=member_ids).count() != len(member_ids):
+            raise ObjectNotExistsError("Invalid member_id of Role instance is specified")
 
         acl: ACLBase = self.instance
         user: User = self.context["request"].user
@@ -138,12 +138,12 @@ class ACLSerializer(serializers.ModelSerializer):
                         "role": Role.objects.filter(id=x["member_id"], is_active=True).first(),
                         "value": int(x["value"]),
                     }
-                    for x in attrs.get("acl", [])
+                    for x in attrs.get("acl_settings", [])
                 ]
                 + [
                     {"role": role, "value": ACLType.Full}
                     for role in acl.full.roles.exclude(
-                        id__in=[x["member_id"] for x in attrs.get("acl", [])]
+                        id__in=[x["member_id"] for x in attrs.get("acl_settings", [])]
                     )
                 ],
             }
@@ -173,7 +173,7 @@ class ACLSerializer(serializers.ModelSerializer):
         ):
             permissions[permission.name] = permission
 
-        for item in [x for x in validated_data.get("acl", []) if x["value"]]:
+        for item in [x for x in validated_data.get("acl_settings", []) if x["value"]]:
             role = Role.objects.get(id=item["member_id"])
             acl_type = [x for x in ACLType.all() if x == int(item["value"])][0]
 
