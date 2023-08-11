@@ -193,12 +193,15 @@ export const Header: FC = () => {
                 keepMounted
                 disableScrollLock
               >
-                <MenuItem>
+                <MenuItem
+                  component={Link}
+                  to={userPath(djangoContext?.user?.id ?? 0)}
+                >
                   <Link to={userPath(djangoContext?.user?.id ?? 0)}>
                     ユーザ設定
                   </Link>
                 </MenuItem>
-                <MenuItem>
+                <MenuItem onClick={() => handleLogout()}>
                   <Link to="#" onClick={() => handleLogout()}>
                     ログアウト
                   </Link>
@@ -242,7 +245,7 @@ export const Header: FC = () => {
                   </MenuItem>
                 )}
                 <Divider light />
-                <MenuItem>
+                <MenuItem component={Link} to={jobsPath()}>
                   <Typography component={Link} to={jobsPath()}>
                     ジョブ一覧
                   </Typography>
