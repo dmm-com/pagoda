@@ -18,6 +18,9 @@ jobs:
     if: ${{ github.event.label.name == 'release-apiv2-client' }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: apt-get
         run: |
           sudo apt-get update
