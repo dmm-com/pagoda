@@ -1,0 +1,29 @@
+name: Build frontend
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - 'frontend/**/*.ts'
+      - 'frontend/**/*.tsx'
+      - '.github/workflows/build-frontend.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+      - name: install dependencies
+        run: npm ci
+      - name: lint
+        run: npm run lint
+      - name: build
+        run: npm run build:development
+      - name: test
+        run: npm run test:ci

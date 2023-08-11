@@ -91,32 +91,9 @@ jobs:
             . virtualenv/bin/activate
             tox
 
-  frontend:
-    docker:
-      - image: cimg/node:18.12
-    steps:
-      - checkout
-      - run:
-          name: Resolve dependency
-          command: |
-            npm install
-      - run:
-          name: lint
-          command: |
-            npm run lint
-      - run:
-          name: build
-          command: |
-            npm run build:development
-      - run:
-          name: test
-          command: |
-            npm run test:ci
-
 workflows:
   version: 2
   build_and_test:
     jobs:
       - python38
       - staticchecks
-      - frontend
