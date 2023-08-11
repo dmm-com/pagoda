@@ -124,7 +124,9 @@ export const EntryHistoryList: FC<Props> = ({
                     </IconButton>
                   )}
                   dialogTitle={`変更前の値に復旧しますか？`}
-                  onClickYes={() => handleRestore(history.prevId!)}
+                  onClickYes={() =>
+                    history.prevId != null && handleRestore(history.prevId)
+                  }
                 />
               </TableCell>
             </StyledTableRow>
