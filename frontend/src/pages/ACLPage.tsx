@@ -77,7 +77,7 @@ export const ACLPage: FC = () => {
     async (aclForm: Schema) => {
       const aclSettings =
         aclForm.roles.map((role) => ({
-          member_id: role.id,
+          memberId: role.id,
           value: role.currentPermission,
         })) ?? [];
 

@@ -134,7 +134,7 @@ class ViewTest(AironeViewTest):
         param = {
             "is_public": False,
             "default_permission": str(ACLType.Nothing.id),
-            "acl": [
+            "acl_settings": [
                 {
                     "member_id": str(role.id),
                     "value": str(ACLType.Full.id),
@@ -168,7 +168,7 @@ class ViewTest(AironeViewTest):
         self.assertTrue(acl.full.roles.filter(id=role.id).exists())
 
         param = {
-            "acl": [
+            "acl_settings": [
                 {
                     "member_id": str(role.id),
                     "value": str(ACLType.Nothing.id),
@@ -223,7 +223,7 @@ class ViewTest(AironeViewTest):
                 {
                     "is_public": False,
                     "default_permission": str(ACLType.Nothing.id),
-                    "acl": [
+                    "acl_settings": [
                         {
                             "member_id": str(role.id),
                             "value": str(ACLType.Nothing.id),
@@ -285,7 +285,7 @@ class ViewTest(AironeViewTest):
             "/acl/api/v2/acls/%s" % acl.id,
             json.dumps(
                 {
-                    "acl": [
+                    "acl_settings": [
                         {
                             "member_id": str(role.id),
                             "value": str(ACLType.Nothing.id),
@@ -302,7 +302,7 @@ class ViewTest(AironeViewTest):
             "/acl/api/v2/acls/%s" % acl.id,
             json.dumps(
                 {
-                    "acl": [
+                    "acl_settings": [
                         {
                             "member_id": str(role.id),
                             "value": str(ACLType.Full.id),
@@ -345,7 +345,7 @@ class ViewTest(AironeViewTest):
             "/acl/api/v2/acls/%s" % acl.id,
             json.dumps(
                 {
-                    "acl": [
+                    "acl_settings": [
                         {
                             "member_id": str(role.id),
                             "value": str(ACLType.Nothing.id),
@@ -372,7 +372,7 @@ class ViewTest(AironeViewTest):
                 {
                     "is_public": False,
                     "default_permission": str(ACLType.Nothing.id),
-                    "acl": [
+                    "acl_settings": [
                         {
                             "member_id": str(roles[0].id),
                             "value": str(ACLType.Nothing.id),
@@ -483,7 +483,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="test", created_user=self.user)
 
         param = {
-            "acl": [
+            "acl_settings": [
                 {
                     "member_id": str(self.role.id),
                     "value": str(ACLType.Writable.id),
@@ -514,7 +514,7 @@ class ViewTest(AironeViewTest):
         )
 
         param = {
-            "acl": [
+            "acl_settings": [
                 {
                     "member_id": str(self.role.id),
                     "value": str(ACLType.Readable.id),
