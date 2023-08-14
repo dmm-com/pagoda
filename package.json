@@ -24,7 +24,6 @@
     "lint": "npx eslint frontend && npx prettier --check frontend",
     "fix": "npx eslint --fix frontend ; npx prettier --write frontend",
     "test": "TZ=UTC npx jest frontend",
-    "test:ci": "TZ=UTC npx jest frontend --runInBand",
     "test:update": "TZ=UTC npx jest -u frontend"
   },
   "repository": {
