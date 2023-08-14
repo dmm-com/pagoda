@@ -7,6 +7,7 @@ on:
     types: [labeled]
     paths:
       - '**/api_v2/**/*.py'
+      - 'apiclient/typescript-fetch/package.json'
       - '.github/workflows/release-apiv2-client.yml'
 
 jobs:
