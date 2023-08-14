@@ -678,6 +678,7 @@ class AironeApiClientV2 {
           attrinfo: attrInfo,
           entryName: entryName,
           hasReferral: hasReferral,
+          isOutputAll: false,
           isAllEntities: searchAllEntities,
           referralName: referralName,
           entryLimit: limit,
