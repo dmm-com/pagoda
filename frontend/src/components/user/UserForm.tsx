@@ -63,8 +63,6 @@ const InputBox: FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const ElemAuthenticationMethod: FC<ReadonlyProps> = ({ user }) => {
-  const djangoContext = DjangoContext.getInstance();
-
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
