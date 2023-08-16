@@ -5,13 +5,12 @@ import React, { FC } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { useSimpleSearch } from "../hooks/useSimpleSearch";
-import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
-
 import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
+import { useSimpleSearch } from "hooks/useSimpleSearch";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 const StyledContainer = styled(Container)({
   marginTop: "16px",
@@ -78,9 +77,9 @@ export const DashboardPage: FC = () => {
         {entries.loading ? (
           <Loading />
         ) : entries.value ? (
-          <ResultBox>
+          <ResultBox id="entry_list">
             {entries.value.map((entry) => (
-              <Box key={entry.id}>
+              <Box id="entry" key={entry.id}>
                 <Result
                   component={Link}
                   to={entryDetailsPath(entry.schema?.id ?? 0, entry.id)}
@@ -96,7 +95,7 @@ export const DashboardPage: FC = () => {
         ) : entities.loading ? (
           <Loading />
         ) : (
-          <ResultBox>
+          <ResultBox id="entity_list">
             {entities.value?.results?.map((entity) => (
               <Result
                 key={entity.id}

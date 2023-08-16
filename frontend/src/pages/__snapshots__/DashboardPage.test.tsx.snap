@@ -93,6 +93,7 @@ exports[`should match snapshot 1`] = `
           </div>
           <div
             class="MuiBox-root css-i48sxq"
+            id="entity_list"
           >
             <a
               class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
@@ -206,6 +207,7 @@ exports[`should match snapshot 1`] = `
         </div>
         <div
           class="MuiBox-root css-i48sxq"
+          id="entity_list"
         >
           <a
             class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"

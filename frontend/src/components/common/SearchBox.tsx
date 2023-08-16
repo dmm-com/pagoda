@@ -31,6 +31,7 @@ export const SearchBox: FC<Props> = ({
 }) => {
   return (
     <StyledTextField
+      key={defaultValue}
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
