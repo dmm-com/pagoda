@@ -14,6 +14,7 @@ export * from "./AdvancedSearchResultExport";
 export * from "./AdvancedSearchResultValue";
 export * from "./AdvancedSearchResultValueAttr";
 export * from "./AdvancedSearchResultValueEntry";
+export * from "./AdvancedSearchResultValueEntity";
 export * from "./AdvancedSearchResultValueReferral";
 export * from "./Attribute";
 export * from "./AttributeData";
