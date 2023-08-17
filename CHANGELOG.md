@@ -5,12 +5,22 @@
 ### Added
 
 ### Changed
+
+### Fixed
+
+## v3.58.0
+
+### Changed
+* Enable to import objects have same name safely.
+  Contributed by @syucream
 * Bumping up pyyaml version for fixing npm packaging failure.
 
 ### Fixed
 * Fixed a bug not to be able to get AttributeValue instance when
   an EntityAttr's name was changed after creating Entry.
   Contributed by @userlocalhost, @hinashi
+* Fix entry copy and entry list pages.
+  Contributed by @syucream
 
 ## v3.57.0
 
