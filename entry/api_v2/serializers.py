@@ -1066,6 +1066,11 @@ class AdvancedSearchResultValueEntrySerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
+class AdvancedSearchResultValueEntitySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+
+
 class AdvancedSearchResultValueReferralSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
@@ -1075,7 +1080,9 @@ class AdvancedSearchResultValueReferralSerializer(serializers.Serializer):
 class AdvancedSearchResultValueSerializer(serializers.Serializer):
     attrs = serializers.DictField(child=AdvancedSearchResultValueAttrSerializer())
     entry = AdvancedSearchResultValueEntrySerializer()
+    entity = AdvancedSearchResultValueEntitySerializer()
     referrals = AdvancedSearchResultValueReferralSerializer(many=True, required=False)
+    is_readable = serializers.BooleanField()
 
 
 class AdvancedSearchResultSerializer(serializers.Serializer):

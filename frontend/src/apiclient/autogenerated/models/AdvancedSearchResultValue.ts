@@ -19,6 +19,12 @@ import {
   AdvancedSearchResultValueAttrFromJSONTyped,
   AdvancedSearchResultValueAttrToJSON,
 } from "./AdvancedSearchResultValueAttr";
+import type { AdvancedSearchResultValueEntity } from "./AdvancedSearchResultValueEntity";
+import {
+  AdvancedSearchResultValueEntityFromJSON,
+  AdvancedSearchResultValueEntityFromJSONTyped,
+  AdvancedSearchResultValueEntityToJSON,
+} from "./AdvancedSearchResultValueEntity";
 import type { AdvancedSearchResultValueEntry } from "./AdvancedSearchResultValueEntry";
 import {
   AdvancedSearchResultValueEntryFromJSON,
@@ -52,10 +58,22 @@ export interface AdvancedSearchResultValue {
   entry: AdvancedSearchResultValueEntry;
   /**
    *
+   * @type {AdvancedSearchResultValueEntity}
+   * @memberof AdvancedSearchResultValue
+   */
+  entity: AdvancedSearchResultValueEntity;
+  /**
+   *
    * @type {Array<AdvancedSearchResultValueReferral>}
    * @memberof AdvancedSearchResultValue
    */
   referrals?: Array<AdvancedSearchResultValueReferral>;
+  /**
+   *
+   * @type {boolean}
+   * @memberof AdvancedSearchResultValue
+   */
+  isReadable: boolean;
 }
 
 /**
@@ -65,6 +83,8 @@ export function instanceOfAdvancedSearchResultValue(value: object): boolean {
   let isInstance = true;
   isInstance = isInstance && "attrs" in value;
   isInstance = isInstance && "entry" in value;
+  isInstance = isInstance && "entity" in value;
+  isInstance = isInstance && "isReadable" in value;
 
   return isInstance;
 }
@@ -85,11 +105,13 @@ export function AdvancedSearchResultValueFromJSONTyped(
   return {
     attrs: mapValues(json["attrs"], AdvancedSearchResultValueAttrFromJSON),
     entry: AdvancedSearchResultValueEntryFromJSON(json["entry"]),
+    entity: AdvancedSearchResultValueEntityFromJSON(json["entity"]),
     referrals: !exists(json, "referrals")
       ? undefined
       : (json["referrals"] as Array<any>).map(
           AdvancedSearchResultValueReferralFromJSON
         ),
+    isReadable: json["is_readable"],
   };
 }
 
@@ -105,11 +127,13 @@ export function AdvancedSearchResultValueToJSON(
   return {
     attrs: mapValues(value.attrs, AdvancedSearchResultValueAttrToJSON),
     entry: AdvancedSearchResultValueEntryToJSON(value.entry),
+    entity: AdvancedSearchResultValueEntityToJSON(value.entity),
     referrals:
       value.referrals === undefined
         ? undefined
         : (value.referrals as Array<any>).map(
             AdvancedSearchResultValueReferralToJSON
           ),
+    is_readable: value.isReadable,
   };
 }

@@ -285,7 +285,7 @@ export const SearchResults: FC<Props> = ({
                   <TableCell>
                     <Box
                       component={Link}
-                      to={entryDetailsPath(0, result.entry.id)}
+                      to={entryDetailsPath(result.entity.id, result.entry.id)}
                     >
                       {result.entry.name}
                     </Box>
@@ -304,6 +304,8 @@ export const SearchResults: FC<Props> = ({
                               )}
                             </>
                           );
+                        } else if (!result.isReadable) {
+                          return <Typography>Permission denied.</Typography>;
                         }
                       })()}
                     </TableCell>
