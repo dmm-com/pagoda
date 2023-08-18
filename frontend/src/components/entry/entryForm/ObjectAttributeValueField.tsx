@@ -195,11 +195,11 @@ export const NamedObjectAttributeValueField: FC<
         <BooleanBox>
           <StyledTypography variant="caption">使用不可</StyledTypography>
           <Controller
-            name={`attrs.${attrId}.value.asArrayNamedObject.${index}.object._boolean`}
+            name={`attrs.${attrId}.value.asArrayNamedObject.${index}._boolean`}
             control={control}
             render={({ field }) => (
               <Checkbox
-                checked={field.value}
+                checked={field.value ?? false}
                 onChange={(e) => field.onChange(e.target.checked)}
               />
             )}
