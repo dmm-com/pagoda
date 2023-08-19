@@ -4,6 +4,13 @@
 
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
+import { formalizeEntryInfo, convertAttrsFormatCtoS } from "./Edit";
+
+import {
+  EditableEntryAttrs,
+  EditableEntryAttrValue,
+} from "components/entry/entryForm/EditableEntry";
+
 Object.defineProperty(window, "django_context", {
   value: {
     user: {
@@ -12,13 +19,6 @@ Object.defineProperty(window, "django_context", {
   },
   writable: false,
 });
-
-import { formalizeEntryInfo, convertAttrsFormatCtoS } from "./Edit";
-
-import {
-  EditableEntryAttrs,
-  EditableEntryAttrValue,
-} from "components/entry/entryForm/EditableEntry";
 
 test("formalizeEntryInfo should return expect value", () => {
   const entity = {

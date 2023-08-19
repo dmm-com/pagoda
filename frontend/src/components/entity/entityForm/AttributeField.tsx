@@ -1,3 +1,4 @@
+import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
@@ -22,7 +23,6 @@ import { Link } from "react-router-dom";
 
 import { Schema } from "./EntityFormSchema";
 
-import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { aclPath } from "Routes";
 import { AttributeTypes } from "services/Constants";
 

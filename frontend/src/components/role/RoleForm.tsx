@@ -1,4 +1,8 @@
 import {
+  RoleGroup,
+  RoleUser,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
   Autocomplete,
   Box,
   Chip,
@@ -23,11 +27,6 @@ import { useAsync } from "react-use";
 import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
 
 import { Schema } from "./roleForm/RoleFormSchema";
-
-import {
-  RoleGroup,
-  RoleUser,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 
 interface Props {
   control: Control<Schema>;

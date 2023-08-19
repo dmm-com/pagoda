@@ -1,3 +1,7 @@
+import {
+  AdvancedSearchResultAttrInfo,
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, Button, Typography } from "@mui/material";
@@ -6,10 +10,6 @@ import React, { FC, useMemo, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import {
-  AdvancedSearchResultAttrInfo,
-  AdvancedSearchResultAttrInfoFilterKeyEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";

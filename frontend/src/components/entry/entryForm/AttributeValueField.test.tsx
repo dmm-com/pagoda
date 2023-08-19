@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { shallow } from "enzyme";
 import React from "react";
 
@@ -9,8 +10,6 @@ import { ReactHookFormTestWrapper } from "../../../ReactHookFormTestWrapper";
 
 import { AttributeValueField } from "./AttributeValueField";
 import { Schema } from "./EntryFormSchema";
-
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 beforeAll(() => {
   Object.defineProperty(window, "django_context", {

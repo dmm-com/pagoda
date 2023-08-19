@@ -1,8 +1,8 @@
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
 import { EditableEntry } from "./EditableEntry";
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AttributeTypes } from "services/Constants";
 import { schemaForType } from "services/ZodSchemaUtil";
 
