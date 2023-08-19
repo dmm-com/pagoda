@@ -48,7 +48,7 @@ jobs:
       - name: generate client
         run: |
           npm ci
-          npm run generate:client:new
+          npm run generate:client
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
