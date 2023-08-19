@@ -61,7 +61,7 @@ class EntityAttr(ACLBase):
         elif isinstance(referral, str):
             adding_referral = Entity.objects.filter(name=referral, is_active=True).first()
 
-        elif isinstance(referral, int) and type(referral) == int:
+        elif isinstance(referral, int) and type(referral) == int:  # noqa: E721
             # The latter type checking is necessary when a boolean typed value is passed
             # because Bool type is implemented as a subclass of Int in Python
             # (at the time of Python 3.8)
