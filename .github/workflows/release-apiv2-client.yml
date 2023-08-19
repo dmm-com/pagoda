@@ -16,6 +16,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      pull-requests: write
     if: ${{ github.event.label.name == 'release-apiv2-client' }}
     steps:
       - uses: actions/checkout@v3
@@ -53,3 +54,20 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
         working-directory: ./apiclient/typescript-fetch
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: "<!-- release-apiv2-client-notification -->"
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- release-apiv2-client-notification -->
+            :zap: :zap: :zap: Now the latest apiv2 client npm package is available at:
+            https://github.com/dmm-com/airone/pkgs/npm/airone-apiclient-typescript-fetch/versions
