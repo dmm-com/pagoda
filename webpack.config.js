@@ -24,6 +24,14 @@ module.exports = {
         }
       },
       {
+        test: /\.ts$/,
+        include: /node_modules\/@dmm-com\/airone-apiclient-typescript-fetch/,
+        loader: 'ts-loader',
+        options: {
+          transpileOnly: true,
+        }
+      },
+      {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {
