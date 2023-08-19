@@ -1,19 +1,20 @@
 module.exports = {
-  "roots": [
+  roots: [
     "frontend/src"
   ],
-  "testMatch": [
+  testMatch: [
     "**/__tests__/**/*.+(ts|tsx|js)",
     "**/?(*.)+(spec|test).+(ts|tsx|js)"
   ],
-  "transform": {
+  transform: {
     "^.+\\.(ts|tsx)$": "ts-jest"
   },
-  "setupFilesAfterEnv": [
+  setupFilesAfterEnv: [
     "<rootDir>/frontend/src/setupTests.ts"
   ],
-  "moduleDirectories": [
+  moduleDirectories: [
     "frontend/src",
     "node_modules"
-  ]
+  ],
+  transformIgnorePatterns: [],
 }
