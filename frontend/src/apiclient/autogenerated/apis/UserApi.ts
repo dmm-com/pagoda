@@ -114,7 +114,6 @@ export interface UserApiV2UpdateRequest {
  */
 export class UserApi extends runtime.BaseAPI {
   /**
-   *
    */
   async userApiV2CreateRaw(
     requestParameters: UserApiV2CreateRequest,
@@ -167,7 +166,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2Create(
     requestParameters: UserApiV2CreateRequest,
@@ -181,7 +179,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2DestroyRaw(
     requestParameters: UserApiV2DestroyRequest,
@@ -229,7 +226,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2Destroy(
     requestParameters: UserApiV2DestroyRequest,
@@ -239,7 +235,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2EditPasswdPartialUpdateRaw(
     requestParameters: UserApiV2EditPasswdPartialUpdateRequest,
@@ -292,7 +287,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2EditPasswdPartialUpdate(
     requestParameters: UserApiV2EditPasswdPartialUpdateRequest,
@@ -306,7 +300,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2EditPasswdUpdateRaw(
     requestParameters: UserApiV2EditPasswdUpdateRequest,
@@ -369,7 +362,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2EditPasswdUpdate(
     requestParameters: UserApiV2EditPasswdUpdateRequest,
@@ -383,7 +375,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2ExportListRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -422,7 +413,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2ExportList(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -432,7 +422,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2ImportCreateRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -469,7 +458,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2ImportCreate(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -478,7 +466,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2ListRaw(
     requestParameters: UserApiV2ListRequest,
@@ -530,7 +517,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2List(
     requestParameters: UserApiV2ListRequest = {},
@@ -544,7 +530,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2PasswordResetConfirmCreateRaw(
     requestParameters: UserApiV2PasswordResetConfirmCreateRequest,
@@ -599,7 +584,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2PasswordResetConfirmCreate(
     requestParameters: UserApiV2PasswordResetConfirmCreateRequest,
@@ -613,7 +597,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2PasswordResetCreateRaw(
     requestParameters: UserApiV2PasswordResetCreateRequest,
@@ -666,7 +649,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2PasswordResetCreate(
     requestParameters: UserApiV2PasswordResetCreateRequest,
@@ -680,7 +662,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2RetrieveRaw(
     requestParameters: UserApiV2RetrieveRequest,
@@ -730,7 +711,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2Retrieve(
     requestParameters: UserApiV2RetrieveRequest,
@@ -744,7 +724,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2SuEditPasswdPartialUpdateRaw(
     requestParameters: UserApiV2SuEditPasswdPartialUpdateRequest,
@@ -799,7 +778,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2SuEditPasswdPartialUpdate(
     requestParameters: UserApiV2SuEditPasswdPartialUpdateRequest,
@@ -813,7 +791,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2SuEditPasswdUpdateRaw(
     requestParameters: UserApiV2SuEditPasswdUpdateRequest,
@@ -878,7 +855,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2SuEditPasswdUpdate(
     requestParameters: UserApiV2SuEditPasswdUpdateRequest,
@@ -892,7 +868,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2TokenCreateRaw(
     requestParameters: UserApiV2TokenCreateRequest,
@@ -935,7 +910,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2TokenCreate(
     requestParameters: UserApiV2TokenCreateRequest = {},
@@ -949,7 +923,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2TokenRetrieveRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -988,7 +961,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2TokenRetrieve(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -998,7 +970,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2UpdateRaw(
     requestParameters: UserApiV2UpdateRequest,
@@ -1061,7 +1032,6 @@ export class UserApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async userApiV2Update(
     requestParameters: UserApiV2UpdateRequest,
