@@ -260,7 +260,7 @@ export const ArrayNamedObjectAttributeValueField: FC<
   });
 
   const handleClickAddListItem = (index: number) => {
-    insert(index + 1, { name: "", object: null });
+    insert(index + 1, { name: "", object: null, _boolean: false });
   };
 
   const handleClickDeleteListItem = (index: number) => {

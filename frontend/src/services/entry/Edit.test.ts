@@ -368,8 +368,8 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
               object: {
                 id: 2,
                 name: "test_object",
-                _boolean: false,
               },
+              _boolean: false,
             },
           ],
         },
