@@ -1,10 +1,10 @@
-from django.conf.urls import url
+from django.urls import path
 
 from . import views
 
 urlpatterns = [
-    url(
-        r"^(?P<pk>\d+)$",
+    path(
+        "<int:pk>",
         views.RoleAPI.as_view(
             {
                 "get": "retrieve",
@@ -13,8 +13,8 @@ urlpatterns = [
             }
         ),
     ),
-    url(
-        r"^$",
+    path(
+        "",
         views.RoleAPI.as_view(
             {
                 "get": "list",
@@ -22,12 +22,12 @@ urlpatterns = [
             }
         ),
     ),
-    url(
-        r"^import$",
+    path(
+        "import",
         views.RoleImportAPI.as_view(),
     ),
-    url(
-        r"^export$",
+    path(
+        "export",
         views.RoleExportAPI.as_view(),
     ),
 ]

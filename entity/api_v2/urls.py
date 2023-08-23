@@ -1,10 +1,9 @@
-from django.conf.urls import url
 from django.urls import path
 
 from . import views
 
 urlpatterns = [
-    url(r"^history/(\d+)$", views.history, name="history"),
+    path("history/<int:pk>", views.history, name="history"),
     path(
         "",
         views.EntityAPI.as_view(
