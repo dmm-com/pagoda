@@ -166,7 +166,8 @@ class ViewTest(AironeViewTest):
                 "type": AttrTypeValue["named_object"],
                 "value": {
                     "as_named_object": {
-                        "hoge": {
+                        "name": "hoge",
+                        "object": {
                             "id": self.ref_entry.id,
                             "name": self.ref_entry.name,
                             "schema": {
@@ -353,7 +354,8 @@ class ViewTest(AironeViewTest):
                 "value": {
                     "as_array_named_object": [
                         {
-                            "foo": {
+                            "name": "foo",
+                            "object": {
                                 "id": self.ref_entry.id,
                                 "name": self.ref_entry.name,
                                 "schema": {
@@ -363,7 +365,8 @@ class ViewTest(AironeViewTest):
                             },
                         },
                         {
-                            "bar": {
+                            "name": "bar",
+                            "object": {
                                 "id": self.ref_entry.id,
                                 "name": self.ref_entry.name,
                                 "schema": {
@@ -624,7 +627,8 @@ class ViewTest(AironeViewTest):
                 "type": AttrTypeValue["named_object"],
                 "value": {
                     "as_named_object": {
-                        "hoge": None,
+                        "name": "hoge",
+                        "object": None,
                     },
                 },
                 "id": entry.attrs.get(schema__name="name").id,
@@ -657,10 +661,12 @@ class ViewTest(AironeViewTest):
                 "value": {
                     "as_array_named_object": [
                         {
-                            "foo": None,
+                            "name": "foo",
+                            "object": None,
                         },
                         {
-                            "bar": None,
+                            "name": "bar",
+                            "object": None,
                         },
                     ]
                 },
@@ -4164,7 +4170,8 @@ class ViewTest(AironeViewTest):
                 "value": {"name": "hoge", "id": self.ref_entry.id},
                 "result": {
                     "as_named_object": {
-                        "hoge": {
+                        "name": "hoge",
+                        "object": {
                             "id": self.ref_entry.id,
                             "name": self.ref_entry.name,
                             "schema": {
@@ -4180,7 +4187,8 @@ class ViewTest(AironeViewTest):
                 "result": {
                     "as_array_named_object": [
                         {
-                            "foo": {
+                            "name": "foo",
+                            "object": {
                                 "id": self.ref_entry.id,
                                 "name": self.ref_entry.name,
                                 "schema": {
