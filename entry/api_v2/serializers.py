@@ -39,6 +39,15 @@ class EntryAttributeValueObject(TypedDict):
     schema: EntityAttributeType
 
 
+class EntryAttributeValueNamedObject(TypedDict):
+    name: str
+    object: Optional[EntryAttributeValueObject]
+
+
+class EntryAttributeValueNamedObjectBoolean(EntryAttributeValueNamedObject):
+    boolean: bool
+
+
 class EntryAttributeValueBoolean(TypedDict):
     boolean: bool
 
@@ -57,20 +66,10 @@ class EntryAttributeValueRole(TypedDict):
 class EntryAttributeValue(TypedDict, total=False):
     as_object: Optional[EntryAttributeValueObject]
     as_string: str
-    as_named_object: Dict[str, Optional[EntryAttributeValueObject]]
+    as_named_object: EntryAttributeValueNamedObject
     as_array_object: List[Optional[EntryAttributeValueObject]]
     as_array_string: List[str]
-    as_array_named_object: List[
-        Dict[
-            str,
-            Optional[
-                Union[
-                    EntryAttributeValueObject,
-                    EntryAttributeValueBoolean,
-                ]
-            ],
-        ]
-    ]
+    as_array_named_object: List[EntryAttributeValueNamedObject]
     as_array_group: List[EntryAttributeValueGroup]
     # text; use string instead
     as_boolean: bool
@@ -98,6 +97,16 @@ class EntryAttributeValueObjectSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     schema = EntityAttributeTypeSerializer()
+
+
+class EntryAttributeValueNamedObjectSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    object = EntryAttributeValueObjectSerializer(allow_null=True)
+
+
+class EntryAttributeValueNamedObjectBooleanSerializer(EntryAttributeValueNamedObjectSerializer):
+    name = serializers.CharField()
+    object = EntryAttributeValueObjectSerializer(allow_null=True)
     boolean = serializers.BooleanField()
 
 
@@ -114,15 +123,13 @@ class EntryAttributeValueRoleSerializer(serializers.Serializer):
 class EntryAttributeValueSerializer(serializers.Serializer):
     as_object = EntryAttributeValueObjectSerializer(allow_null=True, required=False)
     as_string = serializers.CharField(required=False)
-    as_named_object = serializers.DictField(
-        child=EntryAttributeValueObjectSerializer(allow_null=True), required=False
-    )
+    as_named_object = EntryAttributeValueNamedObjectSerializer(required=False)
     as_array_object = serializers.ListField(
         child=EntryAttributeValueObjectSerializer(allow_null=True), required=False
     )
     as_array_string = serializers.ListField(child=serializers.CharField(), required=False)
     as_array_named_object = serializers.ListField(
-        child=serializers.DictField(child=EntryAttributeValueObjectSerializer(allow_null=True)),
+        child=EntryAttributeValueNamedObjectBooleanSerializer(),
         required=False,
     )
     as_array_group = serializers.ListField(
@@ -417,19 +424,10 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     }
 
                 elif attr.schema.type & AttrTypeValue["named"]:
-                    array_named_object: List[
-                        Dict[
-                            str,
-                            Optional[
-                                Union[
-                                    EntryAttributeValueObject,
-                                    EntryAttributeValueBoolean,
-                                ]
-                            ],
-                        ]
-                    ] = [
+                    array_named_object: List[EntryAttributeValueNamedObject] = [
                         {
-                            x.value: {
+                            "name": x.value,
+                            "object": {
                                 "id": x.referral.id if x.referral else None,
                                 "name": x.referral.name if x.referral else "",
                                 "schema": {
@@ -491,8 +489,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 return {"as_string": attrv.value}
 
             elif attr.schema.type & AttrTypeValue["named"]:
-                named: Dict[str, Optional[EntryAttributeValueObject]] = {
-                    attrv.value: {
+                named: EntryAttributeValueNamedObject = {
+                    "name": attrv.value,
+                    "object": {
                         "id": attrv.referral.id if attrv.referral else None,
                         "name": attrv.referral.name if attrv.referral else "",
                         "schema": {
@@ -501,7 +500,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                         },
                     }
                     if attrv.referral and attrv.referral.is_active
-                    else None
+                    else None,
                 }
                 return {"as_named_object": named}
 
@@ -553,7 +552,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     }
 
                 elif type & AttrTypeValue["named"]:
-                    return {"as_array_named_object": AttrDefaultValue[type]}
+                    return {"as_array_named_object": []}
 
                 elif type & AttrTypeValue["object"]:
                     return {"as_array_object": AttrDefaultValue[type]}
@@ -568,7 +567,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 return {"as_string": AttrDefaultValue[type]}
 
             elif type & AttrTypeValue["named"]:
-                return {"as_named_object": AttrDefaultValue[type]}
+                return {"as_named_object": {"name": "", "object": None}}
 
             elif type & AttrTypeValue["object"]:
                 return {"as_object": AttrDefaultValue[type]}
@@ -860,8 +859,9 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
             return {"as_string": obj.date if obj.date else ""}
 
         elif obj.data_type == AttrTypeValue["named_object"]:
-            named: Dict[str, Optional[EntryAttributeValueObject]] = {
-                obj.value: {
+            named: EntryAttributeValueNamedObject = {
+                "name": obj.value,
+                "object": {
                     "id": obj.referral.id if obj.referral else None,
                     "name": obj.referral.name if obj.referral else "",
                     "schema": {
@@ -870,24 +870,15 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                     },
                 }
                 if obj.referral and obj.referral.is_active
-                else None
+                else None,
             }
             return {"as_named_object": named}
 
         elif obj.data_type == AttrTypeValue["array_named_object"]:
-            array_named_object: List[
-                Dict[
-                    str,
-                    Optional[
-                        Union[
-                            EntryAttributeValueObject,
-                            EntryAttributeValueBoolean,
-                        ]
-                    ],
-                ]
-            ] = [
+            array_named_object: List[EntryAttributeValueNamedObject] = [
                 {
-                    x.value: {
+                    "name": x.value,
+                    "object": {
                         "id": x.referral.id if x.referral else None,
                         "name": x.referral.name if x.referral else "",
                         "schema": {

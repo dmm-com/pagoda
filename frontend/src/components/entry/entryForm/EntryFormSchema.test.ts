@@ -103,8 +103,8 @@ describe("schema", () => {
               object: {
                 id: 1,
                 name: "object",
-                _boolean: false,
               },
+              _boolean: false,
             },
           ],
         },

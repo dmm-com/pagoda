@@ -44,12 +44,6 @@ export interface EntryAttributeValueObject {
    * @memberof EntryAttributeValueObject
    */
   schema: EntityAttributeType;
-  /**
-   *
-   * @type {boolean}
-   * @memberof EntryAttributeValueObject
-   */
-  _boolean: boolean;
 }
 
 /**
@@ -60,7 +54,6 @@ export function instanceOfEntryAttributeValueObject(value: object): boolean {
   isInstance = isInstance && "id" in value;
   isInstance = isInstance && "name" in value;
   isInstance = isInstance && "schema" in value;
-  isInstance = isInstance && "_boolean" in value;
 
   return isInstance;
 }
@@ -82,7 +75,6 @@ export function EntryAttributeValueObjectFromJSONTyped(
     id: json["id"],
     name: json["name"],
     schema: EntityAttributeTypeFromJSON(json["schema"]),
-    _boolean: json["boolean"],
   };
 }
 
@@ -99,6 +91,5 @@ export function EntryAttributeValueObjectToJSON(
     id: value.id,
     name: value.name,
     schema: EntityAttributeTypeToJSON(value.schema),
-    boolean: value._boolean,
   };
 }

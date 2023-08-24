@@ -80,7 +80,7 @@ test("formalizeEntryInfo should return expect value", () => {
         type: 2,
         value: {
           asArrayGroup: [],
-          asArrayNamedObject: [{ name: "", object: null }],
+          asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
           asArrayObject: [],
           asArrayRole: [],
           asArrayString: [{ value: "" }],
@@ -102,7 +102,7 @@ test("formalizeEntryInfo should return expect value", () => {
         type: 1026,
         value: {
           asArrayGroup: [],
-          asArrayNamedObject: [{ name: "", object: null }],
+          asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
           asArrayObject: [],
           asArrayRole: [],
           asArrayString: [{ value: "" }],
@@ -124,7 +124,7 @@ test("formalizeEntryInfo should return expect value", () => {
         type: 3073,
         value: {
           asArrayGroup: [],
-          asArrayNamedObject: [{ name: "", object: null }],
+          asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
           asArrayObject: [],
           asArrayRole: [],
           asArrayString: [{ value: "" }],
@@ -237,7 +237,7 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: 3073,
         value: {
-          asArrayNamedObject: [{ name: "", object: null }],
+          asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
         },
       },
     },
@@ -368,8 +368,8 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
               object: {
                 id: 2,
                 name: "test_object",
-                _boolean: false,
               },
+              _boolean: false,
             },
           ],
         },
