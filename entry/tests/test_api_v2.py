@@ -2886,7 +2886,8 @@ class ViewTest(AironeViewTest):
                                 "type": 2049,
                                 "value": {
                                     "as_named_object": {
-                                        "hoge": {"id": self.ref_entry.id, "name": "r-0"}
+                                        "name": "hoge",
+                                        "object": {"id": self.ref_entry.id, "name": "r-0"},
                                     }
                                 },
                             },
@@ -2895,8 +2896,14 @@ class ViewTest(AironeViewTest):
                                 "type": 3073,
                                 "value": {
                                     "as_array_named_object": [
-                                        {"foo": {"id": self.ref_entry.id, "name": "r-0"}},
-                                        {"bar": {"id": self.ref_entry.id, "name": "r-0"}},
+                                        {
+                                            "name": "foo",
+                                            "object": {"id": self.ref_entry.id, "name": "r-0"},
+                                        },
+                                        {
+                                            "name": "bar",
+                                            "object": {"id": self.ref_entry.id, "name": "r-0"},
+                                        },
                                     ]
                                 },
                             },
@@ -2963,7 +2970,12 @@ class ViewTest(AironeViewTest):
                             "name": {
                                 "is_readable": True,
                                 "type": 2049,
-                                "value": {"as_named_object": {"": {"id": "", "name": ""}}},
+                                "value": {
+                                    "as_named_object": {
+                                        "name": "",
+                                        "object": {"id": "", "name": ""},
+                                    }
+                                },
                             },
                             "names": {
                                 "is_readable": True,
