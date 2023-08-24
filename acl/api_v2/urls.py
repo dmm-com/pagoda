@@ -1,14 +1,14 @@
-from django.conf.urls import url
+from django.urls import path
 
 from acl.api_v2 import views
 
 urlpatterns = [
-    url(
-        r"^acls/(?P<pk>\d+)$",
+    path(
+        "acls/<int:pk>",
         views.ACLAPI.as_view({"get": "retrieve", "put": "update"}),
     ),
-    url(
-        r"^acls/(?P<pk>\d+)/history$",
+    path(
+        "acls/<int:pk>/history",
         views.ACLHistoryAPI.as_view(),
     ),
 ]

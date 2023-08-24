@@ -1,10 +1,10 @@
-from django.conf.urls import url
+from django.urls import path
 
 from . import views
 
 urlpatterns = [
-    url(
-        r"^groups$",
+    path(
+        "groups",
         views.GroupAPI.as_view(
             {
                 "get": "list",
@@ -12,11 +12,11 @@ urlpatterns = [
             }
         ),
     ),
-    url(r"^groups/tree$", views.GroupTreeAPI.as_view({"get": "list"})),
-    url(r"^groups/import$", views.GroupImportAPI.as_view()),
-    url(r"^groups/export$", views.GroupExportAPI.as_view()),
-    url(
-        r"^groups/(?P<pk>\d+)$",
+    path("groups/tree", views.GroupTreeAPI.as_view({"get": "list"})),
+    path("groups/import", views.GroupImportAPI.as_view()),
+    path("groups/export", views.GroupExportAPI.as_view()),
+    path(
+        "groups/<int:pk>",
         views.GroupAPI.as_view(
             {
                 "get": "retrieve",

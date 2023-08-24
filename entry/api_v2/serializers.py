@@ -39,10 +39,6 @@ class EntryAttributeValueObject(TypedDict):
     schema: EntityAttributeType
 
 
-class EntryAttributeValueObjectBoolean(EntryAttributeValueObject):
-    boolean: bool
-
-
 class EntryAttributeValueBoolean(TypedDict):
     boolean: bool
 
@@ -70,7 +66,6 @@ class EntryAttributeValue(TypedDict, total=False):
             Optional[
                 Union[
                     EntryAttributeValueObject,
-                    EntryAttributeValueObjectBoolean,
                     EntryAttributeValueBoolean,
                 ]
             ],
@@ -428,7 +423,6 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                             Optional[
                                 Union[
                                     EntryAttributeValueObject,
-                                    EntryAttributeValueObjectBoolean,
                                     EntryAttributeValueBoolean,
                                 ]
                             ],
@@ -887,7 +881,6 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                     Optional[
                         Union[
                             EntryAttributeValueObject,
-                            EntryAttributeValueObjectBoolean,
                             EntryAttributeValueBoolean,
                         ]
                     ],

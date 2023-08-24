@@ -280,7 +280,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
           asObject: {
             id: 3,
             name: "test_object",
-            _boolean: false,
           },
         },
       },
@@ -309,7 +308,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
             object: {
               id: 2,
               name: "test_object",
-              _boolean: false,
             },
           },
         },
@@ -338,7 +336,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
             {
               id: 2,
               name: "test_object",
-              _boolean: false,
             },
           ],
         },
