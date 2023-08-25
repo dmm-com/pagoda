@@ -315,6 +315,24 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 ):
                     entry["attrs"][name]["value"]["as_string"] = ""
 
+                # "asNamedObject", "as_array_named_object" converts types
+                if _get_typed_value(attr["type"]) == "as_named_object":
+                    value = entry["attrs"][name]["value"]["as_named_object"]
+                    entry["attrs"][name]["value"]["as_named_object"] = {
+                        "name": list(value.keys())[0],
+                        "object": list(value.values())[0],
+                    }
+
+                if _get_typed_value(attr["type"]) == "as_array_named_object":
+                    values = entry["attrs"][name]["value"]["as_array_named_object"]
+                    entry["attrs"][name]["value"]["as_array_named_object"] = [
+                        {
+                            "name": list(value.keys())[0],
+                            "object": list(value.values())[0],
+                        }
+                        for value in values
+                    ]
+
         serializer = AdvancedSearchResultSerializer(
             data={"count": resp["ret_count"], "values": resp["ret_values"]}
         )
