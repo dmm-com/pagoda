@@ -50,7 +50,6 @@ describe("schema", () => {
           asObject: {
             id: 1,
             name: "object",
-            _boolean: false,
           },
         },
       },
@@ -67,7 +66,6 @@ describe("schema", () => {
             {
               id: 1,
               name: "object",
-              _boolean: false,
             },
           ],
         },
@@ -86,7 +84,6 @@ describe("schema", () => {
             object: {
               id: 1,
               name: "object",
-              _boolean: false,
             },
           },
         },
@@ -106,8 +103,8 @@ describe("schema", () => {
               object: {
                 id: 1,
                 name: "object",
-                _boolean: false,
               },
+              _boolean: false,
             },
           ],
         },

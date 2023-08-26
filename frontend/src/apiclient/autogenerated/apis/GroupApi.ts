@@ -52,7 +52,6 @@ export interface GroupApiV2GroupsUpdateRequest {
  */
 export class GroupApi extends runtime.BaseAPI {
   /**
-   *
    */
   async groupApiV2GroupsCreateRaw(
     requestParameters: GroupApiV2GroupsCreateRequest,
@@ -105,7 +104,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsCreate(
     requestParameters: GroupApiV2GroupsCreateRequest,
@@ -119,7 +117,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsDestroyRaw(
     requestParameters: GroupApiV2GroupsDestroyRequest,
@@ -167,7 +164,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsDestroy(
     requestParameters: GroupApiV2GroupsDestroyRequest,
@@ -177,7 +173,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsExportListRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -216,7 +211,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsExportList(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -226,7 +220,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsImportCreateRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -263,7 +256,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsImportCreate(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -272,7 +264,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsListRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -311,7 +302,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsList(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -321,7 +311,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsRetrieveRaw(
     requestParameters: GroupApiV2GroupsRetrieveRequest,
@@ -371,7 +360,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsRetrieve(
     requestParameters: GroupApiV2GroupsRetrieveRequest,
@@ -385,7 +373,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsTreeListRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -424,7 +411,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsTreeList(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -434,7 +420,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsUpdateRaw(
     requestParameters: GroupApiV2GroupsUpdateRequest,
@@ -497,7 +482,6 @@ export class GroupApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async groupApiV2GroupsUpdate(
     requestParameters: GroupApiV2GroupsUpdateRequest,

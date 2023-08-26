@@ -19,6 +19,18 @@ import {
   EntryAttributeValueGroupFromJSONTyped,
   EntryAttributeValueGroupToJSON,
 } from "./EntryAttributeValueGroup";
+import type { EntryAttributeValueNamedObject } from "./EntryAttributeValueNamedObject";
+import {
+  EntryAttributeValueNamedObjectFromJSON,
+  EntryAttributeValueNamedObjectFromJSONTyped,
+  EntryAttributeValueNamedObjectToJSON,
+} from "./EntryAttributeValueNamedObject";
+import type { EntryAttributeValueNamedObjectBoolean } from "./EntryAttributeValueNamedObjectBoolean";
+import {
+  EntryAttributeValueNamedObjectBooleanFromJSON,
+  EntryAttributeValueNamedObjectBooleanFromJSONTyped,
+  EntryAttributeValueNamedObjectBooleanToJSON,
+} from "./EntryAttributeValueNamedObjectBoolean";
 import type { EntryAttributeValueObject } from "./EntryAttributeValueObject";
 import {
   EntryAttributeValueObjectFromJSON,
@@ -52,10 +64,10 @@ export interface EntryAttributeValue {
   asString?: string;
   /**
    *
-   * @type {{ [key: string]: EntryAttributeValueObject; }}
+   * @type {EntryAttributeValueNamedObject}
    * @memberof EntryAttributeValue
    */
-  asNamedObject?: { [key: string]: EntryAttributeValueObject };
+  asNamedObject?: EntryAttributeValueNamedObject;
   /**
    *
    * @type {Array<EntryAttributeValueObject>}
@@ -70,10 +82,10 @@ export interface EntryAttributeValue {
   asArrayString?: Array<string>;
   /**
    *
-   * @type {Array<{ [key: string]: EntryAttributeValueObject; }>}
+   * @type {Array<EntryAttributeValueNamedObjectBoolean>}
    * @memberof EntryAttributeValue
    */
-  asArrayNamedObject?: Array<{ [key: string]: EntryAttributeValueObject }>;
+  asArrayNamedObject?: Array<EntryAttributeValueNamedObjectBoolean>;
   /**
    *
    * @type {Array<EntryAttributeValueGroup>}
@@ -133,7 +145,7 @@ export function EntryAttributeValueFromJSONTyped(
     asString: !exists(json, "as_string") ? undefined : json["as_string"],
     asNamedObject: !exists(json, "as_named_object")
       ? undefined
-      : mapValues(json["as_named_object"], EntryAttributeValueObjectFromJSON),
+      : EntryAttributeValueNamedObjectFromJSON(json["as_named_object"]),
     asArrayObject: !exists(json, "as_array_object")
       ? undefined
       : (json["as_array_object"] as Array<any>).map(
@@ -144,7 +156,9 @@ export function EntryAttributeValueFromJSONTyped(
       : json["as_array_string"],
     asArrayNamedObject: !exists(json, "as_array_named_object")
       ? undefined
-      : json["as_array_named_object"],
+      : (json["as_array_named_object"] as Array<any>).map(
+          EntryAttributeValueNamedObjectBooleanFromJSON
+        ),
     asArrayGroup: !exists(json, "as_array_group")
       ? undefined
       : (json["as_array_group"] as Array<any>).map(
@@ -177,10 +191,7 @@ export function EntryAttributeValueToJSON(
   return {
     as_object: EntryAttributeValueObjectToJSON(value.asObject),
     as_string: value.asString,
-    as_named_object:
-      value.asNamedObject === undefined
-        ? undefined
-        : mapValues(value.asNamedObject, EntryAttributeValueObjectToJSON),
+    as_named_object: EntryAttributeValueNamedObjectToJSON(value.asNamedObject),
     as_array_object:
       value.asArrayObject === undefined
         ? undefined
@@ -188,7 +199,12 @@ export function EntryAttributeValueToJSON(
             EntryAttributeValueObjectToJSON
           ),
     as_array_string: value.asArrayString,
-    as_array_named_object: value.asArrayNamedObject,
+    as_array_named_object:
+      value.asArrayNamedObject === undefined
+        ? undefined
+        : (value.asArrayNamedObject as Array<any>).map(
+            EntryAttributeValueNamedObjectBooleanToJSON
+          ),
     as_array_group:
       value.asArrayGroup === undefined
         ? undefined
