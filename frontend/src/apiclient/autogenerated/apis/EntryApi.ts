@@ -126,7 +126,6 @@ export interface EntryApiV2UpdateRequest {
  */
 export class EntryApi extends runtime.BaseAPI {
   /**
-   *
    */
   async entryApiV2AdvancedSearchCreateRaw(
     requestParameters: EntryApiV2AdvancedSearchCreateRequest,
@@ -179,7 +178,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2AdvancedSearchCreate(
     requestParameters: EntryApiV2AdvancedSearchCreateRequest,
@@ -193,7 +191,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2AdvancedSearchResultExportCreateRaw(
     requestParameters: EntryApiV2AdvancedSearchResultExportCreateRequest,
@@ -248,7 +245,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2AdvancedSearchResultExportCreate(
     requestParameters: EntryApiV2AdvancedSearchResultExportCreateRequest,
@@ -262,7 +258,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2AttrReferralsListRaw(
     requestParameters: EntryApiV2AttrReferralsListRequest,
@@ -319,7 +314,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2AttrReferralsList(
     requestParameters: EntryApiV2AttrReferralsListRequest,
@@ -333,7 +327,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2AttrvRestorePartialUpdateRaw(
     requestParameters: EntryApiV2AttrvRestorePartialUpdateRequest,
@@ -381,7 +374,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2AttrvRestorePartialUpdate(
     requestParameters: EntryApiV2AttrvRestorePartialUpdateRequest,
@@ -394,7 +386,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2AttrvRestoreUpdateRaw(
     requestParameters: EntryApiV2AttrvRestoreUpdateRequest,
@@ -442,7 +433,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2AttrvRestoreUpdate(
     requestParameters: EntryApiV2AttrvRestoreUpdateRequest,
@@ -455,7 +445,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2BulkDeleteDestroyRaw(
     requestParameters: EntryApiV2BulkDeleteDestroyRequest,
@@ -497,7 +486,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2BulkDeleteDestroy(
     requestParameters: EntryApiV2BulkDeleteDestroyRequest = {},
@@ -507,7 +495,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2CopyCreateRaw(
     requestParameters: EntryApiV2CopyCreateRequest,
@@ -570,7 +557,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2CopyCreate(
     requestParameters: EntryApiV2CopyCreateRequest,
@@ -584,7 +570,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2DestroyRaw(
     requestParameters: EntryApiV2DestroyRequest,
@@ -632,7 +617,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2Destroy(
     requestParameters: EntryApiV2DestroyRequest,
@@ -642,7 +626,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2ExportCreateRaw(
     requestParameters: EntryApiV2ExportCreateRequest,
@@ -698,7 +681,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2ExportCreate(
     requestParameters: EntryApiV2ExportCreateRequest,
@@ -712,7 +694,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2HistoriesListRaw(
     requestParameters: EntryApiV2HistoriesListRequest,
@@ -770,7 +751,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2HistoriesList(
     requestParameters: EntryApiV2HistoriesListRequest,
@@ -784,7 +764,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2ImportCreateRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -821,7 +800,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2ImportCreate(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -830,7 +808,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2ReferralListRaw(
     requestParameters: EntryApiV2ReferralListRequest,
@@ -892,7 +869,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2ReferralList(
     requestParameters: EntryApiV2ReferralListRequest,
@@ -906,7 +882,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2RestoreCreateRaw(
     requestParameters: EntryApiV2RestoreCreateRequest,
@@ -959,7 +934,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2RestoreCreate(
     requestParameters: EntryApiV2RestoreCreateRequest,
@@ -973,7 +947,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2RetrieveRaw(
     requestParameters: EntryApiV2RetrieveRequest,
@@ -1023,7 +996,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2Retrieve(
     requestParameters: EntryApiV2RetrieveRequest,
@@ -1037,7 +1009,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2SearchListRaw(
     requestParameters: EntryApiV2SearchListRequest,
@@ -1081,7 +1052,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2SearchList(
     requestParameters: EntryApiV2SearchListRequest = {},
@@ -1095,7 +1065,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2UpdateRaw(
     requestParameters: EntryApiV2UpdateRequest,
@@ -1148,7 +1117,6 @@ export class EntryApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entryApiV2Update(
     requestParameters: EntryApiV2UpdateRequest,

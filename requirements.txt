@@ -11,7 +11,7 @@ django-simple-history==3.2.0
 django-storages==1.13.2
 django==3.2.20
 djangorestframework==3.11.2
-drf_spectacular==0.17.3
+drf_spectacular==0.26.4
 elasticsearch==7.17.6
 flower==1.2.0
 gunicorn==20.0.4

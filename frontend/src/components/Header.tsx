@@ -197,15 +197,9 @@ export const Header: FC = () => {
                   component={Link}
                   to={userPath(djangoContext?.user?.id ?? 0)}
                 >
-                  <Link to={userPath(djangoContext?.user?.id ?? 0)}>
-                    ユーザ設定
-                  </Link>
+                  ユーザ設定
                 </MenuItem>
-                <MenuItem onClick={() => handleLogout()}>
-                  <Link to="#" onClick={() => handleLogout()}>
-                    ログアウト
-                  </Link>
-                </MenuItem>
+                <MenuItem onClick={() => handleLogout()}>ログアウト</MenuItem>
               </Menu>
               <IconButton
                 aria-controls="job-menu"
@@ -246,9 +240,7 @@ export const Header: FC = () => {
                 )}
                 <Divider light />
                 <MenuItem component={Link} to={jobsPath()}>
-                  <Typography component={Link} to={jobsPath()}>
-                    ジョブ一覧
-                  </Typography>
+                  ジョブ一覧
                 </MenuItem>
               </Menu>
               <SearchBoxWrapper>

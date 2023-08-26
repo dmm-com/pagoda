@@ -45,7 +45,6 @@ export interface RoleApiV2UpdateRequest {
  */
 export class RoleApi extends runtime.BaseAPI {
   /**
-   *
    */
   async roleApiV2CreateRaw(
     requestParameters: RoleApiV2CreateRequest,
@@ -98,7 +97,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2Create(
     requestParameters: RoleApiV2CreateRequest,
@@ -112,7 +110,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2DestroyRaw(
     requestParameters: RoleApiV2DestroyRequest,
@@ -160,7 +157,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2Destroy(
     requestParameters: RoleApiV2DestroyRequest,
@@ -170,7 +166,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2ExportListRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -209,7 +204,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2ExportList(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -219,7 +213,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2ImportCreateRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -256,7 +249,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2ImportCreate(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -265,7 +257,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2ListRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -304,7 +295,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2List(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -314,7 +304,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2RetrieveRaw(
     requestParameters: RoleApiV2RetrieveRequest,
@@ -364,7 +353,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2Retrieve(
     requestParameters: RoleApiV2RetrieveRequest,
@@ -378,7 +366,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2UpdateRaw(
     requestParameters: RoleApiV2UpdateRequest,
@@ -441,7 +428,6 @@ export class RoleApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async roleApiV2Update(
     requestParameters: RoleApiV2UpdateRequest,

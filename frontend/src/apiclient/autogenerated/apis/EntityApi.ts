@@ -99,7 +99,6 @@ export interface EntityApiV2UpdateRequest {
  */
 export class EntityApi extends runtime.BaseAPI {
   /**
-   *
    */
   async entityApiV2AttrsListRaw(
     requestParameters: EntityApiV2AttrsListRequest,
@@ -141,7 +140,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2AttrsList(
     requestParameters: EntityApiV2AttrsListRequest = {},
@@ -155,7 +153,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2CreateRaw(
     requestParameters: EntityApiV2CreateRequest,
@@ -212,7 +209,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2Create(
     requestParameters: EntityApiV2CreateRequest,
@@ -226,7 +222,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2DestroyRaw(
     requestParameters: EntityApiV2DestroyRequest,
@@ -278,7 +273,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2Destroy(
     requestParameters: EntityApiV2DestroyRequest,
@@ -288,7 +282,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2EntriesCreateRaw(
     requestParameters: EntityApiV2EntriesCreateRequest,
@@ -354,7 +347,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2EntriesCreate(
     requestParameters: EntityApiV2EntriesCreateRequest,
@@ -368,7 +360,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2EntriesListRaw(
     requestParameters: EntityApiV2EntriesListRequest,
@@ -437,7 +428,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2EntriesList(
     requestParameters: EntityApiV2EntriesListRequest,
@@ -451,7 +441,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2ExportRetrieveRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -490,7 +479,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2ExportRetrieve(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -500,7 +488,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2HistoriesListRaw(
     requestParameters: EntityApiV2HistoriesListRequest,
@@ -561,7 +548,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2HistoriesList(
     requestParameters: EntityApiV2HistoriesListRequest,
@@ -575,7 +561,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2ImportCreateRaw(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -612,7 +597,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2ImportCreate(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
@@ -621,7 +605,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2ListRaw(
     requestParameters: EntityApiV2ListRequest,
@@ -681,7 +664,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2List(
     requestParameters: EntityApiV2ListRequest = {},
@@ -695,7 +677,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2RetrieveRaw(
     requestParameters: EntityApiV2RetrieveRequest,
@@ -749,7 +730,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2Retrieve(
     requestParameters: EntityApiV2RetrieveRequest,
@@ -763,7 +743,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2UpdateRaw(
     requestParameters: EntityApiV2UpdateRequest,
@@ -820,7 +799,6 @@ export class EntityApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async entityApiV2Update(
     requestParameters: EntityApiV2UpdateRequest,
