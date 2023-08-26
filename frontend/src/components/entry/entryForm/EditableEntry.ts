@@ -7,7 +7,7 @@ import {
 
 export type EditableEntryAttrValueObject = Pick<
   EntryAttributeValueObject,
-  "id" | "name" | "_boolean"
+  "id" | "name"
 >;
 
 export type EditableEntryAttrValue = {
@@ -19,6 +19,7 @@ export type EditableEntryAttrValue = {
   asArrayNamedObject?: Array<{
     name: string;
     object: EditableEntryAttrValueObject | null;
+    _boolean: boolean;
   }>;
   asArrayGroup?: Array<EntryAttributeValueGroup>;
   asArrayRole?: Array<EntryAttributeValueRole>;

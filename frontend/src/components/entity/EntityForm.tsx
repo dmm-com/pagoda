@@ -1,4 +1,3 @@
-import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Box } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
@@ -9,6 +8,8 @@ import { AttributesFields } from "./entityForm/AttributesFields";
 import { BasicFields } from "./entityForm/BasicFields";
 import { Schema } from "./entityForm/EntityFormSchema";
 import { WebhookFields } from "./entityForm/WebhookFields";
+
+import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const StyledBox = styled(Box)(({ theme }) => ({
   width: theme.breakpoints.values.lg,

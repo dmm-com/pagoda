@@ -2,10 +2,9 @@
  * @jest-environment jsdom
  */
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
-
 import { formalizeEntryInfo, convertAttrsFormatCtoS } from "./Edit";
 
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   EditableEntryAttrs,
   EditableEntryAttrValue,
@@ -80,7 +79,7 @@ test("formalizeEntryInfo should return expect value", () => {
         type: 2,
         value: {
           asArrayGroup: [],
-          asArrayNamedObject: [{ name: "", object: null }],
+          asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
           asArrayObject: [],
           asArrayRole: [],
           asArrayString: [{ value: "" }],
@@ -102,7 +101,7 @@ test("formalizeEntryInfo should return expect value", () => {
         type: 1026,
         value: {
           asArrayGroup: [],
-          asArrayNamedObject: [{ name: "", object: null }],
+          asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
           asArrayObject: [],
           asArrayRole: [],
           asArrayString: [{ value: "" }],
@@ -124,7 +123,7 @@ test("formalizeEntryInfo should return expect value", () => {
         type: 3073,
         value: {
           asArrayGroup: [],
-          asArrayNamedObject: [{ name: "", object: null }],
+          asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
           asArrayObject: [],
           asArrayRole: [],
           asArrayString: [{ value: "" }],
@@ -237,7 +236,7 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: 3073,
         value: {
-          asArrayNamedObject: [{ name: "", object: null }],
+          asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
         },
       },
     },
@@ -280,7 +279,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
           asObject: {
             id: 3,
             name: "test_object",
-            _boolean: false,
           },
         },
       },
@@ -309,7 +307,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
             object: {
               id: 2,
               name: "test_object",
-              _boolean: false,
             },
           },
         },
@@ -338,7 +335,6 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
             {
               id: 2,
               name: "test_object",
-              _boolean: false,
             },
           ],
         },
@@ -371,8 +367,8 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
               object: {
                 id: 2,
                 name: "test_object",
-                _boolean: false,
               },
+              _boolean: false,
             },
           ],
         },

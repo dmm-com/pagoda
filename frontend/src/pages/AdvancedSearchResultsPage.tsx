@@ -1,15 +1,15 @@
-import {
-  AdvancedSearchResultAttrInfo,
-  AdvancedSearchResultAttrInfoFilterKeyEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useMemo, useState } from "react";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import {
+  AdvancedSearchResultAttrInfo,
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
@@ -25,7 +25,6 @@ import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
-  const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const [page, changePage] = usePage();
 
@@ -33,6 +32,7 @@ export const AdvancedSearchResultsPage: FC = () => {
   const [bulkOperationEntryIds, setBulkOperationEntryIds] = useState<
     Array<number>
   >([]);
+  const [toggle, setToggle] = useState(false);
 
   const {
     entityIds,
@@ -60,7 +60,7 @@ export const AdvancedSearchResultsPage: FC = () => {
       searchAllEntities,
       page
     );
-  }, [page]);
+  }, [page, toggle]);
 
   const maxPage = useMemo(() => {
     if (results.loading) {
@@ -105,11 +105,8 @@ export const AdvancedSearchResultsPage: FC = () => {
       enqueueSnackbar("複数エントリの削除に成功しました", {
         variant: "success",
       });
-      history.replace(topPath());
-      history.replace({
-        pathname: location.pathname,
-        search: location.search,
-      });
+      setBulkOperationEntryIds([]);
+      setToggle(!toggle);
     } catch (e) {
       enqueueSnackbar("複数エントリの削除に失敗しました", {
         variant: "error",

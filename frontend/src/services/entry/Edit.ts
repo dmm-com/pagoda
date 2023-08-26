@@ -6,7 +6,6 @@ import {
   EntryAttributeValueObject,
   EntryRetrieve,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-
 import {
   EditableEntryAttrValue,
   EditableEntryAttrs,
@@ -46,7 +45,7 @@ export function formalizeEntryInfo(
               asArrayObject: [],
               asArrayGroup: [],
               asArrayRole: [],
-              asArrayNamedObject: [{ name: "", object: null }],
+              asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
             };
           }
 
@@ -59,26 +58,15 @@ export function formalizeEntryInfo(
                     }),
                   }
                 : { asArrayString: [{ value: "" }] };
-            case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
-              return {
-                asNamedObject: {
-                  name: Object.keys(value?.asNamedObject ?? {})[0] ?? "",
-                  object: Object.values(value.asNamedObject ?? {})[0] ?? null,
-                },
-              };
             case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+            case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT_BOOLEAN:
               return value?.asArrayNamedObject?.length ?? 0 > 0
-                ? {
-                    asArrayNamedObject: value?.asArrayNamedObject?.map(
-                      (value) => {
-                        return {
-                          name: Object.keys(value)[0],
-                          object: Object.values(value)[0],
-                        };
-                      }
-                    ),
-                  }
-                : { asArrayNamedObject: [{ name: "", object: null }] };
+                ? value
+                : {
+                    asArrayNamedObject: [
+                      { name: "", object: null, _boolean: false },
+                    ],
+                  };
             default:
               return value;
           }
@@ -154,16 +142,14 @@ export function convertAttrsFormatCtoS(
           return (
             attrValue.asArrayNamedObject as {
               name: string;
-              object: Pick<
-                EntryAttributeValueObject,
-                "id" | "name" | "_boolean"
-              >;
+              object: EntryAttributeValueObject;
+              _boolean: boolean;
             }[]
           )?.map((x) => {
             return {
               id: x.object?.id ?? null,
               name: x.name,
-              boolean: x.object?._boolean ?? false,
+              boolean: x._boolean,
             };
           });
 

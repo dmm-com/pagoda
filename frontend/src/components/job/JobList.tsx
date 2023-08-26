@@ -1,4 +1,3 @@
-import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
   Button,
@@ -22,6 +21,8 @@ import { jobOperationLabel, jobStatusLabel } from "../../services/JobUtil";
 import { AironeTableHeadCell } from "../common/AironeTableHeadCell";
 import { AironeTableHeadRow } from "../common/AironeTableHeadRow";
 import { Confirmable } from "../common/Confirmable";
+
+import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const StyledTableRow = styled(TableRow)(({}) => ({
   "&:nth-of-type(odd)": {

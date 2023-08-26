@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 
-import { UserRetrieveAuthenticateTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render } from "@testing-library/react";
 import React, { FC } from "react";
 import { useForm } from "react-hook-form";
@@ -11,6 +10,8 @@ import { TestWrapper } from "../../TestWrapper";
 
 import { UserForm } from "./UserForm";
 import { Schema } from "./userForm/UserFormSchema";
+
+import { UserRetrieveAuthenticateTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 test("should render a component with essential props", function () {
   Object.defineProperty(window, "django_context", {

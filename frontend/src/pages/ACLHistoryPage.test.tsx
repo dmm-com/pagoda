@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 
-import { ACLHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   render,
   waitForElementToBeRemoved,
@@ -12,6 +11,7 @@ import React from "react";
 
 import { ACLHistoryPage } from "./ACLHistoryPage";
 
+import { ACLHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 
 afterEach(() => {

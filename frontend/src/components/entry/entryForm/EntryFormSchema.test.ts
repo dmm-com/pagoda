@@ -2,9 +2,9 @@
  * @jest-environment jsdom
  */
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
-
 import { schema, Schema } from "./EntryFormSchema";
+
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 describe("schema", () => {
   const baseValue: Schema = {
@@ -50,7 +50,6 @@ describe("schema", () => {
           asObject: {
             id: 1,
             name: "object",
-            _boolean: false,
           },
         },
       },
@@ -67,7 +66,6 @@ describe("schema", () => {
             {
               id: 1,
               name: "object",
-              _boolean: false,
             },
           ],
         },
@@ -86,7 +84,6 @@ describe("schema", () => {
             object: {
               id: 1,
               name: "object",
-              _boolean: false,
             },
           },
         },
@@ -106,8 +103,8 @@ describe("schema", () => {
               object: {
                 id: 1,
                 name: "object",
-                _boolean: false,
               },
+              _boolean: false,
             },
           ],
         },

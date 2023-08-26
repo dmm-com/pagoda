@@ -2,12 +2,12 @@
  * @jest-environment jsdom
  */
 
-import { Role } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render } from "@testing-library/react";
 import React from "react";
 
 import { EditRolePage } from "./EditRolePage";
 
+import { Role } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 
 afterEach(() => {

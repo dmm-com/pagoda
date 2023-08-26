@@ -1,4 +1,3 @@
-import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Table,
   TableBody,
@@ -15,6 +14,7 @@ import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { AttributeField } from "./AttributeField";
 import { Schema } from "./EntityFormSchema";
 
+import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AttributeTypes } from "services/Constants";
 
 const HeaderTableRow = styled(TableRow)(({}) => ({

@@ -1,4 +1,3 @@
-import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import {
@@ -19,6 +18,7 @@ import React, { FC } from "react";
 import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
+import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AttributeValueField } from "components/entry/entryForm/AttributeValueField";
 import { Schema } from "components/entry/entryForm/EntryFormSchema";
 

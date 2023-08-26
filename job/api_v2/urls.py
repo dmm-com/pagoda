@@ -1,4 +1,3 @@
-from django.conf.urls import url
 from django.urls import path
 
 from . import views
@@ -17,5 +16,5 @@ urlpatterns = [
         "<int:pk>/rerun",
         views.JobRerunAPI.as_view(),
     ),
-    url(r"^jobs$", views.JobListAPI.as_view({"get": "list"})),
+    path("jobs", views.JobListAPI.as_view({"get": "list"})),
 ]

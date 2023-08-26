@@ -1,16 +1,17 @@
-import {
-  EntryAttributeTypeTypeEnum,
-  EntryAttributeValue,
-  EntryAttributeValueGroup,
-  EntryAttributeValueObject,
-  EntryAttributeValueRole,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Checkbox, Box, List, ListItem, Divider } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import * as React from "react";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 
+import {
+  EntryAttributeTypeTypeEnum,
+  EntryAttributeValue,
+  EntryAttributeValueGroup,
+  EntryAttributeValueNamedObject,
+  EntryAttributeValueObject,
+  EntryAttributeValueRole,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { groupsPath, rolePath, entryDetailsPath } from "Routes";
 
 const StyledBox = styled(Box)(() => ({
@@ -63,24 +64,21 @@ const ElemObject: FC<{
 };
 
 const ElemNamedObject: FC<{
-  attrValue: {
-    [key: string]: EntryAttributeValueObject | null;
-  };
+  attrValue: EntryAttributeValueNamedObject;
 }> = ({ attrValue }) => {
-  const key = Object.keys(attrValue)[0];
   return attrValue ? (
     <StyledBox>
-      <Box>{key}</Box>
+      <Box>{attrValue.name}</Box>
       <Divider orientation="vertical" flexItem />
-      {attrValue[key] ? (
+      {attrValue.object ? (
         <Box
           component={Link}
           to={entryDetailsPath(
-            attrValue[key]?.schema?.id ?? 0,
-            attrValue[key]?.id ?? 0
+            attrValue.object.schema?.id ?? 0,
+            attrValue.object.id ?? 0
           )}
         >
-          {attrValue[key]?.name}
+          {attrValue.object.name}
         </Box>
       ) : (
         <Box />
@@ -158,7 +156,9 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         <StyledList>
           <StyledListItem>
             <ElemNamedObject
-              attrValue={attrInfo.value.asNamedObject ?? { "": null }}
+              attrValue={
+                attrInfo.value.asNamedObject ?? { name: "", object: null }
+              }
             />
           </StyledListItem>
         </StyledList>
