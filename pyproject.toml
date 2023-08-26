@@ -14,3 +14,7 @@ extend-exclude = ["./*/migrations", "manage.py", "./node_modules"]
 
 [tool.ruff.per-file-ignores]
 "./airone/tests/test_elasticsearch.py" = ["E501"]
+
+[tool.coverage.run]
+parallel = true
+concurrency = ["multiprocessing"]
