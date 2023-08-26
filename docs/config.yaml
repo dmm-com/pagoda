@@ -1,5 +1,5 @@
 ---
-baseURL: https://dmm-com.github.io/airone/docs/
+baseURL: https://dmm-com.github.io/airone/
 title: AirOne
 theme: hugo-geekdoc
 canonifyURLs: true
