@@ -48,7 +48,6 @@ export interface JobApiV2RetrieveRequest {
  */
 export class JobApi extends runtime.BaseAPI {
   /**
-   *
    */
   async jobApiV2DestroyRaw(
     requestParameters: JobApiV2DestroyRequest,
@@ -96,7 +95,6 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async jobApiV2Destroy(
     requestParameters: JobApiV2DestroyRequest,
@@ -106,7 +104,6 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async jobApiV2JobsListRaw(
     requestParameters: JobApiV2JobsListRequest,
@@ -160,7 +157,6 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async jobApiV2JobsList(
     requestParameters: JobApiV2JobsListRequest = {},
@@ -174,7 +170,6 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async jobApiV2RerunPartialUpdateRaw(
     requestParameters: JobApiV2RerunPartialUpdateRequest,
@@ -222,7 +217,6 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async jobApiV2RerunPartialUpdate(
     requestParameters: JobApiV2RerunPartialUpdateRequest,
@@ -232,7 +226,6 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async jobApiV2RerunUpdateRaw(
     requestParameters: JobApiV2RerunUpdateRequest,
@@ -280,7 +273,6 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async jobApiV2RerunUpdate(
     requestParameters: JobApiV2RerunUpdateRequest,
@@ -290,7 +282,6 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async jobApiV2RetrieveRaw(
     requestParameters: JobApiV2RetrieveRequest,
@@ -340,7 +331,6 @@ export class JobApi extends runtime.BaseAPI {
   }
 
   /**
-   *
    */
   async jobApiV2Retrieve(
     requestParameters: JobApiV2RetrieveRequest,

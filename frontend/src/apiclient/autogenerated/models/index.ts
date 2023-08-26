@@ -34,6 +34,8 @@ export * from "./EntityUpdate";
 export * from "./EntryAttributeType";
 export * from "./EntryAttributeValue";
 export * from "./EntryAttributeValueGroup";
+export * from "./EntryAttributeValueNamedObject";
+export * from "./EntryAttributeValueNamedObjectBoolean";
 export * from "./EntryAttributeValueObject";
 export * from "./EntryAttributeValueRole";
 export * from "./EntryBase";

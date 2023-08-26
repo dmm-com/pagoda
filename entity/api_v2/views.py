@@ -33,12 +33,12 @@ from user.models import History, User
 
 
 @http_get
-def history(request, entity_id):
-    if not Entity.objects.filter(id=entity_id).exists():
+def history(request, pk):
+    if not Entity.objects.filter(id=pk).exists():
         return HttpResponse("Failed to get entity of specified id", status=400)
 
     # entity to be editted is given by url
-    entity = Entity.objects.get(id=entity_id)
+    entity = Entity.objects.get(id=pk)
     histories = History.objects.filter(target_obj=entity, is_detail=False).order_by("-time")
 
     return JsonResponse(
