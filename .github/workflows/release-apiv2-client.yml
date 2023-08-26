@@ -35,7 +35,7 @@ jobs:
           source virtualenv/bin/activate
           pip install pip --upgrade
           pip install poetry
-          poetry install
+          poetry install --no-ansi
       # NOTE why is it needed? if missing, spectacular fails because of "no module named custom_view.api_v2"
       - name: dummy custom_view
         run: |
