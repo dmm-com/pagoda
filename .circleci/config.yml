@@ -28,7 +28,7 @@ jobs:
           name: Wait for ElasticSearch
           command: dockerize -wait tcp://127.0.0.1:9200 -timeout 120s
       - restore_cache:
-          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}-20220708
+          key: py38-{{ checksum "poetry.lock" }}-{{ checksum "tox.ini" }}-20220708
       - run:
           name: Install tox tox-pyenv
           command: |
@@ -55,7 +55,7 @@ jobs:
             . virtualenv/bin/activate
             tox
       - save_cache:
-          key: py38-{{ checksum "requirements.txt" }}-{{ checksum "tox.ini" }}-20220708
+          key: py38-{{ checksum "poetry.lock" }}-{{ checksum "tox.ini" }}-20220708
           paths:
             - virtualenv
             - .tox/py38
@@ -66,34 +66,8 @@ jobs:
             chmod +x codecov
             ./codecov -t ${CODECOV_TOKEN}
 
-  staticchecks:
-    docker:
-      - image: cimg/python:3.8.10
-    environment:
-      TOXENV: "staticchecks"
-    steps:
-      - checkout
-      - run:
-          name: Install tox tox-pyenv
-          command: |
-            python3 -m venv virtualenv
-            . virtualenv/bin/activate
-            pip install --upgrade pip
-            pip install tox
-      - run:
-          name: Install additional dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y libldap2-dev libsasl2-dev libxmlsec1-dev
-      - run:
-          name: staticchecks
-          command: |
-            . virtualenv/bin/activate
-            tox
-
 workflows:
   version: 2
   build_and_test:
     jobs:
       - python38
-      - staticchecks

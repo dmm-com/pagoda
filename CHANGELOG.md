@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.59.0
+
+### Changed
+* Changed value type for named_entry attribute.
+  @hinashi
+
 ## v3.58.0
 
 ### Changed

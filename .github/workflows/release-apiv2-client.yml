@@ -6,9 +6,9 @@ on:
   pull_request_target:
     types: [labeled]
     paths:
-      - '**/api_v2/**/*.py'
-      - 'apiclient/typescript-fetch/package.json'
-      - '.github/workflows/release-apiv2-client.yml'
+      - "**/api_v2/**/*.py"
+      - "apiclient/typescript-fetch/package.json"
+      - ".github/workflows/release-apiv2-client.yml"
 
 jobs:
   release:
@@ -16,6 +16,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      pull-requests: write
     if: ${{ github.event.label.name == 'release-apiv2-client' }}
     steps:
       - uses: actions/checkout@v3
@@ -28,13 +29,14 @@ jobs:
           sudo apt-get install libldap2-dev libsasl2-dev libxmlsec1-dev libmysqlclient-dev pkg-config
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
       - name: venv
         run: |
           python3 -m venv virtualenv
           source virtualenv/bin/activate
           pip install pip --upgrade
-          pip install -r requirements.txt
+          pip install poetry
+          poetry install --no-ansi
       # NOTE why is it needed? if missing, spectacular fails because of "no module named custom_view.api_v2"
       - name: dummy custom_view
         run: |
@@ -44,7 +46,7 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
-          scope: '@dmm-com'
+          scope: "@dmm-com"
       - name: install dependencies
         run: npm ci
         env:
@@ -55,3 +57,20 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
         working-directory: ./apiclient/typescript-fetch
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "<!-- release-apiv2-client-notification -->"
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- release-apiv2-client-notification -->
+            :zap: :zap: :zap: Now the latest apiv2 client npm package is available at:
+            https://github.com/dmm-com/airone/pkgs/npm/airone-apiclient-typescript-fetch/versions
