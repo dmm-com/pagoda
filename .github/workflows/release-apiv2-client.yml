@@ -46,10 +46,12 @@ jobs:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
           scope: '@dmm-com'
+      - name: install dependencies
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: generate client
-        run: |
-          npm ci
-          npm run generate:client:new
+        run: npm run generate:client:new
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
