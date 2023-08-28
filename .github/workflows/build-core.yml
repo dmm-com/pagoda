@@ -1,0 +1,32 @@
+name: Build core (Python / Django)
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - '**/*.py'
+      - 'templates/**/*.html'
+      - '.github/workflows/build-core.yml'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+      - name: Install dependencies
+        run: |
+          python3 -m venv virtualenv
+          . virtualenv/bin/activate
+          pip install --upgrade pip
+          pip install tox
+      - name: staticchecks
+        env:
+          TOXENV: "staticchecks"
+        run: |
+          . virtualenv/bin/activate
+          tox

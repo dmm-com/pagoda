@@ -66,34 +66,8 @@ jobs:
             chmod +x codecov
             ./codecov -t ${CODECOV_TOKEN}
 
-  staticchecks:
-    docker:
-      - image: cimg/python:3.8.10
-    environment:
-      TOXENV: "staticchecks"
-    steps:
-      - checkout
-      - run:
-          name: Install tox tox-pyenv
-          command: |
-            python3 -m venv virtualenv
-            . virtualenv/bin/activate
-            pip install --upgrade pip
-            pip install tox
-      - run:
-          name: Install additional dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y libldap2-dev libsasl2-dev libxmlsec1-dev
-      - run:
-          name: staticchecks
-          command: |
-            . virtualenv/bin/activate
-            tox
-
 workflows:
   version: 2
   build_and_test:
     jobs:
       - python38
-      - staticchecks
