@@ -1,3 +1,7 @@
+import {
+  UserRetrieve,
+  UserRetrieveAuthenticateTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import {
   Box,
@@ -21,10 +25,6 @@ import { Control, Controller } from "react-hook-form";
 
 import { Schema } from "./userForm/UserFormSchema";
 
-import {
-  UserRetrieve,
-  UserRetrieveAuthenticateTypeEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { DjangoContext } from "services/DjangoContext";
 
 const StyledTableRow = styled(TableRow)(() => ({

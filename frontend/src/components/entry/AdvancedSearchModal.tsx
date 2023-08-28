@@ -1,3 +1,4 @@
+import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Modal,
   Box,
@@ -12,8 +13,6 @@ import React, { Dispatch, FC, useState, SetStateAction } from "react";
 import { useHistory } from "react-router-dom";
 
 import { formatAdvancedSearchParams } from "../../services/entry/AdvancedSearch";
-
-import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const StyledModal = styled(Modal)(({}) => ({
   display: "flex",

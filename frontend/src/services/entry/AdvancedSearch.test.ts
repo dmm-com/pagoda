@@ -1,9 +1,9 @@
+import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+
 import {
   extractAdvancedSearchParams,
   formatAdvancedSearchParams,
 } from "./AdvancedSearch";
-
-import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 describe("formatAdvancedSearchParams", () => {
   const baseParams = (() => {

@@ -2,10 +2,10 @@
  * @jest-environment jsdom
  */
 
+import { EntryRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render } from "@testing-library/react";
 import * as React from "react";
 
-import { EntryRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 import { CopyForm } from "components/entry/CopyForm";
 

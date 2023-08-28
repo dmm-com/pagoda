@@ -1,3 +1,4 @@
+import { EntityList as EntityListInterface } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
@@ -17,7 +18,6 @@ import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { EntityList as EntityListInterface } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { entityEntriesPath, newEntityPath } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
 import { EntityControlMenu } from "components/entity/EntityControlMenu";
