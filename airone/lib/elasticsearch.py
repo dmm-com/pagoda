@@ -895,6 +895,7 @@ def execute_query(query: Dict[str, str], size: int = 0) -> Dict[str, Any]:
         "body": query,
         "ignore": [404],
         "sort": ["name.keyword:asc"],
+        "track_total_hits": True,
     }
     if size and isinstance(size, int):
         kwargs["size"] = size
