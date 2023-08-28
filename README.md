@@ -298,6 +298,29 @@ user@hostname:~/airone$ cp -pi ./frontend/src/App.tsx ./frontend/src/customview/
 user@hostname:~/airone$ npm run build:custom
 ```
 
+### API V2 client
+
+Prepare to install API client npm package published on GitHub Packages.
+`TOKEN` is a your GitHub PAT. Issue your PAT with checking [this doc](https://docs.github.com/ja/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#github-packages-%E3%81%B8%E3%81%AE%E8%AA%8D%E8%A8%BC%E3%82%92%E8%A1%8C%E3%81%86).
+Then, you just perform `npm install` as usual.
+
+```
+$ cat > .npmrc
+//npm.pkg.github.com/:_authToken=TOKEN
+```
+
+You can refer your local API client code before publishing it to GitHub Packages with following command.
+
+```shell
+# generate the latest API client code on your local env
+$ npm run generate:client
+
+# refer the latest code temporarily
+$ npm run link:client
+```
+
+If you modify something in API client code, you need to publish it with the package release GitHub Actions workflow. It will be triggered by labeling `release-apiv2-client` to the pull request by repository owners.
+
 ## Auto-format
 
 ```

@@ -6,9 +6,9 @@ on:
   pull_request_target:
     types: [labeled]
     paths:
-      - '**/api_v2/**/*.py'
-      - 'apiclient/typescript-fetch/package.json'
-      - '.github/workflows/release-apiv2-client.yml'
+      - "**/api_v2/**/*.py"
+      - "apiclient/typescript-fetch/package.json"
+      - ".github/workflows/release-apiv2-client.yml"
 
 jobs:
   release:
@@ -29,7 +29,7 @@ jobs:
           sudo apt-get install libldap2-dev libsasl2-dev libxmlsec1-dev libmysqlclient-dev pkg-config
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
       - name: venv
         run: |
           python3 -m venv virtualenv
@@ -46,13 +46,13 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
-          scope: '@dmm-com'
+          scope: "@dmm-com"
       - name: install dependencies
         run: npm ci
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: generate client
-        run: npm run generate:client:new
+        run: npm run generate:client
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -62,7 +62,7 @@ jobs:
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
+          comment-author: "github-actions[bot]"
           body-includes: "<!-- release-apiv2-client-notification -->"
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v3
