@@ -1,0 +1,10 @@
+black
+coverage
+mypy
+requests-html==0.10.0
+types-six
+types-requests
+types-PyYAML
+types-pytz
+types-mock
+ruff

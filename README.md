@@ -31,10 +31,9 @@ user@hostname:~$ cd airone
 user@hostname:~/airone$ python3 -m venv virtualenv
 user@hostname:~/airone$ source virtualenv/bin/activate
 (virtualenv) user@hostname:~/airone$ pip install pip --upgrade
-(virtualenv) user@hostname:~/airone$ pip install poetry
-(virtualenv) user@hostname:~/airone$ poetry install --only main
-# or, during development, install all
-(virtualenv) user@hostname:~/airone$ poetry install
+(virtualenv) user@hostname:~/airone$ pip install -r requirements.txt
+# or, during development 
+(virtualenv) user@hostname:~/airone$ pip install -r requirements-dev.txt
 ```
 
 ## Setting-up Backend with docker-compose
