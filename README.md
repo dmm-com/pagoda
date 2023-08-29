@@ -24,6 +24,11 @@ You have to install libraries.
 user@hostname:~$ sudo apt-get install libldap2-dev  libsasl2-dev libxmlsec1-dev libmysqlclient-dev pkg-config
 ```
 
+(for macOS)
+```
+user@hostname:~$ brew install libxmlsec1 mysql-client pkg-config mysql-connector-python
+```
+
 Then, you can install libraries on which AieOne depends by following after cloning this repository. But we recommand you to setup airone on the separated environment using virtualenv not to pollute system-wide python environment.
 ```
 user@hostname:~$ git clone https://github.com/dmm-com/airone.git
@@ -267,7 +272,7 @@ Install nvm command.
 
 Install npm packages.
 ```
-user@hostname:~$ nvm install 17.2
+user@hostname:~$ nvm install 18.12.0
 user@hostname:~$ cd airone
 user@hostname:~/airone$ npm install
 ```
