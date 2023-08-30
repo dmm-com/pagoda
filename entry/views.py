@@ -197,7 +197,9 @@ def create(request, entity_id):
         {
             "name": "entry_name",
             "type": str,
-            "checker": lambda x: (x["entry_name"] and len(x["entry_name"].strip()) > 0),
+            "checker": lambda x: (
+                x["entry_name"] and len(x["entry_name"].strip()) > 0 and "\t" not in x["entry_name"]
+            ),
         },
         {
             "name": "attrs",
@@ -288,7 +290,9 @@ def edit(request, entry_id):
         {
             "name": "entry_name",
             "type": str,
-            "checker": lambda x: (x["entry_name"] and len(x["entry_name"].strip()) > 0),
+            "checker": lambda x: (
+                x["entry_name"] and len(x["entry_name"].strip()) > 0 and "\t" not in x["entry_name"]
+            ),
         },
         {
             "name": "attrs",
