@@ -222,6 +222,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         initialAttrNames={attrInfo.map(
           (e: AdvancedSearchResultAttrInfo) => e.name
         )}
+        attrInfos={attrInfo}
       />
     </Box>
   );

@@ -1,4 +1,7 @@
-import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  AdvancedSearchResultAttrInfo,
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Modal,
   Box,
@@ -35,6 +38,7 @@ interface Props {
   setOpenModal: Dispatch<SetStateAction<boolean>>;
   attrNames: string[];
   initialAttrNames: string[];
+  attrInfos: AdvancedSearchResultAttrInfo[];
 }
 
 export const AdvancedSearchModal: FC<Props> = ({
@@ -42,6 +46,7 @@ export const AdvancedSearchModal: FC<Props> = ({
   setOpenModal,
   attrNames,
   initialAttrNames,
+  attrInfos,
 }) => {
   const history = useHistory();
   const params = new URLSearchParams(location.search);
@@ -54,13 +59,18 @@ export const AdvancedSearchModal: FC<Props> = ({
   const handleUpdatePageURL = () => {
     const params = formatAdvancedSearchParams({
       attrFilter: Object.fromEntries(
-        selectedAttrNames.map((attrName) => [
-          attrName,
-          {
-            filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
-            keyword: "",
-          },
-        ])
+        selectedAttrNames.map((attrName) => {
+          const attrInfo = attrInfos.find((info) => info.name === attrName);
+          return [
+            attrName,
+            {
+              filterKey:
+                attrInfo?.filterKey ??
+                AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+              keyword: attrInfo?.keyword ?? "",
+            },
+          ];
+        })
       ),
       hasReferral,
       baseParams: new URLSearchParams(location.search),
