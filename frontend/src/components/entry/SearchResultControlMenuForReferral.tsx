@@ -69,6 +69,12 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
   const [filterKey, setFilterKey] =
     useState<AdvancedSearchResultAttrInfoFilterKeyEnum>(getDefaultFilterKey());
   const handleFilter = (key: AdvancedSearchResultAttrInfoFilterKeyEnum) => {
+    // If the same filter item is selected, the filter is cleared.
+    if (filterKey === key) {
+      _handleClear();
+      return;
+    }
+
     switch (key) {
       case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
         setFilterKey(AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY);
