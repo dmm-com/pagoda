@@ -33,7 +33,7 @@ export const GroupAttributeValueField: FC<Props> = ({
 }) => {
   const groups = useAsync(async () => {
     const _groups = await aironeApiClientV2.getGroups();
-    return _groups.map((g) => ({ id: g.id, name: g.name }));
+    return _groups.results?.map((g) => ({ id: g.id, name: g.name }));
   }, []);
 
   const handleChange = (

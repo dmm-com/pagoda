@@ -1,6 +1,9 @@
 from rest_framework import generics, serializers, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import filters, generics, status, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
 
 from airone.lib.drf import YAMLParser, YAMLRenderer
 from group.api_v2.serializers import (
@@ -29,6 +32,10 @@ class UserPermission(BasePermission):
 class GroupAPI(viewsets.ModelViewSet):
     queryset = Group.objects.filter(is_active=True)
     permission_classes = [IsAuthenticated & UserPermission]
+    pagination_class = PageNumberPagination
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    ordering = ["name"]
+    search_fields = ["name"]
 
     def get_serializer_class(self):
         serializer = {

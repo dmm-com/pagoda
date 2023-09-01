@@ -43,6 +43,7 @@ import {
   ACLHistory,
   ACLObjtypeEnum,
   ACLSetting,
+  PaginatedGroupList,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import Cookies from "js-cookie";
 import fileDownload from "js-file-download";
@@ -460,8 +461,12 @@ class AironeApiClientV2 {
     );
   }
 
-  async getGroups(): Promise<Group[]> {
-    return await this.group.groupApiV2GroupsList();
+  async getGroups(page = 1, keyword?: string): Promise<PaginatedGroupList> {
+    return await this.group.groupApiV2GroupsList({
+      page: page,
+      search: keyword,
+      ordering: "name",
+    });
   }
 
   async getGroup(id: number): Promise<Group> {
