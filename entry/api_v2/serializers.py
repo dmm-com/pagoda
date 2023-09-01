@@ -11,6 +11,7 @@ from airone.lib.acl import ACLType
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
     IncorrectTypeError,
+    InvalidValueError,
     ObjectNotExistsError,
     RequiredParameterError,
 )
@@ -192,6 +193,8 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             # In update case, there is no problem with the same name
             if not (self.instance and self.instance.name == name):
                 raise DuplicatedObjectExistsError("specified name(%s) already exists" % name)
+        if "\t" in name:
+            raise InvalidValueError("Names containing tab characters cannot be specified.")
         return name
 
     def _validate(self, schema: Entity, attrs: List[Dict[str, Any]]):
