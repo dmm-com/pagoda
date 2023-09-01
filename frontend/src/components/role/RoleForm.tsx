@@ -36,14 +36,22 @@ interface Props {
 export const RoleForm: FC<Props> = ({ control, setValue }) => {
   const [userKeyword, setUserKeyword] = useState("");
   const [adminUserKeyword, setAdminUserKeyword] = useState("");
+  const [groupUserKeyword, setGroupUserKeyword] = useState("");
+  const [adminGroupUserKeyword, setGroupAdminUserKeyword] = useState("");
 
   // TODO implement pagination and incremental search
-  const groups = useAsync(async () => {
-    const _groups = await aironeApiClientV2.getGroups();
-    return _groups.map(
+  const adminGroups = useAsync(async () => {
+    const _groups = await aironeApiClientV2.getGroups(1, adminGroupUserKeyword);
+    return _groups.results?.map(
       (group): RoleGroup => ({ id: group.id, name: group.name })
     );
-  });
+  }, [adminGroupUserKeyword]);
+  const groups = useAsync(async () => {
+    const _groups = await aironeApiClientV2.getGroups(1, groupUserKeyword);
+    return _groups.results?.map(
+      (group): RoleGroup => ({ id: group.id, name: group.name })
+    );
+  }, [groupUserKeyword]);
   const adminUsers = useAsync(async () => {
     const _users = await aironeApiClientV2.getUsers(1, adminUserKeyword);
     return _users.results?.map(
@@ -142,11 +150,12 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                     render={({ field, fieldState: { error } }) => (
                       <Autocomplete
                         {...field}
-                        options={groups.value ?? []}
+                        options={adminGroups.value ?? []}
                         getOptionLabel={(option: RoleGroup) => option.name}
                         isOptionEqualToValue={(option, value) =>
                           option.id === value.id
                         }
+                        inputValue={adminGroupUserKeyword}
                         renderInput={(params) => (
                           <Box>
                             <TextField {...params} variant="outlined" />
@@ -194,6 +203,9 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                             shouldValidate: true,
                           })
                         }
+                        onInputChange={(_e, value: string) =>
+                          setGroupAdminUserKeyword(value)
+                        }
                         multiple
                       />
                     )}
@@ -215,6 +227,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                         isOptionEqualToValue={(option, value) =>
                           option.id === value.id
                         }
+                        inputValue={groupUserKeyword}
                         renderInput={(params) => (
                           <Box>
                             <TextField {...params} variant="outlined" />
@@ -261,6 +274,9 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                             shouldDirty: true,
                             shouldValidate: true,
                           })
+                        }
+                        onInputChange={(_e, value: string) =>
+                          setGroupUserKeyword(value)
                         }
                         multiple
                       />
