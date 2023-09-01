@@ -1,9 +1,8 @@
-from rest_framework import generics, serializers, status, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics, serializers, status, viewsets
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
-from rest_framework import filters, generics, status, viewsets
-from django_filters.rest_framework import DjangoFilterBackend
 
 from airone.lib.drf import YAMLParser, YAMLRenderer
 from group.api_v2.serializers import (
