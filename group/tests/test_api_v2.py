@@ -22,10 +22,10 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/group/api/v2/groups")
         self.assertEqual(resp.status_code, 200)
         body = resp.json()
-        self.assertEqual(len(body['results']), 1)
-        self.assertEqual(body['results'][0]["id"], group.id)
-        self.assertEqual(len(body['results'][0]["members"]), 1)
-        self.assertEqual(body['results'][0]["members"][0]["id"], user.id)
+        self.assertEqual(len(body["results"]), 1)
+        self.assertEqual(body["results"][0]["id"], group.id)
+        self.assertEqual(len(body["results"][0]["members"]), 1)
+        self.assertEqual(body["results"][0]["members"][0]["id"], user.id)
 
     def test_retrieve(self):
         self.admin_login()
