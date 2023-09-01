@@ -603,6 +603,18 @@ class ViewTest(AironeViewTest):
         self.assertEqual(Attribute.objects.count(), 0)
         self.assertEqual(AttributeValue.objects.count(), 0)
 
+        params = {
+            "entry_name": "hoge\thoge",
+            "attrs": [],
+        }
+        resp = self.client.post(
+            reverse("entry:do_create", args=[self._entity.id]),
+            json.dumps(params),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 400)
+
     @patch(
         "entry.tasks.create_entry_attrs.delay",
         Mock(side_effect=tasks.create_entry_attrs),
@@ -733,6 +745,18 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(AttributeValue.objects.count(), 0)
+
+        params = {
+            "entry_name": "hoge\thoge",
+            "attrs": [],
+        }
+        resp = self.client.post(
+            reverse("entry:do_create", args=[self._entity.id]),
+            json.dumps(params),
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 400)
 
     def test_post_edit_creating_entry(self):
         user = self.admin_login()
