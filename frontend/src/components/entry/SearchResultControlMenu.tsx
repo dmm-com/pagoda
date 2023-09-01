@@ -45,6 +45,18 @@ export const SearchResultControlMenu: FC<Props> = ({
   handleSelectFilterConditions,
 }) => {
   const handleClick = (key: AdvancedSearchResultAttrInfoFilterKeyEnum) => {
+    // If the selected filter is the same, remove the filter.
+    if (attrsFilter[attrName].filterKey === key) {
+      handleSelectFilterConditions({
+        ...attrsFilter,
+        [attrName]: {
+          ...attrsFilter[attrName],
+          filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+        },
+      });
+      return;
+    }
+
     setAttrsFilter({
       ...attrsFilter,
       [attrName]: { ...attrsFilter[attrName], filterKey: key },
