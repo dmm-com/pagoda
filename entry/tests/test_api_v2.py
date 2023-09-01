@@ -912,6 +912,24 @@ class ViewTest(AironeViewTest):
             {"name": [{"code": "AE-220000", "message": "specified name(hoge) already exists"}]},
         )
 
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id,
+            json.dumps({"name": "hoge\thoge"}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "name": [
+                    {
+                        "code": "AE-250000",
+                        "message": "Names containing tab characters cannot be specified.",
+                    }
+                ]
+            },
+        )
+
         hoge_entry.delete()
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps({"name": "hoge"}), "application/json"
