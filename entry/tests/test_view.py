@@ -751,7 +751,7 @@ class ViewTest(AironeViewTest):
             "attrs": [],
         }
         resp = self.client.post(
-            reverse("entry:do_create", args=[self._entity.id]),
+            reverse("entry:do_edit", args=[entry.id]),
             json.dumps(params),
             "application/json",
         )
