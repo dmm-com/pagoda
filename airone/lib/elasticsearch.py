@@ -877,11 +877,12 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> Dict[str, Dict]:
     return {"nested": {"path": "attr", "query": {"bool": {"filter": cond_attr}}}}
 
 
-def execute_query(query: Dict[str, str], size: int = 0) -> Dict[str, Any]:
+def execute_query(query: Dict[str, str], size: Optional[int] = None) -> Dict[str, Any]:
     """Run a search query.
 
     Args:
         query (dict[str, str]): Search query
+        size (Optional[int]): Size of search query results
 
     Raises:
         Exception: If query execution fails, output error details.
@@ -891,14 +892,12 @@ def execute_query(query: Dict[str, str], size: int = 0) -> Dict[str, Any]:
 
     """
     kwargs = {
-        "size": settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
+        "size": size if size else settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
         "body": query,
         "ignore": [404],
         "sort": ["name.keyword:asc"],
         "track_total_hits": True,
     }
-    if size and isinstance(size, int):
-        kwargs["size"] = size
 
     try:
         res = ESS().search(**kwargs)

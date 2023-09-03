@@ -2112,6 +2112,7 @@ class Entry(ACLBase):
             )
 
             # sending request to elasticsearch with making query
+            # resp = execute_query(query, limit + offset)
             resp = execute_query(query)
 
             if "status" in resp and resp["status"] == 404:
@@ -2150,8 +2151,8 @@ class Entry(ACLBase):
         hint_attr_value,
         hint_entity_name=None,
         exclude_entity_names=[],
-        limit=CONFIG.MAX_LIST_ENTRIES,
-        offset=0,
+        limit: int = CONFIG.MAX_LIST_ENTRIES,
+        offset: int = 0,
     ):
         """Method called from simple search.
         Returns the count and values of entries with hint_attr_value.
