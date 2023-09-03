@@ -1,8 +1,7 @@
+import { Role } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
 import { schemaForType } from "../../../services/ZodSchemaUtil";
-
-import { Role } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 export const schema = schemaForType<Role>()(
   z

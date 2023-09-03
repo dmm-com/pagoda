@@ -2,13 +2,13 @@
  * @jest-environment jsdom
  */
 
-import { shallow } from "enzyme";
-import React from "react";
-
 import {
   EntryAttributeTypeTypeEnum,
   EntryAttributeValue,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { shallow } from "enzyme";
+import React from "react";
+
 import { AttributeValue } from "components/entry/AttributeValue";
 
 beforeAll(() => {

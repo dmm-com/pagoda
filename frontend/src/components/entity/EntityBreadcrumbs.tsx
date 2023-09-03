@@ -1,10 +1,10 @@
+import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import LockIcon from "@mui/icons-material/Lock";
 import { Box, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { topPath, entitiesPath, entityEntriesPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 

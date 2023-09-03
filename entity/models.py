@@ -25,7 +25,7 @@ class EntityAttr(ACLBase):
     # if this parameter set.
     is_delete_in_chain = models.BooleanField(default=False)
 
-    note = models.CharField(max_length=200, blank=True, default='')
+    note = models.CharField(max_length=200, blank=True, default="")
 
     history = HistoricalRecords(m2m_fields=[referral], excluded_fields=["status", "updated_time"])
 

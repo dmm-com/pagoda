@@ -1,3 +1,4 @@
+import { EntityHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
   Pagination,
@@ -12,8 +13,6 @@ import {
 import React, { FC } from "react";
 
 import { formatDate } from "../../services/DateUtil";
-
-import { EntityHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const Operations = {
   ADD: 1 << 0,

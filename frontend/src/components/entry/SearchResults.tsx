@@ -1,3 +1,7 @@
+import {
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+  AdvancedSearchResultValue,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import {
@@ -24,10 +28,6 @@ import { useHistory, useLocation, Link } from "react-router-dom";
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
 
-import {
-  AdvancedSearchResultAttrInfoFilterKeyEnum,
-  AdvancedSearchResultValue,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { entryDetailsPath } from "Routes";
 import { AttributeValue } from "components/entry/AttributeValue";
 import { SearchResultControlMenu } from "components/entry/SearchResultControlMenu";
