@@ -877,12 +877,15 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> Dict[str, Dict]:
     return {"nested": {"path": "attr", "query": {"bool": {"filter": cond_attr}}}}
 
 
-def execute_query(query: Dict[str, str], size: Optional[int] = None) -> Dict[str, Any]:
+def execute_query(
+    query: Dict[str, str], size: Optional[int] = None, offset: Optional[int] = None
+) -> Dict[str, Any]:
     """Run a search query.
 
     Args:
         query (dict[str, str]): Search query
         size (Optional[int]): Size of search query results
+        offset (Optional[int]): Offset of search query results
 
     Raises:
         Exception: If query execution fails, output error details.
@@ -893,6 +896,7 @@ def execute_query(query: Dict[str, str], size: Optional[int] = None) -> Dict[str
     """
     kwargs = {
         "size": size if size else settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
+        "from_": offset,
         "body": query,
         "ignore": [404],
         "sort": ["name.keyword:asc"],
@@ -913,7 +917,6 @@ def make_search_results(
     hint_attrs: List[AttrHint],
     hint_referral: Optional[str],
     limit: int,
-    offset: int = 0,
 ) -> AdvancedSearchResults:
     """Acquires and returns the attribute values held by each search result
 
@@ -942,7 +945,6 @@ def make_search_results(
         res (`str`, optional): Search results for Elasticsearch
         hint_attrs (list(AttrHint)):  A list of search strings and attribute sets
         limit (int): Maximum number of search results to return
-        offset (int): The number of offset to get a part of a large amount of search results
 
     Returns:
        AdvancedSearchResults: A set of attributes and attribute values associated with the entry
@@ -962,7 +964,7 @@ def make_search_results(
     hit_entries = Entry.objects.filter(id__in=hit_entry_ids, is_active=True)
 
     hit_infos: Dict = {}
-    for entry in hit_entries[offset : max(0, offset + limit)]:
+    for entry in hit_entries[:limit]:
         hit_infos[entry] = [x["_source"] for x in res["hits"]["hits"] if int(x["_id"]) == entry.id][
             0
         ]

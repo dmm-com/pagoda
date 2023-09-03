@@ -2112,8 +2112,7 @@ class Entry(ACLBase):
             )
 
             # sending request to elasticsearch with making query
-            # resp = execute_query(query, limit + offset)
-            resp = execute_query(query)
+            resp = execute_query(query, limit, offset)
 
             if "status" in resp and resp["status"] == 404:
                 continue
@@ -2136,7 +2135,11 @@ class Entry(ACLBase):
 
             # retrieve data from database on the basis of the result of elasticsearch
             search_result: AdvancedSearchResults = make_search_results(
-                user, resp, hint_attrs, hint_referral, limit, offset
+                user,
+                resp,
+                hint_attrs,
+                hint_referral,
+                limit,
             )
             results["ret_count"] += search_result["ret_count"]
             results["ret_values"].extend(search_result["ret_values"])
