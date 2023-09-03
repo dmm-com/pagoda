@@ -1,4 +1,3 @@
-import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import Check from "@mui/icons-material/Check";
 import {
   Box,
@@ -14,6 +13,8 @@ import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
 
 import { AttrsFilter } from "../../services/entry/AdvancedSearch";
+
+import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const StyledTextField = styled(TextField)({
   margin: "8px",

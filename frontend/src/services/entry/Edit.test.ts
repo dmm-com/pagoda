@@ -2,10 +2,9 @@
  * @jest-environment jsdom
  */
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
-
 import { formalizeEntryInfo, convertAttrsFormatCtoS } from "./Edit";
 
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   EditableEntryAttrs,
   EditableEntryAttrValue,
@@ -37,6 +36,7 @@ test("formalizeEntryInfo should return expect value", () => {
         isDeleteInChain: true,
         isWritable: true,
         referral: [],
+        note: "",
       },
       {
         id: 3,
@@ -47,6 +47,7 @@ test("formalizeEntryInfo should return expect value", () => {
         isDeleteInChain: true,
         isWritable: true,
         referral: [],
+        note: "",
       },
       {
         id: 4,
@@ -57,6 +58,7 @@ test("formalizeEntryInfo should return expect value", () => {
         isDeleteInChain: true,
         isWritable: true,
         referral: [],
+        note: "",
       },
     ],
     webhooks: [],

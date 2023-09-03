@@ -1,4 +1,3 @@
-import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 import PersonIcon from "@mui/icons-material/Person";
 import TaskIcon from "@mui/icons-material/Task";
 import {
@@ -35,6 +34,7 @@ import {
 
 import { SearchBox } from "./common/SearchBox";
 
+import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   jobsPath,
   userPath,

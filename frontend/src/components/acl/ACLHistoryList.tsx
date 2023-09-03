@@ -1,4 +1,3 @@
-import { ACLHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
   Table,
@@ -11,6 +10,7 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
+import { ACLHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AironeTableHeadCell } from "components/common/AironeTableHeadCell";
 import { AironeTableHeadRow } from "components/common/AironeTableHeadRow";
 import { ACLType, ACLTypeLabels } from "services/Constants";

@@ -81,6 +81,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             "is_summarized",
             "is_delete_in_chain",
             "created_user",
+            "note",
         ]
 
     def validate_type(self, type):
@@ -114,6 +115,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             "is_summarized",
             "is_delete_in_chain",
             "is_deleted",
+            "note",
         ]
         extra_kwargs = {"name": {"required": False}, "type": {"required": False}}
 
@@ -403,6 +405,7 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
     is_delete_in_chain = serializers.BooleanField()
     is_writable = serializers.BooleanField()
     referral = serializers.ListField(child=serializers.DictField())
+    note = serializers.CharField()
 
     class EntityDetailAttribute(TypedDict):
         id: int
@@ -413,6 +416,7 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
         is_delete_in_chain: bool
         is_writable: bool
         referral: List[Dict[str, Any]]
+        note: str
 
 
 class EntityDetailSerializer(EntityListSerializer):
@@ -443,6 +447,7 @@ class EntityDetailSerializer(EntityListSerializer):
                     }
                     for r in x.referral.all()
                 ],
+                "note": x.note,
             }
             for x in obj.attrs.filter(is_active=True).order_by("index")
         ]

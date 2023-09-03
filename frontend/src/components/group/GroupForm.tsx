@@ -1,4 +1,3 @@
-import { GroupMember } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Autocomplete,
   Box,
@@ -20,6 +19,7 @@ import { filterAncestorsAndOthers } from "../../services/group/Edit";
 import { GroupTreeRoot } from "./GroupTreeRoot";
 import { Schema } from "./groupForm/GroupFormSchema";
 
+import { GroupMember } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Loading } from "components/common/Loading";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 

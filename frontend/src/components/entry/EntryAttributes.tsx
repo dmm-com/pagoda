@@ -1,4 +1,3 @@
-import { EntryAttributeType } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Table,
   TableContainer,
@@ -12,6 +11,7 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
+import { EntryAttributeType } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AttributeValue } from "components/entry/AttributeValue";
 
 interface Props {

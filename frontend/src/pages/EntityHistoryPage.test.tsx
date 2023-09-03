@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 
-import { PaginatedEntityHistoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   render,
   waitForElementToBeRemoved,
@@ -10,6 +9,7 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
+import { PaginatedEntityHistoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 import { EntityHistoryPage } from "pages/EntityHistoryPage";
 

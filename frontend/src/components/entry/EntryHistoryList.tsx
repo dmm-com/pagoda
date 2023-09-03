@@ -1,4 +1,3 @@
-import { EntryHistoryAttributeValue } from "@dmm-com/airone-apiclient-typescript-fetch";
 import RestoreIcon from "@mui/icons-material/Restore";
 import {
   Box,
@@ -19,6 +18,7 @@ import { useHistory } from "react-router-dom";
 
 import { AttributeValue } from "./AttributeValue";
 
+import { EntryHistoryAttributeValue } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { showEntryHistoryPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";

@@ -1,4 +1,3 @@
-import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Table,
   TableBody,
@@ -15,6 +14,7 @@ import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { AttributeField } from "./AttributeField";
 import { Schema } from "./EntityFormSchema";
 
+import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AttributeTypes } from "services/Constants";
 
 const HeaderTableRow = styled(TableRow)(({}) => ({
@@ -77,6 +77,7 @@ export const AttributesFields: FC<Props> = ({
       isSummarized: false,
       isWritable: true,
       referral: [],
+      note: "",
     });
   };
 
@@ -100,6 +101,7 @@ export const AttributesFields: FC<Props> = ({
         <TableHead>
           <HeaderTableRow>
             <HeaderTableCell width="300px">属性名</HeaderTableCell>
+            <HeaderTableCell width="100px">属性説明</HeaderTableCell>
             <HeaderTableCell width="300px">型</HeaderTableCell>
             <HeaderTableCell width="100px">必須</HeaderTableCell>
             <HeaderTableCell width="100px">関連削除</HeaderTableCell>

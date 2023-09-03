@@ -1,4 +1,3 @@
-import { UserList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   Box,
@@ -14,6 +13,7 @@ import { useHistory } from "react-router-dom";
 
 import { UserPasswordFormModal } from "./UserPasswordFormModal";
 
+import { UserList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { topPath } from "Routes";
 import { usersPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";

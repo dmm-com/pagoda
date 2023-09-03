@@ -39,6 +39,7 @@ describe("schema", () => {
             name: "referred1",
           },
         ],
+        note: "note",
       },
     ],
   };

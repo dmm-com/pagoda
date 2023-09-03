@@ -1,8 +1,8 @@
-import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 import GroupIcon from "@mui/icons-material/Group";
 import {
   Box,
@@ -16,13 +16,15 @@ import {
   Autocomplete,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useMemo } from "react";
+import React, { FC, useMemo, useState } from "react";
 import { Control, Controller, useWatch } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { Link } from "react-router-dom";
 
+import { AttributeNoteModal } from "./AttributeNoteModal";
 import { Schema } from "./EntityFormSchema";
 
+import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { aclPath } from "Routes";
 import { AttributeTypes } from "services/Constants";
 
@@ -66,6 +68,8 @@ export const AttributeField: FC<Props> = ({
     name: `attrs.${index ?? -1}.isWritable`,
   });
 
+  const [openModal, setOpenModal] = useState(false);
+
   const attributeTypeMenuItems = useMemo(() => {
     return Object.keys(AttributeTypes).map((typename, index) => (
       <MenuItem key={index} value={AttributeTypes[typename].type}>
@@ -75,6 +79,8 @@ export const AttributeField: FC<Props> = ({
   }, []);
 
   const isObjectLikeType = ((attrType ?? 0) & AttributeTypes.object.type) > 0;
+
+  const handleCloseModal = () => setOpenModal(false);
 
   return index != null ? (
     <>
@@ -97,6 +103,12 @@ export const AttributeField: FC<Props> = ({
             />
           )}
         />
+      </TableCell>
+
+      <TableCell>
+        <IconButton onClick={() => setOpenModal(true)}>
+          <EditNoteIcon />
+        </IconButton>
       </TableCell>
 
       <TableCell>
@@ -232,9 +244,18 @@ export const AttributeField: FC<Props> = ({
           disabled={attrId == null || !isWritable}
         />
       </TableCell>
+
+      {openModal && (
+        <AttributeNoteModal
+          index={index}
+          handleCloseModal={handleCloseModal}
+          control={control}
+        />
+      )}
     </>
   ) : (
     <>
+      <TableCell />
       <TableCell />
       <TableCell />
       <TableCell />

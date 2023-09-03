@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 
-import { AdvancedSearchResultValue } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   render,
   waitForElementToBeRemoved,
@@ -10,6 +9,7 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
+import { AdvancedSearchResultValue } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";
 

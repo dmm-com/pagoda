@@ -6,7 +6,6 @@ import {
   EntryAttributeValueObject,
   EntryRetrieve,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-
 import {
   EditableEntryAttrValue,
   EditableEntryAttrs,
