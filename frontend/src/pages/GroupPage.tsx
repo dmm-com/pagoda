@@ -44,10 +44,11 @@ export const GroupPage: FC = () => {
     groupId: number;
     el: HTMLButtonElement;
   } | null>();
+  const [toggle, setToggle] = useState(false);
 
   const groupTrees = useAsync(async () => {
     return await aironeApiClientV2.getGroupTrees();
-  });
+  }, [toggle]);
 
   const usersInGroup = useAsync(async (): Promise<
     Array<{ id: number; username: string }>
@@ -141,6 +142,7 @@ export const GroupPage: FC = () => {
               groupId={groupAnchorEls.groupId}
               anchorElem={groupAnchorEls.el}
               handleClose={() => setGroupAnchorEls(null)}
+              setToggle={() => setToggle(!toggle)}
             />
           )}
         </StyledContainer>

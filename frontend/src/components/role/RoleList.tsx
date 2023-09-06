@@ -15,7 +15,7 @@ import { IconButtonTypeMap } from "@mui/material/IconButton/IconButton";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -32,10 +32,11 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
 export const RoleList: FC = ({}) => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
+  const [toggle, setToggle] = useState(false);
 
   const roles = useAsync(async () => {
     return await aironeApiClientV2.getRoles();
-  }, []);
+  }, [toggle]);
   if (!roles.loading && roles.error) {
     throw new Error("Failed to get users from AirOne APIv2 endpoint");
   }
@@ -48,6 +49,7 @@ export const RoleList: FC = ({}) => {
       });
       history.replace(topPath());
       history.replace(rolesPath());
+      setToggle(!toggle);
     } catch (e) {
       enqueueSnackbar("ロールの削除が失敗しました", {
         variant: "error",

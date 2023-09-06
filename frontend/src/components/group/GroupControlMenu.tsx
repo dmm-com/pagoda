@@ -19,12 +19,14 @@ interface Props {
   groupId: number;
   anchorElem: HTMLButtonElement | null;
   handleClose: () => void;
+  setToggle: () => void;
 }
 
 export const GroupControlMenu: FC<Props> = ({
   groupId,
   anchorElem,
   handleClose,
+  setToggle,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
@@ -41,6 +43,7 @@ export const GroupControlMenu: FC<Props> = ({
       });
       history.replace(topPath());
       history.replace(groupsPath());
+      setToggle();
     } catch (e) {
       enqueueSnackbar("グループの削除が失敗しました", {
         variant: "error",

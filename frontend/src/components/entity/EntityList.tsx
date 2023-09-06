@@ -67,6 +67,7 @@ interface Props {
   maxPage: number;
   handleChangePage: (page: number) => void;
   handleChangeQuery: (query: string) => void;
+  setToggle: () => void;
 }
 
 export const EntityList: FC<Props> = ({
@@ -76,6 +77,7 @@ export const EntityList: FC<Props> = ({
   maxPage,
   handleChangePage,
   handleChangeQuery,
+  setToggle,
 }) => {
   const [keyword, setKeyword] = useState(query ?? "");
   const [entityAnchorEls, setEntityAnchorEls] = useState<{
@@ -147,6 +149,7 @@ export const EntityList: FC<Props> = ({
                         })
                       }
                       setOpenImportModal={setOpenImportModal}
+                      setToggle={setToggle}
                     />
                   </>
                 }
