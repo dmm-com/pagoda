@@ -62,10 +62,11 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
 
   const [query, setQuery] = useState<string>(params.get("query") ?? "");
   const [keyword, setKeyword] = useState(query ?? "");
+  const [toggle, setToggle] = useState(false);
 
   const entries = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getEntries(entityId, true, page, query);
-  }, [page, query]);
+  }, [page, query, toggle]);
 
   const handleChangeQuery = (newQuery?: string) => {
     changePage(1);
@@ -155,6 +156,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
                               [entryId]: null,
                             })
                           }
+                          setToggle={() => setToggle(!toggle)}
                         />
                       </>
                     }

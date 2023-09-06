@@ -43,9 +43,11 @@ export const UserList: FC = ({}) => {
     [key: number]: HTMLButtonElement | null;
   }>({});
 
+  const [toggle, setToggle] = useState(false);
+
   const users = useAsync(async () => {
     return await aironeApiClientV2.getUsers(page, query);
-  }, [page, query]);
+  }, [page, query, toggle]);
   if (!users.loading && users.error) {
     throw new Error("Failed to get users from AirOne APIv2 endpoint");
   }
@@ -155,6 +157,7 @@ export const UserList: FC = ({}) => {
                               [userId]: null,
                             })
                           }
+                          setToggle={() => setToggle(!toggle)}
                         />
                       </>
                     }
