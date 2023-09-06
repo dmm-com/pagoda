@@ -23,7 +23,7 @@ interface UserControlProps {
   user: UserList;
   anchorElem: HTMLButtonElement | null;
   handleClose: (userId: number) => void;
-  setToggle: () => void;
+  setToggle?: () => void;
 }
 
 export const UserControlMenu: FC<UserControlProps> = ({
@@ -53,7 +53,7 @@ export const UserControlMenu: FC<UserControlProps> = ({
       });
       history.replace(topPath());
       history.replace(usersPath());
-      setToggle();
+      setToggle && setToggle();
     } catch (e) {
       enqueueSnackbar("ユーザの削除が失敗しました", {
         variant: "error",

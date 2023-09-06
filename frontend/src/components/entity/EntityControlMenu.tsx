@@ -32,7 +32,7 @@ interface Props {
   anchorElem: HTMLButtonElement | null;
   handleClose: (entityId: number) => void;
   setOpenImportModal: (isOpened: boolean) => void;
-  setToggle: () => void;
+  setToggle?: () => void;
 }
 
 export const EntityControlMenu: FC<Props> = ({
@@ -55,7 +55,7 @@ export const EntityControlMenu: FC<Props> = ({
         // A magic to reload the entity list with keeping snackbar
         history.replace(topPath());
         history.replace(entitiesPath());
-        setToggle();
+        setToggle && setToggle();
       })
       .catch(() => {
         enqueueSnackbar("エンティティの削除が失敗しました", {

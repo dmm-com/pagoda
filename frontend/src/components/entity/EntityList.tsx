@@ -67,7 +67,7 @@ interface Props {
   maxPage: number;
   handleChangePage: (page: number) => void;
   handleChangeQuery: (query: string) => void;
-  setToggle: () => void;
+  setToggle?: () => void;
 }
 
 export const EntityList: FC<Props> = ({
