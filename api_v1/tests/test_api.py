@@ -547,6 +547,47 @@ class APITest(AironeViewTest):
         attr: Attribute = entry.attrs.get(schema__name="attr1")
         self.assertEqual(attr.get_latest_value().get_value(), "hoge")
 
+    def test_post_entry_num_into_string(self):
+        admin = self.admin_login()
+
+        entity = self.create_entity(
+            **{
+                "user": admin,
+                "name": "Entity",
+                "attrs": [
+                    {"name": "string", "type": AttrTypeValue["string"]},
+                ],
+            }
+        )
+
+        params = {
+            "name": "Entry",
+            "entity": entity.name,
+            "attrs": {
+                "string": 10
+            },
+        }
+
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+
+        self.assertEqual(resp.status_code, 200)
+
+        ret_data = resp.json()
+
+        self.assertEqual(sorted(ret_data.keys()), ["is_created", "result", "updated_attrs"])
+
+        self.assertTrue(ret_data["is_created"])
+
+        new_entry = Entry.objects.get(id=ret_data["result"])
+        self.assertEqual(new_entry.name, "Entry")
+        self.assertEqual(new_entry.attrs.count(), len(params["attrs"]))
+
+        # checking new_entry is registered to the Elasticsearch
+        res = self._es.get(index=settings.ES_CONFIG["INDEX_NAME"], id=new_entry.id)
+        self.assertTrue(res["found"])
+        attr = new_entry.attrs.get(name="string")
+        self.assertEqual(attr.get_latest_value().value, "10")
+
     def test_update_entry(self):
         admin = self.admin_login()
 

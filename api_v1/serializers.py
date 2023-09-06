@@ -129,7 +129,9 @@ class PostEntrySerializer(serializers.Serializer):
                 return None
 
             if attr.type & AttrTypeValue["string"]:
-                if not all([isinstance(v, str) for v in value]):
+                if not all([isinstance(v, str)
+                            or isinstance(v, int)
+                            or isinstance(v, float) for v in value]):
                     return None
                 return value
 
@@ -155,7 +157,7 @@ class PostEntrySerializer(serializers.Serializer):
                 return [x for x in [AttributeValue.uniform_storable(v, Role) for v in value] if x]
 
         elif attr.type & AttrTypeValue["string"] or attr.type & AttrTypeValue["text"]:
-            if not isinstance(value, str):
+            if not (isinstance(value, str) or isinstance(value, int) or isinstance(value, float)):
                 return None
             return value
 
