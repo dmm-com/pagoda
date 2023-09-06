@@ -29,6 +29,7 @@ interface EntryControlProps {
   entryId: number;
   anchorElem: HTMLButtonElement | null;
   handleClose: (entryId: number) => void;
+  setToggle: () => void;
 }
 
 export const EntryControlMenu: FC<EntryControlProps> = ({
@@ -36,6 +37,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
   entryId,
   anchorElem,
   handleClose,
+  setToggle,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
@@ -46,6 +48,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
       enqueueSnackbar("エントリの削除が完了しました", {
         variant: "success",
       });
+      setToggle();
       history.replace(topPath());
       history.replace(entityEntriesPath(entityId));
     } catch (e) {
