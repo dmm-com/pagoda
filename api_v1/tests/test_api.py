@@ -563,9 +563,7 @@ class APITest(AironeViewTest):
         params = {
             "name": "Entry",
             "entity": entity.name,
-            "attrs": {
-                "string": 10
-            },
+            "attrs": {"string": 10},
         }
 
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")

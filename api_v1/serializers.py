@@ -129,9 +129,12 @@ class PostEntrySerializer(serializers.Serializer):
                 return None
 
             if attr.type & AttrTypeValue["string"]:
-                if not all([isinstance(v, str)
-                            or isinstance(v, int)
-                            or isinstance(v, float) for v in value]):
+                if not all(
+                    [
+                        isinstance(v, str) or isinstance(v, int) or isinstance(v, float)
+                        for v in value
+                    ]
+                ):
                     return None
                 return value
 
