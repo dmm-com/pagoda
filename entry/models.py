@@ -2112,7 +2112,7 @@ class Entry(ACLBase):
             )
 
             # sending request to elasticsearch with making query
-            resp = execute_query(query)
+            resp = execute_query(query, limit, offset)
 
             if "status" in resp and resp["status"] == 404:
                 continue
@@ -2135,7 +2135,11 @@ class Entry(ACLBase):
 
             # retrieve data from database on the basis of the result of elasticsearch
             search_result: AdvancedSearchResults = make_search_results(
-                user, resp, hint_attrs, hint_referral, limit, offset
+                user,
+                resp,
+                hint_attrs,
+                hint_referral,
+                limit,
             )
             results["ret_count"] += search_result["ret_count"]
             results["ret_values"].extend(search_result["ret_values"])
@@ -2150,8 +2154,8 @@ class Entry(ACLBase):
         hint_attr_value,
         hint_entity_name=None,
         exclude_entity_names=[],
-        limit=CONFIG.MAX_LIST_ENTRIES,
-        offset=0,
+        limit: int = CONFIG.MAX_LIST_ENTRIES,
+        offset: int = 0,
     ):
         """Method called from simple search.
         Returns the count and values of entries with hint_attr_value.

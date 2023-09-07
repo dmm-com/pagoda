@@ -457,7 +457,7 @@ class ElasticSearchTest(TestCase):
             ],
         )
 
-    def test_make_search_results_with_limit_offset(self):
+    def test_make_search_results_with_limit(self):
         entries = [
             Entry.objects.create(name="entry-%d" % i, schema=self._entity, created_user=self._user)
             for i in range(1, 16)
@@ -484,7 +484,7 @@ class ElasticSearchTest(TestCase):
         }
 
         # 1 to 10
-        results = elasticsearch.make_search_results(self._user, res, [], "", limit=10, offset=0)
+        results = elasticsearch.make_search_results(self._user, res, [], "", limit=10)
         self.assertEqual(results["ret_count"], len(entries))
         self.assertEqual(
             sorted(results["ret_values"], key=lambda x: x["entry"]["id"]),
@@ -505,31 +505,3 @@ class ElasticSearchTest(TestCase):
                 key=lambda x: x["entry"]["id"],
             ),
         )
-
-        # 11 to 15
-        results = elasticsearch.make_search_results(self._user, res, [], "", limit=10, offset=10)
-        self.assertEqual(results["ret_count"], len(entries))
-        self.assertEqual(
-            sorted(results["ret_values"], key=lambda x: x["entry"]["id"]),
-            sorted(
-                [
-                    {
-                        "entity": {
-                            "id": self._entity.id,
-                            "name": self._entity.name,
-                        },
-                        "entry": {"id": entry.id, "name": entry.name},
-                        "attrs": {},
-                        "is_readable": True,
-                        "referrals": [],
-                    }
-                    for entry in entries[10:15]
-                ],
-                key=lambda x: x["entry"]["id"],
-            ),
-        )
-
-        # Specify -1 for limit
-        results = elasticsearch.make_search_results(self._user, res, [], "", limit=-1, offset=0)
-        self.assertEqual(results["ret_count"], len(entries))
-        self.assertEqual(results["ret_values"], [])
