@@ -6,7 +6,6 @@ from unittest import mock
 from unittest.mock import Mock, patch
 
 import yaml
-from django.urls import reverse
 from rest_framework.exceptions import ValidationError
 
 from airone.lib.test import AironeViewTest
@@ -3572,9 +3571,9 @@ class ViewTest(AironeViewTest):
         )
 
         csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
-        self.assertEqual(len(csv_contents), 1)
+        self.assertEqual(len(csv_contents), 2)
         self.assertEqual(csv_contents[0], "Name,Entity,text")
-        # csv_contents[1] is omitted because of lack of permissions
+        self.assertEqual(csv_contents[1], "private,test-entity,")
 
     @patch(
         "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
@@ -3792,34 +3791,36 @@ class ViewTest(AironeViewTest):
         resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
         for index in range(2):
             entity = Entity.objects.get(name="Entity-%d" % index)
-            e_data = resp_data[entity.name]
-
-            self.assertEqual(
-                len(resp_data[entity.name]), Entry.objects.filter(schema=entity).count()
-            )
-            for e_data in resp_data[entity.name]:
+            found = next(filter(lambda x: x["entity"] == entity.name, resp_data), None)
+            self.assertEqual(len(found["entries"]), Entry.objects.filter(schema=entity).count())
+            for e_data in found["entries"]:
                 self.assertTrue(e_data["name"] in ["e-0", "e-1"])
-                self.assertTrue(all([x in attr_info.keys() for x in e_data["attrs"]]))
+                self.assertTrue(all([a["name"] in attr_info.keys() for a in e_data["attrs"]]))
 
         self.assertEqual(
-            resp_data["Entity-0"][0]["attrs"],
-            {
-                "str": "foo",
-                "obj": "ref",
-                "name": {"bar": "ref"},
-                "bool": False,
-                "arr_str": ["foo", "bar", "baz"],
-                "arr_obj": ["ref"],
-                "arr_name": [
-                    {"hoge": "ref"},
-                    {"fuga": ""},
-                ],
-                "group": "group",
-                "arr_group": ["group"],
-                "role": "role",
-                "arr_role": ["role"],
-                "date": "2020-01-01",
-            },
+            next(filter(lambda x: x["entity"] == "Entity-0", resp_data), None)["entries"][0][
+                "attrs"
+            ],
+            [
+                {"name": "str", "value": "foo"},
+                {"name": "obj", "value": {"entity": "RefEntity", "name": "ref"}},
+                {"name": "name", "value": {"bar": {"entity": "RefEntity", "name": "ref"}}},
+                {"name": "bool", "value": False},
+                {"name": "arr_str", "value": ["foo", "bar", "baz"]},
+                {"name": "arr_obj", "value": [{"entity": "RefEntity", "name": "ref"}]},
+                {
+                    "name": "arr_name",
+                    "value": [
+                        {"hoge": {"entity": "RefEntity", "name": "ref"}},
+                        {"fuga": {"entity": None, "name": ""}},
+                    ],
+                },
+                {"name": "group", "value": "group"},
+                {"name": "arr_group", "value": ["group"]},
+                {"name": "role", "value": "role"},
+                {"name": "arr_role", "value": ["role"]},
+                {"name": "date", "value": "2020-01-01"},
+            ],
         )
 
         # Checked to be able to import exported data
@@ -3828,28 +3829,42 @@ class ViewTest(AironeViewTest):
         )
         new_group = Group.objects.create(name="new_group")
         new_role = Role.objects.create(name="new_role")
-        new_attr_values = {
-            "str": "bar",
-            "obj": "another_ref",
-            "name": {"hoge": "another_ref"},
-            "bool": True,
-            "arr_str": ["hoge", "fuga"],
-            "arr_obj": ["another_ref"],
-            "arr_name": [{"foo": "another_ref"}, {"bar": "ref"}],
-            "group": "new_group",
-            "arr_group": ["new_group"],
-            "role": "new_role",
-            "arr_role": ["new_role"],
-            "date": "1999-01-01",
-        }
-        resp_data["Entity-1"][0]["attrs"] = new_attr_values
+        new_attr_values = [
+            {"name": "str", "value": "bar"},
+            {"name": "obj", "value": {"entity": "RefEntity", "name": "another_ref"}},
+            {"name": "name", "value": {"hoge": {"entity": "RefEntity", "name": "another_ref"}}},
+            {"name": "bool", "value": True},
+            {"name": "arr_str", "value": ["hoge", "fuga"]},
+            {"name": "arr_obj", "value": [{"entity": "RefEntity", "name": "another_ref"}]},
+            {
+                "name": "arr_name",
+                "value": [
+                    {"foo": {"entity": "RefEntity", "name": "another_ref"}},
+                    {"bar": {"entity": "RefEntity", "name": "ref"}},
+                ],
+            },
+            {"name": "group", "value": "new_group"},
+            {"name": "arr_group", "value": ["new_group"]},
+            {"name": "role", "value": "new_role"},
+            {"name": "arr_role", "value": ["new_role"]},
+            {"name": "date", "value": "1999-01-01"},
+        ]
+        resp_data.append(
+            {
+                "entity": "Entity-1",
+                "entries": [
+                    {
+                        "attrs": new_attr_values,
+                    }
+                ],
+            }
+        )
 
+        # FIXME remained broken points
         mockio = mock.mock_open(read_data=yaml.dump(resp_data))
         with mock.patch("builtins.open", mockio):
             with open("hogefuga.yaml") as fp:
-                resp = self.client.post(
-                    reverse("entry:do_import", args=[entities[1].id]), {"file": fp}
-                )
+                resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
                 self.assertEqual(resp.status_code, 303)
 
         self.assertEqual(entry_another_ref.get_referred_objects().count(), 1)
