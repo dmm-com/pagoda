@@ -124,7 +124,11 @@ export const Header: FC = () => {
   const djangoContext = DjangoContext.getInstance();
 
   useInterval(async () => {
-    setRecentJobs(await aironeApiClientV2.getRecentJobs());
+    try {
+      setRecentJobs(await aironeApiClientV2.getRecentJobs());
+    } catch (e) {
+      console.warn("failed to get recent jobs. will auto retried ...");
+    }
   }, JobRefreshIntervalMilliSec);
 
   const uncheckedJobsCount = useMemo(() => {
