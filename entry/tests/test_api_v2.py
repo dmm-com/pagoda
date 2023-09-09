@@ -21,10 +21,8 @@ from airone.lib.types import (
     AttrTypeText,
     AttrTypeValue,
 )
-from dashboard import tasks as dashboard_tasks
 from entity.models import Entity, EntityAttr
 from entry import tasks
-from entry import tasks as entry_tasks
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
 from group.models import Group
@@ -3104,8 +3102,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attrv.value, prev_attrv.value)
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_advanced_search_result(self):
         user = self._create_user("admin", is_superuser=True)
@@ -3485,8 +3482,7 @@ class ViewTest(AironeViewTest):
         )
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_advanced_search_result_with_referral(self):
         user = self._create_user("admin", is_superuser=True)
@@ -3553,8 +3549,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(csv_contents), 1)
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_advanced_search_result_with_no_permission(self):
         admin = self._create_user("admin", is_superuser=True)
@@ -3577,12 +3572,12 @@ class ViewTest(AironeViewTest):
         )
 
         csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
+        self.assertEqual(len(csv_contents), 1)
         self.assertEqual(csv_contents[0], "Name,Entity,text")
-        self.assertEqual(csv_contents[1], "private,test-entity,")
+        # csv_contents[1] is omitted because of lack of permissions
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_show_advanced_search_results_csv_escape(self):
         user = self._create_user("admin", is_superuser=True)
@@ -3692,10 +3687,9 @@ class ViewTest(AironeViewTest):
             data = content.replace(header, "", 1).strip()
             self.assertEqual(data, '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, case[2]))
 
-    @patch("entry.tasks.import_entries.delay", Mock(side_effect=entry_tasks.import_entries))
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_yaml_export(self):
         user = self.admin_login()
@@ -3912,8 +3906,7 @@ class ViewTest(AironeViewTest):
                 self.assertEqual(attrv.date, date(1999, 1, 1))
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_duplicate_export(self):
         user = self.admin_login()
@@ -3957,8 +3950,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_with_hint_entry_name(self):
         admin = self._create_user("admin", is_superuser=True)
@@ -3986,8 +3978,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual([x["name"] for x in resp_data["Entity"]], ["bar", "baz"])
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_yaml_export_with_referral(self):
         user = self._create_user("admin", is_superuser=True)
@@ -4035,8 +4026,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(referrals[0]["entry"], "entry")
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_advanced_search_result_with_no_value(self):
         admin = self._create_user("admin", is_superuser=True)
@@ -4116,8 +4106,7 @@ class ViewTest(AironeViewTest):
         )
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_with_all_entities(self):
         self.add_entry(self.user, "Entry", self.entity, values={"val": "hoge"})

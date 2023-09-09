@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+from typing import Optional
 
 import yaml
 from django.conf import settings
@@ -101,10 +102,12 @@ def _csv_export(job, values, recv_data, has_referral):
     return output
 
 
-def _yaml_export(job, values, recv_data, has_referral):
+def _yaml_export(
+    job: Job, values: list[dict], recv_data: dict, has_referral: bool
+) -> Optional[io.StringIO]:
     output = io.StringIO()
 
-    def _get_attr_value(atype, value):
+    def _get_attr_value(atype: int, value: dict):
         if atype & AttrTypeValue["array"]:
             return [_get_attr_value(atype ^ AttrTypeValue["array"], x) for x in value]
 
@@ -123,16 +126,16 @@ def _yaml_export(job, values, recv_data, has_referral):
         else:
             return value
 
-    resp_data = {}
+    resp_data: dict = {}
     for index, entry_info in enumerate(values):
-        data = {
+        data: dict = {
             "name": entry_info["entry"]["name"],
             "attrs": {},
         }
 
         # Abort processing when job is canceled
         if index % Job.STATUS_CHECK_FREQUENCY == 0 and job.is_canceled():
-            return
+            return None
 
         for attrinfo in recv_data["attrinfo"]:
             if attrinfo["name"] in entry_info["attrs"]:
@@ -175,7 +178,7 @@ def export_search_result(self, job_id):
     recv_data = json.loads(job.params)
 
     # Do not care whether the "has_referral" value is
-    has_referral = recv_data.get("has_referral", False)
+    has_referral: bool = recv_data.get("has_referral", False)
     referral_name = recv_data.get("referral_name")
     entry_name = recv_data.get("entry_name")
 

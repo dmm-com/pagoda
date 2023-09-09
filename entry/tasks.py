@@ -21,6 +21,7 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import (
+    AdvancedSearchResultExportSerializer,
     EntryCreateSerializer,
     EntryImportEntitySerializer,
     EntryUpdateSerializer,
@@ -646,6 +647,94 @@ def export_entries_v2(self, job_id):
         writer.writerow(["Name"] + attrs)
 
         def data2str(data):
+            if not data:
+                return ""
+            return str(data)
+
+        for data in exported_entity[0]["entries"]:
+            writer.writerow(
+                [data["name"]] + [data2str(x["value"]) for x in data["attrs"] if x["name"] in attrs]
+            )
+    else:
+        output = io.StringIO()
+        output.write(
+            yaml.dump(
+                exported_entity,
+                default_flow_style=False,
+                allow_unicode=True,
+            )
+        )
+
+    if output:
+        job.set_cache(output.getvalue())
+
+    # update job status and save it except for the case that target job is canceled.
+    if not job.is_canceled():
+        job.update(Job.STATUS["DONE"])
+
+
+@app.task(bind=True)
+def export_search_result_v2(self, job_id: int):
+    job: Job = Job.objects.get(id=job_id)
+
+    if not job.proceed_if_ready():
+        return
+    job.update(Job.STATUS["PROCESSING"])
+
+    user = job.user
+    serializer = AdvancedSearchResultExportSerializer(data=json.loads(job.params))
+    serializer.is_valid(raise_exception=True)
+    params: dict = serializer.validated_data
+
+    entities = Entity.objects.filter(id__in=params["entities"])
+    entries = Entry.objects.filter(schema__in=entities, is_active=True)
+    with_entity = params["export_style"] != "csv"
+
+    # This variable is used for job status check. When it's checked at every loop, this might send
+    # tons of query to the database. To prevent the sort of tragedy situation, checking status of
+    # this job should be skipped some times (which is specified in Job.STATUS_CHECK_FREQUENCY).
+    #
+    # NOTE:
+    #   This doesn't use enumerate() method to count loop. Because when a QuerySet value is
+    #   passed to the argument of enumerate() method, Django try to get result at once (this never
+    #   do lazy evaluation).
+    exported_entity = []
+    export_item_counter = 0
+    for entity in entities:
+        exported_entries = []
+
+        for entry in [e for e in entries if e.schema == entity]:
+            # abort processing when job is canceled
+            if export_item_counter % Job.STATUS_CHECK_FREQUENCY == 0 and job.is_canceled():
+                return
+
+            if user.has_permission(entry, ACLType.Readable):
+                exported_entries.append(entry.export_v2(user, with_entity=with_entity))
+
+            # increment loop counter
+            export_item_counter += 1
+
+        exported_entity.append(
+            {
+                "entity": entity.name,
+                "entries": exported_entries,
+            }
+        )
+
+    output: Optional[io.StringIO] = None
+    if params["export_style"] == "csv":
+        # newline is blank because csv module performs universal newlines
+        # https://docs.python.org/ja/3/library/csv.html#id3
+        output = io.StringIO(newline="")
+        writer = csv.writer(output)
+
+        # TODO consider to support including "Referrals"
+        attrs = [x["name"] for x in params["attrinfo"]]
+        writer.writerow(
+            ["Name"] + ["Entity"] + attrs
+        )
+
+        def data2str(data) -> str:
             if not data:
                 return ""
             return str(data)
