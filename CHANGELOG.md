@@ -8,11 +8,33 @@
 
 ### Fixed
 
+## v3.60.0
+
+### Changed
+* Changed OpenAPI generator result to NPM package.
+  Contributed by @syucream
+* Refactored advanced search pagination.
+  Contributed by @syucream
+* Redactored get group info in edit role page.
+  Contributed by @yoshi-non
+* Improved behavior when clearing advanced search result filtering.
+  Contributed by @Bayathy
+* Changed tabs to prohibited characters in entry names.
+  Contributed by @Limitex
+
+### Fixed
+* Fixed numeric update in entry API.
+  Contributed by @nameless-mc
+* Fixed bug of EntryList menu to show deleted Entry just after deleting.
+  Contributed by @sniper-fly
+* Fixed AdvancedSearchModal to keep filterKey info after resetting attributes.
+  Contributed by @sniper-fly
+
 ## v3.59.0
 
 ### Changed
 * Changed value type for named_entry attribute.
-  @hinashi
+  Contributed by @hinashi
 
 ## v3.58.0
 
