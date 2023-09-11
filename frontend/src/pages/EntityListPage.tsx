@@ -24,10 +24,11 @@ export const EntityListPage: FC = () => {
 
   const params = new URLSearchParams(location.search);
   const [query, setQuery] = useState<string>(params.get("query") ?? "");
+  const [toggle, setToggle] = useState(false);
 
   const entities = useAsync(async () => {
     return await aironeApiClientV2.getEntities(page, query);
-  }, [page, query]);
+  }, [page, query, toggle]);
 
   const maxPage = useMemo(() => {
     if (entities.loading) {
@@ -97,6 +98,7 @@ export const EntityListPage: FC = () => {
             maxPage={maxPage}
             handleChangePage={changePage}
             handleChangeQuery={handleChangeQuery}
+            setToggle={() => setToggle(!toggle)}
           />
         </Container>
       )}
